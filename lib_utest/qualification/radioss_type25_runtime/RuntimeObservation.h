@@ -11,10 +11,37 @@ struct Observation {
   std::vector<NativeFrictionResult> response;
   std::vector<std::uint32_t> cohort_ends;
 };
+struct NormalObservation {
+  tl::fea::NativeContactPublicationSnapshot accepted;
+  std::uint64_t force_base_epoch=0,attempt=0;
+  std::vector<StoredNormal> face;
+  std::vector<startup::NormalReference> references;
+  std::vector<std::uint32_t> active,tags;
+};
 // Read-only owning qualification seam. No setter, callback, receipt factory,
 // physical publication or production dependency exists here.
 class Access {
  public:
+  static bool ReadAcceptedNormals(const Transaction& value,NormalObservation* output) {
+    if(!value.impl_||!output)return false;const auto& p=*value.impl_;
+    const auto accepted=p.state.Accepted(*p.owner);
+    if(!p.usable||!p.device.normal.shape.enabled||!accepted.available)return false;
+    NormalObservation next;next.accepted=accepted;
+    next.force_base_epoch=accepted.force_phase_available?accepted.force_base_stamp.epoch:0;
+    if(!CopyNormals(p,accepted.selectors.history,false,next))return false;
+    *output=std::move(next);return true;
+  }
+  static bool ReadAttemptNormals(const Transaction& value,tl::fea::FENodalState& owner,
+      const tl::fea::NodalTrialToken& token,const tl::fea::NodalAssemblyView& view,NormalObservation* output) {
+    if(!value.impl_||!output)return false;const auto& p=*value.impl_;
+    if(!p.usable||!p.normal_ready||!p.device.normal.shape.enabled||p.owner!=&owner||
+       p.phase!=Transaction::Impl::Phase::Assembled||view.attempt!=p.assembly_view.attempt||
+       !tl::fea::trial_identity::SameStamp(owner.accepted(),p.assembly_stamp)||
+       owner.AuthenticateAssemblyView(token,view).status!=tl::fea::NodalStatus::Ok)return false;
+    NormalObservation next;next.force_base_epoch=p.assembly_stamp.epoch;next.attempt=view.attempt;
+    if(!CopyNormals(p,p.trial_selectors.history,true,next))return false;
+    *output=std::move(next);return true;
+  }
   static bool Read(const Transaction& value,tl::fea::FENodalState& owner,
       const tl::fea::NodalTrialToken& token,const tl::fea::NodalAssemblyView& view,Observation* output) {
     if(!value.impl_||!output)return false;const auto& p=*value.impl_;
@@ -38,6 +65,18 @@ class Access {
     result.occurrences.reserve(count);result.geometry.reserve(count);result.response.reserve(count);
     for(auto slot:order){if(slot>=count)return false;result.occurrences.push_back(raw[slot]);result.geometry.push_back(geometry[slot]);result.response.push_back(response[slot]);}
     *output=std::move(result);return true;
+  }
+ private:
+  static bool CopyNormals(const Transaction::Impl& p,unsigned slab,bool masks,NormalObservation& out) {
+    out.face.resize(4*p.source.selection.main_count);out.references.resize(p.source.selection.normal_count);
+    if(masks){out.active.resize(p.source.selection.main_count);out.tags.resize(p.source.selection.node_count);}
+    auto error=cudaGetLastError();
+    const auto copy=[&](void* to,const void* from,std::size_t bytes){if(error==cudaSuccess&&bytes)error=cudaMemcpyAsync(to,from,bytes,cudaMemcpyDeviceToHost,p.stream);};
+    copy(out.face.data(),p.device.normal.face[slab],out.face.size()*sizeof(StoredNormal));
+    copy(out.references.data(),p.device.normal.references[slab],out.references.size()*sizeof(startup::NormalReference));
+    if(masks){copy(out.active.data(),p.device.normal.active,out.active.size()*sizeof(std::uint32_t));
+      copy(out.tags.data(),p.device.normal.tags,out.tags.size()*sizeof(std::uint32_t));}
+    const auto drained=cudaStreamSynchronize(p.stream);return error==cudaSuccess&&drained==cudaSuccess;
   }
 };
 } // namespace tlfea::contact::radioss_type25::runtime_qualification

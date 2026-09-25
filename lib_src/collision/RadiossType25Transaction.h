@@ -11,7 +11,7 @@ struct AcceptedContactBuffer {
   int* initial_contact_flags=nullptr;
   std::size_t row_capacity=0;
 };
-// Concrete fixed-main GPU contact participant. FENodalState remains the sole
+// Concrete explicitly selected fixed/moving-main GPU contact participant. FENodalState remains the sole
 // clock and state owner. This stable-address object is noncopyable/nonmovable.
 // Serialize every call/read/destruction with the owner and common publisher;
 // owner and its borrowed stream must outlive destruction. The publisher may
@@ -24,6 +24,10 @@ class Transaction {
   Transaction(const Transaction&)=delete;Transaction& operator=(const Transaction&)=delete;
   Transaction(Transaction&&)=delete;Transaction& operator=(Transaction&&)=delete;
   TransactionReport Initialize(const TransactionConfig&,const FixedMainSource&,
+      tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
+  TransactionReport Initialize(const TransactionConfig&,const MovingMainSource&,
       tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
       const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
@@ -45,6 +49,10 @@ class Transaction {
   TransactionForecast allocations() const noexcept;
   TransactionDiagnostics last_diagnostics() const noexcept;
  private:
+  template<class Source> TransactionReport InitializeSource(const TransactionConfig&,const Source&,
+      tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits) noexcept;
   friend class runtime_qualification::Access;
   struct Impl;std::unique_ptr<Impl> impl_;
 };

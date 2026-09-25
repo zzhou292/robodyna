@@ -10,7 +10,8 @@ bool Add(std::size_t value,std::size_t& sum){if(value>SIZE_MAX-sum)return false;
 }
 Transaction::Transaction()=default;Transaction::~Transaction()=default;
 Transaction::Impl::~Impl(){if(stream)cudaStreamSynchronize(stream);if(arena)cudaFree(arena);}
-TransactionReport Transaction::Initialize(const TransactionConfig& config,const FixedMainSource& source,
+template<class Source>
+TransactionReport Transaction::InitializeSource(const TransactionConfig& config,const Source& source,
     fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
     const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
     TransactionLimits limits) noexcept try {
@@ -42,10 +43,11 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
   std::size_t cub=0;
   if(rd::QueryScratch(source.selection.secondary_count,limits.optimized_candidates,cub)!=cudaSuccess)
     return Error(TransactionStatus::DeviceFailure,"Native runtime scratch query failed");
-  rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
+  const rd::NormalShape normal{upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation};
+  rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout,normal))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
   TransactionForecast forecast;forecast.raw_pair_capacity=limits.inventory.max_pairs;
   forecast.optimized_capacity=limits.optimized_candidates;forecast.sliding_capacity=limits.sliding_entries;
-  forecast.runtime_device_bytes=layout.bytes;
+  forecast.runtime_device_bytes=layout.bytes;forecast.normal_device_bytes=layout.normal.bytes;
   if(!Add(inventory.device_bytes,forecast.inventory_device_bytes)||!Add(inventory.device_bytes,forecast.inventory_device_bytes)||
      !Add(maintenance.device_bytes,forecast.maintenance_device_bytes)||!Add(maintenance.device_bytes,forecast.maintenance_device_bytes))
     return Error(TransactionStatus::ResourceLimit,"Native paired arena forecast overflow");
@@ -73,7 +75,7 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
   next->readback_rows=rows;next->readback_secondary=secondary;
   auto error=cudaGetLastError();if(error!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Pending CUDA error at initialization");
   error=cudaMalloc(&next->arena,layout.bytes);if(error!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Native runtime allocation failed");
-  next->device=rd::Bind(next->arena,layout,source,limits);
+  next->device=rd::Bind(next->arena,layout,source,limits,normal);
   const auto copy=[&](const void* values,const tl::util::ArenaRegion& region) {
     if(error==cudaSuccess&&region.bytes)error=cudaMemcpyAsync(tl::util::ArenaPointer<std::byte>(next->arena,region),values,
         region.bytes,cudaMemcpyHostToDevice,stream);
@@ -86,6 +88,15 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
   copy(upload.positions.data(),layout.reference_positions);copy(upload.native_mass.data(),layout.native_mass);
   copy(upload.secondary_stiffness.data(),layout.secondary_stiffness);copy(upload.secondary_gaps.data(),layout.secondary_gaps);
   copy(upload.main_stiffness.data(),layout.main_stiffness);copy(upload.main_gaps.data(),layout.main_gaps);copy(upload.main_curvature.data(),layout.main_curvature);
+  if(normal.enabled) {
+    copy(upload.moving.topology.mains,layout.normal.topology);
+    copy(upload.moving.main_coefficients.data(),layout.normal.coefficients);
+    copy(upload.moving.free_main_ids.data(),layout.normal.free_mains);
+    for(unsigned slab=0;slab<2;++slab) {
+      copy(upload.moving.starter.starter.face_normals,layout.normal.face[slab]);
+      copy(upload.moving.starter.starter.references,layout.normal.references[slab]);
+    }
+  }
   const auto drained=cudaStreamSynchronize(stream);
   if(error!=cudaSuccess||drained!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Native source upload failed");
   for(unsigned slab=0;slab<2;++slab) {
@@ -99,6 +110,18 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
   if(!next->state.Attach(owner,source.source_id,next->issuer))return Error(TransactionStatus::PublicationFailure,"Native participant attachment rejected");
   impl_=std::move(next);return {TransactionStatus::Ok,"OK"};
 } catch(const std::bad_alloc&){return Error(TransactionStatus::ResourceLimit,"Native startup allocation failed");}
+TransactionReport Transaction::Initialize(const TransactionConfig& config,const FixedMainSource& source,
+    fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
+    const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
+    TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits);
+}
+TransactionReport Transaction::Initialize(const TransactionConfig& config,const MovingMainSource& source,
+    fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
+    const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
+    TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits);
+}
 fe::ShellPhysicalScratchRosterEntry Transaction::roster_entry() noexcept {
   return impl_?fe::ShellPhysicalScratchRosterEntry{&impl_->issuer,impl_->source.source_id}:fe::ShellPhysicalScratchRosterEntry{};
 }

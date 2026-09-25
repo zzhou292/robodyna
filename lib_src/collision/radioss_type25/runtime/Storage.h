@@ -20,7 +20,7 @@ struct Transaction::Impl {
   candidates::Inventory inventory[2];search::Maintenance maintenance[2];
   assembly::DeviceIncidenceBuilder incidence;
   candidates::InventoryView inventory_view[2];
-  TransactionConfig config;FixedMainSource source;TransactionLimits limits;
+  TransactionConfig config;ContactSourceInput source;TransactionLimits limits;
   TransactionForecast forecast;TransactionDiagnostics diagnostics;
   runtime_detail::Layout layout;runtime_detail::Device device;runtime_detail::Control control;
   units_detail::Factors units{};void* arena=nullptr;cudaStream_t stream=nullptr;
@@ -28,7 +28,7 @@ struct Transaction::Impl {
   tl::fea::NodalAssemblyView assembly_view;tl::fea::NodalStamp assembly_stamp;
   tl::fea::NativeContactSelectors trial_selectors;
   enum class Phase { Idle,Assembled,Sealed };Phase phase=Phase::Idle;
-  bool usable=true;
+  bool usable=true,normal_ready=false;
   TransactionReport Fence(cudaError_t) noexcept;
   TransactionReport Fail(TransactionReport) noexcept;
   void DiscardLocal() noexcept;

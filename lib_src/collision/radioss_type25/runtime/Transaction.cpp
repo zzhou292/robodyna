@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "NormalStage.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <cstring>
@@ -39,7 +40,7 @@ void Transaction::Impl::DiscardLocal() noexcept {
     inventory[trial_selectors.reference].Discard();maintenance[trial_selectors.reference].DiscardReference();
     inventory_view[trial_selectors.reference]={};
   }
-  incidence.Discard();phase=Phase::Idle;assembly_view={};assembly_stamp={};trial_selectors={};
+  incidence.Discard();normal_ready=false;phase=Phase::Idle;assembly_view={};assembly_stamp={};trial_selectors={};
 }
 TransactionReport Transaction::Impl::Fail(TransactionReport result) noexcept {
   if(result.status==TransactionStatus::DeviceFailure)usable=false;
@@ -70,7 +71,7 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
     if(view.attempt==p.assembly_view.attempt)return p.Fail(Error(TransactionStatus::StaleAttempt,"Native assembly already ran for this attempt"));
     p.DiscardLocal();
   }
-  p.diagnostics={};p.trial_selectors=accepted.selectors;p.trial_selectors.history=accepted.selectors.history^1u;
+  p.diagnostics={};p.normal_ready=false;p.trial_selectors=accepted.selectors;p.trial_selectors.history=accepted.selectors.history^1u;
   p.assembly_view=view;p.assembly_stamp=accepted.stamp;p.phase=Impl::Phase::Assembled;
   fe::NodalCinAssemblyView cin;
   check=fe::shell_physical_owner::BorrowAssembly(owner,token,accepted.stamp,view,p.issuer.witness_count_,&cin);
@@ -83,7 +84,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   search::Current current;current.stamp={{p.source.source_id,p.source.topology_generation,p.source.selection.generation},accepted.stamp.epoch,view.attempt};
   current.positions=View(view.accepted.position_xyz,view.accepted.node_count);current.velocities=View(view.accepted.velocity_xyz,view.accepted.node_count);
   current.secondary_stiffness=p.device.secondary_stiffness;current.secondary_count=p.source.selection.secondary_count;
-  // Immutable fixed-source gaps select Maintenance::GapMode::Fixed.
+  // Immutable source gaps select Maintenance::GapMode::Fixed, independently
+  // of whether main geometry moves; this profile does not update thickness gaps.
   current.main_gaps=nullptr;current.main_gap_count=0;
   search::Report budget;bool rebuild=!accepted.selectors.has_reference;unsigned reference=accepted.selectors.reference;
   if(!rebuild) {
@@ -132,7 +134,24 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   if(error==cudaSuccess)error=rd::Prepare(p.device,input,p.units,p.stream);
   status=p.Fence(error);if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   if(p.control.required_sliding>p.limits.sliding_entries)return p.Fail(Error(TransactionStatus::ResourceLimit,"Complete sliding scratch exceeds cap"));
-  status=p.Fence(rd::CountCandidates(p.device,input,p.units,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+  if(p.device.normal.shape.enabled) {
+    status=p.Fence(rd::CountBeforeNormals(p.device,input,p.units,p.stream));
+    if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+    if(p.control.required_candidates>p.limits.optimized_candidates)
+      return p.Fail(Error(TransactionStatus::ResourceLimit,"Complete OPTCD suffix exceeds candidate cap"));
+    const auto optimized=std::size_t(p.control.required_candidates);
+    status=p.Fence(rd::EmitOptimized(p.device,input,p.units,optimized,p.stream));
+    if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+    status=p.Fence(rd::UpdateNormals(p.device,input,p.units,accepted.selectors.history,
+        p.trial_selectors.history,optimized,p.stream));
+    if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+    const auto trial=p.trial_selectors.history;
+    input.current_normals={p.device.normal.face[trial],4*input.source.main_count,
+        p.device.normal.references[trial],input.source.normal_count};
+    p.normal_ready=true;
+    status=p.Fence(rd::CountAfterNormals(p.device,input,p.units,p.stream));
+  } else status=p.Fence(rd::CountCandidates(p.device,input,p.units,p.stream));
+  if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   if(p.control.required_candidates>p.limits.optimized_candidates)return p.Fail(Error(TransactionStatus::ResourceLimit,"Complete optimized candidate set exceeds cap"));
   const auto count=std::size_t(p.control.required_candidates);p.diagnostics.optimized_candidates=count;
   status=p.Fence(rd::Complete(p.device,input,p.units,count,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
@@ -161,7 +180,8 @@ TransactionReport Transaction::SealCandidate(fe::FENodalState& owner,const fe::N
     fe::ShellPhysicalScratchParticipationReceipt* output) noexcept {
   if(!impl_)return Error(TransactionStatus::NotInitialized,"Native transaction is not initialized");auto& p=*impl_;
   if(!p.usable)return Error(TransactionStatus::Unusable,"Native transaction is poisoned");
-  if(&owner!=p.owner||p.phase!=Impl::Phase::Assembled||!p.OutputDisjoint(output,sizeof(*output))||
+  if(&owner!=p.owner||p.phase!=Impl::Phase::Assembled||
+     (p.device.normal.shape.enabled&&!p.normal_ready)||!p.OutputDisjoint(output,sizeof(*output))||
      !fe::trial_identity::Disjoint(output,sizeof(*output),this,sizeof(*this))||
      !fe::trial_identity::Disjoint(output,sizeof(*output),&token,sizeof(token))||
      !fe::trial_identity::Disjoint(output,sizeof(*output),&view,sizeof(view))||

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Types.h"
+#include "NormalStorage.h"
 #include "../selection/lifecycle/Admission.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::runtime_detail {
@@ -18,10 +19,12 @@ struct Layout {
   tl::util::ArenaRegion candidate_counts,candidate_offsets,occurrences,geometry,finalized,responses,row_packets;
   tl::util::ArenaRegion order_keys,sorted_keys,order_slots,sorted_slots,positive_flags,positive_offsets,force_rank;
   tl::util::ArenaRegion force_connectivity,force_packets,cohort_ends,nodal_output,control,cub;
+  NormalLayout normal;
   std::size_t bytes=0;
 };
 struct Device {
   lifecycle::SourceView source;
+  NormalDevice normal;
   lifecycle::Secondary* secondary[2]{};
   NativeGeometryHistory* history[2]{};
   double* native_mass=nullptr;Vector* reference_positions=nullptr;
@@ -44,6 +47,6 @@ struct Device {
   std::size_t primary_count=0,raw_capacity=0,candidate_capacity=0,sliding_capacity=0;
   unsigned force_packet_size=0;
 };
-bool MakeLayout(const FixedMainSource&,TransactionLimits,std::size_t cub_bytes,Layout&) noexcept;
-Device Bind(void*,const Layout&,const FixedMainSource&,TransactionLimits) noexcept;
+bool MakeLayout(const ContactSourceInput&,TransactionLimits,std::size_t cub_bytes,Layout&,NormalShape={}) noexcept;
+Device Bind(void*,const Layout&,const ContactSourceInput&,TransactionLimits,NormalShape={}) noexcept;
 } // namespace tlfea::contact::radioss_type25::runtime_detail

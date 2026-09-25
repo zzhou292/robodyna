@@ -2,10 +2,13 @@
 #include "Layout.h"
 #include <climits>
 namespace tlfea::contact::radioss_type25::runtime_detail {
-bool MakeLayout(const FixedMainSource& source,TransactionLimits limits,std::size_t cub,Layout& out) noexcept {
+bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::size_t cub,Layout& out,NormalShape normal) noexcept {
   const auto& s=source.selection;const auto rows=s.secondary_count,cap=limits.optimized_candidates;
   if(!source.force_packet_size||cap>INT_MAX/5||limits.inventory.max_pairs>=INT_MAX||
      rows>=INT_MAX||limits.sliding_entries>=INT_MAX||!limits.max_device_bytes)return false;
+  if(normal.enabled&&(!source.primary_main_count||source.primary_main_count>INT_MAX/8||
+      s.main_count!=2*source.primary_main_count||!s.normal_count||s.normal_count>4*s.main_count||
+      normal.free_count>s.main_count))return false;
   tl::util::BoundedArenaLayout a(limits.max_device_bytes);Layout l;
 #define ADD(type,count,name) if(!a.Append<type>(count,l.name))return false
   ADD(lifecycle::Node,s.node_count,nodes);ADD(lifecycle::Main,s.main_count,mains);
@@ -32,13 +35,25 @@ bool MakeLayout(const FixedMainSource& source,TransactionLimits limits,std::size
   ADD(assembly::Connectivity,cap,force_connectivity);ADD(assembly::SiEndpoints,cap,force_packets);
   ADD(std::uint32_t,cap/source.force_packet_size+(cap%source.force_packet_size!=0),cohort_ends);
   ADD(assembly::SiNodalValue,s.node_count,nodal_output);ADD(Control,1,control);
+  if(normal.enabled) {
+    const auto before=a.bytes();
+    ADD(startup::Main,s.main_count,normal.topology);ADD(double,s.main_count,normal.coefficients);
+    ADD(std::uint32_t,normal.free_count,normal.free_mains);ADD(lifecycle::OptimizedRow,rows,normal.optimized);
+    for(unsigned i=0;i<2;++i) {
+      ADD(StoredNormal,4*s.main_count,normal.face[i]);ADD(startup::NormalReference,s.normal_count,normal.references[i]);
+    }
+    ADD(std::uint32_t,s.main_count,normal.active);ADD(std::uint32_t,s.node_count,normal.tags);
+    ADD(StoredNormal,4*s.main_count,normal.neighbor);ADD(unsigned char,4*s.main_count,normal.eligible);
+    ADD(unsigned char,source.primary_main_count,normal.tage);ADD(std::uint32_t,2*s.normal_count,normal.slots);
+    l.normal.bytes=a.bytes()-before;
+  }
   tl::util::ArenaRegion padding;if(!a.Append<std::byte>((256-a.bytes()%256)%256,padding))return false;
   ADD(std::byte,cub,cub);
 #undef ADD
   l.bytes=a.bytes();out=l;return true;
 }
-Device Bind(void* arena,const Layout& l,const FixedMainSource& source,TransactionLimits limits) noexcept {
-  Device d;d.source=source.selection;
+Device Bind(void* arena,const Layout& l,const ContactSourceInput& source,TransactionLimits limits,NormalShape normal) noexcept {
+  Device d;const auto& s=source.selection;d.source=s;
 #define BIND(name,type) d.name=tl::util::ArenaPointer<type>(arena,l.name)
   d.source.nodes=tl::util::ArenaPointer<lifecycle::Node>(arena,l.nodes);
   d.source.mains=tl::util::ArenaPointer<lifecycle::Main>(arena,l.mains);
@@ -62,6 +77,17 @@ Device Bind(void* arena,const Layout& l,const FixedMainSource& source,Transactio
   BIND(force_connectivity,assembly::Connectivity);BIND(force_packets,assembly::SiEndpoints);BIND(cohort_ends,std::uint32_t);
   BIND(nodal_output,assembly::SiNodalValue);BIND(control,Control);BIND(cub,std::byte);
 #undef BIND
+  d.normal.shape=normal;
+  if(normal.enabled) {
+#define NBIND(name,type) d.normal.name=tl::util::ArenaPointer<type>(arena,l.normal.name)
+    d.normal.topology={tl::util::ArenaPointer<startup::Main>(arena,l.normal.topology),s.node_count,
+        source.primary_main_count,s.main_count,s.normal_count,d.source.normal_to_main};
+    NBIND(coefficients,double);NBIND(free_mains,std::uint32_t);NBIND(optimized,lifecycle::OptimizedRow);
+    for(unsigned i=0;i<2;++i){NBIND(face[i],StoredNormal);NBIND(references[i],startup::NormalReference);}
+    NBIND(active,std::uint32_t);NBIND(tags,std::uint32_t);NBIND(neighbor,StoredNormal);
+    NBIND(eligible,unsigned char);NBIND(tage,unsigned char);NBIND(slots,std::uint32_t);
+#undef NBIND
+  }
   d.cub_bytes=l.cub.bytes;d.primary_count=source.primary_main_count;
   d.raw_capacity=limits.inventory.max_pairs;d.candidate_capacity=limits.optimized_candidates;
   d.sliding_capacity=limits.sliding_entries;d.force_packet_size=source.force_packet_size;return d;

@@ -175,7 +175,8 @@ cudaError_t QueryScratch(std::size_t rows,std::size_t count,std::size_t& output)
 cudaError_t ValidateCurrent(Device d,const tl::fea::NodalAssemblyView& view,cudaStream_t s) noexcept {
   Reset<<<1,1,0,s>>>(d);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
   CheckNodes<<<Blocks(d.source.node_count),128,0,s>>>(d,view);e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
-  CheckFixedMain<<<Blocks(d.primary_count),128,0,s>>>(d,view);return cudaPeekAtLastError();
+  if(!d.normal.shape.enabled){CheckFixedMain<<<Blocks(d.primary_count),128,0,s>>>(d,view);return cudaPeekAtLastError();}
+  return cudaSuccess;
 }
 cudaError_t ConvertInventory(Device d,const candidates::Pair* p,const std::uint64_t* offsets,std::size_t count,cudaStream_t s) noexcept {
   InventoryRows<<<Blocks(std::max(count,d.source.secondary_count+1)),128,0,s>>>(d,p,offsets,count);return cudaPeekAtLastError();
