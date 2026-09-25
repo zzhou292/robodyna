@@ -1,0 +1,87 @@
+"""Bounded declarations for the first fixed-main, moving-shell contact scene."""
+from dataclasses import dataclass
+import math
+
+from benchmarks.accepted_payloads.raw_json import read_object
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def keys(value, fields, name):
+    require(isinstance(value, dict) and set(value) == set(fields), f"{name}: invalid fields")
+
+
+def number(value, name, minimum=None, maximum=None):
+    require(type(value) in (int, float) and math.isfinite(value), f"{name}: finite number required")
+    require(minimum is None or value >= minimum, f"{name}: below lower bound")
+    require(maximum is None or value <= maximum, f"{name}: above upper bound")
+    return float(value)
+
+
+def axis(value, name):
+    require(isinstance(value, list) and 2 <= len(value) <= 33, f"{name}:2..33 coordinates required")
+    out = tuple(number(v, name, -10000, 10000) for v in value)
+    require(all(a < b for a, b in zip(out, out[1:])), f"{name}: strictly increasing coordinates required")
+    return out
+
+
+@dataclass(frozen=True)
+class Grid:
+    x_mm: tuple
+    y_mm: tuple
+    z_mm: float
+    dz_dx: float
+
+
+@dataclass(frozen=True)
+class Scene:
+    wall: Grid
+    patch: Grid
+    velocity_mm_s: tuple
+    density_tonne_mm3: float
+    young_n_mm2: float
+    poisson: float
+    thickness_mm: float
+    end_time_s: float
+    nodal_scale: float
+    animation_interval_s: float
+
+
+def load(path):
+    raw, _ = read_object(path, max_bytes=128 << 10)
+    keys(raw, ('schema', 'units', 'wall', 'patch', 'material', 'thickness_mm', 'run'), 'scene')
+    require(raw['schema'] == 'robo_dyna.native_contact_scene.v1', 'Unknown scene schema')
+    require(raw['units'] == {'length': 'mm', 'mass': 'tonne', 'time': 's'}, 'Only explicit native mm/tonne/s is admitted')
+    grids = []
+    for name in ('wall', 'patch'):
+        fields = ('x_mm', 'y_mm', 'z_mm', 'dz_dx') + (('velocity_mm_s',) if name == 'patch' else ())
+        obj = raw[name]
+        keys(obj, fields, name)
+        grids.append(Grid(axis(obj['x_mm'], name), axis(obj['y_mm'], name),
+                          number(obj['z_mm'], name, -10000, 10000), number(obj['dz_dx'], name, -.5, .5)))
+    require(2*(len(grids[0].x_mm)-1)*(len(grids[0].y_mm)-1) >= 4, 'At least4 genuine main faces required')
+    velocity = raw['patch']['velocity_mm_s']
+    require(isinstance(velocity, list) and len(velocity) == 3, 'Three velocity components required')
+    velocity = tuple(number(v, 'velocity', -100000, 100000) for v in velocity)
+    require(velocity[2] < 0, 'This impact scene approaches its wall along negative z')
+    material = raw['material']
+    keys(material, ('law', 'density_tonne_mm3', 'young_n_mm2', 'poisson'), 'material')
+    require(material['law'] == 'layered_law1', 'Only existing layered elastic LAW1 is admitted')
+    density = number(material['density_tonne_mm3'], 'density', 1e-15, 1e-3)
+    young = number(material['young_n_mm2'], 'Young modulus', 1e-6, 1e9)
+    poisson = number(material['poisson'], 'Poisson ratio', 0, .499)
+    thickness = number(raw['thickness_mm'], 'thickness', 1e-6, 100)
+    run = raw['run']
+    keys(run, ('end_time_s', 'nodal_scale', 'animation_interval_s'), 'run')
+    end = number(run['end_time_s'], 'end time', 1e-9, .1)
+    scale = number(run['nodal_scale'], 'nodal scale', .01, .9)
+    cadence = number(run['animation_interval_s'], 'animation interval', 1e-9, end)
+    require(end/cadence <= 10000, 'Animation count exceeds scene cap')
+    wall, patch = grids
+    require(wall.dz_dx == 0, 'This first fixed-main definition uses a planar wall')
+    require(min(patch.z_mm+patch.dz_dx*x for x in patch.x_mm) > wall.z_mm+thickness,
+            'Scene starts separated; initial overlap requires a separately named case')
+    return Scene(wall, patch, velocity, density, young, poisson, thickness, end, scale, cadence)

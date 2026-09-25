@@ -1,0 +1,12 @@
+{
+  "schema": "robo_dyna.native_contact_scene.v1",
+  "units": {"length": "mm", "mass": "tonne", "time": "s"},
+  "wall": {"x_mm": [-20, 0, 20], "y_mm": [-20, 0, 20], "z_mm": 0, "dz_dx": 0},
+  "patch": {
+    "x_mm": [-5, 0, 5], "y_mm": [-5, 0, 5], "z_mm": 2, "dz_dx": 0.02,
+    "velocity_mm_s": [1000, 0, -10000]
+  },
+  "material": {"law": "layered_law1", "density_tonne_mm3": 7.85e-9, "young_n_mm2": 210000, "poisson": 0.3},
+  "thickness_mm": 1,
+  "run": {"end_time_s": 0.0003, "nodal_scale": 0.8, "animation_interval_s": 0.00001}
+}
