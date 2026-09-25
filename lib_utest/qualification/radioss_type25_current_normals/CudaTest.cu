@@ -99,10 +99,22 @@ TEST_F(CurrentNormalsCuda, NativeSiAndFloorDominatedPacketsCrossOriginal129RowCo
     }
   }
 }
-TEST_F(CurrentNormalsCuda, NativeGeneratedLimitCasePreservesCountsAndZeroBisectors) {
-  // Source-generated numerical packet only: the bounded C++ startup factory
-  // still rejects this disconnected vertex fan, as its owning host test proves.
+TEST_F(CurrentNormalsCuda, NativeCornerFanKeepsItsActuallySplitReferenceGroups) {
+  // Original startup splits this disconnected vertex fan's reference groups.
+  // Keep the full numerical comparison without claiming a LIMIT_CASE premise.
   NativeCornerFan fan;const auto in=fan.Input();const auto expected=Oracle(in);
+  ASSERT_TRUE(std::none_of(expected.references.begin(),expected.references.end(),[](const auto& r){return r.boundary>2;}));
+  for(unsigned threads:{1u,7u,32u,64u})for(bool reverse:{false,true}) {
+    SCOPED_TRACE(threads);
+    SCOPED_TRACE(reverse);
+    SameStages(EvaluateDevice(in,threads,reverse,Fixture::Limits()),expected);
+  }
+}
+TEST_F(CurrentNormalsCuda, ExplicitOpenedTopologyPreservesNativeLimitCaseCountsAndZeros) {
+  // Numerical packet after both reciprocal interior links are explicitly made
+  // free. Original reference groups/CSR and fresh native-verified FREE_BOUND
+  // are retained. This does not claim deletion/refresh lifecycle authority.
+  NativeOpenEdges opened;const auto in=opened.Input();const auto expected=Oracle(in);
   ASSERT_TRUE(std::any_of(expected.references.begin(),expected.references.end(),[](const auto& r){return r.boundary>2;}));
   for(unsigned threads:{1u,7u,32u,64u})for(bool reverse:{false,true}) {
     SCOPED_TRACE(threads);
