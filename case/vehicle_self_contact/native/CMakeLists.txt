@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaNativeTopologyAssessment LANGUAGES CXX)
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+enable_testing()
+include("${CMAKE_CURRENT_LIST_DIR}/TopologyAssessment.cmake")
+get_filename_component(ROBO_ASSESSMENT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_executable(native_topology_assessment_values tests/ValuesTest.cpp tests/DigestTest.cpp
+  "${ROBO_ASSESSMENT_ROOT}/modelio/tied_shell/tests/TinyFixture.cpp")
+target_link_libraries(native_topology_assessment_values PRIVATE robo_dyna_native_topology_assessment GTest::gtest_main)
+add_test(NAME native_topology_assessment_values COMMAND native_topology_assessment_values)
+set_tests_properties(native_topology_assessment_values PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+option(ROBO_DYNA_NATIVE_TOPOLOGY_ACTUAL_TESTS "Build the explicit source-sized assessment driver" OFF)
+if(ROBO_DYNA_NATIVE_TOPOLOGY_ACTUAL_TESTS)
+  add_executable(native_topology_assessment_actual tests/ActualTest.cpp)
+  target_link_libraries(native_topology_assessment_actual PRIVATE robo_dyna_native_topology_assessment GTest::gtest_main)
+  # Deliberately no automatic source-sized CTest. The existing authenticated
+  # fixture launcher is run separately after measured forecast/lane admission.
+endif()
