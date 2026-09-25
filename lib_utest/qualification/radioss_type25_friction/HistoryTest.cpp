@@ -71,7 +71,7 @@ TEST(Type25HistoryPhase, PrescribedClassificationSequenceCombinesNativeHistoryAn
     for (auto* row : {&actual_row, &native_row}) {
       row->irtlm[0] = 7; row->irtlm[1] = penetration[i] == 0 ? -5 : 0;
       row->irtlm[2] = 1; row->irtlm[3] = 1;
-      row->time_s[0] = penetration[i] == 0 ? n::native_constant::ep20 : (i + 1) * 1e-5;
+      row->selection_metric[0] = penetration[i] == 0 ? n::native_constant::ep20 : (i + 1) * 1e-5;
     }
     ASSERT_EQ(n::EndNativeContact(actual_row, &actual_row), n::NormalStatus::Ok);
     native_row = EndOracle(native_row); SameRow(actual_row, native_row, false);
