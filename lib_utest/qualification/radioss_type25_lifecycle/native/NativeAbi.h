@@ -3,6 +3,13 @@
 // Qualification-only serial C/Fortran ABI. Every count/index/table is checked
 // by the typed oracle adapter before native code; these are not product APIs.
 extern "C" {
+void rd_lifecycle_optcd(const int* counts, const int* precision_mode, const double* previous_dt,
+    const double* kinematics, const int* main_nodes, const int* main_global, const int* main_role,
+    const double* main_stiffness, const double* main_gap, const int* secondary_nodes,
+    const double* secondary_stiffness, const double* secondary_gap, int* markers, double* metrics,
+    double* friction, double* penetration, double* stiffness, int* raw_n, const int* raw_e,
+    int* output_n, int* output_e, int* used, int* initial_contact, int* ordinals, int* required);
+void rd_lifecycle_release_main(const int* nsn, int* markers);
 void rd_lifecycle_clear_sliding(const int* nsn, int* sliding);
 void rd_lifecycle_finish_markers(const int* nsn, int* markers);
 void rd_lifecycle_membership(const int* counts, const int* phase,

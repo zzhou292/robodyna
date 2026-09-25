@@ -31,3 +31,21 @@
 @FINISH_MARKERS@
       markers=reshape(intbuf_tab%irtlm,[4,nsn])
       END SUBROUTINE
+
+! MAIN_OPT_TRI releases deleted prior-main markers only AFTER OPTCD has used
+! KLEAVE==-1 to prevent a new impact during this exact cycle.
+      SUBROUTINE rd_lifecycle_release_main(nsn, markers) bind(C)
+      use iso_c_binding
+      implicit none
+      integer(c_int), intent(in) :: nsn
+      integer(c_int), intent(inout) :: markers(4,nsn)
+      type :: source_view
+        integer(c_int), allocatable :: irtlm(:)
+      end type
+      type(source_view) :: intbuf_tab
+      integer :: n, nsnf, nsnl
+      nsnf=1; nsnl=nsn
+      intbuf_tab%irtlm=reshape(markers,[4*nsn])
+@RELEASE_MAIN@
+      markers=reshape(intbuf_tab%irtlm,[4,nsn])
+      END SUBROUTINE

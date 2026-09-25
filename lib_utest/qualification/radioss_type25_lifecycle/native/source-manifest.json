@@ -1,6 +1,6 @@
 {
   "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
-  "scope": "Qualification-only complete PREP_SLID1/2/KEEPF and original phase membership blocks; local rows only.",
+  "scope": "Qualification-only complete local OPTCD/PREP_SLID1/2/KEEPF and exact phase blocks, composed with previously pinned native history/classification/geometry references.",
   "files": [
     {
       "path": "native/original/i25slid.F",
@@ -31,12 +31,23 @@
       "path": "../radioss_type25_friction/native/original/i25mainf.F",
       "bytes": 55358,
       "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
+    },
+    {
+      "path": "native/original/i25optcd.F",
+      "bytes": 15064,
+      "sha256": "1a210e5206ec3bfa61bcd5178036d3e52ccb934587a4a7a06b795e567637b7c4"
+    },
+    {
+      "path": "native/original/i25main_opt_tri.F",
+      "bytes": 9502,
+      "sha256": "f1573773bbaf31dd62264c1e7a4d9572d01c6924b662d50dbd73597a669ac052"
     }
   ],
   "boundary_substitutions": [
     "USE TRI7BOX to USE LIFECYCLE_FOREIGN only",
     "private constants/module and process COMMON names; ISO_C_BINDING binary64/C int boundary",
-    "allocation adapters preserve original temporary integer arrays; no numerical source translation"
+    "allocation adapters preserve original temporary integer arrays; no numerical source translation",
+    "OPTCD read-only appended input ordinal observation; private serial COMMON/barrier boundaries"
   ],
   "abi": {
     "membership": {
@@ -69,6 +80,21 @@
     "finish_markers": {
       "arguments": 2,
       "scope": "exact MAINF post-force loop changes only negative IRTLM1 to its positive value; run once after complete force/assembly phase"
+    },
+    "optcd": {
+      "arguments": 25,
+      "counts": "node count, classification mains G, secondaries, raw search occurrences, complete output capacity",
+      "precision": "explicit raw IRESP0/1/2; 1 special floor, 0/2 ELSE/EM8; default unknown is not admitted",
+      "clock": "native DT1 only; no second physical clock",
+      "source_tables": "all native X/V, IRECT, NSV, MSEGLO/MSEGTYP, coefficients and interface gaps; IGAP1/DRAD0/DGAPLOAD0",
+      "history": "complete IRTLM/TIME_S/SECND_FR/PENE_OLD/STIF_OLD, plus persistent ICONT_I",
+      "observations": "one-based original raw ordinal at each actual output write; exact complete required count before original capacity condition",
+      "capacity": "native I_OPT_STOK advances only when full append fits but individual prefix writes may still occur; production atomic resource failure is a separate private-staging contract",
+      "schedule": "NSPMD1, NTHREAD1, ITASK0, NVSIZ=MVSIZ128; barriers/register boundary stubs do not perform arithmetic"
+    },
+    "release_main": {
+      "arguments": 2,
+      "scope": "original MAIN_OPT_TRI release of negative IRTLM3 only after OPTCD used KLEAVE"
     }
   }
 }
