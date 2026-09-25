@@ -10,12 +10,15 @@ TEST(Type25FixedStartup, ActualObservedEightTriangleWallFieldsAreComputedFromPri
   const Built built(source);Same(built,Oracle(source.Input(),source.coefficients.data(),source.coefficients.size()));
   ASSERT_EQ(built.startup.main_count,16u);ASSERT_EQ(built.ready.normals.reference_count,18u);
   for(std::size_t m=0;m<16;++m) {
+    SCOPED_TRACE(m);
     const auto& main=built.startup.mains[m];EXPECT_EQ(main.segment_type,observed::Roles[m]);EXPECT_EQ(main.global_id,observed::Globals[m]);
     for(unsigned k=0;k<4;++k) {
+      SCOPED_TRACE(k);
       EXPECT_EQ(main.nodes[k]+1,observed::Connectivity[4*m+k]);EXPECT_EQ(main.neighbors[k],observed::Neighbors[4*m+k]);
       EXPECT_EQ(main.normal_reference[k],observed::References[4*m+k]);
       const auto value=built.ready.normals.face_normals[4*m+k];const auto index=3*(4*m+k);
-      EXPECT_EQ(Bits(value.x),observed::NormalBits[index]);EXPECT_EQ(Bits(value.y),observed::NormalBits[index+1]);
+      EXPECT_EQ(Bits(value.x),observed::NormalBits[index])
+          << " Starter x bits=" << Bits(built.startup.starter.face_normals[4*m+k].x);EXPECT_EQ(Bits(value.y),observed::NormalBits[index+1]);
       EXPECT_EQ(Bits(value.z),observed::NormalBits[index+2]);
     }
   }
