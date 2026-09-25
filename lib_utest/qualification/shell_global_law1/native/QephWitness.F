@@ -1,0 +1,30 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Observe complete original CNCOEF3B, never a translated MAX expression.
+      SUBROUTINE GL1_Q_COEFFICIENT(REFERENCE,ACCEPTED,ITHK,VALUE)
+     . BIND(C,NAME="global_law1_qeph_coefficient")
+      USE ISO_C_BINDING,ONLY:C_DOUBLE,C_INT
+      USE GL1_QE_Q2_MATERIAL_MOD,ONLY:QE_MATERIAL_,QE_PREPARE_MATERIAL
+#include "implicit_f.inc"
+#include "mvsiz_p.inc"
+#include "impl1_c.inc"
+      REAL(C_DOUBLE),INTENT(IN)::REFERENCE,ACCEPTED
+      INTEGER(C_INT),INTENT(IN)::ITHK
+      REAL(C_DOUBLE),INTENT(OUT)::VALUE
+      REAL(C_DOUBLE)::INPUT(4),AREA(MVSIZ),THK(MVSIZ),STEP
+      TYPE(QE_MATERIAL_) M
+      ISMDISP=0
+      IMPL_S=0
+      INPUT=[ONE,ONE,FOURTH,REFERENCE]
+      AREA=ONE
+      THK=ACCEPTED
+      STEP=ONE
+      CALL QE_PREPARE_MATERIAL(INPUT,AREA,THK,STEP,ITHK,M)
+      VALUE=M%THK0(1)
+      END
+      FUNCTION GL1_EM20() RESULT(VALUE) BIND(C,NAME="global_law1_em20")
+      USE ISO_C_BINDING,ONLY:C_DOUBLE
+      USE QE_Q1_CONSTANT_MOD,ONLY:EM20
+      IMPLICIT NONE
+      REAL(C_DOUBLE)::VALUE
+      VALUE=EM20
+      END
