@@ -28,7 +28,9 @@ Status Inventory::Impl::Check(const Current& in) const noexcept {
   }
   namespace d=detail;namespace v=tl::math::fixed3;
   const auto lo=in.domain.minimum,hi=in.domain.maximum;
-  if(!v::Finite(lo)||!v::Finite(hi)||lo.x>hi.x||lo.y>hi.y||lo.z>hi.z||
+  if((in.domain_policy!=DomainPolicy::Bounded&&in.domain_policy!=DomainPolicy::AllFinite)||
+     (in.domain_policy==DomainPolicy::Bounded&&
+      (!v::Finite(lo)||!v::Finite(hi)||lo.x>hi.x||lo.y>hi.y||lo.z>hi.z))||
      !d::Nonnegative(in.margin)||!tl::math::Finite(in.gap_load)||!d::Nonnegative(in.drad)||
      !d::Nonnegative(in.stored_motion)||!d::Nonnegative(in.previous_dt))return Status::InvalidInput;
   return Status::Ok;
@@ -54,8 +56,10 @@ Status Inventory::Stage(const Current& in) noexcept {
   auto status=p.Check(in);if(status!=Status::Ok){p.report.status=status;return status;}
   Current native=in;
   if(p.device.si) {
-    native.domain.minimum=tl::math::fixed3::Divide(in.domain.minimum,p.device.length);
-    native.domain.maximum=tl::math::fixed3::Divide(in.domain.maximum,p.device.length);
+    if(in.domain_policy==DomainPolicy::Bounded) {
+      native.domain.minimum=tl::math::fixed3::Divide(in.domain.minimum,p.device.length);
+      native.domain.maximum=tl::math::fixed3::Divide(in.domain.maximum,p.device.length);
+    }
     native.margin/=p.device.length;native.gap_load/=p.device.length;native.drad/=p.device.length;
     native.stored_motion/=p.device.length;native.previous_dt/=p.device.time;
     status=p.Check(native);if(status!=Status::Ok){p.report.status=Status::NonfiniteResult;return p.report.status;}

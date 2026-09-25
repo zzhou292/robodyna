@@ -34,7 +34,7 @@ __global__ void SecondaryKeys(Device d,Current in) {
     if(stiffness==0.)continue;
     const auto x=Read(d,in.positions,node);
     if(!tl::math::fixed3::Finite(x)){Fail(d,i,Status::InvalidInput);continue;}
-    if(!InDomain(x,in.domain))continue;
+    if(in.domain_policy==DomainPolicy::Bounded&&!InDomain(x,in.domain))continue;
     const double gap=Gap(d,in.secondary_gaps[i]);
     if(!Nonnegative(gap)){Fail(d,i,Status::InvalidInput);continue;}
     d.keys[i]=x.x;

@@ -9,7 +9,7 @@ NativeContactPublicationState::~NativeContactPublicationState() noexcept {
 bool NativeContactPublicationState::Attach(FENodalState& owner,std::uint64_t source,
     ShellPhysicalScratchParticipation& issuer) noexcept {
   const auto stamp=owner.accepted();
-  if(attached_||issuer.native_contact_||issuer.configured()||!source||!stamp.owner_id||stamp.epoch)
+  if(attached_||generation_||force_phase_available_||issuer.native_contact_||issuer.configured()||!source||!stamp.owner_id||stamp.epoch)
     return false;
   issuer_=&issuer;owner_=&owner;source_id_=source;accepted_stamp_=stamp;
   issuer_lifetime_=issuer.lifetime_id_;issuer.native_contact_=this;attached_=true;return true;

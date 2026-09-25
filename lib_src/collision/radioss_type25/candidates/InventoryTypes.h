@@ -5,6 +5,9 @@
 #include "../../SurfaceContactTypes.h"
 namespace tlfea::contact::radioss_type25::candidates {
 enum class InputUnits { Native, Si };
+// AllFinite disables only the optional global domain screen. Native strict
+// pair screens/packing/PEN3 and complete bounded inventory counts still apply.
+enum class DomainPolicy { Bounded, AllFinite };
 struct SourceStamp {std::uint64_t source=0,topology=0;};
 struct QueryStamp {
   SourceStamp source;
@@ -42,6 +45,7 @@ struct Current {
   const double* main_curvature=nullptr;
   Bounds domain;
   double margin=0,gap_load=0,drad=0,stored_motion=0,previous_dt=0;
+  DomainPolicy domain_policy=DomainPolicy::Bounded;
 };
 struct Pair {std::uint32_t secondary_row=0,main_occurrence=0;};
 struct Limits {
