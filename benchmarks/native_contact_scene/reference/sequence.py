@@ -21,6 +21,7 @@ _main=None
 _cycles=[]
 _classification_packets=0
 _packets=0
+_geometry_packets=0
 _responses=0
 _pending=0
 _breakpoints=[]
@@ -66,6 +67,11 @@ class Returned(gdb.FinishBreakpoint):
             if self.routine=='I25MAINF':
                 data['arrays']=nodal(self.pointers,data['nodes'])
                 _main=None
+            elif self.routine=='I25DST3_3':
+                data['arrays']={name:values(self.pointers[name],data['jlt'],'d')
+                                for name in ('PENE','STIF')}
+                data['history']={name:values(self.pointers[name],count*data['nsn'],code)
+                                 for name,count,code in (('IRTLM',4,'i'),('PENE_OLD',5,'d'))}
             elif self.routine=='I25CDCOR3':
                 data['arrays']={name:values(self.pointers[name],data['jlt'],'i')
                                 for name in ('CAND_E_N','CAND_N_N')}
@@ -96,7 +102,7 @@ class Entered(gdb.Breakpoint):
         self.routine=routine
 
     def stop(self):
-        global _main,_packets,_responses,_classification_packets
+        global _main,_packets,_responses,_classification_packets,_geometry_packets
         try:
             if self.routine=='I25CDCOR3':
                 caller=gdb.newest_frame().older()
@@ -126,9 +132,14 @@ class Entered(gdb.Breakpoint):
                 meta['jlt']=extent(call.scalar('JLT'),'JLT',4096)
                 if meta['jlt']>meta['NVSIZ']:raise ValueError('Packet exceeds native NVSIZ')
                 pointers={name:call.pointer(name) for name in call.index}
-                meta['source_occurrences_one_based']=call.array('INDEX',meta['jlt'],'i')
-                if self.routine=='I25CDCOR3':_packets+=1
+                if self.routine=='I25DST3_3':
+                    _geometry_packets+=1
+                    meta['nsn']=extent(call.scalar('NSN'),'secondary count',128)
+                    meta['arrays']={name:call.array(name,meta['jlt'],'i') for name in ('CAND_N','CAND_E')}
                 else:
+                    meta['source_occurrences_one_based']=call.array('INDEX',meta['jlt'],'i')
+                if self.routine=='I25CDCOR3':_packets+=1
+                elif self.routine=='I25FOR3':
                     _responses+=1;meta['nsn']=extent(call.scalar('NSN'),'secondary count',128)
                     meta['arrays']={name:call.array(name,meta['jlt'],code) for name,code in
                                     (('CAND_N_N','i'),('PENE','d'),('STIF','d'))}
@@ -157,16 +168,17 @@ def install(path):
             raise ValueError('Native ABI donor changed')
     _stream=Path('native-sequence.jsonl').open('x')
     gdb.events.exited.connect(exited)
-    for name in ('I25MAINF','I25CDCOR3','I25FOR3'):_breakpoints.append(Entered(name))
+    for name in ('I25MAINF','I25CDCOR3','I25DST3_3','I25FOR3'):_breakpoints.append(Entered(name))
 
 
 def finish():
     complete=(_failure is None and _exit_code==0 and _pending==0 and _main is None and
-              len(_cycles)>1 and _responses>0)
+              len(_cycles)>1 and _responses>0 and _geometry_packets>=_responses)
     record=dict(schema='robo_dyna.native_sequence_observation.v1',complete=complete,
                 exit_code=_exit_code,failure=_failure,cycle_count=len(_cycles),
                 first_cycle=_cycles[0] if _cycles else None,last_cycle=_cycles[-1] if _cycles else None,
-                packets=_packets,responses=_responses,records=_records,bytes=_bytes,
+                external_cdcor3_force_packets=_packets,geometry_packets=_geometry_packets,
+                responses=_responses,records=_records,bytes=_bytes,
                 excluded_classification_packets=_classification_packets,
                 scope='Reference states/packet order only; debugger timing is not performance evidence')
     with Path('native-sequence-summary.json').open('x') as stream:json.dump(record,stream,indent=2);stream.write('\n')

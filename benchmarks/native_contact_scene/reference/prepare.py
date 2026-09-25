@@ -7,6 +7,7 @@ from pathlib import Path
 from .abi import arguments, verify_common_prefix
 
 ROUTINES = {
+    'I25DST3_3':'engine/source/interfaces/int25/i25dst3_3.F',
     'I25CDCOR3':'engine/source/interfaces/int25/i25mainf.F',
     'I25MAINF':'engine/source/interfaces/int25/i25mainf.F',
     'I25COMP_2':'engine/source/interfaces/int25/i25comp_2.F',
