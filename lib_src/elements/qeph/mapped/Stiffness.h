@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include "../../ShellGlobalLaw1Profile.h"
 #include "../QephCurrentFrame.h"
 #include "../QephStiffnessDiagnostics.h"
 #include "../../ShellNodalStiffness.h"
@@ -26,17 +27,22 @@ TL_QEPH_HD inline bool PackStiffness(const ForceDiagnostics& values,
 // Coefficient-only initial packet. No material update, history advance or
 // completed force diagnostic is created. Initial CINMAS is not substituted.
 TL_QEPH_HD inline bool InitialStiffness(const ReferenceData& reference,
-    ShellSectionLaw law,NodalStiffness& output) noexcept {
-  if (!reference.prepared || (law!=ShellSectionLaw::LayeredLaw1Nip3 &&
+    ShellSectionLaw law,NodalStiffness& output,const ShellGlobalLaw1Profile* global=nullptr) noexcept {
+  if (!reference.prepared || (law!=ShellSectionLaw::LayeredLaw1Nip3 && law!=ShellSectionLaw::GlobalLaw1Npt0 &&
       law!=ShellSectionLaw::LayeredLaw44Nip3)) return false;
-  if (law==ShellSectionLaw::LayeredLaw1Nip3 &&
+  if ((law==ShellSectionLaw::LayeredLaw1Nip3||law==ShellSectionLaw::GlobalLaw1Npt0) &&
       reference.input.placement!=ShellReferencePlacement::Centered) return false;
   PrescribedInterval coordinates;
   for (unsigned slot=0;slot<4;++slot) coordinates.position_endpoint[slot]=reference.input.position[slot];
   detail::GeometryWork geometry;
   if (detail::CurrentGeometry(coordinates,geometry)!=Status::kSuccess) return false;
   detail::MaterialWork material;
-  if (!detail::PrepareMaterial(reference.input,geometry.values.area,0,material,
+  auto coefficient_input=reference.input;
+  if(law==ShellSectionLaw::GlobalLaw1Npt0) {
+    if(!global||!shell_global_law1::Valid(*global))return false;
+    coefficient_input.thickness=shell_global_law1::QephCoefficientThickness(*global,reference.input.thickness,reference.input.thickness);
+  }
+  if (!detail::PrepareMaterial(coefficient_input,geometry.values.area,0,material,
       reference.input.placement)) return false;
   ForceDiagnostics diagnostics;
   detail::StiffnessDiagnostics(geometry,material,diagnostics);

@@ -1,4 +1,5 @@
 #pragma once
+#include "ShellParentExecution.h"
 #include "ShellBatchBinding.h"
 #include "ShellBatchPlasticity.h"
 #include "ShellPlasticityCatalogLimits.h"
@@ -34,6 +35,7 @@ struct ShellPlasticityParentInput {
   ShellBindingFamily family=ShellBindingFamily::None;
   std::size_t family_index=NoShellBindingNode;
   std::uint64_t source_parent_id=0,source_part_id=0,material_id=0,section_id=0;
+  ShellParentExecution execution{}; // Trailing default preserves legacy aggregates.
 };
 // Borrowed startup declarations. IDs are unique within each declaration kind;
 // every declaration is referenced, and every native parent occurs exactly once.
@@ -114,6 +116,7 @@ class ShellBatchPlasticityBinding {
   bool ElasticParameters(ShellBindingFamily,std::size_t family_index,
       material::ShellElasticLaw1PointParameters* output) const noexcept;
   bool Law(ShellBindingFamily,std::size_t family_index,ShellSectionLaw* output) const noexcept;
+  bool GlobalLaw1Profile(ShellBindingFamily,std::size_t family_index,ShellGlobalLaw1Profile* output) const noexcept;
   bool Counts(ShellBindingFamily,ShellSectionCounts* output) const noexcept;
   bool MaterialPointCount(ShellBindingFamily,std::size_t family_index,unsigned* output) const noexcept;
   bool execution_sections() const noexcept { return prepared_&&data_.execution; }

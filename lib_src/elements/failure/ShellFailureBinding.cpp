@@ -19,7 +19,8 @@ using Status = ShellPlasticityBindingStatus;
 bool Same(const ShellPlasticityParentInput& a, const ShellPlasticityParentInput& b) noexcept {
   return a.family == b.family && a.family_index == b.family_index &&
       a.source_parent_id == b.source_parent_id && a.source_part_id == b.source_part_id &&
-      a.material_id == b.material_id && a.section_id == b.section_id;
+      a.material_id == b.material_id && a.section_id == b.section_id &&
+      SameShellParentExecution(a.execution,b.execution);
 }
 bool Same(double a, double b) noexcept {
   return std::memcmp(&a, &b, sizeof a) == 0;

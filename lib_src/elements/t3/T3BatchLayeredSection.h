@@ -12,6 +12,10 @@ TL_T3_HD inline Status EvaluateMixedSection(const ReferenceData& reference,const
     unsigned accepted_slab,std::size_t parent,ForceTrial& output) noexcept {
   if(accepted_slab>1)return Status::kInvalidInput;
   const auto law=storage.law[parent];
+  if(law==ShellSectionLaw::GlobalLaw1Npt0) {
+    if(!storage.global_law1)return Status::kInvalidInput;
+    return EvaluateGlobalLaw1Force(storage.global_law1[parent],reference,old_shell,interval,output);
+  }
   if(law==ShellSectionLaw::LayeredLaw1Nip3) {
     const LayeredLaw1History base{old_shell,storage.elastic_section[accepted_slab][parent]};
     LayeredLaw1ForceTrial next;

@@ -7,7 +7,7 @@
 namespace tl::fea::t3::mapped {
 template<class Model>
 TL_T3_HD inline AssemblyParent PrepareAssemblyParent(const Model& model, const ForceTrial& result,
-    std::size_t parent, ShellSectionLaw law, const NodalAssemblyView& view, bool initial) noexcept {
+    std::size_t parent, ShellSectionLaw law, const NodalAssemblyView& view, bool initial,const ShellGlobalLaw1Profile* global=nullptr) noexcept {
   AssemblyParent next;
   const auto& element = model.element[parent];
   for (auto node : element.nodes) {
@@ -18,7 +18,7 @@ TL_T3_HD inline AssemblyParent PrepareAssemblyParent(const Model& model, const F
   }
   const bool skin = law == ShellSectionLaw::RigidSkin;
   if (!ValidResult(element.reference, result, view.position_time, view.accepted.base_epoch, skin) ||
-      (!skin && !(initial ? InitialStiffness(element.reference, law, next.stiffness) :
+      (!skin && !(initial ? InitialStiffness(element.reference, law, next.stiffness,global) :
           AcceptedStiffness(result, next.stiffness)))) {
     next.status = BatchStatus::NonfiniteResult;
   } else if (!skin) {

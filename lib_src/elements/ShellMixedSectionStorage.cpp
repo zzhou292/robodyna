@@ -9,9 +9,9 @@
 namespace tl::fea::shell_batch_plasticity_detail {
 MixedHostStorage::~MixedHostStorage() { if(device_)cudaFree(device_); }
 bool MixedHostStorage::Forecast(std::size_t count,std::size_t points,std::size_t catalog_bytes,
-    std::size_t device_cap,std::size_t host_cap,MixedLayout& output,std::size_t& host_bytes) noexcept {
+    std::size_t device_cap,std::size_t host_cap,MixedLayout& output,std::size_t& host_bytes,bool global) noexcept {
   MixedLayout layout;
-  if(!host_cap||host_cap>MaxVehicleShellResidentHostBytes||!layout.Initialize(count,points,device_cap))return false;
+  if(!host_cap||host_cap>MaxVehicleShellResidentHostBytes||!layout.Initialize(count,points,device_cap,global))return false;
   util::BoundedArenaLayout host(host_cap);util::ArenaRegion ignored;
   if(!host.Append<unsigned char>(sizeof(HostStorage)+sizeof(MixedHostStorage),ignored)||
      !host.Append<unsigned char>(layout.bytes,ignored)||!host.Append<ShellBatchSectionState>(count,ignored)||
@@ -73,7 +73,7 @@ SetupReport HostStorage::InitializeSections(const ShellBatchPlasticityBinding& c
     return {SetupStatus::InvalidInput,"One-point T3 requires complete constant failure binding"};
   std::size_t binding_bytes=0,catalog_bytes=0,host_bytes=0;MixedLayout layout;
   if(!shell_batch_detail::RetainedScopeBytes(&binding,&catalog,vehicle,binding_bytes,catalog_bytes)||
-     !MixedHostStorage::Forecast(count,catalog.curve_point_count(),catalog_bytes,device_cap,host_cap,layout,host_bytes))
+     !MixedHostStorage::Forecast(count,catalog.curve_point_count(),catalog_bytes,device_cap,host_cap,layout,host_bytes,counts.law1_global_npt0!=0))
     return {SetupStatus::ResourceLimit,"Mixed layered section exceeds active byte budgets"};
   auto owned=std::unique_ptr<ShellBatchPlasticityBinding>(new(std::nothrow) ShellBatchPlasticityBinding(catalog));
   auto next=std::unique_ptr<MixedHostStorage>(new(std::nothrow) MixedHostStorage);
@@ -91,6 +91,10 @@ SetupReport MixedHostStorage::Initialize(const ShellBatchPlasticityBinding& cata
       catalog.execution_sections()!=execution||
       (family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3))
     return {SetupStatus::InvalidInput,"Invalid explicit mixed section layout"};
+  ShellSectionCounts counts;
+  if(!catalog.Counts(family,&counts)||
+      layout.global_profiles.count!=(counts.law1_global_npt0?count:0))
+    return {SetupStatus::InvalidInput,"Global LAW1 profile storage differs from the complete catalog"};
   util::HostArena arena;
   if(!arena.Initialize(layout.bytes))return {SetupStatus::ResourceLimit,"Mixed section staging allocation failed"};
   auto* initial=layout.Construct(arena);
@@ -106,7 +110,10 @@ SetupReport MixedHostStorage::Initialize(const ShellBatchPlasticityBinding& cata
     offsets[e]=NoShellBindingNode;
     if(!catalog.Law(family,e,&initial->law[e]))
       return {SetupStatus::InvalidInput,"Mixed catalog does not resolve a native parent"};
-    if(initial->law[e]==ShellSectionLaw::LayeredLaw1Nip3) {
+    if(initial->law[e]==ShellSectionLaw::GlobalLaw1Npt0) {
+      if(!execution||!initial->global_law1||!catalog.GlobalLaw1Profile(family,e,&initial->global_law1[e]))
+        return {SetupStatus::InvalidInput,"Global LAW1 immutable profile is unavailable"};
+    } else if(initial->law[e]==ShellSectionLaw::LayeredLaw1Nip3) {
       if(!catalog.ElasticParameters(family,e,&initial->elastic_parameters[e]))
         return {SetupStatus::InvalidInput,"Mixed catalog elastic parameters are unavailable"};
     } else if(initial->law[e]==ShellSectionLaw::LayeredLaw44Nip3||initial->law[e]==ShellSectionLaw::Law44Nip1) {

@@ -26,6 +26,17 @@ TL_GLOBAL_LAW1_HD inline bool Valid(const ShellGlobalLaw1Profile& p) noexcept {
       tl::math::Finite(p.coefficient_working_length_m)&&p.coefficient_working_length_m>0&&
       tl::math::Finite(floor)&&floor>0;
 }
+// Shared with virgin mapped STI: initial accepted thickness equals the
+// declared reference, but CNCOEF3B's ITHK1 floor still applies at time zero.
+TL_GLOBAL_LAW1_HD inline double QephCoefficientThickness(const ShellGlobalLaw1Profile& p,
+    double reference,double accepted) noexcept {
+  return p.thickness==ShellLaw1Thickness::Reference?reference:
+      ::fmax(accepted,NativeThicknessFloor*p.coefficient_working_length_m);
+}
+TL_GLOBAL_LAW1_HD inline double T3CoefficientThickness(const ShellGlobalLaw1Profile& p,
+    double reference,double accepted) noexcept {
+  return p.thickness==ShellLaw1Thickness::Reference?reference:accepted;
+}
 } // namespace shell_global_law1
 } // namespace tl::fea
 #undef TL_GLOBAL_LAW1_HD

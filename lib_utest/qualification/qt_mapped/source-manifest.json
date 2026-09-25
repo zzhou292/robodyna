@@ -10,13 +10,13 @@
     },
     {
       "path": "lib_src/elements/qeph/mapped/Stiffness.h",
-      "bytes": 2468,
-      "sha256": "f40353e47557fbb7dcf00a5d37c80e863377602ed69a4b958f570530ed4f8465"
+      "bytes": 2931,
+      "sha256": "4f94e502309c03f5685d6ec31efb454f66c33dda7b40828bc1d17da6fd57e633"
     },
     {
       "path": "lib_src/elements/t3/mapped/Stiffness.h",
-      "bytes": 2394,
-      "sha256": "3242f1377890f6a682365c47d4cbab912b2fc48ff19a79fdfbe975d73f8f99fd"
+      "bytes": 2855,
+      "sha256": "20c82ea3e89a234e9b40841f611b4a3834eeffc98461ccc3a6509cc9dfe104a5"
     },
     {
       "path": "lib_utest/qualification/native/law44_one_point/source-manifest.json",
@@ -137,6 +137,51 @@
       "path": "lib_src/elements/t3/mapped/Assemble.cu",
       "bytes": 3472,
       "sha256": "3d245f5a22bf0632b961da34f663d84f550a4690b529089464f64b1952137edb"
+    },
+    {
+      "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+      "bytes": 1991,
+      "sha256": "b23e3cf6b44d7a1c95a74bb942815c35bd3404185e4e2d5118b5bba86765a706"
+    },
+    {
+      "path": "lib_src/elements/ShellParentExecution.h",
+      "bytes": 1203,
+      "sha256": "df2903dbc495a3eba89d8dc0a281fd37a70b715ff8dec740f5730073b9ac3fea"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/Kernels.cuh",
+      "bytes": 7285,
+      "sha256": "56833279b06625b69a53be599bc613365a7118f4d3f75ce3de71c9958623c250"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Startup.cpp",
+      "bytes": 6704,
+      "sha256": "a07c9b39dd839d8bc20bb462124f488b057563f6537877e7405b3384bf912c07"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Startup.cpp",
+      "bytes": 6418,
+      "sha256": "1cac9b31fe97555dbc3f3f24f7492a1c40b5ea1722b0f07b98a8bf13ba690c5d"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/AssemblyValues.h",
+      "bytes": 2068,
+      "sha256": "c890cab758ec87371396da8b552c41886f8b6ba91b73da79eb6a6d97f232591f"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/AssemblyValues.h",
+      "bytes": 2227,
+      "sha256": "8d344624c304a3cda1137b4da209f6bd0524e28bf36a5df4428e15de73e80ae6"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Kernels.cu",
+      "bytes": 1152,
+      "sha256": "d61cd3b750d3af2047b9ec4650572318bf4fbf2767299f532ff37c4c1dadf122"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Kernels.cu",
+      "bytes": 1142,
+      "sha256": "cc2fa08a8dd373661aed3fc8080e6392c45ab2784e139e4db308c58b3db7eccf"
     }
   ],
   "mapped_t3_gather_registration": {
@@ -149,5 +194,21 @@
         "sha256": "14f2299781e9a906f226bffb5eb6a83e246312e09371706bc8576b2bf8428182"
       }
     ]
+  },
+  "global_law1_execution_extension": {
+    "scope": "Explicit per-parent global LAW1 dispatch/identity and native initial-thickness STI profile. Legacy/native mathematical leaves retained; owning mixed publication and native regressions required.",
+    "prior_active_records": [
+      {
+        "path": "lib_src/elements/qeph/mapped/Stiffness.h",
+        "bytes": 2468,
+        "sha256": "f40353e47557fbb7dcf00a5d37c80e863377602ed69a4b958f570530ed4f8465"
+      },
+      {
+        "path": "lib_src/elements/t3/mapped/Stiffness.h",
+        "bytes": 2394,
+        "sha256": "3242f1377890f6a682365c47d4cbab912b2fc48ff19a79fdfbe975d73f8f99fd"
+      }
+    ],
+    "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
   }
 }

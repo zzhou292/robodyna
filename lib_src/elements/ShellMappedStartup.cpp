@@ -36,6 +36,6 @@ bool ForecastSections(const ShellPhysicalBinding& physical,ShellBindingFamily fa
       (counts.law44_nip1 && family!=ShellBindingFamily::T3)) return false;
   return shell_batch_plasticity_detail::HostStorage::ForecastFailureSections(count,
       physical.catalog()->curve_point_count(),sizeof(ShellBatchFailureBinding),
-      device_cap,host_cap,limits,host_bytes,counts.law44_nip1!=0,&device_bytes);
+      device_cap,host_cap,limits,host_bytes,counts.law44_nip1!=0,&device_bytes,counts.law1_global_npt0!=0);
 }
 } // namespace tl::fea::shell_mapped_detail

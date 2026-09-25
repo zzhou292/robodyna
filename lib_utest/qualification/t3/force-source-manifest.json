@@ -29,8 +29,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/T3Force.h",
-      "bytes": 4125,
-      "sha256": "092ef048af5e64eb1e661c493bf3d96222b441d3e7d77d905f28a15033dd3ad3"
+      "bytes": 4118,
+      "sha256": "c02fb03e8f2b84f98e59bef7e567093e5e6d58e10a429fccc632f81f48f91f68"
     },
     {
       "path": "lib_src/elements/t3/T3ForceConstants.h",
@@ -84,8 +84,8 @@
     },
     {
       "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
-      "bytes": 1350,
-      "sha256": "9de51cbad7fcb60758e91e623030ed427369366ce6739825d037efd21d3813c1",
+      "bytes": 1991,
+      "sha256": "b23e3cf6b44d7a1c95a74bb942815c35bd3404185e4e2d5118b5bba86765a706",
       "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
     }
   ],
@@ -997,5 +997,22 @@
       "lib_src/elements/t3/T3Force.h"
     ],
     "scope": "Old EvaluateForce retains reference coefficient thickness. New explicit ITHK0/1 value profile; raw numerical leaves and native donors unchanged. T3 accepted thickness is used directly without the QEPH coefficient floor."
+  },
+  "global_law1_execution_extension": {
+    "scope": "Explicit per-parent global LAW1 dispatch/identity and native initial-thickness STI profile. Legacy/native mathematical leaves retained; owning mixed publication and native regressions required.",
+    "prior_active_records": [
+      {
+        "path": "lib_src/elements/t3/T3Force.h",
+        "bytes": 4125,
+        "sha256": "092ef048af5e64eb1e661c493bf3d96222b441d3e7d77d905f28a15033dd3ad3"
+      },
+      {
+        "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+        "bytes": 1350,
+        "sha256": "9de51cbad7fcb60758e91e623030ed427369366ce6739825d037efd21d3813c1",
+        "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
+      }
+    ],
+    "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
   }
 }
