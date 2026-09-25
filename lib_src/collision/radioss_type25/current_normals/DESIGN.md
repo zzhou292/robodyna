@@ -78,7 +78,10 @@ copies the corresponding transformed edge directions into the first two slots;
 if count>2 it writes the original zeros. This reproduces the global free-list
 subsequence for that reference without changing floating arithmetic. It requires
 the actual complete ordered CSR, not a caller assertion that an arbitrary list
-is sorted. Source topology admission remains responsible for that provenance.
+is sorted. Its producer/admission must prove exactly one incidence for each
+distinct main/reference pair, omitting the repeated T3 corner. Otherwise the
+per-reference scan of all face edges could count the same endpoints twice.
+Source topology admission remains responsible for that provenance.
 
 Each face/edge/reference result has one writer. Keep a bounded WNOD scratch
 array for the FLAG2 gather-before-write dependency, reusing existing arena/launch
