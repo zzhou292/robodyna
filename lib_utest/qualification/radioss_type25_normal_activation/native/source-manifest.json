@@ -1,0 +1,33 @@
+{
+  "pin": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "files": [
+    {
+      "path": "native/original/i25norm.F",
+      "source_path": "engine/source/interfaces/int25/i25norm.F",
+      "bytes": 36651,
+      "sha256": "93f82432f7347a65e072f4cd522aa875639e4ee798a9a2e4bb7a676e654a98b4",
+      "git_blob": "3bf29012f396aa6c03b996a781dd05f9c54d4313"
+    },
+    {
+      "path": "native/original/i25free_bound.F",
+      "source_path": "engine/source/interfaces/int25/i25free_bound.F",
+      "bytes": 3546,
+      "sha256": "6b01efc8029d44e30e3e804e9165b19224429f28a7bc7e491a8287c7b5122038",
+      "git_blob": "aaf6ea410637de3628d89fe8003c3e2a2b7445cd"
+    },
+    {
+      "path": "native/original/constant_mod.F",
+      "source_path": "common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "native/original/i25edge_c.inc",
+      "source_path": "engine/share/includes/i25edge_c.inc",
+      "bytes": 2734,
+      "sha256": "457c45f798c665998c8e0b5080922ea09dafe877645dcafab1bcafaacd2e800a",
+      "git_blob": "5065f776c48119c8f1c1181eaf35079dc21141a8"
+    }
+  ]
+}
