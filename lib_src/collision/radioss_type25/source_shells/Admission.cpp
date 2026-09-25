@@ -2,7 +2,6 @@
 #include "Layout.h"
 #include "Values.h"
 #include "../search/Ranges.h"
-#include "lib_src/solvers/NodalTrialIdentity.h"
 #include <climits>
 namespace tlfea::contact::radioss_type25::source_shells::detail {
 Report Prepare(const Input& input, Limits limits, Layout& output) noexcept {
@@ -93,7 +92,11 @@ bool SeparateStorage(const Input& input, const Layout& layout, void* scratch,
       {out.primary_stiffness,out.primary_count*sizeof(double)},
       {out.secondary,out.secondary_count*sizeof(SecondaryFields)} };
   auto separate=[](Range a,Range b) {
-    return !a.bytes || !b.bytes || tl::fea::trial_identity::Disjoint(a.data,a.bytes,b.data,b.bytes);
+    if (!a.bytes || !b.bytes) return true;
+    const auto first=reinterpret_cast<std::uintptr_t>(a.data);
+    const auto second=reinterpret_cast<std::uintptr_t>(b.data);
+    return a.data && b.data && a.bytes<=UINTPTR_MAX-first && b.bytes<=UINTPTR_MAX-second &&
+        (first+a.bytes<=second || second+b.bytes<=first);
   };
   for (unsigned i=0;i<4;++i) {
     for (const auto& source:read) if (!separate(write[i],source)) return false;

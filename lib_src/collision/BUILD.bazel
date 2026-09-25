@@ -1142,5 +1142,5 @@ cc_library(
     hdrs = ["RadiossType25ShellSource.h"] + glob(["radioss_type25/source_shells/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_coefficients", ":radioss_type25_search_values",
-            "//lib_src/solvers:nodal_trial_identity", "//lib_utils:bounded_arena"],
+            "//lib_utils:bounded_arena"],
 )
