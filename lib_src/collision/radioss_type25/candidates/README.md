@@ -40,3 +40,11 @@ membership on bounded scenes; complete GPU count/fill/sort/secondary incidence;
 empty/dense/exact capacity, exclusions/duplicates, current gap changes, immutable
 reference generations, failure/retry and actual CUDA execution. No component speed
 or whole-contact claim before those gates and coupled selection/response closure.
+
+COR3T closure: local IGAP1 uses base=max(DRAD,(GAP_S+GAP_M)+DGAPLOAD),
+pair velocity extents VX/VY/VZ against all four main slots, VDT=((VX+VY)+VZ)*DT1,
+then GAPV=ONEP01*((base+CURV_MAX)+VDT). Global stored_motion is only a TRIVOX
+screen operand. ICODT is explicitly admitted only in0..7; its common constrained
+axes produce IBC. ETYP and full source NRTM remain distinct operands. ISKEW,
+STIF and ITYP are not consumed/fabricated. Tests use the whole pinned COR3T and
+all32,768 admitted five-node ICODT combinations plus moving mixed-topology rows.

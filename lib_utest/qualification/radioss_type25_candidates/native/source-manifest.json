@@ -1,6 +1,6 @@
 {
   "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
-  "scope": "Unmodified whole I25PEN3; only scalar cohort packing and source constants are supplied by this qualification harness.",
+  "scope": "Whole pinned I25PEN3 and I25COR3T; exact local I25TRIVOX screen chunks; independent qualification wrappers only.",
   "files": [
     {
       "path": "native/original/i25pen3.F",
@@ -16,6 +16,11 @@
       "path": "native/original/i25trivox.F",
       "bytes": 23886,
       "sha256": "642acb42c584fb441e7547f862a8ec64933405e6b3973af83b05333b6634fbb1"
+    },
+    {
+      "path": "native/original/i25cor3t.F",
+      "bytes": 8259,
+      "sha256": "3515db74ed3c9c0246088c80dbb1fe2aa87b0a13ec18000a2792f874a23fea2e"
     }
   ],
   "abi": {

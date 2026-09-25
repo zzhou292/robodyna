@@ -14,7 +14,7 @@ def generated():
         data = path.read_bytes()
         assert len(data) == entry["bytes"] and hashlib.sha256(data).hexdigest() == entry["sha256"]
         source[path.name] = data.decode()
-    names = {"ZERO", "ONE", "TWO", "FOUR", "TEN", "HUNDRED", "FOURTH", "EM03", "EM20", "EM30", "EP30"}
+    names = {"ZERO", "ONE", "TWO", "FOUR", "TEN", "HUNDRED", "FOURTH", "EM03", "EM20", "EM30", "EP30", "ONEP01"}
     names.update("EP%02d" % i for i in range(2, 21))
     declarations = []
     for line in source["constant_mod.F"].splitlines():
@@ -36,6 +36,10 @@ def generated():
             "\n".join(declarations) + "\nend module\n",
         "NativePen3.F": routine,
         "NativeScreen.F": wrapper,
+        "NativeCor3t.F": source["i25cor3t.F"][source["i25cor3t.F"].index("      SUBROUTINE I25COR3T"):],
+        "PackingWrapper.F90": (HERE / "PackingWrapper.F90").read_text(),
+        "Tri7Box.F90": "module tri7box\n use iso_c_binding\n real(c_double) :: xrem(10,1)=0\n integer :: irem(7,1)=0\nend module\n",
+        "com08_c.inc": "      REAL(C_DOUBLE) DT1\n      COMMON /QUAL_COR3T_DT/ DT1\n",
         "Wrapper.F90": (HERE / "Wrapper.F90").read_text(),
         "implicit_f.inc": "      USE ISO_C_BINDING\n      USE PEN3_CONSTANTS\n      IMPLICIT NONE\n#define my_real REAL(C_DOUBLE)\n",
         "mvsiz_p.inc": "      INTEGER, PARAMETER :: MVSIZ=2\n",

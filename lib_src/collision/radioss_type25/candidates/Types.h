@@ -30,4 +30,15 @@ struct ScreenRow {
   double margin = 0, curvature = 0, secondary_gap = 0, main_gap = 0;
   double gap_load = 0, drad = 0, stored_motion = 0;
 };
+// COR3T local row. Five symmetry codes are native ICODT, ordered main1..4,
+// secondary; source binding must authenticate every operand. DT1 is the existing
+// physical owner's previous-step operand, not an independent timer.
+struct LocalRow {
+  ScreenRow screen;
+  std::uint64_t nodes[4]{}, secondary_node = 0;
+  Vector main_velocities[4]{}, secondary_velocity{};
+  int constraint_codes[5]{};
+  int segment_type = 0, main_count = 0;
+  double previous_dt = 0;
+};
 } // namespace tlfea::contact::radioss_type25::candidates
