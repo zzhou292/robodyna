@@ -7,7 +7,9 @@
 namespace type25_startup_test {
 TEST(Type25FixedStartup, CompleteNativeQuadTriangleAndMixedTopology) {
   for(unsigned mode=0;mode<3;++mode)for(unsigned size=1;size<=3;++size) {
-    SCOPED_TRACE(mode);SCOPED_TRACE(size);auto source=Grid(size,2,mode);
+    SCOPED_TRACE(mode);
+    SCOPED_TRACE(size);
+    auto source=Grid(size,2,mode);
     const Built built(source);Same(built,Oracle(source.Input(),source.coefficients.data(),source.coefficients.size()));
   }
 }
