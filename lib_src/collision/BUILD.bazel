@@ -1224,3 +1224,10 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
 )
+
+# Current native TAGNOD/ACTNOR value producer; no float-normal or owner state.
+cc_library(
+    name = "radioss_type25_normal_activation",
+    hdrs = ["RadiossType25NormalActivation.h"] + glob(["radioss_type25/normal_activation/*.h"]),
+    deps = [":radioss_type25_lifecycle"],
+)
