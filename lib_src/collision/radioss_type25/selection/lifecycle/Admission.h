@@ -41,9 +41,10 @@ TL_MATH_HOST_DEVICE inline Status Validate(const Input& input) {
      input.accepted_row_count!=source.secondary_count||
      (source.node_count&&!source.nodes)||(source.main_count&&!source.mains)||
      (source.secondary_count&&(!source.secondary||!input.accepted_rows))||
-     (source.normal_count&&!source.normals)||(input.spatial_count&&!input.spatial))return Status::InvalidInput;
+     (!HasCurrentNormals(input)&&source.normal_count&&!source.normals)||(input.spatial_count&&!input.spatial))return Status::InvalidInput;
   if(!Span(source.nodes,source.node_count)||!Span(source.mains,source.main_count)||
-     !Span(source.secondary,source.secondary_count)||!Span(source.normals,source.normal_count)||
+     !Span(source.secondary,source.secondary_count)||
+     (!HasCurrentNormals(input)&&!Span(source.normals,source.normal_count))||!CurrentNormalShape(input)||
      !Span(input.accepted_rows,input.accepted_row_count)||!Span(input.spatial,input.spatial_count)||
      !VectorSpan(input.current.positions,source.node_count)||!VectorSpan(input.current.velocities,source.node_count))
     return Status::InvalidInput;
@@ -53,8 +54,8 @@ TL_MATH_HOST_DEVICE inline Status Validate(const Input& input) {
        !tl::math::fixed3::Finite(Position(input,std::uint32_t(i),units))||
        !tl::math::fixed3::Finite(Velocity(input,std::uint32_t(i),units)))return Status::InvalidInput;
   }
-  for(std::size_t i=0;i<source.normal_count;++i)if(source.normals[i].boundary)
-    for(const auto& normal:source.normals[i].bisector)
+  for(std::size_t i=0;i<source.normal_count;++i)if(ReferenceNormal(input,i).boundary)
+    for(const auto& normal:ReferenceNormal(input,i).bisector)
       if(!tl::math::fixed3::Finite(g::Promote(normal)))return Status::InvalidInput;
   for(std::size_t i=0;i<source.main_count;++i) {
     const auto& main=source.mains[i];
@@ -66,7 +67,7 @@ TL_MATH_HOST_DEVICE inline Status Validate(const Input& input) {
     for(unsigned j=0;j<4;++j)
       if(main.nodes[j]>=source.node_count||main.normal_reference[j]<=0||
          std::size_t(main.normal_reference[j])>source.normal_count||
-         !tl::math::fixed3::Finite(g::Promote(main.normal_slot[j]))||
+         !tl::math::fixed3::Finite(g::Promote(FaceNormal(input,i,j)))||
          !normal_detail::Nonnegative(main.gap[j]))return Status::InvalidInput;
   }
   for(std::size_t row=0;row<source.secondary_count;++row) {

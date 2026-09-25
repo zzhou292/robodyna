@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Types.h"
+#include "NormalAccess.h"
 #include "../Retained.h"
 #include "../NewImpact.h"
 #include "../Continuation.h"
@@ -39,9 +40,9 @@ TL_MATH_HOST_DEVICE inline NativePairInput Pair(const Input& input,std::size_t r
   pair.secondary_coefficient=secondary.coefficient;pair.initial_contact_flag=secondary.initial_contact_flag;
   for(unsigned i=0;i<4;++i) {
     const auto node=main.nodes[i];pair.main_node_ids[i]=scene.nodes[node].source_id;
-    pair.main_vertices[i]=Position(input,node,units);pair.normal_slot[i]=main.normal_slot[i];
+    pair.main_vertices[i]=Position(input,node,units);pair.normal_slot[i]=FaceNormal(input,std::size_t(local_main-1),i);
     pair.neighbors[i]=main.neighbors[i];pair.main_gap[i]=main.gap[i];
-    const int reference=main.normal_reference[i];const auto& normal=scene.normals[reference-1];
+    const int reference=main.normal_reference[i];const auto& normal=ReferenceNormal(input,std::size_t(reference-1));
     if(normal.boundary!=0) {
       pair.boundary_ids[i]=std::uint64_t(reference);
       for(unsigned j=0;j<2;++j)pair.vertex_bisector[i][j]=normal.bisector[j];
@@ -79,8 +80,8 @@ TL_MATH_HOST_DEVICE inline NativeNewImpactInput NewImpact(const Input& input,
     out.opposite.local_main=partner;out.opposite.global_main=opposite.global_id;
     for(unsigned i=0;i<4;++i) {
       out.opposite.main_node_ids[i]=input.source.nodes[opposite.nodes[i]].source_id;
-      out.opposite.normal_slot[i]=opposite.normal_slot[i];out.opposite.neighbors[i]=opposite.neighbors[i];
-      const int reference=opposite.normal_reference[i];const auto& normal=input.source.normals[reference-1];
+      out.opposite.normal_slot[i]=FaceNormal(input,std::size_t(partner-1),i);out.opposite.neighbors[i]=opposite.neighbors[i];
+      const int reference=opposite.normal_reference[i];const auto& normal=ReferenceNormal(input,std::size_t(reference-1));
       if(normal.boundary!=0) {
         out.opposite.boundary_ids[i]=std::uint64_t(reference);
         for(unsigned j=0;j<2;++j)out.opposite.vertex_bisector[i][j]=normal.bisector[j];

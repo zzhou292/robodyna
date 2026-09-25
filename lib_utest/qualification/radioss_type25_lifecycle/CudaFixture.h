@@ -13,6 +13,7 @@ struct Image {
   l::Input input;
   l::Node nodes[Nodes];double positions[3*Nodes],velocities[3*Nodes];
   l::Main mains[Mains];l::Secondary secondary[Rows];l::NormalReference normals[Normals];
+  n::StoredNormal current_face_normals[4*Mains];l::NormalReference current_references[Normals];
   n::NativeGeometryHistory accepted[Rows];l::SpatialOccurrence spatial[Raw];
   std::uint32_t no[Normals+1],ne[Entries],ro[Rows+1],re[Entries],so[Rows+1],se[Raw];
 };
@@ -25,7 +26,9 @@ struct Work {
 };
 __device__ inline l::Input Bind(const Image& x) {
   auto in=x.input;in.source.nodes=x.nodes;in.source.mains=x.mains;
-  in.source.secondary=x.secondary;in.source.normals=x.normals;
+  in.source.secondary=x.secondary;in.source.normals=in.source.normals?x.normals:nullptr;
+  if(in.current_normals.face_normals)in.current_normals.face_normals=x.current_face_normals;
+  if(in.current_normals.references)in.current_normals.references=x.current_references;
   in.source.normal_to_main.offsets=x.no;in.source.normal_to_main.entries=x.ne;
   in.source.removed_main_by_secondary.offsets=x.ro;in.source.removed_main_by_secondary.entries=x.re;
   in.current.positions.data=x.positions;in.current.velocities.data=x.velocities;
@@ -91,6 +94,15 @@ __global__ void CompleteRows(const Image* image,Work* out,bool reverse) {
     out->prepared[row].stage=l::detail::CompleteRow(in,row,Scratch(*out,row),units,out->prepared[row]);
   }
 }
+// Test-only invalid writable span names a real live int subobject. The new
+// read/write-disjoint admission must reject it before changing source fields.
+__global__ void AliasedNormalScratch(Image* image,Work* out) {
+  if(blockIdx.x||threadIdx.x||out->report.status!=n::selection::Status::Ok)return;
+  const auto in=Bind(*image);n::units_detail::Factors units;l::detail::Factors(in.current,units);
+  auto scratch=Scratch(*out,0);scratch.sliding_mains=&image->current_references[0].boundary;
+  scratch.sliding_capacity=1;
+  out->prepared[0]=l::detail::PrepareRow(in,0,scratch,units);
+}
 __global__ void FinishRows(const n::NativeGeometryHistory* in,n::NativeGeometryHistory* out,
     n::selection::Status* status,unsigned count) {
   for(unsigned i=blockIdx.x*blockDim.x+threadIdx.x;i<count;i+=blockDim.x*gridDim.x)
@@ -139,8 +151,18 @@ class Device {
     return result;
   }
   l::Report Evaluate(Fixture& f,l::HostResult& result,bool reverse=false,
-      std::size_t capacity=Rows*Slots,unsigned threads=32,bool separate_phases=false) {
+      std::size_t capacity=Rows*Slots,unsigned threads=32,bool separate_phases=false,
+      const l::CurrentNormalView* current=nullptr,bool omit_legacy_references=false,
+      bool alias_current_reference=false) {
     auto host=std::make_unique<Image>();host->input=f.Input();
+    if(current)host->input.current_normals=*current;
+    if(omit_legacy_references)host->input.source.normals=nullptr;
+    const auto& view=host->input.current_normals;
+    // Bounds on the fixture payload are independent of deliberately malformed
+    // descriptor counts; do not dereference an overflow-sized declared span.
+    if(f.mains.size()>Mains||f.normals.size()>Normals)throw std::runtime_error("Normal fixture bound exceeded");
+    if(view.face_normals)std::copy_n(view.face_normals,std::min(view.normal_count,4*f.mains.size()),host->current_face_normals);
+    if(view.references)std::copy_n(view.references,std::min(view.reference_count,f.normals.size()),host->current_references);
     Copy(host->nodes,f.nodes);Copy(host->positions,f.positions);Copy(host->velocities,f.velocities);
     Copy(host->mains,f.mains);Copy(host->secondary,f.secondary);Copy(host->normals,f.normals);
     Copy(host->accepted,f.accepted);Copy(host->spatial,f.spatial);
@@ -154,7 +176,9 @@ class Device {
     Check(cudaMemcpyAsync(image,host.get(),sizeof(Image),cudaMemcpyHostToDevice,stream));
     Check(cudaMemsetAsync(work,0,sizeof(Work),stream));
     AdmitSource<<<1,1,0,stream>>>(image,work);Check(cudaGetLastError());
-    if(separate_phases) {
+    if(alias_current_reference) {
+      AliasedNormalScratch<<<1,1,0,stream>>>(image,work);Check(cudaGetLastError());
+    } else if(separate_phases) {
       BeforeNormalRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
       AfterNormalRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
     } else {PrepareRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());}

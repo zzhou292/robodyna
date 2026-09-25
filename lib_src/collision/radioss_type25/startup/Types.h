@@ -2,6 +2,7 @@
 #pragma once
 #include "../CoefficientTypes.h"
 #include "../GeometryTypes.h"
+#include "../NormalFields.h"
 #include "../Units.h"
 #include "lib_src/collision/SurfaceContactTypes.h"
 #include <cstddef>
@@ -35,10 +36,7 @@ struct Main {
   int global_id=0,segment_type=0; // Original local MSEGLO / signed MSEGTYP.
   int neighbors[4]{},neighbor_edges[4]{},normal_reference[4]{};
 };
-struct NormalReference {
-  int boundary=0;
-  StoredNormal bisector[2]{};
-};
+using NormalReference=normal_fields::Reference;
 struct NormalView {
   const StoredNormal* face_normals=nullptr; // Four original source slots per expanded main.
   const NormalReference* references=nullptr;
