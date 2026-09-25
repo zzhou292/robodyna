@@ -37,11 +37,11 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS native/prepare.py
   native/source-manifest.json native/original/i25pen3.F
   ../radioss_type25_normal/native/original/constant_mod.F)
 
-add_executable(type25_candidate_host HostTest.cpp PackingTest.cpp)
+add_executable(type25_candidate_host HostTest.cpp PackingTest.cpp PrimaryContextTest.cpp)
 target_link_libraries(type25_candidate_host PRIVATE tl_type25_candidate_filter pen3_native GTest::gtest_main)
 add_test(NAME type25_candidate_host COMMAND type25_candidate_host)
 if(TYPE25_CANDIDATE_CUDA)
-  add_executable(type25_candidate_cuda CudaTest.cu PackingCudaTest.cu)
+  add_executable(type25_candidate_cuda CudaTest.cu PackingCudaTest.cu PrimaryContextCudaTest.cu)
   target_link_libraries(type25_candidate_cuda PRIVATE tl_type25_candidate_filter pen3_native GTest::gtest_main CUDA::cudart)
   set_target_properties(type25_candidate_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   add_test(NAME type25_candidate_cuda COMMAND type25_candidate_cuda)

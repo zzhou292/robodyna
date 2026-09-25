@@ -101,7 +101,7 @@ __device__ bool Candidate(Device d,const Current& in,const Task& task,unsigned l
   if(Removed(d,task.main,node))return false;
   LocalRow row;row.secondary_node=d.ids[node];row.secondary_velocity=Read(d,in.velocities,node,true);
   row.constraint_codes[4]=d.codes[node];row.previous_dt=in.previous_dt;
-  row.segment_type=m.source.segment_type;row.main_count=d.native_main_count;
+  row.segment_type=m.source.segment_type;row.main_count=d.primary_main_count;
   row.screen.secondary=Read(d,in.positions,node);row.screen.margin=in.margin;
   row.screen.secondary_gap=Gap(d,in.secondary_gaps[secondary]);row.screen.main_gap=Gap(d,in.main_gaps[task.main]);
   row.screen.curvature=Gap(d,in.main_curvature[task.main]);row.screen.gap_load=in.gap_load;
