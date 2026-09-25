@@ -10,6 +10,7 @@ from pathlib import Path
 
 import gdb
 from .gdb_access import Call, clock, common, values
+from .row_history import Rows, Coefficients
 
 _abi=None
 _stream=None
@@ -18,6 +19,8 @@ _exit_code=None
 _records=0
 _bytes=0
 _main=None
+_rows=None
+_coefficients=None
 _cycles=[]
 _classification_packets=0
 _packets=0
@@ -66,6 +69,7 @@ class Returned(gdb.FinishBreakpoint):
             data=dict(self.meta)
             if self.routine=='I25MAINF':
                 data['arrays']=nodal(self.pointers,data['nodes'])
+                data['rows']=_rows.after_main(data['clock']['NCYCLE'])
                 _main=None
             elif self.routine=='I25DST3_3':
                 data['arrays']={name:values(self.pointers[name],data['jlt'],'d')
@@ -157,7 +161,7 @@ def exited(event):
 
 
 def install(path):
-    global _abi,_stream
+    global _abi,_stream,_rows,_coefficients
     if Path('native-sequence.jsonl').exists() or Path('native-sequence-summary.json').exists():
         raise FileExistsError('Preserve sequence outputs; use a fresh directory')
     _abi=json.loads(Path(path).read_text())
@@ -168,18 +172,22 @@ def install(path):
             raise ValueError('Native ABI donor changed')
     _stream=Path('native-sequence.jsonl').open('x')
     gdb.events.exited.connect(exited)
+    _rows=Rows(_abi['routines']['I25OPTCD'],emit,fail)
+    _coefficients=Coefficients(_abi['routines']['I25COR3_3'],emit,fail)
     for name in ('I25MAINF','I25CDCOR3','I25DST3_3','I25FOR3'):_breakpoints.append(Entered(name))
 
 
 def finish():
     complete=(_failure is None and _exit_code==0 and _pending==0 and _main is None and
-              len(_cycles)>1 and _responses>0 and _geometry_packets>=_responses)
+              len(_cycles)>1 and _responses>0 and _geometry_packets>=_responses and
+              _rows.initial and _rows.snapshots==len(_cycles) and _coefficients.calls==_geometry_packets)
     record=dict(schema='robo_dyna.native_sequence_observation.v1',complete=complete,
                 exit_code=_exit_code,failure=_failure,cycle_count=len(_cycles),
                 first_cycle=_cycles[0] if _cycles else None,last_cycle=_cycles[-1] if _cycles else None,
                 external_cdcor3_force_packets=_packets,geometry_packets=_geometry_packets,
                 responses=_responses,records=_records,bytes=_bytes,
                 excluded_classification_packets=_classification_packets,
+                complete_row_snapshots=_rows.snapshots,coefficient_control_calls=_coefficients.calls,
                 scope='Reference states/packet order only; debugger timing is not performance evidence')
     with Path('native-sequence-summary.json').open('x') as stream:json.dump(record,stream,indent=2);stream.write('\n')
     _stream.close()
