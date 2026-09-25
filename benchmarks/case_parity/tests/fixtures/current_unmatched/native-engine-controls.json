@@ -1,0 +1,59 @@
+{
+  "schema": "robo_dyna.reference_contact_engine_controls.v1",
+  "status": "observed_at_first_actual_i25for3_entry",
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "case": "fresh no-target-scaling Yaris nodal factor0.8",
+  "controls": {
+    "kdtint": 0,
+    "idtmins": 0,
+    "idtmins_int": 0
+  },
+  "normal_stiffness_branch": "KDTINT==0 && IDTMINS!=2 && IDTMINS_INT==0",
+  "symbol_layout": {
+    "sms_symbol_bytes": 92,
+    "integer_bytes": 4,
+    "idtmins_integer_index": 6,
+    "idtmins_int_integer_index": 15,
+    "scr18_symbol_bytes": 828,
+    "kdtint_integer_index": 204
+  },
+  "method": "GDB read-only COMMON inspection at native contact entry; symbols/layout matched to pinned headers. No memory assignment. Inferior intentionally terminated after observation.",
+  "scope": "Branch observation only, not completed simulation/benchmark or proof of all reference flags. Conventional explicit branch for this specific fresh case.",
+  "pins": [
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-engine-mode-inspection-1.log",
+      "bytes": 3012,
+      "sha256": "51513ad19c6ff6040ea6d168283917d857fa018b244b3a13c07db5adfcf61c4e"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-engine-mode-inspection-1.json",
+      "bytes": 5397,
+      "sha256": "6280bac3a269cf9c4f9f6c161a28c5abde077f5b308dd513b537bf78c8c8494b"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/normal-mode-probe-1/inspect.gdb",
+      "bytes": 245,
+      "sha256": "cf60940c0fc597116dd26a9eed2329280b4d31a33e57f36525be35d47551ca74"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/normal-mode-probe-1/case_0001.rad",
+      "bytes": 447,
+      "sha256": "1dc55f86433cdf3396ce67c9044d38ec0f343cb23eb3fa686323f5ec647b379f"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/engine_linux64_gf",
+      "bytes": 31117192,
+      "sha256": "7fdedddbcf5753a53d7c8d8872aa6ead3b4e9983237997f6dd3b8cdd8375e3ed"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/deps/openradioss-qeph-law1-closure-1/engine/share/includes/sms_c.inc",
+      "bytes": 2693,
+      "sha256": "f95904664529c1189a474640c20966e83bc1656ef4430c4dbad5be01c37e955a"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/deps/openradioss-qeph-law1-closure-1/engine/share/includes/scr18_c.inc",
+      "bytes": 1790,
+      "sha256": "1cfc4b1f7898053279b77d03f25e62c47f8d62e4810777b6c6021cfcadbb255f"
+    }
+  ]
+}

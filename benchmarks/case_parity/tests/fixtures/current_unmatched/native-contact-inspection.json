@@ -1,0 +1,47 @@
+{
+  "schema": "robo_dyna.resolved_reference_contact_inspection.v1",
+  "scope": "Reviewed actual Starter listing values, not an executable TL binding or complete Engine packet. Unit system mm,s,metricton. Engine and pair state resolved separately.",
+  "source": {
+    "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/case_0000.out",
+    "sha256": "9d99dd0323f46899699262dbd7497767bddb0bbdc823034c0ef10ca13275a733",
+    "line_start": 225412,
+    "line_end": 225462
+  },
+  "excerpt": {
+    "file": "starter-interface25.txt",
+    "sha256": "ec48f9fe2ef0e24bb670b316aa8e455eefcdc62749392219e213e579d0f631a0"
+  },
+  "native_values": {
+    "interface_number": 2,
+    "type": 25,
+    "stiffness_formulation": 4,
+    "stiffness_factor": 1.0,
+    "contact_type": 1,
+    "edge_flag": 1000,
+    "gap_flag": 2,
+    "gap_factor": 1.0,
+    "free_edge_zero_gap_flag": 1000,
+    "gap_shape": 1,
+    "remove_type2_conflicts": 1,
+    "initial_penetration_mode": 5,
+    "normal_damping_factor": 0.05,
+    "quadratic_damping_flag": 1,
+    "neighbor_removal_flag": 2,
+    "failure_removal_flag": 1,
+    "friction_filtering_flag": 0,
+    "friction_model": 2,
+    "mu0": 0.1,
+    "C1": 0.0,
+    "C2": 0.0,
+    "C3": 0.0,
+    "C4": 0.0,
+    "C5": 0.1,
+    "C6": -0.001
+  },
+  "unresolved_for_runtime": [
+    "pair geometry/projection weights and initial-offset history",
+    "material-derived side stiffness and current effective coefficients",
+    "friction damping per pair and tangential state",
+    "Engine KDTINT/IDTMINS/IDTMINS_INT initialization path"
+  ]
+}

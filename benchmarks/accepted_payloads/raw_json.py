@@ -15,8 +15,17 @@ def _nonfinite(value):
     raise ValueError(f"nonfinite JSON constant: {value}")
 
 
-def read_object(path):
-    text = path.read_text(encoding="utf-8")
+def read_object(path, max_bytes=None):
+    if max_bytes is None:
+        text = path.read_text(encoding="utf-8")
+    else:
+        if type(max_bytes) is not int or max_bytes <= 0:
+            raise ValueError("positive JSON byte cap required")
+        with path.open("rb") as stream:
+            data = stream.read(max_bytes + 1)
+        if len(data) > max_bytes:
+            raise ValueError("JSON byte cap exceeded")
+        text = data.decode("utf-8")
     decoder = json.JSONDecoder(object_pairs_hook=_unique, parse_constant=_nonfinite)
     values = decoder.decode(text)
     if not isinstance(values, dict):

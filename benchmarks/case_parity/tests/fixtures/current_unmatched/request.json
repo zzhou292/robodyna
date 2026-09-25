@@ -1,0 +1,13 @@
+{
+  "schema": "robo_dyna.case_parity_request.v1",
+  "reference": {
+    "path": "native.json",
+    "sha256": "79bdabb09ed9d7ed9ccbdb4b355b93caf488541b348d36de6394fa0dde6bbfc1"
+  },
+  "candidate": {
+    "path": "v5.json",
+    "sha256": "2fd4c15bfb56b862e94fb583f442fe7f62d96848ecd89a94d0e9910c7c2937bc"
+  },
+  "numerics": null,
+  "timing_pairs": []
+}
