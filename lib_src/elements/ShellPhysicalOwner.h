@@ -13,7 +13,8 @@ struct ProofLayout {
 };
 bool ForecastProof(std::size_t nodes,std::size_t attachments,std::size_t cap,
     ProofLayout&) noexcept;
-// Requires fresh collocated staggered state and the exact complete CIN model.
+// Requires fresh collocated staggered state and the exact complete CIN model
+// (including an explicitly prepared empty scope).
 // The full initial ledger is checked against raw M/J, not constrained inverses.
 NodalReport AuthenticateInitial(const NodalCoefficientLedger&,FENodalState&,
     const NodalStamp&,const ShellBatchStartup&,const NodalCinWitnessSource&,

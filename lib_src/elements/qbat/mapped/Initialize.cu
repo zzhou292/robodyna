@@ -12,7 +12,9 @@ BatchReport Batch::InitializeMapped(const BatchConfig& config,const ShellPhysica
   auto report=mapped::MakeForecast(config,physical,source,sizeof(Impl),forecast);
   if (report.status!=BatchStatus::Success) return report;
   const auto map=physical.mapping()->mapping();
-  const auto roles=owner.ValidateFreeRotationalNodes(map.data(),map.size());
+  const auto roles=(config.startup.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation ?
+      owner.ValidatePresentRotationalNodes(map.data(),map.size()) :
+      owner.ValidateFreeRotationalNodes(map.data(),map.size()));
   if (roles.status!=NodalStatus::Ok) return {
       roles.status==NodalStatus::DeviceFailure?BatchStatus::DeviceFailure:BatchStatus::InvalidInput,
       roles.message,UINT32_MAX,roles.node,Status::kSuccess,roles.status};

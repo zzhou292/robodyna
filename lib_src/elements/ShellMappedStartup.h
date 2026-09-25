@@ -25,7 +25,8 @@ template<class Model> bool CopyLedger(const ShellPhysicalBinding& physical,Model
     model.inertia[node]=c.isotropic_inertia;
     model.physical[node]=c.shell.physical_inertia;
     model.added[node]=c.shell.added_inertia;
-    if (!shell_startup_detail::AddInitialTranslationKinetic(c.mass,
+    if (model.config.startup.kind!=ShellBatchStartupKind::ReferenceConstrainedUniformTranslation &&
+        !shell_startup_detail::AddInitialTranslationKinetic(c.mass,
         model.config.startup.uniform_velocity,kinetic)) return false;
   }
   return true;

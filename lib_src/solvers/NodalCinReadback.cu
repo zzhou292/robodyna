@@ -11,16 +11,19 @@ namespace {
 bool OutputsValid(NodalCinSnapshotBuffer out, std::size_t n, std::size_t r,
     const void* stamp, std::size_t stamp_bytes, const void* token = nullptr,
     std::size_t token_bytes = 0) noexcept {
-  if (!out.mass || !out.inertia || !out.saved_secondary_mass || !out.saved_secondary_inertia ||
+  if (!out.mass || !out.inertia ||
+      (r ? (!out.saved_secondary_mass || !out.saved_secondary_inertia) :
+           (out.saved_secondary_mass || out.saved_secondary_inertia)) ||
       !out.numerical_mass || !stamp || out.capacity_nodes < n || out.capacity_attachments < r) return false;
   const void* ranges[] = {out.mass, out.inertia, out.saved_secondary_mass,
       out.saved_secondary_inertia, out.numerical_mass, stamp};
   const std::size_t bytes[] = {n*sizeof(double), n*sizeof(double), r*sizeof(double),
       r*sizeof(double), sizeof(double), stamp_bytes};
   for (unsigned i = 0; i < 6; ++i) {
+    if (!bytes[i]) continue; // Canonical null zero spans were checked above.
     if (token && !trial_identity::Disjoint(ranges[i], bytes[i], token, token_bytes)) return false;
     for (unsigned j = i+1; j < 6; ++j) {
-      if (!trial_identity::Disjoint(ranges[i], bytes[i], ranges[j], bytes[j])) return false;
+      if (bytes[j] && !trial_identity::Disjoint(ranges[i], bytes[i], ranges[j], bytes[j])) return false;
     }
   }
   return true;
@@ -28,8 +31,10 @@ bool OutputsValid(NodalCinSnapshotBuffer out, std::size_t n, std::size_t r,
 void Publish(NodalCinSnapshotBuffer out, const double* tail, std::size_t n, std::size_t r) noexcept {
   std::memcpy(out.mass, tail, n*sizeof(double));
   std::memcpy(out.inertia, tail+n, n*sizeof(double));
-  std::memcpy(out.saved_secondary_mass, tail+4*n, r*sizeof(double));
-  std::memcpy(out.saved_secondary_inertia, tail+4*n+r, r*sizeof(double));
+  if (r) {
+    std::memcpy(out.saved_secondary_mass, tail+4*n, r*sizeof(double));
+    std::memcpy(out.saved_secondary_inertia, tail+4*n+r, r*sizeof(double));
+  }
   *out.numerical_mass = tail[4*n+2*r];
 }
 }
@@ -45,8 +50,9 @@ NodalReport FENodalState::ValidateCinWitnessSource(const NodalCinWitnessSource& 
   if (source.range_count != cin.rows.size() || source.witness_count != cin.witnesses.size()) {
     return {NodalStatus::InvalidInput, "CIN source counts differ from the admitted complete roster"};
   }
-  if (!source.ranges || !source.witnesses ||
-      source.model->rows().data != cin.source.rows().data ||
+  if ((cin.source.explicitly_empty() ? (source.ranges || source.witnesses) :
+                                         (!source.ranges || !source.witnesses)) ||
+      !source.model->SharesStorage(cin.source) ||
       !source.model->domain()->SharesStorage(*cin.source.domain())) {
     return {NodalStatus::InvalidInput, "CIN source is not the admitted immutable model/domain backing"};
   }

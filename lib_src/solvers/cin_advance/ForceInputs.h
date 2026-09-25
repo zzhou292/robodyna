@@ -41,7 +41,7 @@ TL_CIN_INPUT_HD inline cin::ForceTrial ForceView(const Input& input) noexcept {
   const auto n = input.model.node_count;
   const auto r = input.model.row_count;
   return {input.accepted, input.loads, input.tail, input.tail+n, input.work, input.work+n,
-      input.tail+4*n, input.tail+4*n+r, input.tail+4*n+2*r, input.work+2*n,
+      r ? input.tail+4*n : nullptr, r ? input.tail+4*n+r : nullptr, input.tail+4*n+2*r, input.work+2*n,
       input.patches, input.activity};
 }
 

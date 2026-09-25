@@ -9,7 +9,7 @@
 #endif
 
 namespace tl::fea {
-enum class ShellBatchStartupKind { ReferenceRest,ReferenceUniformTranslation };
+enum class ShellBatchStartupKind { ReferenceRest,ReferenceUniformTranslation,ReferenceConstrainedUniformTranslation };
 struct ShellBatchStartup {
   ShellBatchStartupKind kind=ShellBatchStartupKind::ReferenceRest;
   tl::math::Vec3 uniform_velocity{}; // Physical common WORLD velocity, m/s.
@@ -30,13 +30,31 @@ TL_SHELL_STARTUP_HD inline bool SameStartup(const ShellBatchStartup& a,const She
     const auto x=a.uniform_velocity,y=b.uniform_velocity;
     return x.x==0&&x.y==0&&x.z==0&&y.x==0&&y.y==0&&y.z==0;
   }
-  return a.kind==ShellBatchStartupKind::ReferenceUniformTranslation&&SameVector(a.uniform_velocity,b.uniform_velocity);
+  return (a.kind==ShellBatchStartupKind::ReferenceUniformTranslation||
+    a.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation)&&SameVector(a.uniform_velocity,b.uniform_velocity);
 }
-inline bool ValidStartup(const ShellBatchStartup& s,bool coupled) noexcept {
+inline bool ValidStartup(const ShellBatchStartup& s,bool coupled,bool mapped=false) noexcept {
   const auto v=s.uniform_velocity;
   if(!tl::math::Finite(v.x)||!tl::math::Finite(v.y)||!tl::math::Finite(v.z)) return false;
   if(s.kind==ShellBatchStartupKind::ReferenceRest) return v.x==0&&v.y==0&&v.z==0;
-  return s.kind==ShellBatchStartupKind::ReferenceUniformTranslation&&coupled;
+  return coupled&&(s.kind==ShellBatchStartupKind::ReferenceUniformTranslation||
+      (mapped&&s.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation));
+}
+// Explicit constrained profile only: fixed components are canonical +0; every
+// free component retains the declared velocity's exact bits, including -0.
+TL_SHELL_STARTUP_HD inline tl::math::Vec3 ProjectVelocity(tl::math::Vec3 v,std::uint8_t fixed) noexcept {
+  return {(fixed&1)?0.:v.x,(fixed&2)?0.:v.y,(fixed&4)?0.:v.z};
+}
+TL_SHELL_STARTUP_HD inline bool MatchesInitialReference(tl::math::Vec3 x,tl::math::Vec3 reference,
+    tl::math::Vec3 omega,const double* q) noexcept {
+  return SameVector(x,reference)&&omega.x==0&&omega.y==0&&omega.z==0&&
+      q[0]==1&&q[1]==0&&q[2]==0&&q[3]==0;
+}
+TL_SHELL_STARTUP_HD inline bool MatchesConstrainedInitialNode(const ShellBatchStartup& s,
+    std::uint8_t fixed,tl::math::Vec3 x,tl::math::Vec3 reference,
+    tl::math::Vec3 velocity,tl::math::Vec3 omega,const double* q) noexcept {
+  return s.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation&&fixed<=7&&
+      MatchesInitialReference(x,reference,omega,q)&&SameVector(velocity,ProjectVelocity(s.uniform_velocity,fixed));
 }
 // Caller checks finite fields/unit quaternion and free native m/J separately.
 // Rest retains numeric-zero/unit-q behavior. Explicit translation binds velocity

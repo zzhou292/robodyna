@@ -84,6 +84,47 @@ CinAttachmentReport PrepareCinAttachments(const PostKinChkResult& post,const fea
     return Fail(ResultStatus::ResourceLimit);
   }
 }
+CinAttachmentReport ForecastEmptyCinAttachments(const fea::NodalNodeDomain& domain,
+    std::size_t old_bytes,CinAttachmentForecast* output,CinAttachmentLimits limits) noexcept {
+  using namespace cin_detail;
+  if (!output || !domain.prepared()) return Fail(ResultStatus::InvalidInput);
+  const CinAttachmentLimits hard;
+  if (!limits.max_host_bytes || limits.max_host_bytes>hard.max_host_bytes ||
+      limits.max_attachments>hard.max_attachments) return Fail(ResultStatus::ResourceLimit);
+  if (domain.owned_payload_bytes()<sizeof(fea::NodalNodeDomain)) return Fail(ResultStatus::ResourceLimit);
+  CinAttachmentForecast next;
+  next.domain_payload_bytes=domain.owned_payload_bytes()-sizeof(fea::NodalNodeDomain);
+  util::BoundedArenaLayout budget(limits.max_host_bytes);util::ArenaRegion ignored;
+  if (!budget.Append<unsigned char>(sizeof(TiedCinAttachmentModel),ignored) ||
+      !budget.Append<unsigned char>(sizeof(TiedCinAttachmentModel::Data),ignored) ||
+      !budget.Append<unsigned char>(SharedControlReserveBytes,ignored)) return Fail(ResultStatus::ResourceLimit);
+  next.model_payload_bytes=budget.bytes();
+  if (!budget.Append<unsigned char>(old_bytes,ignored) ||
+      !budget.Append<unsigned char>(next.domain_payload_bytes,ignored)) return Fail(ResultStatus::ResourceLimit);
+  next.startup_payload_bytes=budget.bytes();*output=next;return {};
+}
+CinAttachmentReport PrepareEmptyCinAttachments(const fea::NodalNodeDomain& domain,
+    TiedCinAttachmentModel* output,CinAttachmentLimits limits) noexcept {
+  using namespace cin_detail;
+  if (!output) return Fail(ResultStatus::InvalidInput);
+  util::BoundedArenaLayout old(limits.max_host_bytes);util::ArenaRegion ignored;
+  if (output->prepared()) {
+    const auto bytes=output->forecast();
+    if (!old.Append<unsigned char>(bytes.model_payload_bytes,ignored) ||
+        !old.Append<unsigned char>(bytes.post_kinchk_payload_bytes,ignored) ||
+        (!output->domain()->SharesStorage(domain)&&
+         !old.Append<unsigned char>(bytes.domain_payload_bytes,ignored))) return Fail(ResultStatus::ResourceLimit);
+  }
+  CinAttachmentForecast bytes;
+  auto report=ForecastEmptyCinAttachments(domain,old.bytes(),&bytes,limits);if(!report)return report;
+  try {
+    auto next=std::make_shared<TiedCinAttachmentModel::Data>(PostKinChkResult{},domain);
+    next->explicitly_empty=true;next->bytes=bytes;output->data_=std::move(next);return {};
+  } catch(...) {return Fail(ResultStatus::ResourceLimit);}
+}
+bool TiedCinAttachmentModel::explicitly_empty() const noexcept {
+  return data_&&data_->explicitly_empty;
+}
 const fea::NodalNodeDomain* TiedCinAttachmentModel::domain() const noexcept { return data_ ? &data_->domain : nullptr; }
 const PostKinChkResult* TiedCinAttachmentModel::classification() const noexcept { return data_ ? &data_->post : nullptr; }
 ClassificationView<CinAttachmentRow> TiedCinAttachmentModel::rows() const noexcept {

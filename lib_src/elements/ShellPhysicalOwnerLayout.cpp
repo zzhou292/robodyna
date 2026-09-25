@@ -4,7 +4,7 @@
 namespace tl::fea::shell_physical_owner {
 bool ForecastProof(std::size_t nodes,std::size_t attachments,std::size_t cap,
     ProofLayout& output) noexcept {
-  if (!nodes || nodes>MaxActiveNodalStateNodes || !attachments ||
+  if (!nodes || nodes>MaxActiveNodalStateNodes ||
       attachments>NodalCinLimits{}.max_attachments) return false;
   ProofLayout next;
   util::BoundedArenaLayout layout(cap);
