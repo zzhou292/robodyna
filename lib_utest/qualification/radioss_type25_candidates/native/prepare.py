@@ -14,7 +14,7 @@ def generated():
         data = path.read_bytes()
         assert len(data) == entry["bytes"] and hashlib.sha256(data).hexdigest() == entry["sha256"]
         source[path.name] = data.decode()
-    names = {"ZERO", "ONE", "TWO", "FOUR", "TEN", "HUNDRED", "FOURTH", "EM03", "EM20", "EM30", "EP30", "ONEP01"}
+    names = {"ZERO", "ONE", "TWO", "FOUR", "TEN", "HUNDRED", "FOURTH", "EM03", "EM20", "EM30", "EP30", "ONEP01", "ZEP01", "EM02"}
     names.update("EP%02d" % i for i in range(2, 21))
     declarations = []
     for line in source["constant_mod.F"].splitlines():

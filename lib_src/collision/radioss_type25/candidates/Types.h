@@ -23,6 +23,7 @@ struct FilterResult {
   bool included = false;
 };
 struct Bounds { Vector minimum{}, maximum{}; };
+struct Envelope {Bounds bounds;double radius=0;};
 // Exact local TRIVOX pair operands. Exclusions are evaluated from source roster
 // identity/removal CSR by the inventory owner before this arithmetic screen.
 struct ScreenRow {

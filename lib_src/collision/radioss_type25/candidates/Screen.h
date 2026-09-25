@@ -3,9 +3,9 @@
 #pragma once
 #include "PenetrationFilter.h"
 namespace tlfea::contact::radioss_type25::candidates {
-TL_MATH_HOST_DEVICE inline Status ScreenBounds(const ScreenRow& row,Bounds* output,double* radius) {
+TL_MATH_HOST_DEVICE inline Status ScreenBounds(const ScreenRow& row,Envelope* output) {
   namespace d=detail;namespace v=tl::math::fixed3;
-  if(!output||!radius||!d::Nonnegative(row.margin)||!d::Nonnegative(row.curvature)||
+  if(!output||!d::Nonnegative(row.margin)||!d::Nonnegative(row.curvature)||
      !d::Nonnegative(row.secondary_gap)||!d::Nonnegative(row.main_gap)||
      !tl::math::Finite(row.gap_load)||!d::Nonnegative(row.drad)||
      !d::Nonnegative(row.stored_motion))return Status::InvalidInput;
@@ -16,13 +16,14 @@ TL_MATH_HOST_DEVICE inline Status ScreenBounds(const ScreenRow& row,Bounds* outp
   const auto box=d::Box(row.vertices);
   const Bounds next{v::Subtract(box.minimum,{aaa,aaa,aaa}),v::Add(box.maximum,{aaa,aaa,aaa})};
   if(!v::Finite(next.minimum)||!v::Finite(next.maximum))return Status::NonfiniteResult;
-  *output=next;*radius=aaa;return Status::Ok;
+  *output={next,aaa};return Status::Ok;
 }
 TL_MATH_HOST_DEVICE inline Status EvaluateScreen(const ScreenRow& row,bool* included) {
   namespace d=detail;namespace v=tl::math::fixed3;
   if(!included||!v::Finite(row.secondary))return Status::InvalidInput;
-  Bounds bounds;double aaa;
-  const auto status=ScreenBounds(row,&bounds,&aaa);if(status!=Status::Ok)return status;
+  Envelope envelope;
+  const auto status=ScreenBounds(row,&envelope);if(status!=Status::Ok)return status;
+  const auto bounds=envelope.bounds;const double aaa=envelope.radius;
   const auto p=row.secondary;
   if(p.x<=bounds.minimum.x||p.x>=bounds.maximum.x||p.y<=bounds.minimum.y||
      p.y>=bounds.maximum.y||p.z<=bounds.minimum.z||p.z>=bounds.maximum.z) {

@@ -26,9 +26,10 @@ TEST(NativeCandidateScreen,NativeStrictScreensAndSweepContainment) {
       row.gap_load=load;row.drad=drad;row.curvature=.125;row.stored_motion=.03125;
       bool included=false;ASSERT_EQ(c::EvaluateScreen(row,&included),c::Status::Ok);
       ASSERT_EQ(included,NativeScreen(row));
-      c::Bounds bounds;double radius;
+      c::Envelope result;
       auto envelope=row;envelope.secondary_gap=std::max(1.,row.secondary_gap);
-      ASSERT_EQ(c::ScreenBounds(envelope,&bounds,&radius),c::Status::Ok);
+      ASSERT_EQ(c::ScreenBounds(envelope,&result),c::Status::Ok);
+      const auto bounds=result.bounds;
       if(included) {
         EXPECT_GE(row.secondary.x,bounds.minimum.x);EXPECT_LE(row.secondary.x,bounds.maximum.x);
         EXPECT_GE(row.secondary.y,bounds.minimum.y);EXPECT_LE(row.secondary.y,bounds.maximum.y);

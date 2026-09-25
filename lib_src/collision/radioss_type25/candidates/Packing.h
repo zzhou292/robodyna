@@ -8,8 +8,8 @@ TL_MATH_HOST_DEVICE inline Status PackLocal(const LocalRow& in,PackedRow* output
   const auto& s=in.screen;
   if(!output||!in.secondary_node||in.main_count<=0||!d::Nonnegative(in.previous_dt)||
      !v::Finite(s.secondary)||!v::Finite(in.secondary_velocity))return Status::InvalidInput;
-  Bounds unused;double radius;
-  const auto status=ScreenBounds(s,&unused,&radius);if(status!=Status::Ok)return status;
+  Envelope unused;
+  const auto status=ScreenBounds(s,&unused);if(status!=Status::Ok)return status;
   PackedRow next;
   next.symmetry=in.constraint_codes[4];
   if(next.symmetry<0||next.symmetry>7)return Status::InvalidInput;
