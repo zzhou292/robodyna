@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 using namespace candidate_test;
 namespace {
+__global__ void Nothing() {}
 void Check(c::Inventory& inventory,const std::vector<c::Pair>& expected,std::size_t rows) {
   const auto view=inventory.view();ASSERT_TRUE(inventory.IsCurrent(view));ASSERT_EQ(view.pair_count(),expected.size());
   ASSERT_EQ(view.secondary_count(),rows);std::vector<c::Pair> actual(view.pair_count());std::vector<std::uint64_t> offsets(rows+1);
@@ -88,4 +89,12 @@ TEST(NativeCandidateInventory,SourceLimitsMalformedRolesAndBorrowedAliasReject) 
   auto current=scene.Current();ASSERT_EQ(inventory.Stage(current),c::Status::Ok);const auto view=inventory.view();
   current.main_gaps=reinterpret_cast<const double*>(view.secondary_offsets());
   EXPECT_EQ(inventory.Stage(current),c::Status::InvalidInput);EXPECT_FALSE(inventory.IsCurrent(view));
+}
+
+TEST(NativeCandidateInventory,DevicePoisonCannotTriggerCpuRetry) {
+  Scene scene;c::Inventory inventory;ASSERT_EQ(inventory.Initialize(scene.Source(),Limits(),scene.stream),c::Status::Ok);
+  ASSERT_EQ(inventory.Stage(scene.Current()),c::Status::Ok);const auto prior=inventory.view();
+  Nothing<<<0,32,0,scene.stream>>>();
+  EXPECT_EQ(inventory.Stage(scene.Current()),c::Status::DeviceFailure);EXPECT_FALSE(inventory.IsCurrent(prior));
+  EXPECT_EQ(inventory.Stage(scene.Current()),c::Status::Unusable);EXPECT_EQ(inventory.view().pairs(),nullptr);
 }

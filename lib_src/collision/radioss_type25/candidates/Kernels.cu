@@ -27,7 +27,7 @@ __global__ void Reset(Device d) {
 }
 __global__ void SecondaryKeys(Device d,Current in) {
   for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<d.secondary_count;i+=blockDim.x*gridDim.x) {
-    d.keys[i]=CUDART_INF;d.ordinals[i]=std::uint32_t(i);
+    d.keys[i]=std::numeric_limits<double>::infinity();d.ordinals[i]=std::uint32_t(i);
     const auto node=d.secondary[i];const double stiffness=in.secondary_stiffness[i];
     if(!Nonnegative(stiffness)){Fail(d,i,Status::InvalidInput);continue;}
     if(stiffness==0.)continue;

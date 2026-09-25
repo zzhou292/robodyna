@@ -61,3 +61,14 @@ publication atomically. It calls Stage only on a required native inventory rebui
 It must forecast both arenas, validate IsCurrent before consumption, and preserve
 the accepted instance while the other stages. Device failure poisons the instance;
 resource/numerical errors permit retry with new current inputs and no publication.
+
+Native/SI source mode converts borrowed kinematics/gaps on each GPU load using
+existing UnitScale factors; scalar/domain controls convert once per Stage. No
+converted whole-state buffer is introduced. Zero-stiffness entries skip their
+fields; domain-clipped secondary entries skip gaps and velocities. COR3T velocity
+validation occurs only after exact screen admission. Negative activity remains an
+explicit unsupported numerical input, matching the current maintenance boundary.
+The membership oracle exhaustively enumerates the complete supplied source roster,
+then invokes exact native TRIVOX screen chunks and whole COR3T/PEN3. This validates
+sweep completeness against native per-pair admission; it is not an execution of
+native voxel construction, scheduling or original removal-list production.
