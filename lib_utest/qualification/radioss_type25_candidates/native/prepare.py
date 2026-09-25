@@ -36,7 +36,7 @@ def generated():
             "\n".join(declarations) + "\nend module\n",
         "NativePen3.F": routine,
         "NativeScreen.F": wrapper,
-        "NativeCor3t.F": source["i25cor3t.F"][source["i25cor3t.F"].index("      SUBROUTINE I25COR3T"):],
+        "NativeCor3t.F": "      MODULE COR3T_REFERENCE\n      CONTAINS\n" + source["i25cor3t.F"][source["i25cor3t.F"].index("      SUBROUTINE I25COR3T"):] + "      END MODULE\n",
         "PackingWrapper.F90": (HERE / "PackingWrapper.F90").read_text(),
         "Tri7Box.F90": "module tri7box\n use iso_c_binding\n real(c_double) :: xrem(10,1)=0\n integer :: irem(7,1)=0\nend module\n",
         "com08_c.inc": "      REAL(C_DOUBLE) DT1\n      COMMON /QUAL_COR3T_DT/ DT1\n",

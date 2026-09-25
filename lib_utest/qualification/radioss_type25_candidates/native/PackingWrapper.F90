@@ -1,6 +1,7 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
 subroutine rd_native_pack(coords,velocities,controls,flags,gap,ibc) bind(c)
   use iso_c_binding
+  use cor3t_reference
   implicit none
   real(c_double),intent(in) :: coords(3,5),velocities(3,5),controls(7)
   integer(c_int),intent(in) :: flags(7)
@@ -20,7 +21,7 @@ subroutine rd_native_pack(coords,velocities,controls,flags,gap,ibc) bind(c)
   gap_s=controls(1);gap_m=controls(2);curvature=controls(3)
   drad=controls(4);load=controls(5);dt1=controls(6);unused_gap=0
   stif=-991
-  call i25cor3t(1,irect,coords,nsv,cand_e,cand_n,x1,x2,x3,x4,y1,y2,y3,y4, &
+  call i25cor3t(1,coords,irect,nsv,cand_e,cand_n,x1,x2,x3,x4,y1,y2,y3,y4, &
      z1,z2,z3,z4,xi,yi,zi,stif,ix1,ix2,ix3,ix4,1,gap_s,gap_m,gapv, &
      curvature,ityp,1,velocities,igap,unused_gap,unused_gap,segment,etyp, &
      icodt,iskew,bcs,drad,load)
