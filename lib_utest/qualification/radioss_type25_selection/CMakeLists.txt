@@ -23,22 +23,26 @@ set(native "${CMAKE_CURRENT_BINARY_DIR}/native")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
   --output "${native}" RESULT_VARIABLE prepared ERROR_VARIABLE diagnostic)
 if(NOT prepared EQUAL 0)
-  message(FATAL_ERROR "Pinned retained oracle preparation failed: ${diagnostic}")
+  message(FATAL_ERROR "Pinned selection oracle preparation failed: ${diagnostic}")
 endif()
 file(GLOB native_pins CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/native/original/*")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-  native/prepare.py native/Sources.py native/source-manifest.json
-  native/LocalBoundary.F90 native/Observations.F90 native/RetainedWrapper.F90
+  native/prepare.py native/Sources.py native/ContinuationSource.py native/NewImpactSource.py native/source-manifest.json
+  native/LocalBoundary.F90 native/Observations.F90 native/RetainedWrapper.F90 native/ContinuationWrapper.F90 native/NewImpactWrapper.F90
   ../radioss_type25_normal/native/original/constant_mod.F ${native_pins})
-add_library(type25_selection_oracle STATIC NativeOracle.cpp
+add_library(type25_selection_oracle STATIC NativeOracle.cpp NativeContinuationOracle.cpp NativeNewImpactOracle.cpp
   "${native}/Constants.F90" "${native}/LocalBoundary.F90" "${native}/Observations.F90"
   "${native}/CorRetained.F" "${native}/DstRetained.F" "${native}/GlobRetained.F"
-  "${native}/RetainedWrapper.F90")
+  "${native}/RetainedWrapper.F90" "${native}/CorContinuation.F"
+  "${native}/DstContinuation.F" "${native}/GlobContinuation.F" "${native}/ContinuationWrapper.F90"
+  "${native}/CorNewImpact.F" "${native}/DstNewImpact.F" "${native}/GlobNewImpact.F"
+  "${native}/INTERSECA_25.F" "${native}/INTERSECB_25.F" "${native}/INTERSECV0_25.F"
+  "${native}/NewImpactWrapper.F90")
 target_include_directories(type25_selection_oracle PRIVATE "${native}")
 target_link_libraries(type25_selection_oracle PUBLIC tl_radioss_type25_selection)
 target_compile_options(type25_selection_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_selection_host HostTest.cpp)
+add_executable(type25_selection_host HostTest.cpp ContinuationTest.cpp NewImpactTest.cpp)
 target_link_libraries(type25_selection_host PRIVATE type25_selection_oracle GTest::gtest_main)
 add_test(NAME type25_selection_host COMMAND type25_selection_host)
 add_executable(type25_selection_consumer_host ConsumerTest.cpp)
@@ -49,7 +53,7 @@ add_test(NAME type25_selection_sources COMMAND "${Python3_EXECUTABLE}" -B
 set_tests_properties(type25_selection_host type25_selection_consumer_host type25_selection_sources
   PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 if(TYPE25_SELECTION_CUDA)
-  add_executable(type25_selection_cuda CudaTest.cu)
+  add_executable(type25_selection_cuda CudaTest.cu ContinuationCudaTest.cu NewImpactCudaTest.cu)
   target_link_libraries(type25_selection_cuda PRIVATE type25_selection_oracle GTest::gtest_main CUDA::cudart)
   set_target_properties(type25_selection_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   add_test(NAME type25_selection_cuda COMMAND type25_selection_cuda)

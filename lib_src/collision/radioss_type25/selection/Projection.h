@@ -3,7 +3,8 @@
 #pragma once
 #include "Prepare.h"
 namespace tlfea::contact::radioss_type25::selection::detail {
-TL_MATH_HOST_DEVICE inline void RawProjection(Work& w, NativeRetainedResult& out) {
+template<class Result>
+TL_MATH_HOST_DEVICE inline void RawProjection(Work& w, Result& out) {
   Vector crossed[4];
   for(unsigned i=0;i<4;++i)crossed[i]=v::Cross(w.from_secondary,w.relative[i]);
   for(unsigned i=0;i<4;++i) {
@@ -23,8 +24,9 @@ TL_MATH_HOST_DEVICE inline void RawProjection(Work& w, NativeRetainedResult& out
     w.along[i]=g::Max(0.,g::Min(1.,-v::Dot(w.from_secondary,w.frame.arm[i])*inverse));
   }
 }
-TL_MATH_HOST_DEVICE inline void ProjectSector(const NativePairInput& in,Work& w,
-    NativeRetainedResult& out,unsigned i) {
+template<class Result>
+TL_MATH_HOST_DEVICE inline double ProjectedSectorPoint(const NativePairInput& in,Work& w,
+    Result& out,unsigned i) {
   const unsigned j=(i+1)%4;
   auto& s=out.sector[i];
   const auto edge=v::Subtract(w.frame.point[j],w.frame.point[i]);
@@ -46,14 +48,22 @@ TL_MATH_HOST_DEVICE inline void ProjectSector(const NativePairInput& in,Work& w,
       v::Scale(w.frame.point[i],s.clamped_lb)),v::Scale(w.frame.point[j],s.clamped_lc));
   const auto delta=v::Subtract(in.secondary,point);
   s.distance_squared=v::Dot(delta,delta);
+  return la;
+}
+template<class Result>
+TL_MATH_HOST_DEVICE inline double ProjectSector(const NativePairInput& in,Work& w,
+    Result& out,unsigned i,bool radiation_first=false) {
+  const double la=ProjectedSectorPoint(in,w,out,i);
+  auto& s=out.sector[i];const unsigned j=(i+1)%4;
   const double uncapped=in.secondary_gap+la*w.center_gap+s.clamped_lb*in.main_gap[i]+
       s.clamped_lc*in.main_gap[j]+in.applied_gap;
   // Source reverses MAX's argument order for Q4 sectors2..4; keep it.
-  const double inner=i==0?g::Max(in.radiation_range,uncapped):g::Max(uncapped,in.radiation_range);
+  const double inner=(radiation_first||i==0)?g::Max(in.radiation_range,uncapped):g::Max(uncapped,in.radiation_range);
   const double gap=g::Min(inner,g::Max(in.radiation_range,
       native_constant::ep20*native_constant::ep10+in.applied_gap));
   w.plane_distance[i]=v::Dot(w.from_secondary,w.normal[i]);
   s.penetration=w.plane_distance[i]>0 ? g::Max(0.,gap+w.plane_distance[i]) :
       g::Max(0.,gap-::sqrt(s.distance_squared));
+  return gap;
 }
 } // namespace tlfea::contact::radioss_type25::selection::detail
