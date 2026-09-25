@@ -1065,3 +1065,13 @@ cc_library(
     ]],
     deps = [":radioss_type25_normal", "//lib_src/math:fixed3_operations"],
 )
+
+cc_library(
+    name = "radioss_type25_local_geometry",
+    hdrs = ["RadiossType25LocalGeometry.h"] + ["radioss_type25/" + name for name in [
+        "GeometryTypes.h", "RawGeometry.h", "GeometryUnits.h", "GeometryHistory.h",
+        "geometry/Prepare.h", "geometry/General.h", "geometry/Boundary.h", "geometry/Sharp.h",
+        "geometry/HistoryChecks.h", "geometry/HistoryRow.h",
+    ]],
+    deps = [":radioss_type25_friction"],
+)
