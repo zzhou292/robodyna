@@ -18,6 +18,7 @@ inline nodal_empty_test::Source ModelSource() {
     auto& q=source.quads[i];q.source_parent_id=observed::QuadsIds[i];
     q.reference.density=observed::Material[0]*1e12;q.reference.young_modulus=observed::Material[1]*1e6;
     q.reference.poisson_ratio=observed::Material[2];q.reference.thickness=observed::TimeAndThickness[2]*.001;
+    q.reference.projection_working_length_m=.001; // Authenticated native scene mm; physical fields stay SI.
     for(unsigned j=0;j<4;++j){const auto node=observed::QuadsNodes[4*i+j];q.nodes[j]=node;
       q.reference.position[j]=point(node);q.reference.node_ids[j]=std::uint32_t(observed::NodeIds[node]);}
     source.parents.push_back({fe::ShellBindingFamily::Qeph,i,q.source_parent_id,2,1,1});

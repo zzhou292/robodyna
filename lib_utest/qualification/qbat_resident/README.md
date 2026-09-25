@@ -51,7 +51,7 @@ existing complete nodal M/J reduction. There is no fabricated NIP3 state or
 per-part kinetic sum.
 
 The one device arena uses two complete result slabs, one accepted selector,
-an immutable 1,072-byte element record, shared global nodal mirrors and one
+an immutable1,088-byte (including both retained projection-metric identities) element record, shared global nodal mirrors and one
 catalog curve pool. Its variable extent is `7508*parents + 56*nodes +
 16*curve_points` bytes, plus the bounded header/alignment. The original
 4,250/4,384 scope is below 33 MiB. A 524,288-parent maximum-count request can

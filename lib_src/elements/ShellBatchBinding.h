@@ -104,8 +104,8 @@ class ShellBatchInventory {
   ShellBatchInventory(ShellBatchInventory&& other) noexcept
       :ShellBatchInventory(static_cast<const ShellBatchInventory&>(other)) {}
   ShellBatchInventory& operator=(const ShellBatchInventory&) noexcept=default;
-  static constexpr std::size_t WordCount=51; // Version 3 pair encoding, including placement.
-  static constexpr std::size_t Capacity=4+28*MaxShellCollectionParents; // Inline capacity only.
+  static constexpr std::size_t WordCount=52; // Version6 pair: placement and QEPH projection metric.
+  static constexpr std::size_t Capacity=4+29*MaxShellCollectionParents; // Inline capacity only.
   class WordView {
    public:
     const std::uint64_t* data() const noexcept { return data_; }
@@ -154,7 +154,7 @@ class ShellBatchBinding {
   ShellBatchBinding(ShellBatchBinding&& other) noexcept
       :ShellBatchBinding(static_cast<const ShellBatchBinding&>(other)) {}
   ShellBatchBinding& operator=(const ShellBatchBinding&)=delete;
-  // Retains the original pair input and 4..7-node contract; inventory version 3.
+  // Retains the original pair input and 4..7-node contract; inventory version6 includes the QEPH projection metric.
   ShellBindingReport Initialize(const ShellBatchBindingInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput&,const ShellHostBindingLimits&) noexcept;

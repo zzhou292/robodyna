@@ -3,7 +3,7 @@
 #pragma once
 #include "QephCurrentFrame.h"
 #include "QephVelocityCorrection.h"
-#include "QephProjection.h"
+#include "QephProjectionUnits.h"
 #include "QephRates.h"
 
 namespace tl::fea::qeph::detail {
@@ -12,7 +12,7 @@ TL_QEPH_HD inline bool SaneReference(const ReferenceData& r) {
   // malformed PODs; they are not provenance authentication and do not repeat
   // startup frame/mass assembly on every prescribed evaluation.
   const auto& in=r.input;
-  if(!r.prepared||!ValidShellReferencePlacement(r.input.placement)||!Positive(in.density)||!Positive(in.young_modulus)||!Positive(in.thickness)||
+  if(!r.prepared||!ValidProjectionLength(in.projection_working_length_m)||!ValidShellReferencePlacement(r.input.placement)||!Positive(in.density)||!Positive(in.young_modulus)||!Positive(in.thickness)||
      !tl::math::Finite(in.poisson_ratio)||in.poisson_ratio<0||in.poisson_ratio>=.5||
      !Positive(r.area)||!Proper(r.frame)) return false;
   for(unsigned n=0;n<4;++n) {
@@ -25,7 +25,8 @@ TL_QEPH_HD inline bool SaneReference(const ReferenceData& r) {
   return true;
 }
 TL_QEPH_HD inline bool FiniteKinematics(const Kinematics& o) {
-  if(!Proper(o.frame)||!Positive(o.area)||!Positive(o.reciprocal_area)||!Positive(o.characteristic_length)||
+  if(!ValidProjectionLength(o.projection_metric.working_length_m)||
+     !Proper(o.frame)||!Positive(o.area)||!Positive(o.reciprocal_area)||!Positive(o.characteristic_length)||
      !Positive(o.nodal_factors[0])||!Positive(o.nodal_factors[1])||
      !tl::math::Finite(o.raw_warpage_abs)||!tl::math::Finite(o.effective_warpage)) return false;
   for(unsigned n=0;n<4;++n)
@@ -60,7 +61,7 @@ TL_QEPH_HD inline Status PrepareGeometry(const ReferenceData& reference,
   if(status!=Status::kSuccess) return status;
   GatherRates(interval,candidate);
   CorrectMidpointVelocity(interval.dt,candidate);
-  status=ProjectWarpedRates(interval,candidate);
+  status=ProjectWarpedRatesInWorkingLength(interval,reference.input.projection_working_length_m,candidate);
   if(status!=Status::kSuccess) return status;
   NormalizeRates(candidate);
   ComputeRates(candidate);

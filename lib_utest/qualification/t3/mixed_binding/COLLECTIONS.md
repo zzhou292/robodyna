@@ -5,7 +5,7 @@ collection functions and eight unchanged single-pair functions pass in the
 owning host target; their numerical budgets remain unchanged. No resident batch, nodal owner,
 contact, clock or force/history capacity changes are part of this patch.
 
-`elements/ShellCollectionLimits.h` declares 128 physical nodes and 128 **total**
+`elements/ShellCollectionLimits.h` declares 128 physical nodes and 129 **total**
 Q4/T3 parents. These are collection bounds, not separate allowances of 128 per
 family in one input. Both typed storage arrays have fixed capacity so no heap,
 allocator or variant framework is needed. Actual host layout remains unmeasured
@@ -43,14 +43,14 @@ the old zero-argument accessors return empty unless there is exactly one parent
 of each family. They never silently select the first parent of a collection.
 
 The old `ShellBatchBindingInput` overload forwards to this same builder with
-absent parent IDs and its original 4..7-node restriction. Its version 3,
-51-word inventory explicitly includes placement. Collection inventories use
+absent parent IDs and its original 4..7-node restriction. Its version6,
+52-word inventory explicitly includes placement. Collection inventories use
 encoding discriminator 4, node/Q4/T3 counts and ordered per-parent words:
 family, arity, source-parent ID, then global index/source-node ID/three binary64
 coordinate words per local node, four original material scalar words, and
 an explicit placement word.
 `inventory().words()` is now a read-only pointer/active-length view, not a
-51-element array reference. `WordCount=51` names the version 3 pair length;
+51-element array reference. `WordCount=51` names the version6 pair length;
 consumers use the active size or full inventory equality, never a fixed pair-word
 prefix. Equality includes active length and the complete fixed storage (unused
 words are zero). This is an in-process identity encoding, not a file schema,

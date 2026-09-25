@@ -137,11 +137,11 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
             ShellBindingFamily::Qbat,j,parent.nodes[j]),i);
     }
   }
-  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+5)+(2+5*3+5),"Complete placed pair inventory");
-  static_assert(ShellBatchInventory::Capacity>=4+MaxShellCollectionParents*(3+5*4+5),"Complete collection inventory");
+  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+6)+(2+5*3+5),"Complete placed pair inventory");
+  static_assert(ShellBatchInventory::Capacity>=4+MaxShellCollectionParents*(3+5*4+6),"Complete collection inventory");
   auto& words=next.inventory.words_;
   std::size_t cursor=0;
-  words[cursor++]=legacy?3:(qbat_count?5:4); // In-process encoding only, never a file schema.
+  words[cursor++]=legacy?6:(qbat_count?8:7); // In-process encoding only, never a file schema.
   words[cursor++]=next.node_count;
   if(!legacy) { words[cursor++]=next.qeph_count; words[cursor++]=next.t3_count; }
   if(qbat_count) words[cursor++]=next.qbat_count;

@@ -37,10 +37,10 @@ TEST(PlacementReference,ExplicitPerParentInventoryWordsAndBoundedFailurePublicat
   EXPECT_DOUBLE_EQ(a.totals().mass,b.totals().mass);
   EXPECT_DOUBLE_EQ(a.totals().isotropic_inertia,b.totals().isotropic_inertia);
   const auto words=a.inventory().words();
-  ASSERT_EQ(words.size(),51u);
-  EXPECT_EQ(words[0],3u);
+  ASSERT_EQ(words.size(),52u);
+  EXPECT_EQ(words[0],6u);
   EXPECT_EQ(words[28],static_cast<unsigned>(Placement::TopReferencePlane));
-  EXPECT_EQ(words[50],static_cast<unsigned>(Placement::BottomReferencePlane));
+  EXPECT_EQ(words[51],static_cast<unsigned>(Placement::BottomReferencePlane));
   ShellQephBindingInput q{in.qeph,in.qeph_nodes,21};
   ShellT3BindingInput t{in.t3,in.t3_nodes,22};
   ShellBatchCollectionInput collection{&q,&t,1,1,7};
@@ -61,7 +61,7 @@ TEST(PlacementReference,ExplicitPerParentInventoryWordsAndBoundedFailurePublicat
   EXPECT_EQ(tab1_test::Bytes(invalid),before);
   t.reference.placement=in.t3.placement;
   ASSERT_EQ(invalid.Initialize(collection).status,ShellBindingStatus::Success);
-  EXPECT_EQ(invalid.inventory().words().size(),55u);
-  EXPECT_EQ(invalid.inventory().words()[0],4u);
+  EXPECT_EQ(invalid.inventory().words().size(),56u);
+  EXPECT_EQ(invalid.inventory().words()[0],7u);
 }
 } // namespace placement_force_test

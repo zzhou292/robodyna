@@ -9,7 +9,7 @@ static_assert(!std::is_copy_assignable_v<Binding>);
 TEST(ShellBatchCollection,PairPlacementInventoryAndCenteredArithmeticRemainExact) {
   const auto old=Edge(); Binding legacy;
   ASSERT_EQ(legacy.Initialize(old).status,Status::Success);
-  std::array<std::uint64_t,51> expected{};
+  std::array<std::uint64_t,52> expected{};
   std::size_t cursor=0;
   auto bits=[](double x) { std::uint64_t value; std::memcpy(&value,&x,sizeof(value)); return value; };
   auto append=[&](const auto& in,const auto& nodes,std::uint64_t family) {
@@ -22,8 +22,10 @@ TEST(ShellBatchCollection,PairPlacementInventoryAndCenteredArithmeticRemainExact
     expected[cursor++]=bits(in.density); expected[cursor++]=bits(in.thickness);
     expected[cursor++]=bits(in.young_modulus); expected[cursor++]=bits(in.poisson_ratio);
     expected[cursor++]=static_cast<std::uint64_t>(in.placement);
+    if constexpr(std::is_same_v<std::decay_t<decltype(in)>,fe::qeph::ReferenceInput>)
+      expected[cursor++]=bits(in.projection_working_length_m);
   };
-  expected[cursor++]=3; expected[cursor++]=5;
+  expected[cursor++]=6; expected[cursor++]=5;
   append(old.qeph,old.qeph_nodes,4); append(old.t3,old.t3_nodes,3);
   ASSERT_EQ(cursor,expected.size()); ASSERT_EQ(legacy.inventory().words().size(),expected.size());
   EXPECT_TRUE(std::equal(expected.begin(),expected.end(),legacy.inventory().words().begin()));
@@ -32,8 +34,8 @@ TEST(ShellBatchCollection,PairPlacementInventoryAndCenteredArithmeticRemainExact
   ASSERT_NO_FATAL_FAILURE(CheckNativeReduction(old,legacy));
   const auto collection=Pair(); Binding current;
   ASSERT_EQ(current.Initialize(collection.input()).status,Status::Success);
-  ASSERT_EQ(current.inventory().words().size(),55);
-  EXPECT_EQ(current.inventory().words()[0],4);
+  ASSERT_EQ(current.inventory().words().size(),56);
+  EXPECT_EQ(current.inventory().words()[0],7);
   EXPECT_NE(current.inventory(),legacy.inventory());
   for(unsigned n=0;n<5;++n) Exact(current.nodes()[n].native,legacy.nodes()[n].native);
   Exact(current.totals(),legacy.totals());
@@ -51,7 +53,7 @@ TEST(ShellBatchCollection,Connected117Node94ParentUnionRetainsNativeAndAnalyticM
   EXPECT_GT(b.nodes()[116].source_id,std::uint64_t{1}<<53);
   EXPECT_NE(b.nodes()[64].native.mass,b.nodes()[116].native.mass);
   EXPECT_NE(b.t3_reference(5).nodal_mass[0],b.t3_reference(5).nodal_mass[1]);
-  EXPECT_EQ(b.inventory().words().size(),4+28*88+23*6);
+  EXPECT_EQ(b.inventory().words().size(),4+29*88+23*6);
   EXPECT_FALSE(b.qeph_reference().prepared); EXPECT_FALSE(b.t3_reference().prepared);
   for(std::size_t n=NodeCount;n<fe::MaxShellCollectionNodes;++n) {
     EXPECT_EQ(b.nodes()[n].native.mass,0); EXPECT_EQ(b.nodes()[n].source_id,0);

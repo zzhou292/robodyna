@@ -2,7 +2,7 @@
 
 This CPU-only target qualifies immutable startup at 804 Q4 / 111 T3 / 1030 nodes, six materials/sections, two curves and all 915 mappings. The fixture is synthetic and makes no authenticated vehicle dynamics claim. Both pure families also reach the independent 1024-parent bound; a 129-declaration T3 catalog covers every expanded table and family lookup allocation.
 
-Use `binding.Initialize(collection, ShellHostBindingLimits{})` for explicit larger host admission. Default collection initialization still admits only 128 parents/nodes; the original pair remains 4..7 nodes and 51 identity words (in-process version 3). Catalog admission follows the complete binding and accepts its own optional limits. The resident shell/contact constants and layouts remain unchanged.
+Use `binding.Initialize(collection, ShellHostBindingLimits{})` for explicit larger host admission. Default collection initialization still admits only 128 parents/nodes; the original pair remains 4..7 nodes and 52 identity words (in-process version6). Catalog admission follows the complete binding and accepts its own optional limits. The resident shell/contact constants and layouts remain unchanged.
 
 `nodes()` is a read-only contiguous view. Its inline form retains 128 zero-padded entries for existing callers; its expanded form contains the allocated active node extent. Prefer `active_nodes()` to iterate exactly `node_count()` in either form. Reference and parent accessors retain their checked empty-result behavior. Binding and catalog move construction deliberately copies immutable handles, leaving the source usable; assignment remains deleted.
 

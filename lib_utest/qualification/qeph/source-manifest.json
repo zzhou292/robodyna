@@ -250,18 +250,18 @@
   "ported_files": [
     {
       "path": "lib_src/elements/qeph/QephData.h",
-      "bytes": 1724,
-      "sha256": "d777fc9210259f0cd1b1b35c607e68b78459e475eff3577d39562c2414559692"
+      "bytes": 1915,
+      "sha256": "789c0655cb498d80a3ec92cc39c491b5fc648a48b09fe65aedc901f95c580031"
     },
     {
       "path": "lib_src/elements/qeph/QephStartupFrame.h",
-      "bytes": 4208,
-      "sha256": "794cee31915a4bdc4a1a33f6cd6e52df3af96346c043a06708549dfd394d437a"
+      "bytes": 4590,
+      "sha256": "36b65c6c570e7314fda752f07b1aa48c5543aff4cf6f043d4ea476ff23cbada4"
     },
     {
       "path": "lib_src/elements/qeph/QephStartup.h",
-      "bytes": 4195,
-      "sha256": "dfc9551ff6cfa77caa445b0c9f1f88c3cc010469484d2128ecba15213ddb6a25"
+      "bytes": 4269,
+      "sha256": "da4cd3435755e73ab466996a7f24d39670c9aa1589fed65417d3bcba5ccf1957"
     },
     {
       "path": "lib_src/elements/qeph/LICENSE.md",
@@ -270,8 +270,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephKinematicsData.h",
-      "bytes": 1679,
-      "sha256": "7e36d747e1f799c65a80804863e7de4ebb9b1ed8e5d063860952c8561beaf015"
+      "bytes": 2075,
+      "sha256": "1e1342d9dd3767f8613124436c5c2fe706ef2aaa1285a44a7bef63a9c55ee018"
     },
     {
       "path": "lib_src/elements/qeph/QephGeometryWork.h",
@@ -305,8 +305,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephKinematics.h",
-      "bytes": 5266,
-      "sha256": "6e081828b7fcd16fddafed6da5aeba2afa499994798629f42ef21edd94dc94d4"
+      "bytes": 5454,
+      "sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663"
     },
     {
       "path": "lib_src/elements/qeph/QephElasticForces.h",
@@ -315,8 +315,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephForce.h",
-      "bytes": 3120,
-      "sha256": "ee1049f334788824ee4347d25b8c0fa5a90b366587df51262d194ed55056fea0"
+      "bytes": 3279,
+      "sha256": "2aee871022533bfd94c64a854313e45b0f716b843815dac47d3a56b1b43edd9e"
     },
     {
       "path": "lib_src/elements/qeph/QephForceData.h",
@@ -330,8 +330,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephHistory.h",
-      "bytes": 3493,
-      "sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3"
+      "bytes": 3593,
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878"
     },
     {
       "path": "lib_src/elements/qeph/QephHistoryData.h",
@@ -370,13 +370,25 @@
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredForceCore.h",
-      "sha256": "da54d357ae068074cc4e9668addba4b6df270a32da67c91dcd42372b4fbde237",
-      "bytes": 4858
+      "sha256": "268daa778e9aa4ccdc15b8a3807a0798badbf37d98e4f8136d69d90861f13383",
+      "bytes": 5012
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredJ2Failure.h",
       "sha256": "a34d38082404514f228506e4897a1cb57b32214871035c9695dc77aada1808bc",
       "bytes": 1983
+    },
+    {
+      "path": "lib_src/elements/qeph/QephProjectionUnits.h",
+      "sha256": "4783e0b2e59d6ff094d1184bea00fe53cde48b8d866aaffc6812d183fa10c153",
+      "bytes": 4623,
+      "scope": "Explicit immutable working-length packet adapter around unchanged native projection leaf; physical fields remain SI."
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForceProjectionUnits.h",
+      "sha256": "e9b839d4a62ac564f6aa766fee7f675f6852199ca14a3f31ebd9686f992d7887",
+      "bytes": 1960,
+      "scope": "Explicit immutable working-length packet adapter around unchanged native projection leaf; physical fields remain SI."
     }
   ],
   "shared_and_native_dependencies": [
@@ -839,5 +851,20 @@
     ],
     "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
   },
-  "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate."
+  "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate.",
+  "projection_working_length_extension": {
+    "replay_head": "fe30c7cee913466eb74ce9d46ae623499c4f1b29",
+    "legacy_default_metres": 1,
+    "changed_wrappers": [
+      "lib_src/elements/qeph/QephData.h",
+      "lib_src/elements/qeph/QephStartupFrame.h",
+      "lib_src/elements/qeph/QephStartup.h",
+      "lib_src/elements/qeph/QephKinematicsData.h",
+      "lib_src/elements/qeph/QephKinematics.h",
+      "lib_src/elements/qeph/QephForce.h",
+      "lib_src/elements/qeph/QephHistory.h",
+      "lib_src/elements/qeph/QephLayeredForceCore.h"
+    ],
+    "scope": "Reference identity, input validation and explicit dimensional packet conversion; raw QephProjection.h and QephForceProjection.h and native donors unchanged. Owning profile qualification is separate."
+  }
 }

@@ -12,7 +12,7 @@ cc_library(
     name = "kinematics",
     hdrs = [
         "QephKinematicsData.h", "QephGeometryWork.h", "QephCurrentFrame.h",
-        "QephVelocityCorrection.h", "QephProjectionInverse.h", "QephProjection.h",
+        "QephVelocityCorrection.h", "QephProjectionInverse.h", "QephProjection.h", "QephProjectionUnits.h",
         "QephRates.h", "QephKinematics.h",
     ],
     deps = [":startup"],
@@ -24,7 +24,7 @@ cc_library(
         "QephHistoryData.h", "QephHistory.h", "QephForceData.h", "QephForce.h",
         "QephMaterial.h", "QephLaw1.h", "QephElasticForces.h",
         "QephStabilizationState.h", "QephStabilizationForces.h",
-        "QephForceProjection.h", "QephStiffnessDiagnostics.h",
+        "QephForceProjection.h", "QephForceProjectionUnits.h", "QephStiffnessDiagnostics.h",
     ],
     deps = [":kinematics", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
 )

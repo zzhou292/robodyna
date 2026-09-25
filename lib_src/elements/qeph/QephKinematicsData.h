@@ -13,6 +13,10 @@ struct PrescribedInterval {
   std::uint64_t sample_index=0; // Caller label, not a solver epoch.
 };
 
+// Algorithmic projection coefficients use the immutable reference's declared
+// native working length. Physical kinematic fields remain SI.
+struct ProjectionMetric { double working_length_m=1; };
+
 struct Kinematics {
   Matrix3 frame; // Row-major, current world basis columns.
   double area=0,reciprocal_area=0,characteristic_length=0;
@@ -23,6 +27,8 @@ struct Kinematics {
   Vec3 local_normals[4]{};  // Native VQN in local axes; flat branch reports +Z.
   // Native mixed translation/rotation projection coefficients. Their scaling
   // is source-coordinate dependent; not a general physical tensor inverse.
+  // DI/DB below are raw values in projection_metric's working metric, NOT SI
+  // tensors. Their explicit descriptor is required when reading or reusing them.
   double projection_inverse[6]{}; // DI: xx yy zz xy xz yz; flat branch zeros.
   Vec3 projection_columns[4]{};  // DB; flat branch zeros.
   double projected_omega[8]{};   // Two local components per node, rad/s.
@@ -30,5 +36,6 @@ struct Kinematics {
   double hourglass_rate[6]{}; // First2/last2 m/s; components2/3 /s.
   double base_time=0,dt=0;
   std::uint64_t sample_index=0;
+  ProjectionMetric projection_metric;
 };
 } // namespace tl::fea::qeph

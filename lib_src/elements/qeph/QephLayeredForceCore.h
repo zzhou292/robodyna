@@ -61,7 +61,9 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
       Adapter::Diagnostics(section).minimum_tangent_ratio,Adapter::Diagnostics(section).last_point_yield_before_pa,
       proposed,stabilization)) return Status::kNonfiniteResult;
   StabilizationForces(geometry,material,proposed,stabilization,local,proposed.active);
-  ProjectForces(geometry,local,candidate.internal_force,candidate.internal_couple);
+  const auto projection_status=ProjectForcesInWorkingLength(geometry,local,
+      r.input.projection_working_length_m,candidate.internal_force,candidate.internal_couple);
+  if(projection_status!=Status::kSuccess)return projection_status;
   auto& d=candidate.diagnostics;
   for(unsigned i=0;i<2;++i) d.internal_work_increment[i]=proposed.internal_work[i]-base.data().internal_work[i];
   d.hourglass_viscous_work_increment=proposed.hourglass_viscous_work-base.data().hourglass_viscous_work;

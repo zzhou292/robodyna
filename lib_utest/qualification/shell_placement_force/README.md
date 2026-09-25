@@ -18,10 +18,13 @@ authoritative and is never reconstructed from diagnostic partitions.
 
 The complete in-process binding inventory has one explicit placement word after
 each parent's density/thickness/E/nu words. Pair/collection encoding versions are
-3/4; the pair has 51 words and a collection has `4 + 28*Q + 23*T` words. All inline
+6/7; the pair has52 words and a collection has `4 + 29*Q + 23*T` words.
+QEPH records include immutable projection_working_length_m; QBAT encoding8
+adds the same authenticated (currently default-only) field. All inline
 and owned sizes, preflight, and complete equality use that layout. On the qualified
 host ABI, each native reference/history record gains 8 identity bytes; Q/T
-ForceTrial sizes are 1424/984 bytes. Existing arenas use actual sizeof values. This is not a
+ForceTrial sizes include the immutable reference metric and tagged projection
+diagnostics. Existing arenas use actual sizeof values. This is not a
 persistent archive schema. Existing material/source/accepted archive schemas
 remain unchanged. Noncentered resident batches and other full force formulations
 are explicitly rejected pending their independent qualification.
