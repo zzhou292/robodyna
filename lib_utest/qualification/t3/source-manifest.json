@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 5372,
-      "sha256": "9b6d06079b3381226f6f97e0b41e970d7dea8856c6fc64d0f48f163e6dcedd69"
+      "bytes": 5567,
+      "sha256": "bcd21c0b89186884834f60f4213e16bc8bc5ba4e947d23ef3fb735fa12618a9f"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -577,5 +577,9 @@
         "sha256": "e0a32ef2ea3a1acf409c5fc167734cc672678210761b8190775a38125d3a2370"
       }
     ]
+  },
+  "global_law1_build_extension": {
+    "qualified_source": "8c182589e7d15fb364bf476301921ad526499f1b",
+    "scope": "Add explicit global LAW1 coefficient-thickness profile header dependency; startup numerical leaves and native donors unchanged."
   }
 }
