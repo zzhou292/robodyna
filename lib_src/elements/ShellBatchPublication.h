@@ -201,6 +201,7 @@ class ShellBatchPublication {
   ShellPublicationReport ValidatePhysicalScratchSeal(
       FENodalState&,const NodalPreparedView&) const noexcept;
   void ConsumePhysicalScratchSeal() noexcept;
+  void PublishNativeContactState(const NodalStamp&) noexcept;
   void ReleasePhysicalScratchParticipation(
       ShellPhysicalScratchParticipation&) noexcept;
   ShellPublicationReport InitializePhysicalImpl(FENodalState&,const ShellPhysicalBinding&,

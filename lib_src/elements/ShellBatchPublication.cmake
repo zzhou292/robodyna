@@ -22,6 +22,7 @@ add_library(tl_shell_batch_publication STATIC
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalTransaction.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalReadback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/ShellPhysicalScratchParticipation.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/NativeContactPublicationState.cpp"
 
   "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPublicationValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ShellBatchFormulationStartup.cpp"

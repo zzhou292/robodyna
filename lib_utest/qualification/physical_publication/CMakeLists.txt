@@ -36,6 +36,7 @@ else()
     "${TL_ROOT}/lib_src/elements/publication/PhysicalValues.cpp"
     "${TL_ROOT}/lib_src/elements/publication/PhysicalForecast.cpp"
     "${TL_ROOT}/lib_src/elements/publication/ShellPhysicalScratchParticipation.cpp"
+    "${TL_ROOT}/lib_src/elements/publication/NativeContactPublicationState.cpp"
     "${TL_ROOT}/lib_src/elements/ShellBatchPublicationValues.cpp"
     "${TL_ROOT}/lib_src/elements/qeph/QephBatchIdentity.cpp"
     "${TL_ROOT}/lib_src/elements/t3/T3BatchIdentity.cpp"
@@ -64,3 +65,6 @@ add_executable(type13_mapped_legacy_host "${CMAKE_CURRENT_LIST_DIR}/../type13_re
 target_link_libraries(type13_mapped_legacy_host PRIVATE tl_type13_batch_values GTest::gtest_main)
 target_compile_options(type13_mapped_legacy_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME type13_mapped_legacy_host COMMAND type13_mapped_legacy_host)
+
+add_test(NAME native_contact_publication_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/verify_native_publication_sources.py")
