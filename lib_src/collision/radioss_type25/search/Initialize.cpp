@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "Launch.h"
 #include <atomic>
 #include <new>
 namespace tlfea::contact::radioss_type25::search {

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ReductionTile.h"
+#include "Launch.h"
 namespace tlfea::contact::radioss_type25::search::detail {
 namespace {
 __global__ void CapturePositions(Device d, Current input, unsigned slab) {

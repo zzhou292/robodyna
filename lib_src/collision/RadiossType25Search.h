@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "radioss_type25/search/Types.h"
-#include <cuda_runtime_api.h>
 #include <memory>
+// CUDA defines cudaStream_t as this opaque pointer. Forecast consumers need no
+// runtime headers; GPU callers pass their ordinary explicit cudaStream_t.
+struct CUstream_st;
 namespace tlfea::contact::radioss_type25::search {
 class Maintenance;
 class ReferenceToken {
@@ -23,7 +25,7 @@ class Maintenance {
   Maintenance(const Maintenance&) = delete;
   Maintenance& operator=(const Maintenance&) = delete;
   static Status Preflight(const Source&, Limits, Forecast&) noexcept;
-  Status Initialize(const Source&, Limits, cudaStream_t) noexcept;
+  Status Initialize(const Source&, Limits, CUstream_st*) noexcept;
   // Failure invalidates pending staging while preserving the published reference.
   // Current velocities are required only for Evaluate, not reference capture.
   Status StageReference(const Current&, ReferenceToken&) noexcept;

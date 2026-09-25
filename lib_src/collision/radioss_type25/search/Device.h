@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Values.h"
-#include <cuda_runtime_api.h>
 namespace tlfea::contact::radioss_type25::search::detail {
 inline constexpr unsigned Threads = 128, MaximumBlocks = 256;
 struct Partial { Extrema extrema; Status status = Status::Ok; std::size_t invalid = SIZE_MAX; };
@@ -82,6 +81,4 @@ TL_MATH_HOST_DEVICE inline void ObserveGap(const Device& d,const Current& input,
   if (capture) d.gaps[slab][row]=current;
   output.extrema.maximum_gap_change=Maximum(output.extrema.maximum_gap_change,delta);
 }
-cudaError_t Run(Device, const Current&, unsigned slab, bool capture,
-    double margin, double previous_dt, bool force_sort, bool has_reference, cudaStream_t) noexcept;
 } // namespace tlfea::contact::radioss_type25::search::detail

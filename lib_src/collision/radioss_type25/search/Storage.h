@@ -13,7 +13,7 @@ struct Maintenance::Impl {
   detail::DeviceControl control;
   FailureInfo failure;
   void* arena = nullptr;
-  cudaStream_t stream = nullptr;
+  CUstream_st* stream = nullptr;
   std::uint64_t identity = 0, sequence = 0, generation = 0;
   QueryStamp accepted_stamp, staged_stamp;
   unsigned accepted = 0;

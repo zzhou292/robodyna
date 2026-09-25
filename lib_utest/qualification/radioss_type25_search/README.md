@@ -67,7 +67,9 @@ nonzero values and budget decisions are compared exactly in the authored gates.
 Owning CMake: configure this directory with GNU Fortran, Release, and
 `-DTYPE25_SEARCH_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=120`; build and run host/source/
 CUDA CTests under the existing resource guards. Header/O0 forecast and source gates
-also have Bazel targets. The CPU forecast target contains no GPU execution object.
+also have Bazel targets. The CPU forecast target contains no GPU execution object or CUDA header dependency.
+`TYPE25_SEARCH_CUDA=OFF` does not locate the CUDA toolkit; the public owner uses
+CUDA's forward-declared opaque stream pointer without changing its ABI.
 Eight host groups and thirteen CUDA groups cover source values, layouts, caps, token
 lifecycle, stale/foreign/discard, native/SI and SoA/AoS loads, gap changes, inactive
 nonfinite data, empty sides, negative-STFN rejection, malformed map/device ranges,
