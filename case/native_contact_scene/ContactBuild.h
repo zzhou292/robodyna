@@ -6,6 +6,7 @@
 namespace crash::cases::native_scene::contact_detail {
 namespace n=tlfea::contact::radioss_type25;
 namespace l=n::lifecycle;
+enum class MainMotion { FixedWall, MovingShells };
 struct Rows {
     std::uint64_t* ids=nullptr;double* positions=nullptr;
     n::source_shells::PhysicalShell* shells=nullptr;
@@ -27,10 +28,10 @@ struct Layout {
 };
 Layout PlanRows(std::size_t nodes,std::size_t shells,std::size_t primary,std::size_t references,std::size_t cap);
 Rows Construct(tl::util::HostArena&,const Layout&);
-void FillDeclaredInputs(const PhysicalSource&,Rows);
+void FillDeclaredInputs(const PhysicalSource&,Rows,MainMotion);
 n::source_shells::Profile ShellProfile();
 n::TransactionConfig RuntimeProfile();
 n::search_startup::Profile SearchProfile(n::search_startup::Initialization);
-void FillRuntimeRows(const PhysicalSource&,Rows,const n::startup::Snapshot&,const n::startup::FixedMainView&,
+void FillRuntimeRows(const PhysicalSource&,Rows,const n::startup::Snapshot&,const n::startup::NormalView&,
     const n::search_startup::Snapshot&);
 }

@@ -15,7 +15,7 @@ struct ContactForecast {
     // handle's existing storage and excluding any runtime/device owner.
     std::size_t owned_bytes=0,startup_scratch_bytes=0,peak_bytes=0;
 };
-// The sole declared fixed-wall/moving-patch compiler profile. This is not a
+// The explicit declared fixed-wall/moving-patch compiler profile. This is not a
 // general native deck parser. Produces all numerical contact startup fields via
 // TL's source/topology/search producers; no observed K/gap/normal arrays enter.
 // Copies retain immutable storage. The returned views survive while any copy

@@ -86,6 +86,26 @@ if(ROBO_DYNA_NATIVE_SCENE_CONTACT_SOURCE AND ROBO_DYNA_NATIVE_MOVING_SCENE_EXPOR
   if(NOT EXISTS "${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
     message(FATAL_ERROR "Moving-main source fixture is absent")
   endif()
+  file(READ "${CMAKE_CURRENT_LIST_DIR}/evidence/moving-source-manifest.json" moving_manifest)
+  string(JSON moving_hash GET "${moving_manifest}" sha256)
+  set(moving_observation "${CMAKE_CURRENT_LIST_DIR}/evidence/moving-source-observation.jsonl")
+  file(SHA256 "${moving_observation}" moving_actual_hash)
+  if(NOT moving_actual_hash STREQUAL moving_hash)
+    message(FATAL_ERROR "Independent moving-source observation hash differs")
+  endif()
+  add_executable(native_scene_moving_source_test MovingContactSourceTest.cpp MovingContactObservationTest.cpp)
+  target_link_libraries(native_scene_moving_source_test PRIVATE robo_dyna_native_scene_contact_source GTest::gtest_main)
+  target_compile_definitions(native_scene_moving_source_test PRIVATE
+    ROBO_DYNA_MOVING_SOURCE_OBSERVATION="${moving_observation}"
+    ROBO_DYNA_MOVING_SOURCE_OBSERVATION_SHA="${moving_hash}")
+  add_test(NAME native_scene_moving_source COMMAND native_scene_moving_source_test)
+  set_tests_properties(native_scene_moving_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT};ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+  if(ROBO_DYNA_NATIVE_SCENE_EXPECTED_INCLUDE)
+    target_compile_definitions(native_scene_contact_source_test PRIVATE ROBO_DYNA_NATIVE_MOVING_NORMAL_ORACLE=1)
+    set_property(TEST native_scene_contact_source APPEND PROPERTY ENVIRONMENT
+      "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+  endif()
   add_executable(native_scene_moving_admission_test MovingAdmissionTest.cpp)
   target_link_libraries(native_scene_moving_admission_test PRIVATE robo_dyna_native_scene_contact_source GTest::gtest_main)
   add_test(NAME native_scene_moving_admission COMMAND native_scene_moving_admission_test)

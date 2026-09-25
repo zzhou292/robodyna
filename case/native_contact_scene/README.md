@@ -33,3 +33,22 @@ Forecasts cover incremental contact-source owned arenas plus the maximum reused 
 The exported TYPE25 row `reals(1.,.4,...)` declares Gap_scale1 and mesh percentage.4. The latter is not the gap scale. Source gap production therefore uses1, independently confirmed by Starter4 lines311/315; uniform1mm shells yield .5mm main/eligible secondary half-gaps. Dynamic ready-normal phase evidence is kept separate from immutable coefficient/gap/topology evidence.
 
 The fixed-ready normal producer is called once with the complete strictly positive generated main coefficients, and that all-active phase is the admitted runtime source. A later native normal-update phase may differ even by signed zero; it is not substituted here. Runtime admission is one native worker with NVSIZ128 force cohorts (I25MAINF588–589), distinct from MVSIZ129 storage and from CUDA launch geometry. The primary curvature/extent pointer comes directly from the genuine search-startup producer, including its ICURV0 result; no zero array is fabricated in the adapter.
+
+## Fixed and moving contact sources
+
+`ContactSource` admits the fixed-wall declaration. `MovingContactSource` admits
+only the explicit v2 all-shell surface and retains the genuine Starter cache.
+Both factories use `ContactStorage`, `PlanContact` and `BuildContact`: one bounded
+row layout, physical contributor census, coefficient/gap producer, topology
+producer and initial search producer. The moving factory does not allocate or
+invoke an all-active fixed-ready cache. Its exact surface order is wall triangles
+followed by patch quads, matching the emitted SURF/SEG records. The selected
+primary roster, rather than a hard-coded wall assumption, controls nodal gap
+ownership. No source nodes are welded or physical shells omitted.
+
+Only TL's explicit moving transaction can advance this source. The fixed scene
+runner remains unchanged until the moving runtime is qualified. `evidence/`
+contains independent qualification-only Engine observations: topology and static
+coefficients/gaps may be compared, while cycle301 normal fields are not initial
+Starter values. The independent Fortran producer tests the correct initial phase.
+No observation file or reference library is a production factory dependency.

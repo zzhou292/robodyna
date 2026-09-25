@@ -4,7 +4,7 @@
 #include <climits>
 namespace crash::cases::native_scene::contact_detail {
 using output::Require;
-void FillDeclaredInputs(const PhysicalSource& physical,Rows r) {
+void FillDeclaredInputs(const PhysicalSource& physical,Rows r,MainMotion motion) {
     const auto& d=physical.declared().data();const auto count=d.nodes.size();
     Require(physical.rigid().explicitly_empty()&&physical.cin().explicitly_empty()&&
         physical.translation_fixed_bits().size()==count&&physical.rotation_fixed().size()==count,
@@ -35,6 +35,12 @@ void FillDeclaredInputs(const PhysicalSource& physical,Rows r) {
         for(unsigned j=0;j<4;++j)face.nodes[j]=p.nodes[j];
         r.primary_shells[i]=std::uint32_t(d.patch.size()+i);r.parent_ids[i]=p.id;
         for(unsigned j=0;j<3;++j)append(p.nodes[j]);
+    }
+    if(motion==MainMotion::MovingShells)for(std::size_t i=0;i<d.patch.size();++i) {
+        const auto& p=d.patch[i];const auto target=d.wall.size()+i;auto& face=r.primary[target];
+        face.source_id=p.id;face.layout=n::ShellLayout::Quad4;
+        for(unsigned j=0;j<4;++j){face.nodes[j]=p.nodes[j];append(p.nodes[j]);}
+        r.primary_shells[target]=std::uint32_t(i);r.parent_ids[target]=p.id;
     }
     // ILEV1 I25SURFI union of primary-surface nodes and the additional group,
     // followed by I25SORS/MY_ORDERS ascending positive external NID order.
@@ -80,9 +86,9 @@ n::TransactionConfig RuntimeProfile() {
     c.assembly.engine.kdtint=0;c.assembly.engine.idtmins=0;c.assembly.engine.idtmins_int=0;return c;
 }
 void FillRuntimeRows(const PhysicalSource& physical,Rows r,const n::startup::Snapshot& topology,
-    const n::startup::FixedMainView& ready,const n::search_startup::Snapshot& search) {
+    const n::startup::NormalView& normals,const n::search_startup::Snapshot& search) {
     const auto& d=physical.declared().data();
-    Require(ready.normals.reference_count==topology.starter.reference_count&&
+    Require(normals.reference_count==topology.starter.reference_count&&
         search.main_count==topology.main_count&&search.secondary_count==d.nodes.size(),
         "Produced contact source domains differ");
     for(std::size_t i=0;i<topology.main_count;++i) {
@@ -93,10 +99,10 @@ void FillRuntimeRows(const PhysicalSource& physical,Rows r,const n::startup::Sna
             "Native main gap distribution rejected");
         out.maximum_gap=gap.maximum;
         for(unsigned j=0;j<4;++j){out.nodes[j]=in.nodes[j];out.normal_reference[j]=in.normal_reference[j];out.neighbors[j]=in.neighbors[j];
-            out.normal_slot[j]=ready.normals.face_normals[4*i+j];out.gap[j]=gap.corner[j];}
+            out.normal_slot[j]=normals.face_normals[4*i+j];out.gap[j]=gap.corner[j];}
     }
-    for(std::size_t i=0;i<ready.normals.reference_count;++i) {
-        const auto& in=ready.normals.references[i];auto& out=r.normals[i];out.boundary=in.boundary;
+    for(std::size_t i=0;i<normals.reference_count;++i) {
+        const auto& in=normals.references[i];auto& out=r.normals[i];out.boundary=in.boundary;
         // Boundary0 bisectors are native-unused and carry no numerical claim.
         if(in.boundary){out.bisector[0]=in.bisector[0];out.bisector[1]=in.bisector[1];}
     }
