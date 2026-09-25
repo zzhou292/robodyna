@@ -20,6 +20,21 @@ TEST(Type25LifecycleCuda, CompleteNativePhasesUseTheSameRowMathAtBothThreadShape
     }
   }
 }
+TEST(Type25LifecycleCuda, SeparateNormalBoundaryPreservesNativeRowsAndCountRejection) {
+  Fixture f;f.Retained();f.positions[18]=5;f.AddSecondary();
+  f.spatial={{2,1},{1,3},{1,1},{2,3}};f.Rebuild();
+  const auto expected=RunLifecycleFixture(f);Same(expected,OracleLifecycle(f.Input()));
+  device::Device gpu;
+  for(bool reverse:{false,true})for(unsigned threads:{1u,32u}) {
+    l::HostResult actual;
+    ASSERT_EQ(gpu.Evaluate(f,actual,reverse,512,threads,true).status,n::selection::Status::Ok);
+    Same(actual,expected,true);
+    const auto failure=gpu.Evaluate(f,actual,reverse,0,threads,true);
+    EXPECT_EQ(failure.status,n::selection::Status::CapacityExceeded);
+    EXPECT_TRUE(failure.count_complete);EXPECT_EQ(failure.required_candidates,expected.occurrences.size());
+    Same(actual,expected,true);
+  }
+}
 TEST(Type25LifecycleCuda, IndependentRowsReconstructNativeGlobalOccurrenceOrder) {
   Fixture f;f.Retained();f.positions[18]=5;
   f.nodes.push_back({107,0,0});f.positions.insert(f.positions.end(),{2,1,.2});

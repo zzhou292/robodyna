@@ -19,6 +19,7 @@ struct Image {
 struct Work {
   l::Report report;
   l::PreparedRow prepared[Rows];
+  l::OptimizedRow optimized[Rows];
   l::Occurrence occurrences[Rows*Slots];n::NativeRawGeometryResult geometry[Rows*Slots];
   int sliding[Rows*Sliding];
 };
@@ -48,6 +49,27 @@ __global__ void PrepareRows(const Image* image,Work* out,bool reverse) {
     if(needs.status!=n::selection::Status::Ok||needs.sliding>Sliding) {
       out->prepared[row]={};out->prepared[row].stage.report.status=n::selection::Status::CapacityExceeded;
     } else out->prepared[row]=l::detail::PrepareRow(in,row,Scratch(*out,row),units);
+  }
+}
+// Separate launches prove retained preparation can resume after a stream
+// barrier; the normal producer itself is deliberately not simulated here.
+__global__ void BeforeNormalRows(const Image* image,Work* out,bool reverse) {
+  if(out->report.status!=n::selection::Status::Ok)return;
+  const auto in=Bind(*image);n::units_detail::Factors units;l::detail::Factors(in.current,units);
+  for(unsigned i=blockIdx.x*blockDim.x+threadIdx.x;i<in.source.secondary_count;i+=blockDim.x*gridDim.x) {
+    const unsigned row=reverse?unsigned(in.source.secondary_count)-1-i:i;
+    out->optimized[row]=l::detail::PrepareRowBeforeNormals(in,row,units);
+  }
+}
+__global__ void AfterNormalRows(const Image* image,Work* out,bool reverse) {
+  if(out->report.status!=n::selection::Status::Ok)return;
+  const auto in=Bind(*image);n::units_detail::Factors units;l::detail::Factors(in.current,units);
+  for(unsigned i=blockIdx.x*blockDim.x+threadIdx.x;i<in.source.secondary_count;i+=blockDim.x*gridDim.x) {
+    const unsigned row=reverse?unsigned(in.source.secondary_count)-1-i:i;
+    const auto needs=l::detail::Requirements(in,row);
+    if(needs.status!=n::selection::Status::Ok||needs.sliding>Sliding) {
+      out->prepared[row]={};out->prepared[row].stage.report.status=n::selection::Status::CapacityExceeded;
+    } else out->prepared[row]=l::detail::PrepareRowAfterNormals(in,row,Scratch(*out,row),units,out->optimized[row]);
   }
 }
 __global__ void AdmitCount(const Image* image,Work* out,std::size_t capacity) {
@@ -117,7 +139,7 @@ class Device {
     return result;
   }
   l::Report Evaluate(Fixture& f,l::HostResult& result,bool reverse=false,
-      std::size_t capacity=Rows*Slots,unsigned threads=32) {
+      std::size_t capacity=Rows*Slots,unsigned threads=32,bool separate_phases=false) {
     auto host=std::make_unique<Image>();host->input=f.Input();
     Copy(host->nodes,f.nodes);Copy(host->positions,f.positions);Copy(host->velocities,f.velocities);
     Copy(host->mains,f.mains);Copy(host->secondary,f.secondary);Copy(host->normals,f.normals);
@@ -132,7 +154,10 @@ class Device {
     Check(cudaMemcpyAsync(image,host.get(),sizeof(Image),cudaMemcpyHostToDevice,stream));
     Check(cudaMemsetAsync(work,0,sizeof(Work),stream));
     AdmitSource<<<1,1,0,stream>>>(image,work);Check(cudaGetLastError());
-    PrepareRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
+    if(separate_phases) {
+      BeforeNormalRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
+      AfterNormalRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
+    } else {PrepareRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());}
     AdmitCount<<<1,1,0,stream>>>(image,work,capacity);Check(cudaGetLastError());
     CompleteRows<<<2,threads,0,stream>>>(image,work,reverse);Check(cudaGetLastError());
     Check(cudaMemcpyAsync(actual.get(),work,sizeof(Work),cudaMemcpyDeviceToHost,stream));
