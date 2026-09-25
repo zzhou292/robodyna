@@ -26,3 +26,13 @@ def verify_common_prefix(text, block, names):
     prefix=tuple(v.strip().upper() for v in match[1].split(',')[:len(names)])
     if prefix != tuple(names):
         raise ValueError(f'Native common prefix differs:{block}:{prefix}')
+
+
+def leading_stride(text, name):
+    """Literal first dimension of a native assumed-size rank-two declaration."""
+    statements='\n'.join(line[6:] for line in text.splitlines()
+                         if len(line)>6 and line[0] not in 'cC*!#')
+    extents={int(m[1]) for m in re.finditer(r'\b'+re.escape(name)+r'\s*\(\s*([0-9]+)\s*,\s*\*\s*\)',statements,re.I)}
+    if len(extents)!=1 or not 0<next(iter(extents))<=16:
+        raise ValueError('Ambiguous or absent native row stride:'+name)
+    return next(iter(extents))

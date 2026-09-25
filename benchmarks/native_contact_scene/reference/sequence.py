@@ -172,7 +172,7 @@ def install(path):
             raise ValueError('Native ABI donor changed')
     _stream=Path('native-sequence.jsonl').open('x')
     gdb.events.exited.connect(exited)
-    _rows=Rows(_abi['routines']['I25OPTCD'],emit,fail)
+    _rows=Rows(_abi['routines']['I25OPTCD'],_abi['history_strides'],emit,fail)
     _coefficients=Coefficients(_abi['routines']['I25COR3_3'],emit,fail)
     for name in ('I25MAINF','I25CDCOR3','I25DST3_3','I25FOR3'):_breakpoints.append(Entered(name))
 

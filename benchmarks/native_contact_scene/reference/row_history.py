@@ -2,14 +2,15 @@
 import gdb
 from .gdb_access import Call, clock, values
 
-_FIELDS=(('IRTLM',4,'i'),('PENE_OLD',5,'d'),('STIF_OLD',2,'d'),
-         ('SECND_FR',6,'d'),('TIME_S',1,'d'),('ICONT_I',1,'i'))
+_FIELDS=(('IRTLM','i'),('PENE_OLD','d'),('STIF_OLD','d'),
+         ('SECND_FR','d'),('TIME_S','d'),('ICONT_I','i'))
 
 
 class Rows(gdb.Breakpoint):
-    def __init__(self,names,emit,fail):
+    def __init__(self,names,strides,emit,fail):
         super().__init__('*i25optcd_',internal=True)
         self.names,self.emit,self.fail=names,emit,fail
+        self.strides=strides
         self.cycle=None;self.count=0;self.pointers={};self.snapshots=0;self.initial=False
 
     def stop(self):
@@ -19,7 +20,7 @@ class Rows(gdb.Breakpoint):
                 raise ValueError('Row history observer requires bounded single-worker scope')
             if self.count and count!=self.count:raise ValueError('Native persistent row extent changed')
             self.count=count;self.cycle=now['NCYCLE']
-            self.pointers={name:call.pointer(name) for name,_,_ in _FIELDS}
+            self.pointers={name:call.pointer(name) for name,_ in _FIELDS}
             if not self.initial:
                 if self.cycle!=0:raise ValueError('Initial native ICONT_I was not observed at cycle0')
                 self.emit('initial_rows_after_begin',dict(clock=now,rows=self.read(self.cycle)))
@@ -33,7 +34,7 @@ class Rows(gdb.Breakpoint):
         # cycle or claim a stale snapshot if source scheduling changes.
         if self.cycle!=cycle or not self.pointers:
             raise ValueError('Native history pointers are not bound in this main cycle')
-        return {name:values(self.pointers[name],width*self.count,code) for name,width,code in _FIELDS}
+        return {name:values(self.pointers[name],self.strides[name]*self.count,code) for name,code in _FIELDS}
 
     def after_main(self,cycle):
         result=self.read(cycle);self.snapshots+=1;return result

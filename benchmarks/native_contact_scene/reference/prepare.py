@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from .abi import arguments, verify_common_prefix
+from .abi import arguments, verify_common_prefix, leading_stride
 
 ROUTINES = {
     'I25OPTCD':'engine/source/interfaces/int25/i25optcd.F',
@@ -30,6 +30,10 @@ def prepare(donors, common_root, output, app_root, mode="observe"):
         return data.decode()
     for name, relative in ROUTINES.items():
         abi[name]=arguments(read(donors/relative),name)
+    row_source=read(donors/'engine/source/interfaces/int25/i25slid.F')
+    strides={name:leading_stride(row_source,name) for name in
+             ('IRTLM','PENE_OLD','STIF_OLD','SECND_FR','TIME_S')}
+    strides['ICONT_I']=1 # Original OPTCD declares ICONT_I(NSN).
     common_fields={
         'COM01':('N2D','NCPRI','IALE','NGROUP','NCYCLE','IRUN','IGER','LBUFEL','IRODDL','IEULER',
                  'IHSH','ITESTV','ITURB','ILAG','ISECUT','IDAMP','IRXDP','NMULT','INTEG8','ISIGI','NSPMD'),
@@ -46,7 +50,7 @@ def prepare(donors, common_root, output, app_root, mode="observe"):
         raise ValueError('Main interface ABI differs from authenticated prior probe')
     document={'schema':'robo_dyna.native_scene_observation_abi.v1',
               'platform':'Linux x86-64 little-endian GNU Fortran MYREAL8; entry breakpoints',
-              'routines':abi,'source_pins':sources,'common_prefixes':common_fields}
+              'routines':abi,'source_pins':sources,'common_prefixes':common_fields,'history_strides':strides}
     with (output/'probe-abi.json').open('x') as f:
         json.dump(document,f,indent=2);f.write('\n')
     commands=['set pagination off','set confirm off','set print thread-events off',
