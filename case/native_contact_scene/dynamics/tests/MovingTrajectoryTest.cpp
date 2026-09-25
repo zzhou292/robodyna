@@ -89,7 +89,8 @@ TEST(NativeMovingSceneDynamicsCuda, ShippingSourceThousandIntervalsAndActiveDisc
             ASSERT_TRUE(Access::AcceptedNormals(dynamics,unchanged));SameNormals(before_normals,unchanged);
             ASSERT_NO_FATAL_FAILURE(assemble());retried=true;
         }
-        ASSERT_NO_THROW(dynamics.CommitStep());ASSERT_NO_THROW(capture->Capture());
+        ASSERT_NO_THROW(dynamics.CommitStep());
+        ASSERT_NO_THROW(capture->Capture());
         const auto published=Access::Contact(dynamics);EXPECT_EQ(published.generation,step+1);EXPECT_EQ(published.force_base_stamp.epoch,step);
         const auto& diagnostics=dynamics.last_accepted_step().contact;active+=diagnostics.active_forces!=0;rebuilds+=diagnostics.reference_rebuilt;
         for(unsigned row=0;row<18;++row) {
