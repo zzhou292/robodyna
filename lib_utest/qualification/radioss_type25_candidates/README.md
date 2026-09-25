@@ -16,10 +16,10 @@ inventory oracle exhaustively enumerates supplied source roles, own/removal/doma
 exclusions, then invokes native screen/COR3T/PEN3. It does not execute the whole
 native voxel traversal or produce original removal lists.
 
-Cases retain the earlier2064-case T3 cohort-composition experiment, then add14,432
-Q4/type/symmetry rows. The production host gate checks all16,496 PEN3 results across
+Cases retain the earlier2064-case T3 cohort-composition experiment, then add7,232
+Q4/type/symmetry rows. The production host gate checks all9,296 PEN3 results across
 four native cohort modes; actual CUDA checks the same rows. Whole COR3T gap bits
-and symmetry agree on16,496 moving rows, with all32,768 five-node ICODT combinations
+and symmetry agree on9,296 moving rows, with all32,768 five-node ICODT combinations
 additionally checked on host. The original type25_pen3_cohort_probe executable
 remains an experiment, not the acceptance test for this production module.
 
