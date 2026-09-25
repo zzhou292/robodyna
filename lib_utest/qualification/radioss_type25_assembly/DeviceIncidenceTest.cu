@@ -17,6 +17,7 @@ __global__ void GatherWithBuiltIncidence(IncidenceCase* c, ass::Incidence incide
   if (node < CorpusNodes) c->status[node] = ass::GatherNode(node,c->rows,c->packets,
       {c->ends,5,CorpusRows},incidence,c->incoming[node],&c->staged[node]);
 }
+__global__ void EmptyKernelForLaunchFailure() {}
 using Type25DeviceIncidence = type25_friction_test::FrictionCuda;
 static ass::IncidenceLimits Limits() { return {MaxRows,251,MaxRows,16u<<20}; }
 static ass::DeviceConnectivity Current(IncidenceCase* d, std::size_t rows=CorpusRows,
@@ -144,5 +145,24 @@ TEST_F(Type25DeviceIncidence, EmptyContactAndIndependentAcceptedTrialStorage) {
   ASSERT_EQ(empty.Stage(Current(device,0,CorpusNodes,0)),ass::IncidenceStatus::Ok);
   SameCsr(empty.view().incidence(),*data,0,CorpusNodes,0);
   EXPECT_EQ(empty.last_report().sort_calls,0u);
+}
+TEST_F(Type25DeviceIncidence, PriorCudaLaunchErrorPoisonsWorkspaceWithoutClaimingUnlaunchedWork) {
+  const auto c=Corpus(); auto data=std::make_unique<IncidenceCase>();
+  type25_friction_test::Drain drain{stream}; UploadCase(c,*data);
+  auto* device=static_cast<IncidenceCase*>(input); ass::DeviceIncidenceBuilder builder;
+  ASSERT_EQ(builder.Initialize(Limits(),stream),ass::IncidenceStatus::Ok);
+  ASSERT_EQ(cudaMemcpyAsync(device,data.get(),sizeof(*data),cudaMemcpyHostToDevice,stream),cudaSuccess);
+  ASSERT_EQ(builder.Stage(Current(device)),ass::IncidenceStatus::Ok);
+  const auto previous=builder.view();
+  // A zero-grid launch fails admission without executing a device instruction
+  // or poisoning the CUDA context. Stage must consume, report and retain failure.
+  EmptyKernelForLaunchFailure<<<0,1,0,stream>>>();
+  ASSERT_EQ(cudaPeekAtLastError(),cudaErrorInvalidConfiguration);
+  EXPECT_EQ(builder.Stage(Current(device)),ass::IncidenceStatus::DeviceFailure);
+  EXPECT_FALSE(builder.IsCurrent(previous));
+  EXPECT_EQ(builder.last_report().own_kernel_launches,0u);
+  EXPECT_EQ(builder.last_report().sort_calls,0u); EXPECT_EQ(builder.last_report().host_fences,1u);
+  EXPECT_EQ(builder.Stage(Current(device)),ass::IncidenceStatus::Unusable);
+  EXPECT_EQ(cudaGetLastError(),cudaSuccess);
 }
 } // namespace type25_assembly_test
