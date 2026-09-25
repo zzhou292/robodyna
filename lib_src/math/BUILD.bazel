@@ -13,3 +13,6 @@ cc_library(
 
 cc_library(name = "fixed_integer", hdrs = ["FixedInteger.h", "HostDevice.h"])
 filegroup(name = "fixed_integer_sources", srcs = ["FixedInteger.h", "HostDevice.h", "fixed_integer/ExtractionManifest.json"])
+
+# Shared execution-space annotation, without pulling an arithmetic backend.
+cc_library(name = "host_device", hdrs = ["HostDevice.h"])

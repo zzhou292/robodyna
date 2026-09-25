@@ -1,0 +1,51 @@
+   INTERFACE NUMBER :         2 CONTACT
+
+
+    TYPE==25  MUTI-TYPE IMPACTING             
+
+    BOUND. COND. DELETED AFTER IMPACT . . . . . IN X DIR       0
+       SECONDARY NODE  (1:YES 0:NO)                Y DIR       0
+                                                   Z DIR       0
+    STIFFNESS FORMULATION . . . . . . . . . . .                4
+    STIFFNESS FACTOR. . . . . . . . . . . . . .   1.000000000000    
+    CONTACT TYPES (1:S1/S1;2:S1/S2;3:N/S  . . .                1
+    EDGE FLAG . . . . . . . . . . . . . . . . .             1000
+    ANGLE FOR EDGE COMPUTATION (Iedge/=0) . . .   0.000000000000    
+    MINIMUM STIFFNESS . . . . . . . . . . . . .   0.000000000000    
+    MAXIMUM STIFFNESS . . . . . . . . . . . . .  1.0000000000000E+30
+    FRICTION FACTOR . . . . . . . . . . . . . .  0.1000000000000    
+    GAP FLAG. . . . . . . . . . . . . . . . . .                2
+    GAP SCALE FACTOR. . . . . . . . . . . . . .   1.000000000000    
+    MAXIMUM SECONDARY GAP VALUE . . . . . . . .  1.0000000000000E+30
+    MAXIMUM MAIN GAP VALUE. . . . . . . . . . .  1.0000000000000E+30
+    %MESHSIZE TAKEN INTO ACCOUNT FOR            
+    CALCULATION OF MAXIMUM GAP(IGAP = 3). . . .   0.000000000000    
+    ZERO GAP FOR SECONDARY SHELL ON FREE EDGE .             1000
+    GAP SHAPE ALONG MAIN FREE EDGES             
+           (1:SQUARE,2:CYLINDRICAL) . . . . . .                1
+    DE-ACTIVATION FLAG IF CONFLICT W/ TYPE2 . .                1
+    START TIME. . . . . . . . . . . . . . . . .   0.000000000000    
+    STOP TIME . . . . . . . . . . . . . . . . .  1.0000000000000E+30
+    DE-ACTIVATION OF INITIAL PENETRATIONS . . .                5
+    CRITICAL DAMPING FACTOR . . . . . . . . . .  5.0000000000000E-02
+    QUADRATIC DAMPING FLAG. . . . . . . . . . .                1
+    FLAGREMNODE : NOT CONSIDER NEIGHBORING      
+    NODES IN CASE OF ELEMENT SIZE < GAP VALUE .                2
+
+    DELETION FLAG ON FAILURE OF MAIN ELEMENT (1:YES-ALL/2:YES-ANY/1000:NO) :     1
+
+    FRICTION FILTERING FLAG. . . . . . . . .          0
+    FILTERING FACTOR . . . . . . . . . . . .   1.000000000000    
+
+    FRICTION MODEL 2 (Darmstad Law) :
+     MU = MUo+c1*exp(c2*v)*p^2+c3*exp(c4*v)*p+c5*exp(c6*v)
+    Muo. . . . . . . . . . . . . . . . . . .  0.1000000000000    
+    C1 . . . . . . . . . . . . . . . . . . .   0.000000000000    
+    C2 . . . . . . . . . . . . . . . . . . .   0.000000000000    
+    C3 . . . . . . . . . . . . . . . . . . .   0.000000000000    
+    C4 . . . . . . . . . . . . . . . . . . .   0.000000000000    
+    C5 . . . . . . . . . . . . . . . . . . .  0.1000000000000    
+    C6 . . . . . . . . . . . . . . . . . . . -1.0000000000000E-03
+
+
+
