@@ -28,7 +28,7 @@ TEST_F(FrictionCuda, EveryRowPhaseBranchMatchesIndependentNativeOnDevice) {
   }
   for (int marker : {-10, -1, 0, 5}) for (bool lost_time : {false, true}) {
     PhaseCase c{Row(), {1, 1, 1}, true}; c.row.irtlm[1] = marker;
-    if (lost_time) c.row.time_s[0] = n::native_constant::ep20;
+    if (lost_time) c.row.selection_metric[0] = n::native_constant::ep20;
     cases.push_back(c);
   }
   std::vector<PhaseResponse> actual(cases.size()); Drain drain{stream};
@@ -55,7 +55,7 @@ __global__ void CoupledStep(const StepCase* in, StepResult* out) {
   if (out->status != n::NormalStatus::Ok) return;
   // Prescribed native classification is fixture input; no search is fabricated.
   for (unsigned i = 0; i < 4; ++i) phase.row.irtlm[i] = in->marker[i];
-  phase.row.time_s[0] = in->time[0]; phase.row.time_s[1] = in->time[1];
+  phase.row.selection_metric[0] = in->time[0]; phase.row.selection_metric[1] = in->time[1];
   out->status = n::EndNativeContact(phase.row, &phase.row);
   if (out->status != n::NormalStatus::Ok) return;
   n::NativeFrictionResult response;
@@ -84,7 +84,7 @@ TEST_F(FrictionCuda, MultiStepStickSlipNormalChangeLossAndRecontactMatchNative) 
     step.time[0] = p[i] == 0 ? n::native_constant::ep20 : c.input.normal.time; step.time[1] = 0.2;
     reference_row = BeginOracle(reference_row, {1, 1, 1}).row;
     for (unsigned j = 0; j < 4; ++j) reference_row.irtlm[j] = step.marker[j];
-    reference_row.time_s[0] = step.time[0]; reference_row.time_s[1] = step.time[1];
+    reference_row.selection_metric[0] = step.time[0]; reference_row.selection_metric[1] = step.time[1];
     reference_row = EndOracle(reference_row); c.history = reference_row.history;
     const auto expected = Oracle(c); reference_row.history = expected.history;
     StepResult actual; Drain drain{stream};

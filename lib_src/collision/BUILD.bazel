@@ -1127,3 +1127,11 @@ cc_library(
     deps = [":radioss_type25_candidate_device", "//lib_src/solvers:nodal_trial_identity"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
+
+cc_library(
+    name = "radioss_type25_selection",
+    hdrs = ["RadiossType25Selection.h"] + ["radioss_type25/selection/" + name for name in [
+        "Types.h", "Prepare.h", "Projection.h", "RetainedBoundary.h", "RetainedDecision.h", "Retained.h",
+    ]],
+    deps = [":radioss_type25_local_geometry", "//lib_src/math:scalar_bits"],
+)

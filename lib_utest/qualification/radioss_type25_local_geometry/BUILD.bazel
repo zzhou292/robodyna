@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 # Native Fortran and CUDA arithmetic gates are owned by CMake.
 cc_test(
     name = "consumer", size = "small", srcs = ["ConsumerTest.cpp", "Cases.h"],
@@ -12,4 +12,11 @@ cc_test(
             "//lib_utest/qualification/radioss_type25_normal:native_source_files",
             "//lib_utest/qualification/radioss_type25_friction:geometry_source_files"],
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "case_values",
+    hdrs = ["Cases.h"],
+    deps = ["//lib_src/collision:radioss_type25_local_geometry"],
+    visibility = ["//lib_utest/qualification/radioss_type25_selection:__pkg__"],
 )

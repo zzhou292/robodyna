@@ -8,8 +8,8 @@ namespace tlfea::contact::radioss_type25 {
 namespace history_detail {
 TL_MATH_HOST_DEVICE inline bool Valid(const NativeContactRow& row) {
   return friction_detail::Valid(row.history) && tl::math::Finite(row.penetration_auxiliary) &&
-      tl::math::Finite(row.penetration_offset) && tl::math::Finite(row.time_s[0]) &&
-      tl::math::Finite(row.time_s[1]);
+      tl::math::Finite(row.penetration_offset) && tl::math::Finite(row.selection_metric[0]) &&
+      tl::math::Finite(row.selection_metric[1]);
 }
 TL_MATH_HOST_DEVICE inline void ClearHistory(NativeContactRow& row) {
   row.history = {}; row.penetration_auxiliary = 0; row.penetration_offset = 0;
@@ -33,7 +33,7 @@ TL_MATH_HOST_DEVICE inline NormalStatus BeginNativeHistory(const NativeContactRo
       if (old.irtlm[2] <= 0) return NormalStatus::InvalidInput;
       if (input.main_stiffness == 0) {
         row.irtlm[0] = 0; row.irtlm[1] = 0; row.irtlm[2] = -1; row.irtlm[3] = 0;
-        row.time_s[0] = native_constant::ep20; row.time_s[1] = native_constant::ep20;
+        row.selection_metric[0] = native_constant::ep20; row.selection_metric[1] = native_constant::ep20;
         history_detail::ClearHistory(row);
       } else {
         next.retained_candidate = true;
@@ -43,16 +43,16 @@ TL_MATH_HOST_DEVICE inline NormalStatus BeginNativeHistory(const NativeContactRo
         row.history.normal.staged_penetration = 0;
         row.history.normal.previous_stiffness = row.history.normal.staged_stiffness;
         row.history.normal.staged_stiffness = 0;
-        row.time_s[0] = native_constant::ep20; row.time_s[1] = native_constant::ep20;
+        row.selection_metric[0] = native_constant::ep20; row.selection_metric[1] = native_constant::ep20;
       }
     } else {
       history_detail::ClearHistory(row);
-      row.time_s[0] = native_constant::ep20; row.time_s[1] = native_constant::ep20;
+      row.selection_metric[0] = native_constant::ep20; row.selection_metric[1] = native_constant::ep20;
     }
   } else {
     row.history.normal.damping_half_force = 0;
     row.penetration_auxiliary = 0;
-    row.time_s[0] = -native_constant::ep20; row.time_s[1] = native_constant::ep20;
+    row.selection_metric[0] = -native_constant::ep20; row.selection_metric[1] = native_constant::ep20;
   }
   *output = next;
   return NormalStatus::Ok;
@@ -64,7 +64,7 @@ TL_MATH_HOST_DEVICE inline NormalStatus EndNativeContact(const NativeContactRow&
   if (!output || !history_detail::Valid(old)) return NormalStatus::InvalidInput;
   auto next = old;
   const bool leave = old.irtlm[1] < 0 && (-static_cast<std::int64_t>(old.irtlm[1])) % 5 == 0;
-  if (old.irtlm[0] > 0 && (old.time_s[0] == native_constant::ep20 || leave)) {
+  if (old.irtlm[0] > 0 && (old.selection_metric[0] == native_constant::ep20 || leave)) {
     history_detail::ClearMarker(next); history_detail::ClearHistory(next);
   }
   *output = next;

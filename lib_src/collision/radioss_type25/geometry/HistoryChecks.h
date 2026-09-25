@@ -66,8 +66,8 @@ TL_MATH_HOST_DEVICE inline bool Ranges(const GeometryHistoryBatch& b) {
 TL_MATH_HOST_DEVICE inline bool ValidRow(const NativeContactRow& row) {
   return normal_detail::Valid(row.history.normal) && v::Finite(row.history.previous_force) &&
       v::Finite(row.history.staged_force) && tl::math::Finite(row.penetration_auxiliary) &&
-      tl::math::Finite(row.penetration_offset) && tl::math::Finite(row.time_s[0]) &&
-      tl::math::Finite(row.time_s[1]);
+      tl::math::Finite(row.penetration_offset) && tl::math::Finite(row.selection_metric[0]) &&
+      tl::math::Finite(row.selection_metric[1]);
 }
 } // namespace geometry_detail
 } // namespace tlfea::contact::radioss_type25
