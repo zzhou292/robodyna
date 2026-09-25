@@ -25,6 +25,10 @@ bool Same(n::StoredNormal a, n::StoredNormal b) {
   const float x[]{a.x, a.y, a.z}, y[]{b.x, b.y, b.z};
   return std::memcmp(x, y, sizeof(x)) == 0;
 }
+bool Same(n::Vector a, n::Vector b) {
+  const double x[]{a.x, a.y, a.z}, y[]{b.x, b.y, b.z};
+  return std::memcmp(x, y, sizeof(x)) == 0;
+}
 } // namespace
 n::NativeRawGeometryResult OracleRaw(const n::GeometryProfile& p,
                                     const n::NativeGeometryInput& input) {
@@ -44,7 +48,7 @@ n::NativeRawGeometryResult OracleRaw(const n::GeometryProfile& p,
     for (unsigned j = 0; j < i; ++j)
       if (input.main_node_ids[i] == input.main_node_ids[j]) {
         const auto a = input.main_vertices[i], b = input.main_vertices[j];
-        if (a.x != b.x || a.y != b.y || a.z != b.z)
+        if (!Same(a, b))
           throw std::invalid_argument("One native node has conflicting coordinates");
         flags[i] = flags[j];
       }
