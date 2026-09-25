@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+# Numerical native/CUDA parity is the owning CMake Fortran qualification.
+# This Bazel gate verifies production header closure without a Fortran link.
+cc_test(
+    name = "header", size = "small", srcs = ["HeaderTest.cpp"],
+    copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_normal", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
+    data = ["native/prepare.py", "native/Wrapper.F.in", "native/source-manifest.json"] + glob(["native/original/*"]),
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)

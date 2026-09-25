@@ -1048,3 +1048,10 @@ cc_library(
     deps = [":nodal_wall_mapped_device", ":nodal_wall_contact_owner", "//lib_utils:source_identity_index"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
+
+# Selected source-derived TYPE25 normal packet; no Fortran/runtime dependency.
+cc_library(
+    name = "radioss_type25_normal",
+    hdrs = ["RadiossType25Normal.h"] + glob(["radioss_type25/*.h"]),
+    deps = ["//lib_src/math:quaternion", "//lib_src/math:host_device"],
+)

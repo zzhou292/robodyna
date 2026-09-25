@@ -1,0 +1,36 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only exact numerical blocks; not production dependencies",
+  "files": [
+    {
+      "path": "native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "path": "native/original/i25for3.F",
+      "bytes": 132646,
+      "sha256": "c601423a4ab8561230c0b86fec7cc277003cd8e9ba78cece91c11156bf2ca986"
+    },
+    {
+      "path": "native/original/starter-interface25.txt",
+      "bytes": 2680,
+      "sha256": "ec48f9fe2ef0e24bb670b316aa8e455eefcdc62749392219e213e579d0f631a0"
+    },
+    {
+      "path": "native/original/starter-manifest.json",
+      "bytes": 1611,
+      "sha256": "c29cbf56ac03d1fa9503de1a600c28550d44666e4bd4f62f5cd6817925c6b861"
+    },
+    {
+      "path": "native/original/engine-controls.json",
+      "bytes": 2735,
+      "sha256": "92b5054d3d900a6ab2dcfbe55543479a605b4ab009d233759d32151e3696e8ec"
+    },
+    {
+      "path": "native/original/engine-controls.log",
+      "bytes": 3012,
+      "sha256": "51513ad19c6ff6040ea6d168283917d857fa018b244b3a13c07db5adfcf61c4e"
+    }
+  ]
+}
