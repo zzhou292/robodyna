@@ -1057,6 +1057,27 @@ cc_library(
 )
 
 cc_library(
+    name = "radioss_type25_assembly_device_values",
+    hdrs = ["RadiossType25AssemblyDevice.h"] + glob(["radioss_type25/assembly/device/*.h"]),
+    deps = [":radioss_type25_assembly", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_library(
+    name = "radioss_type25_assembly_kernels",
+    srcs = ["radioss_type25/assembly/device/Kernels.cu"],
+    deps = [":radioss_type25_assembly_device_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_assembly_device",
+    srcs = glob(["radioss_type25/assembly/device/*.cpp"]),
+    deps = [":radioss_type25_assembly_device_values", ":radioss_type25_assembly_kernels"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
     name = "radioss_type25_normal",
     hdrs = ["RadiossType25Normal.h"] + ["radioss_type25/" + name for name in [
         "Types.h", "NativeConstants.h", "NormalResponse.h", "Units.h", "UnitConversions.h",
