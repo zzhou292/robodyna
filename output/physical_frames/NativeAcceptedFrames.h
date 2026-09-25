@@ -12,7 +12,7 @@ class NativeAcceptedFrames {
   public:
     NativeAcceptedFrames(const records::source::PreparedSourceMapping&,const tl::fea::ShellPhysicalBinding&,
         tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,tl::fea::qeph::QephBatch&,tl::fea::t3::T3Batch&,
-        tlfea::contact::radioss_type25::Transaction&,records::Identity,Limits={});
+        tlfea::contact::radioss_type25::Transaction&,const tl::fea::ShellPhysicalPublicationIdentity&,records::Identity,Limits={});
     ~NativeAcceptedFrames();
     NativeAcceptedFrames(const NativeAcceptedFrames&)=delete;
     NativeAcceptedFrames& operator=(const NativeAcceptedFrames&)=delete;

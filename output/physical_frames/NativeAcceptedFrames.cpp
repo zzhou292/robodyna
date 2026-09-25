@@ -27,8 +27,8 @@ bool SameSource(native::TransactionSourceInfo a,native::TransactionSourceInfo b)
 struct NativeAcceptedFrames::Impl {
     Impl(const source::PreparedSourceMapping& m,const fe::ShellPhysicalBinding& p,records::Context c,Forecast f,
         fe::FENodalState& o,fe::ShellBatchPublication& pub,fe::qeph::QephBatch& q,fe::t3::T3Batch& t,native::Transaction& n,
-        native::TransactionSourceInfo source)
-      :mapping(m),physical(p),context(std::move(c)),forecast(f),owner(o),publication(pub),qeph(q),t3(t),contact(n),info(source),frames(context) {
+        native::TransactionSourceInfo source,const fe::ShellPhysicalPublicationIdentity& publication_identity)
+      :mapping(m),physical(p),context(std::move(c)),forecast(f),owner(o),publication(pub),qeph(q),t3(t),contact(n),info(source),publication_identity(publication_identity),frames(context) {
         positions.resize(3*info.nodes);velocities.resize(3*info.nodes);
         layered.resize(f.layered_rows);active.resize(f.layered_rows);
         for(unsigned i=0;i<2;++i){history[i].resize(info.secondaries);icont[i].resize(info.secondaries);}
@@ -37,6 +37,7 @@ struct NativeAcceptedFrames::Impl {
     records::Context context;Forecast forecast;
     fe::FENodalState& owner;fe::ShellBatchPublication& publication;fe::qeph::QephBatch& qeph;fe::t3::T3Batch& t3;native::Transaction& contact;
     native::TransactionSourceInfo info;
+    fe::ShellPhysicalPublicationIdentity publication_identity;
     std::vector<std::uint32_t> nodes;std::vector<ParentField> parents;
     detail::FrameBuffers frames;
     std::vector<double> positions,velocities;
@@ -50,19 +51,20 @@ struct NativeAcceptedFrames::Impl {
             id.configuration==scope.diagnostics.qeph.configuration_id&&id.qualification==scope.diagnostics.qeph.qualification_id&&
             id.source_instance==physical.domain()->source_instance_id()&&id.topology==scope.source.topology_generation&&
             Bits(scope.stamp.fixed_dt)==Bits(context.fixed_dt()),"Native capture belongs to another actual source/configuration");
-        Require(qeph.MappedBinding()&&t3.MappedBinding()&&qeph.MappedBinding()->Matches(physical)&&t3.MappedBinding()->Matches(physical),
-            "Native capture participants no longer match the complete physical binding");
+        const auto authentic=publication.ValidatePhysicalSources(owner,physical,{&qeph,&t3},publication_identity);
+        Require(authentic.status==fe::ShellPublicationStatus::Success,authentic.message);
         return scope;
     }
 };
 NativeAcceptedFrames::NativeAcceptedFrames(const source::PreparedSourceMapping& mapping,const fe::ShellPhysicalBinding& physical,
     fe::FENodalState& owner,fe::ShellBatchPublication& publication,fe::qeph::QephBatch& q,fe::t3::T3Batch& t,
-    native::Transaction& contact,records::Identity id,Limits limits) {
+    native::Transaction& contact,const fe::ShellPhysicalPublicationIdentity& publication_identity,records::Identity id,Limits limits) {
+    const auto authentic=publication.ValidatePhysicalSources(owner,physical,{&q,&t},publication_identity);
+    Require(authentic.status==fe::ShellPublicationStatus::Success,authentic.message);
     const auto scope=ReadScope(owner,publication,contact);const auto& info=scope.source;
     Require(physical.prepared()&&physical.execution()&&physical.domain()->node_count()==info.nodes&&mapping.nodes()==info.nodes&&
         physical.shells()->qeph_count()&&physical.shells()->t3_count()&&!physical.shells()->qbat_count()&&
-        mapping.parents().size()==physical.shells()->qeph_count()+physical.shells()->t3_count()&&
-        q.MappedBinding()&&t.MappedBinding()&&q.MappedBinding()->Matches(physical)&&t.MappedBinding()->Matches(physical),
+        mapping.parents().size()==physical.shells()->qeph_count()+physical.shells()->t3_count(),
         "Native accepted capture source/family binding differs");
     Require((!id.owner||id.owner==scope.stamp.owner_id)&&(!id.source_instance||id.source_instance==physical.domain()->source_instance_id())&&
         (!id.configuration||id.configuration==scope.diagnostics.qeph.configuration_id)&&
@@ -80,7 +82,7 @@ NativeAcceptedFrames::NativeAcceptedFrames(const source::PreparedSourceMapping& 
     const auto forecast=detail::PlanBuffers(context,info.nodes,physical.shells()->qeph_count(),physical.shells()->t3_count(),0,extra.bytes(),limits);
     // Complete active count/byte admission precedes dynamic mapping and readback buffers.
     auto bound=detail::BindNativeSource(mapping,physical,limits.host_bytes);
-    auto next=std::make_unique<Impl>(mapping,physical,std::move(context),forecast,owner,publication,q,t,contact,info);
+    auto next=std::make_unique<Impl>(mapping,physical,std::move(context),forecast,owner,publication,q,t,contact,info,publication_identity);
     next->nodes=std::move(bound.nodes);next->parents=std::move(bound.parents);next->Current();impl_=std::move(next);
 }
 NativeAcceptedFrames::~NativeAcceptedFrames()=default;
