@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "CudaFixture.h"
+#include "NativeOracle.h"
+#include "HistoryAssertions.h"
 namespace type25_friction_test {
 namespace {
 struct PhaseCase { n::NativeContactRow row; n::HistoryPhaseInput input; bool ending = false; };

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "NativeOracle.h"
-#include "HistoryAssertions.h"
+#include <gtest/gtest.h>
+#include <cstddef>
 #include <cuda_runtime.h>
 namespace type25_friction_test {
 struct Drain { cudaStream_t stream; ~Drain() { EXPECT_EQ(cudaStreamSynchronize(stream), cudaSuccess); } };
