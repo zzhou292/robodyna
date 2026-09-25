@@ -1106,3 +1106,24 @@ cc_library(
     deps = [":radioss_type25_search_device", "//lib_src/solvers:nodal_trial_identity"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
+
+# Native candidate numerics and bounded GPU staging; no physical publication.
+cc_library(
+    name = "radioss_type25_candidate_values",
+    srcs = ["radioss_type25/candidates/Layout.cpp"],
+    hdrs = ["RadiossType25Candidates.h"] + glob(["radioss_type25/candidates/*.h"]),
+    deps = [":radioss_type25_search_values"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_candidate_device",
+    srcs = ["radioss_type25/candidates/Kernels.cu"],
+    deps = [":radioss_type25_candidate_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_candidates",
+    srcs = ["radioss_type25/candidates/Initialize.cpp", "radioss_type25/candidates/Inventory.cpp"],
+    deps = [":radioss_type25_candidate_device", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

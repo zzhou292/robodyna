@@ -4,9 +4,9 @@ if(NOT TARGET tl_radioss_type25_candidate_values)
   add_library(tl_radioss_type25_candidate_values INTERFACE)
   target_include_directories(tl_radioss_type25_candidate_values INTERFACE "${_type25_candidates_root}")
   target_compile_features(tl_radioss_type25_candidate_values INTERFACE cxx_std_17)
-  target_compile_options(tl_radioss_type25_candidate_values INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"
-    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--ftz=false;--prec-div=true;--prec-sqrt=true>")
+  include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Normal.cmake")
+  target_link_libraries(tl_radioss_type25_candidate_values INTERFACE tl_radioss_type25_normal)
+
 endif()
 if(CMAKE_CUDA_COMPILER AND NOT TARGET tl_radioss_type25_candidates)
   find_package(CUDAToolkit REQUIRED)

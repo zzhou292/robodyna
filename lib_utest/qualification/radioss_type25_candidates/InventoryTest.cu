@@ -28,7 +28,7 @@ TEST(NativeCandidateInventory,CompleteMixedMembershipAndUpdates) {
   }
 }
 TEST(NativeCandidateInventory,DenseTasksExactCapacityAndNoTruncation) {
-  Scene scene(2,600);auto current=scene.Current();const auto expected=Reference(scene,current);ASSERT_GT(expected.size(),1u);
+  Scene scene(2,1800);auto current=scene.Current();const auto expected=Reference(scene,current);ASSERT_GT(expected.size(),1u);
   c::Inventory exact;ASSERT_EQ(exact.Initialize(scene.Source(),Limits(expected.size(),64),scene.stream),c::Status::Ok);
   ASSERT_EQ(exact.Stage(current),c::Status::Ok);Check(exact,expected,scene.secondaries.size());
   EXPECT_GT(exact.last_report().tasks,2u);
