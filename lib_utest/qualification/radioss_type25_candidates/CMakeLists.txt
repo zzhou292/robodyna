@@ -63,3 +63,6 @@ if(TYPE25_CANDIDATE_CUDA)
   set_target_properties(type25_inventory_consumer_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   add_test(NAME type25_inventory_consumer_cuda COMMAND type25_inventory_consumer_cuda)
 endif()
+
+add_test(NAME type25_primary_observed_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/prepare_observed.py" --check)
