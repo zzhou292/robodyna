@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Complete pinned local normal activation and free-roster native reference."""
-import argparse
+import argparse,re
 from pathlib import Path
 from Sources import ROOT,read,routine,constants
 
@@ -9,10 +9,11 @@ def generated():
     tag=routine(source["i25norm.F"],"I25TAGN")
     free=routine(source["i25free_bound.F"],"I25FREE_BOUND")
     def namespace(text):
-        return text.replace("USE INTBUFDEF_MOD","USE NA_REMOTE").replace("USE TRI7BOX","USE NA_SORT").replace(
+        text=text.replace("USE INTBUFDEF_MOD","USE NA_REMOTE").replace("USE TRI7BOX","USE NA_SORT").replace(
           "use nodal_arrays_mod","use na_nodes").replace("use my_alloc_mod","use na_memory").replace(
           "use my_dealloc_mod, only : my_dealloc","use na_memory, only : my_dealloc").replace(
           "CALL MY_BARRIER","CALL NA_BARRIER")
+        return re.sub(r"\bmy_barrier\b","na_barrier",text,flags=re.I)
     result={"Tag.F":namespace(tag),"Free.F":free,
       "Constants.F90":constants(source["constant_mod.F"],[tag.upper(),free.upper()]).replace("selection_constants","na_constants"),
       "Boundary.F90":(ROOT/"Boundary.F90").read_text(),"Wrapper.F90":(ROOT/"Wrapper.F90").read_text(),
