@@ -18,8 +18,7 @@ __global__ void Prepare(Storage* storage, NodalAssemblyView view, NodalCinAssemb
       !CanGatherAssembly(state, view, cin)) state.assembly.fallback = 1;
   state.assembly.prepared = !state.assembly.fallback;
 }
-__global__ void CheckGeometry(Storage* storage, NodalAssemblyView view) {
-  auto& state = *storage;
+__device__ void CheckGeometry(Storage& state, NodalAssemblyView view) {
   // prepared is immutable throughout CheckGeometry and Gather. Only fallback
   // changes, through integer atomics; neither kernel reads that flag.
   if (!state.assembly.prepared) return;
@@ -41,9 +40,11 @@ __global__ void CheckGeometry(Storage* storage, NodalAssemblyView view) {
 __global__ void Gather(Storage* storage, unsigned slab, NodalAssemblyView view,
     NodalCinAssemblyView cin) {
   auto& state = *storage;
-  // Prepare has completed on this stream. This kernel writes only private
-  // nodes and an integer failure flag, never shared floating-point atomics.
+  // Validation and sums are independent private work. Finish waits for the
+  // entire kernel before checking fallback or writing any owner array.
+  // This kernel uses no shared floating-point atomics.
   if (!state.assembly.prepared) return;
+  CheckGeometry(state, view);
   const auto node = std::size_t(blockIdx.x)*blockDim.x+threadIdx.x;
   if (node >= view.accepted.node_count) return;
   if (state.assembly.offsets[node] == state.assembly.offsets[node + 1]) return;
@@ -76,9 +77,6 @@ cudaError_t LaunchAssembly(Storage* storage, unsigned slab,
   if (!blocks) blocks = 1;
   Prepare<<<1, 1, 0, view.stream>>>(storage, view, cin);
   auto error = cudaPeekAtLastError();
-  if (error != cudaSuccess) return error;
-  CheckGeometry<<<blocks, threads, 0, view.stream>>>(storage, view);
-  error = cudaPeekAtLastError();
   if (error != cudaSuccess) return error;
   Gather<<<blocks, threads, 0, view.stream>>>(storage, slab, view, cin);
   error = cudaPeekAtLastError();

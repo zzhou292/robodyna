@@ -89,7 +89,7 @@ TEST_F(SolidParallelAssemblyCuda, GeometryFailureWinsOverEarlierArithmeticFailur
   }
 }
 TEST_F(SolidParallelAssemblyCuda, LaunchFaultStopsBeforePublishingOrSerialReplayAndPoisonsPublicBatch) {
-  for (unsigned boundary:{1u,2u,3u}) {
+  for (unsigned boundary:{1u,2u}) {
     Packet packet;DevicePacket device(packet);
     const auto before=device.Read();
     launch_fault::Arm(boundary);
