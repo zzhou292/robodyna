@@ -16,7 +16,7 @@ n::HistoryPhaseResult Phase(const n::NativeContactRow& row, n::HistoryPhaseInput
       h.normal.staged_penetration, h.normal.staged_stiffness, h.normal.damping_half_force,
       h.previous_force.x, h.previous_force.y, h.previous_force.z,
       h.staged_force.x, h.staged_force.y, h.staged_force.z,
-      row.penetration_auxiliary, row.penetration_offset, row.time_s[0], row.time_s[1]};
+      row.penetration_auxiliary, row.penetration_offset, row.selection_metric[0], row.selection_metric[1]};
   const double stiffness[]{in.secondary_stiffness, in.main_stiffness};
   double output[15]{}; int marker[4]{}, kept = 0;
   rd_type25_phase(values, row.irtlm, stiffness, &in.local_processor, &mode, output, marker, &kept);
@@ -26,7 +26,7 @@ n::HistoryPhaseResult Phase(const n::NativeContactRow& row, n::HistoryPhaseInput
   next.history.previous_force = {output[5], output[6], output[7]};
   next.history.staged_force = {output[8], output[9], output[10]};
   next.penetration_auxiliary = output[11]; next.penetration_offset = output[12];
-  next.time_s[0] = output[13]; next.time_s[1] = output[14];
+  next.selection_metric[0] = output[13]; next.selection_metric[1] = output[14];
   for (unsigned i = 0; i < 4; ++i) next.irtlm[i] = marker[i];
   result.retained_candidate = kept != 0;
   return result;

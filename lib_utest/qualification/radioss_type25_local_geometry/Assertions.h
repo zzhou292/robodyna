@@ -36,11 +36,11 @@ inline void Same(const n::NativeGeometryHistory& a,
   const double first[]{p.previous_penetration,p.previous_stiffness,p.staged_penetration,
     p.staged_stiffness,p.damping_half_force,x.history.previous_force.x,x.history.previous_force.y,
     x.history.previous_force.z,x.history.staged_force.x,x.history.staged_force.y,x.history.staged_force.z,
-    x.penetration_auxiliary,x.penetration_offset,x.time_s[0],x.time_s[1]};
+    x.penetration_auxiliary,x.penetration_offset,x.selection_metric[0],x.selection_metric[1]};
   const double second[]{q.previous_penetration,q.previous_stiffness,q.staged_penetration,
     q.staged_stiffness,q.damping_half_force,y.history.previous_force.x,y.history.previous_force.y,
     y.history.previous_force.z,y.history.staged_force.x,y.history.staged_force.y,y.history.staged_force.z,
-    y.penetration_auxiliary,y.penetration_offset,y.time_s[0],y.time_s[1]};
+    y.penetration_auxiliary,y.penetration_offset,y.selection_metric[0],y.selection_metric[1]};
   for (unsigned i=0;i<15;++i) { SCOPED_TRACE(i); Number(first[i],second[i],exact); }
 }
 template<class U> inline n::RawGeometryResult<U> Sentinel() {

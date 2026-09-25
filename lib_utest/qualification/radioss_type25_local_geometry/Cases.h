@@ -54,7 +54,7 @@ inline n::NativeGeometryHistory History(const n::NativeGeometryInput& in) {
   row.row.history.previous_force = {.25, -.5, .125};
   row.row.history.staged_force = {-.125, .0625, -.25};
   row.row.penetration_auxiliary = .375; row.row.penetration_offset = .05;
-  row.row.time_s[0] = -1e20; row.row.time_s[1] = 1e20;
+  row.row.selection_metric[0] = -1e20; row.row.selection_metric[1] = 1e20;
   return row;
 }
 inline std::vector<Case> Cases() {

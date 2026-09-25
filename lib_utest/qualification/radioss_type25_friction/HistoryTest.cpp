@@ -36,11 +36,11 @@ TEST(Type25HistoryPhase, LeaveUsesExactMarkerAndTimePredicates) {
   for (int marker : {-10, -5, -1, 0, 5}) for (int active : {-7, 0, 7})
     for (double time : {0., n::native_constant::ep20,
                         std::nextafter(n::native_constant::ep20, 0.)}) {
-      auto row = Row(); row.irtlm[0] = active; row.irtlm[1] = marker; row.time_s[0] = time;
+      auto row = Row(); row.irtlm[0] = active; row.irtlm[1] = marker; row.selection_metric[0] = time;
       auto actual = row;
       ASSERT_EQ(n::EndNativeContact(actual, &actual), n::NormalStatus::Ok);
       SameRow(actual, EndOracle(row));
-      EXPECT_EQ(actual.time_s[0], row.time_s[0]);
+      EXPECT_EQ(actual.selection_metric[0], row.selection_metric[0]);
     }
 }
 TEST(Type25HistoryPhase, InvalidRangeAndAliasedRetryPreserveWholeRow) {

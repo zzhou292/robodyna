@@ -9,7 +9,7 @@ inline n::NativeContactRow Row() {
   row.history.staged_force = {0.04, -0.05, 0.06};
   row.penetration_auxiliary = -0.17; row.penetration_offset = 0.001;
   row.irtlm[0] = 7; row.irtlm[1] = -1; row.irtlm[2] = 1; row.irtlm[3] = 1;
-  row.time_s[0] = 0.1; row.time_s[1] = 0.2;
+  row.selection_metric[0] = 0.1; row.selection_metric[1] = 0.2;
   return row;
 }
 inline std::array<double, 15> RowFields(const n::NativeContactRow& row) {
@@ -18,7 +18,7 @@ inline std::array<double, 15> RowFields(const n::NativeContactRow& row) {
     h.normal.staged_penetration, h.normal.staged_stiffness, h.normal.damping_half_force,
     h.previous_force.x, h.previous_force.y, h.previous_force.z,
     h.staged_force.x, h.staged_force.y, h.staged_force.z,
-    row.penetration_auxiliary, row.penetration_offset, row.time_s[0], row.time_s[1]}};
+    row.penetration_auxiliary, row.penetration_offset, row.selection_metric[0], row.selection_metric[1]}};
 }
 inline void SameRow(const n::NativeContactRow& a, const n::NativeContactRow& b, bool exact = true) {
   for (unsigned i = 0; i < 4; ++i) EXPECT_EQ(a.irtlm[i], b.irtlm[i]);

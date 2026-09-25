@@ -46,7 +46,7 @@ struct NativeContactRow {
   double penetration_auxiliary = 0; // PENE_OLD(4), opaque to these phase helpers.
   double penetration_offset = 0;    // PENE_OLD(5).
   int irtlm[4]{};
-  double time_s[2]{};
+  double selection_metric[2]{}; // Native TIME_S metrics/sentinels, never physical seconds.
 };
 struct HistoryPhaseInput {
   double secondary_stiffness = 0, main_stiffness = 0;
