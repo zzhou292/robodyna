@@ -4,7 +4,8 @@ using namespace candidate_test;
 TEST(NativeCandidateFilter,AllNativePackedOutputsAndMembership) {
   const auto cases=Cases();std::size_t positive=0,quad_positive=0;
   for(std::size_t i=0;i<cases.size();++i) {
-    SCOPED_TRACE(i);SCOPED_TRACE(cases[i].family);
+    SCOPED_TRACE(i);
+    SCOPED_TRACE(cases[i].family);
     const auto row=Pack(cases[i]);c::FilterResult out;
     ASSERT_EQ(c::EvaluatePacked(row,&out),c::Status::Ok);
     for(unsigned mode=0;mode<4;++mode) {
@@ -42,7 +43,8 @@ TEST(NativeCandidateScreen,ExactAndUlpExpandedBoundaries) {
   for(unsigned axis=0;axis<3;++axis)for(unsigned side=0;side<2;++side) {
     double edge=(axis==2?.5:1.5)*(side?-1.:1.);
     for(double value:{edge,std::nextafter(edge,0.),std::nextafter(edge,side?-INFINITY:INFINITY)}) {
-      row.secondary={0,0,0};(&row.secondary.x)[axis]=value;
+      row.secondary={0,0,0};
+      if(axis==0)row.secondary.x=value;else if(axis==1)row.secondary.y=value;else row.secondary.z=value;
       bool included=true;ASSERT_EQ(c::EvaluateScreen(row,&included),c::Status::Ok);
       EXPECT_EQ(included,NativeScreen(row));
       if(value==edge)EXPECT_FALSE(included);

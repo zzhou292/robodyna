@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../NativeConstants.h"
+#include "lib_src/math/HostDevice.h"
 #include "lib_src/math/Fixed3Operations.h"
 #include <cstddef>
 #include <cstdint>
