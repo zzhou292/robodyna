@@ -12,17 +12,17 @@ void Same(const q::NormalObservation& a,const q::NormalObservation& b) {
   EXPECT_EQ(std::memcmp(a.references.data(),b.references.data(),a.references.size()*sizeof(n::startup::NormalReference)),0);
 }
 void NativeExpected(Rig& rig,const std::vector<double>& positions,const q::NormalObservation& prior,
-    const q::NormalObservation& actual) {
+    const q::NormalObservation& actual,bool inactive_triangle=false) {
   const auto source=rig.source.Source();std::vector<double> coefficients;std::vector<std::uint32_t> free;
   for(std::size_t i=0;i<source.selection.main_count;++i) {
     coefficients.push_back(source.selection.mains[i].coefficient);
     if(n::normal_activation::detail::FreeMain(source.selection.mains[i]))free.push_back(std::uint32_t(i+1));
   }
-  // Every face in this two disconnected shell fixture has a native free edge;
-  // FREE_BOUND/TAGN must activate the complete main and physical node roster.
-  ASSERT_EQ(free,(std::vector<std::uint32_t>{1,2,3,4}));
-  EXPECT_EQ(actual.active,(std::vector<std::uint32_t>(4,1)));
-  EXPECT_EQ(actual.tags,(std::vector<std::uint32_t>(7,1)));
+  // Exact independently known masks for these disconnected free-edge shells.
+  // Constant-zero triangle coefficients omit both triangle sides and nodes.
+  ASSERT_EQ(free,(inactive_triangle?std::vector<std::uint32_t>{1,3}:std::vector<std::uint32_t>{1,2,3,4}));
+  EXPECT_EQ(actual.active,(inactive_triangle?std::vector<std::uint32_t>{1,0,1,0}:std::vector<std::uint32_t>(4,1)));
+  EXPECT_EQ(actual.tags,(inactive_triangle?std::vector<std::uint32_t>{1,1,1,1,0,0,0}:std::vector<std::uint32_t>(7,1)));
   c::Input in;in.profile=c::Profile::OrdinaryShellLocal;in.free_roster=n::normal_activation::FreeRosterPolicy::FreshComplete;
   in.topology={source.starter.mains,source.selection.node_count,source.primary_main_count,source.selection.main_count,
       source.selection.normal_count,source.selection.normal_to_main};
@@ -85,5 +85,21 @@ TEST(NativeMovingCacheCuda, CompleteOptimizedCapacityRejectsBeforeNormalCacheCan
     EXPECT_EQ(unchanged.accepted.generation,0u);EXPECT_EQ(rig.Positions(),x);
     EXPECT_FALSE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&unchanged));rig.Discard();
   }
+}
+TEST(NativeMovingCacheCuda, InactiveMainCacheSurvivesPhysicalMotionAndRepeatedSelectorSwaps) {
+  Rig rig;rig.source.mains[1].coefficient=0;rig.source.mains[3].coefficient=0;rig.Initialize();
+  q::NormalObservation prior;ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));
+  const auto initial=prior;const auto original_position=rig.Positions();
+  for(unsigned step=0;step<8;++step) {
+    SCOPED_TRACE(step);
+    const auto x=rig.Positions();Attempt a;rig.Begin(a);Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly));
+    q::NormalObservation staged;ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&staged));
+    NativeExpected(rig,x,prior,staged,true);
+    for(std::size_t main:{1u,3u})
+      EXPECT_EQ(std::memcmp(staged.face.data()+4*main,initial.face.data()+4*main,4*sizeof(n::StoredNormal)),0);
+    rig.Prepare(a);Check(rig.Commit(a));ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));Same(prior,staged);
+    EXPECT_EQ(prior.accepted.force_base_stamp.epoch,step);
+  }
+  EXPECT_NE(rig.Positions(),original_position);
 }
 } // namespace moving_cache_test
