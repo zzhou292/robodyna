@@ -1,3 +1,5 @@
+#include "lib_src/elements/qeph/QephStartup.h"
+#include "lib_src/elements/t3/T3Startup.h"
 #include "lib_src/elements/qeph/QephForce.h"
 #include "lib_src/elements/t3/T3Force.h"
 int main() {
