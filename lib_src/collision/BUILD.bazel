@@ -1055,3 +1055,24 @@ cc_library(
     hdrs = ["RadiossType25Normal.h"] + glob(["radioss_type25/*.h"]),
     deps = ["//lib_src/math:quaternion", "//lib_src/math:host_device"],
 )
+
+# Native TYPE25 diagnostic search maintenance; no mechanical/candidate authority.
+cc_library(
+    name = "radioss_type25_search_values",
+    srcs = ["radioss_type25/search/Layout.cpp", "radioss_type25/search/Preflight.cpp"],
+    hdrs = ["RadiossType25Search.h"] + glob(["radioss_type25/search/*.h"]),
+    deps = [":radioss_type25_normal", ":surface_contact_primitives", "//lib_src/math:fixed3_operations", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_search_device",
+    srcs = ["radioss_type25/search/Kernels.cu"],
+    deps = [":radioss_type25_search_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_search",
+    srcs = ["radioss_type25/search/Initialize.cpp", "radioss_type25/search/Maintenance.cpp", "radioss_type25/search/Checks.cpp"],
+    deps = [":radioss_type25_search_device", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
