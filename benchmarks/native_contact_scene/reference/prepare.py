@@ -31,6 +31,7 @@ def prepare(donors, common_root, output, app_root):
         'COM04':('NUMMAT','NUMNOD'),
         'COM08':('TT','DT1','DT2','DT12','DT2OLD','TSTOP'),
         'PARAM':('NPROPM','NVSIZ','NPROPG','NPARG','LVEUL','NIXFR1','NIXFR2','NPARI'),
+        'SCR05':('ICRAY','IRFORM','ITFORM','TH_VERS','IRESP'),
     }
     for name, fields in common_fields.items():
         verify_common_prefix(read(common_root/(name.lower()+'_c.inc')),name,fields)

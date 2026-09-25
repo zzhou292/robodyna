@@ -29,7 +29,8 @@ def common(symbol, offset, code):
 def clock():
     return dict(zip(('TT','DT1','DT2_estimator','DT12','DT2OLD','TSTOP'),
                     values(int(gdb.parse_and_eval('(void*)&com08_')),6,'d')),
-                NCYCLE=common('com01_',4,'i'), NSPMD=common('com01_',20,'i'))
+                NCYCLE=common('com01_',4,'i'), NSPMD=common('com01_',20,'i'),
+                IRESP=common('scr05_',4,'i'))
 
 
 class Call:

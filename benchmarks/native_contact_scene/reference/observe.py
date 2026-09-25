@@ -5,6 +5,7 @@ from pathlib import Path
 import gdb
 
 from .gdb_access import Call, clock, common, values
+from .clocks import EarlyClocks
 
 _abi = None
 _records = {}
@@ -12,6 +13,7 @@ _failure = None
 _stream = None
 _inventory_chunks = {}
 _breakpoints = []
+_clocks = []
 _required = {'controls','main','inventory','classification','boundary','positive_response'}
 
 
@@ -153,12 +155,16 @@ class Observe(gdb.Breakpoint):
         except Exception as error:
             _failure=str(error)
             return True
-        return _required <= _records.keys()
+        return complete()
 
 
 def emit(label, data):
     _stream.write(json.dumps({'stage':label,'observation':data},allow_nan=False)+'\n')
     _stream.flush()
+
+
+def complete():
+    return _required <= _records.keys() and len(_clocks)==2 and all(c.finished for c in _clocks)
 
 
 def install(path):
@@ -178,17 +184,20 @@ def install(path):
             ('I25COR3_22','classification',classification),('I25DST3_22','boundary',boundary),
             ('I25FOR3','positive_response',response)):
         _breakpoints.append(Observe(routine,label,handler))
+    for routine in ('I25MAINF','I25FOR3'):
+        _clocks.append(EarlyClocks(routine,_abi['routines'][routine],emit,complete))
 
 
 def finish():
-    complete=_failure is None and _required <= _records.keys()
-    summary={'schema':'robo_dyna.native_scene_observation.v1','complete':complete,
+    finished=_failure is None and complete()
+    summary={'schema':'robo_dyna.native_scene_observation.v1','complete':finished,
              'scope':'read-only source entry observations; child intentionally stopped; no trajectory/performance acceptance',
-             'stages':sorted(_records),'missing_stages':sorted(_required-_records.keys()),'failure':_failure}
+             'stages':sorted(_records),'missing_stages':sorted(_required-_records.keys()),'failure':_failure,
+             'early_clock_counts':{c.routine:len(c.seen) for c in _clocks}}
     with Path('native-observation-summary.json').open('x') as out:
         json.dump(summary,out,indent=2,allow_nan=False);out.write('\n')
     _stream.close()
-    if not complete:
+    if not finished:
         # The GDB process owns this one inferior; no existing workstation jobs.
         if gdb.selected_inferior().pid:gdb.execute('kill')
         gdb.execute('quit 2')
