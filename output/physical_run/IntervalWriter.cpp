@@ -43,6 +43,9 @@ void IntervalWriter::Append(const Values& v) {
     if(v.self_contact)EncodeSelfContact(*v.self_contact,
         s.integers.data()+s.integer_columns*s.buffered+4,
         s.reals.data()+s.columns*s.buffered+4+std::size_t(s.profile.structural_limit));
+    if(v.native_contact)EncodeNativeContact(*v.native_contact,
+        s.integers.data()+s.integer_columns*s.buffered+4,
+        s.reals.data()+s.columns*s.buffered+4+std::size_t(s.profile.structural_limit));
     s.sequence=next;++s.buffered;
     if(s.buffered==s.plan.rows_per_chunk)try {Flush();} catch(...) {s.failed=true;throw;}
 }

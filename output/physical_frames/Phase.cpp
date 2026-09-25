@@ -1,18 +1,7 @@
 #include "Fields.h"
+#include "ParticipantPhase.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 namespace crash::output::physical_frames::detail {
-namespace {
-template<class D> void Check(const D& d,const tl::fea::NodalStamp& s,const records::FrameStamp& f,
-    std::uint64_t configuration,std::uint64_t qualification) {
-    Require(d.valid && d.owner_id==s.owner_id && d.configuration_id==configuration &&
-        d.qualification_id==qualification && d.epoch==s.epoch && Bits(d.time)==Bits(s.time) &&
-        d.phase==decltype(d.phase)::Accepted && d.has_completed_interval==bool(s.epoch),
-        "Accepted participant phase/owner identity differs");
-    if(s.epoch) Require(d.base_epoch==f.base_epoch && d.attempt==f.attempt &&
-        Bits(d.base_time)==Bits(f.base_time) && Bits(d.velocity_time)==Bits(f.velocity_time) &&
-        Bits(d.kick_dt)==Bits(f.kick_dt),"Accepted participant has another interval phase");
-}
-}
 records::FrameStamp Phase(const CaptureScope& c) {
     const auto& s=c.stamp;
     const auto& d=c.diagnostics;
@@ -26,16 +15,16 @@ records::FrameStamp Phase(const CaptureScope& c) {
     records::CheckStamp(s.fixed_dt,f);
     const auto config=d.qeph.configuration_id,qualification=d.qeph.qualification_id;
     Require(config && qualification,"Missing accepted publication configuration");
-    Check(d.qeph,s,f,config,qualification);
-    Check(d.t3,s,f,config,qualification);
-    Check(d.qbat,s,f,config,qualification);
-    Check(d.type25,s,f,config,qualification);
-    Check(d.type13,s,f,config,qualification);
-    Check(d.solids,s,f,config,qualification);
+    CheckAcceptedParticipant(d.qeph,s,f,config,qualification);
+    CheckAcceptedParticipant(d.t3,s,f,config,qualification);
+    CheckAcceptedParticipant(d.qbat,s,f,config,qualification);
+    CheckAcceptedParticipant(d.type25,s,f,config,qualification);
+    CheckAcceptedParticipant(d.type13,s,f,config,qualification);
+    CheckAcceptedParticipant(d.solids,s,f,config,qualification);
     Require(d.has_type45==bool(c.type45_joint_count) &&
         d.has_type45==bool(c.type45_source_instance_id),"Accepted joint source presence differs");
     if(d.has_type45) {
-        Check(d.type45,s,f,config,qualification);
+        CheckAcceptedParticipant(d.type45,s,f,config,qualification);
         Require(d.type45.source_instance_id==c.type45_source_instance_id &&
             d.type45.joint_count==c.type45_joint_count &&
             d.type45.automatic_stiffness_initialized==bool(s.epoch),
@@ -47,7 +36,7 @@ records::FrameStamp Phase(const CaptureScope& c) {
     Require(d.has_beam18==bool(c.beam18_parent_count) &&
         d.has_beam18==bool(c.beam18_source_instance_id),"Accepted structural beam source presence differs");
     if(d.has_beam18) {
-        Check(d.beam18,s,f,config,qualification);
+        CheckAcceptedParticipant(d.beam18,s,f,config,qualification);
         Require(d.beam18.source_instance_id==c.beam18_source_instance_id &&
                 d.beam18.parent_count==c.beam18_parent_count &&
                 d.beam18.accepted_force_assembled==bool(s.epoch) &&
@@ -60,13 +49,13 @@ records::FrameStamp Phase(const CaptureScope& c) {
     return f;
 }
 void CheckReadback(const CaptureScope& scope,const tl::fea::qeph::BatchDiagnostics& value) {
-    Check(value,scope.stamp,Phase(scope),scope.diagnostics.qeph.configuration_id,scope.diagnostics.qeph.qualification_id);
+    CheckAcceptedParticipant(value,scope.stamp,Phase(scope),scope.diagnostics.qeph.configuration_id,scope.diagnostics.qeph.qualification_id);
 }
 void CheckReadback(const CaptureScope& scope,const tl::fea::t3::BatchDiagnostics& value) {
-    Check(value,scope.stamp,Phase(scope),scope.diagnostics.t3.configuration_id,scope.diagnostics.t3.qualification_id);
+    CheckAcceptedParticipant(value,scope.stamp,Phase(scope),scope.diagnostics.t3.configuration_id,scope.diagnostics.t3.qualification_id);
 }
 void CheckReadback(const CaptureScope& scope,const tl::fea::qbat::BatchDiagnostics& value) {
-    Check(value,scope.stamp,Phase(scope),scope.diagnostics.qbat.configuration_id,scope.diagnostics.qbat.qualification_id);
+    CheckAcceptedParticipant(value,scope.stamp,Phase(scope),scope.diagnostics.qbat.configuration_id,scope.diagnostics.qbat.qualification_id);
 }
 void CheckSameEndpoint(const CaptureScope& a,const CaptureScope& b) {
     Require(tl::fea::trial_identity::SameStamp(a.stamp,b.stamp) && records::SameStamp(Phase(a),Phase(b)) &&

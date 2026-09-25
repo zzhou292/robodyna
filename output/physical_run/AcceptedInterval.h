@@ -2,7 +2,7 @@
 #include "Types.h"
 #include "case/vehicle_wall/SetupIdentity.h"
 namespace crash::cases::vehicle_dynamics {class VehiclePhysicalDynamics;}
-namespace crash::output::physical_frames {class PhysicalAcceptedFrames;}
+namespace crash::output::physical_frames {class PhysicalAcceptedFrames;class NativeAcceptedFrames;}
 namespace crash::output::physical_run {
 // Only the live accepted-state factory constructs this handle. File readers
 // return Values for observation, not a token that can append another run.
@@ -19,6 +19,7 @@ class AcceptedInterval {
     Profile profile_;
     cases::vehicle_wall::SetupIdentity wall_;
     friend class RunArchive;
+    friend class physical_frames::NativeAcceptedFrames;
     friend AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehiclePhysicalDynamics&,
         const physical_frames::PhysicalAcceptedFrames&,Profile);
 };

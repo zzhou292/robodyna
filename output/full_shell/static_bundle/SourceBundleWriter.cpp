@@ -1,4 +1,5 @@
 #include "SourceBundleInternal.h"
+#include <algorithm>
 
 namespace crash::output::full_shell::source {
 RecordFile WriteSourceBundle(const std::filesystem::path& root, const PreparedSourceBundle& bundle) {
@@ -22,7 +23,13 @@ RecordFile WriteSourceBundle(const std::filesystem::path& root, const PreparedSo
     // file is measured and authenticated before this static-only publication.
     std::size_t measured = data.descriptor.bytes;
     for (const auto& f : d.files) {
-        detail::ReadFile(root, f, d.file_byte_cap);
+        if(f.bytes)detail::ReadFile(root,f,d.file_byte_cap);
+        else {
+            const auto a=std::find_if(source.arrays.begin(),source.arrays.end(),[&](const NamedArray& value){return value.descriptor.file==f.file;});
+            Require(a!=source.arrays.end() && arrays::ByteCount(a->descriptor.layout,limits)==0 &&
+                f.sha256==Sha256({}) && std::filesystem::file_size(arrays::CheckedPath(root,f.file,true))==0,
+                "Zero source payload is not a typed empty canonical array");
+        }
         detail::AddBytes(measured, f.bytes, StaticReserveBytes);
     }
     Require(measured == d.static_bytes, "Written static payload differs from plan");

@@ -1,5 +1,5 @@
 add_library(robo_dyna_full_shell_source_mapping STATIC
-  InputChecks.cpp SourceReadBudget.cpp SourceAuthority.cpp CanonicalSpecs.cpp CanonicalSource.cpp CanonicalCatalog.cpp
+  InputChecks.cpp SourceReadBudget.cpp SourceAuthority.cpp CanonicalSpecs.cpp CanonicalSource.cpp CanonicalCatalog.cpp DeclaredCatalog.cpp
   Scope.cpp ScopeParts.cpp CanonicalGeometry.cpp MappingArrays.cpp MappingDigest.cpp MappingTopology.cpp
   MappingEncoding.cpp PreparedSourceMapping.cpp MappingFields.cpp
   MappingRecordWriter.cpp MappingRecordReader.cpp)

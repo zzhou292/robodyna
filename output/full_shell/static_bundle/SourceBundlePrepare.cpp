@@ -1,4 +1,5 @@
 #include "SourceBundleInternal.h"
+#include <algorithm>
 
 namespace crash::output::full_shell::source {
 PreparedSourceBundle PreparedSourceBundle::Prepare(const PreparedSourceMapping& mapping, const BundleRequest& request) {
@@ -46,7 +47,9 @@ PreparedSourceBundle PreparedSourceBundle::Prepare(const PreparedSourceMapping& 
     data->descriptor = {d.stem + ".bundle.json", Sha256(data->metadata_bytes), data->metadata_bytes.size()};
     Require(data->descriptor.bytes <= d.file_byte_cap, "Static bundle descriptor exceeds file cap");
     PlanRequest merged = archive;
-    for (const auto& f : d.files) merged.static_files.push_back({f.file, f.bytes});
+    // Reservations are positive upper bounds; a typed empty file reserves one
+    // byte without inventing payload or relaxing metadata admission.
+    for (const auto& f : d.files) merged.static_files.push_back({f.file, std::max(std::size_t{1},f.bytes)});
     merged.static_files.push_back({data->descriptor.file, data->descriptor.bytes});
     data->archive_plan = PlanArchive(merged);
     return PreparedSourceBundle(std::move(data));
@@ -58,7 +61,7 @@ const Plan& PreparedSourceBundle::archive_plan() const noexcept { return data_->
 std::vector<FileReservation> PreparedSourceBundle::reservations() const {
     std::vector<FileReservation> files;
     files.reserve(data_->description.files.size() + 1);
-    for (const auto& f : data_->description.files) files.push_back({f.file, f.bytes});
+    for (const auto& f : data_->description.files) files.push_back({f.file, std::max(std::size_t{1},f.bytes)});
     files.push_back({data_->descriptor.file, data_->descriptor.bytes});
     return files;
 }

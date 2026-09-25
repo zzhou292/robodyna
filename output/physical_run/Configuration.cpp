@@ -8,7 +8,7 @@ Document ConfigurationDocument(const Configuration& c) {
     Require(r.extra_interval_bytes==ExtraIntervalBytes(c.profile) && !r.extra_frame_bytes,
         "Physical configuration interval storage differs from its profile");
     records::PlanArchive(r);
-    Document d;d.SetObject();String(d,"schema",c.profile.self_contact?
+    Document d;d.SetObject();String(d,"schema",c.profile.native_contact?"robo_dyna.physical_run_configuration.v3":c.profile.self_contact?
         "robo_dyna.physical_run_configuration.v2":"robo_dyna.physical_run_configuration.v1");
     if(c.wall)String(d,"wall_case",WallProfile);
     array_json::Child(d,"identity",records::IdentityDocument(c.identity));
@@ -19,7 +19,7 @@ Document ConfigurationDocument(const Configuration& c) {
     Number(d,"fixed_dt_s",r.fixed_dt);Number(d,"requested_duration_s",r.requested_duration);
     Integer(d,"static_reserve_bytes",r.static_byte_reserve);
     Integer(d,"total_byte_cap",r.total_byte_cap);Integer(d,"file_byte_cap",r.file_byte_cap);
-    if(c.profile.self_contact)Integer(d,"extra_interval_bytes",r.extra_interval_bytes);
+    if(c.profile.self_contact||c.profile.native_contact)Integer(d,"extra_interval_bytes",r.extra_interval_bytes);
     Value files(rapidjson::kArrayType);
     for(const auto& f:r.static_files) {
         Document row;row.SetObject();String(row,"file",f.file);Integer(row,"bytes",f.bytes);
@@ -39,13 +39,14 @@ Configuration ReadConfiguration(const Value& v) {
         "fixed_dt_s","requested_duration_s","static_reserve_bytes","total_byte_cap","file_byte_cap","static_reservations","wall_case"});
     else Keys(v,{"schema","identity","profile","point_layout_sha256","nodes","parents","points","samples","intervals",
         "fixed_dt_s","requested_duration_s","static_reserve_bytes","total_byte_cap","file_byte_cap","static_reservations"});
-    Require(Text(v["schema"])==(self?"robo_dyna.physical_run_configuration.v2":"robo_dyna.physical_run_configuration.v1"),
-        "Unsupported physical configuration");
     Configuration c;auto& r=c.request;
     if(wall)Require(Text(v["wall_case"])==WallProfile,"Unknown physical wall profile");
     c.wall=wall;
     c.identity=records::ParseIdentity(v["identity"]);c.profile=ReadProfile(v["profile"]);
-    Require(c.profile.self_contact==self,"Physical configuration/profile self-contact storage differs");
+    Require((c.profile.self_contact||c.profile.native_contact)==self,"Physical configuration/profile contact storage differs");
+    Require(Text(v["schema"])==(c.profile.native_contact?"robo_dyna.physical_run_configuration.v3":
+        c.profile.self_contact?"robo_dyna.physical_run_configuration.v2":"robo_dyna.physical_run_configuration.v1"),
+        "Unsupported physical configuration");
     if(self)r.extra_interval_bytes=UInt(v["extra_interval_bytes"]);
     c.point_layout_sha256=Text(v["point_layout_sha256"]);
     r.nodes=UInt(v["nodes"]);r.parents=UInt(v["parents"]);r.plastic_points=UInt(v["points"]);

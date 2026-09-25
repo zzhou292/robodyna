@@ -14,7 +14,7 @@ std::vector<RecordFile> Inventory(const PreparedSourceMapping& mapping,
     for (const auto& f : files) {
         arrays::CheckRelativeName(f.file);
         arrays::CheckHash(f.sha256);
-        Require(f.bytes && f.bytes <= d.file_byte_cap && names.insert(f.file).second,
+        Require((f.bytes || f.sha256==Sha256({})) && f.bytes <= d.file_byte_cap && names.insert(f.file).second,
             "Duplicate or oversized static source file");
     }
     return files;

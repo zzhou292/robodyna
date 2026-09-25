@@ -18,7 +18,7 @@ if(NOT EXISTS "${ROBO_DYNA_TL_ROOT}/lib_utils/BoundedArena.h")
 endif()
 include(PhysicalRun.cmake)
 add_executable(robo_dyna_physical_run_check tests/ValuesTest.cpp tests/RecordsTest.cpp tests/FailureTest.cpp tests/WallTest.cpp tests/ViewerInputTest.cpp
-  tests/SelfContactRecordsTest.cpp)
+  tests/SelfContactRecordsTest.cpp tests/NativeContactRecordsTest.cpp)
 target_link_libraries(robo_dyna_physical_run_check PRIVATE robo_dyna_physical_run_records GTest::gtest_main)
 target_compile_options(robo_dyna_physical_run_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME physical_run_records COMMAND robo_dyna_physical_run_check)

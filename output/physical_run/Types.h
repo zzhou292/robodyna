@@ -2,6 +2,7 @@
 #include "output/full_shell/activity/ActivityRecord.h"
 #include "output/full_shell/IntervalChunkPlan.h"
 #include "SelfContactValues.h"
+#include "NativeContactValues.h"
 #include <optional>
 namespace crash::output::physical_run {
 namespace records=full_shell;
@@ -10,11 +11,13 @@ inline constexpr const char* IndexSchema="robo_dyna.physical_accepted_index.v1";
 inline constexpr const char* ProfileSchema="robo_dyna.physical_observation_profile.v1";
 inline constexpr const char* SelfContactProfileSchema="robo_dyna.physical_observation_profile.v2";
 inline constexpr std::size_t MetadataCap=1024u<<10;
+inline constexpr const char* NativeContactProfileSchema="robo_dyna.physical_observation_profile.v3";
 struct Profile {
     bool type45=false;
     bool structural_limit=false;
     bool beam18=false;
     bool self_contact=false;
+    bool native_contact=false; // Explicit QEPH/T3 fixed-main native TYPE25 participant set.
 };
 bool SameProfile(Profile,Profile) noexcept;
 Document ProfileDocument(Profile);
@@ -24,10 +27,12 @@ struct Values {
     records::FrameStamp stamp;
     std::optional<double> structural_limit_s;
     std::optional<SelfContactValues> self_contact;
+    std::optional<NativeContactValues> native_contact;
 };
 struct Sequence {
     records::FrameStamp last;
     std::uint64_t self_source_id=0,self_selected_parents=0;
+    std::optional<NativeContactValues> native_contact;
 };
 void CheckValues(const records::Context&,Profile,const Values&);
 Sequence Advance(const records::Context&,Profile,std::uint64_t planned,const Sequence&,const Values&);

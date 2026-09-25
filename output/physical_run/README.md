@@ -229,3 +229,7 @@ exact-cap versus one-byte-short rejection, invalid or overflowing partitions,
 stale phase/source rejection, initial-only and sampled prefix validation, and
 legacy profile bytes. These codecs do not substitute for a live committed
 wall+self controller run.
+
+## Native fixed-main contact observations
+
+The additive `physical_observation_profile.v3` identifies the QEPH/T3/native TYPE25 participant set. It reuses the existing integer/real interval codec and exact accepted time-grid rules, with source identity/counts and accepted publication/reference generations plus the authentic force-base phase. It does not encode the earlier V5 residual-policy counters. Its fresh-owner publication generation must equal accepted epoch; references are positive, bounded by publication generation and increase at most once per interval. The initial frame is separate and has no completed interval. All unavailable force/work/energy fields stay explicitly unavailable. Native contact and legacy self-contact/joint/beam profiles cannot be combined by this profile.

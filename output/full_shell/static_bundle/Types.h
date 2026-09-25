@@ -5,6 +5,8 @@
 
 namespace crash::output::full_shell::source {
 inline constexpr const char* CanonicalSchema = "tlfea.yaris_source_vehicle_geometry.v1";
+inline constexpr const char* DeclaredCanonicalSchema = "robo_dyna.declared_shell_source.v1";
+inline constexpr const char* DeclaredScopeSchema = "robo_dyna.declared_shell_scope.v1";
 inline constexpr const char* ScopeSchema = "robo-dyna.full-shell-scope.v1";
 inline constexpr const char* MappingSchema = "robo_dyna.full_shell_source_mapping.v1";
 inline constexpr std::size_t CanonicalArrayCount = 17;
@@ -30,7 +32,7 @@ struct SourceLimits {
 };
 struct PartDeclaration {
     std::uint64_t part = 0, material = 0, section = 0;
-    unsigned source_elform = 0;
+    unsigned source_elform = 0; // Opaque code: original ELFORM, or declared formulation_scheme.
     bool shell_section = false;
 };
 struct NamedArray {

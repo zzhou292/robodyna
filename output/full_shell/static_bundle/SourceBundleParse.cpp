@@ -8,10 +8,13 @@ using namespace array_json;
 RecordFile ParseFile(const Value& v, std::size_t cap) {
     Keys(v, {"file", "sha256", "bytes"});
     const auto n = UInt(v["bytes"]);
-    Require(n && n <= cap, "Static source file exceeds capacity");
+    Require(n <= cap, "Static source file exceeds capacity");
     RecordFile f{Text(v["file"]), Text(v["sha256"]), static_cast<std::size_t>(n)};
     arrays::CheckRelativeName(f.file);
     arrays::CheckHash(f.sha256);
+    // Staged inventory only. Zero entries must later match a reconstructed
+    // canonical array whose typed dimensions require zero elements.
+    Require(f.bytes || f.sha256==Sha256({}),"Empty source array hash differs");
     return f;
 }
 void ExpectedCopy(const RecordFile& copy, const RecordFile& original, const std::string& path) {

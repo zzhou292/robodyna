@@ -3,7 +3,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../physical_frames/FrameArchive.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/WallComposition.cmake")
 add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ViewerInput.cpp" "${CMAKE_CURRENT_LIST_DIR}/Profile.cpp" "${CMAKE_CURRENT_LIST_DIR}/Sequence.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/SelfContactValues.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SelfContactValues.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeContactValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Fields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IntervalWriter.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/IntervalReader.cpp" "${CMAKE_CURRENT_LIST_DIR}/Configuration.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/IndexFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IndexChecks.cpp"

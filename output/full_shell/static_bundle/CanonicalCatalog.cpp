@@ -79,7 +79,11 @@ void ReadCatalog(CanonicalData& out, const Value& doc) {
         UInt(Field(counts, "parts")) == out.parts.size(), "Canonical source count mismatch");
     out.canonical_nodes = static_cast<std::size_t>(nodes);
     out.canonical_shells = static_cast<std::size_t>(shells);
-    const auto& table = Field(doc, "arrays");
+    ReadCanonicalArrays(out,Field(doc,"arrays"),nodes,shells,solids,beams);
+}
+void ReadCanonicalArrays(CanonicalData& out,const Value& table,std::size_t nodes,
+    std::size_t shells,std::size_t solids,std::size_t beams) {
+    using namespace array_json;
     Keys(table, {"node_ids", "node_positions", "node_codes", "node_blank_masks", "node_source_lines",
         "shells_records", "shells_node_indices", "shells_source_lines", "shells_blank_masks",
         "solids_records", "solids_node_indices", "solids_source_lines", "solids_blank_masks",
