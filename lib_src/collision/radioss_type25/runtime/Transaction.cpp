@@ -7,7 +7,7 @@ namespace tlfea::contact::radioss_type25 {
 namespace fe=tl::fea;namespace rd=runtime_detail;
 namespace {
 TransactionReport Error(TransactionStatus s,const char* message){return {s,message};}
-VectorView View(const double* data,std::size_t nodes){return {data,nodes,3,1};}
+VectorView View(const double* data,std::size_t nodes){return {data,std::uint32_t(nodes),3,1};}
 bool Phase(const fe::NodalStamp& s,double& drift,double& kick) {
   if(s.temporal_scheme!=fe::NodalTemporalScheme::StaggeredHalfKickStart||!s.has_rotations||
      !tl::math::Finite(s.time)||!normal_detail::Nonnegative(s.fixed_dt)||!s.fixed_dt)return false;
@@ -188,6 +188,10 @@ TransactionReport Transaction::CopyAccepted(AcceptedContactBuffer output,fe::Nat
   using fe::trial_identity::Disjoint;
   if(!selected.available||output.row_capacity<rows||!p.OutputDisjoint(output.rows,row_bytes)||
      !p.OutputDisjoint(output.initial_contact_flags,flag_bytes)||!p.OutputDisjoint(snapshot,sizeof(*snapshot))||
+     !Disjoint(output.rows,row_bytes,this,sizeof(*this))||!Disjoint(output.initial_contact_flags,flag_bytes,this,sizeof(*this))||
+     !Disjoint(snapshot,sizeof(*snapshot),this,sizeof(*this))||
+     !Disjoint(output.rows,row_bytes,&output,sizeof(output))||!Disjoint(output.initial_contact_flags,flag_bytes,&output,sizeof(output))||
+     !Disjoint(snapshot,sizeof(*snapshot),&output,sizeof(output))||
      !Disjoint(output.rows,row_bytes,output.initial_contact_flags,flag_bytes)||
      !Disjoint(output.rows,row_bytes,snapshot,sizeof(*snapshot))||!Disjoint(output.initial_contact_flags,flag_bytes,snapshot,sizeof(*snapshot)))
     return Error(TransactionStatus::InvalidInput,"Invalid native accepted snapshot output");

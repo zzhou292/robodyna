@@ -12,7 +12,6 @@ namespace tlfea::contact::radioss_type25::runtime_detail {
 namespace {
 TransactionReport Fail(TransactionStatus s,const char* m,std::size_t row=SIZE_MAX){return {s,m,row};}
 struct Parent {std::uint64_t id=0;bool triangle=false;std::size_t index=0;};
-bool Span(const void* p,std::size_t count,std::size_t size) {return (!count||p)&&count<=SIZE_MAX/size;}
 }
 TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainSource& source,
     const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,SourceStaging& out) noexcept try {
@@ -23,11 +22,25 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
      !units_detail::Make(config.units,units)||source.native_workers!=1||!source.force_packet_size||
      source.force_packet_size>INT_MAX||!p||p>INT_MAX/2||s.main_count!=2*p||!s.secondary_count||
      s.node_count!=domain->node_count()||!s.nodes||!s.mains||!s.secondary||
-     !Span(source.primary_parent_ids,p,sizeof(std::uint64_t))||!Span(source.primary_curvature,p,sizeof(double)))
+     !lifecycle::detail::Span(source.primary_parent_ids,p)||!lifecycle::detail::Span(source.primary_curvature,p))
     return Fail(TransactionStatus::InvalidInput,"Incomplete fixed-main native source");
   if(s.node_count>limits.inventory.max_nodes||s.secondary_count>limits.inventory.max_secondaries||p>limits.inventory.max_mains||
      limits.optimized_candidates>INT_MAX/5||limits.sliding_entries>=INT_MAX||limits.inventory.max_pairs>=INT_MAX)
     return Fail(TransactionStatus::ResourceLimit,"Fixed-main source exceeds explicit count limits");
+  // Typed span/alignment/overflow admission precedes every borrowed metadata
+  // read, including preparation of the physical identity and virgin history.
+  if(s.normal_count>4*s.main_count||s.normal_to_main.offset_count!=s.normal_count+1||
+     s.normal_to_main.entry_count>4*s.main_count||
+     s.removed_main_by_secondary.offset_count!=s.secondary_count+1||
+     s.removed_main_by_secondary.entry_count>limits.inventory.max_removals)
+    return Fail(TransactionStatus::ResourceLimit,"Native source CSR counts exceed topology limits");
+  if(!lifecycle::detail::Span(s.nodes,s.node_count)||!lifecycle::detail::Span(s.mains,s.main_count)||
+     !lifecycle::detail::Span(s.secondary,s.secondary_count)||!lifecycle::detail::Span(s.normals,s.normal_count)||
+     !lifecycle::detail::Span(s.normal_to_main.offsets,s.normal_to_main.offset_count)||
+     !lifecycle::detail::Span(s.normal_to_main.entries,s.normal_to_main.entry_count)||
+     !lifecycle::detail::Span(s.removed_main_by_secondary.offsets,s.removed_main_by_secondary.offset_count)||
+     !lifecycle::detail::Span(s.removed_main_by_secondary.entries,s.removed_main_by_secondary.entry_count))
+    return Fail(TransactionStatus::InvalidInput,"Native source metadata span is invalid");
   if(!normal_detail::Nonnegative(source.margin)||!tl::math::Finite(source.gap_load)||!normal_detail::Nonnegative(source.drad)||
      !friction_detail::Supported(config.friction)||!friction_detail::Valid(config.friction_coefficients)||
      !assembly::detail::Supported(config.assembly)||config.normal.engine.kdtint!=config.assembly.engine.kdtint||
@@ -65,7 +78,7 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
       return Fail(TransactionStatus::SourceMismatch,"Contact node identity/constraint differs from physical source",node);
     next.ids[node]=s.nodes[node].source_id;next.codes[node]=s.nodes[node].constraint;next.positions[node]=domain->nodes()[node].position;
     const double mass=ledger->nodes()[node].coefficients.mass;
-    if(!(mass>0)||!tl::math::Finite(mass)||!normal_detail::Nonnegative(mass/units.mass))
+    if(!(mass>0)||!tl::math::Finite(mass)||!tl::math::Finite(mass/units.mass)||!(mass/units.mass>0))
       return Fail(TransactionStatus::SourceMismatch,"Physical raw contact mass is invalid",node);
     next.native_mass[node]=mass/units.mass;
   }
@@ -79,8 +92,8 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
   }
   std::vector<std::uint32_t> empty_offsets(s.secondary_count+1,0);
   lifecycle::Input input;input.profile=config.lifecycle;input.source=s;
-  input.current={VectorView{reinterpret_cast<const double*>(next.positions.data()),s.node_count,3,1},
-      VectorView{reinterpret_cast<const double*>(zero_velocity.data()),s.node_count,3,1},lifecycle::KinematicsUnits::Si,config.units};
+  input.current={VectorView{reinterpret_cast<const double*>(next.positions.data()),std::uint32_t(s.node_count),3,1},
+      VectorView{reinterpret_cast<const double*>(zero_velocity.data()),std::uint32_t(s.node_count),3,1},lifecycle::KinematicsUnits::Si,config.units};
   input.accepted_rows=next.history.data();input.accepted_row_count=s.secondary_count;
   input.spatial_by_secondary={empty_offsets.data(),empty_offsets.size(),nullptr,0};
   const auto admitted=lifecycle::detail::Validate(input);

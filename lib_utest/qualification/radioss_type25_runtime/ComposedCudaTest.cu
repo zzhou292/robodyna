@@ -5,6 +5,7 @@
 #include "lib_src/collision/RadiossType25AssemblyDevice.h"
 #include "../radioss_type25_lifecycle/Assertions.h"
 #include "../radioss_type25_lifecycle/NativeOracle.h"
+#include "../radioss_type25_local_geometry/NativeOracle.h"
 #include "../radioss_type25_friction/NativeOracle.h"
 #include "../radioss_type25_friction/Assertions.h"
 #include "../radioss_type25_assembly/NativeOracle.h"

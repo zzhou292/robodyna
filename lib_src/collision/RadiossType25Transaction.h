@@ -13,7 +13,9 @@ struct AcceptedContactBuffer {
 // Concrete fixed-main GPU contact participant. FENodalState remains the sole
 // clock and state owner. This stable-address object is noncopyable/nonmovable.
 // Serialize every call/read/destruction with the owner and common publisher;
-// the borrowed owner stream must outlive destruction. All staging calls drain.
+// owner and its borrowed stream must outlive destruction. The publisher may
+// destruct first: its typed issuer detaches and all later calls reject before
+// dereferencing the former publisher. All staging calls drain.
 // Only ShellBatchPublication::CommitPhysical can publish accepted selectors.
 class Transaction {
  public:
