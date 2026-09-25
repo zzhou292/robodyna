@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer", size = "small", srcs = ["ConsumerTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_lifecycle", "//lib_utils:ordered_node_incidence", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
+    data = glob(["native/**"]) + [
+        "//lib_utest/qualification/radioss_type25_normal:native_source_files",
+        "//lib_utest/qualification/radioss_type25_friction:lifecycle_source_files",
+        "//lib_utest/qualification/radioss_type25_selection:lifecycle_source_files"],
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)

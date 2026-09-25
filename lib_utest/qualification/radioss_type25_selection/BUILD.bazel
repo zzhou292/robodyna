@@ -14,3 +14,9 @@ cc_test(
             glob(["native/original/*"]),
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
 )
+
+filegroup(
+    name = "lifecycle_source_files",
+    srcs = glob(["native/**"]),
+    visibility = ["//lib_utest/qualification/radioss_type25_lifecycle:__pkg__"],
+)

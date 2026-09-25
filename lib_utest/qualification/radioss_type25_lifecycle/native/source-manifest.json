@@ -1,0 +1,100 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only complete local OPTCD/PREP_SLID1/2/KEEPF and exact phase blocks, composed with previously pinned native history/classification/geometry references.",
+  "files": [
+    {
+      "path": "native/original/i25slid.F",
+      "bytes": 48398,
+      "sha256": "1745175e22fdbff44f3f05dea095566dd5e7506aa568d9964e1a6ac7c2bec878"
+    },
+    {
+      "path": "native/original/i25main_slid.F",
+      "bytes": 22199,
+      "sha256": "4c2438bcbbcc3a75565a07ab3265db02f76284c2cbf4b72e5f4dc9fdd105ba96"
+    },
+    {
+      "path": "../radioss_type25_selection/native/original/i25comp_1.F",
+      "bytes": 8951,
+      "sha256": "687e25a63c6e99768a88393fc8c4d51535e1786cfe7eac6b7b761843576d6139"
+    },
+    {
+      "path": "../radioss_type25_selection/native/original/i25comp_2.F",
+      "bytes": 14026,
+      "sha256": "49b4656d294120131e729e620004c3e34866e07d9d2f04f1de565fe90eeae1e3"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "path": "../radioss_type25_friction/native/original/i25mainf.F",
+      "bytes": 55358,
+      "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
+    },
+    {
+      "path": "native/original/i25optcd.F",
+      "bytes": 15064,
+      "sha256": "1a210e5206ec3bfa61bcd5178036d3e52ccb934587a4a7a06b795e567637b7c4"
+    },
+    {
+      "path": "native/original/i25main_opt_tri.F",
+      "bytes": 9502,
+      "sha256": "f1573773bbaf31dd62264c1e7a4d9572d01c6924b662d50dbd73597a669ac052"
+    }
+  ],
+  "boundary_substitutions": [
+    "USE TRI7BOX to USE LIFECYCLE_FOREIGN only",
+    "private constants/module and process COMMON names; ISO_C_BINDING binary64/C int boundary",
+    "allocation adapters preserve original temporary integer arrays; no numerical source translation",
+    "OPTCD read-only appended input ordinal observation; private serial COMMON/barrier boundaries"
+  ],
+  "abi": {
+    "membership": {
+      "arguments": 8,
+      "counts": "NSN, NRTM, occurrence count",
+      "phase": "1 continuation, 2 new impact",
+      "outputs": "one-based complete INDEX snapshot and count; API-zero unused tail"
+    },
+    "prepare1": {
+      "arguments": 13,
+      "counts": "NSN, NRTM, NADMSR, retained occurrence count",
+      "arrays": "native column-major IRECT(4,NRTM), ADMSR(4,NRTM), IRTLM(4,NSN), TIME_S(2,NSN), complete FARM/PENM/LBM/LCM(4,count), ISLIDE(4,NSN)"
+    },
+    "expand": {
+      "arguments": 18,
+      "counts": "NSN, NRTM, NADMSR, capacity, normal-incidence length, removal-incidence length",
+      "offsets": "native zero-based prefix offsets; entries/native references remain one-based",
+      "outputs": "complete K_STOK count; native I_STOK and appended arrays change only when full append fits"
+    },
+    "keep": {
+      "arguments": 13,
+      "counts": "NSN, NRTM, occurrence count, positive index count, node-map length",
+      "arrays": "actual CAND_N/E, INDEX, native global main and node identities, complete IRTLM/PENM/PENE_OLD/SECND_FR/TIME_S/STIF_OLD",
+      "outputs": "native signed occurrence markers and source row clearing; unchanged history fields retained"
+    },
+    "clear_sliding": {
+      "arguments": 2,
+      "scope": "exact MAIN_SLID clear of all four ISLIDE slots per local secondary before retained classification"
+    },
+    "finish_markers": {
+      "arguments": 2,
+      "scope": "exact MAINF post-force loop changes only negative IRTLM1 to its positive value; run once after complete force/assembly phase"
+    },
+    "optcd": {
+      "arguments": 25,
+      "counts": "node count, classification mains G, secondaries, raw search occurrences, complete output capacity",
+      "precision": "explicit raw IRESP0/1/2; 1 special floor, 0/2 ELSE/EM8; default unknown is not admitted",
+      "clock": "native DT1 only; no second physical clock",
+      "source_tables": "all native X/V, IRECT, NSV, MSEGLO/MSEGTYP, coefficients and interface gaps; IGAP1/DRAD0/DGAPLOAD0",
+      "history": "complete IRTLM/TIME_S/SECND_FR/PENE_OLD/STIF_OLD, plus persistent ICONT_I",
+      "observations": "one-based original raw ordinal at each actual output write; exact complete required count before original capacity condition",
+      "capacity": "native I_OPT_STOK advances only when full append fits but individual prefix writes may still occur; production atomic resource failure is a separate private-staging contract",
+      "schedule": "NSPMD1, NTHREAD1, ITASK0, NVSIZ=MVSIZ128; barriers/register boundary stubs do not perform arithmetic"
+    },
+    "release_main": {
+      "arguments": 2,
+      "scope": "original MAIN_OPT_TRI release of negative IRTLM3 only after OPTCD used KLEAVE"
+    }
+  }
+}

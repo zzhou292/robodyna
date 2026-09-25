@@ -17,3 +17,9 @@ filegroup(
     srcs = ["native/original/i25dst3_3.F", "native/original/i25mainf.F"],
     visibility = ["//lib_utest/qualification/radioss_type25_local_geometry:__pkg__"],
 )
+
+filegroup(
+    name = "lifecycle_source_files",
+    srcs = glob(["native/**"]),
+    visibility = ["//lib_utest/qualification/radioss_type25_lifecycle:__pkg__"],
+)
