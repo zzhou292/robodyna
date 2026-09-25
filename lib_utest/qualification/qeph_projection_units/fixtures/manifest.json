@@ -1,0 +1,15 @@
+{
+  "schema": "qeph.native-projection-capture.v1",
+  "bytes": 60604,
+  "sha256": "38ee4b3c6cd7053a9e43dc1683066d9fd59bfbdc40f2f332005ed4b1dd636816",
+  "source_app": "d768096",
+  "source_file": "crash-work/investigations/native-contact-scene-structural-1/native-structural.jsonl",
+  "units": "millimetre-tonne-second; forcesN andcouplesNmm",
+  "cycles": [
+    0,
+    473,
+    700
+  ],
+  "rows_per_cycle": 4,
+  "scope": "Observed raw native projection entries/exits. Fullcaller replay needs its complete source context; unused planar warped arrays remain undefined."
+}
