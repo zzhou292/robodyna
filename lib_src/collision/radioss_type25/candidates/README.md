@@ -1,74 +1,72 @@
-# Native TYPE25 candidate inventory
+# Native TYPE25 candidate staging
 
-Implementation boundary, 2026-09-25. Pinned OpenRadioss a62b27e6.
-This stage computes search inventory, never force, penetration history or a clock.
-Production reimplements native numerics in C++/CUDA; native Fortran stays in tests.
+Pinned OpenRadioss a62b27e6, MYREAL8. This module builds a complete numerical
+node/main candidate inventory. It never applies forces, owns history or advances
+a physical clock. Production is C++/CUDA and has no native Fortran dependency.
 
-Selected scope is local node/main roles, ILEV1, IEDGE0, IGAP1, FLAGREMNODE2,
-finite nonnegative native gaps/activity, explicit source symmetry controls.
-Source IDs and repeated secondary/main occurrences are retained, with their
-original ordinals. Missing removal/gap producers must not be filled with invented
-values. Unsupported profiles fail before publishing any trial inventory.
+The selected source scope is local roles, ILEV1, IEDGE0, IGAP1, FLAGREMNODE2 and
+ICODT0..7. Actual source IDs, ordered four-slot topology, repeated secondary/main
+occurrences, genuine removal CSR, main segment type and global native NRTM remain
+explicit. Negative activity, remote exchange and other source profiles are not
+admitted. No absent coefficient, gap or removal producer is synthesized.
 
-The filter preserves strict TRIVOX coordinate/diagonal screens, COR3T packing,
-native PEN3 floors/expression order/symmetry and PENE != 0 admission. T3 uses the
-all-T3 row expression; Q4 uses the Q4 expression. The 2064-case native packing
-experiment motivates this policy; host/CUDA differential tests remain mandatory.
+TRIVOX coordinate and diagonal tests retain strict comparisons and source
+association. COR3T uses base=max(DRAD,(GAP_S+GAP_M)+DGAPLOAD), pair velocity extrema
+VX/VY/VZ against all four main slots, VDT=((VX+VY)+VZ)*DT1 and
+GAPV=ONEP01*((base+CURV_MAX)+VDT). Global stored_motion participates only in TRIVOX.
+PEN3 evaluates the native all-T3 row for T3 and native Q4 fan rows for Q4, with
+native denominator floors, edge-region decisions and PENE != 0 admission.
+IBC bit1 is Z, bit2 is Y, bit4 is X. ETYP/global NRTM select solid/coating symmetry.
+Repeated source-node inputs require identical coordinate/velocity bits. STIF,
+ITYP and ISKEW are neither fabricated nor consumed by this candidate stage.
 
-Conservative sweep proof: let g* be the maximum native secondary gap among the
-positive-activity, search-domain-clipped roster. Compute A* in the same rounded
-order as the per-pair radius: ((margin+curvature)+max((g*+main_gap)+gap_load,drad))
-+stored_motion. Finite IEEE round-nearest additions and max are monotone, so
-A* >= A(pair). The same main coordinate extrema and subtraction/addition imply
-every native strict-coordinate survivor lies inside the inclusive sweep envelope.
-Overflow is rejection. The voxel-only PMAX_GAP overestimate does not tighten the
-native exact pair screen. A sorted x sweep may therefore overenumerate; it cannot
-omit any pair admitted by that screen. It does not replace native domain clipping,
-own-node/removal rules, diagonal/PEN3 tests or required stateful selection order.
+Source has explicit UnitScale and Native/Si input mode. Borrowed positions,
+velocities and gaps convert on each GPU load using existing unit factors; scalar
+controls/domain convert once per Stage. There is no converted whole-state copy.
+Zero stiffness skips row fields; domain-clipped secondary rows skip gaps and
+velocities. COR3T reads velocities only after own-node/removal and strict screen
+admission. Finite-input arithmetic overflow rejects before publication.
 
-Retained GPU implementation will reuse BoundedArena and stable CUB radix/scan
-patterns, split dense main ranges into bounded tasks, use identical immutable
-filter inputs for count/fill, reject exact capacity overflow and never truncate.
-Records are canonically stored by secondary source-row ordinal, global main ID,
-main occurrence. This storage order does not authorize a stateful selection fold.
-Reference, inventory, history and physical state are committed only together by
-the existing common physical owner; standalone inventory success is not a receipt.
+The conservative x-sweep derives maximum secondary gap g* from the admitted
+positive-activity, domain-clipped roster. It evaluates
+A*=((margin+curvature)+max((g*+main_gap)+gap_load,drad))+stored_motion in the same
+rounded order as the pair radius. Finite IEEE round-nearest additions/max are
+monotone, so A* >= A(pair). The same main coordinate extrema then imply every
+strict native coordinate survivor lies inside the inclusive sweep envelope.
+Overflow rejects. Native voxel PMAX_GAP is an enumeration overestimate; the exact
+pair screen does not consume it. The sweep can overenumerate but cannot omit a
+pair admitted by that screen under the declared finite domain.
 
-Qualification gate: original native PEN3 and COR3T (independent test wrappers),
-mixed T3/Q4 including warped/degenerate/ULP/symmetry; independent native TRIVOX
-membership on bounded scenes; complete GPU count/fill/sort/secondary incidence;
-empty/dense/exact capacity, exclusions/duplicates, current gap changes, immutable
-reference generations, failure/retry and actual CUDA execution. No component speed
-or whole-contact claim before those gates and coupled selection/response closure.
+Inventory reuses BoundedArena and stable CUB radix/scan patterns. Dense ranges
+split into bounded256-lane tasks. Identical immutable filter inputs drive count
+and fill, capacity failure publishes nothing, and no nearest-K truncation or
+implicit growth exists. Canonical order is secondary-row ordinal, global main ID,
+then source main occurrence; a separate device CSR retains secondary incidence.
+This storage order grants no permission to reorder stateful selection or ASS0.
+Removal-list sorting changes membership lookup only, not physical/response order.
 
-COR3T closure: local IGAP1 uses base=max(DRAD,(GAP_S+GAP_M)+DGAPLOAD),
-pair velocity extents VX/VY/VZ against all four main slots, VDT=((VX+VY)+VZ)*DT1,
-then GAPV=ONEP01*((base+CURV_MAX)+VDT). Global stored_motion is only a TRIVOX
-screen operand. ICODT is explicitly admitted only in0..7; its common constrained
-axes produce IBC. ETYP and full source NRTM remain distinct operands. ISKEW,
-STIF and ITYP are not consumed/fabricated. Tests use the whole pinned COR3T and
-all32,768 admitted five-node ICODT combinations plus moving mixed-topology rows.
+Initialize copies source maps into a startup arena. Stage synchronously drains one
+explicit borrowed stream and copies only small control packets. Every Stage
+attempt, including failure, and Discard expire that instance's prior view.
+IsCurrent checks that lifetime; a consuming coordinator must additionally compare
+the complete QueryStamp with its authenticated source/activity/gap/geometry/attempt
+and reference context. Query metadata is not physical authority. Device failure
+poisons the instance; numerical/capacity rejection permits retry without publishing.
 
-The implemented Inventory is a numerical staging owner, not a reference receipt.
-Every Stage (including input, resource or device failure) expires its old view;
-Discard expires it too. Stage completes synchronously on one explicit borrowed
-stream and transfers only three small control packets. Its reusable startup arena
-holds a sorted secondary sweep, bounded256-lane tasks, count/scan/fill buffers,
-canonical pairs and device secondary CSR. Sorting removal lists changes membership
-lookup order only; secondary/main occurrence identity and multiplicity remain.
-The future common coordinator retains two owners and binds reference/history/force
-publication atomically. It calls Stage only on a required native inventory rebuild.
-It must forecast both arenas, validate IsCurrent before consumption, and preserve
-the accepted instance while the other stages. Device failure poisons the instance;
-resource/numerical errors permit retry with new current inputs and no publication.
+The common contact coordinator must hold two owners, leave its accepted instance
+untouched while staging the other, forecast both arenas/CUB workspaces, call Stage
+only when native maintenance requests an inventory rebuild, and publish reference,
+inventory, history and physical state together. This module exposes no physical
+Commit or standalone reference reuse receipt. Reports count this module's explicit
+kernel launches, CUB calls and host fences separately; they are not profiler counts
+of CUB's internal kernel launches or whole-solver timings.
 
-Native/SI source mode converts borrowed kinematics/gaps on each GPU load using
-existing UnitScale factors; scalar/domain controls convert once per Stage. No
-converted whole-state buffer is introduced. Zero-stiffness entries skip their
-fields; domain-clipped secondary entries skip gaps and velocities. COR3T velocity
-validation occurs only after exact screen admission. Negative activity remains an
-explicit unsupported numerical input, matching the current maintenance boundary.
-The membership oracle exhaustively enumerates the complete supplied source roster,
-then invokes exact native TRIVOX screen chunks and whole COR3T/PEN3. This validates
-sweep completeness against native per-pair admission; it is not an execution of
-native voxel construction, scheduling or original removal-list production.
+Qualification compares whole native PEN3/COR3T and exact native TRIVOX screen
+chunks on mixed, warped, degenerate, ULP, symmetry and velocity cases. An exhaustive
+complete-role native-pair oracle checks CUDA sweep membership, multiplicity,
+canonical storage and CSR over updates. Other gates cover dense/exact capacities,
+empty/inactive/clipped fields, native/SI views, retry/view expiry, alias rejection,
+CUDA poison and production-only consumer linking. Whole native voxel scheduling,
+original removal-roster generation, stateful selection/history, endpoint ASS0 and
+common physical publication are separate remaining integration gates. This is
+not a complete contact solver or a matched CPU/GPU performance claim.
