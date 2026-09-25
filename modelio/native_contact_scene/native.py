@@ -3,6 +3,8 @@ from .cards import ints, reals, node_group
 
 
 def starter(scene, mesh):
+    if (scene.definition_version, scene.contact_surface) not in ((1, 'fixed_wall'), (2, 'all_shells')):
+        raise ValueError('Unqualified scene contact surface declaration')
     material = scene.material
     unit = ''.join(s.rjust(20) for s in ('Mg','mm','s'))
     out = ['#RADIOSS STARTER', '/BEGIN', 'contact_scene', ints(2024), unit, unit,
@@ -24,10 +26,13 @@ def starter(scene, mesh):
     out += node_group(2,'Moving patch nodes',mesh.patch_nodes)
     out += ['/BCS/1','Fixed wall translations and rotations','   111 111'+ints(0,1),
             '/INIVEL/TRA/1','Initial patch velocity',reals(*scene.velocity_mm_s)+ints(2,0),
-            '/SURF/SEG/1','Finite wall triangles']
+            '/SURF/SEG/1',('Finite wall triangles' if scene.contact_surface == 'fixed_wall' else 'Complete declared wall and moving shell surface')]
     out += [ints(e.id,*e.nodes,0) for e in mesh.wall]
-    # Surface1 selects ILEV1 self-contact on the fixed wall; the explicit node
-    # group adds moving patch secondaries. Fixed wall nodes remain authentic
+    if scene.contact_surface == 'all_shells':
+        out += [ints(e.id,*e.nodes) for e in mesh.patch]
+    # Surface1 selects ILEV1 self-contact on its complete declared roster.
+    # Version1 adds moving patch secondaries; version2 already includes them
+    # as genuine main-surface nodes and preserves the explicit group union. Fixed wall nodes remain authentic
     # secondary uses and are handled by native constraints/incidence/removal.
     # Labels below are intended inputs; actual normalized controls are observed
     # from the pinned Starter/Engine before any runtime profile is admitted.

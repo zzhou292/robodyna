@@ -1,0 +1,18 @@
+{
+  "schema": "robo_dyna.native_scene_v1_export_bytes.v1",
+  "source_commit": "23f7e904b82c0c022f5bdd1a27ee2e2603d8f2de",
+  "fixtures": {
+    "fixed_wall_patch.json": {
+      "contact_scene_0000.rad": "4a6dbc2ff7aa27aceb27d36fdd9ca6b25a267ddd74f890bf9c741e9766bd2e6d",
+      "contact_scene_0001.rad": "5e10df092c1bf087559b802ff223b43a4c4e8d8476499431601cc8a18f138500",
+      "declared-scene.json": "064ac154fe8a2f7b35f130496c3b812b3a9fc6cd8c66543bb808be6a17b0f050",
+      "scene.json": "111ab03a2bb1a3d090b4012a637979852fa44c7a45e13c7d493ad50e91558f69"
+    },
+    "fixed_wall_patch_capped.json": {
+      "contact_scene_0000.rad": "4a6dbc2ff7aa27aceb27d36fdd9ca6b25a267ddd74f890bf9c741e9766bd2e6d",
+      "contact_scene_0001.rad": "19b1e604a8599541d3584392078ce2817e2296d498402c94b48d3180f73fe3db",
+      "declared-scene.json": "d4f1b04b51efc4191942dd50e644cece571c011e451fc7774800b6b891769bd6",
+      "scene.json": "f88d86629cbab8c45c0f22562a9606e8f496bd6a33806465f6817878bc6e1fd9"
+    }
+  }
+}

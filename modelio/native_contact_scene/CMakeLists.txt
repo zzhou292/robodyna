@@ -9,7 +9,7 @@ target_link_libraries(native_scene_material_test PRIVATE robo_dyna_native_scene_
 target_compile_options(native_scene_material_test PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME native_scene_material COMMAND native_scene_material_test)
 add_test(NAME native_scene_export COMMAND "${Python3_EXECUTABLE}" -B -m unittest
-  benchmarks.native_contact_scene.test_scene benchmarks.native_contact_scene.reference.test_abi)
+  benchmarks.native_contact_scene.test_scene benchmarks.native_contact_scene.reference.test_abi modelio.native_contact_scene.test_surface)
 add_test(NAME native_scene_json_compat COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
   -s benchmarks/accepted_payloads -p "test_*.py")
 set_tests_properties(native_scene_material native_scene_export native_scene_json_compat PROPERTIES
@@ -28,4 +28,18 @@ if(ROBO_DYNA_NATIVE_SCENE_READER)
   add_test(NAME native_scene_source COMMAND native_scene_source_test)
   set_tests_properties(native_scene_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
     ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+endif()
+
+if(ROBO_DYNA_NATIVE_SCENE_READER)
+  set(ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT "" CACHE FILEPATH "Explicit version2 all-shell source fixture")
+  if(ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT)
+    if(NOT EXISTS "${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+      message(FATAL_ERROR "Moving declaration fixture is absent")
+    endif()
+    add_executable(native_scene_moving_source_test MovingSourceTest.cpp)
+    target_link_libraries(native_scene_moving_source_test PRIVATE robo_dyna_native_scene_declared GTest::gtest_main)
+    add_test(NAME native_scene_moving_source COMMAND native_scene_moving_source_test)
+    set_tests_properties(native_scene_moving_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
+      ENVIRONMENT "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+  endif()
 endif()

@@ -19,7 +19,10 @@ struct ContactSource::Data {
     n::search_startup::Initialization preprocessing=n::search_startup::Initialization::Unspecified;
 };
 ContactSource ContactSource::Prepare(const PhysicalSource& physical,ContactIdentity identity,ContactLimits limits) {
-    const auto& d=physical.declared().data();const auto nodes=d.nodes.size(),primary=d.wall.size(),shells=primary+d.patch.size();
+    const auto& d=physical.declared().data();
+    Require(d.contact_surface==modelio::native_scene::DeclaredContactSurface::FixedWall,
+        "Fixed-main compiler cannot admit an all-shell moving surface");
+    const auto nodes=d.nodes.size(),primary=d.wall.size(),shells=primary+d.patch.size();
     Require(identity.source&&identity.topology&&identity.generation&&nodes&&primary&&!d.patch.empty()&&
         limits.nodes&&limits.nodes<=2048&&limits.physical_shells&&limits.physical_shells<=1024&&
         nodes<=limits.nodes&&shells<=limits.physical_shells&&limits.host_bytes&&limits.host_bytes<=128u<<20&&

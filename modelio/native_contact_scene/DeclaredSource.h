@@ -18,7 +18,9 @@ struct SourceParent {
     std::uint64_t id=0,part=0;unsigned corners=0;
     std::array<std::uint32_t,4> nodes{}; // Zero-based original exported-node order; repeated T3 slot4.
 };
+enum class DeclaredContactSurface { FixedWall, AllShells };
 struct DeclaredData {
+    DeclaredContactSurface contact_surface=DeclaredContactSurface::FixedWall;
     std::string export_sha256,definition_sha256,definition_bytes;
     NativeMaterial material;
     std::vector<SourceNode> nodes;

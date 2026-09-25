@@ -21,9 +21,13 @@ def export(source, destination):
     mesh = build(scene)
     decks = {'contact_scene_0000.rad':starter(scene,mesh), 'contact_scene_0001.rad':engine(scene)}
     # Evaluate/validate every representation before creating the destination.
-    record = {'schema':'robo_dyna.native_contact_scene_export.v1',
+    exported_scene = asdict(scene)
+    exported_scene.pop('definition_version')
+    if scene.definition_version == 1:
+        exported_scene.pop('contact_surface')  # Exact historical v1 representation.
+    record = {'schema':f'robo_dyna.native_contact_scene_export.v{scene.definition_version}',
               'scope':'declared source only; runtime controls and physical trajectory unqualified',
-              'source_sha256':hashlib.sha256(source_bytes).hexdigest(), 'scene':asdict(scene), 'mesh':asdict(mesh)}
+              'source_sha256':hashlib.sha256(source_bytes).hexdigest(), 'scene':exported_scene, 'mesh':asdict(mesh)}
     if source.read_bytes() != source_bytes:
         raise ValueError('Scene declaration changed during export')
     destination = Path(destination)
