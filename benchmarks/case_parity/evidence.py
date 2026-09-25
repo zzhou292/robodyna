@@ -127,9 +127,18 @@ def measured_run(pin, parent, contract, producer, artifacts):
             "solver-only or component timing cannot be relabelled end-to-end")
     elapsed = guard.get("elapsed_seconds")
     require(type(elapsed) in (int, float) and elapsed > 0, "positive measured guard elapsed required")
-    definition = output_work(value["output_work"], record_file.path.parent, contract, artifacts)
-    mean, window = warm_timing(value["warm_timing"], record_file.path.parent, contract, producer,
-                               steps, elapsed, artifacts)
+    definition, outputs = output_work(value["output_work"], record_file.path.parent,
+                                      contract, producer, value["run_id"], artifacts)
+    mean, window, warm_file = warm_timing(value["warm_timing"], record_file.path.parent,
+        contract, producer, value["run_id"], steps, elapsed, artifacts)
+    # These are outputs of one invocation, not shared case/program inputs.
+    # Check both resolved names and physical identities to catch hard-link reuse.
+    owned = [record_file, warm_file, *outputs]
+    owned_paths = [str(item.path) for item in owned]
+    owned_files = [(item.path.stat().st_dev, item.path.stat().st_ino) for item in owned]
+    require(len(set(owned_paths)) == len(owned_paths) and
+            len(set(owned_files)) == len(owned_files),
+            "invocation output artifacts alias one another")
     text(value["platform_id"], "machine/boot identity")
     interval_file = artifacts.verify(wrapper["launcher_interval"], file.path.parent)
     interval = artifacts.object(interval_file)
@@ -150,6 +159,7 @@ def measured_run(pin, parent, contract, producer, artifacts):
     require(elapsed <= complete_elapsed + .001, "guard elapsed exceeds its bound launcher span")
     result = dict(value)
     result.update(guard_sha256=guard_file.sha256, elapsed_seconds=complete_elapsed,
+                  invocation_output_paths=owned_paths, invocation_output_files=owned_files,
                   warm_step_seconds=mean, warm_window=window,
                   time_grid_sha256=grid.sha256, output_definition=definition,
                   start_ns=interval["start_ns"], end_ns=interval["end_ns"], affinity=guard.get("cpu_affinity"),

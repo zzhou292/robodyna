@@ -23,10 +23,10 @@ def assess(request_pin, parent):
     report = {
         "schema": "robo_dyna.case_parity_assessment.v1",
         "status": "incomparable" if mismatches else "numerics_unqualified",
-        "case_scope": candidate.scope,
+        "case_scope": candidate.scope, "assessment_scope": "declared_case_only",
         "reference_case": reference.case_id, "candidate_case": candidate.case_id,
         "mismatches": mismatches, "gpu_speedup": None, "full_vehicle_requirement_met": False,
-        "trust_boundary": "Evidence consistency only. Pinned declarations and a completed named test do not independently prove scientific truth or performance generality.",
+        "trust_boundary": "Evidence consistency only. Producer truth, backend execution and hardware/software identity need independent qualification; opaque platform labels do not prove them. Version 1 never certifies the project/full-vehicle delivery requirement.",
     }
     if mismatches or request["numerics"] is None or reference.numerical_protocol is None or candidate.numerical_protocol is None:
         artifacts.recheck()
@@ -43,6 +43,8 @@ def assess(request_pin, parent):
     rows = []
     identities = set()
     guards = set()
+    output_paths = set()
+    output_files = set()
     work_identity = None
     previous_end = None
     for index, pair in enumerate(pairs):
@@ -56,6 +58,11 @@ def assess(request_pin, parent):
             require(run["run_id"] not in identities and run["guard_sha256"] not in guards,
                     "duplicate timing run/receipt cannot count as a repeat")
             identities.add(run["run_id"]); guards.add(run["guard_sha256"])
+            require(output_paths.isdisjoint(run["invocation_output_paths"]) and
+                    output_files.isdisjoint(run["invocation_output_files"]),
+                    "invocation-owned timing/output files cannot be reused across repeats")
+            output_paths.update(run["invocation_output_paths"])
+            output_files.update(run["invocation_output_files"])
         for key in ("requested_steps", "completed_steps", "start_time_s", "end_time_s",
                     "time_grid_sha256", "output_definition", "host_cpus", "affinity",
                     "platform_id", "warm_window"):
@@ -91,7 +98,6 @@ def assess(request_pin, parent):
     report["performance_reason"] = "separated_observed_ranges" if faster else "no_repeatable_advancement_and_end_to_end_win"
     if faster:
         report["status"] = "measured_gpu_win"
-        report["full_vehicle_requirement_met"] = candidate.scope == "full_vehicle"
     report["variation_scope"] = "Observed paired/range bound, not a population confidence interval; no extrapolation beyond the declared case."
     artifacts.recheck()
     report["evidence_files"] = artifacts.inventory()

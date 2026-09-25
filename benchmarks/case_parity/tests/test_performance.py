@@ -111,7 +111,8 @@ class PerformanceTests(unittest.TestCase):
                     pin = f.change(f.grid, lambda d: d.update(times_s=[0, 8e-6]))
                     field = "time_grid"
                 else:
-                    work = f.load(f.output)
+                    wrapper = f.load(f.pairs[0]["candidate"])
+                    work = f.load(f.load(wrapper["producer_record"])["output_work"])
                     work["payloads"]["position_m"] = f.write("bad-payload.bin", b"x")
                     pin = f.write("bad-output.json", work); field = "output_work"
                 f.pairs[0]["candidate"] = f.edit_run(f.pairs[0]["candidate"],
@@ -131,6 +132,48 @@ class PerformanceTests(unittest.TestCase):
                     lambda d: d.update(guard_sha256=wrapper["guard"]["sha256"]))
                 pair[role] = f.write(Path(pin["path"]).name, wrapper)
         self.assertEqual(assess(f.request(), f.root)["status"], "measured_gpu_win")
+
+
+    def test_warm_and_output_records_are_bound_to_each_invocation(self):
+        for field in ("warm_timing", "output_work"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                f = Fixture(directory)
+                old = f.load(f.load(f.pairs[0]["candidate"])["producer_record"])[field]
+                f.pairs[1]["candidate"] = f.edit_run(f.pairs[1]["candidate"],
+                    lambda d: d.update({field: old}))
+                with self.assertRaisesRegex(ValueError, "not bound to this invocation"):
+                    assess(f.request(), f.root)
+
+    def test_output_payloads_cannot_be_reused_by_path_or_hard_link(self):
+        for hard_link in (False, True):
+            with self.subTest(hard_link=hard_link), tempfile.TemporaryDirectory() as directory:
+                f = Fixture(directory)
+                previous = f.load(f.load(f.load(f.pairs[0]["candidate"])["producer_record"])["output_work"])
+                payload = previous["payloads"]["position_m"]
+                if hard_link:
+                    alias = f.root / "alias.bin"
+                    alias.hardlink_to(payload["path"])
+                    payload = f.pin(alias)
+                def update(record):
+                    record["output_work"] = f.change(record["output_work"],
+                        lambda d: d["payloads"].update(position_m=payload))
+                f.pairs[1]["candidate"] = f.edit_run(f.pairs[1]["candidate"], update)
+                with self.assertRaisesRegex(ValueError, "cannot be reused across repeats"):
+                    assess(f.request(), f.root)
+
+    def test_same_bytes_in_fresh_output_files_are_valid(self):
+        f = self.fixture
+        # The fixture intentionally produces identical payload bytes at distinct
+        # invocation-owned paths; a repeated hash alone is not reuse.
+        self.assertEqual(assess(f.request(), f.root)["status"], "measured_gpu_win")
+
+    def test_full_vehicle_scope_never_certifies_project_delivery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            f = Fixture(directory, scope="full_vehicle", steps=2)
+            result = assess(f.request(), f.root)
+            self.assertEqual(result["status"], "measured_gpu_win")
+            self.assertEqual(result["assessment_scope"], "declared_case_only")
+            self.assertFalse(result["full_vehicle_requirement_met"])
 
     def test_late_producer_mutation_is_not_hidden_by_cached_pins(self):
         f = self.fixture

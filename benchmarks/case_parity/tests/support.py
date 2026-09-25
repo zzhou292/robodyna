@@ -8,22 +8,19 @@ from benchmarks.case_parity.contracts import DOMAINS
 
 
 class Fixture:
-    def __init__(self, directory):
+    def __init__(self, directory, scope="synthetic", steps=8):
         self.root = Path(directory); self.tick = 10000; self.launch_ns = 1000000000
+        self.scope = scope; self.steps = steps
         self.declaration = self.write("declaration.json", {"scope": "synthetic parser fixture only"})
         self.tolerance = self.write("tolerance.json", {"scope": "synthetic", "absolute_force_n": 1e-12})
         self.cpu = self.write("cpu.producer", b"synthetic CPU producer identity; never executed")
         self.gpu = self.write("gpu.producer", b"synthetic GPU producer identity; never executed")
         self.comparator = self.write("comparator.producer", b"synthetic comparator identity; never executed")
         self.grid = self.write("grid.json", {"schema": "robo_dyna.case_time_grid.v1",
-            "kind": "physical_steps", "times_s": [i*1e-6 for i in range(9)]})
+            "kind": "physical_steps", "times_s": [i*1e-6 for i in range(steps + 1)]})
         self.output_definition = {"precision": "binary64", "format": "case_fields_f64_v1",
             "fields": [{"name": "position_m", "components": 3}, {"name": "force_n", "components": 3}],
-            "sample_epochs": [0, 8]}
-        payloads = {name: self.write(name+".bin", struct.pack("<6d", *range(6)))
-                    for name in ("position_m", "force_n")}
-        self.output = self.write("output.json", {"schema": "robo_dyna.case_output_work.v1",
-            "definition": self.output_definition, "payloads": payloads})
+            "sample_epochs": [0, steps]}
         self.ref = self.contract("reference"); self.can = self.contract("candidate")
         self.pairs = [self.pair(i) for i in range(3)]
         self.numerics = self.numerical(self.pairs)
@@ -60,11 +57,11 @@ class Fixture:
     def contract(self, name):
         domains = {domain: {"status": "resolved", "definition": {"synthetic_domain": domain},
                             "evidence": [self.declaration]} for domain in DOMAINS}
-        domains["recorded_time_grid"]["definition"] = {"kind": "physical_steps", "planned_steps": 8,
-            "initial_time_s": 0.0, "requested_end_time_s": 8e-6}
+        domains["recorded_time_grid"]["definition"] = {"kind": "physical_steps", "planned_steps": self.steps,
+            "initial_time_s": 0.0, "requested_end_time_s": self.steps * 1e-6}
         domains["output_work_precision"]["definition"] = self.output_definition
         return self.write(name + ".json", {
-            "schema": "robo_dyna.resolved_case_contract.v1", "case_id": name, "scope": "synthetic",
+            "schema": "robo_dyna.resolved_case_contract.v1", "case_id": name, "scope": self.scope,
             "domains": domains, "numerical_protocol": {
                 "id": "synthetic_evidence_only", "test_name": "ParityFixture.CompletedComparison",
                 "tolerances": self.tolerance}})
@@ -108,17 +105,26 @@ class Fixture:
     def run(self, pair, candidate, elapsed):
         name = f"pair{pair}-" + ("gpu" if candidate else "cpu")
         producer, contract = (self.gpu, self.can) if candidate else (self.cpu, self.ref)
+        payloads = {field: self.write(name+"."+field+".bin", struct.pack("<6d", *range(6)))
+                    for field in ("position_m", "force_n")}
+        output = self.write(name+".output.json", {"schema": "robo_dyna.case_output_work.v1",
+            "run_id": name, "producer_sha256": producer["sha256"],
+            "contract_sha256": contract["sha256"],
+            "definition": self.output_definition, "payloads": payloads})
+        warmup = min(2, self.steps - 1)
         warm = self.write(name+".timing.json", {
-            "schema": "robo_dyna.complete_advancement_timing.v1",
+            "schema": "robo_dyna.complete_advancement_timing.v1", "run_id": name,
             "producer_sha256": producer["sha256"], "contract_sha256": contract["sha256"],
-            "boundary": "accepted_complete_step", "first_step": 3, "step_count": 6, "warmup_steps": 2,
+            "boundary": "accepted_complete_step", "first_step": warmup + 1,
+            "step_count": self.steps - warmup, "warmup_steps": warmup,
             "total_seconds": .5 if candidate else 2, "timer_resolution_seconds": 1e-9})
         record = self.write(name+".record.json", {
             "schema": "robo_dyna.completed_case_measurement.v1", "run_id": name,
             "backend": "cuda_candidate" if candidate else "cpu_reference",
             "contract_sha256": contract["sha256"], "producer_sha256": producer["sha256"],
-            "requested_steps": 8, "completed_steps": 8, "start_time_s": 0, "end_time_s": 8e-6,
-            "time_grid": self.grid, "output_work": self.output,
+            "requested_steps": self.steps, "completed_steps": self.steps,
+            "start_time_s": 0, "end_time_s": self.steps * 1e-6,
+            "time_grid": self.grid, "output_work": output,
             "timing_scope": "startup_advance_and_equivalent_output", "warm_timing": warm,
             "platform_id": "synthetic-host-and-boot"})
         guard = self.guard(name+".guard.json", [producer["path"], "--run-id", name,

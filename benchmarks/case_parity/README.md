@@ -11,7 +11,9 @@ and assess(request_pin,parent). The CLI is:
 
 Exit0 means a report was written, not that a benchmark passed. Read status:
 incomparable, numerics_unqualified, comparable_without_speed_win, measured_gpu_win.
-Synthetic and normal-response wins never satisfy full_vehicle_requirement_met.
+Every v1 verdict is declared_case_only. full_vehicle_requirement_met is always false,
+even for a contract labelled full_vehicle. Project delivery needs a separately reviewed
+P5 workload/acceptance protocol; a short case cannot establish it.
 
 ## Trust and scope
 
@@ -20,7 +22,10 @@ scientific claims are true. A pinned comparator must be independently reviewed
 and qualified. The gate verifies that a specific completed named test bound these
 contracts, producer programs, tolerances and exact timing-run manifest; a supplied
 passed=true flag is never enough. It cannot make a dishonest producer trustworthy
-or replace numerical validation of the equations.
+or replace numerical validation of the equations. Backend truth, GPU UUID/driver,
+producer dependency pins, effective OMP/worker settings and hardware identity remain
+trusted-producer/qualified-adapter responsibilities. Comparing opaque platform IDs
+and observed guard affinity is not independent hardware verification.
 
 The real fixture current_unmatched contains copied investigation evidence for
 704.352kg V5 versus1256.152kg complete native Yaris. Its unresolved ledgers/catalogs
@@ -58,6 +63,12 @@ sample_epochs spanning0..planned_steps. Each run's output manifest must reproduc
 this definition and pin exactly one dense payload per field. Actual byte counts
 must equal samples × components ×8. Scientific values are checked by the separate
 numerical comparator, not by pretending equal output work implies equal response.
+The output manifest also binds run_id, producer_sha256 and contract_sha256.
+Its manifest and each payload must have distinct invocation-owned resolved paths
+and file identities across repeats; shared case inputs and byte-identical newly
+written payloads remain allowed. Fresh create-only writes during the timed invocation
+are a qualified producer-adapter responsibility; offline hashes cannot prove when a
+file was written.
 
 ## Numerical and measurement evidence
 
@@ -83,7 +94,7 @@ does not accept a producer filename passed as an argument to another executable.
 A native Engine comparison therefore needs a small qualified record-producing
 benchmark adapter; this gate does not parse arbitrary shell pipelines.
 
-The warm record supplies first_step, step_count, warmup_steps, total_seconds,
+The warm record binds run_id, producer_sha256 and contract_sha256, and supplies first_step, step_count, warmup_steps, total_seconds,
 timer_resolution_seconds and boundary. Its mean is derived, not accepted as an
 unbound scalar. Vehicle/synthetic complete-step boundary is accepted_complete_step;
 normal packets use complete_normal_response_update. The window must follow warm-up,
@@ -96,6 +107,8 @@ These actual intervals enforce nonoverlap/order and supply complete elapsed time
 Child start ticks are never added to a duration that starts before preflight. All repeats must
 retain the same declared work, actual grid, output definition, hardware/boot and
 host resources. Guard identities/run IDs cannot be reused as extra samples.
+Warm records, producer records, output manifests and payloads cannot share paths or
+underlying files between invocations (including hard-link aliases).
 Both warm advancement and complete guarded elapsed must have nonoverlapping
 observed ranges: max(candidate)<min(reference). The report includes paired medians
 and conservative observed variation bounds, not a population confidence interval.
