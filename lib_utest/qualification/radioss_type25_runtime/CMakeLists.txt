@@ -75,3 +75,12 @@ if(TYPE25_RUNTIME_MOVING_SCENE)
   add_test(NAME type25_runtime_observed_source COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py" --output "${observed}" --check)
 endif()
+
+# Complete original normal-cache oracle is linked only into owning tests.
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_current_normals" current-normal-regression)
+add_executable(type25_runtime_moving_cache_cuda MovingCacheTest.cu)
+target_link_libraries(type25_runtime_moving_cache_cuda PRIVATE tl_radioss_type25_transaction
+  type25_current_normals_oracle GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_moving_cache_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_moving_cache_cuda COMMAND type25_runtime_moving_cache_cuda)
+set_tests_properties(type25_runtime_moving_cache_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)

@@ -11,7 +11,7 @@ set(_type25_runtime "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/runtime")
 add_library(tl_radioss_type25_transaction STATIC
   "${_type25_runtime}/Layout.cpp" "${_type25_runtime}/Source.cpp" "${_type25_runtime}/MovingSource.cpp"
   "${_type25_runtime}/Initialize.cpp" "${_type25_runtime}/Transaction.cpp"
-  "${_type25_runtime}/Kernels.cu")
+  "${_type25_runtime}/Kernels.cu" "${_type25_runtime}/NormalStage.cu")
 target_link_libraries(tl_radioss_type25_transaction PUBLIC
   tl_radioss_type25_lifecycle tl_radioss_type25_candidates tl_radioss_type25_search
   tl_radioss_type25_assembly_device tl_shell_batch_publication CUDA::cudart)

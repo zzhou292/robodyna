@@ -63,3 +63,25 @@ drain. Immutable arrays are copied once by the runtime; they do not create a
 second physical state. Failed admission preserves the caller's prior staging.
 Dynamic erosion, rigid/CIN response and full vehicle scope require their own
 integration; they are not enabled by selecting the moving descriptor.
+
+
+The isolated moving transaction implementation retains one arena and the same
+history/reference publication participant. `Initialize(MovingMainSource)` copies
+its validated genuine Starter cache and source topology; current normal updates
+write only the inactive cache under the existing history selector. A complete
+OPTCD suffix is counted, admitted, emitted and ordered before native activation.
+FLAG1, boundary/reference construction and FLAG2 gather/average use separate GPU
+stages before the lifecycle receives one complete `current_normals` view.
+Accepted normal snapshots describe the force-base geometry, not the newly drifted
+owner coordinates. Discard/retry never changes the accepted cache. Immutable
+legacy source normals/references remain copied separately; the active view fully
+overrides them for moving classification. `normal_device_bytes` records the
+additional cache/topology/mask/scratch storage inside `runtime_device_bytes`.
+
+The first moving implementation remains restricted to constant activity/gaps,
+ordinary complete QEPH/T3 source, one native worker and the same fixed-step owner.
+Native per-step current-normal values are already independently qualified, but
+this owner integration and a full source-derived moving trajectory require their
+own actual GPU gates. No generic nonplanar/vehicle/performance claim follows from
+source compilation or a small cache recurrence. The retained fixed coupon and
+videos remain separate qualified evidence.
