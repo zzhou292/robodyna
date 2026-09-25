@@ -51,5 +51,20 @@
     "row_markers": "integer(c_int)(4): resulting IRTLM",
     "row_values": "real(c_double)(4): classification product, DIST, two selection metrics",
     "defined": "integer(c_int): wrapper old-sector-readiness only; not a native status"
+  },
+  "continuation_abi": {
+    "function": "rd_selection_continuation",
+    "scope": "one supplied local occurrence and row snapshot; MVSIZ=1; serial qualification",
+    "common_arrays": "same coordinates(3,5), scalars(12), normals(3,4), flags(19), and finite seed as retained",
+    "references": "integer(c_int) raw ADMSR(4), ISLIDE(4), LBOUND(reference_count); references not compressed",
+    "bisectors": "real(c_float)(3,2,reference_count), direct native indices, qualification cap1048576",
+    "segment_count": "actual native NRTM, scalar integer(c_int) by reference",
+    "constraints": "integer(c_int)(5) main1..4 then secondary, separately for ICODT and ISKEW",
+    "values": "real(c_double)(9,4), same retained field order",
+    "sector_flags": "integer(c_int)(6,4): FAR, cached FAR, raw-defined, clamped-defined, KSLIDE, INGAP",
+    "row_markers": "integer(c_int)(4), source IRTLM; C++ restores local_main only after an observed winner write",
+    "row_values": "real(c_double)(4): classification product, DIST, two selection metrics",
+    "axes": "integer(c_int)(3), initialized native IBCX/IBCY/IBCZ",
+    "decision": "integer(c_int)(2), observed effective IT and local winner-branch entry; inactive selected IT is API-zero"
   }
 }

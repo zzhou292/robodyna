@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 from Sources import ROOT, read, routine, constants
+from ContinuationSource import routines as continuation_routines, observed as continuation_observed
 
 
 def generated():
@@ -21,7 +22,9 @@ def generated():
         "      retained_distance_squared = DD\n      RETURN\n")
     output = dict(retained)
     output["DstRetained.F"] = observed
-    output["Constants.F90"] = constants(source["constant_mod.F"], retained.values())
+    continuation = continuation_routines(source)
+    output.update(continuation_observed(continuation))
+    output["Constants.F90"] = constants(source["constant_mod.F"], [*retained.values(), *continuation.values()])
     for name in ["LocalBoundary.F90", "Observations.F90", "RetainedWrapper.F90"]:
         output[name] = (ROOT / name).read_text()
     output["implicit_f.inc"] = ("      USE ISO_C_BINDING\n      USE SELECTION_CONSTANTS\n"
@@ -45,4 +48,4 @@ if __name__ == "__main__":
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(text)
-    print("Pinned complete retained COR/DST/GLOB source stage prepared")
+    print("Pinned complete retained and continuation COR/DST/GLOB stages prepared")

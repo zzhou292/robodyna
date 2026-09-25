@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "lib_src/collision/radioss_type25/selection/Types.h"
+#include "lib_src/collision/radioss_type25/selection/ContinuationTypes.h"
 namespace type25_selection_test {
 namespace n = tlfea::contact::radioss_type25;
 namespace s = n::selection;
@@ -15,4 +16,8 @@ struct RetainedScratchObservation {
 s::NativeRetainedResult OracleRetained(const s::Profile&, const s::NativePairInput&,
     const n::NativeGeometryHistory& prior, double scratch_seed = 0.,
     RetainedScratchObservation* observation = nullptr);
+// Same serial qualification boundary, complete COR21/DST21/GLOB phase.
+s::NativeContinuationResult OracleContinuation(const s::Profile&,
+    const s::NativeContinuationInput&, const n::NativeGeometryHistory& prior,
+    double scratch_seed = 0., RetainedScratchObservation* observation = nullptr);
 } // namespace type25_selection_test
