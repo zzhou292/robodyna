@@ -76,19 +76,62 @@ const VehicleSectionResolution& CheckSource(const physical_model::VehiclePhysica
         "Complete execution formulation totals differ from native binding");
     return *resolution;
 }
+Law1ExecutionPolicy ResolvePolicy(const physical_model::VehiclePhysicalModel& model, Law1ExecutionProfile profile) {
+    const auto& references = model.shell_source().references();
+    const auto& units = references.source().canonical().data().inputs.units;
+    const auto policy = Law1ExecutionPolicy::Resolve(profile,
+        {units.mass_to_kg, units.length_to_m, units.time_to_s}, references.qeph_metric());
+    if (policy.requires_ordinary_explicit_defaults()) {
+        const auto* resolution = references.resolution();
+        Require(resolution, "Native LAW1 requires resolved original sections");
+        for (std::size_t i = 0; i < resolution->parents().size(); ++i) {
+            const auto part = resolution->parents()[i].part_index;
+            const auto* material = resolution->material(part);
+            const auto* section = resolution->section(part);
+            const auto* row = resolution->native_parent(i);
+            Require(material && section && row, "Missing resolved LAW1 source row");
+            const auto driver = material->source.keyword == "*MAT_ELASTIC" ? resolution->source().law1_driver(part) :
+                modelio::assembly::ResolveLaw1SourceDriver(*material, *section);
+            Require(driver.material_id() == row->source.material_id && driver.section_id() == row->source.section_id,
+                    "Native LAW1 driver identity differs before allocation");
+            (void)policy.Parent(driver, row->source.family, resolution->section_formulation(part));
+        }
+        for (std::size_t i = 0; i < references.rows().size(); ++i) {
+            if (const auto* quad = references.qeph(i)) {
+                Require(output::Bits(quad->input.projection_working_length_m) == output::Bits(units.length_to_m),
+                        "Native LAW1 source is bound to another QEPH working metric");
+            }
+        }
+    }
+    return policy;
+}
+
 void PackSource(const physical_model::VehiclePhysicalModel& model, Packing& packed) {
+    PackSource(model, packed, ResolvePolicy(model, Law1ExecutionProfile::LegacyLayered));
+}
+void PackSource(const physical_model::VehiclePhysicalModel& model, Packing& packed, const Law1ExecutionPolicy& policy) {
     const auto& resolution = *model.shell_source().references().resolution();
-    for (std::size_t p = 0; p < resolution.parts().size(); ++p) {
-        const auto* material = resolution.material(p);
-        const auto* section = resolution.section(p);
-        const auto* native = resolution.native_material(p);
+    for (std::size_t part = 0; part < resolution.parts().size(); ++part) {
+        const auto* material = resolution.material(part);
+        const auto* section = resolution.section(part);
+        const auto* native = resolution.native_material(part);
         Require(material && section && native, "Complete execution has an unavailable source declaration");
-        AddPart(packed, resolution.source().parts()[p], *material, *section, *native,
-                resolution.role(p), resolution.section_formulation(p));
+        AddPart(packed, resolution.source().parts()[part], *material, *section, *native,
+                resolution.role(part), resolution.section_formulation(part));
     }
     PackCurves(packed, resolution.source().curves(), resolution.failure_curves());
     for (std::size_t i = 0; i < resolution.parents().size(); ++i) {
-        const auto& row = *resolution.native_parent(i);
+        auto row = *resolution.native_parent(i);
+        const auto part = resolution.parents()[i].part_index;
+        const auto& material = *resolution.material(part);
+        const auto& section = *resolution.section(part);
+        const auto driver = material.source.keyword == "*MAT_ELASTIC" ? resolution.source().law1_driver(part) :
+            modelio::assembly::ResolveLaw1SourceDriver(material, section);
+        if (policy.requires_ordinary_explicit_defaults()) {
+            Require(driver.material_id() == row.source.material_id && driver.section_id() == row.source.section_id,
+                    "Resolved LAW1 driver belongs to another source MID/SID");
+        }
+        row.source.execution = policy.Parent(driver, row.source.family, resolution.section_formulation(part));
         packed.parents.push_back(row.source);
         packed.failure.push_back(row);
     }

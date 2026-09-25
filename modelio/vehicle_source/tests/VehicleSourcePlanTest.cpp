@@ -60,4 +60,25 @@ TEST(VehicleSourcePlan, ActualV3ProjectionsAndSharedCopyMoveKeepSourceBits) {
         }
     }
 }
+TEST(VehicleSourcePlan, EveryOriginalElasticParentKeepsRawNipAndResolvedDriverSeparate) {
+    const auto& p=Plan();std::size_t parts=0,q=0,t=0;
+    const auto& conn=source::FindArray(p.canonical().data(),"shells_node_indices");
+    const auto nodes=output::arrays::Decode<std::uint32_t>(conn.descriptor,conn.bytes);
+    for(std::size_t i=0;i<p.parts().size();++i) {
+        const auto driver=p.law1_driver(i);const auto* m=p.material(i);
+        if(!m) {EXPECT_EQ(driver.status(),assembly::Law1DriverStatus::Unavailable);continue;}
+        if(m->source.keyword!="*MAT_ELASTIC") {EXPECT_EQ(driver.status(),assembly::Law1DriverStatus::NotElastic);continue;}
+        ++parts;ASSERT_TRUE(driver.available());EXPECT_EQ(driver.material_id(),m->id);
+        EXPECT_EQ(driver.section_id(),p.section(i)->id);EXPECT_EQ(driver.raw_nip(),3u);EXPECT_EQ(driver.resolved_npt(),0);
+        EXPECT_EQ(p.section(i)->through_thickness_points,3u);
+    }
+    for(const auto& parent:p.parents())if(p.law1_driver(parent.part_index).available()) {
+        const auto n=4*std::size_t(parent.canonical_parent);
+        nodes[n+2]==nodes[n+3]?++t:++q;
+    }
+    EXPECT_EQ(parts,10u);EXPECT_EQ(q,26225u);EXPECT_EQ(t,952u);
+    EXPECT_EQ(p.law1_driver(p.parts().size()).status(),assembly::Law1DriverStatus::Unavailable);
+    auto copy=p;EXPECT_EQ(copy.law1_driver(0).status(),p.law1_driver(0).status());
+    EXPECT_EQ(&copy.canonical().data(),&p.canonical().data());
+}
 } // namespace crash::modelio::vehicle::test

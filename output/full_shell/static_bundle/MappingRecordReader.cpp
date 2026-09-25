@@ -8,7 +8,9 @@ PreparedSourceMapping ReadMappingRecord(const std::filesystem::path& root, const
         const RecordFile& file, const std::string& expected_digest) {
     const auto bytes = detail::ReadFile(root, file, MappingMetadataByteCap);
     const auto doc = array_json::Parse(bytes, MappingMetadataByteCap);
-    const auto descriptors = detail::ParseMappingDocument(source, doc, expected_digest);
+    MappingExecution execution;
+    const auto descriptors = detail::ParseMappingDocument(source, doc, expected_digest,&execution);
+    const auto* policy=execution.profile==MappingExecutionProfile::LegacyOpaque?nullptr:&execution;
     std::array<NamedArray, 8> entries;
     const arrays::Limits cap{source.data().limits.file_bytes, UINT32_MAX, 64};
     for (std::size_t i = 0; i < entries.size(); ++i) {
@@ -17,7 +19,7 @@ PreparedSourceMapping ReadMappingRecord(const std::filesystem::path& root, const
         entries[i].descriptor = descriptors[i];
         entries[i].bytes = arrays::ReadBytes(root, descriptors[i], cap);
     }
-    Require(MappingDigest(entries, cap) == expected_digest, "Mapping content digest differs from caller authority");
+    Require(MappingDigest(entries,policy,cap) == expected_digest, "Mapping content digest differs from caller authority");
     const auto& nodes = entries[detail::NodeCanonical];
     const auto& parent_reference = entries[detail::ParentReference];
     const auto& points = entries[detail::ParentPoints];
@@ -33,7 +35,7 @@ PreparedSourceMapping ReadMappingRecord(const std::filesystem::path& root, const
             native_points[3 * i + 1], static_cast<PlasticField>(native_points[3 * i + 2])});
     }
     auto mapping = PreparedSourceMapping::Prepare(source,
-        {canonical_nodes.data(), canonical_nodes.size(), parents.data(), parents.size()});
+        {canonical_nodes.data(), canonical_nodes.size(), parents.data(), parents.size(),policy});
     // Regeneration shares the same semantic authority: source IDs/MID/SECID,
     // topology and point applicability cannot be replaced by rehashed records.
     Require(mapping.digest() == expected_digest, "Stored mapping is inconsistent with original source semantics");

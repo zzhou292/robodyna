@@ -9,10 +9,11 @@ namespace {
 using namespace array_json;
 } // namespace
 Document MappingDocument(const CanonicalSource& source, const std::string& digest,
-        const std::array<arrays::Descriptor, 8>& descriptors) {
+        const std::array<arrays::Descriptor, 8>& descriptors,const MappingExecution* execution) {
     arrays::CheckHash(digest);
     Document d; d.SetObject();
-    String(d, "schema", MappingSchema);
+    String(d, "schema", execution?"robo_dyna.full_shell_source_mapping.v2":MappingSchema);
+    if(execution)Child(d,"execution",MappingExecutionDocument(*execution));
     String(d, "mapping_sha256", digest);
     String(d, "scope", "immutable_source_mapping_only_native_meaning_and_runtime_admission_external");
     Child(d, "source_authority", AuthorityDocument(source.data().inputs));
@@ -24,10 +25,19 @@ Document MappingDocument(const CanonicalSource& source, const std::string& diges
     return d;
 }
 std::array<arrays::Descriptor, 8> ParseMappingDocument(const CanonicalSource& source,
-        const Value& v, const std::string& expected_digest) {
+        const Value& v, const std::string& expected_digest,MappingExecution* execution) {
     arrays::CheckHash(expected_digest);
-    Keys(v, {"schema", "mapping_sha256", "scope", "source_authority", "arrays"});
-    Require(Text(v["schema"]) == MappingSchema && Text(v["mapping_sha256"]) == expected_digest &&
+    const auto schema = Text(Field(v, "schema"));
+    if (schema == "robo_dyna.full_shell_source_mapping.v2") {
+        Keys(v, {"schema", "mapping_sha256", "scope", "source_authority", "arrays", "execution"});
+        Require(execution, "Mapping-v2 requires execution provenance readback");
+        *execution = ParseMappingExecution(v["execution"]);
+    } else {
+        Keys(v, {"schema", "mapping_sha256", "scope", "source_authority", "arrays"});
+        Require(schema == MappingSchema, "Unknown source mapping schema");
+        if (execution) *execution = {};
+    }
+    Require(Text(v["mapping_sha256"]) == expected_digest &&
         Text(v["scope"]) == "immutable_source_mapping_only_native_meaning_and_runtime_admission_external",
         "Mapping schema/digest/scope mismatch");
     CheckAuthority(source.data().inputs, v["source_authority"]);

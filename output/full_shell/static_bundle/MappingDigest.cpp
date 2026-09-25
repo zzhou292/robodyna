@@ -1,4 +1,5 @@
 #include "MappingArrays.h"
+#include "MappingExecution.h"
 
 namespace crash::output::full_shell::source {
 namespace {
@@ -27,5 +28,9 @@ std::string MappingDigest(const std::array<NamedArray, 8>& entries, arrays::Limi
         AppendText(input, a.descriptor.sha256);
     }
     return Sha256(input);
+}
+std::string MappingDigest(const std::array<NamedArray,8>& entries,const MappingExecution* execution,arrays::Limits cap) {
+    const auto base=MappingDigest(entries,cap);
+    return execution?detail::MappingExecutionDigest(base,*execution):base;
 }
 } // namespace crash::output::full_shell::source

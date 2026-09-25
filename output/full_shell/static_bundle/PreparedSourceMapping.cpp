@@ -8,6 +8,7 @@ struct PreparedSourceMapping::Data {
     std::array<NamedArray, 8> arrays;
     std::vector<ParentPoints> points;
     std::string digest;
+    std::shared_ptr<const MappingExecution> execution;
     std::size_t bytes = 0;
 };
 PreparedSourceMapping PreparedSourceMapping::Prepare(const CanonicalSource& source, MappingInput input) {
@@ -16,13 +17,21 @@ PreparedSourceMapping PreparedSourceMapping::Prepare(const CanonicalSource& sour
     const arrays::Limits limits{source.data().limits.file_bytes, UINT32_MAX, 64};
     data->arrays = detail::EncodeMapping(draft, limits);
     data->points = std::move(draft.points);
-    data->digest = MappingDigest(data->arrays, limits);
+    if(input.execution)data->execution=std::make_shared<const MappingExecution>(*input.execution);
+    data->digest = MappingDigest(data->arrays,data->execution.get(),limits);
     for (const auto& a : data->arrays) data->bytes += a.descriptor.bytes;
+    if(data->execution) {
+        Require(data->execution->parts.capacity()<=2*input.execution->parts.size(),
+                "Mapping execution clone exceeded its admitted capacity");
+        data->bytes+=sizeof(MappingExecution)+data->execution->parts.capacity()*sizeof(MappingExecutionPart);
+        Require(data->bytes<=source.data().limits.host_bytes,"Mapping execution payload exceeded its source cap");
+    }
     return PreparedSourceMapping(std::move(data));
 }
 const CanonicalSource& PreparedSourceMapping::source() const noexcept { return data_->source; }
 const std::array<NamedArray, 8>& PreparedSourceMapping::arrays() const noexcept { return data_->arrays; }
 const std::string& PreparedSourceMapping::digest() const noexcept { return data_->digest; }
+const MappingExecution* PreparedSourceMapping::execution() const noexcept {return data_->execution.get();}
 const std::vector<ParentPoints>& PreparedSourceMapping::parents() const noexcept { return data_->points; }
 std::size_t PreparedSourceMapping::nodes() const noexcept { return data_->source.data().retained_nodes; }
 std::size_t PreparedSourceMapping::triangles() const noexcept { return data_->arrays[detail::Triangles].descriptor.layout.rows; }

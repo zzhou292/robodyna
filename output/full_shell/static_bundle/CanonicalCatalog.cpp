@@ -29,10 +29,17 @@ void Parts(CanonicalData& out, const Value& doc) {
     Require(materials.IsArray() && materials.Size() <= 65536 && sections.IsArray() &&
         sections.Size() <= 65536 && parts.IsArray() && parts.Size() <= 65536,
         "Canonical declaration table exceeds capacity");
-    std::set<std::uint64_t> material_ids;
-    for (const auto& m : materials.GetArray())
-        Require(material_ids.insert(Positive(Field(m, "source_material_id"))).second,
+    std::map<std::uint64_t,SourceMaterialRole> material_ids;
+    for (const auto& m : materials.GetArray()) {
+        // Older opaque mapping fixtures need not have a keyword. Such rows
+        // remain unavailable to the new native execution provenance profile.
+        const auto keyword=m.HasMember("keyword")?Text(m["keyword"]):std::string{};
+        const auto role=keyword.empty()?SourceMaterialRole::Unspecified:
+            keyword=="*MAT_ELASTIC"?SourceMaterialRole::Elastic:
+            keyword=="*MAT_RIGID"?SourceMaterialRole::Rigid:SourceMaterialRole::Other;
+        Require(material_ids.emplace(Positive(Field(m,"source_material_id")),role).second,
             "Duplicate source material ID");
+    }
     std::map<std::uint64_t, Section> section_ids;
     for (const auto& s : sections.GetArray()) {
         const bool shell = Text(Field(s, "keyword")) == "*SECTION_SHELL";
@@ -51,6 +58,7 @@ void Parts(CanonicalData& out, const Value& doc) {
             "Source part has missing material/section declaration");
         value.source_elform = section->second.elform;
         value.shell_section = section->second.shell;
+        value.material_role=material_ids.at(value.material);
         const auto& raw = Field(p, "raw_fields");
         Require(raw.IsArray() && raw.Size() == 8 && UInt(raw[0]) == value.part &&
             UInt(raw[1]) == value.section && UInt(raw[2]) == value.material,

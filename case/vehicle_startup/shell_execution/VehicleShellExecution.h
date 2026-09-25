@@ -2,8 +2,11 @@
 #include "case/vehicle_startup/physical_model/VehiclePhysicalModel.h"
 #include "modelio/vehicle_sections/VehicleSectionResolution.h"
 #include "lib_src/assembly/ShellPhysicalBinding.h"
+#include "modelio/source_assembly/Law1ExecutionPolicy.h"
 
 namespace crash::cases::vehicle_startup::shell_execution {
+using modelio::assembly::Law1ExecutionProfile;
+using modelio::assembly::Law1ExecutionPolicy;
 struct Limits {
     // Inclusive source/startup reservation, deliberately overcharging shared
     // backing across native module caps. This is not expected resident RSS.
@@ -24,6 +27,10 @@ class VehicleShellExecution {
   public:
     static Forecast Preflight(const physical_model::VehiclePhysicalModel&, Limits = {});
     static VehicleShellExecution Prepare(const physical_model::VehiclePhysicalModel&, Limits = {});
+    // Third argument stays explicit: historical Prepare(model,{}) is unambiguous.
+    static Forecast Preflight(const physical_model::VehiclePhysicalModel&,Law1ExecutionProfile,Limits);
+    static VehicleShellExecution Prepare(const physical_model::VehiclePhysicalModel&,Law1ExecutionProfile,Limits);
+    const Law1ExecutionPolicy& law1_policy() const noexcept;
     const physical_model::VehiclePhysicalModel& model() const noexcept;
     const VehicleSectionResolution& resolution() const noexcept;
     const tl::fea::ShellBatchPlasticityBinding& catalog() const noexcept;

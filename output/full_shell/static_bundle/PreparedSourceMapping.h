@@ -1,5 +1,6 @@
 #pragma once
 #include "Types.h"
+#include "MappingExecution.h"
 
 namespace crash::output::full_shell::source {
 struct NativeParent {
@@ -12,6 +13,7 @@ struct MappingInput {
     std::size_t node_count = 0;
     const NativeParent* parents = nullptr;
     std::size_t parent_count = 0;
+    const MappingExecution* execution=nullptr;
 };
 // Exact source/runtime ordering and opaque native declarations. This immutable
 // mapping owns no nodal state, mass, constraint, force, material history or clock.
@@ -25,6 +27,7 @@ class PreparedSourceMapping {
     const CanonicalSource& source() const noexcept;
     const std::array<NamedArray, 8>& arrays() const noexcept;
     const std::string& digest() const noexcept;
+    const MappingExecution* execution() const noexcept;
     const std::vector<ParentPoints>& parents() const noexcept;
     std::size_t nodes() const noexcept;
     std::size_t triangles() const noexcept;
@@ -42,4 +45,5 @@ class PreparedSourceMapping {
 // binds the domain tag and ordered explicit layouts/counts/content hashes;
 // filesystem paths, run IDs and native C++ object bytes are excluded.
 std::string MappingDigest(const std::array<NamedArray, 8>&, arrays::Limits = {});
+std::string MappingDigest(const std::array<NamedArray, 8>&,const MappingExecution*,arrays::Limits);
 } // namespace crash::output::full_shell::source

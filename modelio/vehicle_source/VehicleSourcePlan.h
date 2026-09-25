@@ -1,5 +1,6 @@
 #pragma once
 #include "modelio/source_assembly/SourceAssemblyData.h"
+#include "modelio/source_assembly/SourceLaw1Driver.h"
 #include "output/full_shell/static_bundle/Types.h"
 #include <memory>
 
@@ -49,6 +50,9 @@ class VehicleSourcePlan {
     const assembly::Material* material(std::size_t part_index) const noexcept;
     const assembly::Section* section(std::size_t part_index) const noexcept;
     const std::vector<assembly::Curve>& curves() const noexcept;
+    // Pure derivation from retained authenticated declarations. Unknown/unresolved
+    // parts return unavailable; this does not inspect an Engine control deck.
+    assembly::SourceLaw1Driver law1_driver(std::size_t part_index) const noexcept;
     std::size_t startup_budget_bytes() const noexcept;
   private:
     struct Data;

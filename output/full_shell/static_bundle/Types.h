@@ -30,10 +30,12 @@ struct SourceLimits {
     std::size_t host_bytes = 384 * 1024 * 1024;
     std::uint32_t nodes = 1048576, parents = 1048576;
 };
+enum class SourceMaterialRole { Unspecified, Elastic, Rigid, Other };
 struct PartDeclaration {
     std::uint64_t part = 0, material = 0, section = 0;
     unsigned source_elform = 0; // Opaque code: original ELFORM, or declared formulation_scheme.
     bool shell_section = false;
+    SourceMaterialRole material_role=SourceMaterialRole::Unspecified; // Literal keyword classification, no mechanics.
 };
 struct NamedArray {
     std::string name;

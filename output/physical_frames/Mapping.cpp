@@ -1,5 +1,6 @@
 #include "Mapping.h"
 #include "lib_utils/BoundedArena.h"
+#include <map>
 namespace crash::output::physical_frames {
 struct Mapping::Data {
     Data(const Execution& e,source::PreparedSourceMapping m):execution(e),mapping(std::move(m)) {}
@@ -26,7 +27,17 @@ Mapping Mapping::Prepare(const Execution& execution,std::size_t cap) {
         budget.Append<std::uint64_t>(canonical.data().canonical_nodes,unused) &&
         budget.Append<std::uint32_t>(canonical_nodes.size(),unused) &&
         budget.Append<ParentField>(native.parents().size(),unused) &&
-        budget.Append<source::NativeParent>(native.parents().size(),unused),"Accepted mapping scratch exceeds cap");
+        budget.Append<source::NativeParent>(native.parents().size(),unused) &&
+        budget.Append<std::byte>(resolution.parts().size()*(3*sizeof(source::MappingExecutionPart)+128),unused),
+        "Accepted mapping scratch exceeds cap");
+    source::MappingExecution provenance;
+    std::map<std::uint64_t,source::MappingExecutionPart> resolved;
+    const auto& policy=execution.law1_policy();
+    if(policy.requires_ordinary_explicit_defaults()) {
+        provenance.profile=source::MappingExecutionProfile::NativeA62OrdinaryLaw1;
+        provenance.coefficient_working_length_m=policy.coefficient_working_length_m();
+        provenance.projection_working_length_m=execution.model().shell_source().references().qeph_metric().working_length_m();
+    }
     std::vector<source::NativeParent> rows;
     rows.reserve(native.parents().size());
     std::vector<ParentField> fields;
@@ -39,12 +50,26 @@ Mapping Mapping::Prepare(const Execution& execution,std::size_t cap) {
             mapping->family_index<=UINT32_MAX && raw.source_parent_id==role.source.source_parent_id,
             "Accepted parent/source family identity differs");
         const auto family=Family(mapping->family);
+        if(role.law==tl::fea::ShellSectionLaw::GlobalLaw1Npt0) {
+            const auto driver=resolution.source().law1_driver(raw.part_index);
+            Require(policy.requires_ordinary_explicit_defaults() && driver.available() &&
+                driver.material_id()==role.source.material_id && driver.section_id()==role.source.section_id &&
+                role.material_points==0,"Accepted global LAW1 lacks authenticated execution provenance");
+            auto [at,inserted]=resolved.try_emplace(role.source.source_part_id,source::MappingExecutionPart{
+                role.source.source_part_id,role.source.material_id,role.source.section_id,0,0});
+            Require(at->second.material==role.source.material_id && at->second.section==role.source.section_id,
+                "Accepted global LAW1 PID has conflicting source declarations");
+            if(family==QephFamily)++at->second.qeph;else if(family==T3Family)++at->second.t3;
+            else Require(false,"Global LAW1 cannot replace QBAT execution");
+        }
         rows.push_back({raw.canonical_parent,family,static_cast<std::uint32_t>(mapping->family_index),
                         role.material_points,Plasticity(role.law)});
         fields.push_back({family,static_cast<std::uint32_t>(mapping->family_index),role.law});
     }
+    for(const auto& part:resolved)provenance.parts.push_back(part.second);
+    const auto* metadata=policy.requires_ordinary_explicit_defaults()?&provenance:nullptr;
     auto prepared=source::PreparedSourceMapping::Prepare(canonical,
-        {canonical_nodes.data(),canonical_nodes.size(),rows.data(),rows.size()});
+        {canonical_nodes.data(),canonical_nodes.size(),rows.data(),rows.size(),metadata});
     // The source mapping factory already enforces its complete child reservation
     // charged above; its temporary arrays retire before the node-ID decode.
     auto next=std::make_shared<Data>(execution,std::move(prepared));

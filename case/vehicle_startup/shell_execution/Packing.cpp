@@ -30,7 +30,8 @@ bool Same(const fe::ShellPlasticitySectionInput& a, const fe::ShellPlasticitySec
 bool Same(const fe::ShellPlasticityParentInput& a, const fe::ShellPlasticityParentInput& b) noexcept {
     return a.family == b.family && a.family_index == b.family_index &&
         a.source_parent_id == b.source_parent_id && a.source_part_id == b.source_part_id &&
-        a.material_id == b.material_id && a.section_id == b.section_id;
+        a.material_id == b.material_id && a.section_id == b.section_id &&
+        fe::SameShellParentExecution(a.execution,b.execution);
 }
 void Packing::Reserve(std::size_t parts, std::size_t count, std::size_t curve_count) {
     curves.reserve(curve_count);

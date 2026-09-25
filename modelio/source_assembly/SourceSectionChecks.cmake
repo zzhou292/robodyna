@@ -13,6 +13,7 @@ if(ROBO_DYNA_SOURCE_ELASTIC_INVENTORY)
   include("${CMAKE_CURRENT_LIST_DIR}/../../case/source_assembly/SourceAssemblyWallSetup.cmake")
   add_executable(robo_dyna_source_section_input_check
     "${CMAKE_CURRENT_LIST_DIR}/tests/SourceSectionInputTest.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/tests/SourceGlobalLaw1Test.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/tests/SourceSectionRejectionTest.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/tests/SourceSectionAuxiliaryTest.cpp")
   target_link_libraries(robo_dyna_source_section_input_check PRIVATE

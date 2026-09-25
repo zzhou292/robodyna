@@ -9,6 +9,7 @@ include("${robo_assembly_root}/output/ArtifactIO.cmake")
 add_library(robo_dyna_source_assembly STATIC
   "${CMAKE_CURRENT_LIST_DIR}/SourceFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceCurve.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssembly.cpp" "${CMAKE_CURRENT_LIST_DIR}/JsonReader.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceLaw1Driver.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadDeclarations.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReadLaw44Material.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadGeometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadLaw1Material.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReadMaterialPolicy.cpp"

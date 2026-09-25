@@ -13,7 +13,7 @@ records::PlasticField Plasticity(tl::fea::ShellSectionLaw law) {
     switch(law) {
     case L::LayeredLaw44Nip3:case L::Law44Nip1:case L::Law44QbatFourInPlane:
         return records::PlasticField::NativeEquivalentPlasticStrain;
-    case L::LayeredLaw1Nip3:case L::RigidSkin:return records::PlasticField::NotApplicable;
+    case L::LayeredLaw1Nip3:case L::RigidSkin:case L::GlobalLaw1Npt0:return records::PlasticField::NotApplicable;
     default:throw std::runtime_error("Unavailable source role cannot be captured as accepted material");
     }
 }

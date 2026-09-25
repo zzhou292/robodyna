@@ -10,7 +10,7 @@ if(NOT sha_length EQUAL 64)
   message(FATAL_ERROR "Shell execution checks require glass SHA256")
 endif()
 add_executable(robo_dyna_vehicle_shell_execution_original_check tests/OriginalCatalogTest.cpp
-  tests/OriginalLayersTest.cpp tests/OriginalRetryTest.cpp)
+  tests/OriginalLayersTest.cpp tests/OriginalRetryTest.cpp tests/OriginalGlobalLaw1Test.cpp)
 target_link_libraries(robo_dyna_vehicle_shell_execution_original_check PRIVATE
   robo_dyna_vehicle_shell_execution GTest::gtest_main)
 option(ROBO_DYNA_VEHICLE_CONTACT_GEOMETRY_ORIGINAL "Verify complete source-mapped contact surface" OFF)

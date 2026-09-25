@@ -1,6 +1,6 @@
 add_library(robo_dyna_full_shell_source_mapping STATIC
   InputChecks.cpp SourceReadBudget.cpp SourceAuthority.cpp CanonicalSpecs.cpp CanonicalSource.cpp CanonicalCatalog.cpp DeclaredCatalog.cpp
-  Scope.cpp ScopeParts.cpp CanonicalGeometry.cpp MappingArrays.cpp MappingDigest.cpp MappingTopology.cpp
+  Scope.cpp ScopeParts.cpp CanonicalGeometry.cpp MappingArrays.cpp MappingDigest.cpp MappingTopology.cpp MappingExecution.cpp
   MappingEncoding.cpp PreparedSourceMapping.cpp MappingFields.cpp
   MappingRecordWriter.cpp MappingRecordReader.cpp)
 target_link_libraries(robo_dyna_full_shell_source_mapping PUBLIC robo_dyna_full_shell_records)
@@ -17,7 +17,7 @@ if(ROBO_DYNA_SOURCE_MAPPING_TESTS)
   find_package(GTest REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_executable(robo_dyna_source_mapping_check tests/MappingValueTest.cpp
-    tests/ActualMappingTest.cpp tests/ActualMappingCorruptionTest.cpp)
+    tests/ActualMappingTest.cpp tests/ActualMappingCorruptionTest.cpp tests/MappingExecutionTest.cpp)
   target_link_libraries(robo_dyna_source_mapping_check PRIVATE robo_dyna_full_shell_source_mapping GTest::gtest_main)
   target_compile_options(robo_dyna_source_mapping_check PRIVATE -fno-fast-math -ffp-contract=off)
   add_test(NAME full_shell_source_mapping_values COMMAND robo_dyna_source_mapping_check --gtest_filter=SourceMappingValues.*)

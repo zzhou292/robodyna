@@ -47,7 +47,8 @@ void StageLayered(const records::Context& c,const std::vector<ParentField>& mapp
             Point(point->point.saved.plastic_strain,out.plastic_points[begin]);
         } else {
             Require(begin==end && ((row.elastic() && c.parents()[i].native_points==3) ||
-                (m.law==tl::fea::ShellSectionLaw::RigidSkin && c.parents()[i].native_points==0)),
+                ((m.law==tl::fea::ShellSectionLaw::RigidSkin || m.law==tl::fea::ShellSectionLaw::GlobalLaw1Npt0) &&
+                 c.parents()[i].native_points==0)),
                 "Nonplastic role exposes fabricated native plastic points");
         }
         flags[i]=active[m.index];

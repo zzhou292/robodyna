@@ -1,5 +1,6 @@
 #include "MappingDraft.h"
 #include "InputChecks.h"
+#include "MappingRecords.h"
 #include <algorithm>
 
 namespace crash::output::full_shell::source::detail {
@@ -8,7 +9,8 @@ template<class T> std::vector<T> Decode(const CanonicalData& d, const char* name
     const auto& a = FindArray(d, name);
     return arrays::Decode<T>(a.descriptor, a.bytes);
 }
-void Preflight(const CanonicalData& d, MappingInput in) {
+} // namespace
+std::size_t MappingWorkingBytes(const CanonicalData& d, MappingInput in) {
     Require(in.node_count == d.retained_nodes && in.parent_count == d.retained_shells &&
         in.canonical_nodes && in.parents, "Missing/incomplete runtime source ordering");
     std::size_t bytes = 0;
@@ -22,7 +24,18 @@ void Preflight(const CanonicalData& d, MappingInput in) {
     AddBytes(bytes, 8 * d.canonical_nodes, d.limits.host_bytes);
     AddBytes(bytes, 2 * d.canonical_bytes.size(), d.limits.host_bytes);
     AddBytes(bytes, 2 * d.scope_bytes.size(), d.limits.host_bytes);
+    if (in.execution) {
+        CheckMappingExecution(*in.execution);
+        // Complete bounded descriptor clone, per-PID counters and digest/JSON
+        // staging. Metadata codec stays capped at the existing16KiB record cap.
+        AddBytes(bytes, 2 * sizeof(MappingExecution), d.limits.host_bytes);
+        AddBytes(bytes, 2 * in.execution->parts.size() * sizeof(MappingExecutionPart), d.limits.host_bytes);
+        AddBytes(bytes, in.execution->parts.size() * sizeof(std::array<std::uint64_t, 2>), d.limits.host_bytes);
+        AddBytes(bytes, 16 * MappingMetadataByteCap, d.limits.host_bytes);
+    }
+    return bytes;
 }
+namespace {
 void CheckNative(const NativeParent& p, std::size_t count) {
     Require(p.native_family && p.family_index < count && p.native_points <= 64,
         "Invalid caller native family/index/point declaration");
@@ -38,7 +51,22 @@ void CheckNative(const NativeParent& p, std::size_t count) {
 }
 } // namespace
 MappingDraft BuildMapping(const CanonicalData& d, MappingInput in) {
-    Preflight(d, in); // Count/byte checks precede every borrowed pointer read.
+    (void)MappingWorkingBytes(d, in); // Count/byte checks precede borrowed arrays and allocations.
+    std::vector<std::array<std::uint64_t, 2>> execution_counts;
+    if (in.execution) {
+        CheckMappingExecution(*in.execution);
+        Require(Bits(in.execution->projection_working_length_m) == Bits(d.inputs.units.length_to_m) &&
+            Bits(in.execution->coefficient_working_length_m) == Bits(d.inputs.units.length_to_m),
+            "Mapping execution metrics differ from authenticated source units");
+        execution_counts.resize(in.execution->parts.size());
+        for (const auto& p : in.execution->parts) {
+            const auto& source = FindPart(d, p.part);
+            Require(source.material == p.material && source.section == p.section && source.shell_section &&
+                source.material_role == SourceMaterialRole::Elastic &&
+                (source.source_elform == 2 || source.source_elform == 16),
+                "Global LAW1 mapping PID/MID/SID/material role differs from source");
+        }
+    }
     const auto node_ids = Decode<std::uint64_t>(d, "node_ids");
     const auto records = Decode<std::uint64_t>(d, "shells_records");
     const auto connectivity = Decode<std::uint32_t>(d, "shells_node_indices");
@@ -76,6 +104,29 @@ MappingDraft BuildMapping(const CanonicalData& d, MappingInput in) {
         const auto& part = FindPart(d, raw[1]);
         Require(std::binary_search(d.selected_parts.begin(), d.selected_parts.end(), raw[1]) && part.source_elform,
             "Runtime parent is omitted or lacks a literal source ELFORM");
+        const MappingExecutionPart* resolved = nullptr;
+        std::size_t resolved_index = 0;
+        if (in.execution) {
+            const auto& parts = in.execution->parts;
+            const auto at = std::lower_bound(parts.begin(), parts.end(), raw[1],
+                [](const auto& entry, std::uint64_t id) { return entry.part < id; });
+            if (at != parts.end() && at->part == raw[1]) {
+                resolved = &*at;
+                resolved_index = at - parts.begin();
+            }
+        }
+        // A known elastic zero-point role is the additive resolved execution
+        // profile. It cannot lose its descriptor by downgrading to mapping-v1.
+        if (part.material_role == SourceMaterialRole::Elastic &&
+            p.plastic == PlasticField::NotApplicable && p.native_points == 0) {
+            Require(resolved, "Global elastic zero-point mapping lacks execution provenance");
+        }
+        if (resolved) {
+            const bool triangle = connectivity[4 * p.canonical_parent + 2] == connectivity[4 * p.canonical_parent + 3];
+            Require(p.native_points == 0 && p.plastic == PlasticField::NotApplicable &&
+                p.native_family == (triangle ? 2u : 1u), "Global LAW1 mapping has forged family/point availability");
+            ++execution_counts[resolved_index][triangle ? 1 : 0];
+        }
         next.parent_ids.insert(next.parent_ids.end(), {raw[0], raw[1], part.material, part.section});
         next.parent_reference.insert(next.parent_reference.end(), {p.canonical_parent, p.native_family, p.family_index});
         next.parent_points.insert(next.parent_points.end(), {part.source_elform, p.native_points, static_cast<unsigned>(p.plastic)});
@@ -96,6 +147,13 @@ MappingDraft BuildMapping(const CanonicalData& d, MappingInput in) {
         if (n[2] != n[3]) {
             next.triangles.insert(next.triangles.end(), {n[0], n[2], n[3]});
             next.triangle_parents.push_back(static_cast<std::uint32_t>(i));
+        }
+    }
+    if (in.execution) {
+        for (std::size_t i = 0; i < execution_counts.size(); ++i) {
+            Require(execution_counts[i][0] == in.execution->parts[i].qeph &&
+                execution_counts[i][1] == in.execution->parts[i].t3,
+                "Global LAW1 per-PID mapping coverage is incomplete");
         }
     }
     std::sort(family_indices.begin(), family_indices.end());

@@ -48,5 +48,9 @@ const assembly::Section* VehicleSourcePlan::section(std::size_t p) const noexcep
     return p<d.sections.size()&&d.sections[p]!=SIZE_MAX?&d.typed.sections[d.sections[p]]:nullptr;
 }
 const std::vector<assembly::Curve>& VehicleSourcePlan::curves() const noexcept {return data_->declarations.typed.curves;}
+assembly::SourceLaw1Driver VehicleSourcePlan::law1_driver(std::size_t p) const noexcept {
+    const auto* m=material(p);const auto* s=section(p);
+    return m&&s?assembly::ResolveLaw1SourceDriver(*m,*s):assembly::SourceLaw1Driver{};
+}
 std::size_t VehicleSourcePlan::startup_budget_bytes() const noexcept {return data_->budget;}
 } // namespace crash::modelio::vehicle

@@ -18,7 +18,7 @@ MappingRecordPlan PlanMappingRecord(const PreparedSourceMapping& mapping, const 
         detail::AddBytes(plan.bytes, plan.arrays[i].bytes, cap);
         plan.files.push_back({plan.arrays[i].file, plan.arrays[i].bytes});
     }
-    auto doc = detail::MappingDocument(mapping.source(), mapping.digest(), plan.arrays);
+    auto doc = detail::MappingDocument(mapping.source(), mapping.digest(), plan.arrays,mapping.execution());
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     Require(doc.Accept(writer) && buffer.GetSize() <= MappingMetadataByteCap,
