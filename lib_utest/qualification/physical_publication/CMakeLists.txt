@@ -68,3 +68,8 @@ add_test(NAME type13_mapped_legacy_host COMMAND type13_mapped_legacy_host)
 
 add_test(NAME native_contact_publication_source COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_LIST_DIR}/verify_native_publication_sources.py")
+
+option(NATIVE_CONTACT_LEGACY_CUDA "Build focused old wall/self-contact participation consumers" OFF)
+if(PHYSICAL_PUBLICATION_CUDA AND NATIVE_CONTACT_LEGACY_CUDA)
+  include("${CMAKE_CURRENT_LIST_DIR}/NativeContactLegacy.cmake")
+endif()
