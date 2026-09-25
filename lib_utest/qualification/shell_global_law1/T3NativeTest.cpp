@@ -10,7 +10,9 @@ TEST(GlobalLaw1Native,T3BothThicknessModesLoadedHeldRotatingReversed) {
     Profile profile{ithk?Thickness::Accepted:Thickness::Reference,1.};
     double thickness_change=0;
     for(;motion.step<160*motion.refinement;++motion.step) {
-      SCOPED_TRACE(ithk);SCOPED_TRACE(scenario);SCOPED_TRACE(motion.step);
+      SCOPED_TRACE(ithk);
+      SCOPED_TRACE(scenario);
+      SCOPED_TRACE(motion.step);
       const auto in=motion.Interval(input);t::ForceTrial a;nt::ForceTrial b;
       ASSERT_EQ(t::EvaluateGlobalLaw1Force(profile,r,accepted,in,a),t::Status::kSuccess);
       ASSERT_EQ(global::Evaluate(nr,expected,t3_port_test::Native(in),ithk,b),nt::Status::kSuccess);

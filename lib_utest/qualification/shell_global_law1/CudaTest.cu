@@ -25,7 +25,8 @@ TEST(GlobalLaw1Cuda,QephBothModesNativeRecurrenceExactHostParityAndRetry) {
     auto history=QNativeHistory(nr,packet.history);Device<QPacket> device;ASSERT_TRUE(device.Initialize());
     path::Path motion{true,1};motion.angular_speed=18000;
     for(;motion.step<160;++motion.step) {
-      SCOPED_TRACE(ithk);SCOPED_TRACE(motion.step);packet.input=motion.Interval(input);
+      SCOPED_TRACE(ithk);
+      SCOPED_TRACE(motion.step);packet.input=motion.Interval(input);
       nq::ForceTrial expected;q::ForceTrial cpu;
       ASSERT_EQ(global::Evaluate(nr,history,qeph_kinematics_test::NativeInterval(packet.input),ithk,expected),nq::Status::kSuccess);
       ASSERT_EQ(q::EvaluateGlobalLaw1Force(packet.profile,packet.reference,packet.history,packet.input,cpu),q::Status::kSuccess);
@@ -70,7 +71,8 @@ TEST(GlobalLaw1Cuda,T3BothModesNativeRecurrenceExactHostParityAndRetry) {
     auto history=t3_force_port_test::Native(nr,packet.history);Device<TPacket> device;ASSERT_TRUE(device.Initialize());
     path::Path motion{true,1};motion.angular_speed=18000;
     for(;motion.step<160;++motion.step) {
-      SCOPED_TRACE(ithk);SCOPED_TRACE(motion.step);packet.input=motion.Interval(input);
+      SCOPED_TRACE(ithk);
+      SCOPED_TRACE(motion.step);packet.input=motion.Interval(input);
       nt::ForceTrial expected;t::ForceTrial cpu;
       ASSERT_EQ(global::Evaluate(nr,history,t3_port_test::Native(packet.input),ithk,expected),nt::Status::kSuccess);
       ASSERT_EQ(t::EvaluateGlobalLaw1Force(packet.profile,packet.reference,packet.history,packet.input,cpu),t::Status::kSuccess);
