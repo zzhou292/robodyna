@@ -75,3 +75,16 @@ This neither enforces a larger step nor changes physical mass. Numerical
 acceptance still requires the actual native and TL dt grids, not deck intent.
 Single-thread native coupons establish exact packet/gather ordering; the final
 performance comparison must retain the declared four-core CPU reference.
+
+## Complete numerical reference sequence
+
+`prepare.py --mode sequence` selects `sequence.py`. This single-thread,
+single-interface, bounded tiny-scene observer lets Engine finish normally and
+records each MAINF entry/return, original CDCOR3 INDEX/cohort, and FOR3
+entry/return. X/V/raw mass and actual DT1/DT12 are retained; incoming/outgoing
+A/STIFN distinguish contact from structural contributions. Every cohort keeps
+its inactive lanes. Pre-force undefined interpolation is not read. Post-force
+N is captured only where the exact left-associated ASS0 H sum is nonzero.
+Original source/history indices remain one-based. Exit, call balance, bounded
+output and at least one response are required. Full dt-grid/trajectory review
+is separate; debugger timings cannot establish CPU or GPU speed.

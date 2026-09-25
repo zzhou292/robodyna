@@ -7,6 +7,7 @@ from pathlib import Path
 from .abi import arguments, verify_common_prefix
 
 ROUTINES = {
+    'I25CDCOR3':'engine/source/interfaces/int25/i25mainf.F',
     'I25MAINF':'engine/source/interfaces/int25/i25mainf.F',
     'I25COMP_2':'engine/source/interfaces/int25/i25comp_2.F',
     'I25MAIN_TRI':'engine/source/interfaces/intsort/i25main_tri.F',
@@ -17,7 +18,8 @@ ROUTINES = {
 }
 
 
-def prepare(donors, common_root, output, app_root):
+def prepare(donors, common_root, output, app_root, mode="observe"):
+    if mode not in ("observe","sequence"):raise ValueError("Unknown native probe mode")
     sources=[]; abi={}
     def read(path):
         data=path.read_bytes()
@@ -47,13 +49,16 @@ def prepare(donors, common_root, output, app_root):
     commands=['set pagination off','set confirm off','set print thread-events off',
               'set disable-randomization off','set language c','python',
               'import sys',f'sys.path.insert(0, {str(app_root.resolve())!r})',
-              'from benchmarks.native_contact_scene.reference.observe import install, finish',
-              'install("probe-abi.json")','end','run','python','finish()','end','kill','quit']
+              f'from benchmarks.native_contact_scene.reference.{mode} import install, finish',
+              'install("probe-abi.json")','end','run','python','finish()','end']
+    if mode=='observe':commands += ['kill']
+    commands += ['quit']
     with (output/'inspect.gdb').open('x') as f:f.write('\n'.join(commands)+'\n')
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('donors','common-root','output','app-root'):parser.add_argument('--'+name,type=Path,required=True)
+    parser.add_argument("--mode",choices=("observe","sequence"),default="observe")
     args=parser.parse_args()
-    prepare(args.donors,args.common_root,args.output,args.app_root)
+    prepare(args.donors,args.common_root,args.output,args.app_root,args.mode)
