@@ -51,7 +51,8 @@ TEST(NativeSceneCli, DuplicateUnknownMissingAndOversizedArgumentsAreRejected) {
     EXPECT_THROW(Extra({"--steps"}),std::exception);
     EXPECT_THROW(Extra({"--stop-file",std::string(4097,'x')}),std::exception);
     EXPECT_THROW(Extra({std::string(4097,'x'),"1"}),std::exception);
-    EXPECT_THROW(Parse(0,nullptr),std::exception);EXPECT_THROW(Parse(49,nullptr),std::exception);
+    EXPECT_THROW(Parse(0,nullptr),std::exception);
+    EXPECT_THROW(Parse(49,nullptr),std::exception);
 }
 TEST(NativeSceneCli, NumericGarbageOverflowAndNonfiniteValuesAreRejected) {
     for(const auto* value:{"-1","1.5","12junk","18446744073709551616",""}) {
