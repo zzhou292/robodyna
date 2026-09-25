@@ -57,9 +57,13 @@ TEST(Type25Assembly, NativeProductsAreConvertedOnceAtTheSiBoundary) {
   ASSERT_EQ(ass::EndpointsToSi({.001,1000.,1.},native,&si),ass::Status::Ok);
   EXPECT_TRUE(si.active);
   EXPECT_EQ(si.secondary_resultant.x,native.secondary_resultant.x);
+  EXPECT_EQ(si.secondary_resultant.y,native.secondary_resultant.y);
+  EXPECT_EQ(si.secondary_resultant.z,native.secondary_resultant.z);
   EXPECT_EQ(si.secondary_stiffness,native.secondary_stiffness*1000.);
   for (unsigned slot = 0; slot < 4; ++slot) {
     EXPECT_EQ(si.main_force[slot].x,native.main_force[slot].x);
+    EXPECT_EQ(si.main_force[slot].y,native.main_force[slot].y);
+    EXPECT_EQ(si.main_force[slot].z,native.main_force[slot].z);
     EXPECT_EQ(si.main_stiffness[slot],native.main_stiffness[slot]*1000.);
   }
 }
