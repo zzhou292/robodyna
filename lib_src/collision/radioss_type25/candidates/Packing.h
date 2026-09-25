@@ -17,9 +17,8 @@ TL_MATH_HOST_DEVICE inline Status PackLocal(const LocalRow& in,PackedRow* output
     if(!in.nodes[i]||!v::Finite(in.main_velocities[i])||in.constraint_codes[i]<0||in.constraint_codes[i]>7)
       return Status::InvalidInput;
     for(unsigned j=0;j<i;++j)if(in.nodes[i]==in.nodes[j]&&
-       (s.vertices[i].x!=s.vertices[j].x||s.vertices[i].y!=s.vertices[j].y||s.vertices[i].z!=s.vertices[j].z||
-        in.main_velocities[i].x!=in.main_velocities[j].x||in.main_velocities[i].y!=in.main_velocities[j].y||
-        in.main_velocities[i].z!=in.main_velocities[j].z||in.constraint_codes[i]!=in.constraint_codes[j]))
+       (!d::SameVector(s.vertices[i],s.vertices[j])||!d::SameVector(in.main_velocities[i],in.main_velocities[j])||
+        in.constraint_codes[i]!=in.constraint_codes[j]))
       return Status::InvalidInput;
     next.nodes[i]=in.nodes[i];next.vertices[i]=s.vertices[i];next.symmetry&=in.constraint_codes[i];
   }

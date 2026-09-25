@@ -10,6 +10,15 @@ inline constexpr double em03 = 1. / 1000.;
 TL_MATH_HOST_DEVICE inline double Max(double a,double b) {return a<b?b:a;}
 TL_MATH_HOST_DEVICE inline double Min(double a,double b) {return a<b?a:b;}
 TL_MATH_HOST_DEVICE inline bool Nonnegative(double a) {return tl::math::Finite(a)&&a>=0;}
+TL_MATH_HOST_DEVICE inline bool SameBits(double a,double b) {
+  const auto* first=reinterpret_cast<const unsigned char*>(&a);
+  const auto* second=reinterpret_cast<const unsigned char*>(&b);
+  for(unsigned i=0;i<sizeof(double);++i)if(first[i]!=second[i])return false;
+  return true;
+}
+TL_MATH_HOST_DEVICE inline bool SameVector(Vector a,Vector b) {
+  return SameBits(a.x,b.x)&&SameBits(a.y,b.y)&&SameBits(a.z,b.z);
+}
 TL_MATH_HOST_DEVICE inline double Clamp(double a) {return Max(0.,Min(1.,a));}
 TL_MATH_HOST_DEVICE inline Bounds Box(const Vector* p) {
   Bounds b{p[0],p[0]};
@@ -68,8 +77,7 @@ TL_MATH_HOST_DEVICE inline Status EvaluatePacked(const PackedRow& row,FilterResu
   for(unsigned i=0;i<4;++i) {
     if(!row.nodes[i]||!v::Finite(row.vertices[i]))return Status::InvalidInput;
     for(unsigned j=0;j<i;++j)if(row.nodes[i]==row.nodes[j]&&
-       (row.vertices[i].x!=row.vertices[j].x||row.vertices[i].y!=row.vertices[j].y||
-        row.vertices[i].z!=row.vertices[j].z))return Status::InvalidInput;
+       !d::SameVector(row.vertices[i],row.vertices[j]))return Status::InvalidInput;
   }
   const double zone=row.gap+row.margin,gap2=zone*zone;
   if(!d::Nonnegative(zone)||!d::Nonnegative(gap2))return Status::NonfiniteResult;

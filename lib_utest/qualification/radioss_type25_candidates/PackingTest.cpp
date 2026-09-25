@@ -34,3 +34,11 @@ TEST(NativeCandidatePacking,InvalidAndOverflowAreAtomic) {
   row.constraint_codes[0]=0;row.previous_dt=std::numeric_limits<double>::max();
   EXPECT_EQ(c::PackLocal(row,&packed),c::Status::NonfiniteResult);EXPECT_EQ(packed.gap,99.);
 }
+
+TEST(NativeCandidatePacking,RepeatedNativeNodeRequiresIdenticalOperandBits) {
+  auto row=PackingCases().front();row.screen.vertices[2].x=0.;row.screen.vertices[3].x=-0.;
+  c::PackedRow packed;packed.gap=123.;EXPECT_EQ(c::PackLocal(row,&packed),c::Status::InvalidInput);
+  EXPECT_EQ(packed.gap,123.);row.screen.vertices[3].x=0.;
+  row.main_velocities[2].x=0.;row.main_velocities[3].x=-0.;
+  EXPECT_EQ(c::PackLocal(row,&packed),c::Status::InvalidInput);EXPECT_EQ(packed.gap,123.);
+}
