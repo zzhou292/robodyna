@@ -1,0 +1,76 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only ordinary fixed-main topology, original float normals, native CSR and explicitly separate Starter/ready phases.",
+  "files": [
+    {
+      "path": "native/original/i25surfi.F",
+      "source": "starter/source/interfaces/inter3d1/i25surfi.F",
+      "bytes": 27552,
+      "sha256": "f47b140133ddd3eea5e01e0b42309ee7ee27360cf7ae9fc40b9db7cfe781a7db",
+      "git_blob": "fc03db70db0a48fdf25f7cf3bac5ac3572d76bb2"
+    },
+    {
+      "path": "native/original/i25norm3.F",
+      "source": "starter/source/interfaces/inter3d1/i25norm3.F",
+      "bytes": 18004,
+      "sha256": "1bcacc89d23ae0017ee215fe0b944fecc1aada6722012eff3da9d8bf859aed4a",
+      "git_blob": "e50b8ab0395fb0d97819f1e928290493436b3047"
+    },
+    {
+      "path": "native/original/i25neigh.F",
+      "source": "starter/source/interfaces/inter3d1/i25neigh.F",
+      "bytes": 68494,
+      "sha256": "60371d61970cc9da0dab430a533048423b0ce20a12d21404b1b4b0871e484097",
+      "git_blob": "140cc479c1405d1078f178ff747fbee58a525e53"
+    },
+    {
+      "path": "native/original/i24tools.F",
+      "source": "starter/source/interfaces/inter3d1/i24tools.F",
+      "bytes": 26172,
+      "sha256": "fc91f38402f15ddd0e9b4206b17ca9f118a3ea5475d76d8a13975bcdd57f3867",
+      "git_blob": "bbe05c7ae7c0fe5b534c551739b31ba237f37f0b"
+    },
+    {
+      "path": "native/original/norma1.F",
+      "source": "starter/source/interfaces/inter3d1/norma1.F",
+      "bytes": 8505,
+      "sha256": "175dd2d3e6c88ead6083094213a5d5a22c411c9db5b8f845c361d9144a869002",
+      "git_blob": "83a2bfd9d26d83de813e01ba7350939f0ec907ef"
+    },
+    {
+      "path": "native/original/inter_tools.F",
+      "source": "starter/source/restart/ddsplit/inter_tools.F",
+      "bytes": 268399,
+      "sha256": "5fa64224e4677d369dbd8575c4263443b0b7d2d4e141275318d7aba949133e2a",
+      "git_blob": "62a44da92b5b9804a1929b80659fb2707b2bce48"
+    },
+    {
+      "path": "native/original/i25norm.F",
+      "source": "engine/source/interfaces/int25/i25norm.F",
+      "bytes": 36651,
+      "sha256": "93f82432f7347a65e072f4cd522aa875639e4ee798a9a2e4bb7a676e654a98b4",
+      "git_blob": "3bf29012f396aa6c03b996a781dd05f9c54d4313"
+    },
+    {
+      "path": "native/original/i25main_norm.F",
+      "source": "engine/source/interfaces/int25/i25main_norm.F",
+      "bytes": 14288,
+      "sha256": "b4774db422b3d561cc2eb7c52af2d3bc5bea1069cf7eb2fbe880aea751a88d96",
+      "git_blob": "3afc7d9ef65c7486e63561b40d4c87deedb2b8f5"
+    },
+    {
+      "path": "native/original/i25free_bound.F",
+      "source": "engine/source/interfaces/int25/i25free_bound.F",
+      "bytes": 3546,
+      "sha256": "6b01efc8029d44e30e3e804e9165b19224429f28a7bc7e491a8287c7b5122038",
+      "git_blob": "aaf6ea410637de3628d89fe8003c3e2a2b7445cd"
+    },
+    {
+      "path": "native/original/constant_mod.F",
+      "source": "common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    }
+  ]
+}
