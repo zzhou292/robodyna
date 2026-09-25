@@ -102,6 +102,11 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
 fe::ShellPhysicalScratchRosterEntry Transaction::roster_entry() noexcept {
   return impl_?fe::ShellPhysicalScratchRosterEntry{&impl_->issuer,impl_->source.source_id}:fe::ShellPhysicalScratchRosterEntry{};
 }
+TransactionSourceInfo Transaction::source_info() const noexcept {
+  if(!impl_)return {};const auto& s=impl_->source;
+  return {s.source_id,s.topology_generation,s.selection.generation,s.selection.node_count,
+    s.selection.secondary_count,s.primary_main_count,s.selection.main_count,true};
+}
 TransactionForecast Transaction::allocations() const noexcept{return impl_?impl_->forecast:TransactionForecast{};}
 TransactionDiagnostics Transaction::last_diagnostics() const noexcept{return impl_?impl_->diagnostics:TransactionDiagnostics{};}
 } // namespace tlfea::contact::radioss_type25

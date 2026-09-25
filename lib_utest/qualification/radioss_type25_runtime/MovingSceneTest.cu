@@ -59,6 +59,9 @@ void Exact(const State& a,const State& b) {
 TEST(NativeType25MovingSceneCuda,ActualOwnerInitialMassInertiaAndReadbackAdmission) {
   Rig rig;ASSERT_NO_THROW(rig.Initialize());const auto state=rig.Read();
   EXPECT_FALSE(state.contact.force_phase_available);EXPECT_FALSE(state.contact.selectors.has_reference);
+  const auto source=rig.contact.source_info();ASSERT_TRUE(source.available);EXPECT_EQ(source.nodes,18u);
+  EXPECT_EQ(source.secondaries,18u);EXPECT_EQ(source.primary_mains,8u);EXPECT_EQ(source.expanded_mains,16u);
+  EXPECT_EQ(source.source_id,1u);EXPECT_EQ(source.topology_generation,1u);EXPECT_EQ(source.source_generation,1u);
   for(unsigned i=0;i<18;++i) {SCOPED_TRACE(i);Number(state.mass[i],observed::ObservedMass[i]*1000,0,128*std::numeric_limits<double>::epsilon());
     Number(state.inertia[i],observed::ObservedInertia[i]*.001,0,128*std::numeric_limits<double>::epsilon());
     EXPECT_GT(state.mass[i],0);EXPECT_GT(state.inertia[i],0);if(i<9){EXPECT_EQ(rig.fixture.inverse_mass[i],0);EXPECT_EQ(rig.fixture.inverse_inertia[i],0);}}

@@ -41,6 +41,7 @@ class Transaction {
   tl::fea::NativeContactPublicationSnapshot accepted() const noexcept;
   TransactionReport CopyAccepted(AcceptedContactBuffer,
       tl::fea::NativeContactPublicationSnapshot*) const noexcept;
+  TransactionSourceInfo source_info() const noexcept;
   TransactionForecast allocations() const noexcept;
   TransactionDiagnostics last_diagnostics() const noexcept;
  private:

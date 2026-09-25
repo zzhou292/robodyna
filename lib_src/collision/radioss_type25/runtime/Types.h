@@ -48,6 +48,12 @@ struct TransactionLimits {
   std::size_t optimized_candidates=65536,sliding_entries=65536;
   std::size_t max_device_bytes=std::size_t{1}<<30,max_host_bytes=std::size_t{128}<<20;
 };
+// Immutable descriptive startup identity; not a physical/accepted receipt.
+struct TransactionSourceInfo {
+  std::uint64_t source_id=0,topology_generation=0,source_generation=0;
+  std::size_t nodes=0,secondaries=0,primary_mains=0,expanded_mains=0;
+  bool available=false;
+};
 struct TransactionForecast {
   std::size_t device_bytes=0,host_bytes=0,startup_host_bytes=0;
   std::size_t runtime_device_bytes=0,inventory_device_bytes=0,maintenance_device_bytes=0,incidence_device_bytes=0;
