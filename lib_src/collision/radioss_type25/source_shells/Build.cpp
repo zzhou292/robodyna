@@ -4,6 +4,7 @@
 #include "../../RadiossType25ShellSource.h"
 #include "Layout.h"
 #include "Values.h"
+#include "../search/Ranges.h"
 #include <cstring>
 #include <new>
 namespace tlfea::contact::radioss_type25::source_shells {
@@ -101,7 +102,8 @@ Report Build(const Input& input, Limits limits, void* scratch, std::size_t bytes
 
 Report MainGaps(const NodeFields* fields, std::size_t count, const std::uint32_t (&nodes)[4],
     MainGapFields* output) noexcept {
-  if (!fields || !output || !count || count>Limits{}.nodes) return {Status::InvalidInput};
+  if (!count || count>Limits{}.nodes || !search::detail::Span(fields,count) ||
+      !search::detail::Span(output,std::size_t{1})) return {Status::InvalidInput};
   MainGapFields result;
   for (unsigned slot=0;slot<4;++slot) {
     if (nodes[slot]>=count || !fields[nodes[slot]].on_main_surface ||

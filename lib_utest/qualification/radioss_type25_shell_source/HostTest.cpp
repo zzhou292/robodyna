@@ -124,5 +124,11 @@ TEST(ShellContactSource, MainGapFailurePreservesOutput) {
   const std::uint32_t bad[]{0,8,9,1};s::MainGapFields output{{1,2,3,4},5};
   EXPECT_EQ(s::MainGaps(f.nodes.data(),f.nodes.size(),bad,&output).status,s::Status::InvalidInput);
   EXPECT_EQ(output.corner[3],4);EXPECT_EQ(output.maximum,5);
+  const auto* misaligned=reinterpret_cast<const s::NodeFields*>(
+      reinterpret_cast<const unsigned char*>(f.nodes.data())+1);
+  EXPECT_EQ(s::MainGaps(misaligned,f.nodes.size(),bad,&output).status,s::Status::InvalidInput);
+  const auto* overflowing=reinterpret_cast<const s::NodeFields*>(UINTPTR_MAX-(alignof(s::NodeFields)-1));
+  EXPECT_EQ(s::MainGaps(overflowing,1,bad,&output).status,s::Status::InvalidInput);
+  EXPECT_EQ(output.corner[3],4);EXPECT_EQ(output.maximum,5);
 }
 } // namespace
