@@ -70,6 +70,7 @@ TEST(NativeSceneDynamicsCuda,GeneratedSourceFullThousandIntervalTrajectoryRetain
     reference::ReferenceReader native_reference(TYPE25_NATIVE_REFERENCE_FILE);
     std::array<bool,18> prior{};std::array<unsigned,18> episodes{};std::size_t active=0,rebuilds=0;
     RecordProperty("physical_source","shipping DeclaredSource/PhysicalSource/ContactSource");
+    RecordProperty("normal_profile","planar fixed-wall coupon, source-derived all-active ready normals; no nonplanar/moving cache claim");
     RecordProperty("coordinate_absolute_tolerance_native_mm","2e-8");RecordProperty("velocity_absolute_tolerance_native_mm_per_s","2e-5");
     RecordProperty("force_absolute_tolerance_native_n","2e-5");RecordProperty("stiffness_absolute_tolerance_native_n_per_mm","2e-3");RecordProperty("relative_tolerance","2e-8");
     for(std::uint64_t step=0;step<1000;++step){
