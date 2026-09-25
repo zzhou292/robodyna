@@ -42,4 +42,15 @@ failure is recorded separately from simulation or video validity. Source
 archives are never modified.
 
 Host tests: `python3 -B -m unittest viewer.postprocess.test_lifecycle
-viewer.postprocess.test_replay_evidence -v` (one command).
+viewer.postprocess.test_replay_evidence viewer.postprocess.test_native_run -v` (one command).
+
+Closed-output dispatch supports the existing vehicle `run-summary.json` contract
+unchanged, and the explicit native `summary.json` schema
+`robo_dyna.native_shell_impact_run.v1`. The native closure precheck validates its nested
+RecordFiles, binds the forecast to the authenticated native configuration/profile,
+and checks exact final archive count/time and complete/prefix claims before
+returning an in-memory postprocessing view. It never writes a vehicle summary
+or converts a failed producer guard into success. The existing C++ exact archive
+checker remains responsible for full schema, identity and physical-frame validation. Notifications name the actual
+run directory/profile; the renderer labels physical time in microseconds and
+milliseconds without changing stored samples or geometry scale.

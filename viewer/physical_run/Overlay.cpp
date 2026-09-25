@@ -10,16 +10,16 @@ class Overlay final:public chrono::vsg3d::ChGuiComponentVSG {
         ImGui::SetNextWindowPos(ImVec2(12,12),ImGuiCond_Always);
         const auto flags=ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse|
             ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoSavedSettings;
-        if(ImGui::Begin("robo-dyna | Yaris mesh-wall preview",nullptr,flags)) {
+        if(ImGui::Begin("robo-dyna | Physical simulation replay",nullptr,flags)) {
             const auto& replay=*scene.samples();const auto& stamp=*scene.stamp();
-            ImGui::Text("Time %.6f ms | sample %zu / %zu",stamp.time*1000,stamp.index+1,replay.frames().size());
+            ImGui::Text("Time %.3f us (%.6f ms) | sample %zu / %zu",stamp.time*1e6,stamp.time*1000,stamp.index+1,replay.frames().size());
             if (replay.recovered()) {
                 ImGui::TextUnformatted("Recovered interrupted saved samples");
                 ImGui::TextUnformatted("Interval ledger unavailable | completion unknown");
             } else ImGui::TextUnformatted(replay.normal()->index().horizon_complete?
                 "Requested duration complete":"Diagnostic prefix | trajectory incomplete");
             ImGui::TextUnformatted("Original shell assembly | deformation scale 1x");
-            ImGui::TextUnformatted(replay.wall()?"Gray wireframe: mesh wall":"No wall in this recording");
+            ImGui::TextUnformatted(replay.wall()?"Gray wireframe: mesh wall":"No additional wall mesh");
             if(scene.geometry()->color_mode()==visual::ReplayColorMode::PartId) {
                 ImGui::TextUnformatted("Colors: original parts, consistent across frames");
             } else if(scene.geometry()->color_mode()==visual::ReplayColorMode::PlasticStrain) {

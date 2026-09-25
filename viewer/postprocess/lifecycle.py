@@ -39,6 +39,10 @@ def closed_run(launch):
     if report.get('exit_code') not in (0, 2):
         raise ValueError('Simulation did not close normally; inspect its guard report')
     run = Path(launch['output'])
+    if not (run / 'run-summary.json').exists():
+        from .native_run import closed_native_run
+        return closed_native_run(run, report)
+    # Existing vehicle closure validation remains unchanged below.
     summary = read_json(run / 'run-summary.json')
     if summary.get('valid_archive_manifest') is not True:
         raise ValueError('Simulation has no valid closed archive')
