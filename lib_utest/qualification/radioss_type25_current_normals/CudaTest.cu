@@ -99,6 +99,20 @@ TEST_F(CurrentNormalsCuda, NativeSiAndFloorDominatedPacketsCrossOriginal129RowCo
     }
   }
 }
+TEST_F(CurrentNormalsCuda, NativeGeneratedLimitCasePreservesCountsAndZeroBisectors) {
+  // Source-generated numerical packet only: the bounded C++ startup factory
+  // still rejects this disconnected vertex fan, as its owning host test proves.
+  NativeCornerFan fan;const auto in=fan.Input();const auto expected=Oracle(in);
+  ASSERT_TRUE(std::any_of(expected.references.begin(),expected.references.end(),[](const auto& r){return r.boundary>2;}));
+  for(unsigned threads:{1u,7u,32u,64u})for(bool reverse:{false,true}) {
+    SCOPED_TRACE(threads);
+    SCOPED_TRACE(reverse);
+    const auto actual=EvaluateDevice(in,threads,reverse,Fixture::Limits());SameStages(actual,expected);
+    for(const auto& r:actual.values.references)if(r.boundary>2) {
+      SameNormal(r.bisector[0],{});SameNormal(r.bisector[1],{});
+    }
+  }
+}
 TEST_F(CurrentNormalsCuda, AdmissionAndLateArithmeticFailurePreservePriorPublicationAndRetry) {
   Fixture clean(Grid(2,1));const auto expected=Oracle(clean.Input(true));
   const auto valid=EvaluateDevice(clean.Input(),32,false,Fixture::Limits());SameStages(valid,expected);
