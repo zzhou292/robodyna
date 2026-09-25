@@ -29,3 +29,37 @@ target_link_libraries(type25_runtime_composed_cuda PRIVATE tl_radioss_type25_tra
 set_target_properties(type25_runtime_composed_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 add_test(NAME type25_runtime_composed_cuda COMMAND type25_runtime_composed_cuda)
 set_tests_properties(type25_runtime_composed_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+option(TYPE25_RUNTIME_MOVING_SCENE "Build the real common-owner native wall/patch coupon" OFF)
+set(TYPE25_NATIVE_SCENE_APP_ROOT "" CACHE PATH "Pinned app material bridge source checkout")
+if(TYPE25_RUNTIME_MOVING_SCENE)
+  if(NOT EXISTS "${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridge.cmake")
+    message(FATAL_ERROR "Moving scene requires the explicitly pinned app material bridge")
+  endif()
+  set(ROBO_DYNA_TL_ROOT "${TL_ROOT}" CACHE PATH "Explicit qualified TL source checkout" FORCE)
+  include("${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridge.cmake")
+  set(observed "${CMAKE_CURRENT_BINARY_DIR}/observed-fixture")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py"
+    --output "${observed}" RESULT_VARIABLE fixture_status)
+  if(NOT fixture_status EQUAL 0)
+    message(FATAL_ERROR "Pinned native scene fixture generation failed")
+  endif()
+  file(GLOB fixture_inputs CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/fixture/*")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${fixture_inputs}
+    "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py")
+  add_executable(type25_runtime_moving_cuda MovingSceneTest.cu)
+  target_include_directories(type25_runtime_moving_cuda PRIVATE "${observed}")
+  target_compile_definitions(type25_runtime_moving_cuda PRIVATE
+    TYPE25_NATIVE_REFERENCE_FILE="${observed}/native-reference.bin")
+  target_link_libraries(type25_runtime_moving_cuda PRIVATE tl_radioss_type25_transaction
+    robo_dyna_native_scene_material GTest::gtest_main CUDA::cudart)
+  set_target_properties(type25_runtime_moving_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_test(NAME type25_runtime_moving_cuda COMMAND type25_runtime_moving_cuda)
+  set_tests_properties(type25_runtime_moving_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240)
+  add_executable(type25_runtime_material_bridge
+    "${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridgeTest.cpp")
+  target_link_libraries(type25_runtime_material_bridge PRIVATE robo_dyna_native_scene_material GTest::gtest_main)
+  add_test(NAME type25_runtime_material_bridge COMMAND type25_runtime_material_bridge)
+  add_test(NAME type25_runtime_observed_source COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py" --output "${observed}" --check)
+endif()
