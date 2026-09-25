@@ -98,3 +98,17 @@ TEST(NativeCandidateInventory,DevicePoisonCannotTriggerCpuRetry) {
   EXPECT_EQ(inventory.Stage(scene.Current()),c::Status::DeviceFailure);EXPECT_FALSE(inventory.IsCurrent(prior));
   EXPECT_EQ(inventory.Stage(scene.Current()),c::Status::Unusable);EXPECT_EQ(inventory.view().pairs(),nullptr);
 }
+
+TEST(NativeCandidateInventory,PrimaryPrefixAdmissionKeepsCountSeparateFromCurrentActivity) {
+  Scene scene;c::Inventory inventory;auto source=scene.Source();
+  source.primary_main_count*=2;EXPECT_EQ(inventory.Initialize(source,Limits(),scene.stream),c::Status::InvalidInput);
+  source=scene.Source();const auto saved=scene.mains[0].segment_type;
+  for(int invalid:{-1,1,source.primary_main_count}) {
+    scene.mains[0].segment_type=invalid;EXPECT_EQ(inventory.Initialize(source,Limits(),scene.stream),c::Status::UnsupportedProfile);
+  }
+  scene.mains[0].segment_type=saved;ASSERT_EQ(inventory.Initialize(source,Limits(),scene.stream),c::Status::Ok);
+  for(std::size_t i=0;i<scene.main_stiffness.size;++i)scene.main_stiffness[i]=0.;
+  ASSERT_EQ(inventory.Stage(scene.Current()),c::Status::Ok);Check(inventory,{},scene.secondaries.size());
+  for(std::size_t i=0;i<scene.main_stiffness.size;++i)scene.main_stiffness[i]=1.;
+  ASSERT_EQ(inventory.Stage(scene.Current()),c::Status::Ok);Check(inventory,Reference(scene,scene.Current()),scene.secondaries.size());
+}

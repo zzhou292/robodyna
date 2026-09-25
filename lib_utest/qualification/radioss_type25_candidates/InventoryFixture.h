@@ -38,7 +38,7 @@ struct Scene {
     if(cudaStreamCreate(&stream)!=cudaSuccess)throw std::runtime_error("stream");
     std::vector<double> xyz,velocity;
     for(unsigned m=0;m<main_count;++m) {
-      c::Main main;main.source_id=100+(main_count-m)/2;main.segment_type=m%3==0?0:1;
+      c::Main main;main.source_id=100+(main_count-m)/2;main.segment_type=m%3==0?0:int(main_count+m+1);
       const double origin=double(m%3)*3.;
       double points[12]={origin-1,-1,0,origin+1,-1,0,origin+1,1,.0625*double(m%2),origin-1,1,0};
       for(unsigned j=0;j<4;++j) {
@@ -71,7 +71,7 @@ struct Scene {
     s.physical_nodes=ids.size();s.secondaries=secondaries.size();s.mains=mains.size();s.removals=removals.size();
     s.node_ids=ids.data();s.constraint_codes=codes.data();s.secondary_nodes=secondaries.empty()?nullptr:secondaries.data();
     s.main=mains.empty()?nullptr:mains.data();s.removal_offsets=removal_offsets.data();
-    s.removal_nodes=removals.empty()?nullptr:removals.data();s.native_main_count=std::max<std::size_t>(1,mains.size());return s;
+    s.removal_nodes=removals.empty()?nullptr:removals.data();s.primary_main_count=int(mains.size());return s;
   }
   c::Current Current() const {
     c::Current x;x.stamp={{71,81},1,1,1,1,1};
@@ -104,7 +104,7 @@ inline std::vector<c::Pair> Reference(const Scene& scene,const c::Current& in) {
       for(unsigned j=0;j<4;++j)row.screen.vertices[j]=Read(in,main.nodes[j]);
       if(!NativeScreen(row.screen))continue;
       row.previous_dt=in.previous_dt;row.secondary_velocity=Read(in,node,true);row.constraint_codes[4]=scene.codes[node];
-      row.segment_type=main.segment_type;row.main_count=scene.Source().native_main_count;
+      row.segment_type=main.segment_type;row.main_count=scene.Source().primary_main_count;
       for(unsigned j=0;j<4;++j){row.nodes[j]=scene.ids[main.nodes[j]];row.main_velocities[j]=Read(in,main.nodes[j],true);row.constraint_codes[j]=scene.codes[main.nodes[j]];}
       if(NativeClearance(row)!=0.)result.push_back({std::uint32_t(s),std::uint32_t(m)});
     }

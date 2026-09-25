@@ -6,7 +6,7 @@ a physical clock. Production is C++/CUDA and has no native Fortran dependency.
 
 The selected source scope is local roles, ILEV1, IEDGE0, IGAP1, FLAGREMNODE2 and
 ICODT0..7. Actual source IDs, ordered four-slot topology, repeated secondary/main
-occurrences, genuine removal CSR, main segment type and global native NRTM remain
+occurrences, genuine removal CSR, main segment type and primary search count P remain
 explicit. Negative activity, remote exchange and other source profiles are not
 admitted. No absent coefficient, gap or removal producer is synthesized.
 
@@ -16,7 +16,8 @@ VX/VY/VZ against all four main slots, VDT=((VX+VY)+VZ)*DT1 and
 GAPV=ONEP01*((base+CURV_MAX)+VDT). Global stored_motion participates only in TRIVOX.
 PEN3 evaluates the native all-T3 row for T3 and native Q4 fan rows for Q4, with
 native denominator floors, edge-region decisions and PENE != 0 admission.
-IBC bit1 is Z, bit2 is Y, bit4 is X. ETYP/global NRTM select solid/coating symmetry.
+IBC bit1 is Z, bit2 is Y, bit4 is X. PEN3 receives canonical primary count P;
+classification and opposite-side lookup receive their separate complete count G.
 Repeated source-node inputs require identical coordinate/velocity bits through
 the shared math/ScalarBits.h helper also used by selection/geometry. Integration
 qualification retains native/CUDA differential and signed-zero admission gates. STIF,
@@ -78,3 +79,17 @@ CUDA poison and production-only consumer linking. Whole native voxel scheduling,
 original removal-roster generation, stateful selection/history, endpoint ASS0 and
 common physical publication are separate remaining integration gates. This is
 not a complete contact solver or a matched CPU/GPU performance claim.
+
+Primary-role correction boundary: Source.primary_main_count must equal the complete
+searched primary roster (P=IPARI4-IPARI42), not active main count or classification
+table size G. SH2SURF25 gives primary role0 or role>P. Every nonempty worker has
+1<=local_count<=P and its unshifted MSEGTYP lookup remains in that primary prefix;
+therefore native local-count/unshifted-role and canonical P/actual-role symmetry
+predicates are identical. This source shape is checked before allocation; negative
+generated opposite rows and ordinary positive roles<=P are not primary inputs.
+It does not authenticate a caller's source provenance or partner table by itself.
+The pure PackedRow.main_count remains an explicit raw PEN3 call operand, admitting
+generic arithmetic fixtures. Empty numerical primary rosters use P=0 without any
+PEN3 call; current zero activity never changes immutable P. Required gates compare
+whole native output bits for all worker counts1..P, both topologies and all native
+constraint masks, plus full-G and invalid-prefix counterexamples and actual CUDA.

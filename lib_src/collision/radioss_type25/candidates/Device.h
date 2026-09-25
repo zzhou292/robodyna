@@ -14,7 +14,7 @@ struct Device {
   std::uint64_t* pair_keys=nullptr;std::uint64_t* sorted_pair_keys=nullptr;
   Pair* pairs=nullptr;std::uint64_t* secondary_offsets=nullptr;Control* control=nullptr;
   void* cub=nullptr;std::size_t cub_bytes=0,nodes=0,secondary_count=0,main_count=0,task_capacity=0,pair_capacity=0;
-  int native_main_count=0;bool si=false;double length=1,velocity=1,time=1;
+  int primary_main_count=0;bool si=false;double length=1,velocity=1,time=1;
 };
 inline Device Bind(void* base,const Layout& l,const Source& s,Limits limits) noexcept {
   Device d;units_detail::Factors factors;units_detail::Make(s.units,factors);
@@ -29,6 +29,6 @@ inline Device Bind(void* base,const Layout& l,const Source& s,Limits limits) noe
   BIND(secondary_offsets,std::uint64_t);BIND(control,Control);BIND(cub,std::byte);
 #undef BIND
   d.cub_bytes=l.cub.bytes;d.nodes=s.physical_nodes;d.secondary_count=s.secondaries;d.main_count=s.mains;
-  d.task_capacity=limits.max_tasks;d.pair_capacity=limits.max_pairs;d.native_main_count=s.native_main_count;return d;
+  d.task_capacity=limits.max_tasks;d.pair_capacity=limits.max_pairs;d.primary_main_count=s.primary_main_count;return d;
 }
 } // namespace tlfea::contact::radioss_type25::candidates::detail

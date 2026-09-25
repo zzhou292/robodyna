@@ -12,7 +12,7 @@ Status CheckSource(const Source& s,Limits l) noexcept {
      !l.max_host_bytes||l.max_host_bytes>hard.max_host_bytes)return Status::ResourceLimit;
   units_detail::Factors factors;
   if(!units_detail::Make(s.units,factors)||(s.input_units!=InputUnits::Native&&s.input_units!=InputUnits::Si))return Status::InvalidInput;
-  if(!s.stamp.source||!s.stamp.topology||!s.physical_nodes||s.native_main_count<=0)
+  if(!s.stamp.source||!s.stamp.topology||!s.physical_nodes||s.primary_main_count<0||std::size_t(s.primary_main_count)!=s.mains)
     return Status::InvalidInput;
   if(s.processors!=1||s.edge_mode!=0||s.gap_mode!=1||s.level!=1||s.neighbor_removal!=2)
     return Status::UnsupportedProfile;
@@ -28,6 +28,7 @@ Status CheckSource(const Source& s,Limits l) noexcept {
   if(s.removal_offsets[0]!=0||s.removal_offsets[s.mains]!=s.removals)return Status::InvalidInput;
   for(std::size_t i=0;i<s.mains;++i) {
     if(!s.main[i].source_id||s.removal_offsets[i]>s.removal_offsets[i+1])return Status::InvalidInput;
+    if(s.main[i].segment_type!=0&&s.main[i].segment_type<=s.primary_main_count)return Status::UnsupportedProfile;
     for(unsigned j=0;j<4;++j)if(s.main[i].nodes[j]>=s.physical_nodes)return Status::InvalidInput;
   }
   for(std::size_t i=0;i<s.removals;++i)if(s.removal_nodes[i]>=s.physical_nodes)return Status::InvalidInput;

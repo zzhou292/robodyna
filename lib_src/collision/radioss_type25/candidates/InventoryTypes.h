@@ -25,7 +25,7 @@ struct Source {
   const Main* main=nullptr;
   const std::uint64_t* removal_offsets=nullptr; // mains+1
   const std::uint32_t* removal_nodes=nullptr;
-  int native_main_count=0;
+  int primary_main_count=0; // P=IPARI4-IPARI42, equal to mains; never classification total G.
   int processors=1,edge_mode=0,gap_mode=1,level=1,neighbor_removal=2;
 };
 // DEVICE fields and scalar/domain controls follow Source.input_units, borrowed

@@ -16,7 +16,7 @@ struct PackedRow {
   std::uint64_t nodes[4]{};
   Vector vertices[4]{}, secondary{};
   double gap = 0, margin = 0;
-  int segment_type = 0, main_count = 0, symmetry = 0;
+  int segment_type = 0, main_count = 0, symmetry = 0; // Raw PEN3 count operand, not implicitly global.
 };
 struct FilterResult {
   double squared_clearance = 0;
