@@ -48,7 +48,7 @@ struct Fixture {
     input.node_source_ids=ids.data();input.node_count=ids.size();
     input.positions={physical.positions.data(),std::uint32_t(ids.size()),3,1};
     input.primary=primary.data();input.primary_count=primary.size();input.source_generation=7;
-    const auto forecast=s::Preflight(ids.size(),primary.size());
+    const auto forecast=s::Preflight(input);
     physical.Require(forecast.status==s::Status::Ok&&output.Initialize(forecast.output_bytes)&&
         scratch.Initialize(forecast.scratch_bytes),"Source fixture startup arenas");
     physical.Require(s::BuildStarter(input,{},output,scratch,&starter).status==s::Status::Ok,"Source fixture Starter");
