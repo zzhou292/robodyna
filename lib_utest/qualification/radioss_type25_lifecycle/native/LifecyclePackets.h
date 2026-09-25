@@ -94,7 +94,11 @@ inline n::NativeGeometryInput Geometry(const l::Input& input, l::Occurrence& ite
     out.neighbors[k] = pair.neighbors[k]; out.boundary_ids[k] = pair.boundary_ids[k];
     for (unsigned b = 0; b < 2; ++b) out.vertex_bisector[k][b] = pair.vertex_bisector[k][b];
   }
-  item.selected = {true,out.key,item.local_main,sector,out.lb,out.lc,out.incoming_stiffness};
+  item.selected.enabled = true; item.selected.key = out.key;
+  item.selected.local_main = item.local_main; item.selected.subtriangle = sector;
+  item.selected.selection_code = marker[1];
+  item.selected.lb = out.lb; item.selected.lc = out.lc;
+  item.selected.incoming_stiffness = out.incoming_stiffness;
   return out;
 }
 } // namespace type25_lifecycle_test::reference

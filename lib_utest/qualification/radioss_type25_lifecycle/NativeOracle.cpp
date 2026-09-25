@@ -42,8 +42,10 @@ OracleResult OracleLifecycle(const l::Input& input) {
     item.local_main = native.cache.local_main; // GLOB22 side rewrite is independent of the global winner.
     rows.Store(std::size_t(item.secondary-1),row.history.row);
   }
-  for (unsigned count : initialized)
-    Require(count == 1, "Native lifecycle occurrence lacks exactly one completed cache-producing phase");
+  for (std::size_t i = 0; i < initialized.size(); ++i) {
+    Require(initialized[i] == 1, "Native lifecycle occurrence lacks exactly one completed cache-producing phase");
+    output.occurrences[i].cache_initialized = true;
+  }
   Keep(input,table,rows,output);
   output.geometry.resize(output.occurrences.size());
   for (std::size_t i = 0; i < output.occurrences.size(); ++i) {

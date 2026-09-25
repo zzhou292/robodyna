@@ -54,6 +54,7 @@ void FilterRaw(const l::Input& input, const Tables& table, Rows& rows, OracleRes
     const auto pair = Pair(input,item.secondary,item.local_main,i);
     item.cache.key = pair.key; item.cache.local_main = pair.local_main; item.cache.occurrence = i;
     output.occurrences.push_back(item);
+    ++output.rows[item.secondary-1].optimized_count;
   }
   const int count = Integer(source.secondary_count);
   rd_lifecycle_release_main(&count,rows.markers.data());
