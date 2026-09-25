@@ -19,6 +19,7 @@ class PhysicalSource {
     const tl::fea::ShellBatchStartup& startup() const noexcept;
     const std::vector<std::uint8_t>& translation_fixed_bits() const noexcept;
     const std::vector<std::uint8_t>& rotation_fixed() const noexcept;
+    std::size_t retained_host_upper_bound() const;
   private:
     struct Data;
     explicit PhysicalSource(std::shared_ptr<const Data> data):data_(std::move(data)){}

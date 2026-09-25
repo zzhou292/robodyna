@@ -1,0 +1,23 @@
+add_executable(native_scene_dynamics_host_check "${CMAKE_CURRENT_LIST_DIR}/tests/OptionsTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/tests/ForecastTest.cpp")
+target_link_libraries(native_scene_dynamics_host_check PRIVATE robo_dyna_native_scene_options GTest::gtest_main)
+add_test(NAME native_scene_dynamics_host COMMAND native_scene_dynamics_host_check)
+set_tests_properties(native_scene_dynamics_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+  ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+add_executable(native_scene_dynamics_cuda_check "${CMAKE_CURRENT_LIST_DIR}/tests/CaptureTest.cpp")
+target_link_libraries(native_scene_dynamics_cuda_check PRIVATE robo_dyna_native_scene_run GTest::gtest_main CUDA::cudart)
+set(TYPE25_NATIVE_REFERENCE_FILE "" CACHE FILEPATH "Pinned independent native1000interval reference, qualification only")
+if(TYPE25_NATIVE_REFERENCE_FILE)
+  if(NOT EXISTS "${TYPE25_NATIVE_REFERENCE_FILE}" OR NOT EXISTS "${ROBO_DYNA_NATIVE_SCENE_EXPECTED_INCLUDE}/ObservedScene.h")
+    message(FATAL_ERROR "Actual native trajectory gate requires both pinned reference files")
+  endif()
+  target_sources(native_scene_dynamics_cuda_check PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tests/NativeTrajectoryTest.cpp")
+  target_include_directories(native_scene_dynamics_cuda_check PRIVATE "${ROBO_DYNA_NATIVE_SCENE_EXPECTED_INCLUDE}")
+  target_compile_definitions(native_scene_dynamics_cuda_check PRIVATE TYPE25_NATIVE_REFERENCE_FILE="${TYPE25_NATIVE_REFERENCE_FILE}")
+endif()
+add_test(NAME native_scene_dynamics_cuda COMMAND native_scene_dynamics_cuda_check)
+set_tests_properties(native_scene_dynamics_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 600
+  ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+foreach(t native_scene_dynamics_host_check native_scene_dynamics_cuda_check)
+  target_compile_options(${t} PRIVATE -fno-fast-math -ffp-contract=off)
+endforeach()

@@ -1,5 +1,6 @@
 #pragma once
 #include "Buffers.h"
+#include "NativeState.h"
 #include "output/full_shell/static_bundle/PreparedSourceMapping.h"
 #include "output/physical_run/AcceptedInterval.h"
 #include "lib_src/collision/RadiossType25Transaction.h"
@@ -10,6 +11,10 @@ namespace crash::output::physical_frames {
 // participant batches must outlive this capture. No simulation call occurs here.
 class NativeAcceptedFrames {
   public:
+    // Capacity/source descriptor only, never an accepted receipt. Allows a
+    // prospective Context before any physical owner/device allocation.
+    static Forecast Preflight(const records::source::PreparedSourceMapping&,const tl::fea::ShellPhysicalBinding&,
+        const records::Context&,std::size_t secondaries,Limits={});
     NativeAcceptedFrames(const records::source::PreparedSourceMapping&,const tl::fea::ShellPhysicalBinding&,
         tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,tl::fea::qeph::QephBatch&,tl::fea::t3::T3Batch&,
         tlfea::contact::radioss_type25::Transaction&,const tl::fea::ShellPhysicalPublicationIdentity&,records::Identity,Limits={});
@@ -28,6 +33,7 @@ class NativeAcceptedFrames {
     const tlfea::contact::radioss_type25::NativeGeometryHistory* native_history() const noexcept;
     const int* initial_contact_flags() const noexcept;
     std::size_t secondary_count() const noexcept;
+    NativeAcceptedState native_state() const noexcept;
   private:
     struct Impl;std::unique_ptr<Impl> impl_;
 };

@@ -74,3 +74,9 @@ if(ROBO_DYNA_NATIVE_SCENE_CONTACT_SOURCE)
   set_tests_properties(native_scene_contact_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
     ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
 endif()
+
+option(ROBO_DYNA_NATIVE_SCENE_RUNNER "Build actual sole-owner GPU scene runner and owning tests" OFF)
+if(ROBO_DYNA_NATIVE_SCENE_RUNNER)
+  include("${CMAKE_CURRENT_LIST_DIR}/dynamics/NativeSceneDynamics.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/dynamics/Tests.cmake")
+endif()

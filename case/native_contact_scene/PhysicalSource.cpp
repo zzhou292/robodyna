@@ -1,6 +1,7 @@
 #include "PhysicalSource.h"
 #include "modelio/source_assembly/MaterialDeclarationFields.h"
 #include "output/ArtifactIO.h"
+#include "lib_utils/BoundedArena.h"
 namespace crash::cases::native_scene {
 namespace fe=tl::fea;
 namespace source=modelio::native_scene;
@@ -109,4 +110,17 @@ const tl::constraints::tied_shell::TiedCinAttachmentModel& PhysicalSource::cin()
 const fe::ShellBatchStartup& PhysicalSource::startup() const noexcept{return data_->startup;}
 const std::vector<std::uint8_t>& PhysicalSource::translation_fixed_bits() const noexcept{return data_->fixed;}
 const std::vector<std::uint8_t>& PhysicalSource::rotation_fixed() const noexcept{return data_->rotation;}
+std::size_t PhysicalSource::retained_host_upper_bound() const {
+    const auto& d=data_->declared.data();tl::util::BoundedArenaLayout b(SIZE_MAX);tl::util::ArenaRegion unused;
+    Require(b.Append<std::byte>(sizeof(Data)+sizeof(source::DeclaredData)+8192,unused)&&
+        b.Append<std::byte>(data_->physical.owned_payload_bytes(),unused)&&
+        b.Append<std::byte>(data_->cin.forecast().model_payload_bytes,unused)&&
+        b.Append<source::SourceNode>(d.nodes.capacity(),unused)&&
+        b.Append<source::SourceParent>(d.wall.capacity()+d.patch.capacity(),unused)&&
+        b.Append<std::uint32_t>(d.wall_nodes.capacity()+d.patch_nodes.capacity(),unused)&&
+        b.Append<std::uint8_t>(data_->fixed.capacity()+data_->rotation.capacity(),unused)&&
+        b.Append<char>(d.export_sha256.capacity()+d.definition_sha256.capacity()+d.definition_bytes.capacity()+3,unused),
+        "Physical source retained byte bound overflow");
+    return b.bytes();
+}
 } // namespace crash::cases::native_scene
