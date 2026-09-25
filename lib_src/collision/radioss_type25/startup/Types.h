@@ -10,15 +10,18 @@
 namespace tlfea::contact::radioss_type25::startup {
 enum class Status { Ok, InvalidInput, UnsupportedProfile, UnsupportedTopology,
   NonfiniteResult, UnsupportedArithmetic, ResourceLimit };
-enum class Profile { Unspecified, OrdinaryExteriorFixedMain, OrdinaryExteriorMovingMain };
+enum class Profile { Unspecified, OrdinaryExteriorFixedMain, OrdinaryExteriorMovingMain, ResolvedShellSides };
 enum class Coordinates { Native, Si };
 // Motion profile and topology admission are independent. The zero/default
 // policy retains the qualified manifold matcher and its exact arena forecast.
-enum class TopologyPolicy { ManifoldTwoSided, NativeOrdinaryShell };
+enum class TopologyPolicy { ManifoldTwoSided, NativeOrdinaryShell, NativeResolvedShellSides };
+// Already resolved source roles. This producer does not classify shell/solid membership.
+enum class ShellSideRole { Ordinary, CoatingForward, CoatingReversed };
 struct PrimaryFace {
   std::uint64_t source_id=0;
   ShellLayout layout=ShellLayout::Unspecified;
   std::uint32_t nodes[4]{}; // Zero-based source-node indices; T3 repeats slot3 in slot4.
+  ShellSideRole side_role = ShellSideRole::Ordinary;
 };
 struct Input {
   Profile profile=Profile::Unspecified;
@@ -58,6 +61,10 @@ struct Snapshot {
   std::uint64_t source_generation=0;
   Profile profile=Profile::Unspecified;
   TopologyPolicy topology=TopologyPolicy::ManifoldTwoSided;
+  // Owned immutable input-role provenance only in the resolved profile. The
+  // normalized first-side geometry alone cannot distinguish reversed input scope.
+  const ShellSideRole* primary_roles = nullptr;
+  std::size_t primary_role_count = 0;
 };
 struct FixedMainInput {
   const double* main_coefficients=nullptr;
@@ -78,7 +85,7 @@ struct Limits {
 };
 struct Forecast {
   Status status=Status::InvalidInput;
-  // ready_* are zero/unavailable for NativeOrdinaryShell until separately qualified.
+  // ready_* are zero/unavailable for both native general policies.
   std::size_t output_bytes=0,scratch_bytes=0,ready_output_bytes=0,ready_scratch_bytes=0;
   std::size_t expanded_mains=0,maximum_references=0,maximum_incidence=0;
 };

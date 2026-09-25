@@ -5,14 +5,24 @@
 #include "../normal_activation/Types.h"
 namespace tlfea::contact::radioss_type25::current_normals {
 enum class Status { Ok,InvalidInput,UnsupportedProfile,UnsupportedTopology,NonfiniteResult,ResourceLimit,UnsupportedArithmetic };
-enum class Profile { Unspecified,OrdinaryShellLocal };
-// Immutable ordinary-shell topology. Admission verifies unique primary/partner
+enum class Profile { Unspecified,OrdinaryShellLocal,ResolvedShellSidesLocal };
+enum class RolePolicy { OrdinaryOnly, ResolvedShellSides };
+// Immutable two-sided shell topology. Admission verifies unique primary/partner
 // writers, reversed connectivity, node-bound reference identities and the exact
 // ordered distinct main/reference CSR. It does not authenticate a source deck.
 struct Topology {
   const startup::Main* mains=nullptr;
   std::size_t nodes=0,primary_count=0,main_count=0,references=0;
   selection::lifecycle::Csr normal_to_main;
+  // Legacy direct numerical packets may leave origin unspecified. The explicit
+  // resolved profile requires the immutable role table and matching origin.
+  // Numerical validation checks the coating class/pair relationships. Without
+  // original primary connectivity it cannot authenticate a caller-made table
+  // or distinguish a forged Forward/Reversed label on identical final geometry.
+  startup::Profile source_profile = startup::Profile::Unspecified;
+  startup::TopologyPolicy source_topology = startup::TopologyPolicy::ManifoldTwoSided;
+  const startup::ShellSideRole* primary_roles = nullptr;
+  std::size_t primary_role_count = 0;
 };
 struct Input {
   Profile profile=Profile::Unspecified;

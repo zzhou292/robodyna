@@ -3,7 +3,7 @@
 #include <climits>
 namespace tlfea::contact::radioss_type25::startup::detail {
 namespace {
-bool Output(tl::util::BoundedArenaLayout& arena,std::size_t p,OutputLayout& out) noexcept {
+bool Output(tl::util::BoundedArenaLayout& arena,std::size_t p,OutputLayout& out,TopologyPolicy policy) noexcept {
   const auto g=2*p,refs=4*g;
   return arena.Append<Main>(g,out.mains) &&
       arena.Append<std::uint32_t>(g,out.expanded_to_primary) &&
@@ -11,11 +11,13 @@ bool Output(tl::util::BoundedArenaLayout& arena,std::size_t p,OutputLayout& out)
       arena.Append<StoredNormal>(4*g,out.normals) &&
       arena.Append<NormalReference>(refs,out.references) &&
       arena.Append<std::uint32_t>(refs+1,out.normal_offsets) &&
-      arena.Append<std::uint32_t>(4*g,out.normal_mains);
+      arena.Append<std::uint32_t>(4*g,out.normal_mains) &&
+      (!role_policy::Resolved(policy) || arena.Append<ShellSideRole>(p,out.primary_roles));
 }
 }
 Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output,TopologyPolicy policy) noexcept {
-  if(policy!=TopologyPolicy::ManifoldTwoSided && policy!=TopologyPolicy::NativeOrdinaryShell)
+  if(policy!=TopologyPolicy::ManifoldTwoSided && policy!=TopologyPolicy::NativeOrdinaryShell &&
+      policy!=TopologyPolicy::NativeResolvedShellSides)
     return {Status::UnsupportedProfile};
   const Limits hard;
   if (!nodes || !p) return {Status::InvalidInput};
@@ -26,13 +28,13 @@ Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output,T
   Layout next; const auto g=2*p;
   tl::util::BoundedArenaLayout persistent(SIZE_MAX),scratch(SIZE_MAX),ready(SIZE_MAX);
   OutputLayout staging;
-  if (!Output(persistent,p,next.output) || !Output(scratch,p,staging) ||
+  if (!Output(persistent,p,next.output,policy) || !Output(scratch,p,staging,policy) ||
       !scratch.Append<Vector>(nodes,next.points) || !scratch.Append<Edge>(4*g,next.edges) ||
       !scratch.Append<FaceKey>(p,next.face_keys) ||
       !scratch.Append<Identity>(nodes>p?nodes:p,next.identities) ||
       !scratch.Append<int>(4*g,next.parents) || !scratch.Append<int>(4*g,next.tags) ||
       !scratch.Append<std::uint32_t>(nodes,next.node_references)) return {Status::ResourceLimit};
-  if(policy==TopologyPolicy::NativeOrdinaryShell &&
+  if(policy!=TopologyPolicy::ManifoldTwoSided &&
       (!scratch.Append<int>(g+4,next.candidate_ids) ||
        !scratch.Append<double>(g,next.candidate_angles) ||
        !scratch.Append<double>(g,next.candidate_sides))) return {Status::ResourceLimit};
@@ -56,7 +58,8 @@ Data Construct(tl::util::HostArena& arena,const OutputLayout& p) noexcept {
   return {arena.Construct<Main>(p.mains),arena.Construct<std::uint32_t>(p.expanded_to_primary),
       arena.Construct<std::uint32_t>(p.primary_to_partner),arena.Construct<StoredNormal>(p.normals),
       arena.Construct<NormalReference>(p.references),arena.Construct<std::uint32_t>(p.normal_offsets),
-      arena.Construct<std::uint32_t>(p.normal_mains)};
+      arena.Construct<std::uint32_t>(p.normal_mains),
+      p.primary_roles.count ? arena.Construct<ShellSideRole>(p.primary_roles) : nullptr};
 }
 } // namespace tlfea::contact::radioss_type25::startup::detail
 namespace tlfea::contact::radioss_type25::startup {
@@ -66,7 +69,7 @@ Forecast Preflight(std::size_t nodes,std::size_t primary,Limits limits) noexcept
   Forecast result; result.status=report.status; return result;
 }
 Forecast Preflight(const Input& input,Limits limits) noexcept {
-  if(input.profile!=Profile::OrdinaryExteriorFixedMain && input.profile!=Profile::OrdinaryExteriorMovingMain) {
+  if(!role_policy::Supported(input.profile,input.topology)) {
     Forecast result;result.status=Status::UnsupportedProfile;return result;
   }
   detail::Layout layout;

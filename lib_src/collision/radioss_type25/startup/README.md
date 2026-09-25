@@ -76,3 +76,26 @@ General fixed-ready is not admitted: general moving sources start with genuine
 Starter cache and use the separately qualified current NORMP stages. This new
 policy requires its owning native/current-normal gates before selection; no full
 Yaris topology or physical startup is implied by the bounded source cases.
+
+
+## Explicit resolved coating roles
+
+`Profile::ResolvedShellSides` requires `TopologyPolicy::NativeResolvedShellSides`.
+Only this pair admits the trailing `PrimaryFace::side_role` values Ordinary,
+CoatingForward and CoatingReversed. The input is an already-resolved ordered
+shell roster; this producer does not classify solid membership or reproduce
+upstream surface sorting. Raw native roles are 3/7, 4/8 and -4/-8 by Q4/T3 layout.
+Negative coating reverses the supplied primary before appending its opposite.
+Encoded coating partners carry the native G offset; the published partner map
+still contains the decoded local main ID. Native neighborhood group separation,
+reference-root ordering and REAL4 arithmetic are unchanged.
+
+This profile copies every supplied role into `Snapshot::primary_roles` with an
+exact P-element extent. Thus Forward versus Reversed provenance survives even
+when different source connectivity normalizes to identical final geometry. The
+source owner must retain genuine producer output; the table alone does not
+authenticate a caller's source declaration. Both output and staging forecasts
+include the sizeof-based table and alignment. Legacy forecasts and null/count0
+role tables are unchanged. Generalized fixed-ready and runtime source admission
+remain closed for this new profile. Current-normal value evaluation has its own
+explicit resolved-shell profile and owning native/CUDA gates.

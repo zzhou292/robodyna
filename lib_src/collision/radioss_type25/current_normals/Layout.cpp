@@ -5,7 +5,8 @@
 #include <new>
 namespace tlfea::contact::radioss_type25::current_normals::detail {
 Report Plan(const Input& in,Limits limits,Layout& output,double& length) noexcept {
-  if(in.profile!=Profile::OrdinaryShellLocal||in.free_roster!=normal_activation::FreeRosterPolicy::FreshComplete)
+  if ((in.profile!=Profile::OrdinaryShellLocal && in.profile!=Profile::ResolvedShellSidesLocal) ||
+      in.free_roster!=normal_activation::FreeRosterPolicy::FreshComplete)
     return {Status::UnsupportedProfile};
   if(!self_contact_filters::CompatibleHostArithmetic())return {Status::UnsupportedArithmetic};
   const auto admitted=Validate(in,limits,length);if(admitted.status!=Status::Ok)return admitted;
@@ -34,6 +35,7 @@ bool InputDisjoint(const Input& in,const void* target,std::size_t bytes) noexcep
   const g::Range inputs[]{
     {&in,sizeof(in),alignof(Input)},
     {t.mains,t.main_count*sizeof(startup::Main),alignof(startup::Main)},
+    {t.primary_roles,t.primary_role_count*sizeof(startup::ShellSideRole),alignof(startup::ShellSideRole)},
     {csr.offsets,csr.offset_count*sizeof(std::uint32_t),alignof(std::uint32_t)},
     {csr.entries,csr.entry_count*sizeof(std::uint32_t),alignof(std::uint32_t)},
     {in.positions.data,(std::size_t(last)+1)*sizeof(double),alignof(double)},

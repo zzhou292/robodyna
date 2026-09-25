@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// SH2SURF25 ordinary exterior shell branch; parent order and identities persist.
+// SH2SURF25 ordinary and explicitly resolved coated shell branches; source order persists.
 #include "Internal.h"
 #include "lib_src/math/Fixed3Operations.h"
 #include <algorithm>
@@ -39,6 +39,9 @@ Report Expand(const Input& in,Data data,Vector* points,Identity* ids,FaceKey* fa
   for (std::size_t i=0;i<in.primary_count;++i) {
     const auto& face=in.primary[i];
     if (!face.source_id) return {Status::InvalidInput,i};
+    if (!role_policy::Valid(face.side_role) ||
+        (!role_policy::Resolved(in.topology) && face.side_role != ShellSideRole::Ordinary))
+      return {Status::UnsupportedProfile,i};
     ids[i]={face.source_id,static_cast<std::uint32_t>(i)};
     const unsigned count=face.layout==ShellLayout::Triangle3?3:4;
     if (face.layout!=ShellLayout::Triangle3 && face.layout!=ShellLayout::Quad4)
@@ -66,11 +69,18 @@ Report Expand(const Input& in,Data data,Vector* points,Identity* ids,FaceKey* fa
     auto& first=data.mains[i]; auto& second=data.mains[partner];
     first.source_id=source.source_id; second.source_id=source.source_id;
     first.global_id=static_cast<int>(i+1); second.global_id=static_cast<int>(partner+1);
-    first.segment_type=second.global_id; second.segment_type=-first.global_id;
+    // MakeLayout bounds8P before any conversion: encoded coating magnitude is
+    // at most4P, and the reference count remains the stronger integer bound.
+    const int offset = source.side_role == ShellSideRole::Ordinary ? 0 : static_cast<int>(2*in.primary_count);
+    first.segment_type=second.global_id+offset;
+    second.segment_type=-(first.global_id+offset);
+    if (data.primary_roles) data.primary_roles[i]=source.side_role;
     data.expanded_to_primary[i]=data.expanded_to_primary[partner]=static_cast<std::uint32_t>(i);
     data.primary_to_partner[i]=static_cast<std::uint32_t>(partner+1);
     for (unsigned k=0;k<4;++k) {
-      first.nodes[k]=source.nodes[k]; second.nodes[k]=source.nodes[opposite[k]];
+      const bool reversed = source.side_role == ShellSideRole::CoatingReversed;
+      first.nodes[k]=source.nodes[reversed?opposite[k]:k];
+      second.nodes[k]=source.nodes[reversed?k:opposite[k]];
     }
   }
   return {Status::Ok};

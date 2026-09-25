@@ -35,7 +35,7 @@ target_include_directories(type25_startup_oracle PRIVATE "${native}")
 target_link_libraries(type25_startup_oracle PUBLIC tl_radioss_type25_fixed_main_startup)
 target_compile_options(type25_startup_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-ffixed-line-length-none;-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_fixed_startup_host HostTest.cpp ObservedTest.cpp GeneralTopologyTest.cpp)
+add_executable(type25_fixed_startup_host HostTest.cpp ObservedTest.cpp GeneralTopologyTest.cpp CoatedStartupTest.cpp)
 target_include_directories(type25_fixed_startup_host PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(type25_fixed_startup_host PRIVATE type25_startup_oracle GTest::gtest_main)
 add_test(NAME type25_fixed_startup_host COMMAND type25_fixed_startup_host)

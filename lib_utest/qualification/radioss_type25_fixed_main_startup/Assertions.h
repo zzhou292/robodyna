@@ -11,6 +11,9 @@ inline void Same(n::StoredNormal a,n::StoredNormal b) {
 }
 inline void SameStarter(const s::Snapshot& view,const NativeResult& expected) {
   ASSERT_EQ(view.main_count,expected.mains.size());
+  ASSERT_EQ(view.primary_role_count,expected.primary_roles.size());
+  if(expected.primary_roles.empty())EXPECT_EQ(view.primary_roles,nullptr);
+  for(std::size_t i=0;i<expected.primary_roles.size();++i)EXPECT_EQ(view.primary_roles[i],expected.primary_roles[i]);
   ASSERT_EQ(view.starter.reference_count,expected.starter_references.size());
   ASSERT_EQ(view.normal_incidence_count,expected.incidence.size());
   for(std::size_t i=0;i<view.main_count;++i) {

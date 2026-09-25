@@ -13,8 +13,10 @@ struct Case {
   std::vector<s::PrimaryFace> primary;
   s::Coordinates units=s::Coordinates::Native;
   n::UnitScale scale{.001,1000,1};
+  s::Profile profile=s::Profile::OrdinaryExteriorFixedMain;
+  s::TopologyPolicy topology=s::TopologyPolicy::ManifoldTwoSided;
   s::Input Input() const {
-    s::Input result;result.profile=s::Profile::OrdinaryExteriorFixedMain;
+    s::Input result;result.profile=profile;result.topology=topology;
     result.node_source_ids=ids.data();result.node_count=ids.size();
     result.positions={positions.data(),std::uint32_t(ids.size()),3,1};
     result.primary=primary.data();result.primary_count=primary.size();result.coordinates=units;

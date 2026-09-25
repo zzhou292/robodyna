@@ -10,10 +10,7 @@ bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) noexcep
 Report CheckInput(const Input& in,const Layout&,const tl::util::HostArena& output,
     const tl::util::HostArena& scratch,const void* published,std::size_t published_bytes) noexcept {
   namespace range=search::detail;
-  if (in.profile!=Profile::OrdinaryExteriorFixedMain &&
-      in.profile!=Profile::OrdinaryExteriorMovingMain) return {Status::UnsupportedProfile};
-  if(in.topology!=TopologyPolicy::ManifoldTwoSided && in.topology!=TopologyPolicy::NativeOrdinaryShell)
-    return {Status::UnsupportedProfile};
+  if (!role_policy::Supported(in.profile,in.topology)) return {Status::UnsupportedProfile};
   if (!self_contact_filters::CompatibleHostArithmetic()) return {Status::UnsupportedArithmetic};
   if (!in.source_generation || !range::Span(in.node_source_ids,in.node_count) ||
       !range::Span(in.primary,in.primary_count) || !published ||

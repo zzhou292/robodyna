@@ -41,3 +41,20 @@ leaves caller outputs unchanged. Accepted prior cache is always read-only.
 
 This component is under qualification. A successful value test is not a full
 moving-main transaction, self-contact trajectory, Yaris or performance result.
+
+
+`ResolvedShellSidesLocal` admits genuine resolved ordinary/coated startup pairs.
+It requires matching startup profile/policy plus the complete copied role table,
+validates encoded class and unique pair relationships, and decodes the original
+subtract-G partner before writing. All float leaves and stage barriers are the
+same as the ordinary profile. The default `ValidateTopology` policy stays
+ordinary-only, so this numerical extension does not opt a runtime source in.
+Unknown origin enums reject; legacy direct ordinary packets may retain the
+explicit Unspecified origin.
+
+A numerical topology packet cannot distinguish a forged Forward/Reversed label
+on identical normalized geometry without the original primary connectivity.
+These checks retain role provenance and validate its structural class; source
+binding and authenticity remain the owner's responsibility. All selected role
+spans participate in output/scratch alias admission. No new cache owner,
+physical clock or solid-face role is introduced.

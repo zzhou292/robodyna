@@ -17,6 +17,7 @@ struct Image {
   n::startup::Main mains[Mains];double positions[3*Nodes],coefficient[Mains];
   std::uint32_t active[Mains],tags[Nodes],free_ids[Mains],offsets[References+1],entries[Normals];
   n::StoredNormal prior[Normals];
+  n::startup::ShellSideRole primary_roles[Primaries];
 };
 struct Published {
   n::StoredNormal first[Normals],normals[Normals];
@@ -32,6 +33,7 @@ struct State {
 __device__ inline c::Input Bind(const Image& image) {
   auto in=image.in;in.topology.mains=image.mains;in.topology.normal_to_main.offsets=image.offsets;
   in.topology.normal_to_main.entries=image.entries;in.positions.data=image.positions;
+  in.topology.primary_roles=image.in.topology.primary_roles?image.primary_roles:nullptr;
   in.main_coefficients=image.coefficient;in.main_active=image.active;in.node_tag=image.tags;
   in.free_main_ids=in.free_count?image.free_ids:nullptr;in.prior_normals=image.prior;return in;
 }
@@ -117,6 +119,9 @@ inline void Pack(const c::Input& in,Image& image) {
       !in.positions.valid()||in.positions.node_count>Nodes)
     throw std::runtime_error("CUDA normal fixture is outside qualification storage");
   image.in=in;
+  // Fixtures retain authentic P-element backing even when testing a malformed
+  // declared role count. Preserve that count/nullness for device admission.
+  if(t.primary_roles)Copy(image.primary_roles,t.primary_roles,t.primary_count);
   Copy(image.mains,t.mains,t.main_count);Copy(image.coefficient,in.main_coefficients,in.coefficient_count);
   Copy(image.active,in.main_active,in.active_count);Copy(image.tags,in.node_tag,in.tag_count);
   Copy(image.free_ids,in.free_main_ids,in.free_count);Copy(image.prior,in.prior_normals,in.prior_count);
