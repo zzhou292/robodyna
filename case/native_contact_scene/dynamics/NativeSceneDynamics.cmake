@@ -10,7 +10,7 @@ add_library(robo_dyna_native_scene_owner_packing STATIC "${robo_scene_case_root}
 target_link_libraries(robo_dyna_native_scene_owner_packing PUBLIC robo_dyna_native_scene_physical_source CUDA::cudart Eigen3::Eigen)
 add_library(robo_dyna_native_scene_dynamics STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Configuration.cpp" "${CMAKE_CURRENT_LIST_DIR}/Forecast.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/Initialize.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeSceneDynamics.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/Initialize.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeSceneDynamics.cpp" "${CMAKE_CURRENT_LIST_DIR}/ContactSelection.cpp")
 target_link_libraries(robo_dyna_native_scene_dynamics PUBLIC robo_dyna_native_scene_contact_source
   robo_dyna_native_accepted_frames robo_dyna_native_scene_owner_packing)
 include("${robo_scene_case_root}/case/vehicle_run/Values.cmake")

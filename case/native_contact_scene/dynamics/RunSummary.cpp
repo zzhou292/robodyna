@@ -11,7 +11,7 @@ const char* Stop(vehicle_run::StopKind value) {
     case K::ObserverFailure:return "observer_failure";}return "unknown";
 }
 }
-output::Document ForecastDocument(const RunConfig& config,const vehicle_run::Horizon& h,const RunForecast& f,const ContactSource& source) {
+output::Document ForecastDocument(const RunConfig& config,const vehicle_run::Horizon& h,const RunForecast& f,const ContactSelection& source) {
     using namespace output;Document d;d.SetObject();String(d,"schema","robo_dyna.native_shell_impact_forecast.v1");
     String(d,"case","declared_gpu_shell_impact_coupon");String(d,"scope","capacity_bounds_not_stability_or_completed_physics");
     Integer(d,"run_id",config.run_id);Integer(d,"planned_intervals",h.intervals);Integer(d,"samples",config.samples);
@@ -26,7 +26,7 @@ output::Document ForecastDocument(const RunConfig& config,const vehicle_run::Hor
     Number(d,"source_h_pa",hardening.source_h_pa);Number(d,"derived_etan_pa",hardening.derived_etan_pa);
     Number(d,"prepared_h_pa",hardening.prepared_h_pa);Integer(d,"prepared_h_ulp_difference",hardening.prepared_h_ulp_difference);
     Boolean(d,"exact_source_h_identity",hardening.exact_source_h_identity);Number(d,"projection_working_length_m",source.config().units.length_m);
-    String(d,"native_profile","ordinary_fixed_main_all_active_ready_normals_local_single_worker");
+    String(d,"native_profile",source.profile_name());
     String(d,"native_preprocessing",source.preprocessing()==native::search_startup::Initialization::SerialNative?"serial_native":"proved_no_expansion");
     Integer(d,"native_workers",source.source().native_workers);Integer(d,"native_force_packet_size",source.source().force_packet_size);
     Integer(d,"nodes",source.source().selection.node_count);Integer(d,"primary_mains",source.source().primary_main_count);
@@ -34,7 +34,7 @@ output::Document ForecastDocument(const RunConfig& config,const vehicle_run::Hor
     return d;
 }
 output::full_shell::RecordFile Summary(const std::filesystem::path& root,const RunConfig& config,const vehicle_run::Horizon& h,
-    const RunForecast& f,const ContactSource& source,const RunResult& result) {
+    const RunForecast& f,const ContactSelection& source,const RunResult& result) {
     using namespace output;Document d;d.SetObject();String(d,"schema","robo_dyna.native_shell_impact_run.v1");
     String(d,"caption","GPU shell-impact coupon");String(d,"scope","accepted_visualization_not_vehicle_delivery_or_restart");
     array_json::Child(d,"forecast",ForecastDocument(config,h,f,source));

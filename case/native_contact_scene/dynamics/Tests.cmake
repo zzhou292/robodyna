@@ -21,3 +21,26 @@ set_tests_properties(native_scene_dynamics_cuda PROPERTIES RUN_SERIAL TRUE PROCE
 foreach(t native_scene_dynamics_host_check native_scene_dynamics_cuda_check)
   target_compile_options(${t} PRIVATE -fno-fast-math -ffp-contract=off)
 endforeach()
+
+if(ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT)
+  target_sources(native_scene_dynamics_host_check PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tests/MovingForecastTest.cpp")
+  set_property(TEST native_scene_dynamics_host APPEND PROPERTY ENVIRONMENT
+    "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+endif()
+set(TYPE25_MOVING_NATIVE_REFERENCE_DIR "" CACHE PATH "Pinned expected v2 trajectory and metadata, qualification only")
+if(TYPE25_MOVING_NATIVE_REFERENCE_DIR)
+  set(moving_binary "${TYPE25_MOVING_NATIVE_REFERENCE_DIR}/native-reference.bin")
+  set(moving_metadata "${TYPE25_MOVING_NATIVE_REFERENCE_DIR}/reference-metadata.json")
+  if(NOT EXISTS "${moving_binary}" OR NOT EXISTS "${moving_metadata}" OR NOT ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT)
+    message(FATAL_ERROR "Moving trajectory gate requires v2 source and both expected reference artifacts")
+  endif()
+  add_executable(native_scene_moving_dynamics_cuda_check "${CMAKE_CURRENT_LIST_DIR}/tests/MovingTrajectoryTest.cpp")
+  target_link_libraries(native_scene_moving_dynamics_cuda_check PRIVATE robo_dyna_native_scene_run GTest::gtest_main CUDA::cudart)
+  target_compile_definitions(native_scene_moving_dynamics_cuda_check PRIVATE
+    TYPE25_MOVING_NATIVE_REFERENCE_FILE="${moving_binary}"
+    TYPE25_MOVING_NATIVE_REFERENCE_METADATA="${moving_metadata}")
+  target_compile_options(native_scene_moving_dynamics_cuda_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME native_scene_moving_dynamics_cuda COMMAND native_scene_moving_dynamics_cuda_check)
+  set_tests_properties(native_scene_moving_dynamics_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 600
+    ENVIRONMENT "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+endif()

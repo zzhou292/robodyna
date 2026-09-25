@@ -2,7 +2,7 @@
 #include "output/full_shell/FixedStepHorizon.h"
 #include "lib_utils/BoundedArena.h"
 namespace crash::cases::native_scene {
-PreparedNativeSceneRun PreparedNativeSceneRun::Prepare(const ContactSource& contact,const ArchiveSource& archive,RunConfig config) {
+PreparedNativeSceneRun PreparedNativeSceneRun::Prepare(const ContactSelection& contact,const ArchiveSource& archive,RunConfig config) {
     using output::Require;const auto& physical=contact.physical_source().physical();
     Require(config.run_id&&config.steps&&config.steps<=1000000&&config.samples>=2&&config.samples<=1000&&
         config.samples-1<=config.steps&&config.host_bytes&&config.host_bytes<=1u<<30&&

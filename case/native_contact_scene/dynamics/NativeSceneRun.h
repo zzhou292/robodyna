@@ -26,7 +26,7 @@ struct RunResult {
 // emitted, authenticated static source; Execute alone creates the GPU owner.
 class PreparedNativeSceneRun {
   public:
-    static PreparedNativeSceneRun Prepare(const ContactSource&,const ArchiveSource&,RunConfig);
+    static PreparedNativeSceneRun Prepare(const ContactSelection&,const ArchiveSource&,RunConfig);
     const RunForecast& forecast() const noexcept;
     const vehicle_run::Horizon& horizon() const noexcept;
     output::Document ForecastDocument() const;

@@ -1,5 +1,5 @@
 #pragma once
-#include "../ContactSource.h"
+#include "ContactSelection.h"
 #include "output/physical_frames/NativeAcceptedFrames.h"
 #include "lib_src/solvers/NodalCinStructuralLimit.h"
 namespace crash::cases::native_scene {
@@ -33,8 +33,8 @@ struct NativeStepObservation {
 // capture created here borrows that storage and must be destroyed first.
 class NativeSceneDynamics {
   public:
-    static DynamicsForecast Preflight(const ContactSource&,DynamicsConfig);
-    static NativeSceneDynamics Prepare(const ContactSource&,DynamicsConfig);
+    static DynamicsForecast Preflight(const ContactSelection&,DynamicsConfig);
+    static NativeSceneDynamics Prepare(const ContactSelection&,DynamicsConfig);
     ~NativeSceneDynamics();
     NativeSceneDynamics(NativeSceneDynamics&&) noexcept;
     NativeSceneDynamics& operator=(NativeSceneDynamics&&)=delete;
@@ -47,7 +47,7 @@ class NativeSceneDynamics {
     tl::fea::NodalStamp accepted() const noexcept;
     const NativeStepObservation& last_accepted_step() const;
     const DynamicsForecast& forecast() const noexcept;
-    const ContactSource& source() const noexcept;
+    const ContactSelection& source() const noexcept;
     std::unique_ptr<output::physical_frames::NativeAcceptedFrames> MakeCapture(
         const output::full_shell::source::PreparedSourceMapping&,output::full_shell::Identity,
         output::physical_frames::Limits={});

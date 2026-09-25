@@ -4,7 +4,7 @@ namespace dd=dynamics_detail;
 NativeSceneDynamics::NativeSceneDynamics(std::unique_ptr<Storage> p):storage_(std::move(p)){}
 NativeSceneDynamics::~NativeSceneDynamics()=default;
 NativeSceneDynamics::NativeSceneDynamics(NativeSceneDynamics&&) noexcept=default;
-NativeSceneDynamics NativeSceneDynamics::Prepare(const ContactSource& source,DynamicsConfig config) {
+NativeSceneDynamics NativeSceneDynamics::Prepare(const ContactSelection& source,DynamicsConfig config) {
     const auto forecast=Preflight(source,config);auto state=std::make_unique<Storage>(source,config,forecast);
     state->Initialize();return NativeSceneDynamics(std::move(state));
 }
@@ -65,7 +65,7 @@ const NativeStepObservation& NativeSceneDynamics::last_accepted_step() const {
     output::Require(accepted().epoch,"No native scene interval has been accepted");return storage_->observations[storage_->selected];
 }
 const DynamicsForecast& NativeSceneDynamics::forecast() const noexcept{return storage_->forecast;}
-const ContactSource& NativeSceneDynamics::source() const noexcept{return storage_->source;}
+const ContactSelection& NativeSceneDynamics::source() const noexcept{return storage_->source;}
 std::unique_ptr<output::physical_frames::NativeAcceptedFrames> NativeSceneDynamics::MakeCapture(
     const output::full_shell::source::PreparedSourceMapping& mapping,output::full_shell::Identity id,output::physical_frames::Limits limits) {
     auto& s=*storage_;output::Require(!s.pending&&!s.trial,"Cannot attach capture during a native physical attempt");

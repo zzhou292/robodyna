@@ -12,7 +12,7 @@ int main(int argc,char** argv) {
             std::filesystem::is_empty(options.output),"Run output must be a real pre-created empty directory");
         const auto declared=crash::modelio::native_scene::DeclaredSource::Read(options.source,options.source_sha256);
         const auto physical=scene::PhysicalSource::Prepare(declared,options.config.run_id);
-        const auto contact=scene::ContactSource::Prepare(physical,{options.config.run_id,1,1});
+        const auto contact=scene::ContactSelection::Prepare(physical,{options.config.run_id,1,1});
         const auto archive=scene::ArchiveSource::Write(physical,options.source_output);
         const auto prepared=scene::PreparedNativeSceneRun::Prepare(contact,archive,options.config);
         const auto& f=prepared.forecast();

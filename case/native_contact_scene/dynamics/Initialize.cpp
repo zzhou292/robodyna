@@ -32,7 +32,9 @@ void NativeSceneDynamics::Storage::Initialize() {
     Discard();
     dd::RequireSuccess(publication.InitializePhysical(owner,binding,physical.rigid(),dd::Witnesses(physical),Participants(),Identity(),
         dd::PublicationLimits(binding.domain()->node_count())));
-    dd::RequireSuccess(contact.Initialize(source.config(),source.source(),owner,publication,binding,Participants(),Identity(),config.limits.contact));
+    dd::RequireSuccess(source.Visit([&](const auto& selected) {
+        return contact.Initialize(selected.config(),selected.source(),owner,publication,binding,Participants(),Identity(),config.limits.contact);
+    }));
     dd::RequireSuccess(publication.ConfigurePhysicalScratchParticipation(owner,binding,Participants(),Identity(),{{},contact.roster_entry()}));
     // Exact resident component allocations and conservative transaction caps
     // are different claims. No driver/context allocation size is inferred.

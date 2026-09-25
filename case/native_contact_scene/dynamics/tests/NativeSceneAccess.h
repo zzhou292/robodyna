@@ -15,6 +15,9 @@ class NativeSceneAccess {
         auto& s=*d.storage_;return native::runtime_qualification::Access::Read(s.contact,s.owner,s.token,s.assembly,&out);
     }
     static tl::fea::NativeContactPublicationSnapshot Contact(const NativeSceneDynamics& d){return d.storage_->contact.accepted();}
+    static bool AcceptedNormals(NativeSceneDynamics& d,native::runtime_qualification::NormalObservation& out) {
+        return native::runtime_qualification::Access::ReadAcceptedNormals(d.storage_->contact,&out);
+    }
     static void Force(NativeSceneDynamics& d,std::array<double,54>& values,std::array<double,18>& stiffness) {
         auto& s=*d.storage_;
         if(!s.trial||(s.stage!=1&&s.stage!=2)||s.assembly.forces.node_count!=18||

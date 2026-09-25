@@ -4,7 +4,7 @@ namespace crash::cases::native_scene {
 namespace {
 class Session final:public vehicle_run::detail::Operations {
   public:
-    Session(const ContactSource& source,const ArchiveSource& original,const RunConfig& config,
+    Session(const ContactSelection& source,const ArchiveSource& original,const RunConfig& config,
         output::full_shell::source::BundleRequest request,const std::filesystem::path& root)
       :dynamics(NativeSceneDynamics::Prepare(source,config.dynamics)),capture(dynamics.MakeCapture(original.mapping(),[&]{
         output::full_shell::Identity id;id.run=config.run_id;return id;}(),config.capture)),

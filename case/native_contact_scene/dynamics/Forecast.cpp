@@ -3,7 +3,7 @@
 #include <algorithm>
 namespace crash::cases::native_scene {
 namespace dd=dynamics_detail;
-DynamicsForecast NativeSceneDynamics::Preflight(const ContactSource& source,DynamicsConfig config) {
+DynamicsForecast NativeSceneDynamics::Preflight(const ContactSelection& source,DynamicsConfig config) {
     namespace f=tl::fea;using output::Require;const auto& p=source.physical_source();const auto& physical=p.physical();
     const auto owner_config=dd::OwnerConfig(p,config);const auto nodes=physical.domain()->node_count();
     const auto stamp=dd::DescriptiveStamp(p,config);const auto witnesses=dd::Witnesses(p);

@@ -18,9 +18,9 @@ f::ShellPublicationLimits PublicationLimits(std::size_t nodes);
 }
 namespace crash::cases::native_scene {
 struct NativeSceneDynamics::Storage {
-    Storage(const ContactSource& s,DynamicsConfig c,DynamicsForecast f):source(s),config(c),forecast(f){}
+    Storage(const ContactSelection& s,DynamicsConfig c,DynamicsForecast f):source(s),config(c),forecast(f){}
     ~Storage(){Discard();}
-    ContactSource source;DynamicsConfig config;DynamicsForecast forecast;
+    ContactSelection source;DynamicsConfig config;DynamicsForecast forecast;
     tl::fea::FENodalState owner;
     tl::fea::qeph::QephBatch qeph;tl::fea::t3::T3Batch t3;
     tl::fea::ShellBatchPublication publication;

@@ -15,3 +15,26 @@ The CLI requires --source, --source-sha256, --source-output, --output and --run-
 The summary schema is robo_dyna.native_shell_impact_run.v1. Its caption is GPU shell-impact coupon; it explicitly disclaims vehicle delivery and restart scope. The existing ViewerInput and physical archive codecs feed the existing Chrono reader. Actual recorded timestamps and scale1 coordinates remain authoritative; playback cadence is separate from physical time.
 
 Owning gates include eight host CLI/forecast groups, three actual GPU initialization/rollback/destruction/archive groups, and the full1000interval generated-source versus independent native trajectory/RHS/STI/history/packet comparison. The latter preserves the original numerical tolerances and uses observations only for assertions. Source records, old archive regressions, no-GTest/no-Fortran CLI linkage, actual CLI closure and exact Chrono replay are separate required gates before publishing a video.
+
+## Moving main surfaces
+
+The runner retains a `ContactSelection`, a closed immutable choice of the two
+already compiled source factories. A v1 fixed-wall declaration selects
+`ContactSource`; an explicit v2 all-shell declaration selects
+`MovingContactSource`. Its typed visitor selects the corresponding TL
+`Transaction::Initialize` overload once at startup. Both choices use the same
+physical owner, batch participants, prepare/commit/discard implementation,
+controller and accepted archive capture. There is no per-step host dispatch.
+
+The forecast and summary record the actual selected native profile. Existing
+fixed-profile keys and values remain unchanged. Moving runs retain genuine
+Starter normals, with subsequent cache updates owned by the native transaction.
+Raw declaration hashes bind the selected source membership. They do not assert
+whole-vehicle readiness or a matched CPU/GPU performance win.
+
+The moving trajectory gate consumes only independent expected data through the
+existing `ReferenceReader`; source factories and runtime never read that fixture.
+Shared assertions preserve the fixed gate's original tolerances. The new full
+1,000-interval gate also discards/retries an actual force-active attempt, checking
+all accepted physical fields, native history and normal-cache bytes before it
+allows the single common commit to advance.
