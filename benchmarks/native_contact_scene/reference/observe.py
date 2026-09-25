@@ -10,6 +10,7 @@ _abi = None
 _records = {}
 _failure = None
 _stream = None
+_inventory_chunks = {}
 _breakpoints = []
 _required = {'controls','main','inventory','classification','boundary','positive_response'}
 
@@ -31,7 +32,7 @@ def controls(call):
     raw=values(call.pointer('IPARI')+(nin-1)*npari*4,npari,'i')
     fields={'NRTM':4,'NSN':5,'NTY':7,'IVIS2':14,'source_interface_ID':15,'ILEV':20,
             'IGAP':21,'INACTI':22,'MFROT':30,'IFQ':31,'IGSTI':34,'INTTH':47,
-            'IGAP0':53,'IEDGE':58,'FLAGREMNOD':63,'NADMSR':67,'NEDGE':68,'ISHARP':84}
+            'NRTM_SH':42,'IGAP0':53,'IEDGE':58,'FLAGREMNOD':63,'NADMSR':67,'NEDGE':68,'ISHARP':84}
     controls={name:raw[index-1] for name,index in fields.items()}
     for name in ('NRTM','NSN','NADMSR'):bounded(controls[name],name,16384)
     return dict(clock=clock(),nodes=nodes,npari=npari,nin=nin,controls=controls,ipari=raw)
@@ -45,19 +46,37 @@ def main(call):
 
 
 def inventory(call):
+    current_clock=clock()
+    if current_clock['NCYCLE'] != 0:return None
     nr=bounded(call.scalar('NRTM'),'NRTM');ns=bounded(call.scalar('NSN'),'NSN')
+    global_controls=_records['controls']['controls']
+    total=global_controls['NRTM'];primary=bounded(total-global_controls['NRTM_SH'],'primary search extent')
+    shift=call.scalar('ESHIFT')
+    if shift < 0 or shift+nr > primary:raise ValueError('Search slice differs from primary source extent')
     counts=call.array('KREMNOD',2*nr+1,'i')
     if any(v<0 for v in counts) or any(a>b for a,b in zip(counts,counts[1:])):
         raise ValueError('Unexpected native removal index layout')
     if counts[-1] > 1<<18:raise ValueError('Native removal extent exceeds probe cap')
     nodes=bounded(common('com04_',1,'i'),'node count')
-    return dict(clock=clock(),
-        controls={name:call.scalar(name) for name in ('NSN','NSNR','NRTM','NOINT','ILEV','FLAGREMNODE','IGAP')},
+    record=dict(clock=current_clock,
+        controls={name:call.scalar(name) for name in ('NSN','NSNR','NRTM','ESHIFT','ITASK','NOINT','ILEV','FLAGREMNODE','IGAP')},
         scalars={name:call.scalar(name,'d') for name in ('MARGE','VMAXDT','BGAPSMX','PMAX_GAP','DRAD','DGAPLOAD')},
         removal_offsets=counts,removal_nodes=call.array('REMNOD',counts[-1],'i'),
         arrays=arrays(call,[('IRECT',4*nr,'i'),('NSV',ns,'i'),('STF',nr,'d'),('STFN',ns,'d'),
-            ('GAP_S',ns,'d'),('GAP_M',nr,'d'),('CURV_MAX',nr,'d'),('MSEGTYP',nr,'i'),
+            ('GAP_S',ns,'d'),('GAP_M',nr,'d'),('CURV_MAX',nr,'d'),('MSEGTYP',total,'i'),
             ('ICODT',nodes,'i'),('ISKEW',nodes,'i'),('XYZM',6,'d')]))
+    if shift in _inventory_chunks:
+        if _inventory_chunks[shift] != record:raise ValueError('Repeated initial search slice changed')
+        return None
+    _inventory_chunks[shift]=record
+    emit('inventory_chunk',record)
+    ranges=[range(s,s+r['controls']['NRTM']) for s,r in sorted(_inventory_chunks.items())]
+    indices=[i for span in ranges for i in span]
+    if len(indices) != len(set(indices)):raise ValueError('Initial search slices overlap')
+    if sorted(indices) == list(range(primary)):
+        return dict(clock=current_clock,global_nrtm=total,primary_search_count=primary,
+                    chunks=[_inventory_chunks[s] for s in sorted(_inventory_chunks)])
+    return None
 
 
 def classification(call):
@@ -130,12 +149,16 @@ class Observe(gdb.Breakpoint):
                 self.enabled=False
                 print('Observed native scene stage '+self.label,flush=True)
                 # Preserve completed bounded evidence even if a later stage fails.
-                _stream.write(json.dumps({'stage':self.label,'observation':data},allow_nan=False)+'\n')
-                _stream.flush()
+                emit(self.label,data)
         except Exception as error:
             _failure=str(error)
             return True
         return _required <= _records.keys()
+
+
+def emit(label, data):
+    _stream.write(json.dumps({'stage':label,'observation':data},allow_nan=False)+'\n')
+    _stream.flush()
 
 
 def install(path):
@@ -150,7 +173,7 @@ def install(path):
         if len(data)!=item['bytes'] or hashlib.sha256(data).hexdigest()!=item['sha256']:
             raise ValueError('Native ABI donor changed')
     _stream=Path('native-observations.jsonl').open('x')
-    for routine,label,handler in (('I25COMP_2','controls',controls),('I25MAINF','main',main),
+    for routine,label,handler in (('I25MAIN_TRI','controls',controls),('I25MAINF','main',main),
             ('I25TRIVOX','inventory',inventory),
             ('I25COR3_22','classification',classification),('I25DST3_22','boundary',boundary),
             ('I25FOR3','positive_response',response)):

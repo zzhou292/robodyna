@@ -13,13 +13,26 @@ implements bounded read-only call-entry access for the declared platform.
 `observe.py` names each captured stage, units/array storage and completion state.
 Completed stages disable their breakpoints and flush diagnostic evidence promptly.
 
-Observe first interface controls, complete bounded inventory source arrays and
-removal indices, classification normals/adjacency/role/gap/coefficient arrays,
+Observe first interface controls, all initial primary-search worker slices and
+their removal indices, classification normals/adjacency/role/gap/coefficient arrays,
 boundary bisectors/global-main identities, raw nodal masses/velocities/coordinates,
 and the first positive force-entry packet with native histories and time phases.
 Arrays retain Fortran column-major order. Stored normals/bisectors are REAL4;
 positions/coefficients/history are MYREAL8. Integer IDs remain native one-based
 identities rather than being silently converted to app ordinals.
+
+`I25TRIVOX.NRTM` is a local worker extent. Initial slices retain ESHIFT/ITASK and
+must cover every primary search role exactly once before inventory completion.
+The full classification NRTM includes generated opposite sides and is a distinct
+namespace. The source caller shifts IRECT/STFM/gaps/removal offsets but leaves
+MSEGTYP unshifted; the probe preserves this literal pointer contract. Do not
+relabel the first worker's two rows as the complete16-role interface.
+
+Only positive-penetration FOR3 lanes and their actual CAND_N_N history rows are
+read. Inactive pre-response interpolation/history scratch is not an observation.
+The original observation1 is retained but superseded for full inventory and
+inactive packet-channel interpretation; its topology/controls remain separately
+scoped raw evidence. Corrected observations use a fresh invocation/directory.
 
 NOINT is the source interface ID. FLAGREMNOD/IPARI63 is the removal-mode selector.
 The prior authenticated same-binary normal/friction probes establish the fixed

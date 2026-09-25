@@ -9,6 +9,7 @@ from .abi import arguments, verify_common_prefix
 ROUTINES = {
     'I25MAINF':'engine/source/interfaces/int25/i25mainf.F',
     'I25COMP_2':'engine/source/interfaces/int25/i25comp_2.F',
+    'I25MAIN_TRI':'engine/source/interfaces/intsort/i25main_tri.F',
     'I25TRIVOX':'engine/source/interfaces/intsort/i25trivox.F',
     'I25COR3_22':'engine/source/interfaces/int25/i25cor3.F',
     'I25DST3_22':'engine/source/interfaces/int25/i25dst3_22.F',
