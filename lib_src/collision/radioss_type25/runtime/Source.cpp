@@ -12,6 +12,11 @@ namespace tlfea::contact::radioss_type25::runtime_detail {
 namespace {
 TransactionReport Fail(TransactionStatus s,const char* m,std::size_t row=SIZE_MAX){return {s,m,row};}
 struct Parent {std::uint64_t id=0;bool triangle=false;std::size_t index=0;};
+bool Scale(double value,double factor,double& output) {
+  const double next=value*factor;
+  if(!tl::math::Finite(value)||!tl::math::Finite(next)||(value!=0&&next==0))return false;
+  output=next;return true;
+}
 }
 TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainSource& source,
     const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,SourceStaging& out) noexcept try {
@@ -24,7 +29,8 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
      s.node_count!=domain->node_count()||!s.nodes||!s.mains||!s.secondary||
      !lifecycle::detail::Span(source.primary_parent_ids,p)||!lifecycle::detail::Span(source.primary_curvature,p))
     return Fail(TransactionStatus::InvalidInput,"Incomplete fixed-main native source");
-  if(s.node_count>limits.inventory.max_nodes||s.secondary_count>limits.inventory.max_secondaries||p>limits.inventory.max_mains||
+  if(s.node_count>UINT32_MAX||s.secondary_count>=INT_MAX||s.node_count>limits.inventory.max_nodes||
+     s.secondary_count>limits.inventory.max_secondaries||p>limits.inventory.max_mains||
      limits.optimized_candidates>INT_MAX/5||limits.sliding_entries>=INT_MAX||limits.inventory.max_pairs>=INT_MAX)
     return Fail(TransactionStatus::ResourceLimit,"Fixed-main source exceeds explicit count limits");
   // Typed span/alignment/overflow admission precedes every borrowed metadata
@@ -88,7 +94,9 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
     if(s.secondary[row].node>=s.node_count)return Fail(TransactionStatus::InvalidInput,"Invalid secondary node",row);
     next.history[row]={s.nodes[s.secondary[row].node].source_id,s.generation,{}};
     next.secondary_nodes[row]=s.secondary[row].node;
-    next.secondary_stiffness[row]=s.secondary[row].coefficient;next.secondary_gaps[row]=s.secondary[row].gap*units.length;
+    if(!Scale(s.secondary[row].coefficient,units.stiffness,next.secondary_stiffness[row])||
+       !Scale(s.secondary[row].gap,units.length,next.secondary_gaps[row]))
+      return Fail(TransactionStatus::InvalidInput,"Secondary SI conversion is not representable",row);
   }
   std::vector<std::uint32_t> empty_offsets(s.secondary_count+1,0);
   lifecycle::Input input;input.profile=config.lifecycle;input.source=s;
@@ -123,8 +131,10 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
     }
     if(!normal_detail::Nonnegative(source.primary_curvature[i]))return Fail(TransactionStatus::InvalidInput,"Invalid main curvature",i);
     next.primary[i].source_id=std::uint64_t(main.global_id);next.primary[i].segment_type=main.segment_type;
-    next.main_stiffness[i]=main.coefficient;next.main_gaps[i]=main.maximum_gap*units.length;
-    next.main_curvature[i]=source.primary_curvature[i]*units.length;
+    if(!Scale(main.coefficient,units.stiffness,next.main_stiffness[i])||
+       !Scale(main.maximum_gap,units.length,next.main_gaps[i])||
+       !Scale(source.primary_curvature[i],units.length,next.main_curvature[i]))
+      return Fail(TransactionStatus::InvalidInput,"Main SI conversion is not representable",i);
   }
   // Transpose genuine per-secondary main-removal lists into the candidate
   // owner's main-to-physical-node representation. Duplicate source occurrences

@@ -81,8 +81,8 @@ struct NumericalRig {
   }
   std::vector<a::SiNodalValue> Assemble(const std::vector<a::NativeNodalValue>& incoming) {
     const auto kept=std::size_t(control.kept),cohorts=kept/source.force_packet_size+(kept%source.force_packet_size!=0);
-    const a::Schedule schedule{d.cohort_ends,cohorts,kept};
-    if(incidence->Stage({d.force_connectivity,schedule,input.source.node_count,{1,1,1,1,1}})!=a::IncidenceStatus::Ok)
+    const a::Schedule schedule{cohorts?d.cohort_ends:nullptr,cohorts,kept};
+    if(incidence->Stage({kept?d.force_connectivity:nullptr,schedule,input.source.node_count,{1,1,1,1,1}})!=a::IncidenceStatus::Ok)
       throw std::runtime_error("Incidence stage failed");
     const auto nodes=input.source.node_count;std::vector<double> values(4*nodes);
     for(std::size_t i=0;i<nodes;++i){values[i]=incoming[i].force.x;values[nodes+i]=incoming[i].force.y;

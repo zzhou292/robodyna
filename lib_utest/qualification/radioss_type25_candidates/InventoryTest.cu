@@ -112,3 +112,31 @@ TEST(NativeCandidateInventory,PrimaryPrefixAdmissionKeepsCountSeparateFromCurren
   for(std::size_t i=0;i<scene.main_stiffness.size;++i)scene.main_stiffness[i]=1.;
   ASSERT_EQ(inventory.Stage(scene.Current()),c::Status::Ok);Check(inventory,Reference(scene,scene.Current()),scene.secondaries.size());
 }
+
+
+TEST(NativeCandidateInventory,AllFiniteDomainPreservesTranslatedNativePairMembership) {
+  Scene scene;const double shift=0x1p+30;
+  for(std::size_t i=0;i<scene.positions.size;++i)scene.positions[i]+=shift;
+  auto native=scene.Current();native.domain={{shift-100,shift-100,shift-100},{shift+100,shift+100,shift+100}};
+  const auto expected=Reference(scene,native);ASSERT_FALSE(expected.empty());
+  c::Inventory inventory;ASSERT_EQ(inventory.Initialize(scene.Source(),Limits(),scene.stream),c::Status::Ok);
+  auto all=native;all.domain_policy=c::DomainPolicy::AllFinite;all.domain={{NAN,NAN,NAN},{NAN,NAN,NAN}};
+  ASSERT_EQ(inventory.Stage(all),c::Status::Ok);Check(inventory,expected,scene.secondaries.size());
+  all.domain_policy=static_cast<c::DomainPolicy>(17);EXPECT_EQ(inventory.Stage(all),c::Status::InvalidInput);
+}
+TEST(NativeCandidateInventory,AllFiniteSiDomainHasNoExtremeBoundConversion) {
+  Scene scene;auto native=scene.Current();const auto expected=Reference(scene,native);c::Inventory inventory;
+  ASSERT_EQ(inventory.Initialize(scene.Source(c::InputUnits::Si),Limits(),scene.stream),c::Status::Ok);
+  for(std::size_t i=0;i<scene.positions.size;++i){scene.positions[i]*=.001;scene.velocities[i]*=.001;}
+  for(std::size_t i=0;i<scene.secondary_gaps.size;++i)scene.secondary_gaps[i]*=.001;
+  for(std::size_t i=0;i<scene.main_gaps.size;++i){scene.main_gaps[i]*=.001;scene.curvature[i]*=.001;}
+  auto si=scene.Current();si.margin*=.001;si.stored_motion*=.001;si.domain_policy=c::DomainPolicy::AllFinite;
+  si.domain={{NAN,NAN,NAN},{NAN,NAN,NAN}};
+  ASSERT_EQ(inventory.Stage(si),c::Status::Ok);Check(inventory,expected,scene.secondaries.size());
+  // No synthetic DBL_MAX domain is divided by the native length scale.
+  for(std::size_t i=0;i<scene.main_stiffness.size;++i)scene.main_stiffness[i]=0;
+  for(std::size_t i=0;i<scene.positions.size;++i)scene.positions[i]=0x1p+900*.001;
+  ASSERT_EQ(inventory.Stage(si),c::Status::Ok);Check(inventory,{},scene.secondaries.size());
+  scene.positions[3*scene.secondaries[0]]=INFINITY;
+  EXPECT_EQ(inventory.Stage(si),c::Status::InvalidInput);
+}

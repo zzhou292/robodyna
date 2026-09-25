@@ -143,10 +143,10 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   p.diagnostics.active_forces=p.control.active;p.diagnostics.elastic_energy=p.control.elastic_energy;
   p.diagnostics.damping_work=p.control.damping_work;p.diagnostics.friction_work=p.control.friction_work;
   const auto cohorts=kept/p.source.force_packet_size+(kept%p.source.force_packet_size!=0);
-  const assembly::Schedule schedule{p.device.cohort_ends,cohorts,kept};
+  const assembly::Schedule schedule{cohorts?p.device.cohort_ends:nullptr,cohorts,kept};
   const assembly::IncidenceStamp incidence_stamp{p.source.source_id,p.source.topology_generation,
     accepted.generation+1,accepted.generation+1,view.attempt};
-  const auto incidence_status=p.incidence.Stage({p.device.force_connectivity,schedule,p.source.selection.node_count,incidence_stamp});
+  const auto incidence_status=p.incidence.Stage({kept?p.device.force_connectivity:nullptr,schedule,p.source.selection.node_count,incidence_stamp});
   if(incidence_status!=assembly::IncidenceStatus::Ok)return p.Fail(Error(incidence_status==assembly::IncidenceStatus::DeviceFailure?
       TransactionStatus::DeviceFailure:TransactionStatus::NumericalFailure,"Native dynamic ASS0 incidence rejected"));
   const auto incidence=p.incidence.view();if(!p.incidence.IsCurrent(incidence))return p.Fail(Error(TransactionStatus::StaleAttempt,"Native ASS0 incidence expired"));
