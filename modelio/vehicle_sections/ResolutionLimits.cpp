@@ -3,8 +3,11 @@
 
 namespace crash::modelio::vehicle::resolution {
 std::size_t Preflight(const VehicleSourcePlan& plan, const assembly::ArtifactIdentity& id,
-                      ResolutionLimits limits) {
-    const ResolutionLimits maximum;
+                      ResolutionLimits limits, BudgetScope scope) {
+    Require(scope == BudgetScope::Artifact || scope == BudgetScope::CompleteRigidOverlay,
+            "Unknown vehicle resolution budget scope");
+    const auto maximum = scope == BudgetScope::CompleteRigidOverlay ?
+        ResolutionLimits::CompleteRigidOverlay() : ResolutionLimits{};
     Require(limits.declaration_bytes && limits.declaration_bytes <= maximum.declaration_bytes &&
             limits.host_bytes && limits.host_bytes <= maximum.host_bytes &&
             limits.parents && limits.parents <= maximum.parents &&

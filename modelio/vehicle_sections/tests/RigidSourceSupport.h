@@ -15,7 +15,7 @@ inline const std::string& OriginalMember() {
 }
 inline const VehicleSectionResolution& RigidResolution() {
     static const auto value=VehicleSectionResolution::ResolveOriginalRigidParts(MidlayerResolution(),OriginalMember(),
-                                                       ResolutionProfile::OriginalRigidPartsV1);
+        ResolutionProfile::OriginalRigidPartsV1, ResolutionLimits::CompleteRigidOverlay());
     return value;
 }
 }

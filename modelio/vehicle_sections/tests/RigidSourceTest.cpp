@@ -60,18 +60,20 @@ TEST(VehicleRigidSource, OriginalCoverageRootsAndChainedParametersRemainExact) {
 }
 TEST(VehicleRigidSource, BadTailAndCapacityFailWithoutChangingBaseAndExactRetry) {
     const auto& base=MidlayerResolution();constexpr auto profile=ResolutionProfile::OriginalRigidPartsV1;
-    const auto forecast=VehicleSectionResolution::ForecastOriginalRigidParts(base,profile);
-    auto limits=ResolutionLimits{};limits.host_bytes=forecast-1;
+    const auto declared = ResolutionLimits::CompleteRigidOverlay();
+    const auto forecast = VehicleSectionResolution::ForecastOriginalRigidParts(base, profile, declared);
+    auto limits = declared;
+    limits.host_bytes = forecast - 1;
     EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(base,OriginalMember(),profile,limits),std::runtime_error);
-    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(GlassResolution(),OriginalMember(),profile),std::runtime_error);
-    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(base,OriginalMember(),ResolutionProfile::Artifact),std::runtime_error);
+    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(GlassResolution(),OriginalMember(),profile,declared),std::runtime_error);
+    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(base,OriginalMember(),ResolutionProfile::Artifact,declared),std::runtime_error);
     auto bad=OriginalMember();bad.back()^=1;
-    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(base,bad,profile),std::runtime_error);
+    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(base,bad,profile,declared),std::runtime_error);
     bad.clear();bad.shrink_to_fit();
     limits.host_bytes=forecast;
     const auto current=VehicleSectionResolution::ResolveOriginalRigidParts(base,OriginalMember(),profile,limits);
     EXPECT_EQ(current.startup_budget_bytes(),forecast);EXPECT_EQ(base.counts().unresolved_shells,5102);
     EXPECT_EQ(base.rigid_source(),nullptr);
-    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(current,OriginalMember(),profile),std::runtime_error);
+    EXPECT_THROW(VehicleSectionResolution::ResolveOriginalRigidParts(current,OriginalMember(),profile,declared),std::runtime_error);
 }
 }

@@ -13,7 +13,9 @@ struct Declarations {
     std::vector<GlassDeclaration> glass;
     bool includes_glass = false;
 };
-std::size_t Preflight(const VehicleSourcePlan&, const assembly::ArtifactIdentity&, ResolutionLimits);
+enum class BudgetScope { Artifact, CompleteRigidOverlay };
+std::size_t Preflight(const VehicleSourcePlan&, const assembly::ArtifactIdentity&, ResolutionLimits,
+                      BudgetScope = BudgetScope::Artifact);
 void CheckAuthority(const VehicleSourcePlan&, const Value&);
 Declarations ReadDeclarations(const VehicleSourcePlan&, const Value&, ResolutionLimits);
 std::vector<SectionParentResolution> ReadParents(const VehicleSourcePlan&);

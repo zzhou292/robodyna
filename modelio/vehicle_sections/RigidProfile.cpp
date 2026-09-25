@@ -1,4 +1,5 @@
 #include "ResolutionData.h"
+#include <algorithm>
 namespace crash::modelio::vehicle {
 namespace {
 void CheckProfile(const VehicleSectionResolution& base,ResolutionProfile profile) {
@@ -10,13 +11,15 @@ void CheckProfile(const VehicleSectionResolution& base,ResolutionProfile profile
 }
 rigid_part::Limits SourceLimits(ResolutionLimits limits) {
     rigid_part::Limits out;
-    out.host_bytes=limits.host_bytes;out.parts=limits.parts;
+    // The larger outer overlay envelope does not expand the source reader.
+    out.host_bytes = std::min(limits.host_bytes, rigid_part::Limits{}.host_bytes);
+    out.parts = limits.parts;
     return out;
 }
 }
 std::size_t VehicleSectionResolution::ForecastOriginalRigidParts(const VehicleSectionResolution& base,
     ResolutionProfile profile,ResolutionLimits limits) {
-    resolution::Preflight(base.source(),base.identity(),limits);
+    resolution::Preflight(base.source(), base.identity(), limits, resolution::BudgetScope::CompleteRigidOverlay);
     CheckProfile(base,profile);
     std::size_t total=0;
     const auto add=[&](std::size_t count,std::size_t width) {

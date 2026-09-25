@@ -33,4 +33,29 @@ TEST(VehicleShellExecutionOriginal, NativeSourceProfileKeepsAllParentsAndFailure
     EXPECT_THROW(VehicleShellExecution::Preflight(physical_model::test::Actual(),
         Law1ExecutionProfile::NativeA62OrdinaryNpt0,{}),std::exception);
 }
+TEST(VehicleShellExecutionOriginal, CompleteRigidOverlayChargesAllParentCopiesAtExactCap) {
+    using Resolution = modelio::vehicle::VehicleSectionResolution;
+    using Resource = modelio::vehicle::ResolutionLimits;
+    const auto profile = modelio::vehicle::ResolutionProfile::OriginalRigidPartsV1;
+    const auto& base = modelio::vehicle::test::MidlayerResolution();
+    const auto declared = Resource::CompleteRigidOverlay();
+    const auto bytes = Resolution::ForecastOriginalRigidParts(base, profile, declared);
+    EXPECT_EQ(Resource{}.host_bytes, std::size_t{512} << 20);
+    EXPECT_EQ(declared.host_bytes, std::size_t{640} << 20);
+    EXPECT_EQ(modelio::vehicle::rigid_part::Limits{}.host_bytes, std::size_t{512} << 20);
+    EXPECT_GT(bytes, Resource{}.host_bytes);
+    EXPECT_LE(bytes, declared.host_bytes);
+    EXPECT_THROW(Resolution::ForecastOriginalRigidParts(base, profile), std::exception);
+    auto exact = declared;
+    exact.host_bytes = bytes;
+    const auto resolved = Resolution::ResolveOriginalRigidParts(base, modelio::vehicle::test::OriginalMember(), profile, exact);
+    EXPECT_EQ(resolved.startup_budget_bytes(), bytes);
+    --exact.host_bytes;
+    EXPECT_THROW(Resolution::ResolveOriginalRigidParts(base, modelio::vehicle::test::OriginalMember(), profile, exact), std::exception);
+    RecordProperty("complete_rigid_overlay_bytes", std::to_string(bytes));
+    RecordProperty("failure_parent_bytes", std::to_string(sizeof(fe::ShellFailureParentInput)));
+    RecordProperty("retained_parent_copies", "3");
+    RecordProperty("original_parent_count", std::to_string(base.parents().size()));
+}
+
 }

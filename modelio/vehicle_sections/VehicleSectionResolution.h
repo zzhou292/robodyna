@@ -15,6 +15,14 @@ struct ResolutionLimits {
     std::size_t declaration_bytes = 4 * 1024 * 1024;
     std::size_t host_bytes = 512 * 1024 * 1024;
     std::size_t parents = 524288, parts = 1024, tables = 1024, curve_points = 1024;
+    // Complete retained artifact + midlayer + rigid parent overlays. Generic
+    // artifact/default limits stay512MiB; this named envelope includes the
+    // immutable per-parent execution descriptor in each retained copy.
+    static ResolutionLimits CompleteRigidOverlay() noexcept {
+        ResolutionLimits result;
+        result.host_bytes = std::size_t{640} << 20;
+        return result;
+    }
 };
 enum class SectionDisposition { Existing, ConstantFailure, Unresolved, GlassTab1, Midlayer, RigidPart };
 enum class ResolutionProfile { Artifact, OriginalMidlayerV1, OriginalRigidPartsV1 };

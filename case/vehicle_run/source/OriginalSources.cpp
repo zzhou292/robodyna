@@ -25,7 +25,8 @@ modelio::vehicle::VehicleSectionResolution Resolve(const modelio::vehicle::Vehic
         "ea40b817b66c73e961c502e5ff0d4dffd5d354b65e1339e6a093164adeb32158");
     const auto glass=Resolution::ReadBytes(plan,bytes,{bytes.size(),output::Sha256(bytes)});
     const auto midlayer=Resolution::ResolveOriginalMidlayer(glass,Profile::OriginalMidlayerV1);
-    return Resolution::ResolveOriginalRigidParts(midlayer,member,Profile::OriginalRigidPartsV1);
+    return Resolution::ResolveOriginalRigidParts(midlayer, member, Profile::OriginalRigidPartsV1,
+        modelio::vehicle::ResolutionLimits::CompleteRigidOverlay());
 }
 }
 std::string ReadOriginal(const std::filesystem::path& path,std::size_t bytes,const char* sha256) {
