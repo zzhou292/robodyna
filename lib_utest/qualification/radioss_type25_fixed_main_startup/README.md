@@ -43,3 +43,13 @@ for the complete native oracle gate. Source authoring and source generation do
 not establish compiled or numerical qualification. Integration into a physical
 source factory still owns primary ordering, fixed activity, material/gap fields,
 removal topology, and physical accepted/trial lifetimes.
+
+Observed phase boundary: observation2 captures positions at cycle0 but its
+classification/boundary numerical fields at cycle216 (TT140.433us). Only the
+immutable topology from that later capture is compared as startup evidence.
+Every produced Starter/all-active-ready normal and bisector bit still compares
+to the independent native oracle on the exact observed input coordinates. The
+three later minus-zero X channels on main4 are preserved as phase evidence;
+there is no sign normalization or tolerance substitution. Dynamic ACTNOR/TAGNOD
+normal maintenance remains a separate runtime dependency before general fixed
+nonplanar or moving-main equivalence claims.
