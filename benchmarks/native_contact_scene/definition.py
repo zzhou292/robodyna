@@ -59,6 +59,7 @@ class Scene:
     end_time_s: float
     nodal_scale: float
     animation_interval_s: float
+    time_step_cap_s: float | None = None
 
 
 def load(path):
@@ -93,13 +94,19 @@ def load(path):
         number(material['rate_filter_hz'], 'rate filter', 1e-9, 1e12))
     thickness = number(raw['thickness_mm'], 'thickness', 1e-6, 100)
     run = raw['run']
-    keys(run, ('end_time_s', 'nodal_scale', 'animation_interval_s'), 'run')
+    run_fields = ('end_time_s', 'nodal_scale', 'animation_interval_s')
+    if isinstance(run, dict) and 'time_step_cap_s' in run:
+        run_fields += ('time_step_cap_s',)
+    keys(run, run_fields, 'run')
     end = number(run['end_time_s'], 'end time', 1e-9, .1)
     scale = number(run['nodal_scale'], 'nodal scale', .01, .9)
     cadence = number(run['animation_interval_s'], 'animation interval', 1e-9, end)
     require(end/cadence <= 10000, 'Animation count exceeds scene cap')
+    step_cap = None
+    if 'time_step_cap_s' in run:
+        step_cap = number(run['time_step_cap_s'], 'time step cap', 1e-12, end)
     wall, patch = grids
     require(wall.dz_dx == 0, 'This first fixed-main definition uses a planar wall')
     require(min(patch.z_mm+patch.dz_dx*x for x in patch.x_mm) > wall.z_mm+thickness,
             'Scene starts separated; initial overlap requires a separately named case')
-    return Scene(wall, patch, velocity, constitutive, thickness, end, scale, cadence)
+    return Scene(wall, patch, velocity, constitutive, thickness, end, scale, cadence, step_cap)

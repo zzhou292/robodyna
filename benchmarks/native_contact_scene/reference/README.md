@@ -58,3 +58,20 @@ same authorized sandbox escalation used by earlier reference probes.
 Both `native-observations.jsonl` and `native-observation-summary.json` are retained.
 Summary completion requires all named stages; exit2 means incomplete/rejected
 observation. Partial records and all failed guard receipts remain diagnostic evidence.
+
+## Raw startup mass and inertia
+
+`prepare_startup.py`/`startup.py` observe the pinned Starter at SPMD_MSIN and
+INITIA returns. They capture raw positive MS/IN, original-node ITAB, ETNOD,
+NSHNOD and volume/stiffness operands in native units, then let Starter terminate
+normally and produce its restart. These are qualification-only observations;
+production must use TL shell mass/inertia and contact-coefficient producers.
+The probe bounds nodes/calls, checks parsed signatures/source hashes, preserves
+all observations and rejects incomplete/unwound/nonzero-exit sessions.
+
+`fixed_wall_patch_capped.json` adds a 300ns initial/maximum /DTIX limit to the
+otherwise identical scene. The existing nodal STOP/stability controls remain.
+This neither enforces a larger step nor changes physical mass. Numerical
+acceptance still requires the actual native and TL dt grids, not deck intent.
+Single-thread native coupons establish exact packet/gather ordering; the final
+performance comparison must retain the declared four-core CPU reference.

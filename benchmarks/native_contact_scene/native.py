@@ -43,11 +43,13 @@ def starter(scene, mesh):
 
 
 def engine(scene):
-    # Ordinary unscaled nodal control. This is not a fixed-step or mass-scaling
-    # shortcut; actual Engine DT1/DT12/time grids remain separate observations.
+    # Ordinary unscaled nodal control. Optional DTIX limits initial/maximum dt;
+    # smaller stability-limited steps remain legal. No target mass scaling.
     out = ['/RUN/contact_scene/1',reals(scene.end_time_s),
            '/DT',reals(scene.nodal_scale,0.),'/DT/NODA/STOP',reals(scene.nodal_scale,0.),
            '/ANIM/DT',reals(0.,scene.animation_interval_s),'/ANIM/VECT/DISP',
            '/ANIM/VECT/VEL','/ANIM/VECT/CONT','/ANIM/ELEM/ENER',
            '/TFILE/4',reals(scene.animation_interval_s),'/PARITH/OFF','/TH/TITLE']
+    if scene.time_step_cap_s is not None:
+        out += ['/DTIX',reals(scene.time_step_cap_s,scene.time_step_cap_s)]
     return '\n'.join(out)+'\n'

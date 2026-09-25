@@ -52,6 +52,22 @@ class NativeContactScene(unittest.TestCase):
         self.assertIn('/DT/NODA/STOP',native.engine(scene))
         self.assertNotIn('/CST',native.engine(scene))
 
+    def test_step_cap_changes_only_engine_control_and_preserves_stability_screen(self):
+        uncapped = definition.load(SOURCE)
+        capped = definition.load(SOURCE.with_name('fixed_wall_patch_capped.json'))
+        self.assertIsNone(uncapped.time_step_cap_s)
+        self.assertEqual(capped.time_step_cap_s, 3e-7)
+        self.assertEqual(native.starter(capped,mesh.build(capped)),
+                         native.starter(uncapped,mesh.build(uncapped)))
+        self.assertEqual(native.engine(capped), native.engine(uncapped)+
+                         '/DTIX\n'+cards.reals(3e-7,3e-7)+'\n')
+        for value in (0, -1, True, None, float('inf'), .1):
+            raw=json.loads(SOURCE.read_text())
+            raw['run']['time_step_cap_s']=value
+            with tempfile.TemporaryDirectory() as name:
+                path=Path(name)/'case.json';path.write_text(json.dumps(raw))
+                with self.assertRaises(ValueError):definition.load(path)
+
     def test_field_writers_reject_loss_and_nonfinite(self):
         for value in (True, float('nan'),float('inf'),1.2345678901234568e-120):
             with self.assertRaises(ValueError): cards.real(value)
