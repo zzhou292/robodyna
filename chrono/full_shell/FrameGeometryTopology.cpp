@@ -26,7 +26,7 @@ void InitializeTopology(FrameGeometryState& s, const std::vector<std::uint32_t>&
     output::Require(s.scalar_colors.Initialize(s.triangle_parents, s.fields,
         s.options.plastic_strain_maximum, s.staged_colors, s.options.geometry), "Invalid parent field mapping");
     if (s.options.colors == ReplayColorMode::PartId) {
-        output::Require(s.part_colors.Initialize(s.triangle_parts, s.mesh->GetCoordsColors()),
+        output::Require(s.part_colors.Initialize(s.triangle_parts, s.mesh->GetCoordsColors(), s.options.part_palette_seed),
             "Invalid original part color mapping");
     } else if (s.options.colors == ReplayColorMode::PlasticStrain) {
         s.mesh->GetCoordsColors() = s.staged_colors;

@@ -15,7 +15,7 @@ output::Document CaptureMetadata(const Options& options,const Input& input,const
     String(d,"surface_color_mode",visual::ReplayColorModeName(scene.geometry()->color_mode()));
     if(const auto* legend=scene.geometry()->part_legend()) {
         String(d,"part_palette",visual::ReplayPartPaletteName);
-        Integer(d,"part_palette_seed",visual::ReplayPartPaletteSeed);
+        Integer(d,"part_palette_seed",scene.geometry()->part_palette_seed());
         Value rows(rapidjson::kArrayType);
         for(const auto& entry:*legend) {
             Value row(rapidjson::kArrayType);row.PushBack(Value().SetUint64(entry.part_id),d.GetAllocator());
@@ -34,6 +34,13 @@ output::Document CaptureMetadata(const Options& options,const Input& input,const
     String(d,"camera_view",visual::ReplayViewName(camera.view));
     String(d,"camera_vertical",camera.vertical==visual::ReplayVertical::Y?"Y":"Z");
     Number(d,"camera_vertical_fov_degrees",camera.vertical_fov_degrees);
+    const auto& clip=visual.Clipping();const auto& bounds=*scene.bounds();
+    FiniteArray(d,"scene_bounds_low_m",bounds.low.data(),3);FiniteArray(d,"scene_bounds_high_m",bounds.high.data(),3);
+    Number(d,"camera_near_m",clip.near_m);Number(d,"camera_far_m",clip.far_m);
+    Number(d,"camera_distance_m",clip.camera_distance_m);Number(d,"scene_diagonal_m",clip.scene_diagonal_m);
+    Number(d,"scene_minimum_camera_depth_m",clip.minimum_depth_m);Number(d,"scene_maximum_camera_depth_m",clip.maximum_depth_m);
+    Boolean(d,"scene_bounds_wholly_in_front_of_camera",clip.minimum_depth_m>0);
+    String(d,"camera_clipping_policy","actual fixed camera and complete archived motion bounds; geometry scale 1; framing reviewed separately");
     Number(d,"light_azimuth",light.azimuth);Number(d,"light_elevation",light.elevation);
     const auto dimensions=visual.FramebufferSize();Integer(d,"width",dimensions[0]);Integer(d,"height",dimensions[1]);
     const auto device=visual.GetWindow()->getPhysicalDevice()->getProperties();

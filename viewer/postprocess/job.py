@@ -46,13 +46,15 @@ def run_job(config):
             count = summary['accepted_intervals']
             duration_ms = summary['actual_completed_time_s'] * 1000
             reached = count == config['requested_steps']
-            message = f'{count:,} accepted steps, {duration_ms:.6g} ms saved. Rendering is starting.'
-            notifications.append(notify('Yaris run finished' if reached else 'Yaris run stopped early',
+            label = f"{Path(config['run']).name} | {summary.get('_display_profile', 'physical simulation')}"
+            message = f'{label}: {count:,} accepted steps, {duration_ms:.6g} ms saved. Rendering is starting.'
+            notifications.append(notify('Simulation finished' if reached else 'Simulation stopped early',
                                         message, config['environment']))
             evidence = dict(accepted_steps=count, simulated_time_s=duration_ms / 1000,
                             requested_steps_reached=reached, saved_frames=len(index['frames']),
                             stop_reason=summary['reason'], viewer_receipt_sha256=receipt_sha,
-                            run_summary_sha256=sha256(Path(config['run']) / 'run-summary.json'))
+                            run_summary_sha256=sha256(Path(config['run']) / summary.get('_summary_file', 'run-summary.json')),
+                            summary_file=summary.get('_summary_file', 'run-summary.json'))
             write_status(directory, stage='verifying_replay', **evidence, notifications=notifications)
             for path, expected in config['pinned_files'].items():
                 if sha256(path) != expected:
@@ -79,12 +81,12 @@ def run_job(config):
                 if len(movies) != 1:
                     raise ValueError('Encoder did not publish exactly one video')
                 videos.append(str(movies[0]))
-            notifications.append(notify('Yaris videos ready',
-                f'Overview and impact close-up: {directory}', config['environment']))
+            notifications.append(notify('Simulation videos ready',
+                f'{label}: {directory}', config['environment']))
             write_status(directory, stage='complete', **evidence,
                          videos=videos, notifications=notifications)
         except Exception as error:
-            notifications.append(notify('Yaris postprocessing needs attention', str(error),
+            notifications.append(notify('Simulation postprocessing needs attention', str(error),
                                         config['environment']))
             write_status(directory, stage='failed', error=str(error), videos=videos,
                          notifications=notifications)

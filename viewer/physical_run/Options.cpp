@@ -1,5 +1,6 @@
 #include "Options.h"
 #include <cmath>
+#include <charconv>
 #include <set>
 namespace crash::viewer::physical_run {
 namespace {
@@ -22,7 +23,7 @@ std::array<double, 3> Coordinates(const std::string& text) {
 } // namespace
 Options Parse(int argc,char** argv) {
     using output::Require;
-    Require(argc>=2,"usage: robo_dyna_physical_replay (RUN_DIR_OR_RECEIPT | --recovered RECOVERED_DESCRIPTOR) [--capture NEW_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6]");
+    Require(argc>=2,"usage: robo_dyna_physical_replay (RUN_DIR_OR_RECEIPT | --recovered RECOVERED_DESCRIPTOR) [--capture NEW_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--part-palette-seed UINT64] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6]");
     Options out;
     int first_option=2;
     if (std::string(argv[1])=="--recovered") {
@@ -53,6 +54,12 @@ Options Parse(int argc,char** argv) {
         } else if (name == "--camera-up") {
             Require(value == "y" || value == "z", "Camera up axis must be y or z");
             camera.vertical = value == "y" ? visual::ReplayVertical::Y : visual::ReplayVertical::Z;
+        } else if(name=="--part-palette-seed") {
+            std::uint64_t seed=0;
+            const auto result=std::from_chars(value.data(),value.data()+value.size(),seed);
+            Require(result.ec==std::errc{} && result.ptr==value.data()+value.size(),
+                "Part palette seed requires an unsigned decimal 64-bit integer");
+            out.scene.part_palette_seed=seed;
         } else if(name=="--require-frames") {
             std::size_t end=0;const auto n=std::stoull(value,&end);
             Require(end==value.size() && n>0 && n<=10000,"Required sample count must be 1..10000");
@@ -73,6 +80,8 @@ Options Parse(int argc,char** argv) {
         Require(visual::MakeFixedCamera(camera, validated), "Camera eye/target/up basis is degenerate or unrepresentable");
         out.scene.fixed_camera = camera;
     }
+    Require(!seen.count("--part-palette-seed") || out.scene.colors==visual::ReplayColorMode::PartId ||
+        out.scene.colors==visual::ReplayColorMode::Automatic,"Part palette seed requires part-id colors");
     return out;
 }
 } // namespace crash::viewer::physical_run

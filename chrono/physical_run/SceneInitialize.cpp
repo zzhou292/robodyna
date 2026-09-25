@@ -15,6 +15,7 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
         const auto scan=Scan(replay);
         auto next=std::make_unique<Impl>(replay);
         next->budget=budget;
+        next->bounds={scan.low,scan.high};
         next->plastic_maximum=scan.plastic_maximum;
         if (options.fixed_camera) {
             output::Require(MakeFixedCamera(*options.fixed_camera, next->camera),
@@ -27,6 +28,7 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
         full_shell::FrameGeometryOptions geometry;
         geometry.geometry=ReplayGeometryLimits::Vehicle();
         geometry.colors=options.colors;
+        geometry.part_palette_seed=options.part_palette_seed;
         geometry.parent_activity=true;
         geometry.plastic_strain_maximum=scan.plastic_maximum;
         auto report=next->geometry.Initialize(replay.mapping(),replay.context(),geometry);

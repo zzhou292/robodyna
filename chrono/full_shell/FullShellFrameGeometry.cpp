@@ -39,5 +39,8 @@ const std::vector<ReplayPartLegendEntry>* FullShellFrameGeometry::part_legend() 
 ReplayColorMode FullShellFrameGeometry::color_mode() const noexcept {
     return impl_ ? impl_->options.colors : ReplayColorMode::Automatic;
 }
+std::uint64_t FullShellFrameGeometry::part_palette_seed() const noexcept {
+    return impl_ ? impl_->options.part_palette_seed : ReplayPartPaletteSeed;
+}
 std::size_t FullShellFrameGeometry::budget_bytes() const noexcept { return impl_ ? impl_->budget : 0; }
 } // namespace crash::visual::full_shell

@@ -1,6 +1,7 @@
 #pragma once
 #include "chrono/full_shell/FullShellFrameGeometry.h"
 #include "chrono/ReplayFixedCamera.h"
+#include "chrono/ReplayClipping.h"
 #include "SampleSource.h"
 #include <optional>
 namespace crash::visual::physical_run {
@@ -10,6 +11,7 @@ struct SceneOptions {
     bool wireframe=false;
     std::size_t host_bytes=1024u<<20;
     std::optional<FixedCameraInput> fixed_camera;
+    std::uint64_t part_palette_seed=ReplayPartPaletteSeed;
 };
 // Application-owned reader, geometry and transient sample workspace. VSG /
 // Vulkan driver buffers are outside this value forecast and measured at render.
@@ -31,6 +33,7 @@ class Scene {
     ReplaySceneReport Publish(std::size_t sample);
     chrono::ChSystem& system();
     const ReplayCamera* camera() const noexcept;
+    const ReplayBounds* bounds() const noexcept; // complete archive motion plus optional wall
     const ReplayStamp* stamp() const noexcept;
     const full_shell::FullShellFrameGeometry* geometry() const noexcept;
     const output::physical_run::Replay* replay() const noexcept; // null for recovered samples

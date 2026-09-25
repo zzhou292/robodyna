@@ -20,6 +20,17 @@ void SameCamera(const visual::ReplayCamera& a, const visual::ReplayCamera& b) {
 }
 } // namespace
 
+TEST(PhysicalPartPalette, StrictUnsignedSeedDefaultAndFullWidthValueReachScene) {
+    EXPECT_EQ(ParseArgs({"viewer","run"}).scene.part_palette_seed,1u);
+    EXPECT_EQ(ParseArgs({"viewer","run","--part-palette-seed","0"}).scene.part_palette_seed,0u);
+    EXPECT_EQ(ParseArgs({"viewer","run","--part-palette-seed","2"}).scene.part_palette_seed,2u);
+    EXPECT_EQ(ParseArgs({"viewer","run","--part-palette-seed","18446744073709551615"}).scene.part_palette_seed,UINT64_MAX);
+    for(const char* invalid:{"","-1","+2"," 2","2 ","2.0","2x","18446744073709551616"})
+        EXPECT_THROW(ParseArgs({"viewer","run","--part-palette-seed",invalid}),std::exception);
+    EXPECT_THROW(ParseArgs({"viewer","run","--part-palette-seed","2","--part-palette-seed","3"}),std::exception);
+    EXPECT_THROW(ParseArgs({"viewer","run","--part-palette-seed","2","--color","plastic-strain"}),std::exception);
+}
+
 TEST(PhysicalFixedCamera, PairedSiCoordinatesAndExistingUpAxesReachCameraUnchanged) {
     const auto options = ParseArgs({"viewer", "run", "--camera-eye", "-1.25,2e-1,0.8",
         "--camera-target", "0.5,-0.0,0.4"});

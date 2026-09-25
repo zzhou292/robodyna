@@ -16,6 +16,7 @@ struct FrameGeometryOptions {
     // Explicit optional channel. Every update then requires an authenticated
     // ActivityRecord; the legacy overload remains all-parent presentation.
     bool parent_activity = false;
+    std::uint64_t part_palette_seed = ReplayPartPaletteSeed;
 };
 std::size_t FrameGeometryBudget(std::size_t nodes, std::size_t parents, std::size_t triangles,
     const FrameGeometryOptions&);
@@ -51,6 +52,7 @@ class FullShellFrameGeometry {
     const ReplayScalarLegend* scalar_legend() const noexcept;
     const std::vector<ReplayPartLegendEntry>* part_legend() const noexcept;
     ReplayColorMode color_mode() const noexcept;
+    std::uint64_t part_palette_seed() const noexcept;
     std::size_t budget_bytes() const noexcept;
   private:
     struct Impl;

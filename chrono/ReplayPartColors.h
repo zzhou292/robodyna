@@ -14,10 +14,11 @@ struct ReplayPartLegendEntry {
     chrono::ChColor color;
 };
 // Versioned integer mixing followed by an HSV color construction. Depends only
-// on the full original PID, never a frame, part order or selected subset.
+// on the full original PID and explicit seed, never a frame, part order or selected subset.
 // Categorical colors carry no stress/material meaning. Arbitrary 64-bit IDs
 // cannot all have unique display colors; the mapping makes no such promise.
-chrono::ChColor ReplayPartColor(std::uint64_t part_id) noexcept;
+chrono::ChColor ReplayPartColor(std::uint64_t part_id,
+    std::uint64_t seed = ReplayPartPaletteSeed) noexcept;
 
 class ReplayPartColors {
   public:
@@ -25,7 +26,7 @@ class ReplayPartColors {
     // triangle bound; failure preserves colors and the prior legend. Allocates
     // only during initialization. Reader/scene geometry admission is separate.
     bool Initialize(const std::vector<std::uint64_t>& triangle_parts,
-                    std::vector<chrono::ChColor>& colors);
+                    std::vector<chrono::ChColor>& colors, std::uint64_t seed = ReplayPartPaletteSeed);
     const std::vector<ReplayPartLegendEntry>& legend() const noexcept { return legend_; }
   private:
     std::vector<ReplayPartLegendEntry> legend_;

@@ -43,6 +43,11 @@ int main(int argc,char** argv) {
         const auto light=crash::viewer::ConfigureReplayVisual(*visual,scene.system(),*scene.camera());
         visual->AddGuiComponent(app::MakeOverlay(scene,playback,capture,options.frames_per_second));
         crash::viewer::InitializeReplayVisual(*visual);
+        visual->ConfigureClipping(*scene.bounds());
+        const auto& clipping=visual->Clipping();
+        std::cout<<"Replay clipping (m): near="<<clipping.near_m<<" far="<<clipping.far_m
+            <<" camera distance="<<clipping.camera_distance_m<<" scene depth=["<<clipping.minimum_depth_m
+            <<','<<clipping.maximum_depth_m<<"]"<<std::endl;
         if(capture) crash::viewer::WarmupReplayCapture(*visual);
         bool first=true;auto next=Clock::now();
         while(visual->Run()) {
