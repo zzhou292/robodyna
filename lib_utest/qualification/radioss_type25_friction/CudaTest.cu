@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "CudaFixture.h"
+#include "NativeOracle.h"
+#include "Assertions.h"
 namespace type25_friction_test {
 namespace {
 struct Response { n::NativeFrictionResult value; n::NormalStatus status; };
