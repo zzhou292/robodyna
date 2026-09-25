@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ContinuationCases.h"
+#include "NewImpactCases.h"
 #include <gtest/gtest.h>
 #include <cuda_runtime.h>
 namespace type25_selection_test {
@@ -32,6 +33,23 @@ TEST(Type25SelectionConsumerCuda, NativeContinuationExecutesWithoutOracleDepende
   ASSERT_EQ(cudaMalloc(reinterpret_cast<void**>(&device.value),sizeof(actual)),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(device.value,&actual,sizeof(actual),cudaMemcpyHostToDevice),cudaSuccess);
   EvaluateContinuationHeader<<<1,1>>>(device.value);
+  ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+  ASSERT_EQ(cudaMemcpy(&actual,device.value,sizeof(actual),cudaMemcpyDeviceToHost),cudaSuccess);
+  EXPECT_EQ(actual.status,s::Status::Ok);EXPECT_TRUE(actual.result.row_replaced);
+}
+struct NewImpactPacket {
+  s::NativeNewImpactInput input;n::NativeGeometryHistory prior;
+  s::NativeNewImpactResult result;s::Status status;
+};
+__global__ void EvaluateNewImpactHeader(NewImpactPacket* p) {
+  p->status=s::EvaluateNativeNewImpact({1,5,1,false,false,false},p->input,p->prior,&p->result);
+}
+TEST(Type25SelectionConsumerCuda, NativeNewImpactExecutesWithoutOracleDependency) {
+  const auto c=BasicNewImpact();NewImpactPacket actual;actual.input=c.input;actual.prior=c.prior;
+  struct Owner {NewImpactPacket* value=nullptr;~Owner(){if(value)cudaFree(value);}} device;
+  ASSERT_EQ(cudaMalloc(reinterpret_cast<void**>(&device.value),sizeof(actual)),cudaSuccess);
+  ASSERT_EQ(cudaMemcpy(device.value,&actual,sizeof(actual),cudaMemcpyHostToDevice),cudaSuccess);
+  EvaluateNewImpactHeader<<<1,1>>>(device.value);
   ASSERT_EQ(cudaGetLastError(),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(&actual,device.value,sizeof(actual),cudaMemcpyDeviceToHost),cudaSuccess);
   EXPECT_EQ(actual.status,s::Status::Ok);EXPECT_TRUE(actual.result.row_replaced);

@@ -3,3 +3,5 @@
 #include "radioss_type25/selection/Retained.h"
 
 #include "radioss_type25/selection/Continuation.h"
+
+#include "radioss_type25/selection/NewImpact.h"

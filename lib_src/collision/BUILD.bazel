@@ -1113,6 +1113,8 @@ cc_library(
         "Types.h", "Prepare.h", "Projection.h", "RetainedBoundary.h", "RetainedDecision.h", "Retained.h",
         "ContinuationTypes.h", "ContinuationPrepare.h", "ContinuationBoundary.h", "Continuation.h",
         "ClassificationValues.h", "BoundaryValues.h",
+        "NewImpactTypes.h", "ImpactIntersection.h", "NewImpactPrepare.h", "NewImpactProjection.h",
+        "NewImpactBoundary.h", "NewImpactDecision.h", "NewImpact.h",
     ]],
     deps = [":radioss_type25_local_geometry", "//lib_src/math:scalar_bits"],
 )

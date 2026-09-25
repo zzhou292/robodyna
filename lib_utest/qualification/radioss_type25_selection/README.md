@@ -1,18 +1,18 @@
 # Native TYPE25 selection stages
 
-The retained checkpoint implements the complete selected COR3_1 → DST3_1 →
-GLOB_1 packet. This successor adds the complete scalar local continuation
-COR3_21 → DST3_21 → GLOB packet. New-impact classification, multi-occurrence
-winner folding and sliding/inventory staging remain subsequent stages.
-Continuation source and its owning oracle/tests require their own qualification;
-the preceding retained results do not qualify newly changed shared helpers.
+The retained and continuation checkpoints implement their complete selected
+COR/DST/GLOB scalar stages. This successor adds complete local new-impact
+COR3_22 → DST3_22 → GLOB22 with original INTERSECA/B/V0 crossing arithmetic.
+Multi-occurrence phase membership, one-writer winner folding, source-authenticated
+sliding/inventory and complete physical integration remain coordinator stages.
+Each successor reruns the preceding numerical gates after shared helper changes.
 No physical contact owner, second clock or keyword parser is introduced.
 
 The retained input supplies authentic current source geometry, native normal slots,
 gaps, both side coefficients, row identity/generation and a prior native row.
 Classification uses main*abs(secondary); this is NOT the min/clamped force K.
 An active retained row requires a valid old sector and matching global/local main
-and processor. Zero old sector is an undefined native input, not repaired to1.
+and processor. Zero old sector is an undefined native input, not repaired to 1.
 The explicit profile is local IGAP1/INACTI5, no thermal or applied-gap extension.
 
 NativeContactRow.selection_metric replaces the misleading time_s field without
@@ -22,7 +22,7 @@ and sentinels, not physical seconds. UnitScale.time_s remains the physical unit.
 The result includes complete raw/clamped projection observations, source row
 transition and exact global-cache publication. Explicit sector masks identify
 source-defined channels. Active T3 raw barycentrics are defined in all sectors,
-but only sector1 clamped/cached barycentrics are defined. Inactive products leave
+but only sector 1 clamped/cached barycentrics are defined. Inactive products leave
 all barycentric scratch undefined while FAR/PENT/DD/DIST initialization remains
 defined. Our unused payload zeros are API values with mask bits CLEAR; they are
 never native observations or consumable selected geometry. A future geometry
@@ -42,12 +42,12 @@ from the qualified raw geometry code with identical operation order.
 
 Owning CMake includes parent normal/friction/raw-geometry regressions, then native
 retained host/CUDA comparisons and header-only consumers. Bazel owns independent
-header closure and pinned source preparation. Current tests use the139-point
+header closure and pinned source preparation. Current tests use the 139-point
 geometry corpus plus inactive/underflow, T3 scratch masks, old-sector loss,
 invalid source/prior state and output preservation. They do not qualify the full
 vehicle profile or claim a speed win.
 
-PEN3's focused2064-case/8256-call oracle found target outputs bit-identical between
+PEN3's focused 2,064-case / 8,256-call oracle found target outputs bit-identical between
 all-T3 and mixed packets. This does not require reproducing CPU scheduling.
 Genuinely stateful row phases, original occurrence identity and per-row native
 order remain explicit until the complete pipeline establishes permitted reorderings.
@@ -85,3 +85,40 @@ this stage does not reinterpret them as time or silently change their units.
 The pure scalar API supplies no physical owner, history rollover or candidate
 inventory authority. A complete scene still needs the original phase ordering,
 new-impact/sliding stages, source binding and defined-XP composition gate.
+
+## New-impact source boundary
+
+The input supplies current primary coordinates/velocities, native DT1, original
+signed MSEGTYP/NRTM, ICONT_I and authentic opposite-side metadata when COR22's
+literal positive-role rule selects a partner. Negative generated sides do not
+create another partner. The supplied node permutation is checked for consistency;
+it is not proof that an external model catalogue is authentic. The coordinator
+must bind both source identities and current geometry before physical use.
+
+Primary gaps and coefficient product remain primary even if side B wins. Partner
+normals/neighbors and boundary references use their different original
+permutations. The crossing helpers preserve the original volume-product test,
+including its floating underflow behavior, and INTERSECV0's narrow caller
+tolerance even for triangles. The recontact cutoff retains the original
+arm(i).x*arm(1).x expression; it is not replaced by a squared vector norm.
+
+All four raw/clamped projection sectors, distances and both side FAR/INGAP
+arrays are native-defined for T3 and nonpositive coefficient products too.
+Inactive scalar PENT and non-winning FAR/LBS/LCS remain mask-clear API zeros.
+GLOB22's cleared cache is native-defined in every sector. Equal opposing
+penetrations reject both sides. A selected local side-B occurrence rewrites its
+cache identity even if it loses the separate global row comparison. Original
+source and selected cache keys remain distinct in the result.
+
+The independent reference compiles whole COR/DST/GLOB and all three called
+intersection routines; it supplies exact main/reference indices and observes
+only source-defined fields. Its bounded explicit table forecast is separate
+from the production value API and is not a complete process RSS forecast.
+Qualification uses the 273-case geometry/role/motion corpus plus masked scratch,
+equal-side and global-tie decisions, recontact control, source failure and retry.
+The CUDA packet fixture reuses the existing buffer owner with a 2048-byte row;
+all older fixtures retain their 1024-byte row allocation and lifecycle.
+
+No statement here qualifies the whole Yaris contact profile, material dispatch,
+physical timestep policy or GPU performance. Those require the authenticated
+coordinator, composed defined-XP check and matched scene/vehicle evidence.

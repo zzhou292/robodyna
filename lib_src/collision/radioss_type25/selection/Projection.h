@@ -25,8 +25,8 @@ TL_MATH_HOST_DEVICE inline void RawProjection(Work& w, Result& out) {
   }
 }
 template<class Result>
-TL_MATH_HOST_DEVICE inline double ProjectSector(const NativePairInput& in,Work& w,
-    Result& out,unsigned i,bool radiation_first=false) {
+TL_MATH_HOST_DEVICE inline double ProjectedSectorPoint(const NativePairInput& in,Work& w,
+    Result& out,unsigned i) {
   const unsigned j=(i+1)%4;
   auto& s=out.sector[i];
   const auto edge=v::Subtract(w.frame.point[j],w.frame.point[i]);
@@ -48,6 +48,13 @@ TL_MATH_HOST_DEVICE inline double ProjectSector(const NativePairInput& in,Work& 
       v::Scale(w.frame.point[i],s.clamped_lb)),v::Scale(w.frame.point[j],s.clamped_lc));
   const auto delta=v::Subtract(in.secondary,point);
   s.distance_squared=v::Dot(delta,delta);
+  return la;
+}
+template<class Result>
+TL_MATH_HOST_DEVICE inline double ProjectSector(const NativePairInput& in,Work& w,
+    Result& out,unsigned i,bool radiation_first=false) {
+  const double la=ProjectedSectorPoint(in,w,out,i);
+  auto& s=out.sector[i];const unsigned j=(i+1)%4;
   const double uncapped=in.secondary_gap+la*w.center_gap+s.clamped_lb*in.main_gap[i]+
       s.clamped_lc*in.main_gap[j]+in.applied_gap;
   // Source reverses MAX's argument order for Q4 sectors2..4; keep it.
