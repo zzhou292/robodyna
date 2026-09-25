@@ -5,6 +5,14 @@
 #include "../NodalContributionTypes.h"
 
 namespace tlfea::contact::radioss_type25 {
+namespace coefficient_detail::spring_nodal {
+// Actual qualified native MAX2/MAX3 retains the later equal operand, including
+// signed zero. All operands are already finite before this leaf-local helper.
+TL_MATH_HOST_DEVICE inline double Maximum(double first, double later) {
+  return first > later ? first : later;
+}
+} // namespace coefficient_detail::spring_nodal
+
 TL_MATH_HOST_DEVICE inline CoefficientStatus EvaluateNativeSpringNodalCoefficient(
     const NativeSpringNodalInput& in, NativeScalarCoefficient* output) {
   using namespace coefficient_detail;
@@ -26,8 +34,8 @@ TL_MATH_HOST_DEVICE inline CoefficientStatus EvaluateNativeSpringNodalCoefficien
     if (!Nonnegative(in.geometric_length)) return CoefficientStatus::InvalidInput;
     length = in.geometric_length;
   }
-  double maximum = Max(terms[0], terms[1]);
-  if (count == 3) maximum = Max(maximum, terms[2]);
+  double maximum = spring_nodal::Maximum(terms[0], terms[1]);
+  if (count == 3) maximum = spring_nodal::Maximum(maximum, terms[2]);
   const double result = maximum / Max(native_constant::em30, length);
   if (!Finite(result)) return CoefficientStatus::NonfiniteResult;
   *output = {result};
