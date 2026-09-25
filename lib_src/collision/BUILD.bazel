@@ -1051,6 +1051,12 @@ cc_library(
 
 # Selected source-derived TYPE25 normal packet; no Fortran/runtime dependency.
 cc_library(
+    name = "radioss_type25_assembly",
+    hdrs = ["RadiossType25Assembly.h"] + glob(["radioss_type25/assembly/*.h"]),
+    deps = [":radioss_type25_friction", "//lib_utils:ordered_node_incidence"],
+)
+
+cc_library(
     name = "radioss_type25_normal",
     hdrs = ["RadiossType25Normal.h"] + ["radioss_type25/" + name for name in [
         "Types.h", "NativeConstants.h", "NormalResponse.h", "Units.h", "UnitConversions.h",
