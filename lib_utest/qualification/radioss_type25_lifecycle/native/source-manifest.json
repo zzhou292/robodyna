@@ -1,0 +1,36 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only complete PREP_SLID1/2/KEEPF and original phase membership blocks; local rows only.",
+  "files": [
+    {
+      "path": "native/original/i25slid.F",
+      "bytes": 48398,
+      "sha256": "1745175e22fdbff44f3f05dea095566dd5e7506aa568d9964e1a6ac7c2bec878"
+    },
+    {
+      "path": "native/original/i25main_slid.F",
+      "bytes": 22199,
+      "sha256": "4c2438bcbbcc3a75565a07ab3265db02f76284c2cbf4b72e5f4dc9fdd105ba96"
+    },
+    {
+      "path": "../radioss_type25_selection/native/original/i25comp_1.F",
+      "bytes": 8951,
+      "sha256": "687e25a63c6e99768a88393fc8c4d51535e1786cfe7eac6b7b761843576d6139"
+    },
+    {
+      "path": "../radioss_type25_selection/native/original/i25comp_2.F",
+      "bytes": 14026,
+      "sha256": "49b4656d294120131e729e620004c3e34866e07d9d2f04f1de565fe90eeae1e3"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ],
+  "boundary_substitutions": [
+    "USE TRI7BOX to USE LIFECYCLE_FOREIGN only",
+    "private constants/module and process COMMON names; ISO_C_BINDING binary64/C int boundary",
+    "allocation adapters preserve original temporary integer arrays; no numerical source translation"
+  ]
+}
