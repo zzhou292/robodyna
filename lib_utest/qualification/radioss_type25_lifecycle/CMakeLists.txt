@@ -39,7 +39,7 @@ target_link_libraries(type25_lifecycle_oracle PUBLIC tl_radioss_type25_lifecycle
   type25_selection_oracle type25_coefficient_oracle type25_geometry_oracle type25_friction_oracle)
 target_compile_options(type25_lifecycle_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_lifecycle_host HostTest.cpp)
+add_executable(type25_lifecycle_host HostTest.cpp PhaseBoundaryTest.cpp)
 target_link_libraries(type25_lifecycle_host PRIVATE type25_lifecycle_oracle GTest::gtest_main)
 add_test(NAME type25_lifecycle_host COMMAND type25_lifecycle_host)
 add_executable(type25_lifecycle_consumer ConsumerTest.cpp)

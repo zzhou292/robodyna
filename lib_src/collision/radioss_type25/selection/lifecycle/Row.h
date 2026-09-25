@@ -15,6 +15,12 @@ struct RowStageResult {
   RowResult value;
   std::size_t occurrence_count=0;
 };
+// Private partial state at MAIN_OPT_TRI return, before TAGNOD/ACTNOR/NORMP.
+// It is not a complete candidate census or permission to publish a row.
+struct OptimizedRow {
+  RowStageResult stage;
+  int optimization_main=0,optimization_leave=0;
+};
 struct PreparedRow {
   RowStageResult stage;
   CandidateCache retained_cache;
@@ -36,12 +42,16 @@ TL_MATH_HOST_DEVICE inline PreparedRow PrepareFailure(PreparedRow result,Status 
     Stage stage,std::size_t row,std::size_t occurrence=SIZE_MAX) {
   result.stage=Failure(result.stage,status,stage,row,occurrence);return result;
 }
-// Run once into private trial scratch. The batch scans these exact counts and
-// admits total CAND_OPT capacity BEFORE continuation/new-impact/force geometry.
-TL_MATH_HOST_DEVICE inline PreparedRow PrepareRow(const Input& input,std::size_t row,
-    RowScratch scratch,const units_detail::Factors& units) {
-  PreparedRow prepared;auto& out=prepared.stage;auto status=BeginRow(input,row,out.value);
-  if(status!=Status::Ok)return PrepareFailure(prepared,status,Stage::Begin,row);
+// No normal/bisector/cache geometry is read in this phase. Complete source
+// admission remains the caller's responsibility; only the normal fields may
+// change before PrepareRowAfterNormals. X/V, coefficients, adjacency, controls,
+// accepted history and the spatial inventory must retain this same snapshot.
+TL_MATH_HOST_DEVICE inline OptimizedRow PrepareRowBeforeNormals(const Input& input,
+    std::size_t row,const units_detail::Factors& units) {
+  OptimizedRow prepared;auto& out=prepared.stage;auto status=BeginRow(input,row,out.value);
+  if(status!=Status::Ok) {
+    out=Failure(out,status,Stage::Begin,row);return prepared;
+  }
   prepared.optimization_main=out.value.history.row.irtlm[0];
   prepared.optimization_leave=out.value.history.row.irtlm[2];
   const auto& csr=input.spatial_by_secondary;
@@ -51,6 +61,22 @@ TL_MATH_HOST_DEVICE inline PreparedRow PrepareRow(const Input& input,std::size_t
       ++out.value.optimized_count;
   }
   ReleaseDeletedMain(out.value);
+  out.report.status=Status::Ok;out.report.stage=Stage::Optimize;
+  // Counts exclude retained/sliding candidates until their geometry is ready.
+  return prepared;
+}
+// Resume after the complete batch normal-update barrier. Only private trial
+// scratch is written. The batch must still admit ALL final counts before any
+// continuation/new-impact/force geometry or accepted publication.
+TL_MATH_HOST_DEVICE inline PreparedRow PrepareRowAfterNormals(const Input& input,
+    std::size_t row,RowScratch scratch,const units_detail::Factors& units,
+    const OptimizedRow& optimized) {
+  PreparedRow prepared;prepared.stage=optimized.stage;
+  prepared.optimization_main=optimized.optimization_main;
+  prepared.optimization_leave=optimized.optimization_leave;
+  auto& out=prepared.stage;
+  if(out.report.status!=Status::Ok)return prepared;
+  auto status=Status::Ok;
   NativeRetainedResult retained;
   int& retained_main=prepared.retained_main;
   if(out.value.retained_count) {
@@ -78,6 +104,13 @@ TL_MATH_HOST_DEVICE inline PreparedRow PrepareRow(const Input& input,std::size_t
   const auto count=out.value.retained_count+out.value.optimized_count+out.value.sliding_count;
   out.report.required_candidates=count;out.report.count_complete=true;
   out.report.status=Status::Ok;return prepared;
+}
+// Existing fixed-ready callers preserve the original arithmetic and ordering.
+// Moving-main callers use the two phases with the native normal-update barrier.
+TL_MATH_HOST_DEVICE inline PreparedRow PrepareRow(const Input& input,std::size_t row,
+    RowScratch scratch,const units_detail::Factors& units) {
+  const auto optimized=PrepareRowBeforeNormals(input,row,units);
+  return PrepareRowAfterNormals(input,row,scratch,units,optimized);
 }
 TL_MATH_HOST_DEVICE inline RowStageResult CompleteRow(const Input& input,std::size_t row,
     RowScratch scratch,const units_detail::Factors& units,const PreparedRow& prepared) {
