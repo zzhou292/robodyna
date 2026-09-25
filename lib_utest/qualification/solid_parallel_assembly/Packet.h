@@ -20,10 +20,17 @@ struct Packet {
       : nodes(node_count) {
     s::BatchConfig config;
     config.owner.node_count = nodes;
+    // The existing solid arena includes a complete owner-proof footprint and
+    // requires at least one CIN attachment even for these private arithmetic
+    // packets. This count creates no live attachment or physical authority.
+    config.cin_attachment_count = 1;
+    config.cin_witness_count = 1;
     d::Counts counts{parents_per_family, parents_per_family, parents_per_family,
         1, 1, 1, parents_per_family, parents_per_family, 1, 1};
-    if (!d::MakeLayout(counts, config, layout) || !arena.Initialize(layout.bytes))
-      throw std::runtime_error("Packet capacity");
+    if (!d::MakeLayout(counts, config, layout))
+      throw std::runtime_error("Packet layout");
+    if (!arena.Initialize(layout.bytes))
+      throw std::runtime_error("Packet allocation");
     auto* state = arena.Construct<d::Storage>(layout.header);
     *state = d::RebasedHeader(arena.data(), layout);
     state->config = config;
