@@ -1,0 +1,27 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only current local geometry and one native logical history cohort. Existing pinned DST3/MAINF/constants are reused.",
+  "source_url": "https://github.com/OpenRadioss/OpenRadioss/tree/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/interfaces/int25",
+  "files": [
+    {
+      "path": "native/original/i25cor3.F",
+      "bytes": 37861,
+      "sha256": "054ab489b4528241f7a98b04c8e65cba05df73eb09cc2a0887bb5a23397043a2"
+    },
+    {
+      "path": "../radioss_type25_friction/native/original/i25dst3_3.F",
+      "bytes": 34913,
+      "sha256": "24edfd9896c87bdcbd637d0cec1ffb51ed555744b3338b7c03995f43ca940fa8"
+    },
+    {
+      "path": "../radioss_type25_friction/native/original/i25mainf.F",
+      "bytes": 55358,
+      "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ]
+}
