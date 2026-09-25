@@ -3,10 +3,11 @@
 #include "Cases.h"
 #include "../radioss_type25_local_geometry/Assertions.h"
 namespace type25_selection_test {
-inline void Same(const s::NativeRetainedResult& a,const s::NativeRetainedResult& b,bool exact=false) {
+template<class Result>
+inline void SameClassified(const Result& a,const Result& b,bool exact=false) {
   using type25_geometry_test::Number;
   type25_geometry_test::Same(a.history,b.history,exact);
-  EXPECT_EQ(a.active,b.active);EXPECT_EQ(a.prior_subtriangle,b.prior_subtriangle);
+  EXPECT_EQ(a.active,b.active);
   EXPECT_EQ(a.selected_subtriangle,b.selected_subtriangle);
   Number(a.classification_product,b.classification_product,exact);
   Number(a.distance_squared,b.distance_squared,exact);
@@ -28,6 +29,9 @@ inline void Same(const s::NativeRetainedResult& a,const s::NativeRetainedResult&
     if(u.defined&s::ClampedBarycentricDefined){Number(u.lb,v.lb,exact);Number(u.lc,v.lc,exact);}
     else {Number(u.lb,0,true);Number(u.lc,0,true);Number(v.lb,0,true);Number(v.lc,0,true);}
   }
+}
+inline void Same(const s::NativeRetainedResult& a,const s::NativeRetainedResult& b,bool exact=false) {
+  SameClassified(a,b,exact);EXPECT_EQ(a.prior_subtriangle,b.prior_subtriangle);
 }
 inline s::NativeRetainedResult Sentinel() {
   s::NativeRetainedResult result;result.history=Basic().prior;

@@ -1,8 +1,11 @@
 # Native TYPE25 selection stages
 
-Current source checkpoint implements the complete selected **retained**
-COR3_1 → DST3_1 → GLOB_1 packet. Continuation/new-impact classification,
+The retained checkpoint implements the complete selected COR3_1 → DST3_1 →
+GLOB_1 packet. This successor adds the complete scalar local continuation
+COR3_21 → DST3_21 → GLOB packet. New-impact classification, multi-occurrence
 winner folding and sliding/inventory staging remain subsequent stages.
+Continuation source and its owning oracle/tests require their own qualification;
+the preceding retained results do not qualify newly changed shared helpers.
 No physical contact owner, second clock or keyword parser is introduced.
 
 The retained input supplies authentic current source geometry, native normal slots,
@@ -54,3 +57,27 @@ documented unassigned-XP condition or select an explicit reviewed repair profile
 In particular, side-B barycentric swapping in the forthcoming _22 stage can
 reintroduce a tiny negative computed LA after native clamping. No convenience
 clamp or invented projection is used here.
+
+## Continuation source boundary
+
+Continuation retains original NRTM/MSEGTYP segment-role encoding, positive local
+ADMSR references and prepared ISLIDE relations. Equal references preserve their
+LBOUND state, and COR21 marks only the first matching main reference for each
+nonzero sliding entry. Authentic ICODT/ISKEW values remain supplied per node;
+solid/coating symmetry uses the exact source test, including its lack of an
+extra main-ISKEW condition. No generic normal or boundary geometry is invented.
+
+Projection, closest-sector selection and cache publication reuse the retained
+helpers. The continuation-specific stage preserves initialized INGAP values,
+selected-sector symmetry and cone checks, the strict native 1.02 prior-metric
+gate, and equal-distance preference for the larger global main ID. Its row
+winner update is staged with the complete pair result; failed admission or
+nonfinite published values leave the output unchanged. The input phase snapshot
+and later one-writer row reduction are separate ownership responsibilities.
+
+All lengths and distances use native working units (distance_squared is native
+length squared). Native selection metrics remain opaque phase-specific state;
+this stage does not reinterpret them as time or silently change their units.
+The pure scalar API supplies no physical owner, history rollover or candidate
+inventory authority. A complete scene still needs the original phase ordering,
+new-impact/sliding stages, source binding and defined-XP composition gate.

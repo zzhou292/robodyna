@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
-    name = "consumer", size = "small", srcs = ["ConsumerTest.cpp", "Cases.h"],
+    name = "consumer", size = "small", srcs = ["ConsumerTest.cpp", "Cases.h", "ContinuationCases.h"],
     copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/collision:radioss_type25_selection",
             "//lib_utest/qualification/radioss_type25_local_geometry:case_values",
@@ -8,8 +8,8 @@ cc_test(
 )
 cc_test(
     name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
-    data = ["native/prepare.py", "native/Sources.py", "native/source-manifest.json",
-            "native/LocalBoundary.F90", "native/Observations.F90", "native/RetainedWrapper.F90",
+    data = ["native/prepare.py", "native/Sources.py", "native/ContinuationSource.py", "native/source-manifest.json",
+            "native/LocalBoundary.F90", "native/Observations.F90", "native/RetainedWrapper.F90", "native/ContinuationWrapper.F90",
             "//lib_utest/qualification/radioss_type25_normal:native_source_files"] +
             glob(["native/original/*"]),
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
