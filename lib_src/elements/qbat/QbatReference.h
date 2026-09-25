@@ -6,9 +6,11 @@
 namespace tl::fea::qbat {
 // Allocation-free startup. All failures preserve output, including when input
 // aliases a previous output.input(). No batch, source or material admission.
+// QBAT uses its own projection; a nondefault QEPH metric is unsupported.
 TL_QBAT_HD inline Status InitializeReference(const ReferenceInput& input, Reference& output) {
   if (!detail::Supported(input.options) || !detail::Positive(input.initial_a11_pa) ||
-      input.quadrilateral.placement != ShellReferencePlacement::Centered)
+      input.quadrilateral.placement != ShellReferencePlacement::Centered ||
+      input.quadrilateral.projection_working_length_m != 1)
     return Status::kInvalidInput;
   Reference next;
   next.input_=input;

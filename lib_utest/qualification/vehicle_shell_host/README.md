@@ -4,7 +4,7 @@
 admits up to 524,288 total parents and 524,288 global nodes, with independently
 bounded 1 GiB immutable payload and 64 MiB startup scratch. These are host binding
 bounds only. Default collection admission remains 128 parents/nodes with inline
-storage; the pair has its version 3, 51-word inventory and 4..7-node contract.
+storage; the pair has its version6,52-word inventory and 4..7-node contract.
 `ShellHostBindingLimits{}` retains the earlier 1,024-parent/2,048-node/4-MiB scope.
 Its previous out-of-domain status behavior is retained.
 

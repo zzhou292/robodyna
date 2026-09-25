@@ -128,7 +128,7 @@ TEST(HostShellBinding, LegacyPairInitializationAndCopiesAllocateNothing) {
     copied=a.inventory()==b.inventory()&&a.prepared();
   }
   ASSERT_EQ(report.status,Status::Success); EXPECT_TRUE(copied);
-  EXPECT_EQ(legacy.inventory().words().size(),51u); EXPECT_EQ(legacy.nodes().size(),128u);
+  EXPECT_EQ(legacy.inventory().words().size(),52u); EXPECT_EQ(legacy.nodes().size(),128u);
   EXPECT_EQ(legacy.active_nodes().size(),5u); EXPECT_EQ(legacy.host_bytes(),sizeof(Geometry));
   for(std::size_t n=5;n<128;++n) EXPECT_EQ(legacy.nodes()[n].source_id,0u);
   shell_binding_test::CheckNativeReduction(input,legacy);
@@ -145,7 +145,7 @@ TEST(HostShellBinding, BothPureFamiliesReachIndependentHostParentBound) {
     fe::ShellBatchCollectionInput input{quadrilateral?q.data():nullptr,quadrilateral?nullptr:t.data(),
       quadrilateral?q.size():0,quadrilateral?0:t.size(),quadrilateral?4u:3u};
     Geometry b; ASSERT_EQ(b.Initialize(input,{}).status,Status::Success);
-    EXPECT_EQ(b.inventory().words().size(),4+(quadrilateral?28:23)*fe::MaxShellHostParents);
+    EXPECT_EQ(b.inventory().words().size(),4+(quadrilateral?29:23)*fe::MaxShellHostParents);
     EXPECT_GT(b.nodes()[input.node_count-1].native.mass,0);
     EXPECT_EQ(quadrilateral?b.qeph_source_id(1023):b.t3_source_id(1023),11023u);
     Geometry rejected; const auto old=Bytes(rejected);

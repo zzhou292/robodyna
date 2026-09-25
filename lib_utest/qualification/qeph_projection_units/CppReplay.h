@@ -7,9 +7,9 @@
 #include <initializer_list>
 namespace qeph_projection_test {
 namespace q=tl::fea::qeph;
-inline q::Vec3 Vector(V3 x){return {x[0],x[1],x[2]};}
-inline V3 Vector(q::Vec3 x){return {x.x,x.y,x.z};}
-inline q::detail::GeometryWork Work(const Geometry& in) {
+TL_QEPH_HD inline q::Vec3 Vector(V3 x){return {x[0],x[1],x[2]};}
+TL_QEPH_HD inline V3 Vector(q::Vec3 x){return {x.x,x.y,x.z};}
+TL_QEPH_HD inline q::detail::GeometryWork Work(const Geometry& in) {
   q::detail::GeometryWork out;
   out.values.area=in.area;out.values.reciprocal_area=in.area_i;
   out.x13=in.x13;out.x24=in.x24;out.y13=in.y13;out.y24=in.y24;
@@ -26,7 +26,7 @@ inline Geometry GeometryOf(const q::detail::GeometryWork& in) {
   for(unsigned i=0;i<9;++i)out.vq[i]=in.values.frame.v[i];
   for(unsigned i=0;i<4;++i)out.corel[i]={in.values.local_position[i].x,in.values.local_position[i].y};return out;
 }
-inline RateResult RateResultOf(const q::detail::GeometryWork& work) {
+TL_QEPH_HD inline RateResult RateResultOf(const q::detail::GeometryWork& work) {
   RateResult out;const auto& k=work.values;out.projection.planar=k.planar;out.projection.z1=k.effective_warpage;
   out.projection.warped_defined=!k.planar;out.v13=Vector(work.v13);out.v24=Vector(work.v24);out.vhi=Vector(work.vhi);
   for(unsigned i=0;i<4;++i){out.rlxyz[i]={k.projected_omega[2*i],k.projected_omega[2*i+1]};

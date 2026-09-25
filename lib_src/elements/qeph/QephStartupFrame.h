@@ -20,6 +20,13 @@ namespace tl::fea::qeph::detail {
 TL_QEPH_STARTUP_HD inline bool Positive(double value) {
   return tl::math::Finite(value)&&value>0;
 }
+TL_QEPH_STARTUP_HD inline bool ValidProjectionLength(double value) {
+  // Both directions and the area conversion must be representable. Actual
+  // consumed packet conversions are checked again before their publication.
+  if(!Positive(value)) return false;
+  const double reciprocal=1/value;
+  return Positive(reciprocal)&&Positive(value*value)&&Positive(reciprocal*reciprocal);
+}
 TL_QEPH_STARTUP_HD inline bool Finite(Vec3 value) {
   return tl::math::Finite(value.x)&&tl::math::Finite(value.y)&&tl::math::Finite(value.z);
 }

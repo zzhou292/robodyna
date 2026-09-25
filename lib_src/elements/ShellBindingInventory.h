@@ -6,8 +6,14 @@ namespace tl::fea::shell_binding_detail {
 // Fixed-word in-process identities. Count bounds precede this arithmetic.
 inline constexpr std::size_t InventoryWords(std::size_t q,std::size_t t,
     std::size_t b,bool legacy) noexcept {
-  return legacy?ShellBatchInventory::WordCount:(b?5:4)+28*q+23*t+46*b;
+  return legacy?ShellBatchInventory::WordCount:(b?5:4)+29*q+23*t+47*b;
 }
+template<class Words>
+void AppendProjectionMetric(Words& words,std::size_t& cursor,const qeph::ReferenceInput& input) noexcept {
+  words[cursor++]=Bits(input.projection_working_length_m);
+}
+template<class Words>
+void AppendProjectionMetric(Words&,std::size_t&,const t3::ReferenceInput&) noexcept {}
 template<class Input,std::size_t N,class Words>
 void AppendInventory(Words& words,
     std::size_t& cursor,std::uint64_t family,const Input& input,
@@ -22,6 +28,7 @@ void AppendInventory(Words& words,
   words[cursor++]=Bits(input.density); words[cursor++]=Bits(input.thickness);
   words[cursor++]=Bits(input.young_modulus); words[cursor++]=Bits(input.poisson_ratio);
   words[cursor++]=static_cast<std::uint64_t>(input.placement);
+  AppendProjectionMetric(words,cursor,input);
 }
 template<class Words>
 void AppendQbatInventory(Words& words,std::size_t& cursor,

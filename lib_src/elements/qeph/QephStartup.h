@@ -21,7 +21,8 @@ namespace tl::fea::qeph {
 // force, batch, time integration or mass-scaling policy is introduced here.
 // Failure preserves all output bytes; successful initialization may replace it.
 TL_QEPH_STARTUP_HD inline Status InitializeReference(const ReferenceInput& input,ReferenceData& output) {
-  if(!ValidShellReferencePlacement(input.placement)||!detail::Positive(input.density)||
+  if(!detail::ValidProjectionLength(input.projection_working_length_m)||
+      !ValidShellReferencePlacement(input.placement)||!detail::Positive(input.density)||
       !detail::Positive(input.young_modulus)||
       !detail::Positive(input.thickness)||!tl::math::Finite(input.poisson_ratio)||
       input.poisson_ratio<0||input.poisson_ratio>=.5) return Status::kInvalidInput;

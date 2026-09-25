@@ -28,7 +28,7 @@ TEST(QbatBindingOriginal, Complete4250QuadsAndOneOriginalT3RetainIdentityAndEver
     EXPECT_TRUE(binding.qbat_reference(i).prepared())<<i;
   }
   Reduction(binding);
-  EXPECT_EQ(binding.inventory().words().size(),5+23+46*4250u);
+  EXPECT_EQ(binding.inventory().words().size(),5+23+47*4250u);
   RecordProperty("owned_host_bytes",std::to_string(binding.host_bytes()));
   RecordProperty("startup_scratch_bytes",std::to_string(binding.startup_scratch_bytes()));
 }

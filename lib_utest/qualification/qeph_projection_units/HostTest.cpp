@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "CppReplay.h"
 #include "NativeReplay.h"
+#include "Profile.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include <cstring>
 namespace qeph_projection_test {
 namespace {
 std::string Text(double value){std::ostringstream out;out<<std::setprecision(17)<<value;return out.str();}
@@ -156,6 +158,76 @@ TEST(QephProjectionReplay,OriginalRateAndForceProjectionRetainVirtualPowerAtEach
       for(unsigned j=0;j<2;++j){const double local=sign*force.vm[anti][j]+force.vm[symmetric][j];second+=local*projected.rlxyz[i][j];}
     }
     EXPECT_NEAR(first,second,512*std::numeric_limits<double>::epsilon()*std::max({1.,std::abs(first),std::abs(second)}));
+  }
+}
+} // namespace qeph_projection_test
+
+namespace qeph_projection_test {
+TEST(QephProjectionProfile,DeclaredWorkingLengthMatchesOriginalNativeStagesInPhysicalSi) {
+  for(const auto& row:CapturedRows())for(double length:{.001,.01,1.}) {
+    SCOPED_TRACE(row.cycle);
+    SCOPED_TRACE(row.original_row);
+    SCOPED_TRACE(length);
+    const auto input=Profile(row,length);const auto actual=EvaluateProfile(input);
+    ASSERT_EQ(actual.rate_status,q::Status::kSuccess);ASSERT_EQ(actual.force_status,q::Status::kSuccess);
+    EXPECT_EQ(actual.metric_length,length);
+    auto expected=NativeRates(Scale(row.rate_entry,.001/length));
+    auto native_force=Scale(row.force_entry,.001/length,expected.projection);
+    auto force=NativeForces(native_force);
+    expected.projection.z1*=length;
+    for(auto* v:{&expected.v13,&expected.v24,&expected.vhi})for(auto& x:*v)x*=length;
+    for(auto& moment:force.couple)for(auto& x:moment)x*=length;
+    Same(actual.rate,expected);Same(actual.force,force);
+  }
+}
+TEST(QephProjectionProfile,DefaultLengthRetainsExactLegacyProjectionFields) {
+  for(const auto& row:CapturedRows()) {
+    ProfileInput input{row.rate_entry,row.force_entry,1};const auto actual=EvaluateProfile(input);
+    ASSERT_EQ(actual.rate_status,q::Status::kSuccess);ASSERT_EQ(actual.force_status,q::Status::kSuccess);
+    const auto rate=CppRates(row.rate_entry);auto force_input=row.force_entry;force_input.projection=rate.projection;const auto force=CppForces(force_input);
+    std::vector<double> a,b;Append(a,actual.rate.v13);Append(a,actual.rate.v24);Append(a,actual.rate.vhi);Append(a,actual.rate.rlxyz);
+    Append(b,rate.v13);Append(b,rate.v24);Append(b,rate.vhi);Append(b,rate.rlxyz);ASSERT_EQ(a.size(),b.size());EXPECT_EQ(std::memcmp(a.data(),b.data(),a.size()*sizeof(double)),0);
+    a.clear();b.clear();Append(a,actual.force.force);Append(a,actual.force.couple);Append(b,force.force);Append(b,force.couple);ASSERT_EQ(a.size(),b.size());EXPECT_EQ(std::memcmp(a.data(),b.data(),a.size()*sizeof(double)),0);
+    a.clear();b.clear();Append(a,actual.rate.projection.z1);Append(a,actual.rate.projection.di);Append(a,actual.rate.projection.db);Append(a,actual.rate.projection.vqn);
+    Append(b,rate.projection.z1);Append(b,rate.projection.di);Append(b,rate.projection.db);Append(b,rate.projection.vqn);
+    ASSERT_EQ(a.size(),b.size());EXPECT_EQ(std::memcmp(a.data(),b.data(),a.size()*sizeof(double)),0);
+    EXPECT_EQ(actual.rate.projection.planar,rate.projection.planar);EXPECT_EQ(actual.rate.projection.warped_defined,rate.projection.warped_defined);
+  }
+}
+TEST(QephProjectionProfile,ScaleAndForceMetricFailuresPreserveStagedOutputs) {
+  const auto& row=CapturedRows()[8];ASSERT_FALSE(row.rate_expected.projection.planar);
+  auto input=Profile(row,.001);auto work=Work(input.rate.geometry);
+  work.v13=Vector(input.rate.v13);work.v24=Vector(input.rate.v24);work.vhi=Vector(input.rate.vhi);
+  q::PrescribedInterval interval;
+  for(unsigned n=0;n<4;++n){interval.omega_midpoint[n]=Vector(input.rate.world_omega[n]);work.values.projected_omega[2*n]=input.rate.rlxyz[n][0];work.values.projected_omega[2*n+1]=input.rate.rlxyz[n][1];}
+  const auto before=work;
+  for(double length:{0.,-1.,1e-300,1e300,1e-150,std::numeric_limits<double>::infinity()}) {
+    auto candidate=before;EXPECT_NE(q::detail::ProjectWarpedRatesInWorkingLength(interval,length,candidate),q::Status::kSuccess);
+    EXPECT_EQ(std::memcmp(&candidate,&before,sizeof candidate),0);
+  }
+  ASSERT_EQ(q::detail::ProjectWarpedRatesInWorkingLength(interval,.001,work),q::Status::kSuccess);
+  q::detail::LocalForceWork local;q::Vec3 f[4]{{3,4,5}},m[4]{{6,7,8}};q::Vec3 old_f[4],old_m[4];std::memcpy(old_f,f,sizeof f);std::memcpy(old_m,m,sizeof m);
+  EXPECT_NE(q::detail::ProjectForcesInWorkingLength(work,local,.01,f,m),q::Status::kSuccess);
+  EXPECT_EQ(std::memcmp(f,old_f,sizeof f),0);EXPECT_EQ(std::memcmp(m,old_m,sizeof m),0);
+}
+} // namespace qeph_projection_test
+
+namespace qeph_projection_test {
+TEST(QephProjectionProfile,PhysicalSiRateAndForceRemainAdjointForEachDeclaredMetric) {
+  for(const auto& row:CapturedRows())if(!row.rate_expected.projection.planar)for(double length:{.001,.01,1.}) {
+    auto in=Profile(row,length);in.rate.v13={.00125,-.0025,.00075};in.rate.v24={-.0015,.00025,.00275};in.rate.vhi={.000375,-.000875,.001125};
+    for(unsigned i=0;i<4;++i){const V3 omega{.15*double(i+1),-.125*double(i+2),.07*double(i+3)};
+      in.rate.world_omega[i]=World(in.rate.geometry,omega);in.rate.rlxyz[i]={omega[0],omega[1]};
+      in.force.vf[i]={.75*double(i+1),-1.25*double(i+2),.5*double(i+3)};
+      in.force.vm[i]={.000625*double(i+1),-.000875*double(i+2)};}
+    const auto out=EvaluateProfile(in);ASSERT_EQ(out.rate_status,q::Status::kSuccess);ASSERT_EQ(out.force_status,q::Status::kSuccess);
+    RateResult unprojected;unprojected.v13=in.rate.v13;unprojected.v24=in.rate.v24;unprojected.vhi=in.rate.vhi;
+    const auto initial=Nodes(unprojected),projected=Nodes(out.rate);double a=0,b=0;
+    for(unsigned n=0;n<4;++n){const auto world=World(in.rate.geometry,initial[n]);const unsigned anti=n%2,sym=2+anti;const double sign=n<2?1.:-1.;
+      for(unsigned j=0;j<3;++j){a+=out.force.force[n][j]*world[j]+out.force.couple[n][j]*in.rate.world_omega[n][j];
+        b+=(sign*in.force.vf[anti][j]+in.force.vf[sym][j])*projected[n][j];}
+      for(unsigned j=0;j<2;++j)b+=(sign*in.force.vm[anti][j]+in.force.vm[sym][j])*out.rate.rlxyz[n][j];}
+    EXPECT_NEAR(a,b,512*std::numeric_limits<double>::epsilon()*std::max({1.,std::abs(a),std::abs(b)}));
   }
 }
 } // namespace qeph_projection_test

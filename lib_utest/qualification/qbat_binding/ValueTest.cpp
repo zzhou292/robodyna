@@ -29,20 +29,20 @@ TEST(QbatBinding, CompleteFormulationOptionBitsAndPlacementAreImmutableIdentity)
   Binding original;
   ASSERT_EQ(original.InitializeFormulations(f.Input()).status,Status::Success);
   const auto words=original.inventory().words();
-  ASSERT_EQ(words.size(),5u+2*28+23+46);
-  EXPECT_EQ(words[0],5u);
+  ASSERT_EQ(words.size(),5u+2*29+23+47);
+  EXPECT_EQ(words[0],8u);
   EXPECT_EQ(words[1],5u);
   EXPECT_EQ(words[2],2u);
   EXPECT_EQ(words[3],1u);
   EXPECT_EQ(words[4],1u);
-  const std::size_t offset=5+2*28+23;
+  const std::size_t offset=5+2*29+23;
   EXPECT_EQ(words[offset],11u);
   EXPECT_EQ(words[offset+1],4u);
   EXPECT_EQ(words[offset+2],103u);
   const std::uint64_t options[]{11,0,2,2,2,1,1,0,0,44,1,1,1};
-  for(unsigned n=0;n<13;++n) EXPECT_EQ(words[offset+28+n],options[n]);
-  for(unsigned n=0;n<4;++n) EXPECT_EQ(words[offset+41+n],Bits(0.));
-  EXPECT_EQ(words[offset+45],Bits(f.b.reference.initial_a11_pa));
+  for(unsigned n=0;n<13;++n) EXPECT_EQ(words[offset+29+n],options[n]);
+  for(unsigned n=0;n<4;++n) EXPECT_EQ(words[offset+42+n],Bits(0.));
+  EXPECT_EQ(words[offset+46],Bits(f.b.reference.initial_a11_pa));
   for(unsigned change=0;change<7;++change) {
     auto altered=f;
     if(change==0) altered.b.source_parent_id++;

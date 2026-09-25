@@ -1,8 +1,8 @@
 # QEPH projection working-unit qualification and design
 
-Status: design only. Production remains unchanged. The independent reference
-replay must establish the actual packet behavior before a projection-unit API
-or numerical change is authored. The source branch starts from runtime pin
+Status: native captured replay qualified at fe30c7ce (28 host tests plus source
+check). Immutable reference-level working-length adapter is source-ready and
+awaits its own host/CUDA and unchanged coupled trajectory gate. The source branch starts from runtime pin
 bccc7801d28a2666335db4d6ae76b0e204195c1c, retaining existing native QEPH oracle and production source identities.
 
 ## Read-only source finding
@@ -107,3 +107,29 @@ Dimensioned thresholds elsewhere in the source, such as the EM10 local-length
 comparisons before projection, also need their declared working-unit contract
 recorded. This slice must not claim that all structural dimensional constants
 were globally closed merely because the warped metric is understood.
+
+## Implemented boundary awaiting qualification
+
+ReferenceInput::projection_working_length_m declares metres per numerical
+projection unit; default1 takes the unchanged raw rate/force paths. Startup,
+history and binding identity authenticate it. Pair/collection/QBAT inventory
+versions are6/7/8 with52 pair words,29 words per QEPH,23 perT3 and47 perQBAT.
+QBAT rejects nondefault projection length because its distinct force formulation
+does not consume this QEPH projection. Retained native mass/inertia are unchanged.
+
+The local adapter converts only projection operands: x and v divide byL,
+area-like terms divide byL², angular rates remain unchanged; projected v returns
+by multiplying L. Force staysN, local moments divide byL and projected couples
+return by multiplying L. The original leaves are unchanged. Kinematics physical
+fields remain SI. DI/DB are exact algorithmic coefficients in the tagged
+ProjectionMetric, not incorrectly advertised as SI tensors or rounded via a
+second representation. Force projection rejects a metric inconsistent with its
+immutable reference. Invalid conversion, overflow or nonzero-to-zero underflow
+rejects before staged output publication. Ordinary material/history calculations
+remain SI. Other native dimensioned thresholds are outside this boundary.
+
+Tests cover captured planar/warped profiles atL.001/.01/1, full rate/force duality,
+legacy exact fields, invalid and mismatched descriptors, both-direction public
+force/history rejection, device execution across launch sizes, and affected
+shell inventory/placement regressions. Physical qualification uses the original
+1000-step moving-scene acceptance tolerances; no gate is relaxed by this change.

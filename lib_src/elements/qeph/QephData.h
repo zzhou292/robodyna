@@ -25,6 +25,9 @@ struct ReferenceInput {
   double poisson_ratio=.3;     // First branch: 0<=nu<.5.
   double thickness=.001648;    // m
   ShellReferencePlacement placement=ShellReferencePlacement::Centered;
+  // Immutable numerical metric for the native mixed translation/rotation
+  // projection. Physical inputs/outputs stay SI. Default1 preserves legacy.
+  double projection_working_length_m=1;
 };
 
 struct ReferenceData {
