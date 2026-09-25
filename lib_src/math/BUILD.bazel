@@ -16,3 +16,5 @@ filegroup(name = "fixed_integer_sources", srcs = ["FixedInteger.h", "HostDevice.
 
 # Shared execution-space annotation, without pulling an arithmetic backend.
 cc_library(name = "host_device", hdrs = ["HostDevice.h"])
+
+cc_library(name = "scalar_bits", hdrs = ["ScalarBits.h"], deps = [":host_device"])

@@ -4,6 +4,7 @@
 #include "../GeometryTypes.h"
 #include "../NormalResponse.h"
 #include "lib_src/math/Fixed3Operations.h"
+#include "lib_src/math/ScalarBits.h"
 namespace tlfea::contact::radioss_type25::geometry_detail {
 namespace v = tl::math::fixed3;
 inline constexpr double em20 = 1. / native_constant::ep20;
@@ -12,13 +13,6 @@ inline constexpr double em04 = 1. / 10000.;
 inline constexpr double epseg = (2. + 0.5) / 100.;
 TL_MATH_HOST_DEVICE inline double Max(double a, double b) { return a < b ? b : a; }
 TL_MATH_HOST_DEVICE inline double Min(double a, double b) { return a < b ? a : b; }
-TL_MATH_HOST_DEVICE inline bool SameStored(float a, float b) {
-  static_assert(sizeof(float) == 4, "Native stored normals require binary32");
-  const auto* first = reinterpret_cast<const unsigned char*>(&a);
-  const auto* second = reinterpret_cast<const unsigned char*>(&b);
-  for (unsigned i = 0; i < sizeof(float); ++i) if (first[i] != second[i]) return false;
-  return true;
-}
 TL_MATH_HOST_DEVICE inline Vector Promote(StoredNormal a) { return {a.x, a.y, a.z}; }
 TL_MATH_HOST_DEVICE inline Vector AddStored(StoredNormal a, StoredNormal b) {
   // Fortran REAL*4 + REAL*4 rounds before assignment to my_real.
@@ -49,16 +43,16 @@ template<class U> TL_MATH_HOST_DEVICE inline bool Valid(const GeometryInput<U>& 
         !normal_detail::Nonnegative(in.main_gap[i])) return false;
     for (unsigned j = 0; j < i; ++j)
       if (in.main_node_ids[i] == in.main_node_ids[j] &&
-          (in.main_vertices[i].x != in.main_vertices[j].x ||
-           in.main_vertices[i].y != in.main_vertices[j].y ||
-           in.main_vertices[i].z != in.main_vertices[j].z)) return false;
+          (!tl::math::SameScalarBits(in.main_vertices[i].x, in.main_vertices[j].x) ||
+           !tl::math::SameScalarBits(in.main_vertices[i].y, in.main_vertices[j].y) ||
+           !tl::math::SameScalarBits(in.main_vertices[i].z, in.main_vertices[j].z))) return false;
     for (unsigned j = 0; j < 2; ++j)
       if (!v::Finite(Promote(in.vertex_bisector[i][j]))) return false;
     // Equal native boundary references must describe the same stored values.
     for (unsigned j = 0; j < i; ++j) if (in.boundary_ids[i] && in.boundary_ids[i] == in.boundary_ids[j])
       for (unsigned k = 0; k < 2; ++k) {
         const auto a = in.vertex_bisector[i][k], b = in.vertex_bisector[j][k];
-        if (!SameStored(a.x, b.x) || !SameStored(a.y, b.y) || !SameStored(a.z, b.z)) return false;
+        if (!tl::math::SameScalarBits(a.x, b.x) || !tl::math::SameScalarBits(a.y, b.y) || !tl::math::SameScalarBits(a.z, b.z)) return false;
       }
   }
   return true;
@@ -70,13 +64,11 @@ struct Work {
   unsigned sector = 0, a = 0, b = 0;
   bool triangle = false, shell_contact = false, boundary = false, closest_defined = false;
 };
-TL_MATH_HOST_DEVICE inline void Prepare(const NativeGeometryInput& in, Work& w) {
-  int sector = in.selection_code % 5;
-  if (sector < 0) sector = -sector;
-  w.sector = unsigned(sector - 1); w.a = w.sector; w.b = (w.sector + 1) % 4;
-  w.triangle = in.main_node_ids[2] == in.main_node_ids[3];
+TL_MATH_HOST_DEVICE inline void PrepareMainFrame(bool triangle, const Vector* vertices,
+    const StoredNormal* stored_normals, Work& w) {
+  w.triangle = triangle;
   for (unsigned i = 0; i < 4; ++i) {
-    w.point[i] = in.main_vertices[i]; w.normal[i] = Promote(in.corner_normal[i]);
+    w.point[i] = vertices[i]; w.normal[i] = Promote(stored_normals[i]);
   }
   w.point[4] = w.triangle ? w.point[2] :
       v::Scale(v::Add(v::Add(v::Add(w.point[0], w.point[1]), w.point[2]), w.point[3]), .25);
@@ -84,6 +76,12 @@ TL_MATH_HOST_DEVICE inline void Prepare(const NativeGeometryInput& in, Work& w) 
       v::Scale(v::Add(v::Add(v::Add(w.normal[0], w.normal[1]), w.normal[2]), w.normal[3]), .25);
   w.normal[4] = Normalize(w.normal[4], em20);
   for (unsigned i = 0; i < 4; ++i) w.arm[i] = v::Subtract(w.point[i], w.point[4]);
+}
+TL_MATH_HOST_DEVICE inline void Prepare(const NativeGeometryInput& in, Work& w) {
+  int sector = in.selection_code % 5;
+  if (sector < 0) sector = -sector;
+  w.sector = unsigned(sector - 1); w.a = w.sector; w.b = (w.sector + 1) % 4;
+  PrepareMainFrame(in.main_node_ids[2] == in.main_node_ids[3], in.main_vertices, in.corner_normal, w);
   w.plane = Normalize(v::Cross(w.arm[w.a], w.arm[w.b]), native_constant::em30);
   const double center_gap = w.triangle ? in.main_gap[2] :
       .25 * (in.main_gap[0] + in.main_gap[1] + in.main_gap[2] + in.main_gap[3]);

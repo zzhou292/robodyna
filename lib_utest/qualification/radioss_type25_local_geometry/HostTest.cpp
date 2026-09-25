@@ -93,4 +93,13 @@ TEST(Type25Geometry, UndefinedNativeProjectionIsRejectedWithoutInventingAResult)
   EXPECT_THROW(OracleRaw(Profile(),in),std::invalid_argument);
 }
 
+
+TEST(Type25Geometry, SharedNodeIdentityPreservesExactCoordinateBits) {
+  auto in=Triangle();in.main_vertices[3].z=-0.0;
+  const auto prior=Sentinel<n::NativeUnitsTag>();auto actual=prior;
+  EXPECT_EQ(n::EvaluateNativeRawGeometry(Profile(),in,&actual),n::GeometryStatus::InvalidInput);
+  Same(actual,prior,true);
+  EXPECT_THROW(OracleRaw(Profile(),in),std::invalid_argument);
+}
+
 } // namespace type25_geometry_test
