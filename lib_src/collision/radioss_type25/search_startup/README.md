@@ -53,3 +53,8 @@ Moving-main ACTNOR/TAGNOD normal maintenance, changing source/activity, native
 initial history binding and additional tie/constraint augmentation remain
 separate runtime/source work. Startup value parity is not a complete contact or
 whole-step performance qualification.
+
+The ordinary moving-shell Starter profile uses the same initial geometry,
+coefficient/gap fields and complete model census as the fixed profile. This
+producer admits either explicit Starter profile; its initial margin/removal/
+flags do not certify later geometry or replace runtime search maintenance.

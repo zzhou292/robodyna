@@ -45,3 +45,21 @@ free/fixed translational subspace is basis independent. Partial masks with nonze
 skew remain unsupported until a dedicated frame binding is supplied. Exact owner
 world masks, main zero velocity/reference coordinates and fixed rotation remain
 required. The observed wall has ICODT7/ISKEW1, not a fabricated zero skew.
+
+## Explicit moving-source admission
+
+`ContactSourceInput` contains shared source identities, physical parent mapping
+and resolved scalar controls. Only the fixed and moving wrappers select runtime
+admission; there is no public initializer accepting the common descriptor alone.
+The moving descriptor additionally retains the genuine `BuildStarter` snapshot
+and an explicit ordinary local activation profile. Source admission proves its
+parent/opposite maps, complete ordered normal CSR, reciprocal adjacency,
+physical source correspondence and literal initial float cache. It derives the
+complete ascending free roster and expanded main coefficients under the startup
+host cap. This adds no GPU moving execution by itself.
+
+All borrowed source storage must remain valid through initialization and upload
+drain. Immutable arrays are copied once by the runtime; they do not create a
+second physical state. Failed admission preserves the caller's prior staging.
+Dynamic erosion, rigid/CIN response and full vehicle scope require their own
+integration; they are not enabled by selecting the moving descriptor.

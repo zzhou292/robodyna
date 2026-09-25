@@ -5,6 +5,7 @@
 namespace tlfea::contact::radioss_type25::startup {
 Report BuildFixedMain(const Input& input,const Snapshot& starter,const FixedMainInput& active,
     Limits limits,tl::util::HostArena& output,tl::util::HostArena& scratch,FixedMainView* published) noexcept {
+  if(input.profile!=Profile::OrdinaryExteriorFixedMain)return {Status::UnsupportedProfile};
   detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.ready_output_bytes || scratch.bytes()<layout.forecast.ready_scratch_bytes)

@@ -130,4 +130,18 @@ TEST(Type25SearchStartup, NativeNonterminatingSmallMarginIsRejectedWithoutPublis
   EXPECT_EQ(s::Build(f.Input(),{},output,scratch,&view).status,s::Status::Ok);
   Same(view,Oracle(f.Input()));
 }
+TEST(Type25SearchStartup, MovingStarterProfilePreservesNativeInitialMarginRemovalAndFlags) {
+  for(unsigned mode=0;mode<3;++mode)for(double gap:{.01,3.}) {
+    SCOPED_TRACE(mode);
+    SCOPED_TRACE(gap);
+    Fixture f(old::Grid(3,2,mode));f.Gaps(gap);Built actual(f);
+    const auto expected=Oracle(f.Input());auto input=f.Input();
+    input.mesh.profile=st::Profile::OrdinaryExteriorMovingMain;
+    ASSERT_EQ(s::Build(input,{},actual.output,actual.scratch,&actual.view).status,s::Status::Ok);
+    Same(actual.view,expected);
+    const auto before=Bytes(actual);input.mesh.profile=st::Profile::Unspecified;
+    EXPECT_EQ(s::Build(input,{},actual.output,actual.scratch,&actual.view).status,s::Status::UnsupportedProfile);
+    EXPECT_EQ(std::memcmp(before.data(),actual.output.data(),before.size()),0);
+  }
+}
 } // namespace type25_search_startup_test

@@ -4,6 +4,8 @@
 #include "../assembly/DeviceTypes.h"
 #include "../search/Types.h"
 #include "../candidates/InventoryTypes.h"
+#include "../startup/Types.h"
+#include "../normal_activation/Types.h"
 namespace tlfea::contact::radioss_type25 {
 namespace lifecycle=selection::lifecycle;
 namespace runtime_detail {
@@ -27,7 +29,7 @@ struct TransactionReport {
 // units. Physical nodes are in the actual ShellPhysicalBinding domain order.
 // Captured source data is permitted in qualification fixtures, never a generic
 // source producer. A successful transaction does not qualify its caller's parser.
-struct FixedMainSource {
+struct ContactSourceInput {
   std::uint64_t source_id=0,topology_generation=0;
   lifecycle::SourceView selection;
   std::size_t primary_main_count=0;
@@ -36,6 +38,15 @@ struct FixedMainSource {
   double margin=0,gap_load=0,drad=0;
   unsigned force_packet_size=0; // Actual native NVSIZ; never CUDA block size.
   int native_workers=0; // First numerical profile requires exactly one.
+};
+// The explicit wrappers select admissible source semantics. There is no public
+// Transaction initializer accepting ContactSourceInput alone.
+struct FixedMainSource : ContactSourceInput {};
+struct MovingMainSource : ContactSourceInput {
+  // Retain the genuine BuildStarter result, not a fixed/all-active ready cache.
+  // The producer owns this borrowed snapshot until Initialize has drained.
+  startup::Snapshot starter;
+  normal_activation::Profile activation;
 };
 struct TransactionConfig {
   UnitScale units;
@@ -66,6 +77,7 @@ struct TransactionForecast {
   std::size_t device_bytes=0,host_bytes=0,startup_host_bytes=0;
   std::size_t runtime_device_bytes=0,inventory_device_bytes=0,maintenance_device_bytes=0,incidence_device_bytes=0;
   std::size_t raw_pair_capacity=0,optimized_capacity=0,sliding_capacity=0;
+  std::size_t normal_device_bytes=0; // Included in runtime_device_bytes; zero for fixed profile.
 };
 struct TransactionDiagnostics {
   std::uint64_t raw_candidates=0,optimized_candidates=0,kept_occurrences=0,active_forces=0;

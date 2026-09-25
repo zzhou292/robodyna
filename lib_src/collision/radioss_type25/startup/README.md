@@ -3,7 +3,7 @@
 This is a host startup numerical producer for an explicitly ordered ordinary
 exterior Q4/T3 surface. It owns no physical state, material, coefficient, gap,
 clock or native runtime. The physical source factory retains all source/order,
-fixed-DOF and lifetime authority. Moving-main activation, erosion, coating,
+fixed-DOF and lifetime authority. Moving-main runtime activation, erosion, coating,
 internal faces, nonmanifold edges, disconnected vertex fans and nonorientable
 surfaces are outside the first admitted profile.
 
@@ -59,3 +59,9 @@ neighbors and shared reference endpoints; it is not authentication of arbitrary
 caller-generated or reordered CSR contents. The source owner retains the actual
 producer result and its lifetime. No unchecked caller flag upgrades this view
 into physical source authority.
+
+`OrdinaryExteriorMovingMain` explicitly admits the same ordinary topology and
+Starter numerical stage for the moving source producer. It does not admit the
+all-active `BuildFixedMain` stage: that function rejects the moving profile
+before touching output. The current-normal owner must perform native activation
+and staged updates from the genuine Starter cache.

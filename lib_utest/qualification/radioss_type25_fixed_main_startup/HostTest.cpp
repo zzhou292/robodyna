@@ -129,4 +129,20 @@ TEST(Type25FixedStartup, ReadyCohortCrossesOriginalEngine129Boundary) {
   const Built built(source);
   Same(built,Oracle(source.Input(),source.coefficients.data(),source.coefficients.size()));
 }
+TEST(Type25FixedStartup, MovingProfileUsesSameStarterAndCannotUseFixedReadyStage) {
+  for(unsigned mode=0;mode<3;++mode) {
+    const auto source=Grid(2,2,mode);Built built(source);
+    const auto expected=Oracle(source.Input(),source.coefficients.data(),source.coefficients.size());
+    auto input=source.Input();input.profile=s::Profile::OrdinaryExteriorMovingMain;
+    ASSERT_EQ(s::BuildStarter(input,{},built.output,built.scratch,&built.startup).status,s::Status::Ok);
+    Same(built,expected);
+    const std::vector<unsigned char> bytes(static_cast<const unsigned char*>(built.ready_output.data()),
+        static_cast<const unsigned char*>(built.ready_output.data())+built.ready_output.bytes());
+    const auto before=built.ready;
+    EXPECT_EQ(s::BuildFixedMain(input,built.startup,{source.coefficients.data(),source.coefficients.size()},
+        {},built.ready_output,built.ready_scratch,&built.ready).status,s::Status::UnsupportedProfile);
+    EXPECT_EQ(std::memcmp(bytes.data(),built.ready_output.data(),bytes.size()),0);
+    EXPECT_EQ(built.ready.normals.face_normals,before.normals.face_normals);
+  }
+}
 } // namespace type25_startup_test

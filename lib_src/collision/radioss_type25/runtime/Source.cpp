@@ -18,8 +18,8 @@ bool Scale(double value,double factor,double& output) {
   output=next;return true;
 }
 }
-TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainSource& source,
-    const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,SourceStaging& out) noexcept try {
+TransactionReport PrepareSourceChecked(const TransactionConfig& config,const ContactSourceInput& source,
+    const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,bool require_fixed,SourceStaging& out) noexcept try {
   const auto& s=source.selection;const auto p=source.primary_main_count;
   const auto* domain=physical.domain();const auto* shells=physical.shells();const auto* ledger=physical.coefficients();
   units_detail::Factors units;
@@ -28,11 +28,11 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
      source.force_packet_size>INT_MAX||!p||p>INT_MAX/2||s.main_count!=2*p||!s.secondary_count||
      s.node_count!=domain->node_count()||!s.nodes||!s.mains||!s.secondary||
      !lifecycle::detail::Span(source.primary_parent_ids,p)||!lifecycle::detail::Span(source.primary_curvature,p))
-    return Fail(TransactionStatus::InvalidInput,"Incomplete fixed-main native source");
+    return Fail(TransactionStatus::InvalidInput,"Incomplete native shell contact source");
   if(s.node_count>UINT32_MAX||s.secondary_count>=INT_MAX||s.node_count>limits.inventory.max_nodes||
      s.secondary_count>limits.inventory.max_secondaries||p>limits.inventory.max_mains||
      limits.optimized_candidates>INT_MAX/5||limits.sliding_entries>=INT_MAX||limits.inventory.max_pairs>=INT_MAX)
-    return Fail(TransactionStatus::ResourceLimit,"Fixed-main source exceeds explicit count limits");
+    return Fail(TransactionStatus::ResourceLimit,"Native shell source exceeds explicit count limits");
   // Typed span/alignment/overflow admission precedes every borrowed metadata
   // read, including preparation of the physical identity and virgin history.
   if(s.normal_count>4*s.main_count||s.normal_to_main.offset_count!=s.normal_count+1||
@@ -51,7 +51,11 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
      !friction_detail::Supported(config.friction)||!friction_detail::Valid(config.friction_coefficients)||
      !assembly::detail::Supported(config.assembly)||config.normal.engine.kdtint!=config.assembly.engine.kdtint||
      config.normal.engine.idtmins!=config.assembly.engine.idtmins||config.normal.engine.idtmins_int!=config.assembly.engine.idtmins_int)
-    return Fail(TransactionStatus::UnsupportedProfile,"Unsupported fixed-main response or search controls");
+    return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native response or search controls");
+  // OptimizedCandidate implements the qualified DRAD=0 / DGAPLOAD=0
+  // source branch. These controls must not be admitted and silently ignored.
+  if(source.drad!=0||source.gap_load!=0)
+    return Fail(TransactionStatus::UnsupportedProfile,"Native OPTCD requires zero DRAD and DGAPLOAD");
   NativeNormalResult probe;
   if(EvaluateNativeNormal(config.normal,{}, {},&probe)!=NormalStatus::Ok)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native normal response");
@@ -60,7 +64,7 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
      coverage.element_mass_records||coverage.solid18_parents||coverage.solid24_parents||coverage.solid6z_parents||
      coverage.solid18_law44_parents||coverage.solid18_law90_parents||coverage.beam18_parents||
      coverage.qeph_parents!=shells->qeph_count()||coverage.t3_parents!=shells->t3_count())
-    return Fail(TransactionStatus::UnsupportedProfile,"First fixed-main profile requires the complete QEPH/T3 mass ledger");
+    return Fail(TransactionStatus::UnsupportedProfile,"First native shell profiles require the complete QEPH/T3 mass ledger");
   const auto* failure=physical.failure();
   if(!failure)return Fail(TransactionStatus::SourceMismatch,"Physical failure declaration is missing");
   for(std::size_t i=0;i<failure->parent_count();++i)
@@ -123,7 +127,7 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
     for(unsigned slot=0;slot<4;++slot) {
       const auto local=it->triangle?shells->t3_nodes(it->index)[slot<3?slot:2]:shells->qeph_nodes(it->index)[slot];
       const auto source_node=shells->active_nodes()[local].source_id;
-      if(next.ids[main.nodes[slot]]!=source_node||s.nodes[main.nodes[slot]].constraint!=7)
+      if(next.ids[main.nodes[slot]]!=source_node||(require_fixed&&s.nodes[main.nodes[slot]].constraint!=7))
         return Fail(TransactionStatus::SourceMismatch,"Primary ordered connectivity/fixed domain differs from physical shell",i);
       const unsigned reverse=slot==0?1:slot==1?0:it->triangle?2:slot==2?3:2;
       if(opposite.nodes[slot]!=main.nodes[reverse])return Fail(TransactionStatus::SourceMismatch,"Opposite connectivity is not native SH2SURF order",i);
@@ -162,4 +166,8 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
   out=std::move(next);return {TransactionStatus::Ok,"OK"};
 } catch(const std::bad_alloc&){return Fail(TransactionStatus::ResourceLimit,"Source startup allocation failed");}
   catch(const std::length_error&){return Fail(TransactionStatus::ResourceLimit,"Source startup length overflow");}
+TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainSource& source,
+    const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,SourceStaging& out) noexcept {
+  return PrepareSourceChecked(config,source,physical,limits,true,out);
+}
 } // namespace tlfea::contact::radioss_type25::runtime_detail
