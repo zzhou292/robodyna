@@ -79,8 +79,14 @@ BatchReport BuildModel(const QephBatchConfig& config,const ShellPhysicalBinding&
          failure->policy!=ShellFailurePolicy::Tab1AnyPoint)) {
       return {BatchStatus::InvalidInput,"Mapped Qeph placement/failure role is unavailable",static_cast<std::uint32_t>(parent)};
     }
+    ShellGlobalLaw1Profile profile;const ShellGlobalLaw1Profile* global=nullptr;
+    if(law==ShellSectionLaw::GlobalLaw1Npt0) {
+      if(!physical.catalog()->GlobalLaw1Profile(ShellBindingFamily::Qeph,parent,&profile))
+        return {BatchStatus::InvalidInput,"Global LAW1 startup profile is unavailable",static_cast<std::uint32_t>(parent)};
+      global=&profile;
+    }
     NodalStiffness stiffness;
-    if (!skin && !InitialStiffness(element.reference,law,stiffness)) {
+    if (!skin && !InitialStiffness(element.reference,law,stiffness,global)) {
       return {BatchStatus::ElementFailure,"Mapped Qeph virgin native stiffness is invalid",static_cast<std::uint32_t>(parent)};
     }
     const auto status=InitializeHistory(element.reference,{0,0},storage.slab[0].element[parent].proposed_history);

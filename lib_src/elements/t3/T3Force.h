@@ -62,8 +62,7 @@ TL_T3_HD inline Status EvaluateGlobalLaw1Force(const ShellGlobalLaw1Profile& pro
     const ReferenceData& r,const History& base,const PrescribedInterval& interval,
     ForceTrial& output) noexcept {
   if(!shell_global_law1::Valid(profile)) return Status::kInvalidInput;
-  const double thickness=profile.thickness==ShellLaw1Thickness::Reference?
-      r.input.thickness : base.data().thickness;
+  const double thickness=shell_global_law1::T3CoefficientThickness(profile,r.input.thickness,base.data().thickness);
   return detail::EvaluateForceWithThickness(r,base,interval,thickness,output);
 }
 } // namespace tl::fea::t3

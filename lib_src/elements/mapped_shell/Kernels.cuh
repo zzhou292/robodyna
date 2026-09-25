@@ -117,7 +117,9 @@ template<class Family> struct MixedAssemblyFamily : Family {
   template<class Model, class Result>
   __device__ static auto Prepare(const Model& model, const Result& result,
       std::size_t parent, const Context* context, const NodalAssemblyView& view, bool initial) {
-    return Family::Prepare(model, result, parent, context->law[parent], view, initial);
+    const auto* global=context->law[parent]==ShellSectionLaw::GlobalLaw1Npt0&&context->global_law1?
+        context->global_law1+parent:nullptr;
+    return Family::Prepare(model, result, parent, context->law[parent], view, initial,global);
   }
   __device__ static auto Access(const typename Family::Slab* accepted, const Context* context) {
     return MixedForceAccess<typename Family::ForceTrial>{accepted->element, context->law};

@@ -8,7 +8,7 @@
 namespace tl::fea::shell_batch_plasticity_detail {
 bool HostStorage::ForecastFailureSections(std::size_t count, std::size_t points,
     std::size_t binding_bytes, std::size_t device_cap, std::size_t host_cap,
-    const ShellBatchFailureLimits& limits, std::size_t& host_bytes, bool one_point, std::size_t* device_bytes) noexcept {
+    const ShellBatchFailureLimits& limits, std::size_t& host_bytes, bool one_point, std::size_t* device_bytes, bool global) noexcept {
   FailureLayout failure;
   MixedLayout mixed;
   OnePointLayout point;
@@ -17,7 +17,7 @@ bool HostStorage::ForecastFailureSections(std::size_t count, std::size_t points,
   if ((one_point && !OnePointHostStorage::Forecast(count, device_cap, host_cap, point, point_host)) ||
       !FailureHostStorage::Forecast(count, binding_bytes, device_cap - point.bytes, limits, failure, failure_host) ||
       !MixedHostStorage::Forecast(count, points, 0, device_cap - point.bytes - failure.bytes,
-                                 host_cap, mixed, mixed_host)) {
+                                 host_cap, mixed, mixed_host, global)) {
     return false;
   }
   util::BoundedArenaLayout host(host_cap);
@@ -76,12 +76,12 @@ SetupReport HostStorage::InitializeFailureCollectionImpl(const ShellBatchFailure
   MixedLayout mixed_layout;
   OnePointLayout point_layout;
   if (!ForecastFailureSections(count, catalog->curve_point_count(), failure_bytes,
-                               device_cap, host_cap, limits, host_bytes, one_point) ||
+                               device_cap, host_cap, limits, host_bytes, one_point, nullptr, counts.law1_global_npt0!=0) ||
       (one_point && !point_layout.Initialize(count, device_cap)) ||
       !FailureHostStorage::Forecast(count, failure_bytes, device_cap - point_layout.bytes,
                                    limits, failure_layout, unused) ||
       !mixed_layout.Initialize(count, catalog->curve_point_count(),
-                               device_cap - point_layout.bytes - failure_layout.bytes)) {
+                               device_cap - point_layout.bytes - failure_layout.bytes, counts.law1_global_npt0!=0)) {
     return {SetupStatus::ResourceLimit, "Mixed failure collection exceeds explicit budgets"};
   }
   std::unique_ptr<FailureHostStorage> failure_storage(new(std::nothrow) FailureHostStorage);

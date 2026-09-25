@@ -13,8 +13,8 @@ struct AssemblyFamily {
   using Memory = mapped::AssemblyMemory;
   static constexpr unsigned Slots = 3;
   __device__ static mapped::AssemblyParent Prepare(const Model& model, const ForceTrial& result,
-      std::size_t parent, ShellSectionLaw law, const NodalAssemblyView& view, bool initial) noexcept {
-    return mapped::PrepareAssemblyParent(model, result, parent, law, view, initial);
+      std::size_t parent, ShellSectionLaw law, const NodalAssemblyView& view, bool initial,const ShellGlobalLaw1Profile* global) noexcept {
+    return mapped::PrepareAssemblyParent(model, result, parent, law, view, initial,global);
   }
 };
 } // namespace

@@ -1,0 +1,35 @@
+{
+  "scope": "Exact selected native initial coefficient/STI phase; source pins, not a full driver qualification",
+  "files": [
+    {
+      "path": "starter/source/elements/shell/coque/c1buf3.F",
+      "bytes": 3187,
+      "sha256": "4f40f04be62dc6d0b927a3ca80e76cca3e9f2609460eb17cb00254aa4c870d28",
+      "git_blob_sha1": "e4753c45660c88c1afc5ea5802bce249c68df0f3"
+    },
+    {
+      "path": "engine/source/elements/shell/coquez/czforc3.F",
+      "bytes": 42687,
+      "sha256": "0cbc96d2fc2e7dee1c5e2f5e6d3349618ba683015550a0184be177a5602515ab",
+      "git_blob_sha1": "72ab7f3fded22d05a06bc851d4542bdc069ac7ac"
+    },
+    {
+      "path": "engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "bytes": 41674,
+      "sha256": "9b8d5c29258b80366179baf1e70b631117fa056c7cd1a2503ff98e47d8f978e5",
+      "git_blob_sha1": "9fbff29d0c49a65ee9bc65b702acf04ca01d103a"
+    },
+    {
+      "path": "engine/source/elements/sh3n/coquedk/cndt3.F",
+      "bytes": 12054,
+      "sha256": "4ae20594cb1868ec0ef6d9ccb2aed816257862582ce292395e97cb767dfea404",
+      "git_blob_sha1": "652c459ee3cf93bdb4983e748ad5d2fd6b5ed672"
+    },
+    {
+      "path": "engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "bytes": 6618,
+      "sha256": "35d43e70c21fc830659ae2f778ce0efefa9308bd71d2bd35bf27552e3e4ae046",
+      "git_blob_sha1": "ea36b962b077c40bc8c947058447b75c5e10d631"
+    }
+  ]
+}

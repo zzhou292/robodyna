@@ -72,8 +72,7 @@ TL_QEPH_HD inline Status EvaluateGlobalLaw1Force(const ShellGlobalLaw1Profile& p
     const ReferenceData& r,const History& base,const PrescribedInterval& interval,
     ForceTrial& output) noexcept {
   if(!shell_global_law1::Valid(profile)) return Status::kInvalidInput;
-  const double thickness=profile.thickness==ShellLaw1Thickness::Reference?
-      r.input.thickness : ::fmax(base.data().thickness,shell_global_law1::NativeThicknessFloor*profile.coefficient_working_length_m);
+  const double thickness=shell_global_law1::QephCoefficientThickness(profile,r.input.thickness,base.data().thickness);
   return detail::EvaluateForceWithThickness(r,base,interval,thickness,output);
 }
 } // namespace tl::fea::qeph

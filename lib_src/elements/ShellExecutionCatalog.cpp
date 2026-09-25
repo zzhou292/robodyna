@@ -27,7 +27,8 @@ bool ShellBatchPlasticityBinding::MaterialPointCount(
   if (!output || !Law(family, index, &law)) return false;
   unsigned points;
   switch (law) {
-    case ShellSectionLaw::RigidSkin: points = 0; break;
+    case ShellSectionLaw::RigidSkin:
+    case ShellSectionLaw::GlobalLaw1Npt0: points = 0; break;
     case ShellSectionLaw::LayeredLaw1Nip3:
     case ShellSectionLaw::LayeredLaw44Nip3: points = 3; break;
     case ShellSectionLaw::Law44Nip1: points = 1; break;

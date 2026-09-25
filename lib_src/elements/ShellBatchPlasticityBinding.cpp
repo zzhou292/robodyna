@@ -70,7 +70,8 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
     const auto& p=x.declaration; const auto& q=y.declaration;
     if(x.material_index!=y.material_index||x.section_index!=y.section_index||p.family!=q.family||
         p.family_index!=q.family_index||p.source_parent_id!=q.source_parent_id||p.source_part_id!=q.source_part_id||
-        p.material_id!=q.material_id||p.section_id!=q.section_id) return false;
+        p.material_id!=q.material_id||p.section_id!=q.section_id||
+        !SameShellParentExecution(p.execution,q.execution)) return false;
   }
   // Family lookup arrays and pointer-free coefficients are derived solely from
   // the complete checked declarations above; no reduced hash grants equality.

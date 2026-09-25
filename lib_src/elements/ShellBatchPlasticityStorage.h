@@ -71,7 +71,7 @@ class HostStorage {
       std::size_t,std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&);
   static bool ForecastFailureSections(std::size_t count,std::size_t points,std::size_t binding_bytes,
       std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,std::size_t& host_bytes,
-      bool one_point=false,std::size_t* device_bytes=nullptr) noexcept;
+      bool one_point=false,std::size_t* device_bytes=nullptr,bool global=false) noexcept;
   const ShellBatchLayeredSection* section_staging() const noexcept;
   // Conservative payload peak: arena initialization + readback + retained
   // curve/catalog data + per-parent rebase offsets. No allocation or input read.

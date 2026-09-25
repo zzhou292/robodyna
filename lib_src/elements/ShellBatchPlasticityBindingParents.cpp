@@ -16,6 +16,9 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
   auto& materials=scratch.material_seen; auto& sections=scratch.section_seen;
   for(std::size_t i=0;i<input.parent_count;++i) {
     const auto& p=input.parents[i];
+    if(!ValidShellParentExecution(p.execution)||
+        (p.execution.policy!=ShellParentExecutionPolicy::FromSection&&!out.execution))
+      return Error(Status::InvalidParent,"Resolved parent execution requires explicit execution catalog and valid policy",i,p.family);
     if(!p.source_parent_id||!p.source_part_id||!p.material_id||!p.section_id||
        (p.family!=ShellBindingFamily::Qeph&&p.family!=ShellBindingFamily::T3&&
         !(out.formulations&&p.family==ShellBindingFamily::Qbat)))
@@ -58,7 +61,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
     const auto prior=scratch.parts.First(p.source_part_id);
     if(prior<i) {
       const auto& old=out.parents[prior].declaration;
-      if(old.material_id!=p.material_id||old.section_id!=p.section_id)
+      if(old.material_id!=p.material_id||old.section_id!=p.section_id||
+        !SameShellParentExecution(old.execution,p.execution))
         return Error(Status::IdentityMismatch,"One source part cannot have conflicting material/section assignments",i,p.family);
     }
     const auto mi=scratch.materials.First(p.material_id);
@@ -83,6 +87,11 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
       placement=reference.quadrilateral.placement;
     }
     if(!matches) return Error(Status::IdentityMismatch,"Parent material/thickness bits differ from its native reference",i,p.family);
+    const bool global=p.execution.policy==ShellParentExecutionPolicy::GlobalLaw1Npt0;
+    if(global&&(m.law!=ShellSectionLaw::LayeredLaw1Nip3||p.family==ShellBindingFamily::Qbat||
+        placement!=ShellReferencePlacement::Centered||s.formulation!=ShellSectionFormulation::LayeredNip3||
+        s.through_thickness_points!=3))
+      return Error(Status::InvalidSection,"Global LAW1 execution requires centered QEPH/T3 with the qualified raw NIP3 elastic source",i,p.family);
     const bool rigid=m.law==ShellSectionLaw::RigidSkin;
     if(rigid!=(s.formulation==ShellSectionFormulation::Nonconstitutive)||
         (rigid&&(!out.execution||p.family==ShellBindingFamily::Qbat)))
@@ -98,7 +107,9 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
     out.parents[i]={p,mi,si};
     rows[p.family_index]=i;
     if(rigid) ++laws->rigid_skin;
-    else if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws->law1;
+    else if(m.law==ShellSectionLaw::LayeredLaw1Nip3) {
+      ++laws->law1;if(global)++laws->law1_global_npt0;
+    }
     else if(m.law==ShellSectionLaw::LayeredLaw44Nip3) {
       ++laws->law44;
       if(one_point&&p.family==ShellBindingFamily::T3) ++laws->law44_nip1;

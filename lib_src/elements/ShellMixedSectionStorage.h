@@ -12,7 +12,7 @@ class MixedHostStorage {
   MixedHostStorage(const MixedHostStorage&)=delete;
   MixedHostStorage& operator=(const MixedHostStorage&)=delete;
   static bool Forecast(std::size_t count,std::size_t points,std::size_t catalog_bytes,
-      std::size_t device_cap,std::size_t host_cap,MixedLayout&,std::size_t& host_bytes) noexcept;
+      std::size_t device_cap,std::size_t host_cap,MixedLayout&,std::size_t& host_bytes,bool global=false) noexcept;
   SetupReport Initialize(const ShellBatchPlasticityBinding&,ShellBindingFamily,std::size_t,
       const MixedLayout&,bool execution=false);
   SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&,

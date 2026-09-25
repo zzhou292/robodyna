@@ -18,6 +18,7 @@ inline constexpr std::uint32_t MixedActivityKeyStride = 8;
 TL_MIXED_ACTIVITY_HD inline MixedActivityError CheckMixedActivity(ShellSectionLaw law,
     const ShellBatchSectionState& plastic, const sections::ShellLayeredLaw1History& elastic) noexcept {
   using shell_batch_plasticity_detail::FiniteSection;
+  if (law == ShellSectionLaw::GlobalLaw1Npt0) return MixedActivityError::None;
   if (law == ShellSectionLaw::LayeredLaw1Nip3)
     return FiniteSection(elastic) ? MixedActivityError::None : MixedActivityError::Elastic;
   if (law == ShellSectionLaw::LayeredLaw44Nip3)
@@ -27,7 +28,8 @@ TL_MIXED_ACTIVITY_HD inline MixedActivityError CheckMixedActivity(ShellSectionLa
 }
 
 TL_MIXED_ACTIVITY_HD inline bool ValidMixedActivityRole(std::uint8_t role) noexcept {
-  return role == static_cast<std::uint8_t>(ShellSectionLaw::LayeredLaw1Nip3) ||
+  return role == static_cast<std::uint8_t>(ShellSectionLaw::GlobalLaw1Npt0) ||
+      role == static_cast<std::uint8_t>(ShellSectionLaw::LayeredLaw1Nip3) ||
       role == static_cast<std::uint8_t>(ShellSectionLaw::LayeredLaw44Nip3) ||
       role == static_cast<std::uint8_t>(ShellSectionLaw::RigidSkin);
 }

@@ -21,7 +21,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeSectionCatal
 bool ShellBatchPlasticityBinding::ElasticParameters(ShellBindingFamily family,std::size_t index,
     material::ShellElasticLaw1PointParameters* output) const noexcept {
   const auto* m=ParentMaterial(family,index);
-  if(!output||!m||m->declaration.law!=ShellSectionLaw::LayeredLaw1Nip3) return false;
+  ShellSectionLaw law;
+  if(!output||!m||!Law(family,index,&law)||law!=ShellSectionLaw::LayeredLaw1Nip3) return false;
   const auto& d=m->declaration;
   return material::PrepareShellElasticLaw1Point(d.young_pa,d.poisson_ratio,d.density_kg_m3,*output);
 }
@@ -31,6 +32,10 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
   if(!output||!m) return false;
   const auto* parent=FamilyParent(family,index);
   const auto& section=data_.sections[parent->section_index];
+  if(parent->declaration.execution.policy==ShellParentExecutionPolicy::GlobalLaw1Npt0) {
+    if(!data_.execution||m->declaration.law!=ShellSectionLaw::LayeredLaw1Nip3||family==ShellBindingFamily::Qbat)return false;
+    *output=ShellSectionLaw::GlobalLaw1Npt0;return true;
+  }
   if(m->declaration.law==ShellSectionLaw::RigidSkin) {
     if(!data_.execution||section.formulation!=ShellSectionFormulation::Nonconstitutive||
         section.through_thickness_points!=0||family==ShellBindingFamily::Qbat) return false;
@@ -47,6 +52,13 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
        m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3)) return false;
   *output=m->declaration.law;
   return true;
+}
+bool ShellBatchPlasticityBinding::GlobalLaw1Profile(ShellBindingFamily family,std::size_t index,
+    ShellGlobalLaw1Profile* output) const noexcept {
+  ShellSectionLaw law;
+  if(!output||!Law(family,index,&law)||law!=ShellSectionLaw::GlobalLaw1Npt0)return false;
+  const auto* parent=FamilyParent(family,index);
+  *output=parent->declaration.execution.global_law1;return true;
 }
 bool ShellBatchPlasticityBinding::Counts(ShellBindingFamily family,ShellSectionCounts* output) const noexcept {
   if(!prepared_||!output) return false;

@@ -32,6 +32,11 @@ class ShellBatchLayeredSection {
   static ShellBatchLayeredSection OnePoint(const ShellBatchOnePointSectionState& value) noexcept {
     return {ShellSectionLaw::Law44Nip1,Payload(value)};
   }
+  // Role-only readback. Global resultants/thickness/work are ordinary shell
+  // history; no point accessor is available for this analytic integration.
+  static ShellBatchLayeredSection GlobalLaw1() noexcept {
+    return {ShellSectionLaw::GlobalLaw1Npt0,Payload{}};
+  }
   static ShellBatchLayeredSection RigidSkin() noexcept {
     return {ShellSectionLaw::RigidSkin,Payload{}};
   }
