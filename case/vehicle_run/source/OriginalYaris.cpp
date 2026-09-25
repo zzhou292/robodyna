@@ -38,7 +38,8 @@ OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Setti
         : modelio::physical_scope::PhysicalScope::Prepare(source.masses,source.tied,source.beams,source.solids);
     const auto domain=modelio::physical_domain::VehiclePhysicalDomain::Prepare(scope,selected.domain);
     const auto shells=vehicle_startup::VehicleShellBinding::Prepare(
-        vehicle_startup::VehicleShellReferences::Prepare(source.resolution));
+        vehicle_startup::VehicleShellReferences::Prepare(source.resolution,
+            vehicle_startup::ReferenceLimits::CompleteRigidOverlay()));
     const auto model_limits=selected.structural_beams ? vehicle_startup::physical_model::Limits::VehicleSupports()
         : selected.extended ? vehicle_startup::physical_model::Limits::ExtendedSolids()
         : vehicle_startup::physical_model::Limits{};

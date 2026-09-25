@@ -36,7 +36,7 @@ template<class Input> void CheckRigidInput(const Input& input,const ReferenceRow
 TEST(VehicleRigidReferenceSource, CompleteOriginalRolesAndAllPriorReferenceBitsArePreserved) {
     const auto& resolution=source_test::RigidResolution();
     const auto prior=VehicleShellReferences::Prepare(source_test::MidlayerResolution());
-    const auto current=VehicleShellReferences::Prepare(resolution);
+    const auto current=VehicleShellReferences::Prepare(resolution,ReferenceLimits::CompleteRigidOverlay());
     const detail::Geometry geometry(resolution.source().canonical().data());
     ASSERT_EQ(current.rows().size(),349645);EXPECT_EQ(current.counts().unresolved,0);
     EXPECT_EQ(current.counts().succeeded,349645);EXPECT_EQ(current.counts().rejected,0);
@@ -63,9 +63,9 @@ TEST(VehicleRigidReferenceSource, CompleteOriginalRolesAndAllPriorReferenceBitsA
         }
     }
     EXPECT_EQ(old_count,344543);EXPECT_EQ(rigid_count,5102);
-    const auto forecast=ForecastReferences(resolution);
+    const auto forecast=ForecastReferences(resolution,ReferenceLimits::CompleteRigidOverlay());
     EXPECT_EQ(forecast.qbat_capacity,4250);
-    auto limits=ReferenceLimits::ResolvedSections();limits.host_bytes=forecast.total_bytes-1;
+    auto limits=ReferenceLimits::CompleteRigidOverlay();limits.host_bytes=forecast.total_bytes-1;
     EXPECT_THROW(VehicleShellReferences::Prepare(resolution,limits),std::runtime_error);
     limits.host_bytes=forecast.total_bytes;EXPECT_EQ(ForecastReferences(resolution,limits).total_bytes,forecast.total_bytes);
     RecordProperty("forecast_bytes",std::to_string(forecast.total_bytes));

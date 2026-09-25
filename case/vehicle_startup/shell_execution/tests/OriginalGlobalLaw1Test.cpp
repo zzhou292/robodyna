@@ -2,7 +2,18 @@
 namespace crash::cases::vehicle_startup::shell_execution::test {
 TEST(VehicleShellExecutionOriginal, NativeSourceProfileKeepsAllParentsAndFailureIdentityWithZeroLaw1Points) {
     const auto refs=VehicleShellReferences::Prepare(modelio::vehicle::test::RigidResolution(),
-        QephMetricProfile::AuthenticatedSourceLength,ReferenceLimits::ResolvedSections());
+        QephMetricProfile::AuthenticatedSourceLength,ReferenceLimits::CompleteRigidOverlay());
+    auto exact_reference = ReferenceLimits::CompleteRigidOverlay();
+    exact_reference.host_bytes = refs.forecast().total_bytes;
+    EXPECT_EQ(ForecastReferences(refs.source(), ReferenceLimits{}).source_bound_bytes,
+        refs.source().startup_budget_bytes());
+    EXPECT_EQ(ForecastReferences(*refs.resolution(), QephMetricProfile::AuthenticatedSourceLength, exact_reference).total_bytes,
+        refs.forecast().total_bytes);
+    --exact_reference.host_bytes;
+    EXPECT_THROW(VehicleShellReferences::Prepare(*refs.resolution(), QephMetricProfile::AuthenticatedSourceLength,
+        exact_reference), std::exception);
+    EXPECT_EQ(ReferenceLimits{}.host_bytes, std::size_t{512} << 20);
+    EXPECT_EQ(ReferenceLimits::ResolvedSections().host_bytes, std::size_t{768} << 20);
     const auto shells=VehicleShellBinding::Prepare(refs);
     const auto model=physical_model::VehiclePhysicalModel::Prepare(physical_model::test::Source(),shells);
     const auto forecast=VehicleShellExecution::Preflight(model,Law1ExecutionProfile::NativeA62OrdinaryNpt0,{});
@@ -30,6 +41,11 @@ TEST(VehicleShellExecutionOriginal, NativeSourceProfileKeepsAllParentsAndFailure
     EXPECT_EQ(native.execution().counts().material_points,1037877u-3*27177u);
     EXPECT_EQ(native.execution().counts().rigid_skin,5102u);
     EXPECT_TRUE(native.physical().coefficients()->Matches(model.coefficients()));
+    RecordProperty("complete_rigid_overlay_bytes",std::to_string(native.resolution().startup_budget_bytes()));
+    RecordProperty("complete_reference_bytes",std::to_string(refs.forecast().total_bytes));
+    RecordProperty("complete_shell_binding_bytes",std::to_string(shells.forecast().total_bytes));
+    RecordProperty("complete_physical_model_bytes",std::to_string(model.forecast().total_bytes));
+    RecordProperty("complete_execution_bytes",std::to_string(native.forecast().total_bytes));
     EXPECT_THROW(VehicleShellExecution::Preflight(physical_model::test::Actual(),
         Law1ExecutionProfile::NativeA62OrdinaryNpt0,{}),std::exception);
 }

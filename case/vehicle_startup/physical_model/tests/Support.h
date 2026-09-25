@@ -16,7 +16,8 @@ inline const modelio::physical_domain::VehiclePhysicalDomain& Source() {
 }
 inline const VehicleShellBinding& Shells() {
     static const auto value = VehicleShellBinding::Prepare(
-        VehicleShellReferences::Prepare(modelio::vehicle::test::RigidResolution()));
+        VehicleShellReferences::Prepare(modelio::vehicle::test::RigidResolution(),
+            ReferenceLimits::CompleteRigidOverlay()));
     return value;
 }
 inline const VehiclePhysicalModel& Actual() {

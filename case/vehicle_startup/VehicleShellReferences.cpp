@@ -34,10 +34,14 @@ ReferenceForecast Forecast(const detail::DeclarationView& declarations,Reference
     const ReferenceLimits legacy;
     const auto& source=declarations.source;
     const auto& count=source.counts();
-    const bool resolved=limits.profile==ReferenceProfile::ResolvedSections;
-    const auto maximum=resolved ? ReferenceLimits::ResolvedSections() : legacy;
+    const bool complete = limits.profile == ReferenceProfile::CompleteRigidOverlay;
+    const bool resolved = limits.profile == ReferenceProfile::ResolvedSections || complete;
+    const auto maximum = complete ? ReferenceLimits::CompleteRigidOverlay() :
+        (resolved ? ReferenceLimits::ResolvedSections() : legacy);
     output::Require((limits.profile==ReferenceProfile::Legacy || resolved) &&
                     (!resolved || declarations.resolution) &&
+                    (!complete || (declarations.resolution && declarations.resolution->resolution_key().profile ==
+                        modelio::vehicle::ResolutionProfile::OriginalRigidPartsV1)) &&
                     limits.parents && limits.parents<=maximum.parents &&
                     limits.nodes && limits.nodes<=maximum.nodes &&
                     limits.host_bytes && limits.host_bytes<=maximum.host_bytes,

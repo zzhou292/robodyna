@@ -8,7 +8,9 @@ namespace crash::cases::vehicle_startup::test {
 namespace source_test=modelio::vehicle::test;
 namespace {
 const VehicleShellReferences& References() {
-    static const auto refs=VehicleShellReferences::Prepare(source_test::RigidResolution());return refs;
+    static const auto refs = VehicleShellReferences::Prepare(source_test::RigidResolution(),
+        ReferenceLimits::CompleteRigidOverlay());
+    return refs;
 }
 const VehicleShellBinding& Prepared() {
     static const auto binding=VehicleShellBinding::Prepare(References());return binding;

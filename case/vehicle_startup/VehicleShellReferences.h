@@ -34,7 +34,7 @@ struct ReferenceCounts {
     std::size_t qbat_attempted=0, qbat_succeeded=0;
     std::array<std::size_t,6> status{}; // Indexed by ReferenceStatus.
 };
-enum class ReferenceProfile { Legacy, ResolvedSections };
+enum class ReferenceProfile { Legacy, ResolvedSections, CompleteRigidOverlay };
 struct ReferenceLimits {
     std::size_t parents=524288, nodes=524288, host_bytes=512*1024*1024;
     ReferenceProfile profile=ReferenceProfile::Legacy;
@@ -42,6 +42,14 @@ struct ReferenceLimits {
         ReferenceLimits limits;
         limits.host_bytes=768*1024*1024;
         limits.profile=ReferenceProfile::ResolvedSections;
+        return limits;
+    }
+    // Inclusive complete rigid source overlay plus native references/decodes.
+    // The ordinary512MiB and resolved-section768MiB envelopes stay unchanged.
+    static ReferenceLimits CompleteRigidOverlay() noexcept {
+        auto limits = ResolvedSections();
+        limits.host_bytes = std::size_t{1} << 30;
+        limits.profile = ReferenceProfile::CompleteRigidOverlay;
         return limits;
     }
 };

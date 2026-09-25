@@ -5,7 +5,7 @@
 #include "../ReferenceStorage.h"
 namespace crash::cases::vehicle_startup::test {
 TEST(VehicleReferenceMetricSource, CompleteOriginalMixedAssessmentPreservesRolesAndNonQephInputs) {
-    const auto& resolution=modelio::vehicle::test::RigidResolution();const auto limits=ReferenceLimits::ResolvedSections();
+    const auto& resolution=modelio::vehicle::test::RigidResolution();const auto limits=ReferenceLimits::CompleteRigidOverlay();
     const auto legacy=VehicleShellReferences::Prepare(resolution,limits);
     const auto selected=VehicleShellReferences::Prepare(resolution,QephMetricProfile::AuthenticatedSourceLength,limits);
     EXPECT_EQ(legacy.qeph_metric().profile(),QephMetricProfile::LegacyOneMetre);

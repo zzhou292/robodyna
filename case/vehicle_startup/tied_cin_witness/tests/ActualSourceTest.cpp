@@ -22,7 +22,7 @@ const VehicleShellBinding& Binding() {
         const auto rigid=VehicleSectionResolution::ResolveOriginalRigidParts(midlayer,
             classification_actual_test::Member("main",42846753), vehicle::ResolutionProfile::OriginalRigidPartsV1,
             vehicle::ResolutionLimits::CompleteRigidOverlay());
-        const auto references=VehicleShellReferences::Prepare(rigid);
+        const auto references = VehicleShellReferences::Prepare(rigid, ReferenceLimits::CompleteRigidOverlay());
         std::cout<<"Original complete shell-binding reservation "<<ForecastShellBinding(references).total_bytes<<" bytes\n";
         return VehicleShellBinding::Prepare(references);
     }();
