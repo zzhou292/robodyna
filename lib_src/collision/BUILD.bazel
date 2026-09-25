@@ -1135,3 +1135,13 @@ cc_library(
     ]],
     deps = [":radioss_type25_local_geometry", "//lib_src/math:scalar_bits"],
 )
+
+# Bounded host startup topology and distinct native float normal stages.
+cc_library(
+    name = "radioss_type25_fixed_main_startup",
+    srcs = glob(["radioss_type25/startup/*.cpp"]),
+    hdrs = ["RadiossType25FixedMainStartup.h"] + glob(["radioss_type25/startup/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_coefficients", ":radioss_type25_local_geometry",
+            ":radioss_type25_search_values", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena"],
+)

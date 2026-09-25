@@ -37,6 +37,8 @@ Report CheckSnapshot(const Input& in,const Snapshot& view,const FixedMainInput& 
         main.global_id!=static_cast<int>(m+1) ||
         main.segment_type!=(m<in.primary_count?static_cast<int>(in.primary_count+m+1):-static_cast<int>(primary+1)))
       return {Status::InvalidInput,primary};
+    if(main.nodes[2]==main.nodes[3] && main.normal_reference[2]!=main.normal_reference[3])
+      return {Status::InvalidInput,primary};
     for(unsigned k=0;k<4;++k) {
       if(main.nodes[k]!=original.nodes[m<in.primary_count?k:reversed[k]] ||
           main.nodes[k]>=in.node_count || main.normal_reference[k]<=0 ||
@@ -46,8 +48,14 @@ Report CheckSnapshot(const Input& in,const Snapshot& view,const FixedMainInput& 
         return {Status::InvalidInput,primary};
       if(main.neighbors[k]) {
         const auto other=std::size_t(main.neighbors[k]-1);const auto edge=unsigned(main.neighbor_edges[k]-1);
-        if(view.mains[other].nodes[edge]!=main.nodes[(k+1)%4] ||
-            view.mains[other].nodes[(edge+1)%4]!=main.nodes[k])return {Status::InvalidInput,primary};
+        const auto& neighbor=view.mains[other];
+        if(neighbor.nodes[edge]!=main.nodes[(k+1)%4] ||
+            neighbor.nodes[(edge+1)%4]!=main.nodes[k] ||
+            neighbor.neighbors[edge]!=static_cast<int>(m+1) ||
+            neighbor.neighbor_edges[edge]!=static_cast<int>(k+1) ||
+            neighbor.normal_reference[edge]!=main.normal_reference[(k+1)%4] ||
+            neighbor.normal_reference[(edge+1)%4]!=main.normal_reference[k])
+          return {Status::InvalidInput,primary};
       }
     }
   }

@@ -9,7 +9,11 @@ namespace tlfea::contact::radioss_type25::startup {
 Forecast Preflight(std::size_t nodes,std::size_t primary_faces,Limits={}) noexcept;
 Report BuildStarter(const Input&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot*) noexcept;
-// Separate native fixed-main-ready stage. It borrows actual resolved coefficients
+// Separate native fixed-main-ready stage. Snapshot must be an immutable result
+// of BuildStarter for this same input/generation. Structural checks reject bad
+// spans, ranges and reciprocal/reference endpoints; they are not authentication
+// of a caller-fabricated or arbitrarily reordered CSR. The source owner retains
+// that borrowed-result provenance and lifetime. It borrows actual resolved coefficients
 // for source activity admission and preserves the Starter snapshot. Output,
 // scratch, snapshot and source ranges must be disjoint. All caller-visible
 // output bytes and view descriptors survive any rejected attempt unchanged.

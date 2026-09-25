@@ -14,3 +14,5 @@ cc_test(
             glob(["native/original/*"]),
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
 )
+
+filegroup(name = "source_constants_helper", srcs = ["native/Sources.py"], visibility = ["//visibility:public"])

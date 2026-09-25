@@ -1,0 +1,5 @@
+{
+  "source": "crash-work/investigations/native-contact-scene-observation-2/native-observations.jsonl",
+  "sha256": "64d429bbfae3bc90de99249bb76e64b2f37a0c5791bf11692452647bc65bcbac",
+  "scope": "Observed native source input coordinates/primary order and expected full fixed-wall topology/float fields; test evidence only."
+}

@@ -52,3 +52,10 @@ Independent pinned native source and owning qualification belong under
 `lib_utest/qualification/radioss_type25_fixed_main_startup`. Captured scene arrays
 are expected test evidence only. Source authoring is not a compiler/runtime pass
 or a full-vehicle contact/performance qualification.
+
+The ready-stage snapshot is an immutable borrowed result of `BuildStarter` for
+that source and generation. Structural admission checks spans, maps, reciprocal
+neighbors and shared reference endpoints; it is not authentication of arbitrary
+caller-generated or reordered CSR contents. The source owner retains the actual
+producer result and its lifetime. No unchecked caller flag upgrades this view
+into physical source authority.
