@@ -101,4 +101,19 @@ TEST(NativeType25Source, ExactHostCapsAndUnsupportedActivationPreserveOutputOnRe
     EXPECT_EQ(rd::PrepareSource(f.Config(),invalid,f.physical.physical,{},output).status,n::TransactionStatus::UnsupportedProfile);Unchanged(output);
   }
 }
+TEST(NativeType25Source, NonzeroUnimplementedOptimizationControlsRejectBothProfiles) {
+  Fixture f;for(auto& node:f.nodes)node.constraint=7;
+  for(unsigned field=0;field<2;++field)for(double value:{1e-100,1.}) {
+    auto moving=f.Source();if(field==0)moving.drad=value;else moving.gap_load=value;
+    n::FixedMainSource fixed;static_cast<n::ContactSourceInput&>(fixed)=moving;
+    auto output=Sentinel();
+    EXPECT_EQ(rd::PrepareSource(f.Config(),fixed,f.physical.physical,{},output).status,n::TransactionStatus::UnsupportedProfile);Unchanged(output);
+    EXPECT_EQ(rd::PrepareSource(f.Config(),moving,f.physical.physical,{},output).status,n::TransactionStatus::UnsupportedProfile);Unchanged(output);
+  }
+  auto moving=f.Source();moving.drad=-0.;moving.gap_load=-0.;
+  n::FixedMainSource fixed;static_cast<n::ContactSourceInput&>(fixed)=moving;
+  rd::SourceStaging output;
+  EXPECT_EQ(rd::PrepareSource(f.Config(),fixed,f.physical.physical,{},output).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(rd::PrepareSource(f.Config(),moving,f.physical.physical,{},output).status,n::TransactionStatus::Ok);
+}
 } // namespace type25_source_test

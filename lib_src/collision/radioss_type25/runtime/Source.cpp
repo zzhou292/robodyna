@@ -52,6 +52,10 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
      !assembly::detail::Supported(config.assembly)||config.normal.engine.kdtint!=config.assembly.engine.kdtint||
      config.normal.engine.idtmins!=config.assembly.engine.idtmins||config.normal.engine.idtmins_int!=config.assembly.engine.idtmins_int)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native response or search controls");
+  // OptimizedCandidate implements the qualified DRAD=0 / DGAPLOAD=0
+  // source branch. These controls must not be admitted and silently ignored.
+  if(source.drad!=0||source.gap_load!=0)
+    return Fail(TransactionStatus::UnsupportedProfile,"Native OPTCD requires zero DRAD and DGAPLOAD");
   NativeNormalResult probe;
   if(EvaluateNativeNormal(config.normal,{}, {},&probe)!=NormalStatus::Ok)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native normal response");
