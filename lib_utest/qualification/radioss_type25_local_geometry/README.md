@@ -70,3 +70,31 @@ cmake -S lib_utest/qualification/radioss_type25_local_geometry -B <fresh-build>
 Use the workstation guard for configure/build/tests, never a new vehicle run as
 a local geometry debugging loop. No whole-contact correctness or performance win
 is established by these coupons.
+
+## Defined-domain limitation: unassigned native XP
+
+The pinned donor does not assign XP/YP/ZP for every prepared row. General geometry
+assigns them when BB<=0 or when BB>0 enters the normal-interpolation branch.
+ISHARP1 later reads XP in its rounded-corner branch when a boundary was selected,
+NNE>0 and BB+(GAPV-GAPS)<0. Consequently BB>0 with no interpolation can reach an
+unassigned native read if the latter conditions also hold.
+
+A sufficient exclusion is GAPV>=GAPS for such rows: BB>0 then makes the rounded
+condition false. Nonnegative selected LA/LB/LC and gaps, together with a gap cap
+not below GAPS, imply that exclusion. Native candidate clamping is relevant, but
+the full producer/sliding/cache/gap-cap invariant has NOT been proved here.
+This module must not be presented as complete full-vehicle TYPE25 admission.
+
+The explicit negative coupon uses LB=.9, LC=.1 (computed LA<0), selected edge
+gaps0/0, other gaps4/4, GAPS=.2, a free selected edge, and secondary
+(.4,-.1,-2^-56). It gives BB>0, no interpolation and a tiny negative GAPV-GAPS,
+so the original rounded branch would read unassigned XP. This is an intentionally
+inconsistent prepared packet, not evidence that native Yaris selection emits it.
+
+Production returns InvalidInput before output publication for this undefined
+scratch path. The qualification wrapper's DEFINED=0 early return merely records
+that no defined donor result exists, and the C++ oracle throws. This observation
+guard is NOT an unchanged native numerical result, a successful comparison or
+a geometry repair. Qualification may proceed on the defined domain. Before
+vehicle admission, prove the selected producer excludes the class or explicitly
+review and qualify a matching CPU/GPU geometry repair/profile change.

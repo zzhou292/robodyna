@@ -3,6 +3,7 @@
 #include "Assertions.h"
 #include "NativeOracle.h"
 #include <limits>
+#include <stdexcept>
 namespace type25_geometry_test {
 TEST(Type25Geometry, CompleteSelectedBranchCorpusMatchesIndependentNativeGeometry) {
   const auto cases=Cases(); ASSERT_EQ(cases.size(),139u);
@@ -74,6 +75,22 @@ TEST(Type25Geometry, EqualBoundaryReferencesRequireIdenticalStoredBits) {
   EXPECT_EQ(n::EvaluateNativeRawGeometry(Profile(),in,&actual),n::GeometryStatus::InvalidInput);
   Same(actual,prior,true);
   EXPECT_ANY_THROW(OracleRaw(Profile(),in));
+}
+
+
+TEST(Type25Geometry, UndefinedNativeProjectionIsRejectedWithoutInventingAResult) {
+  auto in=Quad();
+  in.lb=.9;in.lc=.1;in.neighbors[0]=0;
+  in.main_gap[0]=in.main_gap[1]=0;
+  in.main_gap[2]=in.main_gap[3]=4;
+  in.secondary={.4,-.1,-0x1p-56};
+  // Deliberately inconsistent prepared weights; upstream native reachability
+  // is unproven. This witnesses an undefined scratch domain, not a result.
+  ASSERT_LT(1.-in.lb-in.lc,0.);
+  const auto prior=Sentinel<n::NativeUnitsTag>();auto actual=prior;
+  EXPECT_EQ(n::EvaluateNativeRawGeometry(Profile(),in,&actual),n::GeometryStatus::InvalidInput);
+  Same(actual,prior,true);
+  EXPECT_THROW(OracleRaw(Profile(),in),std::invalid_argument);
 }
 
 } // namespace type25_geometry_test

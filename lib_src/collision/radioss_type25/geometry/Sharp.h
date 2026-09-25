@@ -12,8 +12,8 @@ TL_MATH_HOST_DEVICE inline bool Sharp(const NativeGeometryInput& in, Work& w,
   if (!w.boundary) return true;
   const double main_gap = w.gap - in.secondary_gap;
   if (w.edge_distance > 0 && w.bb + main_gap < 0) {
-    // A valid native candidate defines XP on this branch. Reject malformed
-    // prepared data rather than fabricate the donor's unassigned scratch.
+    // Defined-domain restriction: upstream selection has not yet been proved
+    // to exclude this unassigned native scratch path. Reject rather than repair.
     if (!w.closest_defined) return false;
     const auto center = v::Add(w.closest, v::Scale(w.plane, main_gap));
     const auto direction = v::Subtract(in.secondary, center);
