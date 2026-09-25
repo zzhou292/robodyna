@@ -11,3 +11,10 @@
 Every output is staged and published only on success. Native/Si types prevent accidental domain mixing. SI conversion uses existing unit utilities and dimension-specific area, volume and pressure factors; native denominator floors are applied only after conversion. This bounded numerical admission rejects nonfinite arithmetic and unsupported branches without claiming identical unrestricted-Fortran error behavior.
 
 See `lib_utest/qualification/radioss_type25_coefficients/README.md` for the independent source oracle, case coverage, T3 source-selection caveat, tests and remaining physical binding gates. Passing this value layer does not establish complete vehicle startup coefficients or performance.
+
+
+`SolidNodal.h` and `SpringNodal.h` provide the separate native startup contact
+contribution values. Solid shares retain the H8/Penta6 raw occurrence mask;
+spring STR consumes resolved channels and the source length-mode policy. They
+do not perform whole-model accumulation, infer SI spring slope units, or replace
+ASSTIFI/beam STP/structural STI. All invalid/nonfinite results remain unpublished.

@@ -11,3 +11,9 @@ cc_test(
     data = glob(["native/*.py", "native/*.json", "native/*.F90", "native/*.F.in", "native/original/*"]) +
         ["//lib_utest/qualification/radioss_type25_selection:source_constants_helper"],
 )
+
+filegroup(
+    name = "startup_dimension_source",
+    srcs = ["native/original/starter_mvsiz_p.inc"],
+    visibility = ["//visibility:public"],
+)
