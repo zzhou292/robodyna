@@ -7,6 +7,10 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
+#include <limits>
+#include <stdexcept>
+#include <vector>
 namespace crash::cases::native_scene {
 namespace {
 using Access=qualification::NativeSceneAccess;
