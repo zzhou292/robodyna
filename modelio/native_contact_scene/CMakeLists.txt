@@ -14,3 +14,18 @@ add_test(NAME native_scene_json_compat COMMAND "${Python3_EXECUTABLE}" -B -m uni
   -s benchmarks/accepted_payloads -p "test_*.py")
 set_tests_properties(native_scene_material native_scene_export native_scene_json_compat PROPERTIES
   WORKING_DIRECTORY "${robo_scene_root}" RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+option(ROBO_DYNA_NATIVE_SCENE_READER "Build authenticated declared-source reader tests" OFF)
+if(ROBO_DYNA_NATIVE_SCENE_READER)
+  find_package(Chrono REQUIRED CONFIG)
+  include("${CMAKE_CURRENT_LIST_DIR}/DeclaredSource.cmake")
+  set(ROBO_DYNA_NATIVE_SCENE_EXPORT "" CACHE FILEPATH "Pinned capped scene declared-scene.json export")
+  if(NOT EXISTS "${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+    message(FATAL_ERROR "Scene reader qualification requires the explicit source export")
+  endif()
+  add_executable(native_scene_source_test DeclaredSourceTest.cpp)
+  target_link_libraries(native_scene_source_test PRIVATE robo_dyna_native_scene_declared GTest::gtest_main)
+  add_test(NAME native_scene_source COMMAND native_scene_source_test)
+  set_tests_properties(native_scene_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
+    ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+endif()
