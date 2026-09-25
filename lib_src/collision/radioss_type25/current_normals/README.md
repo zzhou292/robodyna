@@ -23,8 +23,9 @@ lifecycle or source activity ownership follows from this value API.
 Stages preserve the original cache semantics: copy prior faces; update tagged
 primaries and their opposite slots; save pre-transform free-edge eligibility;
 count original reference slots; transform free edges; fill bisectors; gather
-FLAG2 neighbor cache; average active faces. Inactive values and unused positive-
-coefficient T3 slots retain their original bits. Counts above two keep LBOUND and
+FLAG2 neighbor cache; average active faces. TAGE-skipped primary/opposite values and unused positive-coefficient T3 slots
+retain their original bits. ACTNOR0 skips FLAG2 only: TAGNOD may still cause
+FLAG1 to refresh such a face, so ACTNOR0 alone does not promise cache retention. Counts above two keep LBOUND and
 zero both bisectors as native LIMIT_CASE does. Every floating operation reuses
 shared normal_math leaves also used by the already qualified startup stages.
 Starter's power-derived floor stays distinct from the literal Engine float floor.
@@ -34,7 +35,8 @@ the same kernel barriers, unique face/reference writers and private trial buffer
 There are no floating-point atomics. Scratch includes work/neighbor float caches,
 pre-transform eligibility, TAGE, two selected slots per reference and staged
 reference output. Preflight validates complete topology/counts/ranges/values;
-all output and scratch aliases are rejected before writes. Any numerical failure
+the existing host arithmetic guard rejects non-RN/FTZ/trapping environments
+before numerical work, and all output/scratch aliases are rejected before writes. Any numerical failure
 leaves caller outputs unchanged. Accepted prior cache is always read-only.
 
 This component is under qualification. A successful value test is not a full

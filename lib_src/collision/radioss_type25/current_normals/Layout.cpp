@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Layout.h"
 #include "Admission.h"
+#include "../../self_contact_filters/Environment.h"
 #include <new>
 namespace tlfea::contact::radioss_type25::current_normals::detail {
 Report Plan(const Input& in,Limits limits,Layout& output,double& length) noexcept {
+  if(in.profile!=Profile::OrdinaryShellLocal||in.free_roster!=normal_activation::FreeRosterPolicy::FreshComplete)
+    return {Status::UnsupportedProfile};
+  if(!self_contact_filters::CompatibleHostArithmetic())return {Status::UnsupportedArithmetic};
   const auto admitted=Validate(in,limits,length);if(admitted.status!=Status::Ok)return admitted;
   Layout next;tl::util::BoundedArenaLayout arena(limits.scratch_bytes);
   const auto& t=in.topology;

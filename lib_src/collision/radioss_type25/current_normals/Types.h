@@ -4,7 +4,7 @@
 #include "../selection/lifecycle/Types.h"
 #include "../normal_activation/Types.h"
 namespace tlfea::contact::radioss_type25::current_normals {
-enum class Status { Ok,InvalidInput,UnsupportedProfile,UnsupportedTopology,NonfiniteResult,ResourceLimit };
+enum class Status { Ok,InvalidInput,UnsupportedProfile,UnsupportedTopology,NonfiniteResult,ResourceLimit,UnsupportedArithmetic };
 enum class Profile { Unspecified,OrdinaryShellLocal };
 // Immutable ordinary-shell topology. Admission verifies unique primary/partner
 // writers, reversed connectivity, node-bound reference identities and the exact

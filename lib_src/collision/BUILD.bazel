@@ -1244,5 +1244,5 @@ cc_library(
     hdrs = ["RadiossType25CurrentNormals.h"] + glob(["radioss_type25/current_normals/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_fixed_main_startup", ":radioss_type25_normal_activation",
-            ":radioss_type25_normal_math", "//lib_utils:bounded_arena"],
+            ":radioss_type25_normal_math", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena"],
 )
