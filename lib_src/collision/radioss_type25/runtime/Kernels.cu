@@ -17,7 +17,7 @@ __global__ void CheckNodes(Device d,tl::fea::NodalAssemblyView view) {
   for(std::size_t node=blockIdx.x*blockDim.x+threadIdx.x;node<d.source.node_count;node+=blockDim.x*gridDim.x) {
     const auto code=d.source.nodes[node].constraint;
     const unsigned world=((code&1)<<2)|(code&2)|((code&4)>>2);
-    if(view.translation_fixed_bits[node]!=world||d.source.nodes[node].skew!=0||
+    if(view.translation_fixed_bits[node]!=world||!SupportedConstraint(code,d.source.nodes[node].skew)||
        !normal_detail::Nonnegative(d.native_mass[node]))Fail(d,node,TransactionStatus::SourceMismatch);
     for(unsigned c=0;c<3;++c)
       if(!tl::math::Finite(view.accepted.position_xyz[3*node+c])||

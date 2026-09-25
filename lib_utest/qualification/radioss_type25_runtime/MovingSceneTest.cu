@@ -187,7 +187,7 @@ TEST(NativeType25MovingSceneCuda,PublisherDestructionRevokesAllNativeUseBeforeDe
 TEST(NativeType25MovingSceneCuda,SourceMetadataAlignmentAndEmptySpanContractsRejectAtStartup) {
   Rig rig;
   ASSERT_NO_THROW(rig.Initialize(ObservedSource::Limits(),false));const auto config=ObservedSource::Config();
-  for(unsigned field=0;field<6;++field) {
+  for(unsigned field=0;field<7;++field) {
     auto source=rig.source.View();const auto shift=[](const auto* p){return reinterpret_cast<const unsigned char*>(p)+1;};
     if(field==0)source.selection.nodes=reinterpret_cast<const l::Node*>(shift(source.selection.nodes));
     if(field==1)source.selection.mains=reinterpret_cast<const l::Main*>(shift(source.selection.mains));
@@ -195,6 +195,8 @@ TEST(NativeType25MovingSceneCuda,SourceMetadataAlignmentAndEmptySpanContractsRej
     if(field==3)source.selection.normal_to_main.offsets=reinterpret_cast<const std::uint32_t*>(shift(source.selection.normal_to_main.offsets));
     if(field==4)source.primary_parent_ids=reinterpret_cast<const std::uint64_t*>(shift(source.primary_parent_ids));
     if(field==5)source.selection.normal_to_main.entry_count=SIZE_MAX;
+    auto partial=rig.source.nodes;
+    if(field==6){partial[9].constraint=1;partial[9].skew=2;source.selection.nodes=partial.data();}
     n::Transaction rejected;const auto report=rejected.Initialize(config,source,rig.owner,*rig.publication,rig.fixture.physical,rig.Participants(),rig.Identity(),ObservedSource::Limits());
   EXPECT_NE(report.status,n::TransactionStatus::Ok);
   EXPECT_EQ(rejected.allocations().device_bytes,0u);

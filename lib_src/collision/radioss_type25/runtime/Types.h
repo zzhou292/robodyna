@@ -6,6 +6,14 @@
 #include "../candidates/InventoryTypes.h"
 namespace tlfea::contact::radioss_type25 {
 namespace lifecycle=selection::lifecycle;
+namespace runtime_detail {
+// Preserve literal native ISKEW (selection treats1 as its global-axis branch).
+// Without a full frame binder this transaction admits nonzero skew only for
+// entirely free/fixed translations: those subspaces are basis independent.
+TL_MATH_HOST_DEVICE inline bool SupportedConstraint(int code,int skew) noexcept {
+  return code>=0&&code<=7&&skew>=0&&(skew==0||code==0||code==7);
+}
+}
 enum class TransactionStatus { Ok,InvalidInput,UnsupportedProfile,ResourceLimit,
   NotInitialized,AlreadyInitialized,StaleAttempt,SourceMismatch,OwnerFailure,
   PublicationFailure,NumericalFailure,DeviceFailure,Unusable };

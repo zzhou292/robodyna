@@ -37,3 +37,11 @@ readback. Raw pair and optimized-cache capacities are distinct. Source fields
 never become guessed coefficients, normals or secondary gaps. Calls serialize
 with the physical owner. The owner and borrowed stream outlive the transaction;
 publisher-first destruction detaches the typed participant and expires its use.
+
+Native ISKEW values are retained. Continuation's literal source branch recognizes
+ISKEW1 as global-axis; positive values are not generically called local frames.
+This first physical binder admits nonzero skew with ICODT0/7 because the complete
+free/fixed translational subspace is basis independent. Partial masks with nonzero
+skew remain unsupported until a dedicated frame binding is supplied. Exact owner
+world masks, main zero velocity/reference coordinates and fixed rotation remain
+required. The observed wall has ICODT7/ISKEW1, not a fabricated zero skew.

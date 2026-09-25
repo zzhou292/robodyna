@@ -157,6 +157,14 @@ TEST(NativeType25RuntimeCuda,RetainedRowsRespectSourceForcePacketBoundaries) {
     f.accepted[1].row.irtlm[0]=33;f.accepted[1].row.irtlm[2]=3;
     f.Rebuild();CompareComplete(f,packet);}
 }
+TEST(NativeType25RuntimeCuda,NativeFreeFixedSkewTagsRemainLiteralThroughClassification) {
+  for(int skew:{1,3})for(int constraint:{0,7}) {
+    Fixture f;
+    for(auto& node:f.nodes){node.constraint=7;node.skew=skew;}
+    f.nodes[f.secondary[0].node].constraint=constraint;
+    CompareComplete(f,128);
+  }
+}
 TEST(NativeType25RuntimeCuda,EmptyOptimizedSetPreservesIncomingNodalValues) {
   Fixture f;f.positions[20]=100;f.spatial.clear();f.Rebuild();CompareComplete(f,2);
 }

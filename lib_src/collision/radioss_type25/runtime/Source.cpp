@@ -80,7 +80,7 @@ TransactionReport PrepareSource(const TransactionConfig& config,const FixedMainS
   next.positions.resize(s.node_count);next.native_mass.resize(s.node_count);
   std::vector<Vector> zero_velocity(s.node_count);
   for(std::size_t node=0;node<s.node_count;++node) {
-    if(s.nodes[node].source_id!=domain->nodes()[node].source_id||s.nodes[node].constraint<0||s.nodes[node].constraint>7||s.nodes[node].skew!=0)
+    if(s.nodes[node].source_id!=domain->nodes()[node].source_id||!SupportedConstraint(s.nodes[node].constraint,s.nodes[node].skew))
       return Fail(TransactionStatus::SourceMismatch,"Contact node identity/constraint differs from physical source",node);
     next.ids[node]=s.nodes[node].source_id;next.codes[node]=s.nodes[node].constraint;next.positions[node]=domain->nodes()[node].position;
     const double mass=ledger->nodes()[node].coefficients.mass;
