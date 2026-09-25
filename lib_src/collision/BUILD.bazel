@@ -1172,3 +1172,28 @@ cc_library(
     hdrs = ["RadiossType25Lifecycle.h"] + glob(["radioss_type25/selection/lifecycle/*.h"]),
     deps = [":radioss_type25_selection", ":radioss_type25_coefficients", ":surface_contact_primitives"],
 )
+
+
+# Concrete common-owner native TYPE25 transaction. Native qualification oracles
+# are never a transitive dependency of these complete production libraries.
+cc_library(
+    name = "radioss_type25_runtime_values",
+    srcs = ["radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp"],
+    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h"]),
+    deps = [":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
+            ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
+            "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_runtime_kernels",
+    srcs = ["radioss_type25/runtime/Kernels.cu"],
+    deps = [":radioss_type25_runtime_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_transaction",
+    srcs = ["radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp"],
+    deps = [":radioss_type25_runtime_kernels", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
