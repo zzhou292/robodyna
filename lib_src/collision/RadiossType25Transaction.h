@@ -5,6 +5,7 @@
 #include "../elements/publication/NativeContactPublicationState.h"
 #include <memory>
 namespace tlfea::contact::radioss_type25 {
+namespace runtime_qualification {class Access;}
 struct AcceptedContactBuffer {
   NativeGeometryHistory* rows=nullptr;
   int* initial_contact_flags=nullptr;
@@ -43,6 +44,7 @@ class Transaction {
   TransactionForecast allocations() const noexcept;
   TransactionDiagnostics last_diagnostics() const noexcept;
  private:
+  friend class runtime_qualification::Access;
   struct Impl;std::unique_ptr<Impl> impl_;
 };
 } // namespace tlfea::contact::radioss_type25

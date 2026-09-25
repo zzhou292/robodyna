@@ -1,0 +1,46 @@
+{
+  "schema": "type25.observed_runtime_fixture.v1",
+  "scope": "Qualification-only model/source operands and numerical expected outputs. Never physical restart or shipping source producer. Native mechanics remain external oracle.",
+  "files": [
+    {
+      "file": "scene.json",
+      "bytes": 5400,
+      "sha256": "d4f1b04b51efc4191942dd50e644cece571c011e451fc7774800b6b891769bd6",
+      "original_path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-startup-4/declared-scene.json",
+      "original_bytes": 5400,
+      "original_sha256": "d4f1b04b51efc4191942dd50e644cece571c011e451fc7774800b6b891769bd6"
+    },
+    {
+      "file": "startup.jsonl.xz",
+      "bytes": 452,
+      "sha256": "240c508340c06928c059c860f97d3a90b0811d0199efb22d6c7848c57aea26d5",
+      "original_path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-startup-4/native-startup.jsonl",
+      "original_bytes": 3197,
+      "original_sha256": "f1b56447ed57388a389290830debf69addf6d46c2b14677ed0aa684c14c613f1"
+    },
+    {
+      "file": "observation.jsonl.xz",
+      "bytes": 1936,
+      "sha256": "7e9e4755186c81ce250bc691be6beca6f68ec60f3015a88f92358d6b018498ea",
+      "original_path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-observation-4/native-observations.jsonl",
+      "original_bytes": 14062,
+      "original_sha256": "02fdf931655e88e064608791e162cdfd69e895b900c786b4b6f0eff1b31f2253"
+    },
+    {
+      "file": "sequence.jsonl.xz",
+      "bytes": 287468,
+      "sha256": "20b8246be7dc5666af03d027cdc0a2eacb6bb4c7d8ef96f98a741845d541849a",
+      "original_path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-sequence-5/native-sequence.jsonl",
+      "original_bytes": 4993307,
+      "original_sha256": "0291a6620770c12f86518dbe25466c15430eff623a328cc67e6961240a4897c9"
+    },
+    {
+      "file": "assembly.json",
+      "bytes": 627,
+      "sha256": "9389552ba66a41d84566074ce9edb97847d71da09723f650429b7aeb0c69369e",
+      "original_path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-assembly-1/native-assembly-controls.json",
+      "original_bytes": 627,
+      "original_sha256": "9389552ba66a41d84566074ce9edb97847d71da09723f650429b7aeb0c69369e"
+    }
+  ]
+}
