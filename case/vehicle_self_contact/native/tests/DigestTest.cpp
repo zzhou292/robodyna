@@ -17,7 +17,8 @@ TEST(NativeTopologyDigest, CompleteFieldCoverageIncludesSignedZerosAndExcludesAd
     [](auto& v){v.normals[0].x=std::copysign(0.f,-std::copysign(1.f,v.normals[0].x));},
     [](auto& v){++v.references[0].boundary;},[](auto& v){v.references[0].bisector[1].z+=.25f;}};
   for(std::size_t i=0;i<changes.size();++i) {
-    SCOPED_TRACE(i);Copied value(built.view);changes[i](value);
+    SCOPED_TRACE(i);
+    Copied value(built.view);changes[i](value);
     // Digest sensitivity is a value-representation test; mutated topology is
     // not being admitted or used to calculate geometry/forces.
     EXPECT_NE(d::TopologyDigest(value.View(),binding,1u<<20).sha256,expected.sha256);
@@ -42,6 +43,7 @@ TEST(NativeTopologyDigest, InputSourceRowsUnusedNodesAndUnitContextAreBound) {
   input=f.Inputs();input.origin[0].source_line++;EXPECT_NE(d::InputDigest(input,{},1u<<20).sha256,original);
   input=f.Inputs();input.units.length_m=1.;EXPECT_NE(d::InputDigest(input,{},1u<<20).sha256,original);
   input=f.Inputs();input.positions[0]=0.;EXPECT_NE(d::InputDigest(input,{},1u<<20).sha256,original);
-  input=f.Inputs();input.positions.pop_back();EXPECT_THROW(d::InputDigest(input,{},1u<<20),std::exception);
+  input=f.Inputs();input.positions.pop_back();
+  EXPECT_THROW(d::InputDigest(input,{},1u<<20),std::exception);
 }
 } // namespace crash::cases::vehicle_self_contact::native::test

@@ -40,7 +40,8 @@ TEST(NativeTopologyAssessment, SourceMismatchCapsAndCountOnlyForecastRejectBefor
   cap.host_bytes=plan.peak_host_bytes-1;EXPECT_FALSE(d::Plan(f.canonical,f.selected,{},cap).admitted);
   EXPECT_THROW(d::EvaluateValues(f.canonical,f.selected,{},cap),std::exception);
   ++cap.host_bytes;EXPECT_TRUE(d::Plan(f.canonical,f.selected,{},cap).admitted);
-  Config invalid;invalid.order=static_cast<Order>(99);EXPECT_THROW(d::Plan(f.canonical,f.selected,invalid,{}),std::exception);
+  Config invalid;invalid.order=static_cast<Order>(99);
+  EXPECT_THROW(d::Plan(f.canonical,f.selected,invalid,{}),std::exception);
   auto bad=f.Get<std::uint32_t>("shells_node_indices");bad[0]=11;f.Set("shells_node_indices",bad,4);
   EXPECT_THROW(f.Inputs(),std::exception);
 }

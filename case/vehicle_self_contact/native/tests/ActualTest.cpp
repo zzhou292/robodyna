@@ -37,7 +37,8 @@ void SourceCounts() {
 }
 }
 TEST(NativeTopologyAssessmentActual, ForecastCompleteSourceWithoutTopologyAllocation) {
-  ASSERT_NO_FATAL_FAILURE(SourceCounts());const auto forecast=Preflight(Actual());const auto doc=ForecastDocument(forecast);Write("forecast.json",doc);
+  ASSERT_NO_FATAL_FAILURE(SourceCounts());
+  const auto forecast=Preflight(Actual());const auto doc=ForecastDocument(forecast);Write("forecast.json",doc);
   EXPECT_TRUE(forecast.admitted);EXPECT_EQ(forecast.topology.expanded_mains,674184u);
   EXPECT_EQ(forecast.topology.maximum_references,2696736u);
   RecordProperty("peak_host_reservation_bytes",std::to_string(forecast.peak_host_bytes));
@@ -45,7 +46,8 @@ TEST(NativeTopologyAssessmentActual, ForecastCompleteSourceWithoutTopologyAlloca
   RecordProperty("tl_scratch_bytes",std::to_string(forecast.topology.scratch_bytes));
 }
 TEST(NativeTopologyAssessmentActual, CompleteSelectedCanonicalDomainHasOneReportedOutcome) {
-  ASSERT_NO_FATAL_FAILURE(SourceCounts());const auto copied=Actual();EXPECT_EQ(&copied.canonical().data(),&Actual().canonical().data());
+  ASSERT_NO_FATAL_FAILURE(SourceCounts());
+  const auto copied=Actual();EXPECT_EQ(&copied.canonical().data(),&Actual().canonical().data());
   const auto result=Assess(copied);Write("assessment.json",ResultDocument(result));
   EXPECT_EQ(result.counts.canonical_nodes,393165u);EXPECT_EQ(result.counts.selected_parents,337092u);
   EXPECT_EQ(result.counts.selected_q4,315963u);EXPECT_EQ(result.counts.selected_t3,21129u);
