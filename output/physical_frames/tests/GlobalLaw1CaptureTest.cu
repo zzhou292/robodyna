@@ -61,7 +61,8 @@ TEST(GlobalLaw1AcceptedFieldsCuda, RealMixedOwnerCommitDiscardAndRetryRetainZero
         records::test::Directory dir;
         const auto file=records::WriteFrame(dir.path,"accepted",context,{frame.stamp,frame.position_xyz.data(),
             frame.position_xyz.size(),frame.plastic_points.data(),frame.plastic_points.size()});
-        const auto loaded=records::ReadFrame(dir.path,context,file,{});
+        EXPECT_THROW(records::ReadFrame(dir.path,context,file,{}),std::exception);
+        const auto loaded=records::ReadFrame(dir.path,context,file,frame.stamp);
         EXPECT_EQ(loaded.position_xyz,frame.position_xyz);EXPECT_EQ(loaded.plastic_points,frame.plastic_points);
     }
 }
