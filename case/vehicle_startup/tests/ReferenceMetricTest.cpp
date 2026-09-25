@@ -76,4 +76,18 @@ TEST(VehicleReferenceMetric, NativeHistoryAndCompleteBindingIdentityRetainWorkin
     EXPECT_NE(before.inventory(),after.inventory());Same(after.qeph_reference(0).input.projection_working_length_m,.001);
     auto retained=after;EXPECT_EQ(retained.inventory(),after.inventory());Same(retained.qeph_reference(0).input.projection_working_length_m,.001);
 }
+TEST(VehicleReferenceMetric, NativeStartupOwnsRepresentabilityAndPreservesOutputOnExtremePositiveLengths) {
+    namespace q=tl::fea::qeph;q::ReferenceData visible,expected;
+    ASSERT_EQ(q::InitializeReference(Quad(),visible),q::Status::kSuccess);expected=visible;
+    detail::ReferenceStorage assessment;
+    for(double length:{1e-300,1e300}) {
+        const auto metric=a::QephReferenceMetric::Resolve(QephMetricProfile::AuthenticatedSourceLength,{1,length,1});
+        Same(metric.working_length_m(),length);const auto input=a::WithQephMetric(Quad(),metric);
+        EXPECT_EQ(q::InitializeReference(input,visible),q::Status::kInvalidInput);Same(visible,expected);
+        detail::Append(assessment,{},input);
+    }
+    EXPECT_EQ(assessment.counts.rejected,2u);EXPECT_TRUE(assessment.qeph.empty());
+    for(const auto& row:assessment.rows)EXPECT_EQ(row.status,ReferenceStatus::InvalidInput);
+}
+
 }
