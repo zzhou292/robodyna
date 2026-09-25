@@ -59,9 +59,9 @@ whole-composition budget. No 20 GB workstation or vehicle budget is inferred
 from this tiny transaction test.
 
 On the current incoming ABI the physical publisher's roster-absent owned payload
-remains 6,880 bytes; the tiny startup reservation remains 8,704 bytes. The same
+remains 6,888 bytes; the tiny startup reservation remains 8,712 bytes. The same
 checked proof layout at the current original
-372,435 nodes / 11,165 attachments gives 44,876,960 bytes of additional startup
+372,435 nodes / 11,165 attachments gives 44,876,968 bytes of additional startup
 reservation. This is an arithmetic forecast, not an original-owner execution or
 a second charge for already-owned source/participant backings.
 
