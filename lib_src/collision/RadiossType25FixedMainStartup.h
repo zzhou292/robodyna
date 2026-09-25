@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "radioss_type25/startup/Types.h"
+#include "radioss_type25/startup/CoatingOrientation.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::startup {
 // Host startup path. The caller owns bounded arenas and all borrowed source

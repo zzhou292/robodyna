@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType25CoatingOrientation LANGUAGES CXX Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25FixedMainStartup.cmake")
+set(native "${CMAKE_CURRENT_BINARY_DIR}/native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${native}"
+  RESULT_VARIABLE prepared ERROR_VARIABLE diagnostic)
+if(NOT prepared EQUAL 0)
+  message(FATAL_ERROR "Pinned coating orientation source failed: ${diagnostic}")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  native/prepare.py native/source-manifest.json native/Wrapper.F90 native/original/i24surfi.F
+  ../radioss_type25_selection/native/Sources.py ../radioss_type25_normal/native/original/constant_mod.F)
+add_library(type25_coating_orientation_oracle STATIC NativeOracle.cpp
+  "${native}/Constants.F90" "${native}/SegIns.F" "${native}/Wrapper.F90")
+set_target_properties(type25_coating_orientation_oracle PROPERTIES Fortran_MODULE_DIRECTORY "${native}")
+target_include_directories(type25_coating_orientation_oracle PRIVATE "${native}")
+target_link_libraries(type25_coating_orientation_oracle PUBLIC tl_radioss_type25_fixed_main_startup)
+target_compile_options(type25_coating_orientation_oracle PRIVATE
+  "$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-ffixed-line-length-none;-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
+add_executable(type25_coating_orientation_host HostTest.cpp)
+target_link_libraries(type25_coating_orientation_host PRIVATE type25_coating_orientation_oracle GTest::gtest_main)
+add_test(NAME type25_coating_orientation_host COMMAND type25_coating_orientation_host)
+add_executable(type25_coating_orientation_consumer Consumer.cpp)
+target_link_libraries(type25_coating_orientation_consumer PRIVATE tl_radioss_type25_fixed_main_startup)
+add_test(NAME type25_coating_orientation_consumer COMMAND type25_coating_orientation_consumer)
+add_test(NAME type25_coating_orientation_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${native}" --check)
+set_tests_properties(type25_coating_orientation_host type25_coating_orientation_consumer type25_coating_orientation_source
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+option(TYPE25_COATING_ORIENTATION_CUDA "Build actual CUDA orientation qualification" OFF)
+if(TYPE25_COATING_ORIENTATION_CUDA)
+  enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
+  add_executable(type25_coating_orientation_cuda CudaTest.cu)
+  target_link_libraries(type25_coating_orientation_cuda PRIVATE type25_coating_orientation_oracle GTest::gtest_main CUDA::cudart)
+  set_target_properties(type25_coating_orientation_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_test(NAME type25_coating_orientation_cuda COMMAND type25_coating_orientation_cuda)
+  set_tests_properties(type25_coating_orientation_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+endif()
