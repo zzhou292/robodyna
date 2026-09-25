@@ -32,5 +32,30 @@
     "USE TRI7BOX to USE LIFECYCLE_FOREIGN only",
     "private constants/module and process COMMON names; ISO_C_BINDING binary64/C int boundary",
     "allocation adapters preserve original temporary integer arrays; no numerical source translation"
-  ]
+  ],
+  "abi": {
+    "membership": {
+      "arguments": 8,
+      "counts": "NSN, NRTM, occurrence count",
+      "phase": "1 continuation, 2 new impact",
+      "outputs": "one-based complete INDEX snapshot and count; API-zero unused tail"
+    },
+    "prepare1": {
+      "arguments": 13,
+      "counts": "NSN, NRTM, NADMSR, retained occurrence count",
+      "arrays": "native column-major IRECT(4,NRTM), ADMSR(4,NRTM), IRTLM(4,NSN), TIME_S(2,NSN), complete FARM/PENM/LBM/LCM(4,count), ISLIDE(4,NSN)"
+    },
+    "expand": {
+      "arguments": 18,
+      "counts": "NSN, NRTM, NADMSR, capacity, normal-incidence length, removal-incidence length",
+      "offsets": "native zero-based prefix offsets; entries/native references remain one-based",
+      "outputs": "complete K_STOK count; native I_STOK and appended arrays change only when full append fits"
+    },
+    "keep": {
+      "arguments": 13,
+      "counts": "NSN, NRTM, occurrence count, positive index count, node-map length",
+      "arrays": "actual CAND_N/E, INDEX, native global main and node identities, complete IRTLM/PENM/PENE_OLD/SECND_FR/TIME_S/STIF_OLD",
+      "outputs": "native signed occurrence markers and source row clearing; unchanged history fields retained"
+    }
+  }
 }

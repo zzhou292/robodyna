@@ -24,7 +24,7 @@ def generated():
         assert template.count(marker) == 1
         template = template.replace(marker, block)
     result["LifecycleMembership.F"] = template
-    for name in ["LifecycleBoundary.F90", "LifecycleMemory.F90"]:
+    for name in ["LifecycleBoundary.F90", "LifecycleMemory.F90", "LifecycleSliding.F90"]:
         result[name] = (ROOT / name).read_text()
     result["implicit_f.inc"] = ("      USE ISO_C_BINDING\n      USE LIFECYCLE_CONSTANTS\n"
                                 "      IMPLICIT NONE\n#define my_real REAL(C_DOUBLE)\n")
