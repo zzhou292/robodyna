@@ -16,6 +16,9 @@ def prepare():
     def emit(kind,name,values):
         value=lambda x:float(x).hex() if kind=="double" else str(int(x))
         text.append("inline constexpr "+kind+" "+name+"[]={"+",".join(map(value,values))+"};")
+    text.append("inline constexpr int InputCycle="+str(rows["main"]["clock"]["NCYCLE"])+";")
+    text.append("inline constexpr int ClassificationCycle="+str(rows["classification"]["clock"]["NCYCLE"])+";")
+    text.append("inline constexpr double ClassificationTime="+float(rows["classification"]["clock"]["TT"]).hex()+";")
     emit("double","Positions",main["X"]);emit("std::uint64_t","Ids",main["ITAB"])
     emit("std::uint32_t","PrimaryNodes",[x-1 for x in classification["IRECT"][:4*p]])
     emit("int","Connectivity",classification["IRECT"]);emit("int","Roles",classification["MSEGTYP"])
