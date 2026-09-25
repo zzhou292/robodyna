@@ -1,0 +1,31 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete native masked extrema routine and verbatim NTY25 budget block; test-only boundary wrappers",
+  "files": [
+    {
+      "path": "original/i25buce_crit.F",
+      "bytes": 11051,
+      "sha256": "8a0a89c4f3a11da17d308dd3b13fee0a3e48be577b6fbb8f1a9c44b3fb38bb99"
+    },
+    {
+      "path": "original/intcrit.F",
+      "bytes": 22674,
+      "sha256": "fc0787bea51c23494e8105ce17673dee1bd8c1108e60198932e8eae4da19bf4a"
+    },
+    {
+      "path": "original/i25xsave.F90",
+      "bytes": 10380,
+      "sha256": "a1f8d577954a3121a77327ba53a12cbf70adb7e3b39c7dca3ca1cf3d276f9fb2"
+    },
+    {
+      "path": "original/i25gap3.F",
+      "bytes": 4941,
+      "sha256": "caf82b3a181909433fb96ef81743a5cf57ea02eb59a43e17e4cb9a54b7a7ad3f"
+    },
+    {
+      "path": "original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ]
+}
