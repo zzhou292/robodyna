@@ -12,7 +12,9 @@ struct Element {
   Material material;
   Failure failure;
 };
-static_assert(sizeof(Element)==1072,"Immutable QBAT source/parameter row is budgeted exactly");
+// Two retained ReferenceInput copies each add an8-byte authenticated metric.
+// The arena forecast below uses sizeof(Element), never this former byte count.
+static_assert(sizeof(Element)==1088,"Immutable QBAT source/parameter row is budgeted exactly");
 struct Model {
   BatchConfig config;
   Element* element=nullptr;
