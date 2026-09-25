@@ -11,6 +11,18 @@ void RigidStorage::InitializeState(double* tail) const noexcept {
 
 NodalReport ForecastRigidStorage(const NodalRigidAssemblyBinding& binding,const NodalStateConfig& config,
     RigidStorageLayout& output) noexcept {
+  if (binding.explicitly_empty()) {
+    if(config.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart)
+      return {NodalStatus::UnsupportedTemporalScheme,"Empty physical rigid scope requires staggered initialization"};
+    if (binding.domain()->node_count()!=config.node_count)
+      return {NodalStatus::InvalidInput,"Empty rigid binding differs from the physical owner extent"};
+    const auto bytes=binding.owned_payload_bytes()+sizeof(NodalRigidAssemblyBinding);
+    if (bytes<binding.owned_payload_bytes()||!config.rigid_limits.max_host_bytes||
+        bytes>config.rigid_limits.max_host_bytes)
+      return {NodalStatus::ResourceLimit,"Empty rigid source exceeds retained host cap"};
+    RigidStorageLayout empty;empty.host_bytes=bytes;output=empty;
+    return {NodalStatus::Ok,"Explicit empty rigid source requires no rigid device storage"};
+  }
   if (!binding.prepared()||binding.domain()->node_count()!=config.node_count||binding.groups().size()==0)
     return {NodalStatus::InvalidInput,"Prepared rigid binding differs from the physical owner extent"};
   if(config.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart)
@@ -31,6 +43,10 @@ NodalReport ForecastRigidStorage(const NodalRigidAssemblyBinding& binding,const 
 NodalReport PrepareRigidStorage(const NodalRigidAssemblyBinding& binding,const NodalStateConfig& config,
     HostNodalKinematicsView input,const double* inverse_mass,const NodalDofConfig& dofs,
     const RigidStorageLayout& layout,std::unique_ptr<RigidStorage>& output) {
+  if (binding.explicitly_empty()) {
+    output.reset();
+    return {NodalStatus::Ok,"Explicit empty rigid source has no rigid groups"};
+  }
   auto next=std::make_unique<RigidStorage>();
   next->info={binding.parts()->topology()->source_instance_id(),binding.groups().size(),binding.members().size(),
     binding.parts()->roots().size(),binding.plain_source_instance_id()};

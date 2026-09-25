@@ -48,7 +48,7 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
   const auto n = model.node_count;
   const auto r = model.row_count;
   const cin::ForceTrial force{accepted, loads, tail, tail+n, work, work+n,
-    tail+4*n, tail+4*n+r, tail+4*n+2*r, work+2*n, patches, activity};
+    r ? tail+4*n : nullptr, r ? tail+4*n+r : nullptr, tail+4*n+2*r, work+2*n, patches, activity};
   auto stage = transfers_prepared ? cin_advance::force_transfers::Apply(input)
       : inputs_prepared ? cin::detail::TransferForceTrial(model, force)
       : cin::PrepareForceTrial(model, force);

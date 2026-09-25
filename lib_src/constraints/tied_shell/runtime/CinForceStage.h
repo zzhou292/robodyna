@@ -6,18 +6,23 @@
 namespace tl::constraints::tied_shell::cin {
 namespace detail {
 TL_TIED_PATCH_HD inline StageReport CheckForcePointers(StageView model, ForceTrial trial) noexcept {
-  if (!model.rows || !model.dependent_nodes || !model.node_count || !model.row_count ||
+  const bool empty=model.explicitly_empty;
+  if ((empty ? (model.row_count || model.witness_count || model.rows || model.first_witness ||
+                 trial.saved_secondary_mass || trial.saved_secondary_inertia || trial.patches || trial.witness_activity) :
+                (!model.row_count || !model.rows || !trial.saved_secondary_mass ||
+                 !trial.saved_secondary_inertia || !trial.patches || !trial.witness_activity)) ||
+      !model.dependent_nodes || !model.node_count ||
       !trial.position_xyz || !trial.loads || !trial.mass || !trial.inertia ||
       !trial.translational_stiffness || !trial.rotational_stiffness ||
-      !trial.saved_secondary_mass || !trial.saved_secondary_inertia ||
-      !trial.numerical_mass || !trial.entry_inertia || !trial.patches || !trial.witness_activity) {
+      !trial.numerical_mass || !trial.entry_inertia) {
     return {StageStatus::InvalidInput};
   }
   return {};
 }
 TL_TIED_PATCH_HD inline StageReport CheckForceNode(StageView model, ForceTrial trial,
     std::uint32_t i) noexcept {
-  if (!Nonnegative(trial.mass[i]) || !Nonnegative(trial.inertia[i]) ||
+  if ((model.explicitly_empty && model.dependent_nodes[i]) ||
+      !Nonnegative(trial.mass[i]) || !Nonnegative(trial.inertia[i]) ||
       !Nonnegative(trial.translational_stiffness[i]) || !Nonnegative(trial.rotational_stiffness[i]) ||
       !tied_shell::detail::math::Finite(ReadXyz(trial.position_xyz, i))) {
     return {StageStatus::InvalidInput, UINT32_MAX, i};

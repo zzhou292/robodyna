@@ -11,7 +11,8 @@ TL_TIED_PATCH_HD inline void WriteXyz(double* field, std::uint32_t node, Vec3 va
   field[3*node+2] = value.z;
 }
 TL_TIED_PATCH_HD inline bool MotionPointersValid(StageView model, MotionTrial trial) noexcept {
-  return model.rows && trial.patches && trial.velocity_xyz && trial.angular_velocity_xyz &&
+  return (model.explicitly_empty ? (!model.row_count && !model.witness_count && !model.rows && !trial.patches) :
+      (model.rows && trial.patches)) && trial.velocity_xyz && trial.angular_velocity_xyz &&
       trial.acceleration_xyz && trial.angular_acceleration_xyz;
 }
 TL_TIED_PATCH_HD inline StageReport PrepareMotionRow(StageView model, MotionTrial trial,

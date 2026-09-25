@@ -4,6 +4,7 @@
 namespace tl::fea {
 struct NodalRigidAssemblyBinding::Impl:rigid_binding_detail::Storage {
   explicit Impl(const rigid::NodalRigidPartAssemblyModel& p):Storage(p) {}
+  explicit Impl(const NodalCoefficientLedger& source):Storage(source) {}
 };
 RigidBindingReport NodalRigidAssemblyBinding::Initialize(const rigid::NodalRigidPartAssemblyModel& parts,
     const NodalRigidGroupModel* plain,RigidBindingLimits limits) noexcept {
@@ -29,14 +30,44 @@ RigidBindingReport NodalRigidAssemblyBinding::Initialize(const rigid::NodalRigid
     return Fail(S::ResourceLimit,"Combined rigid binding startup allocation failed");
   }
 }
+RigidBindingReport NodalRigidAssemblyBinding::InitializeEmpty(
+    const NodalCoefficientLedger& source,RigidBindingLimits limits) noexcept {
+  using namespace rigid_binding_detail;
+  if(impl_)return Fail(S::AlreadyInitialized,"Rigid binding is immutable");
+  if(!source.prepared()||!source.domain()||!source.domain()->prepared()||
+      !source.domain()->node_count()||source.scope().uncovered_nodes||
+      source.nodes().size()!=source.domain()->node_count())
+    return Fail(S::InvalidInput,"Empty rigid scope requires a complete prepared physical ledger");
+  const RigidBindingLimits hard;
+  if(limits.max_groups>hard.max_groups||limits.max_members>hard.max_members||
+      limits.max_members_per_group>hard.max_members_per_group||!limits.max_nodes||
+      limits.max_nodes>hard.max_nodes||source.domain()->node_count()>limits.max_nodes||
+      !limits.max_host_bytes||limits.max_host_bytes>hard.max_host_bytes)
+    return Fail(S::ResourceLimit,"Empty rigid binding exceeds explicit resource bounds");
+  const auto backing=source.owned_payload_bytes();
+  const auto header=sizeof(NodalRigidAssemblyBinding)+sizeof(Impl)+64;
+  if(backing<sizeof(source)||header>limits.max_host_bytes||
+      backing-sizeof(source)>limits.max_host_bytes-header)
+    return Fail(S::ResourceLimit,"Empty rigid binding retained ledger exceeds byte cap");
+  try {
+    auto next=std::make_shared<Impl>(source);
+    next->owned=next->startup=header+backing-sizeof(source);
+    impl_=std::move(next);return {};
+  } catch(const std::bad_alloc&) {
+    return Fail(S::ResourceLimit,"Empty rigid binding source allocation failed");
+  }
+}
+bool NodalRigidAssemblyBinding::explicitly_empty() const noexcept {
+  return impl_&&impl_->empty_scope;
+}
 const rigid::NodalRigidPartAssemblyModel* NodalRigidAssemblyBinding::parts() const noexcept {
-  return impl_?&impl_->parts:nullptr;
+  return impl_&&!impl_->empty_scope?&impl_->parts:nullptr;
 }
 const NodalCoefficientLedger* NodalRigidAssemblyBinding::coefficients() const noexcept {
-  return impl_?impl_->parts.coefficients():nullptr;
+  return impl_?(impl_->empty_scope?&impl_->empty_coefficients:impl_->parts.coefficients()):nullptr;
 }
 const NodalNodeDomain* NodalRigidAssemblyBinding::domain() const noexcept {
-  return impl_?impl_->parts.coefficients()->domain():nullptr;
+  return impl_?coefficients()->domain():nullptr;
 }
 std::uint64_t NodalRigidAssemblyBinding::plain_source_instance_id() const noexcept {
   return impl_?impl_->plain_source:0;

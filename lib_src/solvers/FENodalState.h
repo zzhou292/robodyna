@@ -271,6 +271,8 @@ class FENodalState {
                          const NodalCinStartup&, const NodalRigidGroupModel* = nullptr);
   // Prepared PART and plain groups in one owner. Requires VehicleAssembly
   // limits, exact source coefficients and kinematically present member rotation.
+  // Explicit empty rigid bindings require staggered startup and the physical
+  // CIN coefficient store (possibly empty); raw fixed-node M/J remain proved.
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalRigidAssemblyBinding&, const NodalCinStartup* = nullptr);
@@ -323,6 +325,15 @@ class FENodalState {
   // Immutable source-role query only: present rotations and unfixed world DOFs.
   // Authentic PART/CIN zero inverses are allowed; no coefficients are inferred.
   NodalReport ValidateFreeRotationalNodes(const std::size_t*,std::size_t count) const noexcept;
+  // Read-only role query allowing actual fixed world components; rotations must
+  // remain present. No allocation, device operation or physical authority.
+  NodalReport ValidatePresentRotationalNodes(const std::size_t*,std::size_t count) const noexcept;
+  // Supplied-readback predicate, requiring the caller's preceding authenticated
+  // CopyAccepted at this fresh accepted stamp; not an independent device read.
+  // It compares exact velocity bits against THIS owner's immutable fixed masks;
+  // it does not certify arbitrary caller data as an owner readback.
+  NodalReport ValidateInitialConstrainedTranslation(const NodalStamp&,const double* velocity_xyz,
+      std::size_t nodes,tl::math::Vec3 common_velocity) const noexcept;
   NodalReport SealAssembly(const NodalTrialToken&);
   // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.

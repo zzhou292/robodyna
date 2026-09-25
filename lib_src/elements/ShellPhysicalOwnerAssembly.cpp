@@ -7,7 +7,7 @@ NodalReport BorrowAssembly(FENodalState& owner,const NodalTrialToken& token,
     const NodalStamp& expected,const NodalAssemblyView& view,std::size_t witnesses,
     NodalCinAssemblyView* output) noexcept {
   using trial_identity::Disjoint;
-  if (!output || !witnesses || witnesses>NodalCinLimits{}.max_witnesses ||
+  if (!output || witnesses>NodalCinLimits{}.max_witnesses ||
       !Disjoint(output,sizeof(*output),&owner,sizeof(owner)) ||
       !Disjoint(output,sizeof(*output),&token,sizeof(token)) ||
       !Disjoint(output,sizeof(*output),&expected,sizeof(expected)) ||
@@ -29,7 +29,7 @@ NodalReport BorrowAssembly(FENodalState& owner,const NodalTrialToken& token,
       next.attempt!=view.attempt || !next.qualification_id ||
       next.node_count!=expected.node_count || next.witness_count!=witnesses ||
       next.stream!=view.stream || !next.translational_stiffness ||
-      !next.rotational_stiffness || !next.witness_activity) {
+      !next.rotational_stiffness || (witnesses ? !next.witness_activity : next.witness_activity!=nullptr)) {
     return {NodalStatus::StaleTrial,"Physical contributor CIN destination identity differs"};
   }
   *output=next;

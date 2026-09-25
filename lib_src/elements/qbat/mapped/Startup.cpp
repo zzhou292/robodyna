@@ -22,12 +22,15 @@ BatchReport Validate(const BatchConfig& config,const ShellPhysicalBinding& physi
       !config.qualification_id || config.usage!=BatchUsage::CoupledForces ||
       config.element_count!=physical.shells()->qbat_count() ||
       owner.node_count!=physical.domain()->node_count() ||
-      !shell_startup_detail::ValidStartup(config.startup,true)) {
+      !shell_startup_detail::ValidStartup(config.startup,true,true)) {
     return {BatchStatus::InvalidInput,"Mapped QBAT requires the complete family and fresh coupled owner"};
   }
-  if (source.range_count!=source.model->rows().count || !source.range_count ||
-      source.range_count>NodalCinLimits{}.max_attachments || !source.witness_count ||
-      source.witness_count>NodalCinLimits{}.max_witnesses || !source.ranges || !source.witnesses ||
+  if (source.range_count!=source.model->rows().count ||
+      source.range_count>NodalCinLimits{}.max_attachments ||
+      source.witness_count>NodalCinLimits{}.max_witnesses ||
+      (source.model->explicitly_empty() ?
+        (source.range_count || source.witness_count || source.ranges || source.witnesses) :
+        (!source.range_count || !source.witness_count || !source.ranges || !source.witnesses)) ||
       !source.model->domain()->SharesStorage(*physical.domain())) {
     return {BatchStatus::InvalidInput,"Mapped QBAT CIN roster/domain differs or exceeds the supported scope"};
   }
@@ -77,7 +80,8 @@ BatchReport BuildModel(const BatchConfig& config,const ShellPhysicalBinding& phy
     model.inertia[node]=c.isotropic_inertia;
     model.physical[node]=c.shell.physical_inertia;
     model.added[node]=c.shell.added_inertia;
-    if (!shell_startup_detail::AddInitialTranslationKinetic(c.mass,
+    if (config.startup.kind!=ShellBatchStartupKind::ReferenceConstrainedUniformTranslation &&
+        !shell_startup_detail::AddInitialTranslationKinetic(c.mass,
         config.startup.uniform_velocity,initial_kinetic)) {
       return {BatchStatus::InvalidMass,"Mapped QBAT initial kinetic domain overflow",UINT32_MAX,
           static_cast<std::uint32_t>(node)};

@@ -37,6 +37,7 @@ struct StageView {
   const std::uint8_t* dependent_nodes = nullptr;
   std::uint32_t node_count = 0, row_count = 0, witness_count = 0;
   const std::uint32_t* first_witness = nullptr;
+  bool explicitly_empty = false; // Prepared complete zero-attachment scope only.
 };
 // Owner-private trial destinations. No independently published state or clock.
 // Force is SoA Fx/Fy/Fz/Cx/Cy/Cz; positions and accelerations are packed xyz.

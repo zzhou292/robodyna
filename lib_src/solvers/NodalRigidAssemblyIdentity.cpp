@@ -27,6 +27,15 @@ NodalReport FENodalState::ValidateRigidAssemblyBinding(const NodalRigidAssemblyB
   if (!impl_) return {NodalStatus::NotInitialized,"Owner is not initialized"};
   const auto& state=*impl_;
   if (!state.usable) return {NodalStatus::DeviceFailure,"CUDA owner is poisoned"};
+  if (binding.explicitly_empty()) {
+    if (!state.empty_rigid_source||state.rigid_groups||
+        !SameRigidGroupInfo(state.stamp.rigid_groups,NodalRigidGroupInfo{})||
+        binding.domain()->node_count()!=state.stamp.node_count||
+        !binding.domain()->SharesStorage(*state.empty_rigid_source->domain())||
+        !binding.coefficients()->Matches(*state.empty_rigid_source->coefficients()))
+      return {NodalStatus::InvalidInput,"Empty rigid binding is not the owner's retained physical source"};
+    return {NodalStatus::Ok,"Explicit empty rigid source matches the actual physical owner"};
+  }
   if (!binding.prepared() || !state.rigid_groups || !state.stamp.rigid_groups.part_group_count ||
       binding.domain()->node_count()!=state.stamp.node_count) {
     return {NodalStatus::InvalidInput,"Owner requires its complete prepared rigid assembly binding"};

@@ -35,9 +35,10 @@ struct CinLayout {
   std::size_t optional_device_bytes = 0;
   std::size_t scratch_values = 0;
   bool Initialize(std::size_t n, std::size_t r, std::size_t w,
-      const NodalCinLimits& limits, std::size_t host_control_bytes, std::size_t group_count = 0) noexcept {
-    if (!n || group_count > n/2 || n > MaxActiveNodalStateNodes || !r || r > limits.max_attachments ||
-        limits.max_attachments > 65536 || !w || w > limits.max_witnesses ||
+      const NodalCinLimits& limits, std::size_t host_control_bytes, std::size_t group_count = 0, bool explicitly_empty = false) noexcept {
+    if (!n || group_count > n/2 || n > MaxActiveNodalStateNodes ||
+        (explicitly_empty ? (r!=0 || w!=0) : (!r || !w)) || r > limits.max_attachments ||
+        limits.max_attachments > 65536 || w > limits.max_witnesses ||
         limits.max_witnesses > 262144 || !limits.max_host_bytes ||
         limits.max_host_bytes > (128u << 20) || !limits.max_device_bytes ||
         limits.max_device_bytes > (128u << 20)) return false;

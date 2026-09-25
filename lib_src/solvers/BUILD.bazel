@@ -73,7 +73,7 @@ cuda_library(
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [":explicit_step_stability", ":nodal_seal_row_values", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
             "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index",
-            ":cin_structural_step_values", ":cin_physical_main_values"],
+            ":cin_structural_step_values", ":cin_physical_main_values", "//lib_src/math:scalar_bits"],
 )
 
 cc_library(

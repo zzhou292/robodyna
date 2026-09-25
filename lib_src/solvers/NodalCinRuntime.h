@@ -12,6 +12,9 @@ struct NodalCinLimits {
   std::size_t max_device_bytes = 128u << 20;
 };
 struct NodalCinStartup {
+  // A prepared explicitly-empty model means zero attachments, but still owns
+  // physical raw M/J, ordinary-node advance and the complete structural screen.
+  // In that scope witness ranges/witnesses are canonical null with count zero.
   const constraints::tied_shell::TiedCinAttachmentModel* model = nullptr;
   // Complete current coefficients, before the first CIN transfer. These are
   // explicit supplied values, not inferred from reciprocal source inputs.

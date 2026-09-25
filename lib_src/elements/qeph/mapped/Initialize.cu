@@ -11,7 +11,9 @@ BatchReport QephBatch::InitializeMapped(const QephBatchConfig& config,const Shel
   auto report=mapped::MakeForecast(config,physical,source,limits,sizeof(Impl),forecast);
   if (report.status!=BatchStatus::Success) return report;
   const auto map=physical.mapping()->mapping();
-  auto roles=owner.ValidateFreeRotationalNodes(map.data(),map.size());
+  auto roles=(config.startup.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation ?
+      owner.ValidatePresentRotationalNodes(map.data(),map.size()) :
+      owner.ValidateFreeRotationalNodes(map.data(),map.size()));
   if (roles.status==NodalStatus::Ok && physical.execution()) {
     roles=owner.ValidateRigidAssemblyBinding(*physical.execution()->rigid());
   }

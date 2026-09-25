@@ -28,3 +28,18 @@ The count fixture is synthetic; original full-case owner admission remains.
 This is the immutable startup association required by the next owner increment.
 No live PART stepping, zero-J rigid-member recurrence, CIN coexistence or
 complete-vehicle dynamics is claimed by this gate.
+
+## Explicit empty rigid scope
+
+InitializeEmpty binds a complete prepared physical coefficient ledger and domain
+without creating a PART, rigid member, tensor, primary or rigid device state.
+It is distinct from an uninitialized binding. All ordinary shell execution roles
+remain constitutive; an attempted rigid-skin catalog still rejects. Exact retained
+source backing and bounded host footprint remain observable after input handles die.
+The nodal owner only accepts this scope when its binding overload explicitly
+retained it at initialization. A bare unrelated owner cannot authenticate it by
+matching a zero group count. Existing nonempty initialization is unchanged.
+The first owner admission requires staggered stepping and a real CIN raw
+coefficient store (which may have an explicitly empty attachment roster), so
+fixed-node M/J are authenticated too. It does not admit rigid force-stage capture
+without actual groups. These guards are independent of immutable host binding.

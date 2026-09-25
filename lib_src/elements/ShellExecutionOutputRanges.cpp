@@ -45,6 +45,12 @@ bool OutputDisjoint(const ShellExecutionBinding& execution,
 bool OutputDisjoint(const NodalRigidAssemblyBinding& binding,
     const void* output,std::size_t bytes) noexcept {
   if (!binding.prepared()) return false;
+  if (binding.explicitly_empty()) {
+    const auto& ledger=*binding.coefficients();
+    return Range(output,bytes,&binding)&&Range(output,bytes,&ledger)&&
+        ViewRange(output,bytes,ledger.nodes())&&Range(output,bytes,ledger.domain())&&
+        ViewRange(output,bytes,ledger.domain()->nodes());
+  }
   const auto& parts=*binding.parts();
   return Range(output,bytes,&binding) &&
       ViewRange(output,bytes,binding.groups()) &&

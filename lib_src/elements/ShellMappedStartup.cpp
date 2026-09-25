@@ -11,12 +11,15 @@ NodalReport Validate(const NodalStamp& owner,const ShellBatchStartup& startup,
       owner.fixed_dt<=0 || owner.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart ||
       owner.velocity_phase!=NodalVelocityPhase::Collocated ||
       owner.node_count!=physical.domain()->node_count() ||
-      !shell_startup_detail::ValidStartup(startup,true)) {
+      !shell_startup_detail::ValidStartup(startup,true,true)) {
     return {NodalStatus::InvalidInput,"Mapped shells require a complete physical scope and fresh staggered owner"};
   }
-  if (source.range_count!=source.model->rows().count || !source.range_count ||
-      source.range_count>NodalCinLimits{}.max_attachments || !source.witness_count ||
-      source.witness_count>NodalCinLimits{}.max_witnesses || !source.ranges || !source.witnesses ||
+  if (source.range_count!=source.model->rows().count ||
+      source.range_count>NodalCinLimits{}.max_attachments ||
+      source.witness_count>NodalCinLimits{}.max_witnesses ||
+      (source.model->explicitly_empty() ?
+        (source.range_count || source.witness_count || source.ranges || source.witnesses) :
+        (!source.range_count || !source.witness_count || !source.ranges || !source.witnesses)) ||
       !source.model->domain()->SharesStorage(*physical.domain())) {
     return {NodalStatus::InvalidInput,"Mapped shell CIN source/domain differs or exceeds scope"};
   }

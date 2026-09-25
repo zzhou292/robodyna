@@ -56,6 +56,12 @@ class TiedCinAttachmentModel {
  public:
   TiedCinAttachmentModel() noexcept = default;
   bool prepared() const noexcept { return bool(data_); }
+  // Explicitly declared complete empty attachment scope, never inferred from
+  // a missing model or an incomplete nonempty declaration.
+  bool explicitly_empty() const noexcept;
+  bool SharesStorage(const TiedCinAttachmentModel& other) const noexcept {
+    return data_ && data_==other.data_;
+  }
   const fea::NodalNodeDomain* domain() const noexcept;
   const PostKinChkResult* classification() const noexcept;
   ClassificationView<CinAttachmentRow> rows() const noexcept;
@@ -63,6 +69,10 @@ class TiedCinAttachmentModel {
   CinAttachmentObligation current_geometry() const noexcept { return CinAttachmentObligation::Pending; }
   CinAttachmentObligation master_activity_and_release() const noexcept { return CinAttachmentObligation::Pending; }
  private:
+  friend CinAttachmentReport ForecastEmptyCinAttachments(const fea::NodalNodeDomain&,
+      std::size_t,CinAttachmentForecast*,CinAttachmentLimits) noexcept;
+  friend CinAttachmentReport PrepareEmptyCinAttachments(const fea::NodalNodeDomain&,
+      TiedCinAttachmentModel*,CinAttachmentLimits) noexcept;
   struct Data;
   std::shared_ptr<const Data> data_;
   friend CinAttachmentReport ForecastCinAttachments(const PostKinChkResult&,const fea::NodalNodeDomain&,
@@ -70,6 +80,13 @@ class TiedCinAttachmentModel {
   friend CinAttachmentReport PrepareCinAttachments(const PostKinChkResult&,const fea::NodalNodeDomain&,
       ClassificationView<CinAttachmentDeclaration>,TiedCinAttachmentModel*,CinAttachmentLimits) noexcept;
 };
+// Deliberate empty scope bound to the complete immutable physical domain.
+// The source factory must establish that its selected case has no CIN cards;
+// this value factory does not scan a deck or prove external source completeness.
+CinAttachmentReport ForecastEmptyCinAttachments(const fea::NodalNodeDomain&,
+    std::size_t old_distinct_retained_bytes,CinAttachmentForecast*,CinAttachmentLimits = {}) noexcept;
+CinAttachmentReport PrepareEmptyCinAttachments(const fea::NodalNodeDomain&,
+    TiedCinAttachmentModel*,CinAttachmentLimits = {}) noexcept;
 // Exact domain/source identity only. This does not produce physical coefficients,
 // current kinematics, a failure-release policy, constrained DOFs or an owner.
 // One complete CIN scope is required: penalty/conflicting rows are not dropped.

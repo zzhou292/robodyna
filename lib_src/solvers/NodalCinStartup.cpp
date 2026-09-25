@@ -45,7 +45,7 @@ NodalReport ForecastCinStorage(const NodalCinStartup& input, const NodalStateCon
   }
   CinLayout next;
   if (!next.Initialize(config.node_count, input.model->rows().count, input.witness_count,
-      input.limits, sizeof(CinStorage), group_count)) {
+      input.limits, sizeof(CinStorage), group_count, input.model->explicitly_empty())) {
     return {NodalStatus::ResourceLimit, "CIN count or complete optional payload exceeds limits"};
   }
   const auto source = input.model->forecast();
@@ -63,7 +63,10 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
     HostNodalKinematicsView kinematics, const double* inverse_mass, const NodalDofConfig& dofs,
     const NodalRigidGroupModel* groups, const CinLayout& layout, std::unique_ptr<CinStorage>& output,
     const NodalRigidAssemblyBinding* binding) {
-  if (!input.mass || !input.inertia || !input.witness_ranges || !input.witnesses) {
+  const bool empty=input.model->explicitly_empty();
+  if (!input.mass || !input.inertia ||
+      (empty ? (input.witness_ranges || input.witnesses || input.witness_count) :
+               (!input.witness_ranges || !input.witnesses || !input.witness_count))) {
     return {NodalStatus::InvalidInput, "CIN coefficient and complete witness inputs are mandatory"};
   }
   if (binding && (!binding->prepared() || !binding->domain()->Matches(*input.model->domain()))) {
@@ -122,7 +125,7 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
   next->qualification_id = input.qualification_id;
   next->rows.resize(source_rows.count);
   next->dependent.resize(config.node_count, 0);
-  next->witnesses.assign(input.witnesses, input.witnesses+input.witness_count);
+  if (input.witness_count) next->witnesses.assign(input.witnesses, input.witnesses+input.witness_count);
   next->first_witness.resize(input.witness_count);
   // Fresh vectors normally reserve exactly the requested count. Charge their
   // actual backing capacities as well, before any device allocation.
@@ -140,7 +143,7 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
   }
   next->layout.host_bytes = actual_host_bytes;
   util::SourceIdentityIndex<16> witness_index;
-  witness_index.Prepare(input.witness_count, [&](std::size_t i) { return input.witnesses[i].source_element_id; });
+  if (input.witness_count) witness_index.Prepare(input.witness_count, [&](std::size_t i) { return input.witnesses[i].source_element_id; });
   for (std::size_t i = 0; i < input.witness_count; ++i) {
     const auto first = witness_index.First(input.witnesses[i].source_element_id);
     next->first_witness[i] = std::uint32_t(first);

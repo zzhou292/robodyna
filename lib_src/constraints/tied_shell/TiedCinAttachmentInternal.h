@@ -12,6 +12,7 @@ struct TiedCinAttachmentModel::Data {
   fea::NodalNodeDomain domain;
   std::unique_ptr<CinAttachmentRow[]> rows;
   std::size_t count = 0;
+  bool explicitly_empty = false;
   CinAttachmentForecast bytes;
 };
 namespace cin_detail {
