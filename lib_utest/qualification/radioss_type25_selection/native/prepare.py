@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from Sources import ROOT, read, routine, constants
 from ContinuationSource import routines as continuation_routines, observed as continuation_observed
+from NewImpactSource import routines as impact_routines, observed as impact_observed
 
 
 def generated():
@@ -24,7 +25,10 @@ def generated():
     output["DstRetained.F"] = observed
     continuation = continuation_routines(source)
     output.update(continuation_observed(continuation))
-    output["Constants.F90"] = constants(source["constant_mod.F"], [*retained.values(), *continuation.values()])
+    impact = impact_routines(source)
+    output.update(impact_observed(impact))
+    output["Constants.F90"] = constants(source["constant_mod.F"],
+        [*retained.values(), *continuation.values(), *impact.values()])
     for name in ["LocalBoundary.F90", "Observations.F90", "RetainedWrapper.F90"]:
         output[name] = (ROOT / name).read_text()
     output["implicit_f.inc"] = ("      USE ISO_C_BINDING\n      USE SELECTION_CONSTANTS\n"
@@ -48,4 +52,4 @@ if __name__ == "__main__":
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(text)
-    print("Pinned complete retained and continuation COR/DST/GLOB stages prepared")
+    print("Pinned complete retained, continuation and new-impact native stages prepared")

@@ -66,5 +66,33 @@
     "row_values": "real(c_double)(4): classification product, DIST, two selection metrics",
     "axes": "integer(c_int)(3), initialized native IBCX/IBCY/IBCZ",
     "decision": "integer(c_int)(2), observed effective IT and local winner-branch entry; inactive selected IT is API-zero"
+  },
+  "new_impact_abi": {
+    "function": "rd_selection_new_impact",
+    "scope": "one supplied local occurrence, actual indexed main/reference tables, serial reference-only COMMON",
+    "arguments": 20,
+    "counts": "integer(c_int)(4): NRTM, reference slots, primary local main, ICONT_I",
+    "kinematics": "real(c_double)(3,5,2): four primary corners then secondary, position then velocity",
+    "source_int": "integer(c_int)(14,NRTM): IRECT4, MSEGTYP, MSEGLO, MVOISIN4, ADMSR4",
+    "source_real": "real(c_double)(6,NRTM): main coefficient, GAP_M, GAP_NM4",
+    "normals": "real(c_float)(3,4,NRTM)",
+    "bounds": "integer(c_int)(references), source LBOUND flags",
+    "bisectors": "real(c_float)(3,2,references)",
+    "control": "real(c_double)(3): secondary coefficient, secondary gap, DT1",
+    "prior": "IRTLM integer4 and selection metrics real2",
+    "seed": "finite real(c_double), only undefined-scratch preservation",
+    "projection": "real(c_double)(5,4): rawLB/rawLC/clampedLB/clampedLC/DD",
+    "side_values": "real(c_double)(2,4): PENA/PENB",
+    "side_flags": "integer(c_int)(4,4): FARA/FARB/INGAPA/INGAPB",
+    "cache_values": "real(c_double)(3,4): PENM/LBM/LCM",
+    "cache_far": "integer(c_int)(4): FARM",
+    "row_outputs": "IRTLM integer4 and selection metrics real2",
+    "scalar_values": "real(c_double)(4): classification product/PENT/LBS/LCS",
+    "decision": "integer(c_int)(10): selected sector/FAR/cached main/side choice/global winner/prechoiceA/prechoiceB/intersectionA/intersectionB/recontact",
+    "table_caps": {
+      "main": 1048576,
+      "normal_reference": 1048576
+    },
+    "declared_table_bytes": "264*main_slots + 28*reference_slots; excludes small fixed scratch/compiler/allocator overhead"
   }
 }

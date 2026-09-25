@@ -2,6 +2,7 @@
 #pragma once
 #include "lib_src/collision/radioss_type25/selection/Types.h"
 #include "lib_src/collision/radioss_type25/selection/ContinuationTypes.h"
+#include "lib_src/collision/radioss_type25/selection/NewImpactTypes.h"
 namespace type25_selection_test {
 namespace n = tlfea::contact::radioss_type25;
 namespace s = n::selection;
@@ -20,4 +21,16 @@ s::NativeRetainedResult OracleRetained(const s::Profile&, const s::NativePairInp
 s::NativeContinuationResult OracleContinuation(const s::Profile&,
     const s::NativeContinuationInput&, const n::NativeGeometryHistory& prior,
     double scratch_seed = 0., RetainedScratchObservation* observation = nullptr);
+struct NewImpactScratchObservation {
+  double penetration = 0, lb = 0, lc = 0;
+  int far = 0;
+};
+struct NewImpactOracleStorage {
+  std::size_t main_slots = 0, reference_slots = 0;
+  std::size_t table_bytes = 0; // C++ plus explicit Fortran unpacked table arrays.
+};
+s::NativeNewImpactResult OracleNewImpact(const s::Profile&, const s::NativeNewImpactInput&,
+    const n::NativeGeometryHistory& prior, double scratch_seed = 0.,
+    NewImpactScratchObservation* observation = nullptr,
+    NewImpactOracleStorage* storage = nullptr);
 } // namespace type25_selection_test
