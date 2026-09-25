@@ -1,0 +1,10 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+subroutine rd_startup_extent(numnod,nrtm_t,x,irect,icurv,curv_max,c_max)
+ use precision_mod,only:WP
+ use constant_mod
+ implicit none
+ integer::numnod,nrtm_t,icurv,i
+ integer::irect(4,nrtm_t)
+ real(WP)::x(3,numnod),curv_max(nrtm_t),c_max,xxx,yyy,zzz
+@EXTENT@
+end subroutine
