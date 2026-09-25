@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "LifecycleTables.h"
+#include "lib_src/collision/radioss_type25/selection/ContinuationTypes.h"
+#include "lib_src/collision/radioss_type25/selection/NewImpactTypes.h"
 #include "../../radioss_type25_coefficients/NativeOracle.h"
 namespace type25_lifecycle_test::reference {
 inline s::NativePairInput Pair(const l::Input& input, int secondary, int local_main,
