@@ -23,12 +23,14 @@ Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& out
       c.physical_shells<mesh.primary_count || c.tied_interfaces || c.rigid_bodies || c.cin_links ||
       c.other_interfaces || c.unsupported_elements ||
       (mesh.profile!=startup::Profile::OrdinaryExteriorFixedMain &&
-       mesh.profile!=startup::Profile::OrdinaryExteriorMovingMain))
+       mesh.profile!=startup::Profile::OrdinaryExteriorMovingMain) ||
+      (mesh.topology!=startup::TopologyPolicy::ManifoldTwoSided &&
+       mesh.topology!=startup::TopologyPolicy::NativeOrdinaryShell))
     return {Status::UnsupportedProfile};
   if (!self_contact_filters::CompatibleHostArithmetic()) return {Status::UnsupportedArithmetic};
   const auto n=mesh.node_count,g=2*mesh.primary_count,s=in.secondary_count;
   std::size_t positions_bytes=0;
-  if (!mesh.source_generation || top.source_generation!=mesh.source_generation || top.node_count!=n ||
+  if (top.profile!=mesh.profile || top.topology!=mesh.topology || !mesh.source_generation || top.source_generation!=mesh.source_generation || top.node_count!=n ||
       top.primary_count!=mesh.primary_count || top.main_count!=g || in.main_count!=g ||
       !r::Span(mesh.node_source_ids,n) || !r::Span(mesh.primary,mesh.primary_count) ||
       !r::VectorSpan(mesh.positions,n,positions_bytes) || !r::Span(top.mains,g) ||

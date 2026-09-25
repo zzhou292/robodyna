@@ -21,7 +21,9 @@ bool Same(StoredNormal a,StoredNormal b) noexcept {
 TransactionReport CheckSnapshot(const MovingMainSource& source,current_normals::Topology& topology) {
   const auto& s=source.selection;const auto& t=source.starter;
   const auto p=source.primary_main_count,g=s.main_count,r=s.normal_count;
-  if(p>INT_MAX/8||t.node_count!=s.node_count||t.primary_count!=p||t.main_count!=g||
+  if(t.profile!=startup::Profile::OrdinaryExteriorMovingMain ||
+      (t.topology!=startup::TopologyPolicy::ManifoldTwoSided && t.topology!=startup::TopologyPolicy::NativeOrdinaryShell) ||
+      p>INT_MAX/8||t.node_count!=s.node_count||t.primary_count!=p||t.main_count!=g||
       t.source_generation!=s.generation||t.starter.reference_count!=r||!r||
       t.normal_incidence_count!=s.normal_to_main.entry_count||
       !ld::Span(t.mains,g)||!ld::Span(t.expanded_to_primary,g)||

@@ -16,7 +16,7 @@ void Copy(detail::Data from,detail::Data to,const detail::OutputLayout& p) noexc
 }
 Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot* published) noexcept {
-  detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout);
+  detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout,input.topology);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.output_bytes || scratch.bytes()<layout.forecast.scratch_bytes)
     return {Status::ResourceLimit};
@@ -33,9 +33,16 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   report=detail::Expand(input,staged,points,ids,face_keys);
   if(report.status!=Status::Ok)return report;
   std::size_t edge_count=0,references=0,incidence=0;
-  report=detail::Topology(input,staged,edges,edge_count);
+  if(input.topology==TopologyPolicy::ManifoldTwoSided)
+    report=detail::Topology(input,staged,edges,edge_count);
+  else
+    report=detail::OrderedNeighbors(input,staged,points,edges,
+        scratch.Construct<int>(layout.candidate_ids),scratch.Construct<double>(layout.candidate_angles),
+        scratch.Construct<double>(layout.candidate_sides));
+  const auto warnings=report.neighbor_warnings;
   if(report.status!=Status::Ok)return report;
   report=detail::References(input,staged,parents,tags,node_refs,references,incidence);
+  report.neighbor_warnings=warnings;
   if(report.status!=Status::Ok)return report;
   // Sorted edges are no longer live. Start the neighbor-normal objects in that
   // checked arena region; this is a sequential storage reuse, not type-punned reads.
@@ -44,6 +51,7 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   auto* previous=scratch.Construct<StoredNormal>(previous_region);
   report=detail::StarterNormals(points,staged,input.primary_count,layout.forecast.expanded_mains,
       references,previous);
+  report.neighbor_warnings=warnings;
   if(report.status!=Status::Ok)return report;
   // All rejection points precede caller output construction. Trivial value
   // construction/copies below cannot fail, allocate, or borrow source storage.
@@ -54,7 +62,8 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   next.expanded_to_primary=committed.expanded_to_primary;next.primary_to_partner=committed.primary_to_partner;
   next.normal_offsets=committed.normal_offsets;next.normal_mains=committed.normal_mains;
   next.normal_incidence_count=incidence;next.starter={committed.normals,committed.references,references};
-  next.source_generation=input.source_generation;*published=next;
-  return {Status::Ok};
+  next.source_generation=input.source_generation;next.profile=input.profile;next.topology=input.topology;
+  *published=next;
+  Report result{Status::Ok};result.neighbor_warnings=warnings;return result;
 }
 } // namespace tlfea::contact::radioss_type25::startup

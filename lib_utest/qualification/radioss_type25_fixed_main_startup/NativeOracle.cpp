@@ -5,7 +5,7 @@
 #include <stdexcept>
 namespace type25_startup_test {
 extern "C" void rd_fixed_main_startup(const int*,const double*,const int*,const int*,const double*,
-    int*,int*,int*,int*,int*,int*,int*,int*,float*,float*,int*,int*,int*,float*,float*,float*);
+    int*,int*,int*,int*,int*,int*,int*,int*,float*,float*,int*,int*,int*,float*,float*,float*,int*);
 namespace {
 void Need(bool value,const char* text){if(!value)throw std::invalid_argument(text);}
 }
@@ -41,11 +41,12 @@ NativeResult Oracle(const s::Input& in,const double* coefficient,std::size_t coe
   std::vector<int> connectivity(4*g),roles(g),globals(g),neighbors(4*g),edges(4*g),refs(4*g);
   std::vector<int> start_bound(cap),ready_bound(cap),offsets(cap+1),incidence(cap);
   std::vector<float> start_normals(12*g),ready_normals(12*g),start_bisectors(6*cap),ready_bisectors(6*cap);
-  NativeResult out;int reference_count=0;
+  NativeResult out;int reference_count=0;int warnings[4]{};
   rd_fixed_main_startup(counts,x.data(),ids.data(),primary.data(),coefficient,connectivity.data(),roles.data(),
       globals.data(),neighbors.data(),edges.data(),refs.data(),&reference_count,start_bound.data(),
       start_normals.data(),start_bisectors.data(),offsets.data(),incidence.data(),ready_bound.data(),
-      ready_normals.data(),ready_bisectors.data(),out.floors.data());
+      ready_normals.data(),ready_bisectors.data(),out.floors.data(),warnings);
+  out.warning_count=warnings[0];out.warning_node_ids={warnings[1],warnings[2]};out.selector_calls=warnings[3];
   Need(reference_count>0&&std::size_t(reference_count)<=cap,"Native reference count is invalid");
   out.mains.resize(g);out.expanded_to_primary.resize(g);out.primary_to_partner.resize(in.primary_count);
   out.starter_normals.resize(4*g);out.ready_normals.resize(4*g);

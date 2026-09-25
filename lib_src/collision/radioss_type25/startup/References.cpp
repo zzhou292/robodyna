@@ -42,7 +42,7 @@ Report References(const Input& in,Data data,int* root,int* tags,std::uint32_t* n
   for(std::size_t m=0;m<g;++m)
     for(auto& ref:data.mains[m].normal_reference) ref=tags[root[ref-1]-1];
   // root storage is dead after all references are mapped. Reuse it as the
-  // reference-to-node check; this rejects nonorientable or disconnected fans.
+  // reference-to-node check. General source topology retains native split fans.
   std::fill_n(root,std::size_t(refs),-1);
   std::fill_n(node_refs,in.node_count,0);
   for(std::size_t m=0;m<g;++m) {
@@ -55,7 +55,7 @@ Report References(const Input& in,Data data,int* root,int* tags,std::uint32_t* n
     }
   }
   for(std::size_t i=0;i<in.node_count;++i)
-    if(node_refs[i] && node_refs[i]!=2) return {Status::UnsupportedTopology,SIZE_MAX,i};
+    if(in.topology==TopologyPolicy::ManifoldTwoSided && node_refs[i] && node_refs[i]!=2) return {Status::UnsupportedTopology,SIZE_MAX,i};
   std::uint32_t total=0;
   for(int i=0;i<refs;++i) {
     const auto count=data.normal_offsets[i]; data.normal_offsets[i]=total;

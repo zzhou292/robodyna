@@ -14,7 +14,9 @@ bool Output(tl::util::BoundedArenaLayout& arena,std::size_t p,OutputLayout& out)
       arena.Append<std::uint32_t>(4*g,out.normal_mains);
 }
 }
-Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output) noexcept {
+Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output,TopologyPolicy policy) noexcept {
+  if(policy!=TopologyPolicy::ManifoldTwoSided && policy!=TopologyPolicy::NativeOrdinaryShell)
+    return {Status::UnsupportedProfile};
   const Limits hard;
   if (!nodes || !p) return {Status::InvalidInput};
   if (!limits.max_nodes || limits.max_nodes>hard.max_nodes || !limits.max_primary_faces ||
@@ -30,10 +32,18 @@ Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output) 
       !scratch.Append<Identity>(nodes>p?nodes:p,next.identities) ||
       !scratch.Append<int>(4*g,next.parents) || !scratch.Append<int>(4*g,next.tags) ||
       !scratch.Append<std::uint32_t>(nodes,next.node_references)) return {Status::ResourceLimit};
+  if(policy==TopologyPolicy::NativeOrdinaryShell &&
+      (!scratch.Append<int>(g+4,next.candidate_ids) ||
+       !scratch.Append<double>(g,next.candidate_angles) ||
+       !scratch.Append<double>(g,next.candidate_sides))) return {Status::ResourceLimit};
   tl::util::ArenaRegion normal_region,reference_region;
-  if (!ready.Append<StoredNormal>(4*g,normal_region) ||
-      !ready.Append<NormalReference>(4*g,reference_region)) return {Status::ResourceLimit};
-  next.forecast={Status::Ok,persistent.bytes(),scratch.bytes(),ready.bytes(),scratch.bytes(),g,4*g,4*g};
+  if (policy==TopologyPolicy::ManifoldTwoSided &&
+      (!ready.Append<StoredNormal>(4*g,normal_region) ||
+       !ready.Append<NormalReference>(4*g,reference_region))) return {Status::ResourceLimit};
+  // General fixed-ready is deliberately unqualified. Zero means unavailable,
+  // not a zero-cost callable stage; BuildFixedMain rejects that policy.
+  const auto ready_scratch=policy==TopologyPolicy::ManifoldTwoSided?scratch.bytes():0;
+  next.forecast={Status::Ok,persistent.bytes(),scratch.bytes(),ready.bytes(),ready_scratch,g,4*g,4*g};
   // Output's exact same prefix layout is used for private staging. The dead
   // sorted-edge region is later placement-constructed as neighbor-normal scratch;
   // no edge pointer survives that phase transition and no extra allocation exists.
@@ -54,5 +64,14 @@ Forecast Preflight(std::size_t nodes,std::size_t primary,Limits limits) noexcept
   detail::Layout layout; const auto report=detail::MakeLayout(nodes,primary,limits,layout);
   if (layout.forecast.output_bytes) return layout.forecast;
   Forecast result; result.status=report.status; return result;
+}
+Forecast Preflight(const Input& input,Limits limits) noexcept {
+  if(input.profile!=Profile::OrdinaryExteriorFixedMain && input.profile!=Profile::OrdinaryExteriorMovingMain) {
+    Forecast result;result.status=Status::UnsupportedProfile;return result;
+  }
+  detail::Layout layout;
+  const auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout,input.topology);
+  if(layout.forecast.output_bytes)return layout.forecast;
+  Forecast result;result.status=report.status;return result;
 }
 } // namespace tlfea::contact::radioss_type25::startup

@@ -53,3 +53,22 @@ three later minus-zero X channels on main4 are preserved as phase evidence;
 there is no sign normalization or tolerance substitution. Dynamic ACTNOR/TAGNOD
 normal maintenance remains a separate runtime dependency before general fixed
 nonplanar or moving-main equivalence claims.
+
+
+Explicit general ordinary-shell policy
+--------------------------------------
+GeneralTopologyTest adds native valence3/4, winding, full-main candidate-prefix,
+extra-vertex, disconnected-reference, strict score-tie, SI/floor, origin/cap and
+failure-preservation coverage. SelectorOracle calls the original double selector;
+its generated read-only hook returns actual ANGLE/YJNI values. Native IRR11
+warning1245 is counted with its source edge instead of being mistaken for a
+fatal qualification-stub error. Other native diagnostics remain fatal to this
+bounded oracle. No donor arithmetic is replaced.
+
+The current_normals owning project additionally builds
+`type25_general_topology_normals_cuda`: real general-policy output and original
+native startup output feed independent repeated NORMP states. Existing ordered
+stage kernels and activation fixture are reused. These are source-authored gates,
+not a claim that they have executed. A source-sized count-only Preflight test
+records actual compiled forecasts without allocating or admitting a full Yaris.
+General fixed-ready has zero/unavailable ready forecasts and remains rejected.

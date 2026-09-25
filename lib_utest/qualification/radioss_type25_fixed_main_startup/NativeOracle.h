@@ -12,6 +12,8 @@ struct NativeResult {
   std::vector<n::StoredNormal> starter_normals,ready_normals;
   std::vector<s::NormalReference> starter_references,ready_references;
   std::array<float,4> floors{};
+  int warning_count=0,selector_calls=0;
+  std::array<int,2> warning_node_ids{};
 };
 // Serial qualification-only original Fortran composition, bounded to256 nodes
 // and160 primaries. External node IDs must fit the original native integer ABI.

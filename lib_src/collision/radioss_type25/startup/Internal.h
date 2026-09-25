@@ -13,6 +13,7 @@ struct OutputLayout {
 struct Layout {
   OutputLayout output;
   tl::util::ArenaRegion points,edges,face_keys,identities,parents,tags,node_references;
+  tl::util::ArenaRegion candidate_ids,candidate_angles,candidate_sides;
   Forecast forecast;
 };
 struct Data {
@@ -25,14 +26,17 @@ struct Data {
   std::uint32_t* normal_mains=nullptr;
 };
 bool Disjoint(const void*,std::size_t,const void*,std::size_t) noexcept;
-Report MakeLayout(std::size_t nodes,std::size_t primary,Limits,Layout&) noexcept;
+Report MakeLayout(std::size_t nodes,std::size_t primary,Limits,Layout&,
+    TopologyPolicy=TopologyPolicy::ManifoldTwoSided) noexcept;
 Data Construct(tl::util::HostArena&,const OutputLayout&) noexcept;
 Report CheckInput(const Input&,const Layout&,const tl::util::HostArena&,
     const tl::util::HostArena&,const void*,std::size_t) noexcept;
 Report CheckSnapshot(const Input&,const Snapshot&,const FixedMainInput&,
     const tl::util::HostArena&,const tl::util::HostArena&,const FixedMainView*) noexcept;
 Report Expand(const Input&,Data,Vector*,Identity*,FaceKey*) noexcept;
+std::size_t BuildEdges(Data,std::size_t mains,Edge*) noexcept;
 Report Topology(const Input&,Data,Edge*,std::size_t&) noexcept;
+Report OrderedNeighbors(const Input&,Data,const Vector*,Edge*,int*,double*,double*) noexcept;
 Report References(const Input&,Data,int*,int*,std::uint32_t*,std::size_t&,std::size_t&) noexcept;
 Report StarterNormals(const Vector*,Data,std::size_t,std::size_t,std::size_t,StoredNormal*) noexcept;
 Report FixedNormals(const Vector*,Data,std::size_t,std::size_t,std::size_t,StoredNormal*,int*,int*) noexcept;

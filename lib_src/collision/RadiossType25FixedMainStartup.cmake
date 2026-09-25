@@ -5,6 +5,7 @@ add_library(tl_radioss_type25_fixed_main_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Checks.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Expand.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Topology.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/OrderedNeighbors.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/References.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Normals.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/SnapshotChecks.cpp"

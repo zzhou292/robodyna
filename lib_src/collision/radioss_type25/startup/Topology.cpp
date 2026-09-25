@@ -10,8 +10,8 @@ bool Less(Edge a,Edge b) noexcept {
   return a.slot<b.slot;
 }
 }
-Report Topology(const Input& in,Data data,Edge* edges,std::size_t& edge_count) noexcept {
-  const auto g=2*in.primary_count; std::size_t count=0;
+std::size_t BuildEdges(Data data,std::size_t g,Edge* edges) noexcept {
+  std::size_t count=0;
   for(std::size_t m=0;m<g;++m) {
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
@@ -21,6 +21,10 @@ Report Topology(const Input& in,Data data,Edge* edges,std::size_t& edge_count) n
     }
   }
   std::sort(edges,edges+count,Less);
+  return count;
+}
+Report Topology(const Input& in,Data data,Edge* edges,std::size_t& edge_count) noexcept {
+  const auto g=2*in.primary_count;const auto count=BuildEdges(data,g,edges);
   for(std::size_t first=0;first<count;) {
     std::size_t last=first+1;
     while(last<count && edges[last].low==edges[first].low && edges[last].high==edges[first].high) ++last;

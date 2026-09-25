@@ -9,6 +9,11 @@ from Extraction import routines,namespace,csr_blocks
 def generated():
     source=read();original=routines(source)
     result={name:namespace(text) for name,text in original.items()}
+    select=result["I25NEIGH_REMOVEALLBUT1.F"]
+    point="         ANGLE(I)=YI(1)*YJ(1,I)+YI(2)*YJ(2,I)+YI(3)*YJ(3,I)\n"
+    assert select.count(point)==1
+    result["I25NEIGH_REMOVEALLBUT1.F"]=select.replace(point,point+
+        "         CALL STARTUP_NATIVE_SCORE(I,ANGLE(I),YJNI(I))\n")
     normal=result["StarterNormals.F"]
     point="      REM30 = RUN/REP30\n"
     assert normal.count(point)==1
@@ -31,7 +36,7 @@ def generated():
         assert wrapper.count("@"+name+"@")==1
         wrapper=wrapper.replace("@"+name+"@",value)
     result["CsrWrapper.F"]=wrapper
-    for name in ["Memory.F90","Boundary.F90","NormalStorage.F90","Wrapper.F90"]:
+    for name in ["Memory.F90","Boundary.F90","NormalStorage.F90","Wrapper.F90","SelectorWrapper.F90"]:
         result[name]=(ROOT/name).read_text()
     result["implicit_f.inc"]=("      USE ISO_C_BINDING\n      USE STARTUP_NATIVE_CONSTANTS\n"
       "      IMPLICIT NONE\n#define my_real REAL(C_DOUBLE)\n")

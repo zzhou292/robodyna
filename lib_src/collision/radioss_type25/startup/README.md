@@ -65,3 +65,14 @@ Starter numerical stage for the moving source producer. It does not admit the
 all-active `BuildFixedMain` stage: that function rejects the moving profile
 before touching output. The current-normal owner must perform native activation
 and staged updates from the genuine Starter cache.
+
+
+The default ManifoldTwoSided topology policy retains the original matcher and
+forecast. Explicit NativeOrdinaryShell preserves native source-order multi-edge
+neighbor selection and split normal references; Input-based Preflight includes
+its additional scratch. Snapshot retains both motion profile and topology policy.
+IRR11 is a source-bound warning with neighbor zero, never deletion of a primary.
+General fixed-ready is not admitted: general moving sources start with genuine
+Starter cache and use the separately qualified current NORMP stages. This new
+policy requires its owning native/current-normal gates before selection; no full
+Yaris topology or physical startup is implied by the bounded source cases.

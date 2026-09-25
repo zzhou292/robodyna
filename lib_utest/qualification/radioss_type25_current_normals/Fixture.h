@@ -23,14 +23,15 @@ inline Case Cube() {
   for(const auto& face:faces)x.Add(n::ShellLayout::Quad4,face[0],face[1],face[2],face[3]);
   return x;
 }
-struct Fixture {
+template<class StartupBuilder=type25_startup_test::Built>
+struct FixtureT {
   Case mesh;
-  type25_startup_test::Built built;
+  StartupBuilder built;
   type25_startup_test::NativeResult native_start;
   std::vector<double> positions,coefficients;
   std::vector<std::uint32_t> main_active,node_tag,free_ids;
   std::vector<n::StoredNormal> prior,native_prior;
-  explicit Fixture(Case source):mesh(ExtraSecondary(std::move(source))),built(mesh),
+  explicit FixtureT(Case source):mesh(ExtraSecondary(std::move(source))),built(mesh),
       native_start(type25_startup_test::Oracle(mesh.Input(),mesh.coefficients.data(),mesh.coefficients.size())),
       positions(mesh.positions),coefficients(mesh.coefficients),main_active(built.startup.main_count,1),node_tag(mesh.ids.size(),1),
       prior(built.startup.starter.face_normals,built.startup.starter.face_normals+4*built.startup.main_count),native_prior(native_start.starter_normals){RefreshFree();}
@@ -89,6 +90,8 @@ struct Fixture {
   }
   static c::Limits Limits(){return {256,160,1280,1280,8u<<20};}
 };
+
+using Fixture=FixtureT<>;
 
 inline Case CornerFanCase() {
   Case fan;fan.ids={1,2,3,4,5};fan.positions={0,0,0,1,0,0,0,1,0,-1,0,0,0,-1,0};

@@ -5,7 +5,7 @@
 namespace tlfea::contact::radioss_type25::startup {
 Report BuildFixedMain(const Input& input,const Snapshot& starter,const FixedMainInput& active,
     Limits limits,tl::util::HostArena& output,tl::util::HostArena& scratch,FixedMainView* published) noexcept {
-  if(input.profile!=Profile::OrdinaryExteriorFixedMain)return {Status::UnsupportedProfile};
+  if(input.profile!=Profile::OrdinaryExteriorFixedMain || input.topology!=TopologyPolicy::ManifoldTwoSided)return {Status::UnsupportedProfile};
   detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.ready_output_bytes || scratch.bytes()<layout.forecast.ready_scratch_bytes)
@@ -39,7 +39,7 @@ Report BuildFixedMain(const Input& input,const Snapshot& starter,const FixedMain
   auto* references=output.Construct<NormalReference>(reference_region);
   std::copy_n(data.normals,count,normals);
   std::copy_n(data.references,count,references);
-  *published={{normals,references,starter.starter.reference_count},input.source_generation};
+  *published={{normals,references,starter.starter.reference_count},input.source_generation,input.profile,input.topology};
   return {Status::Ok};
 }
 } // namespace tlfea::contact::radioss_type25::startup

@@ -3,8 +3,9 @@
 ! Fortran; only source-shaped arrays, local controls and readback live here.
 subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles,global_ids, &
     neighbors,neighbor_edges,refs,nrefs,start_bound,start_normals,start_bisectors, &
-    offsets,incidence,ready_bound,ready_normals,ready_bisectors,floors) bind(C)
+    offsets,incidence,ready_bound,ready_normals,ready_bisectors,floors,warnings) bind(C)
   use iso_c_binding
+  use startup_native_observation
   use startup_native_names
   use startup_native_mpi
   use startup_native_normal_storage, only: observed_rep30,observed_rem30, &
@@ -18,6 +19,7 @@ subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles
   integer(c_int),intent(out)::offsets(8*counts(2)+1),incidence(8*counts(2)),ready_bound(8*counts(2))
   real(c_float),intent(out)::start_normals(3,4,2*counts(2)),start_bisectors(3,2,8*counts(2))
   real(c_float),intent(out)::ready_normals(3,4,2*counts(2)),ready_bisectors(3,2,8*counts(2)),floors(4)
+  integer(c_int),intent(out)::warnings(4)
   integer::numnod,numels,nspmd,ninter25,nthread
   common /STARTUP_NATIVE_COUNTS/numnod,numels
   common /STARTUP_NATIVE_PARTITION/nspmd,ninter25
@@ -33,6 +35,7 @@ subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles
   real(c_double)::edge_stiffness(1)
   character(nchartitle)::title
   type(mpi_comm_nor_struct)::buffers
+  call clear_observations()
   numnod=counts(1);numels=0;nspmd=1;ninter25=1;nthread=1
   p=counts(2);g=2*p
   irect=0;irect(:,1:p)=primary;roles=0;roles(1:p)=3
@@ -76,4 +79,5 @@ subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles
       0,0,ledge,ready_bound,nrefs,refs,dummy_matrix,dummy,ready_bisectors,2,nb_free,free_bound, &
       tage,free_ids,nfree,fskyt,iadnor,0,dummy,dummy,0,fskyn)
   floors=[observed_rep30,observed_rem30,observed_ready_rep30,observed_ready_rem30]
+  warnings=[warning_count,warning_nodes,selector_calls]
 end subroutine
