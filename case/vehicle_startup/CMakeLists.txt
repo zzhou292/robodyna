@@ -13,6 +13,7 @@ option(ROBO_DYNA_VEHICLE_REFERENCE_RIGID_TESTS "Build original rigid and all pri
 option(ROBO_DYNA_VEHICLE_REFERENCE_GLASS_TESTS "Build original glass reference checks" OFF)
 if(ROBO_DYNA_VEHICLE_REFERENCE_TESTS)
   find_package(GTest REQUIRED)
+  include("${CMAKE_CURRENT_LIST_DIR}/ReferenceMetricTests.cmake")
   add_executable(robo_dyna_vehicle_rigid_reference_check tests/RigidReferenceTest.cpp)
   target_link_libraries(robo_dyna_vehicle_rigid_reference_check PRIVATE robo_dyna_vehicle_native_reference GTest::gtest_main)
   target_compile_options(robo_dyna_vehicle_rigid_reference_check PRIVATE -fno-fast-math -ffp-contract=off)

@@ -27,6 +27,10 @@ struct DeclarationView {
     const modelio::vehicle::NativeParentMapping* Mapping(std::size_t parent) const noexcept {
         return resolution ? resolution->native_mapping(parent) : nullptr;
     }
+    QephReferenceMetric Metric(QephMetricProfile profile) const {
+        const auto& u=source.canonical().data().inputs.units;
+        return QephReferenceMetric::Resolve(profile,{u.mass_to_kg,u.length_to_m,u.time_to_s});
+    }
     std::size_t SourceBound() const noexcept {
         // The resolution's bound already includes the historical plan once.
         return resolution ? resolution->startup_budget_bytes() : source.startup_budget_bytes();

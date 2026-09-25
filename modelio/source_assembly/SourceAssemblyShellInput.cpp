@@ -22,14 +22,19 @@ Binding MakeBinding(const Data& source, const Parent& parent) {
     return binding;
 }
 }  // namespace
-SourceAssemblyShellInput::SourceAssemblyShellInput(const SourceAssembly& source) : source_(source) {
+SourceAssemblyShellInput::SourceAssemblyShellInput(const SourceAssembly& source)
+    :SourceAssemblyShellInput(source,QephMetricProfile::LegacyOneMetre) {}
+SourceAssemblyShellInput::SourceAssemblyShellInput(const SourceAssembly& source,QephMetricProfile profile)
+    :source_(source),metric_(QephReferenceMetric::Resolve(profile,source.data().units)) {
     const auto& data = source_.data(); node_count_ = data.nodes.size();
     qeph_.reserve(data.qeph_count); t3_.reserve(data.t3_count);
     qeph_parents_.reserve(data.qeph_count); t3_parents_.reserve(data.t3_count);
     for (const auto& parent : data.parents) {
         if (parent.family == ShellFamily::Qeph) {
             output::Require(parent.family_index == qeph_.size(), "QEPH input family order changed");
-            qeph_.push_back(MakeBinding<tl::fea::ShellQephBindingInput, 4>(data, parent));
+            auto binding=MakeBinding<tl::fea::ShellQephBindingInput,4>(data,parent);
+            binding.reference=WithQephMetric(binding.reference,metric_);
+            qeph_.push_back(binding);
             qeph_parents_.push_back(parent.index);
         } else {
             output::Require(parent.family_index == t3_.size(), "T3 input family order changed");

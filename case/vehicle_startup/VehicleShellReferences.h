@@ -1,6 +1,7 @@
 #pragma once
 #include "modelio/vehicle_source/VehicleSourcePlan.h"
 #include "modelio/vehicle_source/SourceShellRole.h"
+#include "modelio/source_assembly/SourceReferenceMetric.h"
 
 #include "lib_src/elements/qeph/QephData.h"
 #include "lib_src/elements/t3/T3Data.h"
@@ -11,6 +12,8 @@ namespace crash::modelio::vehicle { class VehicleSectionResolution; }
 namespace crash::cases::vehicle_startup {
 using modelio::vehicle::VehicleSourcePlan;
 using modelio::vehicle::VehicleSectionResolution;
+using modelio::assembly::QephMetricProfile;
+using modelio::assembly::QephReferenceMetric;
 enum class ReferenceFamily { None, Qeph, T3, Qbat };
 enum class ReferenceStatus {
     UnresolvedDeclaration, Success, InvalidInput, UnsupportedGeometry, NonfiniteResult, InvalidReference
@@ -50,16 +53,25 @@ struct ReferenceForecast {
     std::size_t qeph_capacity=0, t3_capacity=0, qbat_capacity=0;
 };
 ReferenceForecast ForecastReferences(const VehicleSourcePlan&,ReferenceLimits={});
+ReferenceForecast ForecastReferences(const VehicleSourcePlan&,QephMetricProfile,ReferenceLimits);
 ReferenceForecast ForecastReferences(const VehicleSectionResolution&,
                                     ReferenceLimits=ReferenceLimits::ResolvedSections());
+ReferenceForecast ForecastReferences(const VehicleSectionResolution&,QephMetricProfile,
+                                    ReferenceLimits);
+// Metric overloads require an explicit third limits argument so historical
+// Prepare(source,{})/ForecastReferences(source,{}) remain unambiguous.
 // Complete source assessment, never a partially admitted shell binding/owner.
 // Native rejection is a retained row, not a factory error; malformed packing or
 // resource admission throws before publication. No nodal/global M/J is summed.
 class VehicleShellReferences {
   public:
     static VehicleShellReferences Prepare(const VehicleSourcePlan&,ReferenceLimits={});
+    static VehicleShellReferences Prepare(const VehicleSourcePlan&,QephMetricProfile,ReferenceLimits);
     static VehicleShellReferences Prepare(const VehicleSectionResolution&,
                                          ReferenceLimits=ReferenceLimits::ResolvedSections());
+    static VehicleShellReferences Prepare(const VehicleSectionResolution&,QephMetricProfile,
+                                         ReferenceLimits);
+    const QephReferenceMetric& qeph_metric() const noexcept;
     VehicleShellReferences(const VehicleShellReferences&) noexcept=default;
     VehicleShellReferences(VehicleShellReferences&& other) noexcept:data_(other.data_) {}
     VehicleShellReferences& operator=(const VehicleShellReferences&)=delete;
@@ -77,7 +89,9 @@ class VehicleShellReferences {
     const tl::fea::qbat::Reference* qbat(std::size_t row) const noexcept;
   private:
     friend ReferenceForecast ForecastReferences(const VehicleSourcePlan&,ReferenceLimits);
+    friend ReferenceForecast ForecastReferences(const VehicleSourcePlan&,QephMetricProfile,ReferenceLimits);
     friend ReferenceForecast ForecastReferences(const VehicleSectionResolution&,ReferenceLimits);
+    friend ReferenceForecast ForecastReferences(const VehicleSectionResolution&,QephMetricProfile,ReferenceLimits);
     struct Data;
     explicit VehicleShellReferences(std::shared_ptr<const Data> data):data_(std::move(data)) {}
     std::shared_ptr<const Data> data_;
