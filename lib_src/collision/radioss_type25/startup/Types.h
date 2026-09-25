@@ -12,6 +12,9 @@ enum class Status { Ok, InvalidInput, UnsupportedProfile, UnsupportedTopology,
   NonfiniteResult, UnsupportedArithmetic, ResourceLimit };
 enum class Profile { Unspecified, OrdinaryExteriorFixedMain, OrdinaryExteriorMovingMain };
 enum class Coordinates { Native, Si };
+// Motion profile and topology admission are independent. The zero/default
+// policy retains the qualified manifold matcher and its exact arena forecast.
+enum class TopologyPolicy { ManifoldTwoSided, NativeOrdinaryShell };
 struct PrimaryFace {
   std::uint64_t source_id=0;
   ShellLayout layout=ShellLayout::Unspecified;
@@ -29,6 +32,7 @@ struct Input {
   std::uint64_t source_generation=0;
   // Primary order is supplied by the source binding. This numerical producer
   // does not silently sort a deck, weld equal coordinates, or own a clock.
+  TopologyPolicy topology=TopologyPolicy::ManifoldTwoSided;
 };
 struct Main {
   std::uint64_t source_id=0; // Physical primary identity is shared by its two sides.
@@ -52,6 +56,8 @@ struct Snapshot {
   std::size_t normal_incidence_count=0;
   NormalView starter; // Native Starter boolean LBOUND and I25NORM float fields.
   std::uint64_t source_generation=0;
+  Profile profile=Profile::Unspecified;
+  TopologyPolicy topology=TopologyPolicy::ManifoldTwoSided;
 };
 struct FixedMainInput {
   const double* main_coefficients=nullptr;
@@ -62,6 +68,8 @@ struct FixedMainInput {
 struct FixedMainView {
   NormalView normals; // Distinct source NORMP stage; boundary counts are retained.
   std::uint64_t source_generation=0;
+  Profile profile=Profile::Unspecified;
+  TopologyPolicy topology=TopologyPolicy::ManifoldTwoSided;
 };
 struct Limits {
   std::size_t max_nodes=1048576,max_primary_faces=1048576;
@@ -70,11 +78,19 @@ struct Limits {
 };
 struct Forecast {
   Status status=Status::InvalidInput;
+  // ready_* are zero/unavailable for NativeOrdinaryShell until separately qualified.
   std::size_t output_bytes=0,scratch_bytes=0,ready_output_bytes=0,ready_scratch_bytes=0;
   std::size_t expanded_mains=0,maximum_references=0,maximum_incidence=0;
+};
+struct NeighborWarnings {
+  std::size_t count=0;
+  // Native IRR11: the source selects neighbor zero and emits warning1245.
+  // Main and edge are zero-based expanded source ordinals, not a deleted face.
+  std::size_t first_main=SIZE_MAX,first_edge=SIZE_MAX;
 };
 struct Report {
   Status status=Status::InvalidInput;
   std::size_t primary=SIZE_MAX,node=SIZE_MAX;
+  NeighborWarnings neighbor_warnings;
 };
 } // namespace tlfea::contact::radioss_type25::startup

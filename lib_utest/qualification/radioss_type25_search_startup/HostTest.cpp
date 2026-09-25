@@ -137,6 +137,11 @@ TEST(Type25SearchStartup, MovingStarterProfilePreservesNativeInitialMarginRemova
     Fixture f(old::Grid(3,2,mode));f.Gaps(gap);Built actual(f);
     const auto expected=Oracle(f.Input());auto input=f.Input();
     input.mesh.profile=st::Profile::OrdinaryExteriorMovingMain;
+    const auto previous=Bytes(actual);
+    EXPECT_EQ(s::Build(input,{},actual.output,actual.scratch,&actual.view).status,s::Status::InvalidInput);
+    EXPECT_EQ(std::memcmp(previous.data(),actual.output.data(),previous.size()),0);
+    ASSERT_EQ(st::BuildStarter(input.mesh,{},f.topology.output,f.topology.scratch,&f.topology.startup).status,st::Status::Ok);
+    input.topology=f.topology.startup;
     ASSERT_EQ(s::Build(input,{},actual.output,actual.scratch,&actual.view).status,s::Status::Ok);
     Same(actual.view,expected);
     const auto before=Bytes(actual);input.mesh.profile=st::Profile::Unspecified;

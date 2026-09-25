@@ -12,6 +12,8 @@ Report CheckInput(const Input& in,const Layout&,const tl::util::HostArena& outpu
   namespace range=search::detail;
   if (in.profile!=Profile::OrdinaryExteriorFixedMain &&
       in.profile!=Profile::OrdinaryExteriorMovingMain) return {Status::UnsupportedProfile};
+  if(in.topology!=TopologyPolicy::ManifoldTwoSided && in.topology!=TopologyPolicy::NativeOrdinaryShell)
+    return {Status::UnsupportedProfile};
   if (!self_contact_filters::CompatibleHostArithmetic()) return {Status::UnsupportedArithmetic};
   if (!in.source_generation || !range::Span(in.node_source_ids,in.node_count) ||
       !range::Span(in.primary,in.primary_count) || !published ||

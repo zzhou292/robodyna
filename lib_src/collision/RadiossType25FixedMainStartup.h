@@ -7,6 +7,9 @@ namespace tlfea::contact::radioss_type25::startup {
 // lifetimes. No arena is allocated or grown by these operations; preflight
 // reports aligned storage including private publication staging.
 Forecast Preflight(std::size_t nodes,std::size_t primary_faces,Limits={}) noexcept;
+// Count/profile-only forecast; does not dereference source spans. The old
+// count overload remains unambiguous and preserves the legacy arena layout.
+Forecast Preflight(const Input&,Limits={}) noexcept;
 Report BuildStarter(const Input&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot*) noexcept;
 // Separate native fixed-main-ready stage. Snapshot must be an immutable result

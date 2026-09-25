@@ -21,6 +21,8 @@ TEST(NativeType25Source, MovingTopologyRetainsPhysicalIdentityAndCompleteNativeF
   ASSERT_EQ(report.status,n::TransactionStatus::Ok)<<report.message;
   ASSERT_TRUE(result.moving.enabled);EXPECT_EQ(result.moving.free_main_ids,(std::vector<std::uint32_t>{1,2,3,4}));
   EXPECT_EQ(result.moving.main_coefficients,(std::vector<double>{1e6,1e6,1e6,1e6}));
+  EXPECT_EQ(result.moving.starter.profile,s::Profile::OrdinaryExteriorMovingMain);
+  EXPECT_EQ(result.moving.starter.topology,s::TopologyPolicy::ManifoldTwoSided);
   EXPECT_EQ(result.moving.starter.source_generation,7u);EXPECT_EQ(result.moving.topology.mains,f.starter.mains);
   EXPECT_EQ(result.moving.topology.main_count,4u);EXPECT_EQ(result.moving.topology.normal_to_main.entry_count,14u);
   ASSERT_EQ(result.primary.size(),2u);EXPECT_EQ(result.primary[0].nodes[0],0u);EXPECT_EQ(result.primary[1].nodes[0],4u);
@@ -45,7 +47,7 @@ TEST(NativeType25Source, FreshRosterOmitsInactiveMainsWithoutChangingTopologyOrD
 }
 TEST(NativeType25Source, SnapshotCorruptionRejectsBeforePublishingAnyStartupState) {
   Fixture f;
-  for(unsigned field=0;field<11;++field) {
+  for(unsigned field=0;field<13;++field) {
     SCOPED_TRACE(field);auto source=f.Source();auto output=Sentinel();
     std::vector<s::Main> mains(f.starter.mains,f.starter.mains+f.starter.main_count);
     std::vector<std::uint32_t> expanded(f.starter.expanded_to_primary,f.starter.expanded_to_primary+f.starter.main_count);
@@ -66,6 +68,8 @@ TEST(NativeType25Source, SnapshotCorruptionRejectsBeforePublishingAnyStartupStat
     if(field==8)references[0].bisector[0].x=std::numeric_limits<float>::quiet_NaN();
     if(field==9)source.starter.normal_incidence_count=SIZE_MAX;
     if(field==10)source.starter.mains=reinterpret_cast<const s::Main*>(reinterpret_cast<const unsigned char*>(mains.data())+1);
+    if(field==11)source.starter.profile=s::Profile::OrdinaryExteriorFixedMain;
+    if(field==12)source.starter.topology=static_cast<s::TopologyPolicy>(99);
     EXPECT_NE(rd::PrepareSource(f.Config(),source,f.physical.physical,{},output).status,n::TransactionStatus::Ok);
     Unchanged(output);
   }

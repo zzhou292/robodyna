@@ -7,7 +7,7 @@ Report CheckSnapshot(const Input& in,const Snapshot& view,const FixedMainInput& 
     const tl::util::HostArena& output,const tl::util::HostArena& scratch,const FixedMainView* published) noexcept {
   namespace r=search::detail;
   const auto g=2*in.primary_count,n=view.starter.reference_count;
-  if(view.node_count!=in.node_count || view.primary_count!=in.primary_count || view.main_count!=g ||
+  if(view.profile!=in.profile || view.topology!=in.topology || view.node_count!=in.node_count || view.primary_count!=in.primary_count || view.main_count!=g ||
       view.source_generation!=in.source_generation || !n || n>4*g || view.normal_incidence_count>4*g ||
       active.main_count!=g || !r::Span(active.main_coefficients,g) || !r::Span(view.mains,g) ||
       !r::Span(view.expanded_to_primary,g) || !r::Span(view.primary_to_partner,in.primary_count) ||

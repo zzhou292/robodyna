@@ -23,19 +23,19 @@ endif()
 file(GLOB donors CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/native/original/*")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${donors}
   native/prepare.py native/Sources.py native/Extraction.py native/source-manifest.json
-  native/Memory.F90 native/Boundary.F90 native/NormalStorage.F90 native/Wrapper.F90 native/CsrWrapper.F.in
+  native/Memory.F90 native/Boundary.F90 native/NormalStorage.F90 native/Wrapper.F90 native/SelectorWrapper.F90 native/CsrWrapper.F.in
   ../radioss_type25_selection/native/Sources.py observed.py evidence/manifest.json evidence/native-observations.jsonl)
 set(generated Constants.F90 Memory.F90 Boundary.F90 NormalStorage.F90 Expand.F Neighborhood.F
   I25NEIGH_SEG_EN.F I25NEIGH_SEG_E.F I25NEIGH_REMOVEALLBUT1.F I25NEIGH_SEG_OPP.F I25NEIGH_MSG_ERR.F
-  ADD_ID.F INTAB.F SAME_SEG.F NORMV3.F NORMA4N.F StarterNormals.F ReadyNormals.F FreeMain.F CsrWrapper.F Wrapper.F90)
+  ADD_ID.F INTAB.F SAME_SEG.F NORMV3.F NORMA4N.F StarterNormals.F ReadyNormals.F FreeMain.F CsrWrapper.F Wrapper.F90 SelectorWrapper.F90)
 list(TRANSFORM generated PREPEND "${native}/")
-add_library(type25_startup_oracle STATIC NativeOracle.cpp ${generated})
+add_library(type25_startup_oracle STATIC NativeOracle.cpp SelectorOracle.cpp ${generated})
 set_target_properties(type25_startup_oracle PROPERTIES Fortran_MODULE_DIRECTORY "${native}")
 target_include_directories(type25_startup_oracle PRIVATE "${native}")
 target_link_libraries(type25_startup_oracle PUBLIC tl_radioss_type25_fixed_main_startup)
 target_compile_options(type25_startup_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-ffixed-line-length-none;-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_fixed_startup_host HostTest.cpp ObservedTest.cpp)
+add_executable(type25_fixed_startup_host HostTest.cpp ObservedTest.cpp GeneralTopologyTest.cpp)
 target_include_directories(type25_fixed_startup_host PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(type25_fixed_startup_host PRIVATE type25_startup_oracle GTest::gtest_main)
 add_test(NAME type25_fixed_startup_host COMMAND type25_fixed_startup_host)
