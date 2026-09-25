@@ -3,7 +3,7 @@
 #include "Types.h"
 #include "lib_src/math/Fixed3.h"
 namespace tlfea::contact::radioss_type25 {
-using Vector = tl::math::fixed3::Vec3;
+using Vector = tl::math::Vec3;
 struct FrictionControls {
   int model = -1, formulation = -1, orthotropic = -1, converged = -1;
   int thermal = -1, part_coefficients = -1;
