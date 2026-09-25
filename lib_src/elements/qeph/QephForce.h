@@ -4,7 +4,7 @@
 #include "QephHistory.h"
 #include "QephLaw1.h"
 #include "QephStabilizationForces.h"
-#include "QephForceProjection.h"
+#include "QephForceProjectionUnits.h"
 #include "QephStiffnessDiagnostics.h"
 
 namespace tl::fea::qeph {
@@ -37,7 +37,9 @@ TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& bas
   detail::StabilizationWork stabilization;
   detail::UpdateStabilization(geometry,material,proposed,stabilization);
   detail::StabilizationForces(geometry,material,proposed,stabilization,local);
-  detail::ProjectForces(geometry,local,candidate.internal_force,candidate.internal_couple);
+  const auto projection_status=detail::ProjectForcesInWorkingLength(geometry,local,
+      r.input.projection_working_length_m,candidate.internal_force,candidate.internal_couple);
+  if(projection_status!=Status::kSuccess)return projection_status;
   auto& d=candidate.diagnostics;
   for(unsigned i=0;i<2;++i) d.internal_work_increment[i]=proposed.internal_work[i]-base.data().internal_work[i];
   d.hourglass_viscous_work_increment=proposed.hourglass_viscous_work-base.data().hourglass_viscous_work;
