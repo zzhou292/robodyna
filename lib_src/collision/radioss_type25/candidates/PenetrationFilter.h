@@ -2,6 +2,7 @@
 // Reimplementation of OpenRadioss I25PEN3, a62b27e6, MYREAL8.
 #pragma once
 #include "Types.h"
+#include "lib_src/math/ScalarBits.h"
 namespace tlfea::contact::radioss_type25::candidates {
 namespace detail {
 namespace v = tl::math::fixed3;
@@ -10,14 +11,8 @@ inline constexpr double em03 = 1. / 1000.;
 TL_MATH_HOST_DEVICE inline double Max(double a,double b) {return a<b?b:a;}
 TL_MATH_HOST_DEVICE inline double Min(double a,double b) {return a<b?a:b;}
 TL_MATH_HOST_DEVICE inline bool Nonnegative(double a) {return tl::math::Finite(a)&&a>=0;}
-TL_MATH_HOST_DEVICE inline bool SameBits(double a,double b) {
-  const auto* first=reinterpret_cast<const unsigned char*>(&a);
-  const auto* second=reinterpret_cast<const unsigned char*>(&b);
-  for(unsigned i=0;i<sizeof(double);++i)if(first[i]!=second[i])return false;
-  return true;
-}
 TL_MATH_HOST_DEVICE inline bool SameVector(Vector a,Vector b) {
-  return SameBits(a.x,b.x)&&SameBits(a.y,b.y)&&SameBits(a.z,b.z);
+  return tl::math::SameScalarBits(a.x,b.x)&&tl::math::SameScalarBits(a.y,b.y)&&tl::math::SameScalarBits(a.z,b.z);
 }
 TL_MATH_HOST_DEVICE inline double Clamp(double a) {return Max(0.,Min(1.,a));}
 TL_MATH_HOST_DEVICE inline Bounds Box(const Vector* p) {

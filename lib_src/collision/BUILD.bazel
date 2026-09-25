@@ -1112,7 +1112,7 @@ cc_library(
     name = "radioss_type25_candidate_values",
     srcs = ["radioss_type25/candidates/Layout.cpp"],
     hdrs = ["RadiossType25Candidates.h"] + glob(["radioss_type25/candidates/*.h"]),
-    deps = [":radioss_type25_search_values"],
+    deps = [":radioss_type25_search_values", "//lib_src/math:scalar_bits"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
 cuda_library(

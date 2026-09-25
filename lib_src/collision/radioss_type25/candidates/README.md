@@ -17,7 +17,9 @@ GAPV=ONEP01*((base+CURV_MAX)+VDT). Global stored_motion participates only in TRI
 PEN3 evaluates the native all-T3 row for T3 and native Q4 fan rows for Q4, with
 native denominator floors, edge-region decisions and PENE != 0 admission.
 IBC bit1 is Z, bit2 is Y, bit4 is X. ETYP/global NRTM select solid/coating symmetry.
-Repeated source-node inputs require identical coordinate/velocity bits. STIF,
+Repeated source-node inputs require identical coordinate/velocity bits through
+the shared math/ScalarBits.h helper also used by selection/geometry. Integration
+qualification retains native/CUDA differential and signed-zero admission gates. STIF,
 ITYP and ISKEW are neither fabricated nor consumed by this candidate stage.
 
 Source has explicit UnitScale and Native/Si input mode. Borrowed positions,
