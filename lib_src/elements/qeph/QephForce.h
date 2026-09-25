@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // OpenRadioss (C) 2026 Siemens; coherent selected QEPH LAW1 prescribed force.
 #pragma once
+#include "../ShellGlobalLaw1Profile.h"
 #include "QephHistory.h"
 #include "QephLaw1.h"
 #include "QephStabilizationForces.h"
@@ -10,11 +11,12 @@
 namespace tl::fea::qeph {
 // Native positive internal forces/couples: a nodal RHS subtracts these values.
 // No Fortran runtime, owner, force cache, clock or dt0 initial-force operation.
-// Fixed centered LAW1, CVIS1, DM=DN=.015, ISROT0/IDRIL0/ITHK0. Exact base
+// Centered global LAW1, CVIS1, DM=DN=.015, ISROT0/IDRIL0. Exact base
 // reference/time and next sample identity; every output/base byte survives
 // failure, including late reported-thickness or force/diagnostic arithmetic.
-TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
-    const PrescribedInterval& interval,ForceTrial& output) noexcept {
+namespace detail {
+TL_QEPH_HD inline Status EvaluateForceWithThickness(const ReferenceData& r,const History& base,
+    const PrescribedInterval& interval,double coefficient_thickness,ForceTrial& output) noexcept {
   if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
@@ -27,7 +29,9 @@ TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& bas
   ForceTrial candidate;
   candidate.kinematics=geometry.values; // Before native CNDT3 length mutation.
   detail::MaterialWork material;
-  if(!detail::PrepareMaterial(r.input,geometry.values.area,interval.dt,material))
+  auto coefficient_input=r.input;
+  coefficient_input.thickness=coefficient_thickness;
+  if(!detail::PrepareMaterial(coefficient_input,geometry.values.area,interval.dt,material))
     return Status::kNonfiniteResult;
   auto proposed=base.data();
   if(!detail::UpdateLaw1(geometry,material,proposed)) return Status::kNonfiniteResult;
@@ -52,5 +56,24 @@ TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& bas
   if(preparation!=Status::kSuccess) return Status::kNonfiniteResult;
   output=candidate;
   return Status::kSuccess;
+}
+} // namespace detail
+
+// Legacy fixed-coefficient-thickness API and ordinary shell history are unchanged.
+TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
+    const PrescribedInterval& interval,ForceTrial& output) noexcept {
+  return detail::EvaluateForceWithThickness(r,base,interval,r.input.thickness,output);
+}
+
+// Explicit native NPT0 analytic LAW1. No Gauss-point history is created.
+// The physical owner must retain the resolved profile immutably across calls.
+// CNCOEF3B applies its native EM20 length floor, converted explicitly to SI.
+TL_QEPH_HD inline Status EvaluateGlobalLaw1Force(const ShellGlobalLaw1Profile& profile,
+    const ReferenceData& r,const History& base,const PrescribedInterval& interval,
+    ForceTrial& output) noexcept {
+  if(!shell_global_law1::Valid(profile)) return Status::kInvalidInput;
+  const double thickness=profile.thickness==ShellLaw1Thickness::Reference?
+      r.input.thickness : ::fmax(base.data().thickness,shell_global_law1::NativeThicknessFloor*profile.coefficient_working_length_m);
+  return detail::EvaluateForceWithThickness(r,base,interval,thickness,output);
 }
 } // namespace tl::fea::qeph

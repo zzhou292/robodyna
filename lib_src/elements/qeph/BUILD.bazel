@@ -26,7 +26,7 @@ cc_library(
         "QephStabilizationState.h", "QephStabilizationForces.h",
         "QephForceProjection.h", "QephForceProjectionUnits.h", "QephStiffnessDiagnostics.h",
     ],
-    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
+    deps = [":kinematics", "//lib_src/elements:shell_global_law1_profile", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
 )
 
 cc_library(
@@ -105,4 +105,10 @@ cc_library(
     name = "layered_tab1",
     hdrs = ["QephLayeredTab1.h"],
     deps = [":layered_j2", "//lib_src/elements/sections:shell_layered_tab1"],
+)
+
+filegroup(
+    name = "global_law1_source",
+    srcs = ["QephForce.h"],
+    visibility = ["//lib_utest/qualification/shell_global_law1:__pkg__"],
 )
