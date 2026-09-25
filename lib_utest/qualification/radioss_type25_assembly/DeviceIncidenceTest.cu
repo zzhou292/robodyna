@@ -157,7 +157,11 @@ TEST_F(Type25DeviceIncidence, PriorCudaLaunchErrorPoisonsWorkspaceWithoutClaimin
   // A zero-grid launch fails admission without executing a device instruction
   // or poisoning the CUDA context. Stage must consume, report and retain failure.
   EmptyKernelForLaunchFailure<<<0,1,0,stream>>>();
-  ASSERT_EQ(cudaPeekAtLastError(),cudaErrorInvalidConfiguration);
+  const auto launch_error=cudaPeekAtLastError();
+  RecordProperty("prior_launch_error",static_cast<int>(launch_error));
+  // CUDA runtime versions report either invalid configuration or invalid value
+  // for the same zero-grid host admission failure. Neither executes the kernel.
+  ASSERT_TRUE(launch_error==cudaErrorInvalidConfiguration || launch_error==cudaErrorInvalidValue);
   EXPECT_EQ(builder.Stage(Current(device)),ass::IncidenceStatus::DeviceFailure);
   EXPECT_FALSE(builder.IsCurrent(previous));
   EXPECT_EQ(builder.last_report().own_kernel_launches,0u);
