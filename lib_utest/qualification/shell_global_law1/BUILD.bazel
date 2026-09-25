@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer", size = "small", srcs = ["Consumer.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/qeph:force", "//lib_src/elements/t3:force"],
+)
+cc_test(
+    name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
+    data = ["verify_sources.py", "source-proof.json", "//lib_src/elements/qeph:global_law1_source", "//lib_src/elements/t3:global_law1_source"],
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)

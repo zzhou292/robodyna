@@ -1,0 +1,27 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Observe complete original C3COEF3, never a translated THK selector.
+      SUBROUTINE GL1_T_COEFFICIENT(REFERENCE,ACCEPTED,ITHK,VALUE)
+     . BIND(C,NAME="global_law1_t3_coefficient")
+      USE ISO_C_BINDING,ONLY:C_DOUBLE,C_INT
+      USE GL1_T3_ENGINE_MATERIAL_MOD,ONLY:T3_MATERIAL_,T3_PREPARE_MATERIAL
+      USE T3_ENGINE_GEOMETRY_MOD,ONLY:T3_GEOMETRY_
+      USE T3_ENGINE_HISTORY_MOD,ONLY:T3_HISTORY_
+#include "implicit_f.inc"
+#include "mvsiz_p.inc"
+#include "impl1_c.inc"
+      REAL(C_DOUBLE),INTENT(IN)::REFERENCE,ACCEPTED
+      INTEGER(C_INT),INTENT(IN)::ITHK
+      REAL(C_DOUBLE),INTENT(OUT)::VALUE
+      REAL(C_DOUBLE)::INPUT(4)
+      TYPE(T3_GEOMETRY_) G
+      TYPE(T3_HISTORY_) H
+      TYPE(T3_MATERIAL_) M
+      ISMDISP=0
+      IMPL_S=0
+      INPUT=[ONE,ONE,FOURTH,REFERENCE]
+      G%AREA=ONE
+      G%OFF=ONE
+      H%THK=ACCEPTED
+      CALL T3_PREPARE_MATERIAL(INPUT,G,H,ITHK,M)
+      VALUE=M%THK0(1)
+      END

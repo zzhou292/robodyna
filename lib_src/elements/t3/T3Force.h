@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Coherent selected C3FORC3, OpenRadioss (C) 2026 Siemens; see FORCE.md map.
 #pragma once
+#include "../ShellGlobalLaw1Profile.h"
 #include "T3History.h"
 #include "T3Law1.h"
 #include "T3ForceProjection.h"
@@ -9,8 +10,9 @@ namespace tl::fea::t3 {
 // Pure prescribed endpoint/midpoint value operation. Positive internal loads
 // are subtracted from nodal RHS. No owner/clock/native runtime/h=0 force cache.
 // All inputs and caller output survive failure, even when base aliases output.
-TL_T3_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
-    const PrescribedInterval& in,ForceTrial& output) noexcept {
+namespace detail {
+TL_T3_HD inline Status EvaluateForceWithThickness(const ReferenceData& r,const History& base,
+    const PrescribedInterval& in,double coefficient_thickness,ForceTrial& output) noexcept {
   if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
@@ -22,7 +24,9 @@ TL_T3_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
   detail::GeometryWork geometry;
   status=detail::CurrentGeometry(in.position,longest,geometry); if(status!=Status::kSuccess) return status;
   detail::MaterialWork material;
-  if(!detail::PrepareMaterial(r.input,geometry.kinematics.area,material)) return Status::kNonfiniteResult;
+  auto coefficient_input=r.input;
+  coefficient_input.thickness=coefficient_thickness;
+  if(!detail::PrepareMaterial(coefficient_input,geometry.kinematics.area,material)) return Status::kNonfiniteResult;
   status=detail::EvaluateRates(in,geometry); if(status!=Status::kSuccess) return status;
   auto& k=geometry.kinematics;
   k.base_time=in.base_time; k.position_time=in.base_time+in.dt; k.velocity_time=in.base_time+.5*in.dt;
@@ -42,5 +46,24 @@ TL_T3_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
   if(PreparePrescribedHistory(r,proposed,{in.base_time+in.dt,in.sample_index},candidate.proposed_history)!=Status::kSuccess)
     return Status::kNonfiniteResult;
   output=candidate; return Status::kSuccess;
+}
+} // namespace detail
+
+// Legacy fixed-coefficient-thickness API and ordinary shell history are unchanged.
+TL_T3_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
+    const PrescribedInterval& interval,ForceTrial& output) noexcept {
+  return detail::EvaluateForceWithThickness(r,base,interval,r.input.thickness,output);
+}
+
+// Explicit native NPT0 analytic LAW1. No Gauss-point history is created.
+// The physical owner must retain the resolved profile immutably across calls.
+// C3COEF3 uses accepted thickness directly; it has no CNCOEF3B floor.
+TL_T3_HD inline Status EvaluateGlobalLaw1Force(const ShellGlobalLaw1Profile& profile,
+    const ReferenceData& r,const History& base,const PrescribedInterval& interval,
+    ForceTrial& output) noexcept {
+  if(!shell_global_law1::Valid(profile)) return Status::kInvalidInput;
+  const double thickness=profile.thickness==ShellLaw1Thickness::Reference?
+      r.input.thickness : base.data().thickness;
+  return detail::EvaluateForceWithThickness(r,base,interval,thickness,output);
 }
 } // namespace tl::fea::t3
