@@ -57,7 +57,9 @@ TEST(NativeTopologyAssessment, WholeTopologyRejectionReportsExactSourceWithoutDe
 }
 TEST(NativeTopologyAssessment, DocumentsRespectMetadataCapacity) {
   Fixture f;const auto result=d::EvaluateValues(f.canonical,f.selected,{},{});
-  EXPECT_THROW(ResultDocument(result,64),std::exception);EXPECT_THROW(ForecastDocument(result.forecast,64),std::exception);
-  EXPECT_NO_THROW(ResultDocument(result));EXPECT_NO_THROW(ForecastDocument(result.forecast));
+  EXPECT_THROW(ResultDocument(result,64),std::exception);
+  EXPECT_THROW(ForecastDocument(result.forecast,64),std::exception);
+  EXPECT_NO_THROW(ResultDocument(result));
+  EXPECT_NO_THROW(ForecastDocument(result.forecast));
 }
 } // namespace crash::cases::vehicle_self_contact::native::test
