@@ -84,10 +84,8 @@ ShellPublicationReport ShellBatchPublication::CommitPhysical(FENodalState& owner
   if (physical.HasScratchParticipation()) {
     const auto participation=ValidatePhysicalScratchSeal(owner,authentic);
     if (participation.status!=S::Success) return fail(participation);
-    // Consume only fixed host attempt scratch after the existing owner
-    // validation and before its commit. Thus all old failure ordering is
-    // retained and owner success is still followed solely by existing
-    // infallible material/diagnostic publications below.
+    // Consume fixed issuer identity only. Any prepared typed native selector
+    // plan remains private until owner success; common failure discards it.
     ConsumePhysicalScratchSeal();
   }
   nodal = owner.Commit(token);
@@ -95,6 +93,7 @@ ShellPublicationReport ShellBatchPublication::CommitPhysical(FENodalState& owner
   // The only owner commit has succeeded. Nothing below allocates, reads CUDA,
   // validates arithmetic, calls user code, or returns a fallible status.
   const auto stamp = owner.accepted();
+  PublishNativeContactState(stamp);
   if (state.qbatch) state.qbatch->impl_->Publish(stamp);
   if (state.tbatch) state.tbatch->impl_->Publish(stamp);
   if (state.bbatch) state.bbatch->Publish(stamp);

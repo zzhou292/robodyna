@@ -59,18 +59,38 @@ whole-composition budget. No 20 GB workstation or vehicle budget is inferred
 from this tiny transaction test.
 
 On the current incoming ABI the physical publisher's roster-absent owned payload
-remains 6,880 bytes; the tiny startup reservation remains 8,704 bytes. The same
+remains 6,888 bytes; the tiny startup reservation remains 8,712 bytes. The same
 checked proof layout at the current original
-372,435 nodes / 11,165 attachments gives 44,876,960 bytes of additional startup
+372,435 nodes / 11,165 attachments gives 44,877,736 bytes of additional startup
 reservation. This is an arithmetic forecast, not an original-owner execution or
 a second charge for already-owned source/participant backings.
 
-The frozen LP64 host ABI is: issuer 96 bytes, typed receipt 264 bytes, public
-two-slot roster 32 bytes, and publication-owned configured state 112 bytes.
-Accordingly the exact complete protocol totals are 208 bytes for self-contact
-only and 304 bytes for mapped-wall plus self-contact. The optional state reuses
-the internal two-word CIN-count header after one-time configuration, so the
-roster-absent 6,880/8,704-byte physical forecasts above do not change.
+The current LP64 runtime footprint is: issuer120 bytes, typed receipt288 bytes,
+public two-slot roster32 bytes, and publication-owned configured state112 bytes.
+Protocol totals are232 bytes for self-contact only and352 bytes for mapped-wall
+plus self-contact. The native-state pointer deliberately adds8 bytes per issuer
+versus the previously qualified112-byte issuer; the ledger computes actual bytes
+with sizeof and exact-cap checks. These are rebuilt static-library runtime objects,
+not a persisted serialization ABI. No pointer is encoded inside witness counts.
+The configured native transaction separately charges its embedded
+NativeContactPublicationState (616 bytes in the measured current build) and
+every retained contact arena; if already included
+in sizeof(transaction Impl), that state is not charged a second time.
+The optional roster still reuses the existing two-word CIN-count header, so no
+roster leaves the physical publisher's allocation path and numeric behavior intact.
+
+Native contact publication stores only bounded history/reference selectors and
+coherent owner/generation metadata after the sole physical commit. All numerical
+and lifetime admission happens first. Public snapshot availability means binding
+and full-stamp coherence; initial generation0 has_reference=false is not a usable
+candidate reference. After commit, force_base_stamp separately identifies the
+accepted X_n where contact force/history was evaluated; stamp identifies physical
+publication X_(n+1). Initial force_phase_available=false avoids inventing an
+initial force evaluation. This metadata copies the sole owner stamp and does not
+create a contact clock or move classification to candidate coordinates.
+DT1/DT12 numerical binding remains the concrete transaction obligation.
+Tests here qualify the publication seam using real existing
+physical/material participants, not a complete native contact solver or scene.
 
 Native reference comparisons remain in the separately owned Q/T/QBAT, TYPE25,
 TYPE13 and solid resident gates. Author qualification is host/syntax only;

@@ -2,6 +2,7 @@
 #include "../ShellBatchPublicationImpl.h"
 #include "../ShellPhysicalOwner.h"
 #include "PhysicalScratchParticipationState.h"
+#include "NativeContactPublicationState.h"
 #include <atomic>
 #include <limits>
 #include <new>
@@ -118,6 +119,7 @@ ShellPhysicalScratchParticipation::ShellPhysicalScratchParticipation() noexcept
     :lifetime_id_(NextIssuerLifetime()) {}
 ShellPhysicalScratchParticipation::~ShellPhysicalScratchParticipation() noexcept {
   if (publication_) publication_->ReleasePhysicalScratchParticipation(*this);
+  if(native_contact_){native_contact_->issuer_=nullptr;native_contact_->attached_=false;native_contact_->Unbind();native_contact_=nullptr;}
 }
 void ShellPhysicalScratchParticipation::Bind(
     ShellBatchPublication& publication,FENodalState& owner,
@@ -130,10 +132,12 @@ void ShellPhysicalScratchParticipation::Bind(
   binding_id_=NextIssuerLifetime();
   witness_count_=witness_count;
   phase_=Phase::Idle;
+  if(native_contact_)native_contact_->Bind(publication,owner,lifetime_id_,binding_id_);
 }
 void ShellPhysicalScratchParticipation::Unbind(
     const ShellBatchPublication* publication) noexcept {
   if (publication_ != publication) return;
+  if(native_contact_)native_contact_->Unbind();
   publication_=nullptr;
   owner_=nullptr;
   stream_=nullptr;
@@ -145,12 +149,20 @@ void ShellPhysicalScratchParticipation::Unbind(
   phase_=Phase::Idle;
 }
 void ShellPhysicalScratchParticipation::DiscardTrial() noexcept {
+  if(native_contact_)native_contact_->Discard();
   stream_=nullptr;
   owner_id_=base_epoch_=attempt_=0;
   phase_=Phase::Idle;
 }
 void ShellPhysicalScratchParticipation::Consume() noexcept {
-  DiscardTrial();
+  // Preserve the privately prepared native selectors until owner.Commit either
+  // succeeds (typed Publish) or fails (common Discard). Old scratch only clears.
+  stream_=nullptr;owner_id_=base_epoch_=attempt_=0;phase_=Phase::Idle;
+}
+void ShellPhysicalScratchParticipation::DetachNativeContactState(NativeContactPublicationState& state) noexcept {
+  if(native_contact_!=&state)return;
+  if(publication_)publication_->ReleasePhysicalScratchParticipation(*this);
+  state.issuer_=nullptr;state.attached_=false;state.Unbind();native_contact_=nullptr;
 }
 
 ShellPublicationReport
@@ -217,6 +229,10 @@ ShellBatchPublication::ConfigurePhysicalScratchParticipation(
   if (source.status!=S::Success) return source;
   for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
     const auto& entry=RosterEntry(roster,Kind(slot));
+    if(entry.issuer&&entry.issuer->native_contact_&&
+       (Kind(slot)!=ShellPhysicalScratchContributorKind::SelfContact||
+        !entry.issuer->native_contact_->CanBind(owner,entry.source_id)))
+      return {S::ParticipationFailure,"Native contact state differs from the fixed source/owner slot"};
     if (entry.issuer && entry.issuer->configured())
       return {S::InvalidInput,
               "Scratch participation issuer is already configured"};
@@ -465,6 +481,8 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchCandidate(
   if (issuer.generation_==std::numeric_limits<std::uint64_t>::max())
     return fail({S::ParticipationFailure,
                  "Scratch participation generation is exhausted"});
+  if(issuer.native_contact_&&!issuer.native_contact_->Ready(owner,authentic,issuer.generation_+1))
+    return fail({S::ParticipationFailure,"Native contact history lacks a complete prepared selector plan"});
   ShellPhysicalScratchParticipationReceipt next;
   next.issuer_=&issuer;
   next.publication_=this;
@@ -597,6 +615,8 @@ ShellPublicationReport ShellBatchPublication::ValidatePhysicalScratchSeal(
         participation->sealed_generation[slot]!=issuer.generation_)
       return {S::ParticipationFailure,
               "Configured scratch completion changed before common commit"};
+    if(issuer.native_contact_&&!issuer.native_contact_->Ready(owner,authentic,issuer.generation_))
+      return {S::ParticipationFailure,"Native contact history changed before common commit"};
   }
   return Ok();
 }
@@ -614,6 +634,13 @@ void ShellBatchPublication::ConsumePhysicalScratchSeal() noexcept {
   participation->sealed_owner_id=participation->sealed_base_epoch=
       participation->sealed_attempt=0;
   for (auto& generation:participation->sealed_generation) generation=0;
+}
+
+void ShellBatchPublication::PublishNativeContactState(const NodalStamp& stamp) noexcept {
+  auto* participation=impl_->physical->ScratchParticipation();
+  if(!participation)return;
+  const auto* issuer=participation->entries[PhysicalScratchKindIndex(ShellPhysicalScratchContributorKind::SelfContact)].issuer;
+  if(issuer&&issuer->native_contact_)issuer->native_contact_->Publish(stamp);
 }
 
 void ShellBatchPublication::ReleasePhysicalScratchParticipation(

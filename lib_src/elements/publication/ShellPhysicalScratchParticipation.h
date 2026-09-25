@@ -8,11 +8,14 @@
 namespace tlfea::contact {
 class NodalWallMappedContact;
 class SelfContactTransaction;
+namespace radioss_type25 {class Transaction;}
 }
 
 namespace tl::fea {
 
 class ShellBatchPublication;
+class NativeContactPublicationState;
+namespace native_contact_publication {class QualificationAccess;}
 struct ShellPublicationReport;
 
 // Closed contact scratch roster.  Values are ordered deliberately so all
@@ -92,6 +95,9 @@ class ShellPhysicalScratchParticipation {
   friend class ShellBatchPublication;
   friend class ::tlfea::contact::NodalWallMappedContact;
   friend class ::tlfea::contact::SelfContactTransaction;
+  friend class ::tlfea::contact::radioss_type25::Transaction;
+  friend class NativeContactPublicationState;
+  friend class native_contact_publication::QualificationAccess;
   enum class Phase : std::uint8_t { Idle, AssemblyRecorded, CandidateSealed };
   ShellPublicationReport RecordMappedWallAcceptedAssembly(
       FENodalState&, const NodalTrialToken&,
@@ -111,7 +117,9 @@ class ShellPhysicalScratchParticipation {
       std::size_t witness_count) noexcept;
   void Unbind(const ShellBatchPublication*) noexcept;
   void Consume() noexcept;
+  void DetachNativeContactState(NativeContactPublicationState&) noexcept;
 
+  NativeContactPublicationState* native_contact_ = nullptr;
   ShellBatchPublication* publication_ = nullptr;
   FENodalState* owner_ = nullptr;
   cudaStream_t stream_ = nullptr;
