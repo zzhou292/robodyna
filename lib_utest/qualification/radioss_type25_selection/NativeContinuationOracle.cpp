@@ -33,7 +33,8 @@ s::NativeContinuationResult OracleContinuation(const s::Profile& profile,
     throw std::invalid_argument("Unselected continuation reference profile");
   if(!pair.key.secondary_source_id||pair.key.secondary_source_id!=prior.secondary_source_id||
       pair.key.generation!=prior.generation||pair.key.main_segment<=0||pair.local_main<=0||
-      input.segment_count<pair.local_main||pair.segment_type<0||
+      input.segment_count<pair.local_main||
+      std::int64_t(pair.segment_type)<-2*std::int64_t(input.segment_count)||
       std::int64_t(pair.segment_type)>2*std::int64_t(input.segment_count))
     throw std::invalid_argument("Inconsistent continuation identity/domain");
   // Direct native indexing, with a bounded qualification-only reference arena.
