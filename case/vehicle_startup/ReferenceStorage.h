@@ -24,5 +24,5 @@ struct Geometry {
     std::vector<std::uint32_t> connections, lines;
     explicit Geometry(const modelio::vehicle::source::CanonicalData&);
 };
-void PrepareRows(const DeclarationView&,const Geometry&,ReferenceStorage&);
+void PrepareRows(const DeclarationView&,const Geometry&,const QephReferenceMetric&,ReferenceStorage&);
 } // namespace crash::cases::vehicle_startup::detail

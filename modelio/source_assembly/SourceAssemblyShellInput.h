@@ -1,5 +1,6 @@
 #pragma once
 #include "SourceAssembly.h"
+#include "SourceReferenceMetric.h"
 #include "lib_src/elements/ShellBatchBinding.h"
 
 namespace crash::modelio::assembly {
@@ -9,6 +10,7 @@ namespace crash::modelio::assembly {
 class SourceAssemblyShellInput {
   public:
     explicit SourceAssemblyShellInput(const SourceAssembly&);
+    SourceAssemblyShellInput(const SourceAssembly&,QephMetricProfile);
     SourceAssemblyShellInput(const SourceAssemblyShellInput&) = default;
     SourceAssemblyShellInput(SourceAssemblyShellInput&&) = default;
     SourceAssemblyShellInput& operator=(const SourceAssemblyShellInput&) = delete;
@@ -17,8 +19,10 @@ class SourceAssemblyShellInput {
     const auto& qeph_source_parents() const noexcept { return qeph_parents_; }
     const auto& t3_source_parents() const noexcept { return t3_parents_; }
     const SourceAssembly& source() const noexcept { return source_; }
+    const QephReferenceMetric& qeph_metric() const noexcept{return metric_;}
   private:
     SourceAssembly source_;
+    QephReferenceMetric metric_;
     std::vector<tl::fea::ShellQephBindingInput> qeph_;
     std::vector<tl::fea::ShellT3BindingInput> t3_;
     std::vector<std::size_t> qeph_parents_, t3_parents_;

@@ -4,23 +4,25 @@
 
 namespace crash::cases::vehicle_startup {
 struct VehicleShellReferences::Data {
-    Data(const detail::DeclarationView& view,ReferenceForecast value)
-        : source(view.source),forecast(value) {
+    Data(const detail::DeclarationView& view,ReferenceForecast value,QephReferenceMetric selected)
+        : source(view.source),forecast(value),metric(selected) {
         if (view.resolution) resolution.emplace(*view.resolution);
     }
     VehicleSourcePlan source;
     std::optional<VehicleSectionResolution> resolution;
     ReferenceForecast forecast;
+    QephReferenceMetric metric;
     detail::ReferenceStorage references;
-    static std::shared_ptr<const Data> Prepare(const detail::DeclarationView& view,ReferenceForecast forecast) {
-        auto next=std::make_shared<Data>(view,forecast);
+    static std::shared_ptr<const Data> Prepare(const detail::DeclarationView& view,ReferenceForecast forecast,QephMetricProfile profile) {
+        const auto metric=view.Metric(profile);
+        auto next=std::make_shared<Data>(view,forecast,metric);
         auto& refs=next->references;
         refs.rows.reserve(view.source.counts().parents);
         refs.qeph.reserve(forecast.qeph_capacity);
         refs.t3.reserve(forecast.t3_capacity);
         refs.qbat.reserve(forecast.qbat_capacity);
         const detail::Geometry geometry(view.source.canonical().data());
-        detail::PrepareRows(view,geometry,refs);
+        detail::PrepareRows(view,geometry,metric,refs);
         output::Require(refs.counts.parents==view.source.counts().parents &&
                         refs.counts.attempted==view.Available(),
                         "Vehicle reference assessment lost source coverage");
@@ -79,21 +81,34 @@ ReferenceForecast Forecast(const detail::DeclarationView& declarations,Reference
 }
 } // namespace
 ReferenceForecast ForecastReferences(const VehicleSourcePlan& source,ReferenceLimits limits) {
-    return Forecast(detail::DeclarationView(source),limits,sizeof(VehicleShellReferences::Data)+
-        sizeof(VehicleShellReferences)+sizeof(detail::Geometry)+2*sizeof(void*)+32768);
+    return ForecastReferences(source,QephMetricProfile::LegacyOneMetre,limits);
+}
+ReferenceForecast ForecastReferences(const VehicleSourcePlan& source,QephMetricProfile profile,ReferenceLimits limits) {
+    const detail::DeclarationView view(source);view.Metric(profile);
+    return Forecast(view,limits,sizeof(VehicleShellReferences::Data)+sizeof(VehicleShellReferences)+sizeof(detail::Geometry)+2*sizeof(void*)+32768);
 }
 ReferenceForecast ForecastReferences(const VehicleSectionResolution& resolution,ReferenceLimits limits) {
-    return Forecast(detail::DeclarationView(resolution),limits,sizeof(VehicleShellReferences::Data)+
-        sizeof(VehicleShellReferences)+sizeof(detail::Geometry)+2*sizeof(void*)+32768);
+    return ForecastReferences(resolution,QephMetricProfile::LegacyOneMetre,limits);
+}
+ReferenceForecast ForecastReferences(const VehicleSectionResolution& resolution,QephMetricProfile profile,ReferenceLimits limits) {
+    const detail::DeclarationView view(resolution);view.Metric(profile);
+    return Forecast(view,limits,sizeof(VehicleShellReferences::Data)+sizeof(VehicleShellReferences)+sizeof(detail::Geometry)+2*sizeof(void*)+32768);
 }
 VehicleShellReferences VehicleShellReferences::Prepare(const VehicleSourcePlan& source,ReferenceLimits limits) {
-    const auto forecast=ForecastReferences(source,limits);
-    return VehicleShellReferences(Data::Prepare(detail::DeclarationView(source),forecast));
+    return Prepare(source,QephMetricProfile::LegacyOneMetre,limits);
+}
+VehicleShellReferences VehicleShellReferences::Prepare(const VehicleSourcePlan& source,QephMetricProfile profile,ReferenceLimits limits) {
+    const auto forecast=ForecastReferences(source,profile,limits);
+    return VehicleShellReferences(Data::Prepare(detail::DeclarationView(source),forecast,profile));
 }
 VehicleShellReferences VehicleShellReferences::Prepare(const VehicleSectionResolution& resolution,ReferenceLimits limits) {
-    const auto forecast=ForecastReferences(resolution,limits);
-    return VehicleShellReferences(Data::Prepare(detail::DeclarationView(resolution),forecast));
+    return Prepare(resolution,QephMetricProfile::LegacyOneMetre,limits);
 }
+VehicleShellReferences VehicleShellReferences::Prepare(const VehicleSectionResolution& resolution,QephMetricProfile profile,ReferenceLimits limits) {
+    const auto forecast=ForecastReferences(resolution,profile,limits);
+    return VehicleShellReferences(Data::Prepare(detail::DeclarationView(resolution),forecast,profile));
+}
+const QephReferenceMetric& VehicleShellReferences::qeph_metric() const noexcept{return data_->metric;}
 const VehicleSourcePlan& VehicleShellReferences::source() const noexcept {return data_->source;}
 const VehicleSectionResolution* VehicleShellReferences::resolution() const noexcept {
     return data_->resolution ? &*data_->resolution : nullptr;

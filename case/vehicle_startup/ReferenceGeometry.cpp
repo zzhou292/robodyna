@@ -25,7 +25,7 @@ Geometry::Geometry(const source::CanonicalData& d)
     :node_ids(Decode<std::uint64_t>(d,"node_ids")),records(Decode<std::uint64_t>(d,"shells_records")),
      positions(Decode<double>(d,"node_positions")),connections(Decode<std::uint32_t>(d,"shells_node_indices")),
      lines(Decode<std::uint32_t>(d,"shells_source_lines")) {}
-void PrepareRows(const DeclarationView& declarations,const Geometry& g,ReferenceStorage& out) {
+void PrepareRows(const DeclarationView& declarations,const Geometry& g,const QephReferenceMetric& metric,ReferenceStorage& out) {
     const auto& source=declarations.source;
     for(std::size_t e=0;e<source.parents().size();++e) {
         const auto& parent=source.parents()[e];
@@ -59,7 +59,8 @@ void PrepareRows(const DeclarationView& declarations,const Geometry& g,Reference
             Append(out,row,OriginalMidlayerQbatInput(quad,*native));
         } else if(family==tl::fea::ShellBindingFamily::Qeph) {
             output::Require(!triangle,"QEPH source topology mismatch");
-            Append(out,row,InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s,placement));
+            Append(out,row,modelio::assembly::WithQephMetric(
+                InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s,placement),metric));
         } else {
             output::Require(family==tl::fea::ShellBindingFamily::T3 && triangle,"T3 source topology mismatch");
             Append(out,row,InputFor<tl::fea::t3::ReferenceInput,3>(g,c,*m,*s,placement));

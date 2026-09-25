@@ -12,6 +12,7 @@ template<class T,std::size_t N> void Same(const T (&a)[N],const T (&b)[N]) {
 }
 template<class Input> void SameInput(const Input& a,const Input& b) {
     EXPECT_EQ(a.placement,b.placement);
+    if constexpr(std::is_same_v<Input,tl::fea::qeph::ReferenceInput>)Same(a.projection_working_length_m,b.projection_working_length_m);
     Same(a.position,b.position);
     for(std::size_t i=0;i<std::extent_v<decltype(a.position)>;++i)EXPECT_EQ(a.node_ids[i],b.node_ids[i]);
     Same(a.density,b.density);Same(a.thickness,b.thickness);Same(a.young_modulus,b.young_modulus);Same(a.poisson_ratio,b.poisson_ratio);
