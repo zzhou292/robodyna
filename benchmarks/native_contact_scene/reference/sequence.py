@@ -19,6 +19,7 @@ _records=0
 _bytes=0
 _main=None
 _cycles=[]
+_classification_packets=0
 _packets=0
 _responses=0
 _pending=0
@@ -95,8 +96,18 @@ class Entered(gdb.Breakpoint):
         self.routine=routine
 
     def stop(self):
-        global _main,_packets,_responses
+        global _main,_packets,_responses,_classification_packets
         try:
+            if self.routine=='I25CDCOR3':
+                caller=gdb.newest_frame().older()
+                caller_name=caller.name() if caller else None
+                # The same source helper packs classification inside COMP_2.
+                # Only MAINF's later force cohorts belong to this observer.
+                if caller_name=='i25comp_2_':
+                    _classification_packets+=1
+                    return False
+                if caller_name!='i25mainf_':
+                    raise ValueError('Unexpected CDCOR3 caller:'+str(caller_name))
             call=Call(_abi['routines'][self.routine]);now=clock()
             if 'JTASK' in call.index and call.scalar('JTASK')!=1:
                 raise ValueError('This numerical sequence admits a single native worker only')
@@ -156,6 +167,7 @@ def finish():
                 exit_code=_exit_code,failure=_failure,cycle_count=len(_cycles),
                 first_cycle=_cycles[0] if _cycles else None,last_cycle=_cycles[-1] if _cycles else None,
                 packets=_packets,responses=_responses,records=_records,bytes=_bytes,
+                excluded_classification_packets=_classification_packets,
                 scope='Reference states/packet order only; debugger timing is not performance evidence')
     with Path('native-sequence-summary.json').open('x') as stream:json.dump(record,stream,indent=2);stream.write('\n')
     _stream.close()
