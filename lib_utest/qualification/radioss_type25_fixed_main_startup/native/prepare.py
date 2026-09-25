@@ -19,8 +19,10 @@ def generated():
       "      USE STARTUP_NATIVE_NORMAL_STORAGE, ONLY: observed_ready_rep30, observed_ready_rem30\n")
     point="      IF(FLAG == 1) THEN\n"
     assert ready.count(point)==1
-    result["ReadyNormals.F"]=ready.replace(point,point+
+    ready=ready.replace(point,point+
       "      observed_ready_rep30=REP30\n      observed_ready_rem30=REM30\n")
+    assert ready.count('"mvsiz_p.inc"')==1
+    result["ReadyNormals.F"]=ready.replace('"mvsiz_p.inc"','"engine_mvsiz_p.inc"')
     result["Constants.F90"]=constants(source["constant_mod.F"],original.values()).replace(
       "module selection_constants","module startup_native_constants")
     references,csr=csr_blocks(source)
@@ -33,7 +35,18 @@ def generated():
         result[name]=(ROOT/name).read_text()
     result["implicit_f.inc"]=("      USE ISO_C_BINDING\n      USE STARTUP_NATIVE_CONSTANTS\n"
       "      IMPLICIT NONE\n#define my_real REAL(C_DOUBLE)\n")
-    result["mvsiz_p.inc"]="      INTEGER,PARAMETER::MVSIZ=128\n"
+    # Preserve the actual selected declarations: Starter512 and GNU/Linux
+    # Engine129. NVSIZ128 is a different native parameter, never substituted.
+    starter=source["starter_mvsiz_p.inc"]
+    declaration="       INTEGER MVSIZ\n       PARAMETER (MVSIZ = 512)\n"
+    assert starter.count(declaration)==1
+    result["mvsiz_p.inc"]=declaration
+    engine=source["engine_mvsiz_p.inc"]
+    branch=next(line for line in engine.splitlines() if line.startswith("#elif CPP_mach == CPP_linux64_spmd"))
+    tail=engine.split(branch+"\n",1)[1]
+    selected="      PARAMETER (MVSIZ = 129)\n"
+    assert tail.startswith(selected)
+    result["engine_mvsiz_p.inc"]="       INTEGER MVSIZ\n"+selected
     result["com01_c.inc"]="      INTEGER NSPMD,NINTER25\n      COMMON /STARTUP_NATIVE_PARTITION/NSPMD,NINTER25\n"
     result["com04_c.inc"]="      INTEGER NUMNOD,NUMELS\n      COMMON /STARTUP_NATIVE_COUNTS/NUMNOD,NUMELS\n"
     result["task_c.inc"]="      INTEGER NTHREAD\n      COMMON /STARTUP_NATIVE_THREADS/NTHREAD\n"

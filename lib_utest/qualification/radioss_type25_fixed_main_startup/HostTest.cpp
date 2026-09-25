@@ -121,4 +121,10 @@ TEST(Type25FixedStartup, CorruptedBorrowedSnapshotRejectsBeforeReadyPublication)
   EXPECT_EQ(s::BuildFixedMain(input,view,{source.coefficients.data(),source.coefficients.size()},
       {},built.ready_output,built.ready_scratch,&built.ready).status,s::Status::Ok);
 }
+TEST(Type25FixedStartup, ReadyCohortCrossesOriginalEngine129Boundary) {
+  const auto source=Grid(13,11);ASSERT_EQ(source.primary.size(),143u);
+  ASSERT_LE(source.ids.size(),256u);
+  const Built built(source);
+  Same(built,Oracle(source.Input(),source.coefficients.data(),source.coefficients.size()));
+}
 } // namespace type25_startup_test

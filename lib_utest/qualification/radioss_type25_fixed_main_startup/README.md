@@ -13,9 +13,11 @@ edge-contact/subsurface structures outside IEDGE0/NISUB0. PREPARE_SPLIT_I25's
 original local reference-numbering and incidence loops establish the CSR.
 Wrappers supply source-shaped local arrays and flags, never production math.
 The source-defined Starter and Engine floor values are observed independently.
+Their original cohort constants stay distinct: Starter MVSIZ512 and selected
+GNU/Linux Engine MVSIZ129. A 143-primary fixture crosses the latter boundary.
 Foreign-partition exchange is explicitly outside the local reference domain.
 
-The reference is serial and bounded to 256 nodes and 64 primary faces; these are
+The reference is serial and bounded to 256 nodes and 160 primary faces; these are
 qualification limits, not the production capacity. Its original integer node
 identities are bounded to positive INT_MAX. The public producer also admits
 arbitrary unique nonzero 64-bit node/source identities. Tests cover mixed Q4/T3,
@@ -35,7 +37,7 @@ cmake --build BUILD_DIR -j4
 ctest --test-dir BUILD_DIR --output-on-failure
 ```
 
-CMake owns ten host GTest groups, the production-only consumer and two source
+CMake owns eleven host GTest groups, the production-only consumer and two source
 checks. Bazel additionally owns `consumer` and `source`; it does not substitute
 for the complete native oracle gate. Source authoring and source generation do
 not establish compiled or numerical qualification. Integration into a physical

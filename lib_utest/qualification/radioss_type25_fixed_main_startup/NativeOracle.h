@@ -14,7 +14,7 @@ struct NativeResult {
   std::array<float,4> floors{};
 };
 // Serial qualification-only original Fortran composition, bounded to256 nodes
-// and64 primaries. External node IDs must fit the original native integer ABI.
+// and160 primaries. External node IDs must fit the original native integer ABI.
 // Caller supplies valid admitted ordinary source topology; no production
 // topology/normal helper supplies these expected values.
 NativeResult Oracle(const s::Input&,const double* expanded_coefficients,std::size_t count);

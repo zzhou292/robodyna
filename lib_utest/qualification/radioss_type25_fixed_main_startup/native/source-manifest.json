@@ -71,6 +71,20 @@
       "bytes": 86324,
       "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
       "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "native/original/starter_mvsiz_p.inc",
+      "source_path": "starter/share/spe_inc/mvsiz_p.inc",
+      "bytes": 1622,
+      "sha256": "8498e1f3be7d3872f79594a09b18fa97f57875b25ca893cf853b28109293857e",
+      "git_blob": "274ad22011292c0f56994a526638fee5a2b265e8"
+    },
+    {
+      "path": "native/original/engine_mvsiz_p.inc",
+      "source_path": "engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "git_blob": "ace2eaec18ff827b0889b681100fe18fc180bf7b"
     }
   ]
 }

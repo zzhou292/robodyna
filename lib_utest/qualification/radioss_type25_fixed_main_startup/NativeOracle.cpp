@@ -10,7 +10,7 @@ namespace {
 void Need(bool value,const char* text){if(!value)throw std::invalid_argument(text);}
 }
 NativeResult Oracle(const s::Input& in,const double* coefficient,std::size_t coefficient_count) {
-  Need(in.node_count&&in.node_count<=256&&in.primary_count&&in.primary_count<=64&&
+  Need(in.node_count&&in.node_count<=256&&in.primary_count&&in.primary_count<=160&&
       in.node_source_ids&&in.primary&&in.positions.valid()&&in.positions.node_count==in.node_count,
       "Native startup fixture exceeds its declared source bounds");
   const auto g=2*in.primary_count,cap=4*g;
