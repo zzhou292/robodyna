@@ -23,6 +23,13 @@ target_link_libraries(type25_runtime_consumer PRIVATE tl_radioss_type25_transact
 add_test(NAME type25_runtime_consumer COMMAND type25_runtime_consumer)
 set_tests_properties(type25_runtime_consumer PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 
+include("${TL_ROOT}/lib_src/collision/RadiossType25FixedMainStartup.cmake")
+add_executable(type25_runtime_source_host SourceAdmissionTest.cpp)
+target_link_libraries(type25_runtime_source_host PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main)
+add_test(NAME type25_runtime_source_host COMMAND type25_runtime_source_host)
+set_tests_properties(type25_runtime_source_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
 add_executable(type25_runtime_composed_cuda ComposedCudaTest.cu)
 target_link_libraries(type25_runtime_composed_cuda PRIVATE tl_radioss_type25_transaction
   type25_lifecycle_oracle type25_assembly_oracle GTest::gtest_main CUDA::cudart)

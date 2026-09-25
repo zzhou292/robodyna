@@ -1178,11 +1178,12 @@ cc_library(
 # are never a transitive dependency of these complete production libraries.
 cc_library(
     name = "radioss_type25_runtime_values",
-    srcs = ["radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp"],
+    srcs = ["radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp", "radioss_type25/runtime/MovingSource.cpp"],
     hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h"]),
     deps = [":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
             ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
-            "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena"],
+            "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena",
+            ":radioss_type25_current_normals", "//lib_src/math:scalar_bits"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
 cuda_library(

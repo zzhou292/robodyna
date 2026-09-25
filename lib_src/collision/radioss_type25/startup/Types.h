@@ -9,7 +9,7 @@
 namespace tlfea::contact::radioss_type25::startup {
 enum class Status { Ok, InvalidInput, UnsupportedProfile, UnsupportedTopology,
   NonfiniteResult, UnsupportedArithmetic, ResourceLimit };
-enum class Profile { Unspecified, OrdinaryExteriorFixedMain };
+enum class Profile { Unspecified, OrdinaryExteriorFixedMain, OrdinaryExteriorMovingMain };
 enum class Coordinates { Native, Si };
 struct PrimaryFace {
   std::uint64_t source_id=0;
