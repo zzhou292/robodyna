@@ -29,7 +29,7 @@ void NativeSceneDynamics::Storage::FinishPrepare() {
     output::Require(trial&&!pending&&stage==2,"Native advancement requires its complete contact stage");
     dd::RequireSuccess(owner.SealAssembly(token));
     const f::NodalCinStructuralStep structural{f::NodalCinStructuralProfile::NativeOrdinaryRigidTrace,
-        source.physical_source().declared().data().nodal_scale,true};
+        nodal_scale,true};
     dd::RequireSuccess(f::AdvanceStaggeredCin(owner,token,{next.base.owner_id,next.base.epoch,assembly.attempt,
         config.qualification,config.fixed_dt,config.maximum_rotation_increment,true,structural}));
     dd::RequireSuccess(owner.CopyPreparedCinStructuralLimit(token,&next.structural_limit));
