@@ -1,0 +1,33 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Two exact local source blocks around the classification/force phases.
+      SUBROUTINE rd_lifecycle_clear_sliding(nsn, sliding) bind(C)
+      use iso_c_binding
+      implicit none
+      integer(c_int), intent(in) :: nsn
+      integer(c_int), intent(inout) :: sliding(4,nsn)
+      type :: source_view
+        integer(c_int), allocatable :: islide(:)
+      end type
+      type(source_view) :: intbuf_tab(1)
+      integer :: nin, nsnf, nsnl
+      nin=1; nsnf=0; nsnl=nsn
+      intbuf_tab(1)%islide=reshape(sliding,[4*nsn])
+@CLEAR_SLIDING@
+      sliding=reshape(intbuf_tab(1)%islide,[4,nsn])
+      END SUBROUTINE
+
+      SUBROUTINE rd_lifecycle_finish_markers(nsn, markers) bind(C)
+      use iso_c_binding
+      implicit none
+      integer(c_int), intent(in) :: nsn
+      integer(c_int), intent(inout) :: markers(4,nsn)
+      type :: source_view
+        integer(c_int), allocatable :: irtlm(:)
+      end type
+      type(source_view) :: intbuf_tab
+      integer :: n, nsnft, nsnlt
+      nsnft=1; nsnlt=nsn
+      intbuf_tab%irtlm=reshape(markers,[4*nsn])
+@FINISH_MARKERS@
+      markers=reshape(intbuf_tab%irtlm,[4,nsn])
+      END SUBROUTINE

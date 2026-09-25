@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 from Sources import ROOT, read, constants
-from SlidingSource import routines, memberships
+from SlidingSource import routines, memberships, phase_blocks
 
 
 def generated():
@@ -24,6 +24,13 @@ def generated():
         assert template.count(marker) == 1
         template = template.replace(marker, block)
     result["LifecycleMembership.F"] = template
+    clear, finish = phase_blocks(source)
+    phases = (ROOT / "LifecyclePhases.F.in").read_text()
+    for name, block in [("CLEAR_SLIDING", clear), ("FINISH_MARKERS", finish)]:
+        marker = "@" + name + "@"
+        assert phases.count(marker) == 1
+        phases = phases.replace(marker, block)
+    result["LifecyclePhases.F"] = phases
     for name in ["LifecycleBoundary.F90", "LifecycleMemory.F90", "LifecycleSliding.F90"]:
         result[name] = (ROOT / name).read_text()
     result["implicit_f.inc"] = ("      USE ISO_C_BINDING\n      USE LIFECYCLE_CONSTANTS\n"

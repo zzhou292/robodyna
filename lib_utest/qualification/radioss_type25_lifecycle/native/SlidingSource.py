@@ -21,3 +21,13 @@ def memberships(source):
         assert end in tail
         blocks.append(start + tail.split(end, 1)[0] + end)
     return tuple(blocks)
+
+
+def phase_blocks(source):
+    clear = "        INTBUF_TAB(NIN)%ISLIDE(4*NSNF+1:4*NSNL)=0\n"
+    assert source["i25main_slid.F"].count(clear) == 1
+    main = source["i25mainf.F"]
+    start = "      DO N=NSNFT, NSNLT\n        IF(INTBUF_TAB%IRTLM(4*(N-1)+1) < 0) \n"
+    assert main.count(start) == 1
+    finish = start + main.split(start, 1)[1].split("      END DO\n", 1)[0] + "      END DO\n"
+    return clear, finish

@@ -3,6 +3,8 @@
 // Qualification-only serial C/Fortran ABI. Every count/index/table is checked
 // by the typed oracle adapter before native code; these are not product APIs.
 extern "C" {
+void rd_lifecycle_clear_sliding(const int* nsn, int* sliding);
+void rd_lifecycle_finish_markers(const int* nsn, int* markers);
 void rd_lifecycle_membership(const int* counts, const int* phase,
     const int* candidates_n, const int* candidates_e, const int* main_global,
     const int* markers, int* indices, int* count);

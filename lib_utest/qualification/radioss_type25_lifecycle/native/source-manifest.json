@@ -26,6 +26,11 @@
       "path": "../radioss_type25_normal/native/original/constant_mod.F",
       "bytes": 86324,
       "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "path": "../radioss_type25_friction/native/original/i25mainf.F",
+      "bytes": 55358,
+      "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
     }
   ],
   "boundary_substitutions": [
@@ -56,6 +61,14 @@
       "counts": "NSN, NRTM, occurrence count, positive index count, node-map length",
       "arrays": "actual CAND_N/E, INDEX, native global main and node identities, complete IRTLM/PENM/PENE_OLD/SECND_FR/TIME_S/STIF_OLD",
       "outputs": "native signed occurrence markers and source row clearing; unchanged history fields retained"
+    },
+    "clear_sliding": {
+      "arguments": 2,
+      "scope": "exact MAIN_SLID clear of all four ISLIDE slots per local secondary before retained classification"
+    },
+    "finish_markers": {
+      "arguments": 2,
+      "scope": "exact MAINF post-force loop changes only negative IRTLM1 to its positive value; run once after complete force/assembly phase"
     }
   }
 }
