@@ -15,6 +15,7 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
         const auto scan=Scan(replay);
         auto next=std::make_unique<Impl>(replay);
         next->budget=budget;
+        next->bounds={scan.low,scan.high};
         next->plastic_maximum=scan.plastic_maximum;
         if (options.fixed_camera) {
             output::Require(MakeFixedCamera(*options.fixed_camera, next->camera),

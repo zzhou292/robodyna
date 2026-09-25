@@ -18,6 +18,7 @@ TEST(PhysicalSceneArchive, ExactOriginalArchiveWallActivityAndFailedSeekPreserve
         Scene scene;SceneOptions options;options.colors=colors;
         ASSERT_EQ(scene.Initialize(replay,options).status,ReplaySceneStatus::Ok);
         const auto mesh=scene.geometry()->mesh();
+        ASSERT_NE(scene.bounds(),nullptr);const auto bounds=*scene.bounds();
         EXPECT_FALSE(scene.moving_shape()->IsFixedConnectivity());
         EXPECT_EQ(scene.system().GetBodies().size(),replay.wall()?2u:1u);
         for(std::size_t i=0;i<replay.index().frames.size();++i) {
@@ -25,8 +26,11 @@ TEST(PhysicalSceneArchive, ExactOriginalArchiveWallActivityAndFailedSeekPreserve
             const auto sample=replay.ReadSample(i);
             ASSERT_EQ(mesh->GetCoordsVertices().size()*3,sample.frame.position_xyz.size());
             for(std::size_t n=0;n<mesh->GetCoordsVertices().size();++n)
-                for(unsigned a=0;a<3;++a) ASSERT_EQ(output::Bits(mesh->GetCoordsVertices()[n][a]),
-                    output::Bits(sample.frame.position_xyz[3*n+a]));
+                for(unsigned a=0;a<3;++a) {
+                    ASSERT_EQ(output::Bits(mesh->GetCoordsVertices()[n][a]),output::Bits(sample.frame.position_xyz[3*n+a]));
+                    EXPECT_GE(sample.frame.position_xyz[3*n+a],bounds.low[a]);
+                    EXPECT_LE(sample.frame.position_xyz[3*n+a],bounds.high[a]);
+                }
             EXPECT_EQ(scene.stamp()->epoch,sample.frame.stamp.epoch);
             EXPECT_EQ(scene.system().GetChTime(),sample.frame.stamp.time);
             EXPECT_EQ(scene.geometry()->mesh().get(),mesh.get());

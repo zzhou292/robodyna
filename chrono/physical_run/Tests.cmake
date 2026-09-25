@@ -10,7 +10,7 @@ if(ROBO_DYNA_PHYSICAL_REPLAY_INPUT)
   set_tests_properties(physical_scene_archive PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "ROBO_DYNA_PHYSICAL_REPLAY_INPUT=${ROBO_DYNA_PHYSICAL_REPLAY_INPUT}")
 endif()
-add_executable(robo_dyna_physical_viewer_values_check tests/ViewerValuesTest.cpp tests/FixedCameraTest.cpp)
+add_executable(robo_dyna_physical_viewer_values_check tests/ViewerValuesTest.cpp tests/FixedCameraTest.cpp tests/ClippingTest.cpp)
 target_link_libraries(robo_dyna_physical_viewer_values_check PRIVATE robo_dyna_physical_viewer_values GTest::gtest_main)
 add_test(NAME physical_viewer_values COMMAND robo_dyna_physical_viewer_values_check)
 set_tests_properties(physical_viewer_values PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)

@@ -23,6 +23,7 @@ chrono::ChSystem& Scene::system() {
     return impl_->system;
 }
 const ReplayCamera* Scene::camera() const noexcept {return impl_?&impl_->camera:nullptr;}
+const ReplayBounds* Scene::bounds() const noexcept {return impl_?&impl_->bounds:nullptr;}
 const ReplayStamp* Scene::stamp() const noexcept {return impl_?&impl_->stamp:nullptr;}
 const full_shell::FullShellFrameGeometry* Scene::geometry() const noexcept {return impl_?&impl_->geometry:nullptr;}
 const output::physical_run::Replay* Scene::replay() const noexcept {return impl_?impl_->reader.normal():nullptr;}

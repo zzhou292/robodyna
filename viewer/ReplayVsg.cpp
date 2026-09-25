@@ -9,6 +9,21 @@ std::array<std::uint32_t,2> FixedReplayVisual::FramebufferSize() const {
     const auto extent=m_window->extent2D();
     return {extent.width,extent.height};
 }
+void FixedReplayVisual::ConfigureClipping(const visual::ReplayBounds& bounds) {
+    output::Require(IsInitialized() && m_lookAt && m_vsg_camera,"Replay camera is not initialized");
+    auto* perspective=dynamic_cast<vsg::Perspective*>(m_vsg_camera->projectionMatrix.get());
+    output::Require(perspective,"Replay camera is not a perspective projection");
+    visual::ReplayCamera camera;
+    for(unsigned a=0;a<3;++a) {camera.position[a]=m_lookAt->eye[a];camera.target[a]=m_lookAt->center[a];}
+    visual::ReplayClipping next;
+    output::Require(visual::MakeReplayClipping(camera,bounds,next),"Replay camera clipping is not representable for scene bounds");
+    perspective->nearDistance=next.near_m;perspective->farDistance=next.far_m;
+    clipping_=next;
+}
+const visual::ReplayClipping& FixedReplayVisual::Clipping() const {
+    output::Require(clipping_.has_value(),"Replay clipping was not configured");
+    return *clipping_;
+}
 std::shared_ptr<FixedReplayVisual> CreateReplayVisual() {
 #ifdef ROBO_DYNA_CHRONO_DATA_DIR
     chrono::SetChronoDataPath(ROBO_DYNA_CHRONO_DATA_DIR);

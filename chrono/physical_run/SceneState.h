@@ -14,6 +14,7 @@ struct Scene::Impl {
     chrono::ChSystemNSC system;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
     ReplayCamera camera;
+    ReplayBounds bounds; // stored values fit the existing fixed bookkeeping reserve
     ReplayStamp stamp;
     SceneForecast budget;
     double plastic_maximum=0;
