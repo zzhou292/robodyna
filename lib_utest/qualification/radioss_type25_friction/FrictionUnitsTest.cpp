@@ -198,6 +198,37 @@ TEST(Type25FrictionUnits, NativeProjectionUsesConvertedComponentsWithoutFalseMis
   EXPECT_TRUE(exercised);
 }
 
+TEST(Type25FrictionUnits, StoredFloat32BoundaryNormalIsPreservedWithoutRenormalization) {
+  // Native DST3_3 can copy a REAL*4 vertex bisector directly to its
+  // ISHARP1 horizontal normal. This is a source-supported numerical control,
+  // not a claim that these values were captured from a Yaris contact row.
+  const auto c = Float32BoundaryNormal();
+  const float stored = static_cast<float>(c.input.normal_axis.x);
+  std::uint32_t bits = 0;
+  static_assert(sizeof(stored) == sizeof(bits));
+  std::memcpy(&bits, &stored, sizeof(bits));
+  ASSERT_EQ(bits, UINT32_C(0x3f3504f3));
+  const double component = stored; // Exact float32 -> float64 promotion.
+  EXPECT_DOUBLE_EQ(component, 11863283. / 16777216.);
+  EXPECT_DOUBLE_EQ(c.input.normal_axis.x, component);
+  EXPECT_DOUBLE_EQ(c.input.normal_axis.y, component);
+  EXPECT_DOUBLE_EQ(c.input.normal_axis.z, 0.);
+  const double norm_error = std::abs(vector::Dot(c.input.normal_axis, c.input.normal_axis) - 1);
+  ASSERT_GT(norm_error, 1e-12);
+  ASSERT_LT(norm_error, 1e-6);
+  const auto expected = Oracle(c);
+  n::NativeFrictionResult native;
+  ASSERT_EQ(n::EvaluateNativeFriction(c.normal_config, c.controls, c.coefficients,
+      c.input, c.history, &native), n::NormalStatus::Ok);
+  Same(native, expected);
+  for (auto units : {n::UnitScale{1, 1, 1}, n::UnitScale{0.001, 1000, 1}}) {
+    const auto packet = Convert(c, units);
+    n::SiFrictionResult actual;
+    ASSERT_EQ(Evaluate(c, units, packet, &actual), n::NormalStatus::Ok);
+    Scaled(expected, actual, units);
+  }
+}
+
 TEST(Type25FrictionUnits, InvalidAndOverflowingConversionsPreserveAllOutputFields) {
   const auto c = Basic(); const auto packet = Convert(c, {1, 1, 1});
   const auto prior = Sentinel<n::SiUnitsTag>();
