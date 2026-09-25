@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MaterialUpload.h"
+#include "AssemblyOccurrences.h"
+#include "lib_utils/OrderedNodeIncidence.h"
 
 namespace tl::fea::solids::batch_detail {
 namespace {
@@ -31,6 +33,16 @@ BatchReport BuildUpload(const BatchConfig& config, const Model& model,
     return {BatchStatus::ResourceLimit, "Solid18 force scratch cannot be constructed"};
   }
   auto next = RebasedHeader(arena.data(), layout);
+  if (!arena.Construct<std::uint32_t>(layout.assembly_offsets) ||
+      !arena.Construct<std::uint32_t>(layout.assembly_incidence) ||
+      !arena.Construct<AssemblyNode>(layout.assembly_nodes) ||
+      !util::BuildOrderedNodeIncidence<1>(layout.assembly_incidence.count,
+          config.owner.node_count, [&](std::size_t ordinal, unsigned) {
+            AssemblyOccurrence value;
+            return ReadAssemblyOccurrence<false>(next, 0, ordinal, value) ? value.node : SIZE_MAX;
+          }, next.assembly.offsets, layout.assembly_offsets.count,
+          next.assembly.incidence, layout.assembly_incidence.count))
+    return {BatchStatus::ResourceLimit, "Solid ordered assembly incidence cannot be constructed"};
   next.config = config;
   next.source_instance_id = model.source_instance_id();
   const auto report = UploadMaterials(model, arena, layout);

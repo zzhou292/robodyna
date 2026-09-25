@@ -4,7 +4,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 cc_library(
     name = "values",
     srcs = ["Arena.cpp", "Plan.cpp", "Upload.cpp", "MaterialUpload.cpp", "Forecast.cpp", "Identity.cpp"],
-    hdrs = glob(["*.h"]),
+    hdrs = glob(["*.h", "*.cuh"]),
     deps = [
         "//lib_src/elements/solids:model", "//lib_src/elements/solids:force_stiffness",
         "//lib_src/elements/solid18:force",
@@ -14,7 +14,7 @@ cc_library(
         "//lib_src/elements:shell_physical_owner_values", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_startup", "//lib_src/solvers:explicit_nodal_state",
         "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
-        "//lib_src/constraints:nodal_rigid_assembly_binding", "//lib_utils:bounded_arena",
+        "//lib_src/constraints:nodal_rigid_assembly_binding", "//lib_utils:bounded_arena", "//lib_utils:ordered_node_incidence",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     visibility = ["//visibility:public"],

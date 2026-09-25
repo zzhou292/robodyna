@@ -2,6 +2,7 @@
 #pragma once
 #include "Batch.h"
 #include "ExtendedScratch.h"
+#include "AssemblyTypes.h"
 #include "../../ShellPhysicalOwner.h"
 
 namespace tl::fea::solids::batch_detail {
@@ -34,6 +35,7 @@ struct Storage {
   solid18::total_strain::Material* material90 = nullptr;
   ExtendedScratch<Traits18Law44>* scratch44 = nullptr;
   ExtendedScratch<Traits18Law90>* scratch90 = nullptr;
+  AssemblyMemory assembly;
   Control control;
 };
 struct FamilyLayout {
@@ -43,6 +45,7 @@ struct ArenaLayout {
   util::ArenaRegion header, material36, material42, curves, scratch18;
   FamilyLayout solid18, solid24, solid6z, solid18_law44, solid18_law90;
   util::ArenaRegion material44, material90, scratch44, scratch90;
+  util::ArenaRegion assembly_offsets, assembly_incidence, assembly_nodes;
   std::size_t bytes = 0, staging_bytes = 0, curve_points = 0;
   shell_physical_owner::ProofLayout proof;
 };

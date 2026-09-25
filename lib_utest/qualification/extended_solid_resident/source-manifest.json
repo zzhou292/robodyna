@@ -3,33 +3,33 @@
   "files": [
     {
       "path": "lib_src/elements/publication/PhysicalStartup.cpp",
-      "bytes": 9266,
-      "sha256": "121dbb02d7971c61ea35745da09bef2fcf5c9b9f79a37470c39e31055d164976"
+      "bytes": 9233,
+      "sha256": "c4ea8a50ad4d6d72ca8701361fdba2992e682a855cdb283b4953b4875ca83cca"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 6092,
-      "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
+      "bytes": 6720,
+      "sha256": "29321a4edf5acd52494d737848a8ffce99fdac14c0ffcf8d08993f9fd50f1359"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
-      "bytes": 2533,
-      "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
+      "bytes": 2661,
+      "sha256": "806622a1eb38b1ead65a23ccb5abc7ffde64a8af0ed79020da8c09b2a45490cc"
     },
     {
       "path": "lib_src/elements/solids/resident/AssembleOperation.cu",
-      "bytes": 2194,
-      "sha256": "c30359d197fa84869e0b8e3a7d6c1123ca03b744f070909ff24e09b8f300618d"
+      "bytes": 2266,
+      "sha256": "fabfb1a1ad32e9d475601e2fb9fc48a61a21b4f902b766ea35f972c0ac4df61e"
     },
     {
       "path": "lib_src/elements/solids/resident/Assembly.cu",
-      "bytes": 5371,
-      "sha256": "d1d667aa2fe5a9fe061ddea9f3c5cb3dc716030338294704e242de07619ffe0d"
+      "bytes": 3443,
+      "sha256": "d2b9c05daec756ec623b976b08d1d4464d6cb24bf1eb45b07bebe2898f1dbf6a"
     },
     {
       "path": "lib_src/elements/solids/resident/BUILD.bazel",
-      "bytes": 1814,
-      "sha256": "23312e1a5a18028fabcc71057955dc0cf10d356e9c83061e8ed05f24e7240227"
+      "bytes": 1861,
+      "sha256": "cef33287259be3f1553611fe05c16917fd719947d1a1919e835f39b766f253bf"
     },
     {
       "path": "lib_src/elements/solids/resident/Batch.cmake",
@@ -153,8 +153,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Storage.h",
-      "bytes": 2298,
-      "sha256": "a452914bb49f7c000d30bee32a961fe89484dada9cea5d54a40f2cfff9032a38"
+      "bytes": 2305,
+      "sha256": "50e315041056160be295c9c53e236972c79763f75a337b6f966f3877cb5003cf"
     },
     {
       "path": "lib_src/elements/solids/resident/Traits18.h",
@@ -183,8 +183,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Upload.cpp",
-      "bytes": 2141,
-      "sha256": "0908920e48135a2e9dfcf3da3f46dd2549e5340ec0240f9d3e004c1263639c6d"
+      "bytes": 2934,
+      "sha256": "28c147a7162d29f25bc0ae134c333fb2fa78f60e5e1794e7d410d5121afd2bbe"
     },
     {
       "path": "lib_src/materials/law90/Relocate.h",
@@ -300,6 +300,36 @@
       "path": "lib_src/elements/solids/resident/ResultValidation.cu",
       "bytes": 1677,
       "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/AssemblyTypes.h",
+      "bytes": 477,
+      "sha256": "dcc7b6d084b249cf1cd2ca50dd25377c3dfe9665bbb4f2ecd5c3d1e7d9451ba1"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/AssemblyOccurrences.h",
+      "bytes": 1893,
+      "sha256": "70c1e27131b824ecdda670084130f84de4d31894c595eb42d5b9a12205bad03c"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/AssemblyValues.h",
+      "bytes": 1605,
+      "sha256": "f8f483fed99439cf6a7ccf49d2d3f371f43c8c948429ab75fa4c2b38a7f031b7"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/AssemblyRanges.h",
+      "bytes": 1596,
+      "sha256": "c444c528a95bc5ea5cab85c0aaed1507a090423683c8002c2ef38be0defef29b"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/AssemblySerial.cuh",
+      "bytes": 5234,
+      "sha256": "4bc4b9085fcf5b6bd52f924ede4151fcab51e7836ed0211b18e9c2884a1c967d"
+    },
+    {
+      "path": "lib_utils/OrderedNodeIncidence.h",
+      "bytes": 1632,
+      "sha256": "67f2fd41f29ac4d74fcfcf88530bc8dba1e4518081b19f7cf84afb2616bc3063"
     }
   ],
   "beam18_publication_extension": {
