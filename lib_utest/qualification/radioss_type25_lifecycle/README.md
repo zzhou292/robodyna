@@ -19,3 +19,24 @@ Host and actual CUDA groups compare every defined cache, row/history/ICONT, sele
 Still outside admission: foreign/MPI rows, thermal/adhesive/radiation/gap-load branches, negative secondary stiffness preprocessing, arbitrary source completeness, force/history native NVSIZ packet scheduling, and the documented raw-geometry undefined-XP domain. The latter is rejected by production and explicitly rejected by the oracle; no invented point or silent clamp repairs the native donor. Defined-domain qualification does not prove full vehicle pipeline reachability closure.
 
 Configure this directory with TYPE25_LIFECYCLE_CUDA=ON and the pinned GNU Fortran/NVIDIA compilers. It includes all parent normal/friction/geometry/selection/coefficient regression targets. Run host and CUDA CTests separately under the existing workstation/GPU guards. Bazel consumer/source targets own header usability and pinned extraction; native numerical Fortran/CUDA qualification is CMake-owned. No test executable is linked into a product target.
+
+## Optional current-normal view
+
+The host gate adds seven focused groups for the complete optional view, exact
+legacy/copied-static/native comparisons, primary/opposite/continuation/geometry
+field binding, independent history recurrences, malformed and aliased spans,
+unbound NaN scratch, T3 signed-zero slots and the explicit normal-read barrier.
+An O0 production-only consumer proves the startup/lifecycle reference aliases
+are the same type and require no native backend or physical owner.
+
+`type25_lifecycle_normal_view_cuda` is a separate executable sharing the existing
+bounded fixture; six groups compare complete native rows with different launch
+orders, optional view layouts, repeated same-address changes and rejection/retry.
+The live writable-alias coupon uses the actual `Reference.boundary` int member.
+No unrelated-struct cast is used to bind normal fields or create that alias.
+
+Copied Main records occur only in the independent legacy/native test control.
+Production selects the borrowed staged arrays through one complete descriptor.
+These tests do not implement normal production, synchronize an external stream,
+or grant physical publication authority. The immutable source/force-base phase
+must be bound by the moving transaction owner after the actual normal barrier.

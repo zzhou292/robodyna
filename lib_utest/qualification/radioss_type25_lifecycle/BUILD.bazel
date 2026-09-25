@@ -12,3 +12,10 @@ cc_test(
         "//lib_utest/qualification/radioss_type25_selection:lifecycle_source_files"],
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
 )
+
+cc_test(
+    name = "normal_view_consumer", size = "small", srcs = ["NormalViewConsumer.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_lifecycle", "//lib_src/collision:radioss_type25_fixed_main_startup",
+            "//lib_utils:ordered_node_incidence", "@googletest//:gtest_main"],
+)

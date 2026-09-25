@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../../GeometryTypes.h"
+#include "../../NormalFields.h"
 #include "../../CoefficientTypes.h"
 #include "../../Units.h"
 #include "lib_src/collision/SurfaceContactTypes.h"
@@ -25,10 +26,8 @@ struct Secondary {
   double coefficient=0,gap=0;
   int initial_contact_flag=0; // Incoming runtime ICONT_I; persist staged row output.
 };
-struct NormalReference {
-  int boundary=0; // Original LBOUND zero/nonzero value.
-  StoredNormal bisector[2]{};
-};
+using NormalReference=normal_fields::Reference;
+using CurrentNormalView=normal_fields::View;
 // Exact native prefix sums, represented in zero-based C++ storage. Main entries
 // retain their original positive local IDs and complete source incidence order.
 struct Csr {
@@ -76,6 +75,11 @@ struct Input {
   std::size_t accepted_row_count=0;
   const SpatialOccurrence* spatial=nullptr;std::size_t spatial_count=0;
   Csr spatial_by_secondary; // Entries are zero-based original spatial ordinals.
+  // Optional complete force-base field view. When present, all classification
+  // and selected geometry use it instead of Main.normal_slot/SourceView.normals.
+  // Keep this descriptor and both arrays immutable from the normal barrier
+  // through CompleteRow/Geometry. The physical owner authenticates the phase.
+  CurrentNormalView current_normals;
 };
 enum class Origin { Retained, Spatial, Sliding };
 struct SelectedGeometry {

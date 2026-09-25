@@ -32,6 +32,7 @@ inline bool AddBytes(std::size_t count,std::size_t size,std::size_t& total) {
 inline Report EvaluateNativeLifecycleHost(const Input& input,Limits limits,HostResult* output) {
   Report report;
   if(!output)return report;
+  if(!detail::CurrentNormalsDisjoint(input,output,std::size_t{1}))return report;
   const auto count=input.source.secondary_count;
   std::size_t minimum_bytes=0;
   if(count>limits.rows||count==SIZE_MAX||

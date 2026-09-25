@@ -39,10 +39,10 @@ target_link_libraries(type25_lifecycle_oracle PUBLIC tl_radioss_type25_lifecycle
   type25_selection_oracle type25_coefficient_oracle type25_geometry_oracle type25_friction_oracle)
 target_compile_options(type25_lifecycle_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_lifecycle_host HostTest.cpp PhaseBoundaryTest.cpp)
+add_executable(type25_lifecycle_host HostTest.cpp PhaseBoundaryTest.cpp NormalViewHostTest.cpp)
 target_link_libraries(type25_lifecycle_host PRIVATE type25_lifecycle_oracle GTest::gtest_main)
 add_test(NAME type25_lifecycle_host COMMAND type25_lifecycle_host)
-add_executable(type25_lifecycle_consumer ConsumerTest.cpp)
+add_executable(type25_lifecycle_consumer ConsumerTest.cpp NormalViewConsumer.cpp)
 target_link_libraries(type25_lifecycle_consumer PRIVATE tl_radioss_type25_lifecycle GTest::gtest_main)
 add_test(NAME type25_lifecycle_consumer COMMAND type25_lifecycle_consumer)
 add_test(NAME type25_lifecycle_source COMMAND "${Python3_EXECUTABLE}" -B
@@ -56,4 +56,10 @@ if(TYPE25_LIFECYCLE_CUDA)
   set_target_properties(type25_lifecycle_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   add_test(NAME type25_lifecycle_cuda COMMAND type25_lifecycle_cuda)
   set_tests_properties(type25_lifecycle_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+  # Separate TU/executable: the reused fixture declares its private CUDA kernels.
+  add_executable(type25_lifecycle_normal_view_cuda NormalViewCudaTest.cu)
+  target_link_libraries(type25_lifecycle_normal_view_cuda PRIVATE type25_lifecycle_oracle GTest::gtest_main CUDA::cudart)
+  set_target_properties(type25_lifecycle_normal_view_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_test(NAME type25_lifecycle_normal_view_cuda COMMAND type25_lifecycle_normal_view_cuda)
+  set_tests_properties(type25_lifecycle_normal_view_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 endif()

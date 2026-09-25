@@ -28,6 +28,11 @@ struct PreparedRow {
   std::size_t required_sliding=0;
 };
 namespace detail {
+TL_MATH_HOST_DEVICE inline bool CurrentNormalScratch(const Input& input,const RowScratch& scratch) {
+  return CurrentNormalsDisjoint(input,scratch.occurrences,scratch.occurrence_capacity)&&
+      CurrentNormalsDisjoint(input,scratch.geometry,scratch.occurrence_capacity)&&
+      CurrentNormalsDisjoint(input,scratch.sliding_mains,scratch.sliding_capacity);
+}
 TL_MATH_HOST_DEVICE inline RowStageResult Failure(RowStageResult result,Status status,
     Stage stage,std::size_t row,std::size_t occurrence=SIZE_MAX) {
   result.report.status=status;result.report.stage=stage;result.report.secondary=row;
@@ -76,6 +81,7 @@ TL_MATH_HOST_DEVICE inline PreparedRow PrepareRowAfterNormals(const Input& input
   prepared.optimization_leave=optimized.optimization_leave;
   auto& out=prepared.stage;
   if(out.report.status!=Status::Ok)return prepared;
+  if(!CurrentNormalScratch(input,scratch))return PrepareFailure(prepared,Status::InvalidInput,Stage::Admission,row);
   auto status=Status::Ok;
   NativeRetainedResult retained;
   int& retained_main=prepared.retained_main;
@@ -115,6 +121,7 @@ TL_MATH_HOST_DEVICE inline PreparedRow PrepareRow(const Input& input,std::size_t
 TL_MATH_HOST_DEVICE inline RowStageResult CompleteRow(const Input& input,std::size_t row,
     RowScratch scratch,const units_detail::Factors& units,const PreparedRow& prepared) {
   auto out=prepared.stage;if(out.report.status!=Status::Ok)return out;
+  if(!CurrentNormalScratch(input,scratch))return Failure(out,Status::InvalidInput,Stage::Admission,row);
   const auto count=out.report.required_candidates;
   if(count>scratch.occurrence_capacity||count&&(!scratch.occurrences||!scratch.geometry))
     return Failure(out,Status::CapacityExceeded,Stage::Admission,row);
