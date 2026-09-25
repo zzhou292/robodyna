@@ -23,7 +23,7 @@ def generated():
     xsave=source["i25xsave.F90"]
     extent=between(xsave,"          c_max = zero\n","          return\n")
     all_math=[removal,margin,init,inverse,margin_block,multiplier,base,extent]
-    output={"Constants.F90":constants(source["constant_mod.F"],all_math).replace("selection_constants","constant_mod"),
+    output={"Constants.F90":constants(source["constant_mod.F"],[text.upper() for text in all_math]).replace("selection_constants","constant_mod"),
       "Boundary.F90":(ROOT/"Boundary.F90").read_text(),
       "Removal.F90":removal,"SmallMargin.F90":margin,"RemovalInit.F":init,"Inverse.F":inverse,
       "Wrapper.F90":(ROOT/"Wrapper.F90").read_text()}
