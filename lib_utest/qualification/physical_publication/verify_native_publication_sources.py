@@ -18,7 +18,7 @@ assert 'NativeContactPublicationState(NativeContactPublicationState&&)=delete' i
 assert 'trial_identity::SameStamp(stamp,accepted_stamp_)' in state
 assert 'trial_identity::SamePrepared(prepared_,view)' in state
 body=state.split('void NativeContactPublicationState::Publish(',1)[1].split('{',1)[1].split('}',1)[0]
-assert re.sub(r'\s+','',body)=='accepted_=staged_;accepted_stamp_=stamp;++generation_;Discard();'
+assert re.sub(r'\s+','',body)=='accepted_=staged_;force_base_stamp_=accepted_stamp_;force_phase_available_=true;accepted_stamp_=stamp;++generation_;Discard();'
 commit=transaction.index('nodal = owner.Commit(token)')
 publish=transaction.index('PublishNativeContactState(stamp)')
 assert commit<publish and 'if (nodal.status != NodalStatus::Ok) return fail(Nodal(nodal));' in transaction[commit:publish]

@@ -59,12 +59,14 @@ void NativeContactPublicationState::Discard() noexcept {
 void NativeContactPublicationState::Publish(const NodalStamp& stamp) noexcept {
   // Common commit already validated every field. Infallible selector stores
   // only: no CUDA, allocation, caller callback, arithmetic admission or status.
-  accepted_=staged_;accepted_stamp_=stamp;++generation_;Discard();
+  accepted_=staged_;force_base_stamp_=accepted_stamp_;force_phase_available_=true;
+  accepted_stamp_=stamp;++generation_;Discard();
 }
 NativeContactPublicationSnapshot NativeContactPublicationState::Accepted(const FENodalState& owner) const noexcept {
   NativeContactPublicationSnapshot out;if(!publication_||owner_!=&owner)return out;
   const auto stamp=owner.accepted();
   if(!trial_identity::SameStamp(stamp,accepted_stamp_))return out;
-  out.stamp=accepted_stamp_;out.selectors=accepted_;out.generation=generation_;out.available=true;return out;
+  out.stamp=accepted_stamp_;out.force_base_stamp=force_base_stamp_;out.force_phase_available=force_phase_available_;
+  out.selectors=accepted_;out.generation=generation_;out.available=true;return out;
 }
 } // namespace tl::fea

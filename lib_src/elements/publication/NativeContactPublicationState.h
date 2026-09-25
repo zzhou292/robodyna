@@ -17,10 +17,11 @@ struct NativeContactSelectors {
 // available proves binding/stamp coherence only. Initial generation0 has no
 // retained inventory/reference; callers must inspect selectors.has_reference.
 struct NativeContactPublicationSnapshot {
-  NodalStamp stamp;
+  NodalStamp stamp; // Common publication at X_(n+1).
+  NodalStamp force_base_stamp; // Contact force/history evaluation at accepted X_n.
   NativeContactSelectors selectors;
   std::uint64_t generation=0;
-  bool available=false;
+  bool available=false,force_phase_available=false;
 };
 // A closed typed participant. Mutation is private to the native transaction and
 // the common publisher; there are no user callbacks or public self-attestations.
@@ -56,9 +57,9 @@ class NativeContactPublicationState {
   FENodalState* owner_=nullptr;
   std::uint64_t source_id_=0,issuer_lifetime_=0,binding_id_=0;
   std::uint64_t generation_=0,staged_issuer_generation_=0;
-  NodalStamp accepted_stamp_;
+  NodalStamp accepted_stamp_,force_base_stamp_;
   NodalPreparedView prepared_;
   NativeContactSelectors accepted_,staged_;
-  bool attached_=false,pending_=false;
+  bool attached_=false,pending_=false,force_phase_available_=false;
 };
 } // namespace tl::fea

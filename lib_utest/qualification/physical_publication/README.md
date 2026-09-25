@@ -82,7 +82,13 @@ Native contact publication stores only bounded history/reference selectors and
 coherent owner/generation metadata after the sole physical commit. All numerical
 and lifetime admission happens first. Public snapshot availability means binding
 and full-stamp coherence; initial generation0 has_reference=false is not a usable
-candidate reference. Tests here qualify the publication seam using real existing
+candidate reference. After commit, force_base_stamp separately identifies the
+accepted X_n where contact force/history was evaluated; stamp identifies physical
+publication X_(n+1). Initial force_phase_available=false avoids inventing an
+initial force evaluation. This metadata copies the sole owner stamp and does not
+create a contact clock or move classification to candidate coordinates.
+DT1/DT12 numerical binding remains the concrete transaction obligation.
+Tests here qualify the publication seam using real existing
 physical/material participants, not a complete native contact solver or scene.
 
 Native reference comparisons remain in the separately owned Q/T/QBAT, TYPE25,

@@ -57,14 +57,18 @@ TEST(NativeContactPublicationCuda,CommonCommitPublishesHistoryAndReferenceTogeth
   Rig rig;fe::NativeContactPublicationState state;ASSERT_TRUE(Bind(rig,state));
   RecordProperty("native_publication_state_host_bytes",std::to_string(sizeof(state)));
   auto initial=state.Accepted(rig.owner);ASSERT_TRUE(initial.available);EXPECT_EQ(initial.generation,0u);
-  EXPECT_FALSE(initial.selectors.has_reference);
+  EXPECT_FALSE(initial.selectors.has_reference);EXPECT_FALSE(initial.force_phase_available);
   const fe::NativeContactSelectors plans[]{{1,1,1,true},{0,1,1,true},{1,0,2,true}};
   for(unsigned step=0;step<3;++step) {
+    const auto force_base=rig.owner.accepted();
     Attempt a;ASSERT_TRUE(Prepare(rig,a));ASSERT_TRUE(Stage(rig,state,a,plans[step]));
     EXPECT_EQ(state.Accepted(rig.owner).generation,step);EXPECT_EQ(rig.owner.accepted().epoch,step);
     ASSERT_TRUE(Good(rig.publication.CommitPhysical(rig.owner,a.token,a.common,Receipt(a))));
     const auto accepted=state.Accepted(rig.owner);ASSERT_TRUE(accepted.available);
     EXPECT_TRUE(fe::trial_identity::SameStamp(accepted.stamp,rig.owner.accepted()));
+    ASSERT_TRUE(accepted.force_phase_available);
+    EXPECT_TRUE(fe::trial_identity::SameStamp(accepted.force_base_stamp,force_base));
+    EXPECT_EQ(accepted.force_base_stamp.epoch+1,accepted.stamp.epoch);
     EXPECT_EQ(accepted.generation,step+1);EXPECT_EQ(accepted.selectors.history,plans[step].history);
     EXPECT_EQ(accepted.selectors.reference,plans[step].reference);
     EXPECT_EQ(accepted.selectors.reference_generation,plans[step].reference_generation);
