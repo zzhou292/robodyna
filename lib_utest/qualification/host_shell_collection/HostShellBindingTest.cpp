@@ -12,7 +12,7 @@ TEST(HostShellBinding, Complete804Q111T1030NodeInventoryAndNativeMass) {
   Fixture f; Geometry b;
   ASSERT_EQ(b.Initialize(f.geometry(),{}).status,Status::Success);
   EXPECT_EQ(b.qeph_count(),804u); EXPECT_EQ(b.t3_count(),111u); EXPECT_EQ(b.node_count(),1030u);
-  ASSERT_EQ(b.inventory().words().size(),25069u);
+  ASSERT_EQ(b.inventory().words().size(),25873u);
   EXPECT_EQ(b.active_nodes().size(),1030u); EXPECT_EQ(b.nodes().size(),1030u);
   std::array<shell_binding_test::WideMass,NodeCount> truth{};
   std::array<fe::ShellBindingMass,NodeCount> native{}; fe::ShellBindingMass total;

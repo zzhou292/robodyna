@@ -23,7 +23,8 @@ QEPH records include immutable projection_working_length_m; QBAT encoding8
 adds the same authenticated (currently default-only) field. All inline
 and owned sizes, preflight, and complete equality use that layout. On the qualified
 host ABI, each native reference/history record gains 8 identity bytes; Q/T
-ForceTrial sizes are 1424/984 bytes. Existing arenas use actual sizeof values. This is not a
+ForceTrial sizes include the immutable reference metric and tagged projection
+diagnostics. Existing arenas use actual sizeof values. This is not a
 persistent archive schema. Existing material/source/accepted archive schemas
 remain unchanged. Noncentered resident batches and other full force formulations
 are explicitly rejected pending their independent qualification.

@@ -41,7 +41,7 @@ and inputs, including an already-prepared binding. Const getters expose the
 owned results; assignment is disabled and copy construction preserves the
 immutable value. Default getters carry no prepared authority.
 
-The 51-word inventory contains an internal discriminator and node count, then
+The 52-word inventory contains an internal discriminator and node count, then
 each family and arity, seven ordered `(global index, source ID, x, y, z)`
 records, and density/thickness/E/nu plus placement for each family. Binary64 values use their
 entire object representation. Equality compares every word. This is an
