@@ -66,8 +66,30 @@ TEST_F(SolidParallelAssemblyCuda, InvalidPhaseZeroNodeAndLateNonfiniteGeometryKe
   result=Compare(device,[](auto&){});EXPECT_EQ(result.control.status,s::BatchStatus::InvalidInput);
   device.seed[3*node]=0;result=Compare(device,[](auto&){});EXPECT_EQ(result.control.status,s::BatchStatus::Success);
 }
+TEST_F(SolidParallelAssemblyCuda, GeometryFailureWinsOverEarlierArithmeticFailureAndRetry) {
+  Packet packet;
+  packet.State().solid18.slab[0][0].cache.rhs_force_n[0].x =
+      std::numeric_limits<double>::infinity();
+  DevicePacket device(packet);
+  const auto node = packet.State().solid18_law90.parents[1].domain_nodes[7];
+  for (unsigned channel : {0u, 1u}) {
+    SCOPED_TRACE(channel);
+    const auto offset = channel * 3 * packet.nodes + 3 * node;
+    const auto original = device.seed[offset];
+    device.seed[offset] = std::numeric_limits<double>::quiet_NaN();
+    for (unsigned repeat = 0; repeat < 8; ++repeat) {
+      const auto result = Compare(device, [](auto&){});
+      EXPECT_EQ(result.control.status, s::BatchStatus::InvalidInput);
+      EXPECT_EQ(result.fallback, 1u);
+    }
+    device.seed[offset] = original;
+    const auto retry = Compare(device, [](auto&){});
+    EXPECT_EQ(retry.control.status, s::BatchStatus::AssemblyFailure);
+    EXPECT_EQ(retry.fallback, 1u);
+  }
+}
 TEST_F(SolidParallelAssemblyCuda, LaunchFaultStopsBeforePublishingOrSerialReplayAndPoisonsPublicBatch) {
-  for (unsigned boundary:{1u,2u}) {
+  for (unsigned boundary:{1u,2u,3u}) {
     Packet packet;DevicePacket device(packet);
     const auto before=device.Read();
     launch_fault::Arm(boundary);
