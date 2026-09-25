@@ -145,7 +145,7 @@ TL_MATH_HOST_DEVICE inline RowStageResult CompleteRow(const Input& input,std::si
     if(status!=Status::Ok)return Failure(out,status,Stage::GeometryBinding,row,i);
     if(occurrence.selected.enabled) {
       const auto input_geometry=Geometry(input,occurrence,units);
-      const auto geometry_status=EvaluateNativeGeometry(input.profile.geometry,input_geometry,&scratch.geometry[i]);
+      const auto geometry_status=EvaluateNativeRawGeometry(input.profile.geometry,input_geometry,&scratch.geometry[i]);
       if(geometry_status!=GeometryStatus::Ok)
         return Failure(out,geometry_status==GeometryStatus::NonfiniteResult?
             Status::NonfiniteResult:Status::UndefinedNativeInput,Stage::GeometryBinding,row,i);
