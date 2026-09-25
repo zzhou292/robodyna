@@ -3,15 +3,19 @@ from .cards import ints, reals, node_group
 
 
 def starter(scene, mesh):
+    material = scene.material
     unit = ''.join(s.rjust(20) for s in ('Mg','mm','s'))
     out = ['#RADIOSS STARTER', '/BEGIN', 'contact_scene', ints(2024), unit, unit,
-           '/TITLE', 'Finite triangle wall and free elastic shell patch',
-           '/MAT/LAW1/1', 'Elastic steel', reals(scene.density_tonne_mm3),
-           reals(scene.young_n_mm2,scene.poisson),
-           '/PROP/TYPE1/1', 'Layered LAW1 QEPH and C0, NIP3 ITHICK1',
+           '/TITLE', 'Finite triangle wall and free elastoplastic shell patch',
+           '/MAT/LAW44/1', 'Explicit analytic LAW44 steel', reals(material.density_tonne_mm3),
+           reals(material.young_n_mm2,material.poisson),
+           reals(material.yield_n_mm2,material.plastic_hardening_n_mm2,1.,0.,1e30),
+           reals(material.rate_c_per_s,material.rate_p)+ints(1,1)+reals(material.rate_filter_hz)+ints(0,0),
+           reals(0.,0.,0.),
+           '/PROP/TYPE1/1', 'Layered LAW44 QEPH and C0, NIP3 ITHICK1',
            ints(24,2,1,2,0)+' '*10+reals(1.), reals(0.,0.,0.,.015,.015),
            ints(3)+' '*10+reals(scene.thickness_mm,5./6.)+' '*10+ints(1,2,0)]
-    for identifier, title in ((1,'Fixed finite wall'),(2,'Moving elastic patch')):
+    for identifier, title in ((1,'Fixed finite wall'),(2,'Moving elastoplastic patch')):
         out += [f'/PART/{identifier}', title, ints(1,1,0)]
     out += ['/NODE'] + [ints(n.id)+reals(*n.xyz_mm) for n in mesh.nodes]
     out += ['/SH3N/1'] + [ints(e.id,*e.nodes) for e in mesh.wall]
@@ -22,7 +26,9 @@ def starter(scene, mesh):
             '/INIVEL/TRA/1','Initial patch velocity',reals(*scene.velocity_mm_s)+ints(2,0),
             '/SURF/SEG/1','Finite wall triangles']
     out += [ints(e.id,*e.nodes,0) for e in mesh.wall]
-    # Surface1 plus explicit secondary node group selects nodes-to-surface.
+    # Surface1 selects ILEV1 self-contact on the fixed wall; the explicit node
+    # group adds moving patch secondaries. Fixed wall nodes remain authentic
+    # secondary uses and are handled by native constraints/incidence/removal.
     # Labels below are intended inputs; actual normalized controls are observed
     # from the pinned Starter/Engine before any runtime profile is admitted.
     out += ['/INTER/TYPE25/1','Native aligned finite mesh contact',

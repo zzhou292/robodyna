@@ -5,7 +5,7 @@ reference deck. It does not run a solver, provide native-calculated forces to TL
 or claim that the intended input flags have resolved to the supported profile.
 
 `fixed_wall_patch.json` is the human-editable physical definition: eight wall
-triangles, four moving QEPH shells, elastic steel and a separated initial state.
+triangles, four moving QEPH shells, explicitly parameterized LAW44 steel and a separated initial state.
 Units are explicit mm/tonne/s. `definition.py` validates its bounded scope;
 `mesh.py` builds the shared physical roster; `cards.py` preserves exact-width
 round-trip values; `native.py` emits the reference-only2024 input; `__main__.py`
@@ -26,10 +26,22 @@ files, which must be retained rather than overwritten. Declared input pins are
 not evidence of resolved physics or a completed trajectory. Native reference
 execution is separately guarded and source-observed before production admission.
 
-The numerical input deliberately uses layered LAW1/NIP3/ITHICK1/ISMSTR2, matching
-existing TL family work. Contact is nodes-to-surface against a finite fixed main
-mesh. This first scene is elastic and does not claim deforming main-side normals,
-vehicle self-contact or plastic impact. Those remain later integration gates.
+The numerical input uses existing analytic LAW44/NIP3/ITHICK1/ISMSTR2: A250,
+B1000,n1,isotropic hardening,C40/P5, filtered total-rate VP0 at10000Hz. These are
+explicit synthetic scene parameters, not a calibrated vehicle material. Contact
+is ILEV1 on the fixed wall plus additional moving secondary nodes. Fixed wall
+nodes remain secondary uses with genuine native exclusions and constraints.
+This scene does not claim deforming main-side normals, vehicle self-contact,
+plastic activity or a physical trajectory until those are actually measured.
+
+The first native Starter probe is preserved under
+`crash-work/investigations/native-contact-scene-startup-1` in the workspace. It
+accepted the syntax but changed LAW1/NIP3 to global NPT0 (warning1084), and confirmed
+surface1+extra-node-group is ILEV1. We therefore revised the declared material to
+the already implemented analytic LAW44 branch and corrected the interface scope,
+without relabeling the old source or treating prescribed layered-LAW1 tests as
+proof of native Starter dispatch. Actual full-Yaris elastic dispatch remains a
+separate source-binding question. A fresh Starter gate is required for this input.
 
 Next: observe genuine startup normals/bisectors/adjacency, signed role/partner
 identities, mass/inertia, coefficient/gap/removal producers and Engine branch/time

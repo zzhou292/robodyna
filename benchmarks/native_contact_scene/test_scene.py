@@ -1,5 +1,4 @@
 """Owning definition/export checks; these do not qualify native solver behavior."""
-from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -35,6 +34,10 @@ class NativeContactScene(unittest.TestCase):
         lines = native.starter(scene,mesh.build(scene)).splitlines()
         self.assertEqual(lines[0],'#RADIOSS STARTER')
         self.assertEqual(lines[-1],'/END')
+        law = lines.index('/MAT/LAW44/1')
+        self.assertEqual([float(lines[law+4][i:i+20]) for i in range(0,100,20)],
+                         [250.,1000.,1.,0.,1e30])
+        self.assertEqual(float(lines[law+5][60:80]),10000.)
         prop = lines.index('/PROP/TYPE1/1')
         self.assertEqual([int(lines[prop+2][i:i+10]) for i in range(0,50,10)],[24,2,1,2,0])
         self.assertEqual(int(lines[prop+4][:10]),3)

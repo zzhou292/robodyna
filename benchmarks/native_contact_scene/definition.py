@@ -37,13 +37,24 @@ class Grid:
 
 
 @dataclass(frozen=True)
+class Material:
+    density_tonne_mm3: float
+    young_n_mm2: float
+    poisson: float
+    yield_n_mm2: float
+    plastic_hardening_n_mm2: float
+    rate_c_per_s: float
+    rate_p: float
+    rate_filter_hz: float
+    law: str = 'law44_linear'
+
+
+@dataclass(frozen=True)
 class Scene:
     wall: Grid
     patch: Grid
     velocity_mm_s: tuple
-    density_tonne_mm3: float
-    young_n_mm2: float
-    poisson: float
+    material: Material
     thickness_mm: float
     end_time_s: float
     nodal_scale: float
@@ -68,11 +79,18 @@ def load(path):
     velocity = tuple(number(v, 'velocity', -100000, 100000) for v in velocity)
     require(velocity[2] < 0, 'This impact scene approaches its wall along negative z')
     material = raw['material']
-    keys(material, ('law', 'density_tonne_mm3', 'young_n_mm2', 'poisson'), 'material')
-    require(material['law'] == 'layered_law1', 'Only existing layered elastic LAW1 is admitted')
+    keys(material, ('law', 'density_tonne_mm3', 'young_n_mm2', 'poisson', 'yield_n_mm2',
+                    'plastic_hardening_n_mm2', 'rate_c_per_s', 'rate_p', 'rate_filter_hz'), 'material')
+    require(material['law'] == 'law44_linear', 'Only existing analytic LAW44 is admitted')
     density = number(material['density_tonne_mm3'], 'density', 1e-15, 1e-3)
     young = number(material['young_n_mm2'], 'Young modulus', 1e-6, 1e9)
     poisson = number(material['poisson'], 'Poisson ratio', 0, .499)
+    constitutive = Material(density, young, poisson,
+        number(material['yield_n_mm2'], 'yield stress', 1e-6, young),
+        number(material['plastic_hardening_n_mm2'], 'plastic hardening modulus', 0, young),
+        number(material['rate_c_per_s'], 'rate C', 1e-9, 1e12),
+        number(material['rate_p'], 'rate P', .1, 100),
+        number(material['rate_filter_hz'], 'rate filter', 1e-9, 1e12))
     thickness = number(raw['thickness_mm'], 'thickness', 1e-6, 100)
     run = raw['run']
     keys(run, ('end_time_s', 'nodal_scale', 'animation_interval_s'), 'run')
@@ -84,4 +102,4 @@ def load(path):
     require(wall.dz_dx == 0, 'This first fixed-main definition uses a planar wall')
     require(min(patch.z_mm+patch.dz_dx*x for x in patch.x_mm) > wall.z_mm+thickness,
             'Scene starts separated; initial overlap requires a separately named case')
-    return Scene(wall, patch, velocity, density, young, poisson, thickness, end, scale, cadence)
+    return Scene(wall, patch, velocity, constitutive, thickness, end, scale, cadence)
