@@ -1,0 +1,12 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+      SUBROUTINE rd_initial_flags(NSN,ICONT)
+      USE intbufdef_mod
+      USE my_alloc_mod
+      IMPLICIT NONE
+      INTEGER NSN,ICONT(NSN),NIN
+      TYPE(intbuf_struct_) INTBUF_TAB(1)
+      NIN=1
+      INTBUF_TAB(NIN)%S_ICONT_I=NSN
+@INITIALIZE@
+      ICONT=INTBUF_TAB(NIN)%ICONT_I
+      END
