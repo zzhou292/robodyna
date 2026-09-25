@@ -22,7 +22,7 @@ inline std::vector<ContinuationCase> ContinuationCases() {
   std::vector<ContinuationCase> cases;
   for(const auto& c:Cases())cases.push_back(Continue(c));
   // Same geometry, all native reference-match and solid/coating symmetry routes.
-  for(bool triangle:{false,true})for(int role:{0,4,17})for(int skew:{0,1,2}) {
+  for(bool triangle:{false,true})for(int role:{0,4,17,-4,-17})for(int skew:{0,1,2}) {
     auto c=Continue(FromGeometry({"symmetry",triangle?type25_geometry_test::Triangle():type25_geometry_test::Quad()}));
     c.input.pair.segment_type=role;c.input.secondary_skew=skew;
     c.input.secondary_constraint=1;

@@ -5,11 +5,12 @@
 #include <cmath>
 namespace type25_selection_test {
 TEST(Type25Continuation, CompleteRetainedGeometryAndNativeSlidingSymmetryCorpus) {
-  const auto cases=ContinuationCases();ASSERT_EQ(cases.size(),167u);
+  const auto cases=ContinuationCases();ASSERT_EQ(cases.size(),179u);
   for(const auto& c:cases) {
     SCOPED_TRACE(c.name);s::NativeContinuationResult actual;
     ASSERT_EQ(s::EvaluateNativeContinuation(Profile(),c.input,c.prior,&actual),s::Status::Ok);
     Same(actual,OracleContinuation(Profile(),c.input,c.prior));
+    if(c.input.pair.segment_type<0)EXPECT_EQ(actual.constrained_axis_mask,0u);
   }
 }
 TEST(Type25Continuation, DistanceHysteresisAndEqualDistanceUseNativeGlobalMainTie) {
@@ -80,7 +81,7 @@ TEST(Type25Continuation, NativeInactiveAndTriangleScratchAreExplicitlyMasked) {
   }
 }
 TEST(Type25Continuation, InvalidAuthenticReferencesAndRangesPreserveWholeOutput) {
-  for(unsigned fault=0;fault<8;++fault) {
+  for(unsigned fault=0;fault<9;++fault) {
     auto c=BasicContinuation();const auto before=ContinuationSentinel();auto actual=before;
     if(fault==0)c.input.segment_count=0;
     if(fault==1)c.input.normal_reference[0]=-1;
@@ -90,6 +91,7 @@ TEST(Type25Continuation, InvalidAuthenticReferencesAndRangesPreserveWholeOutput)
     if(fault==5)c.input.pair.key.generation++;
     if(fault==6)c.prior.row.selection_metric[0]=std::numeric_limits<double>::infinity();
     if(fault==7)c.input.pair.main_coefficient=std::numeric_limits<double>::max();
+    if(fault==8)c.input.pair.segment_type=-33;
     const auto status=s::EvaluateNativeContinuation(Profile(),c.input,c.prior,&actual);
     EXPECT_EQ(status,fault==7?s::Status::NonfiniteResult:s::Status::InvalidInput);
     Same(actual,before,true);

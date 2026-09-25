@@ -60,7 +60,11 @@ clamp or invented projection is used here.
 
 ## Continuation source boundary
 
-Continuation retains original NRTM/MSEGTYP segment-role encoding, positive local
+Continuation retains original NRTM/MSEGTYP segment-role encoding, including
+the negative generated opposite-side roles from native SH2SURF25. Those roles
+remain negative: DST21 treats them as shells and does not apply the positive
+coating/solid symmetry branch. The bounded signed source range is admitted
+without taking an absolute value. Continuation also retains positive local
 ADMSR references and prepared ISLIDE relations. Equal references preserve their
 LBOUND state, and COR21 marks only the first matching main reference for each
 nonzero sliding entry. Authentic ICODT/ISKEW values remain supplied per node;

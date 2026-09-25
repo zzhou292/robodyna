@@ -7,7 +7,8 @@ inline constexpr double onep02 = 1. + 2. / 100.;
 TL_MATH_HOST_DEVICE inline bool Valid(const NativeContinuationInput& in,
     const NativeGeometryHistory& prior) {
   if (!Valid(in.pair,prior) || in.segment_count <= 0 ||
-      in.pair.local_main > in.segment_count || in.pair.segment_type < 0 ||
+      in.pair.local_main > in.segment_count ||
+      std::int64_t(in.pair.segment_type) < -2*std::int64_t(in.segment_count) ||
       std::int64_t(in.pair.segment_type) > 2*std::int64_t(in.segment_count) ||
       in.secondary_constraint < 0 || in.secondary_skew < 0) return false;
   for(unsigned i=0;i<4;++i) {
