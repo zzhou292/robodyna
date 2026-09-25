@@ -21,7 +21,9 @@ Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& out
       (p.initialization!=Initialization::SerialNative && p.initialization!=Initialization::InvariantNoExpansion) ||
       c.census!=Census::CompleteDeclaredModel || c.physical_nodes!=mesh.node_count ||
       c.physical_shells<mesh.primary_count || c.tied_interfaces || c.rigid_bodies || c.cin_links ||
-      c.other_interfaces || c.unsupported_elements || mesh.profile!=startup::Profile::OrdinaryExteriorFixedMain)
+      c.other_interfaces || c.unsupported_elements ||
+      (mesh.profile!=startup::Profile::OrdinaryExteriorFixedMain &&
+       mesh.profile!=startup::Profile::OrdinaryExteriorMovingMain))
     return {Status::UnsupportedProfile};
   if (!self_contact_filters::CompatibleHostArithmetic()) return {Status::UnsupportedArithmetic};
   const auto n=mesh.node_count,g=2*mesh.primary_count,s=in.secondary_count;
