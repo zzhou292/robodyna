@@ -22,5 +22,5 @@ inline Device Bind(void* arena, const Layout& layout) noexcept {
       ArenaPointer<std::byte>(arena,layout.cub),layout.forecast.cub_bytes};
 }
 cudaError_t QueryScratch(IncidenceLimits, std::size_t&) noexcept;
-cudaError_t Build(Device, const DeviceConnectivity&, cudaStream_t) noexcept;
+cudaError_t Build(Device, const DeviceConnectivity&, cudaStream_t, IncidenceReport&) noexcept;
 } // namespace tlfea::contact::radioss_type25::assembly::device_detail

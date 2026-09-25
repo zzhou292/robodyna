@@ -23,6 +23,10 @@ the cohort schedule is invalid.
 The synchronous staging API drains its explicit startup stream before returning,
 once work is launched, including device errors; a CUDA error poisons the workspace.
 Host admission errors enqueue nothing and do not drain already queued caller work.
+The caller serializes all operations/readers/destruction of one instance and
+keeps the startup stream alive until its destructor completes. Report counters
+count actual attempted launch/sort/fence API calls, including calls that fail;
+they do not represent completed kernels or CUB's internal kernel census.
 There is no CPU
 fallback. Inputs must remain device-readable and immutable during the call.
 Host admission rejects capacities, pointer extents/alignment, missing provenance

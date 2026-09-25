@@ -24,6 +24,8 @@ struct IncidenceReport {
   IncidenceStamp stamp;
   // Earliest bad cohort takes priority over earliest bad occurrence.
   std::size_t bad_cohort = SIZE_MAX, bad_occurrence = SIZE_MAX;
+  // Actual attempted API calls, including a launch call that itself fails.
+  // Not completed-kernel counts or counts of CUB's private internal kernels.
   unsigned own_kernel_launches = 0, sort_calls = 0, host_fences = 0;
 };
 } // namespace tlfea::contact::radioss_type25::assembly

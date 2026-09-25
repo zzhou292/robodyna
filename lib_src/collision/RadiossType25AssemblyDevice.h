@@ -25,6 +25,8 @@ class DeviceIncidenceView {
 // before using the returned CSR with GatherNode on the same ordered stream.
 // Host admission failures launch no work and do not wait for unrelated caller
 // operations that were already queued on that stream.
+// The caller serializes every call/read/destruction of one instance and keeps
+// the startup stream alive through destruction. No internal mutex is supplied.
 class DeviceIncidenceBuilder {
  public:
   DeviceIncidenceBuilder();

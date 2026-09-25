@@ -28,10 +28,7 @@ IncidenceStatus DeviceIncidenceBuilder::Stage(const DeviceConnectivity& in) noex
   auto status = p.Check(in);
   if (status != IncidenceStatus::Ok) { p.report.status = status; return status; }
   auto error = cudaGetLastError();
-  if (error == cudaSuccess) error = device_detail::Build(p.device,in,p.stream);
-  p.report.own_kernel_launches = 1 + (in.schedule.cohort_count ? 1 : 0) +
-      (in.schedule.row_count ? 2 : 0);
-  p.report.sort_calls = in.schedule.row_count ? 1 : 0;
+  if (error == cudaSuccess) error = device_detail::Build(p.device,in,p.stream,p.report);
   if (error == cudaSuccess) error = cudaMemcpyAsync(&p.failure,p.device.failure,sizeof(p.failure),
       cudaMemcpyDeviceToHost,p.stream);
   const auto drained = cudaStreamSynchronize(p.stream); p.report.host_fences = 1;

@@ -53,23 +53,29 @@ cudaError_t QueryScratch(IncidenceLimits limits, std::size_t& bytes) noexcept {
   return cub::DeviceRadixSort::SortKeys(nullptr,bytes,static_cast<std::uint64_t*>(nullptr),
       static_cast<std::uint64_t*>(nullptr),int(5*limits.max_rows));
 }
-cudaError_t Build(Device d, const DeviceConnectivity& in, cudaStream_t stream) noexcept {
+cudaError_t Build(Device d, const DeviceConnectivity& in, cudaStream_t stream,
+    IncidenceReport& report) noexcept {
   auto error = cudaMemsetAsync(d.failure,0xff,sizeof(*d.failure),stream);
   if (error != cudaSuccess) return error;
   if (in.schedule.cohort_count) {
+    ++report.own_kernel_launches;
     CheckCohorts<<<Blocks(in.schedule.cohort_count),256,0,stream>>>(d,in.schedule);
     error = cudaPeekAtLastError(); if (error != cudaSuccess) return error;
   }
   const auto occurrences = 5*in.schedule.row_count;
   if (occurrences) {
+    ++report.own_kernel_launches;
     Keys<<<Blocks(occurrences),256,0,stream>>>(d,in);
     error = cudaPeekAtLastError(); if (error != cudaSuccess) return error;
     auto bytes = d.cub_bytes;
+    ++report.sort_calls;
     error = cub::DeviceRadixSort::SortKeys(d.cub,bytes,d.keys,d.sorted_keys,int(occurrences),0,64,stream);
     if (error != cudaSuccess) return error;
+    ++report.own_kernel_launches;
     DecodeRanks<<<Blocks(occurrences),256,0,stream>>>(d,occurrences);
     error = cudaPeekAtLastError(); if (error != cudaSuccess) return error;
   }
+  ++report.own_kernel_launches;
   Offsets<<<Blocks(in.nodes+1),256,0,stream>>>(d,in.nodes,occurrences);
   return cudaPeekAtLastError();
 }
