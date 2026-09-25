@@ -1,7 +1,7 @@
 # Robo-dyna architecture and source guide
 
 This guide describes implemented ownership and source boundaries. Changing
-runtime status, qualified revisions, receipts, and the paused/resume state live
+runtime status, qualified revisions, receipts, and the active execution state live
 in the workspace [execution plan](../../planning/CURRENT_EXECUTION_PLAN.md).
 The [delivery roadmap](YARIS_DELIVERY_PLAN.md) describes remaining functionality.
 
@@ -106,6 +106,14 @@ facets. It is not exact bilinear Q4 contact; solid/beam contact surfaces and
 persistent friction history remain future profiles. The current path includes
 host feature/certificate work, so a CUDA physical owner does not imply that
 whole contact qualification executes on the GPU.
+
+## Native-aligned contact and qualification boundary
+
+The existing transaction described above is the experimental exact-certified profile. The new TYPE25 profile is developed alongside it in TL-FEA, with separate resolved controls, native numerical response, current geometry, retained search and history modules. robo-dyna binds source and orchestrates the same physical owner; it does not implement a second contact solver.
+
+Native contact history belongs to source secondary contact rows whose selected main face/subtriangle can change. A geometry-pair key is not sufficient ownership. History rollover, current response and search generations must be staged privately and committed once through the common physical transaction. Discard/retry cannot advance them twice.
+
+[`benchmarks/case_parity`](../benchmarks/case_parity/) compares declared resolved cases and bound numerical/timing/output evidence offline. It cannot authorize physics or declare whole-vehicle completion from a fast component. Native Fortran wrappers and external OpenRadioss processes belong only to qualification; no production dependency points to them. Existing Chrono replay remains downstream of accepted output.
 
 ## Results and rendering
 
