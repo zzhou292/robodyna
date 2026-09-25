@@ -116,6 +116,7 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     else Keys(original,{"schema","units","wall","patch","material","thickness_mm","run"});
     Require(Text(Field(original,"schema"))==(moving?"robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1"),
         "Original declaration and export schema differ");
+    out->definition_schema=Text(Field(original,"schema")); // Exact authenticated member version.
     if(moving)Require(Text(Field(original,"contact_surface"))=="all_shells","Unknown moving source surface");
     const auto& units=Field(original,"units");Keys(units,{"length","mass","time"});
     Require(Text(Field(units,"length"))=="mm"&&Text(Field(units,"mass"))=="tonne"&&Text(Field(units,"time"))=="s","Scene requires explicit native mm/tonne/s");

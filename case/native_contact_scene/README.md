@@ -52,3 +52,9 @@ contains independent qualification-only Engine observations: topology and static
 coefficients/gaps may be compared, while cycle301 normal fields are not initial
 Starter values. The independent Fortran producer tests the correct initial phase.
 No observation file or reference library is a production factory dependency.
+
+Archive canonical `source_format` is copied from the exact authenticated member
+schema retained by DeclaredSource. The static-source reader compares that label
+with the hashed member's bounded JSON envelope, for both v1 and v2. Relabeling a
+v2 member as v1 (even with rehashed outer metadata) rejects; no archived source
+is migrated or edited in place. This envelope check does not reparse mechanics.

@@ -4,6 +4,8 @@ import re
 
 SCHEMA = 'robo_dyna.native_shell_impact_run.v1'
 FORECAST_SCHEMA = 'robo_dyna.native_shell_impact_forecast.v1'
+NATIVE_HISTORY_PAYLOADS = frozenset(('native_type25_accepted_base_force_history_v1',
+    'fixed_main_type25_accepted_base_force_history_v1'))
 STOP_KINDS = frozenset(('completed', 'requested_stop', 'diagnostic_interval_limit',
     'elapsed_limit', 'startup_failure', 'physics_rejected', 'archive_failure',
     'capture_failure', 'observer_failure'))
@@ -77,7 +79,7 @@ def closed_native_run(run, report):
     if (configuration.get('schema') != 'robo_dyna.physical_run_configuration.v3'
             or profile.get('schema') != 'robo_dyna.physical_observation_profile.v3'
             or profile.get('participants') != 'qeph,t3,native_type25'
-            or profile.get('native_contact') != 'fixed_main_type25_accepted_base_force_history_v1'
+            or profile.get('native_contact') not in NATIVE_HISTORY_PAYLOADS
             or _count(configuration['identity']['run'], True) != run_id
             or _count(configuration['intervals'], True) != planned
             or _count(configuration['samples'], True) != samples

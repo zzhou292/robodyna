@@ -1,6 +1,10 @@
 #include "Types.h"
 #include "output/BoundedArrayJson.h"
 namespace crash::output::physical_run {
+namespace {
+constexpr const char* NativeHistoryPayload="native_type25_accepted_base_force_history_v1";
+constexpr const char* LegacyFixedHistoryPayload="fixed_main_type25_accepted_base_force_history_v1";
+}
 bool SameProfile(Profile a,Profile b) noexcept {
     return a.type45==b.type45 && a.structural_limit==b.structural_limit && a.beam18==b.beam18 && a.self_contact==b.self_contact && a.native_contact==b.native_contact;
 }
@@ -18,7 +22,7 @@ Document ProfileDocument(Profile p) {
     for(const auto* name:{"kinetic_energy","total_energy","internal_work","contact_force","contact_penetration","contact_work","joint_work"})
         String(d,name,"unavailable");
     if(p.self_contact)String(d,"self_contact","frictionless_fixed_triangles_v1_accepted_base_force_candidate_policy");
-    if(p.native_contact)String(d,"native_contact","fixed_main_type25_accepted_base_force_history_v1");
+    if(p.native_contact)String(d,"native_contact",NativeHistoryPayload);
     return d;
 }
 Profile ReadProfile(const Value& v) {
@@ -27,7 +31,7 @@ Profile ReadProfile(const Value& v) {
         Keys(v,{"schema","purpose","participants","structural_limit","kinetic_energy","total_energy","internal_work",
             "contact_force","contact_penetration","contact_work","joint_work","native_contact"});
         Require(Text(v["schema"])==NativeContactProfileSchema&&Text(v["purpose"])=="selected_physical_model_accepted_visualization_not_restart"&&
-            Text(v["participants"])=="qeph,t3,native_type25"&&Text(v["native_contact"])=="fixed_main_type25_accepted_base_force_history_v1",
+            Text(v["participants"])=="qeph,t3,native_type25"&&(Text(v["native_contact"])==NativeHistoryPayload||Text(v["native_contact"])==LegacyFixedHistoryPayload),
             "Unknown native physical observation profile");
         Profile p;p.native_contact=true;const auto structural=Text(v["structural_limit"]);
         p.structural_limit=structural=="post_cin_local_physical_bound_s";

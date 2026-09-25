@@ -17,7 +17,7 @@ struct Profile {
     bool structural_limit=false;
     bool beam18=false;
     bool self_contact=false;
-    bool native_contact=false; // Explicit QEPH/T3 fixed-main native TYPE25 participant set.
+    bool native_contact=false; // Explicit QEPH/T3/native TYPE25 observation fields; motion is a source/runtime property.
 };
 bool SameProfile(Profile,Profile) noexcept;
 Document ProfileDocument(Profile);

@@ -119,7 +119,7 @@ std::size_t PhysicalSource::retained_host_upper_bound() const {
         b.Append<source::SourceParent>(d.wall.capacity()+d.patch.capacity(),unused)&&
         b.Append<std::uint32_t>(d.wall_nodes.capacity()+d.patch_nodes.capacity(),unused)&&
         b.Append<std::uint8_t>(data_->fixed.capacity()+data_->rotation.capacity(),unused)&&
-        b.Append<char>(d.export_sha256.capacity()+d.definition_sha256.capacity()+d.definition_bytes.capacity()+3,unused),
+        b.Append<char>(d.export_sha256.capacity()+d.definition_sha256.capacity()+d.definition_bytes.capacity()+d.definition_schema.capacity()+4,unused),
         "Physical source retained byte bound overflow");
     return b.bytes();
 }

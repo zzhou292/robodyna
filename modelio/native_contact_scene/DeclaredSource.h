@@ -21,7 +21,7 @@ struct SourceParent {
 enum class DeclaredContactSurface { FixedWall, AllShells };
 struct DeclaredData {
     DeclaredContactSurface contact_surface=DeclaredContactSurface::FixedWall;
-    std::string export_sha256,definition_sha256,definition_bytes;
+    std::string export_sha256,definition_sha256,definition_bytes,definition_schema;
     NativeMaterial material;
     std::vector<SourceNode> nodes;
     std::vector<SourceParent> wall,patch;

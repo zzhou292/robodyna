@@ -78,6 +78,19 @@ class NativeCompletionTests(unittest.TestCase):
             self.assertEqual((self.root / 'summary.json').read_bytes(), before)
             self.assertFalse((self.root / 'run-summary.json').exists())
 
+    def test_neutral_and_legacy_history_payload_names_read_without_mutating_archives(self):
+        for name in ('native_type25_accepted_base_force_history_v1',
+                     'fixed_main_type25_accepted_base_force_history_v1'):
+            self.configuration['profile']['native_contact'] = name
+            self.publish()
+            before = (self.root / 'archive/configuration.json').read_bytes()
+            closed_run(self.launch)
+            self.assertEqual((self.root / 'archive/configuration.json').read_bytes(), before)
+        self.configuration['profile']['native_contact'] = 'unqualified_restart_state'
+        self.publish()
+        with self.assertRaises(ValueError):
+            closed_run(self.launch)
+
     def test_native_schema_and_typed_claims_cannot_authorize_another_profile(self):
         original = copy.deepcopy(self.summary)
         changes = [('schema', 'unknown'), ('valid_closed_archive', 1), ('output_error', 'failed'),

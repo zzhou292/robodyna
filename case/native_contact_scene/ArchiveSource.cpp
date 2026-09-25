@@ -71,7 +71,7 @@ ArchiveSource ArchiveSource::Write(const PhysicalSource& physical,const std::fil
     for(std::size_t i:{12u,16u})Array(arrays_value,i,0,std::vector<std::uint16_t>{});
     Document canonical;canonical.SetObject();String(canonical,"schema",source::DeclaredCanonicalSchema);
     String(canonical,"purpose","declared_shell_geometry_only_not_simulation_or_restart");
-    String(canonical,"source_format","robo_dyna.native_contact_scene.v1");
+    String(canonical,"source_format",declared.definition_schema);
     String(canonical,"formulation_scheme","openradioss_property_type1_ishell");
     String(canonical,"keyword_annotations","not_applicable_zero_channels");
     array_json::Child(canonical,"member",MemberDocument(inputs));array_json::Child(canonical,"units",UnitDocument());

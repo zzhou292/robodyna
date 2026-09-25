@@ -12,6 +12,7 @@ std::filesystem::path Original(){const auto* value=std::getenv("ROBO_DYNA_NATIVE
 TEST(MovingSceneSource, ExplicitVersionedSurfaceSurvivesSourceReadbackWithoutChangingPhysics) {
     const auto file=Original();const auto source=DeclaredSource::Read(file,output::Sha256(output::ReadBounded(file,4u<<20)));
     const auto& data=source.data();EXPECT_EQ(data.contact_surface,DeclaredContactSurface::AllShells);
+    EXPECT_EQ(data.definition_schema,"robo_dyna.native_contact_scene.v2");
     EXPECT_EQ(data.nodes.size(),18u);EXPECT_EQ(data.wall.size(),8u);EXPECT_EQ(data.patch.size(),4u);
     EXPECT_EQ(data.velocity_mm_s.z,-10000.);EXPECT_EQ(data.thickness_mm,1.);EXPECT_EQ(data.step_cap_s,3e-7);
     const auto copied=source;EXPECT_EQ(copied.data().contact_surface,DeclaredContactSurface::AllShells);

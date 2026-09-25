@@ -25,7 +25,15 @@ std::shared_ptr<const CanonicalData> ReadSource(const SourceInputs& in, SourceLi
     for (const auto& a : data->arrays) detail::AddBytes(budget, 4 * a.descriptor.bytes, limits.host_bytes);
     // Source membership is authenticated as complete original bytes; no keyword
     // interpretation occurs here. The later copy layer rechecks it before copy.
-    if (!member_bytes) detail::ReadFile(in.member_root, in.source_member, limits.source_member_bytes);
+    if(declared) {
+        Require(in.source_member.bytes<=4u<<20,"Declared source member exceeds its format bound");
+        // Existing member reserve covers the raw bytes. Match the other DOM
+        // metadata reserves for the bounded envelope check, before reading it.
+        detail::AddBytes(budget,2*in.source_member.bytes,limits.host_bytes);
+        if(member_bytes)detail::CheckDeclaredMemberFormat(canonical,*member_bytes);
+        else detail::CheckDeclaredMemberFormat(canonical,
+            detail::ReadFile(in.member_root,in.source_member,limits.source_member_bytes));
+    } else if (!member_bytes) detail::ReadFile(in.member_root, in.source_member, limits.source_member_bytes);
     const arrays::Limits array_limits{limits.file_bytes, limits.nodes > limits.parents ? limits.nodes : limits.parents, 64};
     for (auto& a : data->arrays) a.bytes = arrays::ReadBytes(in.canonical_root, a.descriptor, array_limits);
     detail::CheckCanonicalGeometry(*data);

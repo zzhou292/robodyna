@@ -24,6 +24,39 @@ source::BundleRequest Request(const source::PreparedSourceMapping& mapping) {
     return request;
 }
 }
+namespace {
+void CheckSourceFormat(const PhysicalSource& physical,const char* format) {
+    ft::Directory directory;const auto archive=ArchiveSource::Write(physical,directory.path);
+    auto input=archive.mapping().source().data().inputs;
+    auto canonical=array_json::Parse(archive.mapping().source().data().canonical_bytes,1u<<20);
+    EXPECT_EQ(array_json::Text(canonical["source_format"]),format);
+    EXPECT_EQ(array_json::Text(array_json::Parse(physical.declared().data().definition_bytes,4u<<20)["schema"]),format);
+    auto scope=array_json::Parse(archive.mapping().source().data().scope_bytes,1u<<20);
+    const auto rewrite=[&] {
+        input.canonical_manifest=ft::Rewrite(directory.path,input.canonical_manifest,canonical);
+        scope["canonical_sha256"].SetString(input.canonical_manifest.sha256.c_str(),scope.GetAllocator());
+        input.scope_report=ft::Rewrite(directory.path,input.scope_report,scope);
+    };
+    const char* other=std::string(format)=="robo_dyna.native_contact_scene.v1"?
+        "robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1";
+    canonical["source_format"].SetString(other,canonical.GetAllocator());rewrite();
+    EXPECT_THROW(source::CanonicalSource::Read(input),std::exception);
+    EXPECT_THROW(source::CanonicalSource::ReadWithMemberBytes(input,physical.declared().data().definition_bytes),std::exception);
+    canonical["source_format"].SetString(format,canonical.GetAllocator());rewrite();
+    EXPECT_NO_THROW(source::CanonicalSource::Read(input));
+    EXPECT_NO_THROW(source::CanonicalSource::ReadWithMemberBytes(input,physical.declared().data().definition_bytes));
+}
+}
+TEST(NativeSceneArchiveSource, ActualFixedMemberVersionIsPreservedAndCannotBeRelabeled) {
+    CheckSourceFormat(Physical(),"robo_dyna.native_contact_scene.v1");
+}
+#ifdef ROBO_DYNA_NATIVE_MOVING_ARCHIVE_SOURCE
+TEST(NativeSceneArchiveSource, ActualMovingMemberVersionIsPreservedAndCannotBeDowngraded) {
+    const auto* file=std::getenv("ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT");ASSERT_NE(file,nullptr);
+    const auto physical=PhysicalSource::Prepare(modelio::native_scene::DeclaredSource::Read(file,Sha256(ReadBounded(file,4u<<20))),771);
+    CheckSourceFormat(physical,"robo_dyna.native_contact_scene.v2");
+}
+#endif
 TEST(NativeSceneArchiveSource, DeclaredShellOnlySourceAndEmptyFamiliesRoundTripExactly) {
     ft::Directory original,repacked;const auto physical=Physical();
     const auto archive=ArchiveSource::Write(physical,original.path);const auto& mapping=archive.mapping();

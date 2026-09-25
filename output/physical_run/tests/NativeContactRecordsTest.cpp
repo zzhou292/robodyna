@@ -27,6 +27,18 @@ TEST(NativeContactRecords, ExplicitProfileAndConfigurationKeepLegacySchemasSepar
     Profile old;old.self_contact=true;
     EXPECT_EQ(array_json::Text(ProfileDocument(old)["schema"]),SelfContactProfileSchema);
 }
+TEST(NativeContactRecords, NeutralHistoryPayloadWritesAndLegacyFixedPayloadReadsWithoutChangingColumns) {
+    const auto profile=NativeProfile();auto doc=ProfileDocument(profile);
+    EXPECT_EQ(array_json::Text(doc["native_contact"]),"native_type25_accepted_base_force_history_v1");
+    EXPECT_TRUE(SameProfile(ReadProfile(doc),profile));
+    const auto integers=IntegerFields(profile),reals=RealFields(profile);
+    doc["native_contact"].SetString("fixed_main_type25_accepted_base_force_history_v1",doc.GetAllocator());
+    const auto legacy=ReadProfile(doc);EXPECT_TRUE(SameProfile(legacy,profile));
+    EXPECT_EQ(IntegerFields(legacy),integers);EXPECT_EQ(RealFields(legacy),reals);
+    EXPECT_EQ(array_json::Text(ProfileDocument(legacy)["native_contact"]),"native_type25_accepted_base_force_history_v1");
+    doc["native_contact"].SetString("moving_exact_geometry_or_restart",doc.GetAllocator());
+    EXPECT_THROW(ReadProfile(doc),std::exception);
+}
 TEST(NativeContactRecords, NativeGenerationAndForceBaseRoundTripAcrossChunks) {
     ft::Directory dir;const auto c=Context();const auto p=NativeProfile();
     IntervalWriter writer(dir.path,c,p,4,624,16384);
