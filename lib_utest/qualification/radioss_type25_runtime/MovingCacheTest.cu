@@ -102,4 +102,24 @@ TEST(NativeMovingCacheCuda, InactiveMainCacheSurvivesPhysicalMotionAndRepeatedSe
   }
   EXPECT_NE(rig.Positions(),original_position);
 }
+TEST(NativeMovingCacheCuda, GlobalLaw1AndGeneralStartupShareMovingContactAndCommonPublication) {
+  Rig rig(true);rig.Initialize();
+  EXPECT_EQ(rig.source.starter.topology,n::startup::TopologyPolicy::NativeOrdinaryShell);
+  for(auto family:{fe::ShellBindingFamily::Qeph,fe::ShellBindingFamily::T3}) {
+    fe::ShellSectionLaw law=fe::ShellSectionLaw::Unspecified;
+    ASSERT_TRUE(rig.source.physical.catalog.Law(family,0,&law));EXPECT_EQ(law,fe::ShellSectionLaw::GlobalLaw1Npt0);
+  }
+  q::NormalObservation prior;ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));
+  std::size_t active_steps=0;
+  for(unsigned step=0;step<4;++step) {
+    SCOPED_TRACE(step);
+    const auto x=rig.Positions();Attempt a;rig.Begin(a);Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly));
+    active_steps+=rig.contact.last_diagnostics().active_forces!=0;
+    q::NormalObservation staged;ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&staged));
+    NativeExpected(rig,x,prior,staged);rig.Prepare(a);Check(rig.Commit(a));
+    ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));Same(prior,staged);
+    EXPECT_EQ(prior.accepted.force_base_stamp.epoch,step);
+  }
+  EXPECT_GT(active_steps,0u);EXPECT_EQ(rig.owner.accepted().epoch,4u);
+}
 } // namespace moving_cache_test

@@ -24,7 +24,7 @@ struct Rig {
   fe::FENodalState owner;fe::qeph::QephBatch quad;fe::t3::T3Batch triangle;
   fe::ShellBatchPublication publication;n::Transaction contact;
   n::TransactionConfig config=type25_source_test::Fixture::Config();
-  Rig() {
+  explicit Rig(bool global_and_general=false):source(global_and_general) {
     const auto& bits=source.physical.fixed;
     for(std::size_t i=0;i<bits.size();++i)source.nodes[i].constraint=((bits[i]&1)<<2)|(bits[i]&2)|((bits[i]&4)>>2);
     config.lifecycle.maximum_coefficient=1e30;

@@ -20,8 +20,17 @@ struct Fixture {
   std::vector<std::uint32_t> removal_offsets;
   tl::util::HostArena output,scratch;
   s::Snapshot starter;
-  Fixture() {
-    physical.Small();const auto mesh=nodal_empty_test::SmallSource();
+  explicit Fixture(bool global_and_general=false) {
+    auto mesh=nodal_empty_test::SmallSource();
+    if(global_and_general) {
+      auto& material=mesh.materials[0];material.law=tl::fea::ShellSectionLaw::LayeredLaw1Nip3;
+      material.hardening=tl::material::ShellPlasticityHardeningKind::Tabulated;
+      material.curve_id=0;material.linear={};material.rate={};
+      for(auto& parent:mesh.parents)parent.execution={tl::fea::ShellParentExecutionPolicy::GlobalLaw1Npt0,
+          {tl::fea::ShellLaw1Thickness::Accepted,1.}};
+      for(auto& x:mesh.triangles[0].reference.position)x.z=.002000001;
+    }
+    physical.Prepare(mesh,{7,7,7,7,0,1,2},{1,1,1,1,0,1,0});
     for(std::size_t i=0;i<physical.domain.node_count();++i) {
       const auto id=physical.domain.nodes()[i].source_id;ids.push_back(id);
       nodes.push_back({id,0,0});secondary.push_back({std::uint32_t(i),1e6,.001,0});
@@ -35,6 +44,7 @@ struct Fixture {
       for(unsigned k=0;k<4;++k)face.nodes[k]=t.nodes[k<3?k:2];primary.push_back(face);parents.push_back(face.source_id);
     }
     s::Input input;input.profile=s::Profile::OrdinaryExteriorMovingMain;
+    if(global_and_general)input.topology=s::TopologyPolicy::NativeOrdinaryShell;
     input.node_source_ids=ids.data();input.node_count=ids.size();
     input.positions={physical.positions.data(),std::uint32_t(ids.size()),3,1};
     input.primary=primary.data();input.primary_count=primary.size();input.source_generation=7;
