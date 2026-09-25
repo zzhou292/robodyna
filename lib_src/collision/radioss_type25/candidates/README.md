@@ -22,7 +22,10 @@ ITYP and ISKEW are neither fabricated nor consumed by this candidate stage.
 
 Source has explicit UnitScale and Native/Si input mode. Borrowed positions,
 velocities and gaps convert on each GPU load using existing unit factors; scalar
-controls/domain convert once per Stage. There is no converted whole-state copy.
+controls/domain convert once per Stage. There is no converted whole-state copy. In Si mode, all Current lengths (domain bounds,
+gaps, curvature, margin, gap_load, drad and stored_motion) are metres, velocities
+are metres/second and previous_dt is seconds; native mode uses declared native
+working units. Report maximum_secondary_gap is always native length.
 Zero stiffness skips row fields; domain-clipped secondary rows skip gaps and
 velocities. COR3T reads velocities only after own-node/removal and strict screen
 admission. Finite-input arithmetic overflow rejects before publication.
@@ -45,6 +48,8 @@ then source main occurrence; a separate device CSR retains secondary incidence.
 This storage order grants no permission to reorder stateful selection or ASS0.
 Removal-list sorting changes membership lookup only, not physical/response order.
 
+Preflight queries CUB/CUDA for exact scratch requirements; it is not a GPU-free
+parser operation. Pure value headers remain independently usable without CUDA.
 Initialize copies source maps into a startup arena. Stage synchronously drains one
 explicit borrowed stream and copies only small control packets. Every Stage
 attempt, including failure, and Discard expire that instance's prior view.
@@ -59,7 +64,8 @@ only when native maintenance requests an inventory rebuild, and publish referenc
 inventory, history and physical state together. This module exposes no physical
 Commit or standalone reference reuse receipt. Reports count this module's explicit
 kernel launches, CUB calls and host fences separately; they are not profiler counts
-of CUB's internal kernel launches or whole-solver timings.
+of CUB's internal kernel launches or whole-solver timings. On errors, launch/call diagnostics
+describe the attempted schedule rather than proving that every launch executed.
 
 Qualification compares whole native PEN3/COR3T and exact native TRIVOX screen
 chunks on mixed, warped, degenerate, ULP, symmetry and velocity cases. An exhaustive
