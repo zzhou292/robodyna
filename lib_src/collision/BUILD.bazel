@@ -1052,6 +1052,16 @@ cc_library(
 # Selected source-derived TYPE25 normal packet; no Fortran/runtime dependency.
 cc_library(
     name = "radioss_type25_normal",
-    hdrs = ["RadiossType25Normal.h"] + glob(["radioss_type25/*.h"]),
+    hdrs = ["RadiossType25Normal.h"] + ["radioss_type25/" + name for name in [
+        "Types.h", "NativeConstants.h", "NormalResponse.h", "Units.h", "UnitConversions.h",
+    ]],
     deps = ["//lib_src/math:quaternion", "//lib_src/math:host_device"],
+)
+
+cc_library(
+    name = "radioss_type25_friction",
+    hdrs = ["RadiossType25Friction.h"] + ["radioss_type25/" + name for name in [
+        "FrictionTypes.h", "IsotropicResponse.h", "HistoryPhase.h", "FrictionUnits.h",
+    ]],
+    deps = [":radioss_type25_normal", "//lib_src/math:fixed3_operations"],
 )

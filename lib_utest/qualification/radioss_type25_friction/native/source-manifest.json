@@ -1,0 +1,37 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only selected friction/history; P1normal donors reused by relative reference",
+  "source_url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/interfaces/int25/i25irtlm.F",
+  "files": [
+    {
+      "path": "native/original/friction-controls.json",
+      "bytes": 3318,
+      "sha256": "5d7c449392db83b234031e988142e4eb15fe60b74fad50a760c6ba311828d361"
+    },
+    {
+      "path": "native/original/friction-controls.log",
+      "bytes": 3244,
+      "sha256": "6555de553daf2270f5a5dd5a8d7d0e559d557dde74179cb5f5a36eb445fcc975"
+    },
+    {
+      "path": "native/original/i25irtlm.F",
+      "bytes": 17248,
+      "sha256": "0783f0b10cbde5f8cfab747a84b9b3e51ac05feff9ade51408f2b596e0745640"
+    },
+    {
+      "path": "native/original/i25mainf.F",
+      "bytes": 55358,
+      "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
+    },
+    {
+      "path": "native/original/actual-force-input.json",
+      "bytes": 3465,
+      "sha256": "cc85781a0d8b6fcc6919b07869192ef743a425a1ad8be47796b3f07f839021eb"
+    },
+    {
+      "path": "native/original/i25dst3_3.F",
+      "bytes": 34913,
+      "sha256": "24edfd9896c87bdcbd637d0cec1ffb51ed555744b3338b7c03995f43ca940fa8"
+    }
+  ]
+}

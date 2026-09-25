@@ -81,7 +81,7 @@ routine reports the same error. Physical callers must also establish geometry,
 weights/history ownership and supported source flags. Compilation requires
 binary64 round-to-nearest, no fast-math/FMA reassociation or flush-to-zero.
 
-Qualification currently is source-authored and unexecuted. The independent oracle
+The independent oracle
 compiles exact pinned Fortran blocks with only a scalar input/output wrapper and
 observation assignments; production is not invoked by that oracle. See the
 owning qualification README for exact boundaries and commands.

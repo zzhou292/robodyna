@@ -1,7 +1,10 @@
 # P1 normal response qualification
 
-Source authored; no owning compile, numerical test or CUDA execution claimed yet.
-Root owns all heavy execution. This does not admit full TYPE25 contact or a vehicle.
+This is the selected normal-response owning qualification; it does not admit full
+TYPE25 contact or a vehicle. Root owns all heavy execution. The original d3e0efb9
+checkpoint passed 13 host and 4 CUDA tests; workspace receipts are
+radioss-type25-normal-{host-tests,gpu-tests}-1.json. Rerun these regressions when
+shared response, conversion or precision requirements change.
 
 The independent native oracle compiles pinned I25FOR3 blocks and constant_mod
 parameter declarations via native/prepare.py. Original files and actual Starter/
