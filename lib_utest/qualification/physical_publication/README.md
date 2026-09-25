@@ -61,7 +61,7 @@ from this tiny transaction test.
 On the current incoming ABI the physical publisher's roster-absent owned payload
 remains 6,888 bytes; the tiny startup reservation remains 8,712 bytes. The same
 checked proof layout at the current original
-372,435 nodes / 11,165 attachments gives 44,876,968 bytes of additional startup
+372,435 nodes / 11,165 attachments gives 44,877,736 bytes of additional startup
 reservation. This is an arithmetic forecast, not an original-owner execution or
 a second charge for already-owned source/participant backings.
 
@@ -73,7 +73,8 @@ versus the previously qualified112-byte issuer; the ledger computes actual bytes
 with sizeof and exact-cap checks. These are rebuilt static-library runtime objects,
 not a persisted serialization ABI. No pointer is encoded inside witness counts.
 The configured native transaction separately charges its embedded
-NativeContactPublicationState and every retained contact arena; if already included
+NativeContactPublicationState (616 bytes in the measured current build) and
+every retained contact arena; if already included
 in sizeof(transaction Impl), that state is not charged a second time.
 The optional roster still reuses the existing two-word CIN-count header, so no
 roster leaves the physical publisher's allocation path and numeric behavior intact.
