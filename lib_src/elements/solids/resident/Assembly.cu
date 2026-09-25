@@ -9,25 +9,42 @@ __global__ void Prepare(Storage* storage, NodalAssemblyView view, NodalCinAssemb
   state.control = {};
   state.assembly.fallback = 0;
   state.assembly.prepared = false;
-  // Preserve the original all-parent geometry precheck before any sums.
+  // Immutable metadata and range checks gate all parallel reads. Geometry
+  // is checked separately; owner arrays remain untouched until Finish.
   if (view.result->base_epoch != view.accepted.base_epoch || view.result->attempt != view.attempt ||
       view.bounds->base_epoch != view.accepted.base_epoch || view.bounds->attempt != view.attempt ||
       !view.bounds->initialized || !view.bounds->valid || view.bounds->sealed ||
       view.result->status != tlfea::contact::Status::kOk ||
-      !assembly_serial::CheckNodes<Traits18>(state, view) ||
-      !assembly_serial::CheckNodes<Traits24>(state, view) ||
-      !assembly_serial::CheckNodes<Traits6z>(state, view) ||
-      !assembly_serial::CheckNodes<Traits18Law44>(state, view) ||
-      !assembly_serial::CheckNodes<Traits18Law90>(state, view) ||
       !CanGatherAssembly(state, view, cin)) state.assembly.fallback = 1;
   state.assembly.prepared = !state.assembly.fallback;
+}
+__device__ void CheckGeometry(Storage& state, NodalAssemblyView view) {
+  // prepared is immutable throughout CheckGeometry and Gather. Only fallback
+  // changes, through integer atomics; neither kernel reads that flag.
+  if (!state.assembly.prepared) return;
+  const auto stride = std::size_t(gridDim.x)*blockDim.x;
+  for (auto occurrence = std::size_t(blockIdx.x)*blockDim.x+threadIdx.x;
+       occurrence < state.assembly.occurrences; occurrence += stride) {
+    AssemblyOccurrence value;
+    if (!ReadAssemblyOccurrence<false>(state, 0, occurrence, value) ||
+        value.node >= view.accepted.node_count ||
+        !tl::math::fixed3::Finite(shell_batch_fields::ReadVector(
+            view.accepted.position_xyz, value.node)) ||
+        !tl::math::fixed3::Finite(shell_batch_fields::ReadVector(
+            view.accepted.velocity_xyz, value.node)))
+      atomicExch(&state.assembly.fallback, 1u);
+  }
+  // Geometry failure does not suppress private sums. Finish replays the
+  // original serial check first, preserving its error priority and diagnostic.
 }
 __global__ void Gather(Storage* storage, unsigned slab, NodalAssemblyView view,
     NodalCinAssemblyView cin) {
   auto& state = *storage;
-  // Prepare has completed on this stream. This kernel writes only private
-  // nodes and an integer failure flag, never shared floating-point atomics.
+  // Validation and sums are independent private work. Finish waits for the
+  // entire kernel before checking fallback or writing any owner array.
+  // This kernel uses no shared floating-point atomics.
   if (!state.assembly.prepared) return;
+  CheckGeometry(state, view);
   const auto node = std::size_t(blockIdx.x)*blockDim.x+threadIdx.x;
   if (node >= view.accepted.node_count) return;
   if (state.assembly.offsets[node] == state.assembly.offsets[node + 1]) return;
