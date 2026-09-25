@@ -48,3 +48,16 @@ screen operand. ICODT is explicitly admitted only in0..7; its common constrained
 axes produce IBC. ETYP and full source NRTM remain distinct operands. ISKEW,
 STIF and ITYP are not consumed/fabricated. Tests use the whole pinned COR3T and
 all32,768 admitted five-node ICODT combinations plus moving mixed-topology rows.
+
+The implemented Inventory is a numerical staging owner, not a reference receipt.
+Every Stage (including input, resource or device failure) expires its old view;
+Discard expires it too. Stage completes synchronously on one explicit borrowed
+stream and transfers only three small control packets. Its reusable startup arena
+holds a sorted secondary sweep, bounded256-lane tasks, count/scan/fill buffers,
+canonical pairs and device secondary CSR. Sorting removal lists changes membership
+lookup order only; secondary/main occurrence identity and multiplicity remain.
+The future common coordinator retains two owners and binds reference/history/force
+publication atomically. It calls Stage only on a required native inventory rebuild.
+It must forecast both arenas, validate IsCurrent before consumption, and preserve
+the accepted instance while the other stages. Device failure poisons the instance;
+resource/numerical errors permit retry with new current inputs and no publication.

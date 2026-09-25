@@ -38,10 +38,9 @@ TL_MATH_HOST_DEVICE inline Status EvaluateLocal(const LocalRow& in,FilterResult*
   if(!output)return Status::InvalidInput;
   bool admitted=false;const auto screen=EvaluateScreen(in.screen,&admitted);
   if(screen!=Status::Ok)return screen;
-  // Packing inputs are validated even for screen rejection; malformed source
-  // rows must never silently become an empty but successful inventory.
-  PackedRow packed;const auto status=PackLocal(in,&packed);if(status!=Status::Ok)return status;
+  // Native COR3T reads velocities only after the strict TRIVOX screens admit.
   if(!admitted){*output={};return Status::Ok;}
+  PackedRow packed;const auto status=PackLocal(in,&packed);if(status!=Status::Ok)return status;
   return EvaluatePacked(packed,output);
 }
 } // namespace tlfea::contact::radioss_type25::candidates

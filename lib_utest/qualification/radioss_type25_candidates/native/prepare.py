@@ -41,6 +41,7 @@ def generated():
         "Tri7Box.F90": "module tri7box\n use iso_c_binding\n real(c_double) :: xrem(10,1)=0\n integer :: irem(7,1)=0\nend module\n",
         "com08_c.inc": "      REAL(C_DOUBLE) DT1\n      COMMON /QUAL_COR3T_DT/ DT1\n",
         "Wrapper.F90": (HERE / "Wrapper.F90").read_text(),
+        "InventoryPen3.F90": (HERE / "Wrapper.F90").read_text().replace("rd_pen3_cohort(count,coords,gaps,margin,flags,result)", "rd_pen3_inventory(count,coords,gaps,margin,flags,nrtm,result)").replace("integer(c_int), intent(in) :: count, flags(6,2)","integer(c_int), intent(in) :: count, flags(6,2), nrtm").replace("gaps,2,etype,ibc)","gaps,nrtm,etype,ibc)"),
         "implicit_f.inc": "      USE ISO_C_BINDING\n      USE PEN3_CONSTANTS\n      IMPLICIT NONE\n#define my_real REAL(C_DOUBLE)\n",
         "mvsiz_p.inc": "      INTEGER, PARAMETER :: MVSIZ=2\n",
     }
