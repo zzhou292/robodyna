@@ -1,0 +1,32 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Unmodified whole I25PEN3; only scalar cohort packing and source constants are supplied by this qualification harness.",
+  "files": [
+    {
+      "path": "native/original/i25pen3.F",
+      "sha256": "eb322cebe8c71ccda7cce7730192f77769e481bd964761651d13a35d6fa66265",
+      "bytes": 17848
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "bytes": 86324
+    },
+    {
+      "path": "native/original/i25trivox.F",
+      "bytes": 23886,
+      "sha256": "642acb42c584fb441e7547f862a8ec64933405e6b3973af83b05333b6634fbb1"
+    }
+  ],
+  "abi": {
+    "wrapper": "rd_pen3_cohort",
+    "count": "integer(c_int) by reference,1 or2",
+    "coordinates": "real(c_double)(3,5,2), columns4 main corners then secondary",
+    "gaps": "real(c_double)(2)",
+    "margin": "real(c_double) scalar by reference",
+    "flags": "integer(c_int)(6,2), four node IDs, ETYP,IBC",
+    "result": "real(c_double)(2), native PENE, no added donor status",
+    "native_NRTM": 2,
+    "MVSIZ": 2
+  }
+}
