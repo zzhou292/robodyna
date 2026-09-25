@@ -11,7 +11,7 @@
 namespace qeph_projection_test {
 namespace {
 struct Device {ProfileInput* in=nullptr;ProfileResult* out=nullptr;~Device(){cudaDeviceSynchronize();cudaFree(in);cudaFree(out);}};
-__global__ void Run(const ProfileInput* in,ProfileResult* out,unsigned count){const unsigned i=blockIdx.x*blockDim.x+threadIdx.x;if(i<count)out[i]=EvaluateProfile(in[i]);}
+__global__ void ProjectPacketsKernel(const ProfileInput* in,ProfileResult* out,unsigned count){const unsigned i=blockIdx.x*blockDim.x+threadIdx.x;if(i<count)out[i]=EvaluateProfile(in[i]);}
 void Near(double a,double b){ASSERT_TRUE(std::isfinite(a));ASSERT_TRUE(std::isfinite(b));EXPECT_NEAR(a,b,256*std::numeric_limits<double>::epsilon()*std::max(1.,std::abs(b)));}
 template<class T,std::size_t N>void Near(const std::array<T,N>& a,const std::array<T,N>& b){for(unsigned i=0;i<N;++i)Near(a[i],b[i]);}
 void Same(const ProfileResult& a,const ProfileResult& b){ASSERT_EQ(a.rate_status,b.rate_status);ASSERT_EQ(a.force_status,b.force_status);EXPECT_EQ(a.metric_length,b.metric_length);
@@ -32,7 +32,7 @@ TEST(QephProjectionCuda,ActualCapturedProfilesAcrossLaunchSizesMatchHostAndNativ
   std::vector<ProfileResult> actual(input.size());Device d;
   ASSERT_EQ(cudaMalloc(&d.in,input.size()*sizeof(ProfileInput)),cudaSuccess);ASSERT_EQ(cudaMalloc(&d.out,input.size()*sizeof(ProfileResult)),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(d.in,input.data(),input.size()*sizeof(ProfileInput),cudaMemcpyHostToDevice),cudaSuccess);
-  for(unsigned threads:{1u,7u,32u,64u}) {Run<<<(input.size()+threads-1)/threads,threads>>>(d.in,d.out,input.size());ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+  for(unsigned threads:{1u,7u,32u,64u}) {ProjectPacketsKernel<<<(input.size()+threads-1)/threads,threads>>>(d.in,d.out,input.size());ASSERT_EQ(cudaGetLastError(),cudaSuccess);
     ASSERT_EQ(cudaMemcpy(actual.data(),d.out,actual.size()*sizeof(ProfileResult),cudaMemcpyDeviceToHost),cudaSuccess);
     for(unsigned i=0;i<input.size();++i){SCOPED_TRACE(i);Same(actual[i],expected[i]);Same(actual[i],EvaluateProfile(input[i]));}}
 }
@@ -40,7 +40,7 @@ TEST(QephProjectionCuda,MalformedAndUnrepresentableMetricPacketsRejectOnDevice) 
   std::vector<ProfileInput> input;for(double length:{0.,-1.,1e-300,1e300,1e-150,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()})input.push_back(Profile(CapturedRows()[8],length));
   std::vector<ProfileResult> actual(input.size());Device d;ASSERT_EQ(cudaMalloc(&d.in,input.size()*sizeof(ProfileInput)),cudaSuccess);
   ASSERT_EQ(cudaMalloc(&d.out,input.size()*sizeof(ProfileResult)),cudaSuccess);ASSERT_EQ(cudaMemcpy(d.in,input.data(),input.size()*sizeof(ProfileInput),cudaMemcpyHostToDevice),cudaSuccess);
-  Run<<<1,32>>>(d.in,d.out,input.size());ASSERT_EQ(cudaGetLastError(),cudaSuccess);ASSERT_EQ(cudaMemcpy(actual.data(),d.out,actual.size()*sizeof(ProfileResult),cudaMemcpyDeviceToHost),cudaSuccess);
+  ProjectPacketsKernel<<<1,32>>>(d.in,d.out,input.size());ASSERT_EQ(cudaGetLastError(),cudaSuccess);ASSERT_EQ(cudaMemcpy(actual.data(),d.out,actual.size()*sizeof(ProfileResult),cudaMemcpyDeviceToHost),cudaSuccess);
   for(unsigned i=0;i<input.size();++i){EXPECT_NE(actual[i].rate_status,q::Status::kSuccess);Same(actual[i],EvaluateProfile(input[i]));}
 }
 } // namespace qeph_projection_test
