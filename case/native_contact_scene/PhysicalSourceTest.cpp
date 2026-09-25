@@ -62,3 +62,14 @@ TEST(NativeScenePhysicalSource, WrongIdentityAndResourceScopeRejectWithoutChangi
     EXPECT_EQ(old.declared().data().export_sha256,retry.declared().data().export_sha256);
 }
 }
+
+namespace crash::cases::native_scene {
+TEST(NativeScenePhysicalSource, NativeProjectionLengthIsRetainedByActualQephReference) {
+    const auto* path=std::getenv("ROBO_DYNA_NATIVE_SCENE_EXPORT");ASSERT_NE(path,nullptr);
+    const auto source=modelio::native_scene::DeclaredSource::Read(path,output::Sha256(output::ReadBounded(path,4u<<20)));
+    const auto physical=PhysicalSource::Prepare(source,771);
+    // Input provenance is retained in the actual reference; this is not a force comparison.
+    for(std::size_t i=0;i<physical.physical().shells()->qeph_count();++i)
+        EXPECT_EQ(physical.physical().shells()->qeph_reference(i).input.projection_working_length_m,.001);
+}
+}

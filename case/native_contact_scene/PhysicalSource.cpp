@@ -48,6 +48,7 @@ PhysicalSource PhysicalSource::Prepare(const source::DeclaredSource& declared,st
     for(const auto& p:d.patch) {
         fe::ShellQephBindingInput q;q.source_parent_id=p.id;
         q.reference.density=density;q.reference.young_modulus=young;q.reference.poisson_ratio=m.poisson;
+        q.reference.projection_working_length_m=units.length_to_m;
         q.reference.thickness=d.thickness_mm*units.length_to_m;q.reference.placement=fe::ShellReferencePlacement::Centered;
         for(unsigned k=0;k<4;++k){q.nodes[k]=p.nodes[k];q.reference.node_ids[k]=std::uint32_t(d.nodes[p.nodes[k]].id);q.reference.position[k]=position(p.nodes[k]);}
         parents.push_back({fe::ShellBindingFamily::Qeph,quads.size(),p.id,p.part,1,1});quads.push_back(q);
