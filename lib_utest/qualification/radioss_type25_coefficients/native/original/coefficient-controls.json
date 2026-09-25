@@ -1,0 +1,335 @@
+{
+  "schema": "robo_dyna.type25_coefficient_observation.v1",
+  "status": "observed_native_entry_return_and_later_positive_force_row",
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "observations": [
+    {
+      "controls": {
+        "DTSTIF": 0.0,
+        "IGAP": 1,
+        "IGSTI": 4,
+        "ISTIF_MSDT": 0,
+        "JLT": 128,
+        "KMAX": 1e+30,
+        "KMIN": 0.0,
+        "NCYCLE": 0,
+        "NIN": 2,
+        "NRTM": 696587,
+        "NSN": 368583,
+        "common": {
+          "DT1": 0.0,
+          "DT12": 0.0,
+          "DT2_in_progress_estimator": 0.0006868168115177879,
+          "TT": 0.0
+        }
+      },
+      "native_units": "mm, tonne, s",
+      "observation_only": true,
+      "row": {
+        "main_gap_N": [
+          1.4,
+          1.4,
+          1.4,
+          1.4
+        ],
+        "main_global_node_indices": [
+          321434,
+          287338,
+          287347,
+          321471
+        ],
+        "main_index": 243505,
+        "main_masses": [
+          2.084974424703346e-06,
+          1.9425283209972693e-06,
+          1.8958844656498244e-06,
+          2.097145397243384e-06
+        ],
+        "main_positions": [
+          [
+            -253.34612,
+            -594.43341,
+            635.54199
+          ],
+          [
+            -243.82263,
+            -599.86908,
+            645.80164
+          ],
+          [
+            -252.08131,
+            -614.63153,
+            647.30322
+          ],
+          [
+            -261.47726,
+            -609.11682,
+            636.60876
+          ]
+        ],
+        "main_segment_type": 589471,
+        "main_stiffness": 2800.0,
+        "row_one_based": 1,
+        "secondary_gap": 1.205,
+        "secondary_global_node_index": 334282,
+        "secondary_index": 779,
+        "secondary_mass": 4.340484092398648e-07,
+        "secondary_position": [
+          -250.67612,
+          -612.64392,
+          644.11047
+        ],
+        "signed_secondary_stiffness": 2410.0
+      },
+      "stage": "COR3_entry",
+      "thread": 1
+    },
+    {
+      "GAPNM": [
+        1.4,
+        1.4,
+        1.4,
+        1.4
+      ],
+      "GAPS": 1.205,
+      "MSI": 4.340484092398648e-07,
+      "NSVG": 334282,
+      "STIF": 2410.0,
+      "local_main_nodes": [
+        321434,
+        287338,
+        287347,
+        321471
+      ],
+      "main_index": 243505,
+      "row_one_based": 1,
+      "secondary_index": 779,
+      "stage": "COR3_return"
+    },
+    {
+      "native_units": "mm, tonne, s",
+      "observation_only": true,
+      "profile": {
+        "ALPHA0": 1.0,
+        "IFQ": 10,
+        "IGSTI": 4,
+        "INACTI": 5,
+        "INTTH": 0,
+        "IORTHFRIC": 0,
+        "IVIS2": 1,
+        "JLT": 128,
+        "KMIN": 0.0,
+        "MFROT": 2,
+        "NIN": 2,
+        "STIGLO": -1.0,
+        "VISC": 0.05,
+        "VISCF": 0.0,
+        "common": {
+          "DT1": 1.7196193775611314e-07,
+          "DT12": 8.598096887805657e-08,
+          "DT2_in_progress_estimator": 0.0006867691223983035,
+          "TT": 1.7196193775611314e-07
+        }
+      },
+      "row": {
+        "CE_LOC": 636709,
+        "CN_LOC": 6057,
+        "INDEX": 17,
+        "PENE_OLD": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.23478201922188535
+        ],
+        "SECND_FR": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "STIF_OLD": [
+          0.0,
+          164000.0
+        ],
+        "friction_base": 0.1,
+        "friction_viscosity": 0.0,
+        "incoming_stiffness": 164000.0,
+        "main_global_node_indices": [
+          184337,
+          184336,
+          184325,
+          184326
+        ],
+        "main_masses": [
+          8.817268496958272e-07,
+          1.0913076317089144e-06,
+          2.2212635064214266e-06,
+          1.7912232238482177e-06
+        ],
+        "main_positions": [
+          [
+            -1358.6428094147373,
+            -711.16223,
+            345.177369999855
+          ],
+          [
+            -1356.5902094147373,
+            -715.92218,
+            334.835779999855
+          ],
+          [
+            -1342.7723094147373,
+            -716.49347,
+            338.095489999855
+          ],
+          [
+            -1345.922509414737,
+            -710.98871,
+            348.543819999855
+          ]
+        ],
+        "main_source_node_ids": [
+          2432268,
+          2432255,
+          2432256,
+          2432274
+        ],
+        "main_velocities": [
+          [
+            15646.4,
+            0.0,
+            -0.0008431293808182227
+          ],
+          [
+            15646.4,
+            0.0,
+            -0.0008431293808182227
+          ],
+          [
+            15646.4,
+            0.0,
+            -0.0008431293808182227
+          ],
+          [
+            15646.4,
+            0.0,
+            -0.0008431293808182227
+          ]
+        ],
+        "normal_axis": [
+          -0.09898691157809095,
+          -0.901870533266471,
+          0.4205129398269244
+        ],
+        "penetration": 1.48991929904696e-13,
+        "row_one_based": 5,
+        "same_indexed_pair_as_COR3": false,
+        "secondary_global_node_index": 363606,
+        "secondary_index": 6057,
+        "secondary_mass": 1.8162710453369766e-06,
+        "secondary_position": [
+          -1352.943209414737,
+          -713.43726,
+          343.725859999855
+        ],
+        "secondary_source_node_id": 2106057,
+        "secondary_velocity": [
+          15646.4,
+          0.0,
+          -0.0008431293808182227
+        ],
+        "weights": [
+          0.45574151757751646,
+          0.15120692720459122,
+          0.15120692720459122,
+          0.2418446280133011
+        ]
+      },
+      "scope": "One actual local row; no population/physical acceptance or throughput claim",
+      "stage": "FOR3_positive_entry"
+    }
+  ],
+  "native_unit_scale_to_si": {
+    "length_m": 0.001,
+    "mass_kg": 1000.0,
+    "time_s": 1.0
+  },
+  "scope": "Two sampled rows from original full native case, explicitly different pairs; not a V5 comparison, full coefficient census, numerical acceptance or performance result. DT2 is an in-progress estimator.",
+  "method": "Read-only exact function-entry ABI; COR3 pointers retained through scheduler-locked same-thread return; first later same-thread FOR3 positive row and actual ITAB IDs; owned inferior intentionally stopped.",
+  "source_review": "resumed_performance source review clear; root reviewed and executed",
+  "guard": {
+    "elapsed_seconds": 1.856,
+    "peak_sampled_rss_bytes": 1756463104,
+    "cleanup": "complete"
+  },
+  "pins": [
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-coefficient-inspection-1.json",
+      "bytes": 5158,
+      "sha256": "bb4bd98009138fc3bb5d1fb4e74cf067cb4e4a2bcb39c31d5e464f97d8ed31b9"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-coefficient-inspection-1.log",
+      "bytes": 6434,
+      "sha256": "26b3e61005ad7384a68652eeb7e373a9e9b2a47b152aa30acb33590335ed53bf"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-coefficient-inspection-1.proposed.json",
+      "bytes": 4144,
+      "sha256": "6bab0b6ad643875485ff16994fb5cfe4bcda2ab0ed401739d6c98e4494bd55d7"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/type25-coefficient-probe-1-src/inspect.gdb",
+      "bytes": 8941,
+      "sha256": "77c2aa6d115e91adfd8011c1d0cb7d9a57ea03b6e6d1206e84730df8f56ebec3"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/type25-coefficient-probe-1-src/abi-layout.json",
+      "bytes": 42275,
+      "sha256": "6c4e759ea6b50e93370120ac6211f70ae206ea0e78ac5cba27e1d4afafdaa69c"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/type25-coefficient-probe-1-src/manifest.json",
+      "bytes": 1956,
+      "sha256": "91c45a02c307c379810cb031fb5c24592882ce34c19d17864dc3b9aed3b3c6dc"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/type25-coefficient-probe-1-src/symbols.txt",
+      "bytes": 135,
+      "sha256": "84b5bc11dd320fee3bad11afad885ade38ed95656a58d31e5f22dd23dafeebb2"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/coefficient-probe-1/case_0001.rad",
+      "bytes": 447,
+      "sha256": "1dc55f86433cdf3396ce67c9044d38ec0f343cb23eb3fa686323f5ec647b379f"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/coefficient-probe-1/case_0000_0001.rst",
+      "bytes": 726807662,
+      "sha256": "28ca0d3b0d69282e7a616686a63f5f6fd6246c9b3b34d7edc5fac99589b462d0"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/engine_linux64_gf",
+      "bytes": 31117192,
+      "sha256": "7fdedddbcf5753a53d7c8d8872aa6ead3b4e9983237997f6dd3b8cdd8375e3ed"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25cor3.F",
+      "bytes": 37861,
+      "sha256": "054ab489b4528241f7a98b04c8e65cba05df73eb09cc2a0887bb5a23397043a2"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25for3.F",
+      "bytes": 132646,
+      "sha256": "c601423a4ab8561230c0b86fec7cc277003cd8e9ba78cece91c11156bf2ca986"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/deps/openradioss-qeph-law1-closure-1/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496"
+    }
+  ]
+}
