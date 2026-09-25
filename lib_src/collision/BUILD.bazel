@@ -1073,7 +1073,7 @@ cc_library(
         "geometry/Prepare.h", "geometry/General.h", "geometry/Boundary.h", "geometry/Sharp.h",
         "geometry/HistoryChecks.h", "geometry/HistoryRow.h",
     ]],
-    deps = [":radioss_type25_friction"],
+    deps = [":radioss_type25_friction", "//lib_src/math:scalar_bits"],
 )
 
 cc_library(
