@@ -17,7 +17,8 @@ set_tests_properties(physical_viewer_values PROPERTIES TIMEOUT 30 RUN_SERIAL TRU
 # Reuse the affected legacy scene/camera regressions in this small owning gate.
 add_executable(robo_dyna_physical_scene_legacy_check
   "${CMAKE_CURRENT_LIST_DIR}/../../viewer/accepted_replay_scene_check.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/accepted_replay_view_check.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/accepted_replay_view_check.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/accepted_replay_part_color_check.cpp")
 target_link_libraries(robo_dyna_physical_scene_legacy_check PRIVATE robo_dyna_replay_scene GTest::gtest_main)
 add_test(NAME physical_scene_legacy COMMAND robo_dyna_physical_scene_legacy_check)
 set_tests_properties(physical_scene_legacy PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)

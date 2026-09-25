@@ -45,6 +45,21 @@ void ExactIndices(const std::vector<chrono::ChVector3i>& a,const std::vector<chr
     for(std::size_t i=0;i<a.size();++i) for(unsigned j=0;j<3;++j) EXPECT_EQ(a[i][j],b[i][j]);
 }
 }
+TEST(FullShellFrameActivity, ExplicitPaletteSeedPersistsAcrossFramesAndVisibleSubsets) {
+    const auto context=Context();detail::FrameGeometryState state(context);
+    state.options.part_palette_seed=2;Initialize(state,ReplayColorMode::PartId);
+    const auto initial=Frame(),later=Frame(true);
+    const auto all=Activity(context,initial.stamp,{1,1,1});
+    const auto subset=Activity(context,later.stamp,{0,1,1});
+    ASSERT_EQ(detail::UpdateFrame(state,initial,&all,initial.stamp).status,ReplaySceneStatus::Ok);
+    const auto colors=state.mesh->GetCoordsColors();
+    ASSERT_EQ(colors.size(),5u);
+    for(std::size_t i=0;i<colors.size();++i)ExpectColor(colors[i],ReplayPartColor(state.triangle_parts[i],2));
+    ASSERT_EQ(detail::UpdateFrame(state,later,&subset,later.stamp).status,ReplaySceneStatus::Ok);
+    ExpectColors(state.mesh->GetCoordsColors(),colors);
+    ASSERT_EQ(detail::UpdateFrame(state,initial,&all,initial.stamp).status,ReplaySceneStatus::Ok);
+    ExpectColors(state.mesh->GetCoordsColors(),colors);
+}
 TEST(FullShellFrameActivity, MixedQuadsTriangleAndCoincidentLayersKeepCompletePaletteAndSourceOrder) {
     const auto context=Context();
     const auto initial=Frame(),later=Frame(true);

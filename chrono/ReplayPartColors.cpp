@@ -2,9 +2,9 @@
 #include <map>
 
 namespace crash::visual {
-chrono::ChColor ReplayPartColor(std::uint64_t part_id) noexcept {
+chrono::ChColor ReplayPartColor(std::uint64_t part_id,std::uint64_t seed) noexcept {
     // Versioned seed advances the fixed Weyl offset; unsigned wrap is defined.
-    std::uint64_t bits = part_id + (ReplayPartPaletteSeed+1)*UINT64_C(0x9e3779b97f4a7c15);
+    std::uint64_t bits = part_id + (seed+1)*UINT64_C(0x9e3779b97f4a7c15);
     bits = (bits ^ (bits >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
     bits = (bits ^ (bits >> 27)) * UINT64_C(0x94d049bb133111eb);
     bits ^= bits >> 31;
@@ -26,14 +26,14 @@ chrono::ChColor ReplayPartColor(std::uint64_t part_id) noexcept {
     }
 }
 bool ReplayPartColors::Initialize(const std::vector<std::uint64_t>& parts,
-                                  std::vector<chrono::ChColor>& colors) {
+                                  std::vector<chrono::ChColor>& colors,std::uint64_t seed) {
     if (parts.empty() || parts.size() > ReplayPartColorTriangleLimit) return false;
     for (auto part : parts) if (!part) return false;
     std::map<std::uint64_t,chrono::ChColor> unique;
     std::vector<chrono::ChColor> next_colors;
     next_colors.reserve(parts.size());
     for (auto part : parts) {
-        const auto color = ReplayPartColor(part);
+        const auto color = ReplayPartColor(part,seed);
         next_colors.push_back(color);
         unique.emplace(part,color);
     }

@@ -22,6 +22,23 @@ TEST(ReplayPartColor, VersionedPaletteUsesAllPidBitsAndStableKnownValues) {
     const auto low=ReplayPartColor(1),high=ReplayPartColor(UINT64_C(0x100000001));
     EXPECT_TRUE(low.R!=high.R||low.G!=high.G||low.B!=high.B);
 }
+TEST(ReplayPartColor, ExplicitSeedRetainsDefaultBitsAndAlternateColorsAreSourceStable) {
+    for(auto id:{UINT64_C(1),UINT64_C(2),UINT64_C(2000145),UINT64_MAX})
+        SameColor(ReplayPartColor(id),ReplayPartColor(id,1));
+    // Independent Python colorsys construction using the same declared integer
+    // mixing, then one binary32 rounding. No source-ID special case in product.
+    SameColor(ReplayPartColor(1,2),{.9480000138282776f,.15524893999099731f,.2931748032569885f});
+    SameColor(ReplayPartColor(2,2),{.175646111369133f,.49066266417503357f,.9148235321044922f});
+    for(auto seed:{UINT64_C(0),UINT64_C(2),UINT64_MAX}) {
+        ReplayPartColors first,subset;std::vector<chrono::ChColor> full,part;
+        ASSERT_TRUE(first.Initialize({2,2000145,1,2},full,seed));
+        ASSERT_TRUE(subset.Initialize({1,2},part,seed));
+        SameColor(part[0],full[2]);SameColor(part[1],full[0]);SameColor(full[0],full[3]);
+        const auto before=full;
+        EXPECT_FALSE(first.Initialize({1,0},full,seed));SameColors(full,before);
+        ASSERT_TRUE(first.Initialize({2,2000145,1,2},full,seed));SameColors(full,before);
+    }
+}
 TEST(ReplayPartColor, SubsetsOrderRepeatedParentsAndInvalidRetryKeepPidMeaning) {
     ReplayPartColors colors;std::vector<chrono::ChColor> full;
     ASSERT_TRUE(colors.Initialize({2000157,2000145,2000157,2000204},full));

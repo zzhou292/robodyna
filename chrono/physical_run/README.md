@@ -131,3 +131,11 @@ seven production and one viewer-test syntax check under one CPU/512 MiB.
 The three VSG units and recovered-scene test exceed that author header-memory
 allowance and remain root compile gates. Root owns linking, actual archive and
 VSG capture gates.
+
+The optional `--part-palette-seed UINT64` changes only the deterministic original-PID
+color mapping. Default seed 1 retains the existing palette bits. All 64-bit seeds
+use the same versioned algorithm; colors remain stable across frames, source
+order and subsets. No stress/material meaning is implied. The capture manifest
+records the seed actually held by the initialized geometry and its complete RGB
+legend. Use this option only with part-ID colors; source geometry and archive
+fields are unchanged.

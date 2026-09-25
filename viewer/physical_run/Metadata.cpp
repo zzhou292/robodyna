@@ -15,7 +15,7 @@ output::Document CaptureMetadata(const Options& options,const Input& input,const
     String(d,"surface_color_mode",visual::ReplayColorModeName(scene.geometry()->color_mode()));
     if(const auto* legend=scene.geometry()->part_legend()) {
         String(d,"part_palette",visual::ReplayPartPaletteName);
-        Integer(d,"part_palette_seed",visual::ReplayPartPaletteSeed);
+        Integer(d,"part_palette_seed",scene.geometry()->part_palette_seed());
         Value rows(rapidjson::kArrayType);
         for(const auto& entry:*legend) {
             Value row(rapidjson::kArrayType);row.PushBack(Value().SetUint64(entry.part_id),d.GetAllocator());

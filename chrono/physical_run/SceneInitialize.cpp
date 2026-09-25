@@ -28,6 +28,7 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
         full_shell::FrameGeometryOptions geometry;
         geometry.geometry=ReplayGeometryLimits::Vehicle();
         geometry.colors=options.colors;
+        geometry.part_palette_seed=options.part_palette_seed;
         geometry.parent_activity=true;
         geometry.plastic_strain_maximum=scan.plastic_maximum;
         auto report=next->geometry.Initialize(replay.mapping(),replay.context(),geometry);
