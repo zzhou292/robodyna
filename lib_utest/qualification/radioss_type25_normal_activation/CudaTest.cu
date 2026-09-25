@@ -85,7 +85,9 @@ TEST(NormalActivationCuda, ParallelIntegerUnionMatchesNativeAcrossOrdersAndLaunc
   for(unsigned scenario=0;scenario<12;++scenario) {
     auto f=Scenario(scenario);const auto expected=Oracle(f.Input());
     for(unsigned threads:{1u,7u,32u})for(bool reverse:{false,true})for(unsigned repeat=0;repeat<4;++repeat) {
-      SCOPED_TRACE(scenario);SCOPED_TRACE(threads);SCOPED_TRACE(reverse);
+      SCOPED_TRACE(scenario);
+      SCOPED_TRACE(threads);
+      SCOPED_TRACE(reverse);
       const auto result=gpu.Evaluate(f,threads,reverse);ASSERT_EQ(result.status,a::Status::Ok);
       EXPECT_EQ(std::vector<std::uint32_t>(result.mains,result.mains+f.scene.mains.size()),expected.main_active);
       EXPECT_EQ(std::vector<std::uint32_t>(result.nodes,result.nodes+f.scene.nodes.size()),expected.node_tag);
