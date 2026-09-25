@@ -1,0 +1,73 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! One supplied selected current-geometry packet. Coefficient and search stages
+! remain outside this oracle; supplied REAL*4 normals retain native storage.
+      SUBROUTINE RD_TYPE25_GEOMETRY(COORDS,SCALARS,STORED,BISECTORS,
+     .                             FLAGS,OUT,DEFINED) BIND(C)
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN) :: COORDS(3,5),SCALARS(8)
+      REAL(C_FLOAT),INTENT(IN) :: STORED(3,4),BISECTORS(3,2,4)
+      INTEGER(C_INT),INTENT(IN) :: FLAGS(15)
+      REAL(C_DOUBLE),INTENT(OUT) :: OUT(11)
+      INTEGER(C_INT),INTENT(OUT) :: DEFINED
+@CONSTANTS@
+      INTEGER,PARAMETER :: MVSIZ=1,JLT=1
+      INTEGER I,K,N,I1,I2,JG,IT,ITRIA(2,4),IB1,IB2,IB3,IBX,
+     .        IX,IY,IZ,NBORD,KBORD(MVSIZ),J,L,ISHARP
+      INTEGER IX1(MVSIZ),IX2(MVSIZ),IX3(MVSIZ),IX4(MVSIZ),
+     .        SUBTRIA(MVSIZ),MVOISN(MVSIZ,4),IBOUND(4,MVSIZ),
+     .        ETYP(MVSIZ),CAND_E(MVSIZ),CAND_N(MVSIZ),
+     .        CE_LOC(MVSIZ),CN_LOC(MVSIZ)
+      REAL(C_DOUBLE) XX(MVSIZ,5),YY(MVSIZ,5),ZZ(MVSIZ,5),
+     .        XI(MVSIZ),YI(MVSIZ),ZI(MVSIZ),STIF(MVSIZ),
+     .        NNX(MVSIZ,5),NNY(MVSIZ,5),NNZ(MVSIZ,5),
+     .        N1(MVSIZ),N2(MVSIZ),N3(MVSIZ),
+     .        H1(MVSIZ),H2(MVSIZ),H3(MVSIZ),H4(MVSIZ),
+     .        LB(MVSIZ),LC(MVSIZ),GAP_NM(4,MVSIZ),GAPS(MVSIZ),
+     .        GAPMXL(MVSIZ),GAPV(MVSIZ),DIST(MVSIZ),PENE(MVSIZ)
+      REAL(C_FLOAT) NOD_NORMAL(3,4,1),VTX_BISECTOR(3,2,4)
+      REAL(C_DOUBLE) AAA,NNI,NI2,H0,PENE_SHFT,NN,NNE(MVSIZ),
+     .        XH(MVSIZ),YH(MVSIZ),ZH(MVSIZ),XC,YC,ZC,DC,P1,P2,GAPM,
+     .        BB(MVSIZ),LA(MVSIZ),NX(MVSIZ),NY(MVSIZ),NZ(MVSIZ),
+     .        NN1(MVSIZ),NN2(MVSIZ),NN3(MVSIZ),DD,S,
+     .        EPSEG,AX,BX,CX,GAP_MM(MVSIZ),
+     .        XP(MVSIZ),YP(MVSIZ),ZP(MVSIZ),
+     .        X0N(MVSIZ,4),Y0N(MVSIZ,4),Z0N(MVSIZ,4),
+     .        PN,VX,VY,VZ,NNE1,NNE2,NNE4,XN
+      LOGICAL SHELL_CONTACT,RD_POINT_READY(MVSIZ)
+      DATA ITRIA/1,2,2,3,3,4,4,1/
+      DEFINED=1
+      RD_POINT_READY=.FALSE.
+      I=1
+      IX1=FLAGS(1)
+      IX2=FLAGS(2)
+      IX3=FLAGS(3)
+      IX4=FLAGS(4)
+      MVOISN(1,:)=FLAGS(5:8)
+      IBOUND(:,1)=FLAGS(9:12)
+      ETYP=FLAGS(13)
+      SUBTRIA=ABS(MOD(FLAGS(14),5))
+      ISHARP=FLAGS(15)
+      CAND_E=1
+      CAND_N=1
+      XX(1,1:4)=COORDS(1,1:4)
+      YY(1,1:4)=COORDS(2,1:4)
+      ZZ(1,1:4)=COORDS(3,1:4)
+      XI=COORDS(1,5)
+      YI=COORDS(2,5)
+      ZI=COORDS(3,5)
+      LB=SCALARS(1)
+      LC=SCALARS(2)
+      GAP_NM(:,1)=SCALARS(3:6)
+      GAPS=SCALARS(7)
+      STIF=SCALARS(8)
+      GAPMXL=EP30
+      NOD_NORMAL(:,:,1)=STORED
+      VTX_BISECTOR=BISECTORS
+@CENTER@
+@NORMALS@
+@GEOMETRY@
+      OUT(1:3)=(/N1(1),N2(1),N3(1)/)
+      OUT(4:7)=(/H1(1),H2(1),H3(1),H4(1)/)
+      OUT(8:11)=(/PENE(1),GAPV(1),DIST(1),STIF(1)/)
+      END SUBROUTINE
