@@ -37,8 +37,9 @@ BatchReport Batch::AssembleAccepted(FENodalState& owner, const NodalTrialToken& 
   state.assembled_attempt = view.attempt;
   state.assembled_epoch = UINT64_MAX;
   state.stream = view.stream;
-  batch_detail::LaunchAssembly(state.device, state.accepted_slab, view, cin);
-  report = state.ReadControl();
+  report = state.Runtime(batch_detail::LaunchAssembly(state.device, state.accepted_slab, view, cin),
+      "Solid kernel launch failed");
+  if (report) report = state.ReadControl();
   if (!report) {
     owner.Discard();
     return report;

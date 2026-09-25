@@ -11,7 +11,7 @@ void LaunchCandidate(Storage*, unsigned accepted, unsigned trial,
     NodalPreparedView, BatchDiagnostics);
 void LaunchResultValidation(Storage*, unsigned trial, double time,
     std::uint64_t epoch, cudaStream_t);
-void LaunchAssembly(Storage*, unsigned accepted, NodalAssemblyView, NodalCinAssemblyView);
+cudaError_t LaunchAssembly(Storage*, unsigned accepted, NodalAssemblyView, NodalCinAssemblyView);
 } // namespace tl::fea::solids::batch_detail
 namespace tl::fea::solids {
 struct Batch::Impl {

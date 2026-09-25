@@ -24,13 +24,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 6092,
-      "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
+      "bytes": 6720,
+      "sha256": "29321a4edf5acd52494d737848a8ffce99fdac14c0ffcf8d08993f9fd50f1359"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
-      "bytes": 2533,
-      "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
+      "bytes": 2661,
+      "sha256": "806622a1eb38b1ead65a23ccb5abc7ffde64a8af0ed79020da8c09b2a45490cc"
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",

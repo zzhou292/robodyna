@@ -112,3 +112,8 @@ cc_library(
     name = "bounded_arena",
     hdrs = ["BoundedArena.h"],
 )
+
+cc_library(
+    name = "ordered_node_incidence",
+    hdrs = ["OrderedNodeIncidence.h"],
+)
