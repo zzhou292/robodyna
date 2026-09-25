@@ -15,6 +15,9 @@ cc_test(
 filegroup(
     name = "native_source_files",
     srcs = ["native/prepare.py", "native/Wrapper.F.in", "native/source-manifest.json"] + glob(["native/original/*"]),
-    visibility = ["//lib_utest/qualification/radioss_type25_friction:__pkg__",
-                  "//lib_utest/qualification/radioss_type25_local_geometry:__pkg__"],
+    visibility = [
+        "//lib_utest/qualification/radioss_type25_friction:__pkg__",
+        "//lib_utest/qualification/radioss_type25_local_geometry:__pkg__",
+        "//lib_utest/qualification/radioss_type25_coefficients:__pkg__",
+    ],
 )

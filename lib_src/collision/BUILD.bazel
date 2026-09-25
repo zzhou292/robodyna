@@ -1075,3 +1075,13 @@ cc_library(
     ]],
     deps = [":radioss_type25_friction"],
 )
+
+cc_library(
+    name = "radioss_type25_coefficients",
+    hdrs = ["RadiossType25Coefficients.h"] + ["radioss_type25/" + name for name in [
+        "CoefficientTypes.h", "CoefficientUnits.h",
+        "coefficients/Common.h", "coefficients/MainShell.h", "coefficients/MainSolid.h",
+        "coefficients/Nodal.h", "coefficients/Pair.h", "coefficients/UnitFactors.h",
+    ]],
+    deps = [":radioss_type25_normal"],
+)

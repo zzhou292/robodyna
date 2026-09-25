@@ -1,0 +1,36 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Pure selected coefficient value blocks; no material, geometry, or global incident-roster synthesis",
+  "files": [
+    {
+      "path": "native/original/i25sti3.F",
+      "bytes": 47033,
+      "sha256": "98ce3a1610b733dec229ad367da1f3cd81ef87f4a752d3e1a4b4e1006d0923ce"
+    },
+    {
+      "path": "native/original/asstifi.F",
+      "bytes": 2780,
+      "sha256": "2007080b999322c8aaa780e4d1a3228930ef8400cb6b429edbd87edf4bf74064"
+    },
+    {
+      "path": "native/original/i25stslav.F",
+      "bytes": 3024,
+      "sha256": "8cffcd088426b35d9a4cffe4bd2e6b2b3f5ba11a909e30b72cf37a37346d52f4"
+    },
+    {
+      "path": "native/original/i25cor3.F",
+      "bytes": 37861,
+      "sha256": "054ab489b4528241f7a98b04c8e65cba05df73eb09cc2a0887bb5a23397043a2"
+    },
+    {
+      "path": "native/original/coefficient-controls.json",
+      "bytes": 9828,
+      "sha256": "c5bd451f42cd31b51e9270200ee61762dafbf2aae5a7f71a61b4eb6154034334"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ]
+}

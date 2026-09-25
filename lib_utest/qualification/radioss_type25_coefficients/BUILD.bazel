@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+# Numerical native/CUDA comparisons are the owning Fortran CMake gates.
+cc_test(
+    name = "header",
+    size = "small",
+    srcs = ["HeaderTest.cpp"],
+    copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_coefficients", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "source",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    copts = ["-std=c++17"],
+    data = ["native/prepare.py", "native/source-manifest.json"] +
+        glob(["native/*.F.in", "native/original/*"]) +
+        ["//lib_utest/qualification/radioss_type25_normal:native_source_files"],
+    deps = ["@googletest//:gtest_main"],
+)

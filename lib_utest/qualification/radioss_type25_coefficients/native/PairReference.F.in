@@ -1,0 +1,28 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! ISTIF_MSDT=0 is independently pinned; no mass/timestep block is executed.
+      SUBROUTINE RD_TYPE25_PAIR_COEFFICIENT(VALUES,RESULT) BIND(C)
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN) :: VALUES(4)
+      REAL(C_DOUBLE),INTENT(OUT) :: RESULT
+@CONSTANTS@
+      TYPE :: FOREIGN_ROW
+        REAL(C_DOUBLE) P(1)
+      END TYPE
+      TYPE(FOREIGN_ROW) STIFI(1)
+      INTEGER I,L,NI,NN,NIN,NSN,JLT,IGSTI,CAND_E(1),CAND_N(1)
+      REAL(C_DOUBLE) STF(1),STFN(1),STIF(1),KMIN,KMAX
+      JLT=1
+      NSN=1
+      NIN=1
+      IGSTI=4
+      CAND_E=1
+      CAND_N=1
+      STF=VALUES(1)
+      STFN=VALUES(2)
+      KMIN=VALUES(3)
+      KMAX=VALUES(4)
+@PAIR@
+@CLAMP@
+      RESULT=STIF(1)
+      END SUBROUTINE
