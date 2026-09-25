@@ -97,6 +97,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
                                         const NodalDofConfig* dofs, const NodalRigidGroupModel* groups,
                                         const NodalCinStartup* cin, const NodalRigidAssemblyBinding* binding) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
+  if(binding&&binding->explicitly_empty()&&(!cin||c.capture_force_stage_accelerations))
+    return {NodalStatus::InvalidInput,"Empty rigid source requires the physical raw coefficient scope without rigid force capture"};
   if (!c.max_nodes || c.max_nodes > MaxActiveNodalStateNodes ||
       !c.node_count || c.node_count > c.max_nodes || !c.max_device_bytes ||
       c.max_device_bytes > MaxActiveNodalStateDeviceBytes)
@@ -216,6 +218,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   try {
     auto next = std::make_unique<Impl>();
     next->rigid_groups=std::move(rigid_groups);
+    if(binding&&binding->explicitly_empty())
+      next->empty_rigid_source=std::make_unique<NodalRigidAssemblyBinding>(*binding);
     next->cin=std::move(cin_storage);
     next->staging.resize(state_values,0.);
     next->constraint_staging.resize(mask_bytes,0);

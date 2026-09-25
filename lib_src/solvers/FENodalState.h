@@ -271,6 +271,8 @@ class FENodalState {
                          const NodalCinStartup&, const NodalRigidGroupModel* = nullptr);
   // Prepared PART and plain groups in one owner. Requires VehicleAssembly
   // limits, exact source coefficients and kinematically present member rotation.
+  // Explicit empty rigid bindings require staggered startup and the physical
+  // CIN coefficient store (possibly empty); raw fixed-node M/J remain proved.
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalRigidAssemblyBinding&, const NodalCinStartup* = nullptr);

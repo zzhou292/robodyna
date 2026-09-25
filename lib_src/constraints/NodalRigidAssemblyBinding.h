@@ -34,6 +34,10 @@ class NodalRigidAssemblyBinding {
   NodalRigidAssemblyBinding& operator=(const NodalRigidAssemblyBinding&)=delete;
   RigidBindingReport Initialize(const rigid::NodalRigidPartAssemblyModel&,
       const NodalRigidGroupModel* plain=nullptr,RigidBindingLimits={}) noexcept;
+  // Explicit declaration that this complete physical ledger has no rigid
+  // groups. No PART model, member, primary or device group is manufactured.
+  RigidBindingReport InitializeEmpty(const NodalCoefficientLedger&,RigidBindingLimits={}) noexcept;
+  bool explicitly_empty() const noexcept;
   bool prepared() const noexcept {return bool(impl_);}
   const rigid::NodalRigidPartAssemblyModel* parts() const noexcept;
   const NodalCoefficientLedger* coefficients() const noexcept;

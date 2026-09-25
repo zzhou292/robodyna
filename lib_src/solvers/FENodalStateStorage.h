@@ -92,6 +92,8 @@ struct FENodalState::Impl {
   std::vector<double> staging;
   std::vector<std::uint8_t> constraint_staging;
   std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
+  // Immutable source association only; no rigid state/device allocation.
+  std::unique_ptr<NodalRigidAssemblyBinding> empty_rigid_source;
   std::unique_ptr<nodal_detail::CinStorage> cin;
 };
 }  // namespace tl::fea

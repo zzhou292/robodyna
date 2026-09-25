@@ -19,7 +19,10 @@ struct Layout {
 };
 struct Storage {
   explicit Storage(const rigid::NodalRigidPartAssemblyModel& p):parts(p) {}
+  explicit Storage(const NodalCoefficientLedger& source):empty_coefficients(source),empty_scope(true) {}
   rigid::NodalRigidPartAssemblyModel parts;
+  NodalCoefficientLedger empty_coefficients;
+  bool empty_scope=false;
   util::HostArena arena;
   RigidBindingGroup* groups=nullptr;
   RigidBindingMember* members=nullptr;

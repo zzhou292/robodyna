@@ -22,7 +22,9 @@ Report Forecast(const ShellBatchPlasticityBinding& catalog, const NodalCoefficie
     return Error(Status::IdentityMismatch, "Shell execution requires the exact catalog and PART coefficient ledger");
   }
   const auto& shells = *ledger.shells()->shells();
-  const auto& topology = *rigid.parts()->topology();
+  const auto* topology = rigid.parts()?rigid.parts()->topology():nullptr;
+  const auto part_count = topology?topology->part_count():0;
+  const auto member_count = topology?topology->member_count():0;
   const auto catalog_bytes = catalog.host_bytes();
   const auto rigid_bytes = rigid.owned_payload_bytes();
   if (catalog_bytes < sizeof(catalog) || rigid_bytes < sizeof(rigid)) {
@@ -43,8 +45,8 @@ Report Forecast(const ShellBatchPlasticityBinding& catalog, const NodalCoefficie
       !owned.Append<unsigned char>(rigid_bytes - sizeof(rigid), ignored) ||
       !owned.Append<unsigned char>(arena.bytes(), ignored) ||
       !startup.Append<unsigned char>(owned.bytes(), ignored) ||
-      !startup.Append<unsigned char>(Index::Bytes(topology.part_count()), ignored) ||
-      !startup.Append<unsigned char>(Index::Bytes(topology.member_count()), ignored)) {
+      !startup.Append<unsigned char>(Index::Bytes(part_count), ignored) ||
+      !startup.Append<unsigned char>(Index::Bytes(member_count), ignored)) {
     return Error(Status::ResourceLimit, "Complete shell execution sources and startup indexes exceed byte cap");
   }
   next.arena_bytes = arena.bytes();
