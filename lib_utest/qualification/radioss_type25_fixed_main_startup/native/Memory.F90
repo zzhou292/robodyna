@@ -3,6 +3,8 @@
 module startup_native_memory
   use iso_c_binding
   implicit none
+  private
+  public :: my_alloc,my_dealloc
   interface my_alloc
     module procedure i1,i2,i3,f3
   end interface
