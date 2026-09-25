@@ -23,8 +23,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Assembly.cu",
-      "bytes": 3443,
-      "sha256": "d2b9c05daec756ec623b976b08d1d4464d6cb24bf1eb45b07bebe2898f1dbf6a"
+      "bytes": 4347,
+      "sha256": "7f72b3ef55201853b53fbd04b2bc58e4a6456824b5e99fd45601e35de71dc2a2"
     },
     {
       "path": "lib_src/elements/solids/resident/BUILD.bazel",
