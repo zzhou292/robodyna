@@ -1,0 +1,31 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Exact local PREPARE_SPLIT_I25 reference numbering and incidence loops.
+      SUBROUTINE rd_startup_csr(nrtm,nadmsr,irect,admsr,
+     1 offsets,entries,mapping)
+      use iso_c_binding
+      implicit none
+      integer(c_int),intent(in)::nrtm,nadmsr,irect(4,nrtm),admsr(4,nrtm)
+      integer(c_int),intent(out)::offsets(nadmsr+1),entries(4*nrtm),mapping(nadmsr)
+      type::source_view
+        integer,allocatable::irectm(:),admsr(:)
+      end type
+      type::partition_view
+        integer,allocatable::p(:)
+      end type
+      type(source_view)::intbuf_tab
+      type(partition_view)::intercep
+      integer::i,k,n,n1,n2,n3,n4,proc,nadmsr_l
+      integer::tag_sm(nadmsr),tag_segm2(nrtm)
+      integer::knor2msr(nadmsr+1),nor2msr(4*nrtm)
+      intbuf_tab%irectm=reshape(irect,[4*nrtm])
+      intbuf_tab%admsr=reshape(admsr,[4*nrtm])
+      allocate(intercep%p(nrtm));intercep%p=1;proc=0
+      do i=1,nrtm
+        tag_segm2(i)=i
+      end do
+      tag_sm=0;knor2msr=0;nor2msr=0
+@REFERENCES@
+@CSR@
+      if(nadmsr_l/=nadmsr)error stop "Native CSR lost an admitted reference"
+      offsets=knor2msr;entries=nor2msr;mapping=tag_sm
+      END SUBROUTINE

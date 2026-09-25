@@ -20,3 +20,4 @@ filegroup(
     srcs = glob(["native/**"]),
     visibility = ["//lib_utest/qualification/radioss_type25_lifecycle:__pkg__"],
 )
+filegroup(name = "source_constants_helper", srcs = ["native/Sources.py"], visibility = ["//visibility:public"])
