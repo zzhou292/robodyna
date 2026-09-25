@@ -1118,3 +1118,9 @@ cc_library(
     ]],
     deps = [":radioss_type25_local_geometry", "//lib_src/math:scalar_bits"],
 )
+
+cc_library(
+    name = "radioss_type25_lifecycle",
+    hdrs = ["RadiossType25Lifecycle.h"] + glob(["radioss_type25/selection/lifecycle/*.h"]),
+    deps = [":radioss_type25_selection", ":radioss_type25_coefficients", ":surface_contact_primitives"],
+)
