@@ -74,7 +74,8 @@ struct Tables {
         Require(source.nodes[j].source_id != node.source_id, "Native node map contains duplicate identities");
     }
     for (std::size_t i = 0; i < source.normal_count; ++i)
-      for (auto normal : source.normals[i].bisector) Finite(normal);
+      if (source.normals[i].boundary)
+        for (auto normal : source.normals[i].bisector) Finite(normal);
     for (std::size_t i = 0; i < source.main_count; ++i) {
       const auto& main = source.mains[i]; Require(main.global_id > 0, "Nonpositive native global main");
       Require(std::int64_t(main.segment_type) >= -2*std::int64_t(source.main_count) &&
