@@ -132,7 +132,8 @@ TEST(Type25SearchStartup, NativeNonterminatingSmallMarginIsRejectedWithoutPublis
 }
 TEST(Type25SearchStartup, MovingStarterProfilePreservesNativeInitialMarginRemovalAndFlags) {
   for(unsigned mode=0;mode<3;++mode)for(double gap:{.01,3.}) {
-    SCOPED_TRACE(mode);SCOPED_TRACE(gap);
+    SCOPED_TRACE(mode);
+    SCOPED_TRACE(gap);
     Fixture f(old::Grid(3,2,mode));f.Gaps(gap);Built actual(f);
     const auto expected=Oracle(f.Input());auto input=f.Input();
     input.mesh.profile=st::Profile::OrdinaryExteriorMovingMain;
