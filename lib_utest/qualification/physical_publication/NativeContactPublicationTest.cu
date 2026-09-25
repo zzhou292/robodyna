@@ -55,6 +55,7 @@ fe::NodalValidationReceipt Receipt(const Attempt& a,bool pass=true) {
 }
 TEST(NativeContactPublicationCuda,CommonCommitPublishesHistoryAndReferenceTogether) {
   Rig rig;fe::NativeContactPublicationState state;ASSERT_TRUE(Bind(rig,state));
+  RecordProperty("native_publication_state_host_bytes",std::to_string(sizeof(state)));
   auto initial=state.Accepted(rig.owner);ASSERT_TRUE(initial.available);EXPECT_EQ(initial.generation,0u);
   EXPECT_FALSE(initial.selectors.has_reference);
   const fe::NativeContactSelectors plans[]{{1,1,1,true},{0,1,1,true},{1,0,2,true}};

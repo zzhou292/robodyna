@@ -152,7 +152,7 @@ TEST(PhysicalPublicationValues, CompleteTypedDiagnosticComparisonIncludesLastSol
   EXPECT_TRUE(fe::shell_publication_detail::SamePhysicalDiagnostics(value,value));
 }
 TEST(PhysicalPublicationValues,
-     ScratchRosterHasFixedAbiNonforgeableReceiptAndExactSeparateCap) {
+     ScratchRosterHasExplicitRuntimeFootprintNonforgeableReceiptAndExactCap) {
   using Kind=fe::ShellPhysicalScratchContributorKind;
   using Receipt=fe::ShellPhysicalScratchParticipationReceipt;
   using Issuer=fe::ShellPhysicalScratchParticipation;
@@ -168,7 +168,7 @@ TEST(PhysicalPublicationValues,
   EXPECT_FALSE((std::is_constructible_v<Receipt,fe::NodalValidationReceipt>));
   EXPECT_FALSE((std::is_convertible_v<fe::NodalValidationReceipt,Receipt>));
   EXPECT_FALSE(Receipt{}.valid());
-  static_assert(sizeof(Issuer)==112);
+  static_assert(sizeof(Issuer)==120);
   static_assert(sizeof(Receipt)==288);
   static_assert(sizeof(fe::ShellPhysicalScratchRoster)==32);
   RecordProperty("scratch_participation_issuer_bytes",std::to_string(sizeof(Issuer)));
@@ -188,7 +188,7 @@ TEST(PhysicalPublicationValues,
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       self_only,{},forecast).status,fe::ShellPublicationStatus::Success);
   EXPECT_EQ(forecast.publication_host_bytes,112u);
-  EXPECT_EQ(forecast.total_host_bytes,224u);
+  EXPECT_EQ(forecast.total_host_bytes,232u);
   RecordProperty("scratch_participation_publication_bytes",
       std::to_string(forecast.publication_host_bytes));
   RecordProperty("scratch_participation_self_only_total_bytes",
@@ -208,7 +208,7 @@ TEST(PhysicalPublicationValues,
                                       {self,self_source}};
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       both,{},forecast).status,fe::ShellPublicationStatus::Success);
-  EXPECT_EQ(forecast.total_host_bytes,336u);
+  EXPECT_EQ(forecast.total_host_bytes,352u);
   RecordProperty("scratch_participation_wall_self_total_bytes",
       std::to_string(forecast.total_host_bytes));
   EXPECT_EQ(forecast.configured_issuer_host_bytes,2*sizeof(Issuer));
