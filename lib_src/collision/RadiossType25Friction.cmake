@@ -1,0 +1,4 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Normal.cmake")
+add_library(tl_radioss_type25_friction INTERFACE)
+target_link_libraries(tl_radioss_type25_friction INTERFACE tl_radioss_type25_normal)

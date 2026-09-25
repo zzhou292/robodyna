@@ -11,3 +11,9 @@ cc_test(
     data = ["native/prepare.py", "native/Wrapper.F.in", "native/source-manifest.json"] + glob(["native/original/*"]),
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
 )
+
+filegroup(
+    name = "native_source_files",
+    srcs = ["native/prepare.py", "native/Wrapper.F.in", "native/source-manifest.json"] + glob(["native/original/*"]),
+    visibility = ["//lib_utest/qualification/radioss_type25_friction:__pkg__"],
+)
