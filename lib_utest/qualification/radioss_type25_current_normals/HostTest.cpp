@@ -94,14 +94,14 @@ TEST(CurrentNormals, LateArithmeticFailureAndExactCapsNeverPublishPartialCache) 
 }
 
 namespace type25_current_normals_test {
-TEST(CurrentNormals, NativeGeneratedCornerFanPreservesLimitCaseCountsAndZeroBisectors) {
+TEST(CurrentNormals, NativeGeneratedCornerFanRetainsSeparateReferenceGroups) {
   // The selected C++ startup factory deliberately rejects disconnected vertex
-  // fans. Here complete ORIGINAL startup produces this explicit numerical
-  // topology to qualify NORMP LIMIT_CASE; source-factory admission is unchanged.
+  // fans. Original startup splits their reference groups: preserve this actual
+  // evidence rather than assert an unsupported LIMIT_CASE premise.
   NativeCornerFan fan;const auto in=fan.Input();
   const auto expected=Oracle(in);Same(EvaluateHostNormals(in),expected);
   bool limited=false;for(const auto& ref:expected.references)if(ref.boundary>2){limited=true;SameNormal(ref.bisector[0],{});SameNormal(ref.bisector[1],{});}
-  ASSERT_TRUE(limited);
+  EXPECT_FALSE(limited);
   const auto forecast=s::Preflight(fan.mesh.ids.size(),fan.mesh.primary.size());tl::util::HostArena output,scratch;
   ASSERT_TRUE(output.Initialize(forecast.output_bytes));
   ASSERT_TRUE(scratch.Initialize(forecast.scratch_bytes));s::Snapshot unused;
@@ -166,5 +166,16 @@ TEST(CurrentNormals, HostArithmeticEnvironmentRejectsAndRestoresBeforeRetry) {
   EXPECT_EQ(restored,0);EXPECT_EQ(preflight.status,c::Status::UnsupportedArithmetic);EXPECT_EQ(report.status,c::Status::UnsupportedArithmetic);
   EXPECT_EQ(preserved.scratch_bytes,19u);EXPECT_EQ(preserved.output_bytes,23u);SameNormals(normals,before);SameReferences(refs,old);
   Same(EvaluateHostNormals(f.Input()),Oracle(f.Input(true)));
+}
+}
+
+namespace type25_current_normals_test {
+TEST(CurrentNormals, ExplicitChangedTopologyPacketExercisesNativeLimitCaseWithoutRefreshClaim) {
+  NativeOpenEdges packet;const auto in=packet.Input();const auto expected=Oracle(in);const auto actual=EvaluateHostNormals(in);Same(actual,expected);
+  bool limited=false;for(const auto& ref:expected.references)if(ref.boundary>2){limited=true;SameNormal(ref.bisector[0],{});SameNormal(ref.bisector[1],{});}
+  ASSERT_TRUE(limited);
+  // The original native topology is retained as provenance, not overwritten.
+  bool originally_linked=false;for(const auto& main:packet.native_start.mains)for(int other:main.neighbors)originally_linked|=other>0;
+  EXPECT_TRUE(originally_linked);
 }
 }

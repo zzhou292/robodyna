@@ -12,9 +12,14 @@ integer boundary/TAGE checks. Masks include actual qualified Begin/OPTCD and
 activation output, sparse/retained/removal patterns, closed inactive interiors,
 independently deformed Q4/T3, preserved unused triangle slots, zero raw versus
 zero transformed boundary vectors, native LIMIT_CASE, SI coordinates and the
-original129-primary cohort boundary. The corner-touch topology is produced only
-by original native startup for a numerical LIMIT_CASE coupon; the production
-startup factory still rejects disconnected vertex fans.
+original129-primary cohort boundary. Original native startup splits the
+corner-touch fan's references; a separate agreement case preserves that evidence
+and the production startup factory's retained disconnected-fan rejection. Native
+LIMIT_CASE is exercised on an explicitly changed-topology numerical packet:
+reciprocal links in a native-generated grid are made free while its node-bound
+reference groups and CSR remain unchanged. This does not qualify startup,
+deletion or topology-refresh authority. The first failed host receipt preserves
+the disproven corner-fan LIMIT_CASE premise; no math or tolerance was changed.
 
 Host failure gates preserve all caller output bytes for invalid/corrupt topology,
 rosters, masks, aliases, caps, arithmetic environment and late nonfinite results.

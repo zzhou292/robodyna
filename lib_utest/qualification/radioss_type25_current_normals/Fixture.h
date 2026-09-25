@@ -94,26 +94,40 @@ inline Case CornerFanCase() {
   Case fan;fan.ids={1,2,3,4,5};fan.positions={0,0,0,1,0,0,0,1,0,-1,0,0,0,-1,0};
   fan.Add(n::ShellLayout::Triangle3,0,1,2,2);fan.Add(n::ShellLayout::Triangle3,0,3,4,4);return fan;
 }
-// Native-only topology coupon: production startup still rejects disconnected
-// vertex fans. Current-normal arithmetic can consume its explicit node-bound
-// CSR, without granting that broader source factory any admission authority.
-struct NativeCornerFan {
+// Native-only topology packets: expected normals still come exclusively from
+// original NORMP. Such numerical inputs do not grant source-factory or topology
+// refresh authority. Keep the unmodified original native result separately.
+struct NativePacket {
   Case mesh;
   type25_startup_test::NativeResult native_start;
+  std::vector<s::Main> mains;
   std::vector<std::uint32_t> active,tag,free_ids;
-  NativeCornerFan():mesh(CornerFanCase()),native_start(type25_startup_test::Oracle(mesh.Input(),mesh.coefficients.data(),mesh.coefficients.size())),
-      active(native_start.mains.size(),1),tag(mesh.ids.size(),1) {
-    for(std::size_t m=0;m<native_start.mains.size();++m)for(unsigned k=0;k<4;++k)
-      if(!native_start.mains[m].neighbors[k]&&!(k==2&&native_start.mains[m].nodes[2]==native_start.mains[m].nodes[3])){
+  explicit NativePacket(Case source):mesh(std::move(source)),native_start(type25_startup_test::Oracle(mesh.Input(),mesh.coefficients.data(),mesh.coefficients.size())),
+      mains(native_start.mains),active(mains.size(),1),tag(mesh.ids.size(),1){RefreshFree();}
+  void RefreshFree() {
+    free_ids.clear();for(std::size_t m=0;m<mains.size();++m)for(unsigned k=0;k<4;++k)
+      if(!mains[m].neighbors[k]&&!(k==2&&mains[m].nodes[2]==mains[m].nodes[3])){
         free_ids.push_back(std::uint32_t(m+1));break;}
   }
   c::Input Input() const {
     const auto& data=native_start;c::Input in;in.profile=c::Profile::OrdinaryShellLocal;in.free_roster=n::normal_activation::FreeRosterPolicy::FreshComplete;
-    in.topology={data.mains.data(),mesh.ids.size(),mesh.primary.size(),data.mains.size(),data.starter_references.size(),
+    in.topology={mains.data(),mesh.ids.size(),mesh.primary.size(),mains.size(),data.starter_references.size(),
       {data.offsets.data(),data.offsets.size(),data.incidence.data(),data.incidence.size()}};
     in.positions=mesh.Input().positions;in.main_coefficients=mesh.coefficients.data();in.coefficient_count=mesh.coefficients.size();
     in.main_active=active.data();in.active_count=active.size();in.node_tag=tag.data();in.tag_count=tag.size();
     in.free_main_ids=free_ids.data();in.free_count=free_ids.size();in.prior_normals=data.starter_normals.data();in.prior_count=data.starter_normals.size();return in;
+  }
+};
+struct NativeCornerFan:NativePacket {
+  NativeCornerFan():NativePacket(CornerFanCase()){}
+};
+struct NativeOpenEdges:NativePacket {
+  NativeOpenEdges():NativePacket(Grid(2,2)) {
+    // Explicit changed-topology numerical packet. Clear BOTH directions of all
+    // interior links while retaining original node-bound reference groups/CSR.
+    // This is not a claimed native deletion or refresh-lifecycle implementation.
+    for(auto& main:mains)for(unsigned k=0;k<4;++k){main.neighbors[k]=0;main.neighbor_edges[k]=0;}
+    RefreshFree(); // Original FREE_BOUND independently verifies this input list.
   }
 };
 
