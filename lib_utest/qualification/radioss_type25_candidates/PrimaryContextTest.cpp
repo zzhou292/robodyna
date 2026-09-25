@@ -43,3 +43,22 @@ TEST(NativePrimaryContext,ActualInitialChunksMatchCanonicalActualRoleWithoutWork
   }
   EXPECT_GT(admitted,0u);RecordProperty("observed_native_initial_candidates",admitted);
 }
+
+TEST(NativePrimaryContext,RemainderAndEmptyWorkersCoverOnlyAuthenticPrimaryRows) {
+  auto row=PrimaryCases().front().row;row.symmetry=1;row.secondary={0,0,0};unsigned empty=0;
+  for(int primary:{1,3,5,8})for(int workers:{1,2,4,11}) {
+    std::vector<int> roles(primary),seen(primary,0);
+    for(int i=0;i<primary;++i)roles[i]=i%3==0?0:(i%3==1?primary+i+1:3*primary+i+1);
+    for(int worker=0;worker<workers;++worker) {
+      const int first=worker*primary/workers,last=(worker+1)*primary/workers,count=last-first;
+      if(!count){++empty;continue;}
+      for(int local=0;local<count;++local) {
+        ++seen[first+local];row.main_count=primary;row.segment_type=roles[first+local];c::FilterResult out;
+        ASSERT_EQ(c::EvaluatePacked(row,&out),c::Status::Ok);
+        EXPECT_EQ(Bits(out.squared_clearance),Bits(NativeThreshold(row,count,roles[local])));
+      }
+    }
+    for(auto count:seen)EXPECT_EQ(count,1);
+  }
+  EXPECT_GT(empty,0u);
+}
