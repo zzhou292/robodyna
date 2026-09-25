@@ -85,19 +85,33 @@ def response(call):
     if call.scalar('JLT') == 0:return None
     jlt=bounded(call.scalar('JLT'),'JLT',4096)
     penetration=call.array('PENE',jlt)
-    if not any(v>0 for v in penetration):return None
+    selected=[i for i,v in enumerate(penetration) if v>0]
+    if not selected:return None
     nr=bounded(call.scalar('NRTM'),'NRTM');ns=bounded(call.scalar('NSN'),'NSN')
     scalars={name:call.scalar(name,'d') for name in ('VISC','VISCF','ALPHA0','KMIN')}
     controls={name:call.scalar(name) for name in
               ('MFROT','IFQ','IORTHFRIC','INTTH','ILEV','INTEREFRIC','IGSTI','IVIS2','INACTI')}
     controls.update(KDTINT=common('scr18_',204,'i'),IDTMINS=common('sms_',6,'i'),
                     IDTMINS_INT=common('sms_',15,'i'),INCONV=common('impl1_',60,'i'))
-    spec=[(name,jlt,'d') for name in ('PENE','STIF','N1','N2','N3','H1','H2','H3','H4',
-                                    'FRICC','VISCFFRIC','MSI','VXI','VYI','VZI')]
-    spec += [(name,jlt,'i') for name in ('IX1','IX2','IX3','IX4','NSVG','CAND_N_N','CN_LOC','CE_LOC')]
-    spec += [('PENE_OLD',5*ns,'d'),('STIF_OLD',2*ns,'d'),('SECND_FR',6*ns,'d'),
-             ('IRTLM',4*ns,'i'),('MSEGTYP',nr,'i')]
-    return dict(clock=clock(),jlt=jlt,controls=controls,scalars=scalars,arrays=arrays(call,spec))
+    # Inactive lanes can contain unassigned interpolation scratch before FOR3
+    # clears it. Read only source-defined positive-penetration lane operands.
+    packet={}
+    for names,code,width in ((('PENE','STIF','N1','N2','N3','H1','H2','H3','H4',
+                               'FRICC','VISCFFRIC','MSI','VXI','VYI','VZI'),'d',8),
+                            (('IX1','IX2','IX3','IX4','NSVG','CAND_N_N','CN_LOC','CE_LOC'),'i',4)):
+        for name in names:
+            packet[name]=[values(call.pointer(name)+i*width,1,code)[0] for i in selected]
+    histories=[]
+    for node in packet['CAND_N_N']:
+        bounded(node,'local response history row',ns)
+        row={'secondary_row_one_based':node}
+        for name,count,code,width in (('PENE_OLD',5,'d',8),('STIF_OLD',2,'d',8),
+                                      ('SECND_FR',6,'d',8),('IRTLM',4,'i',4)):
+            row[name]=values(call.pointer(name)+(node-1)*count*width,count,code)
+        histories.append(row)
+    return dict(clock=clock(),jlt=jlt,selected_rows_one_based=[i+1 for i in selected],
+                controls=controls,scalars=scalars,arrays=packet,histories=histories,
+                main_segment_types=call.array('MSEGTYP',nr,'i'))
 
 
 class Observe(gdb.Breakpoint):
