@@ -20,6 +20,8 @@ struct FullLedgerFixture {
   tl::fea::NodalCoefficientLedger ledger;
   tl::fea::ShellBatchPlasticityBinding catalog;
   tl::fea::ShellBatchFailureBinding failure;
+  tl::fea::NodalRigidAssemblyBinding rigid;
+  tl::fea::ShellExecutionBinding execution;
   tl::fea::ShellPhysicalBinding physical;
   std::vector<std::uint64_t> ids,parents;
   std::vector<double> positions,curvature;
@@ -45,14 +47,16 @@ struct FullLedgerFixture {
       {tl::fea::ShellBindingFamily::Qeph,1,101,1001,1001,1001},
       {tl::fea::ShellBindingFamily::T3,0,102,2000524,2000524,2000524},
       {tl::fea::ShellBindingFamily::Qbat,0,103,2000524,2000524,2000524}};
-    EXPECT_EQ(catalog.InitializeFormulations(source.shells,{&declaration.curve,
+    EXPECT_EQ(catalog.InitializeExecutionCatalog(source.shells,{&declaration.curve,
       declaration.materials.data(),declaration.sections.data(),p,1,3,3,4}).status,
       tl::fea::ShellPlasticityBindingStatus::Success);
     tl::fea::ShellFailureParentInput policies[4];
     for(unsigned i=0;i<4;++i){policies[i].source=p[i];policies[i].policy=tl::fea::ShellFailurePolicy::None;}
     if(failing_parent){policies[3].policy=tl::fea::ShellFailurePolicy::ConstantAllPoints;policies[3].constant.failure_strain=2.5;}
-    EXPECT_EQ(failure.Initialize(catalog,policies,4).status,tl::fea::ShellPlasticityBindingStatus::Success);
-    EXPECT_TRUE(physical.Initialize({&source.shells,&catalog,&failure,nullptr},ledger));
+    EXPECT_EQ(failure.InitializeExecution(catalog,policies,4).status,tl::fea::ShellPlasticityBindingStatus::Success);
+    EXPECT_TRUE(rigid.InitializeEmpty(ledger));
+    EXPECT_EQ(execution.Initialize(catalog,ledger,rigid).status,tl::fea::ShellPlasticityBindingStatus::Success);
+    EXPECT_TRUE(physical.InitializeExecution({&source.shells,&catalog,&failure,nullptr},ledger,execution));
     for(std::size_t i=0;i<domain.node_count();++i) {
       const auto& node=domain.nodes()[i];ids.push_back(node.source_id);
       positions.insert(positions.end(),{node.position.x,node.position.y,node.position.z});
@@ -66,8 +70,9 @@ struct FullLedgerFixture {
       }
       primary.push_back(face);parents.push_back(id);
     };
-    for(std::size_t i=0;i<source.shells.qeph_count();++i)
-      add(source.shells.qeph_source_id(i),n::ShellLayout::Quad4,source.shells.qeph_nodes(i));
+    // The selected contact surface is the actual T3/QBAT midlayer. Its two
+    // coincident QEPH layers remain real coefficient contributors, not duplicate
+    // raw faces bypassing native surface filtering.
     for(std::size_t i=0;i<source.shells.t3_count();++i)
       add(source.shells.t3_source_id(i),n::ShellLayout::Triangle3,source.shells.t3_nodes(i));
     for(std::size_t i=0;i<source.shells.qbat_count();++i)

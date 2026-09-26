@@ -14,7 +14,7 @@ TEST(NativeType25FullLedger, ActualContributorsAndQbatConnectivityStayInOneSourc
   const auto report=rd::PrepareSource(f.Config(),f.Contact(),f.physical,{},output);
   ASSERT_EQ(report.status,n::TransactionStatus::Ok)<<report.message;
   EXPECT_EQ(output.ids,f.ids);EXPECT_TRUE(output.native_mass.empty()); // Actual owner mass is borrowed during assembly.
-  ASSERT_EQ(output.primary.size(),4u);
+  ASSERT_EQ(output.primary.size(),2u);
   const auto& qbat=f.source.shells.qbat_nodes(0);
   for(unsigned k=0;k<4;++k)
     EXPECT_EQ(output.ids[output.primary.back().nodes[k]],f.source.shells.active_nodes()[qbat[k]].source_id);
