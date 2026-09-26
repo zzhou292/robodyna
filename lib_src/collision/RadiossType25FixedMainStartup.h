@@ -35,8 +35,10 @@ Forecast ForecastMixedStarterStorage(std::size_t nodes,std::size_t primaries,
 // prefix and genuine original sides before one shared topology build. Added
 // IDs must be unique and all coordinates finite, as in the original admission.
 // No contact face may reference the added suffix. Old overloads stay exact.
+// Prefix preflight requires an explicit Limits argument, preserving legacy
+// calls whose fourth argument is an empty Limits initializer.
 Forecast PreflightMixedStarter(const Input&,const MixedSidesSnapshot&,
-    const PostGapmTopology&,const NodePrefixExtension&,Limits={}) noexcept;
+    const PostGapmTopology&,const NodePrefixExtension&,Limits) noexcept;
 Report BuildStarter(const Input&,const MixedSidesSnapshot&,const PostGapmTopology&,
     const NodePrefixExtension&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot*) noexcept;

@@ -26,7 +26,7 @@ struct Extended {
     for(unsigned i=0;i<4;++i){ids.push_back(9000+i);points.push_back({10.+double(i%2),-2.,double(i/2)});}
     input.node_count=ids.size();input.node_source_ids=ids.data();
     input.positions={reinterpret_cast<const double*>(points.data()),std::uint32_t(points.size()),3,1};
-    forecast=s::PreflightMixedStarter(input,original.sides.result,original.post,prefix);
+    forecast=s::PreflightMixedStarter(input,original.sides.result,original.post,prefix,{});
     if(forecast.status!=s::Status::Ok || !output.Initialize(forecast.output_bytes) || !scratch.Initialize(forecast.scratch_bytes))
       throw std::runtime_error("Combined-domain fixture forecast failed");
   }
@@ -56,7 +56,7 @@ TEST(MixedNodePrefix, GenuineSidesRemainOriginalWhileWholeNativeUsesCompleteDoma
     type25_startup_test::SameStarter(f.snapshot,expected);
     EXPECT_EQ(f.snapshot.primary_count,f.original.startup.primary_count);
     EXPECT_EQ(f.snapshot.main_count,f.original.startup.main_count);
-    EXPECT_EQ(s::PreflightMixedStarter(f.input,f.original.sides.result,f.original.post).status,s::Status::InvalidInput);
+    EXPECT_EQ(s::PreflightMixedStarter(f.input,f.original.sides.result,f.original.post,{}).status,s::Status::InvalidInput);
     EXPECT_EQ(s::BuildStarter(f.input,f.original.sides.result,f.original.post,{},f.output,f.scratch,&f.snapshot).status,s::Status::InvalidInput);
   }
 }
@@ -71,7 +71,7 @@ TEST(MixedNodePrefix, PrefixBitsUnitsAndFaceExtentRejectBeforeAnyPublication) {
     if(fault==3)prefix.node_count=f.input.node_count;
     if(fault==4){faces.back().nodes[0]=std::uint32_t(prefix.node_count);f.input.primary=faces.data();}
     if(fault==5)prefix.positions.data=nullptr;
-    EXPECT_NE(s::PreflightMixedStarter(f.input,f.original.sides.result,f.original.post,prefix).status,s::Status::Ok);
+    EXPECT_NE(s::PreflightMixedStarter(f.input,f.original.sides.result,f.original.post,prefix,{}).status,s::Status::Ok);
     EXPECT_NE(s::BuildStarter(f.input,f.original.sides.result,f.original.post,prefix,{},f.output,f.scratch,&f.snapshot).status,s::Status::Ok);
     EXPECT_EQ(upstream::Bytes(f.output),saved);
     f.ids[0]=f.original.mesh.ids[0];f.points[0]=f.original.mesh.points[0];f.input=good_input;
