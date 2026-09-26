@@ -72,6 +72,46 @@ TEST(NativeSpringIds, UnrelatedMaterialPrefixesCannotEnterAuditedDispatch) {
         EXPECT_THROW(fixture.Context(),detail::Failure);
     }
 }
+TEST(NativeSpringIds, BeamDispatchUsesExactSourceSectionInsteadOfShellConvenienceField) {
+    Fixture fixture;
+    ASSERT_EQ(fixture.canonical.parts.front().source_elform,0u);
+    EXPECT_EQ(fixture.Context().precursors.size(),3u);
+    const auto populate = [&](const output::Document& metadata) {
+        auto context = fixture.Context();
+        context.precursors.clear();
+        context.non_spring_beams = 0;
+        detail::PopulateElements(fixture.canonical,metadata,context,{});
+        return context;
+    };
+    output::Document metadata;
+    metadata.Parse(fixture.canonical.canonical_bytes.c_str());
+    metadata["materials"][0]["keyword"].SetString("*MAT_024",metadata.GetAllocator());
+    metadata["sections"][0]["formulation_field_raw"].SetString("1",metadata.GetAllocator());
+    const auto ordinary = populate(metadata);
+    EXPECT_EQ(ordinary.non_spring_beams,1u);
+    EXPECT_EQ(ordinary.precursors.size(),2u);
+    for (unsigned invalid=0; invalid<8; ++invalid) {
+        SCOPED_TRACE(invalid);
+        metadata.Parse(fixture.canonical.canonical_bytes.c_str());
+        switch (invalid) {
+        case 0: metadata["sections"][0]["source_section_id"].SetUint(11); break;
+        case 1: metadata["sections"][0]["keyword"].SetString("*SECTION_BEAM_TITLE",metadata.GetAllocator()); break;
+        case 2: metadata["sections"][0]["formulation_field_raw"].SetString("9.0",metadata.GetAllocator()); break;
+        case 3: metadata["sections"][0]["formulation_field_raw"].SetString("",metadata.GetAllocator()); break;
+        case 4: metadata["sections"][0]["formulation_field_raw"].SetString("-9",metadata.GetAllocator()); break;
+        case 5: metadata["sections"][0]["formulation_field_raw"].SetString("2147483648",metadata.GetAllocator()); break;
+        case 6: metadata["sections"][0]["formulation_field_raw"].SetString("1",metadata.GetAllocator()); break;
+        case 7: {
+            output::Value duplicate;
+            duplicate.CopyFrom(metadata["sections"][0],metadata.GetAllocator());
+            metadata["sections"].PushBack(duplicate,metadata.GetAllocator());
+            break;
+        }
+        }
+        EXPECT_THROW(populate(metadata),detail::Failure);
+    }
+    EXPECT_EQ(fixture.Context().precursors.size(),3u);
+}
 TEST(NativeSpringIds, FailureContextCannotBeUpgradedByResolution) {
     ContextData context; context.diagnostic={Readiness::UnsupportedSource,"Unproven preload",{},0,0};
     const auto result=detail::ResolveRows(context,{},{});

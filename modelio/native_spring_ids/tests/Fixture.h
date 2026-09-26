@@ -58,19 +58,26 @@ struct Fixture {
         root.Add("*DEFINE_TRANSFORMATION", {Card({9}),"    TRANSL       1.0       0.0       0.0"});
         root.Add("*INCLUDE_TRANSFORM", {wall.name,Card({10000,10000,10000,10000,10000,10000,10000}),Card({10000}),"",Card({9})});
         root.Add("*END");
-        output::Document document, files, materials; document.SetObject(); files.SetObject(); materials.SetArray();
+        output::Document document, files, materials, sections;
+        document.SetObject(); files.SetObject(); materials.SetArray(); sections.SetArray();
         for (const auto* file : {&main,&auxiliary,&wall,&root}) {
             const auto metadata = file->Metadata(); output::array_json::Child(files,file->name.c_str(),metadata);
             storage.emplace_back(file->name,file->bytes);
         }
         output::Document material; material.SetObject(); output::Integer(material,"source_material_id",10); output::String(material,"keyword","*MAT_SPOTWELD");
         output::Value copy; copy.CopyFrom(material,materials.GetAllocator()); materials.PushBack(copy,materials.GetAllocator());
+        output::Document section; section.SetObject();
+        output::Integer(section,"source_section_id",10); output::String(section,"keyword","*SECTION_BEAM");
+        output::String(section,"formulation_field_raw","9");
+        copy.CopyFrom(section,sections.GetAllocator()); sections.PushBack(copy,sections.GetAllocator());
         output::array_json::Child(document,"source_files",files); output::array_json::Child(document,"materials",materials);
+        output::array_json::Child(document,"sections",sections);
         rapidjson::StringBuffer buffer; rapidjson::Writer<rapidjson::StringBuffer> writer(buffer); document.Accept(writer);
         canonical.canonical_bytes.assign(buffer.GetString(),buffer.GetSize());
         canonical.inputs.source_member={main.name,output::Sha256(main.bytes),main.bytes.size()};
         canonical.inputs.canonical_manifest={"manifest.json",output::Sha256(canonical.canonical_bytes),canonical.canonical_bytes.size()};
-        canonical.parts.push_back({10,10,10,9,false});
+        // The real canonical catalog intentionally stores ELFORM only for shells.
+        canonical.parts.push_back({10,10,10,0,false});
         const std::uint64_t beam[]{20,10,1,2,3,0,0,0,0,2}; Add<std::uint64_t>("beams_records",beam,10,10);
         const auto line=std::uint32_t(beam_line); Add<std::uint32_t>("beams_source_lines",&line,1,1);
     }

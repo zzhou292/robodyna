@@ -3,6 +3,7 @@
 #include "modelio/type45/Internal.h"
 #include <algorithm>
 #include <climits>
+#include <charconv>
 #include <map>
 #include <set>
 namespace crash::modelio::native_spring_ids::detail {
@@ -33,6 +34,14 @@ void PopulateElements(const source::CanonicalData& canonical, const output::Docu
         const auto id = reader::Unsigned(row, "source_material_id");
         if (!materials.emplace(id, reader::Text(row, "keyword")).second)
             Reject(Readiness::InvalidSource, "Duplicate canonical material identity", {}, 0, id);
+    }
+    // PartDeclaration::source_elform is a shell-only convenience field.
+    // Beam dispatch consumes its own authenticated source section instead.
+    std::map<std::uint64_t, const output::Value*> sections;
+    for (const auto& row : reader::Array(document, "sections", 65536, 1).GetArray()) {
+        const auto id = reader::Unsigned(row, "source_section_id", INT_MAX);
+        if (!id || !sections.emplace(id, &row).second)
+            Reject(Readiness::InvalidSource, "Invalid or duplicate canonical section identity", {}, 0, id);
     }
     std::string main_file;
     for (const auto& member : data.members) if (member.sha256 == canonical.inputs.source_member.sha256) {
@@ -65,6 +74,16 @@ void PopulateElements(const source::CanonicalData& canonical, const output::Docu
         const auto material = materials.find(part.material);
         if (material == materials.end()) Reject(Readiness::MissingSource, "Beam material identity is unresolved", main_file, lines[i], beam[0]);
         if (part.shell_section) Reject(Readiness::InvalidSource, "Beam is associated with a shell section", main_file, lines[i], beam[0]);
+        const auto section = sections.find(part.section);
+        if (section == sections.end())
+            Reject(Readiness::MissingSource, "Beam section identity is unresolved", main_file, lines[i], beam[0]);
+        if (reader::Text(*section->second, "keyword") != "*SECTION_BEAM")
+            Reject(Readiness::UnsupportedSource, "Unaudited beam section keyword", main_file, lines[i], beam[0]);
+        const auto raw_elform = reader::Text(*section->second, "formulation_field_raw");
+        unsigned elform = 0;
+        const auto parsed = std::from_chars(raw_elform.data(), raw_elform.data()+raw_elform.size(), elform);
+        if (parsed.ec != std::errc{} || parsed.ptr != raw_elform.data()+raw_elform.size() || elform > INT_MAX)
+            Reject(Readiness::InvalidSource, "Beam formulation must be an explicit native integer", main_file, lines[i], beam[0]);
         const auto& keyword = material->second;
         // The converter uses substring tests, but source admission is narrower:
         // only these audited literal aliases enter that branch sequence. No
@@ -75,8 +94,8 @@ void PopulateElements(const source::CanonicalData& canonical, const output::Docu
             keyword == "*MAT_024" || keyword == "*MAT_ELASTIC" || keyword == "*MAT_001" ||
             keyword == "*MAT_RIGID" || keyword == "*MAT_020";
         if (!known) Reject(Readiness::UnsupportedSource, "Unaudited beam material dispatch", main_file, lines[i], beam[0]);
-        if (!SpringBeam(keyword, part.source_elform)) { ++data.non_spring_beams; continue; }
-        if (!(Contains(keyword, "*MAT_SPOTWELD") || Contains(keyword, "*MAT_100")) || part.source_elform != 9)
+        if (!SpringBeam(keyword, elform)) { ++data.non_spring_beams; continue; }
+        if (!(Contains(keyword, "*MAT_SPOTWELD") || Contains(keyword, "*MAT_100")) || elform != 9)
             Reject(Readiness::UnsupportedSource, "Native beam SPRING is outside the existing TYPE13 source policy", main_file, lines[i], beam[0]);
         SourceRow row; row.kind = SourceKind::Type13; row.original_id = beam[0];
         row.endpoints = {beam[2], beam[3]}; row.canonical_index = i; row.location = location;
