@@ -7,7 +7,7 @@ import json
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = '3ffb5228305c7e35d008835ddb3df8c00deffb887cad6841ab86010cfaa4fd8e'
+EXPECTED = '1b9d3248239b621bd61e56a75d5fcd3d142f2fa1f989ef71056418d000318f42'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -22,8 +22,44 @@ addition = '''        if(config.structural.capture_limiter)
                 &candidate().structural_limiter),"Copy actual structural limiter");
 '''
 assert trial.count(addition) == 1
-prior = next(row['prior'] for row in manifest['files'] if row['path'] == trial_path)
-assert hashlib.sha256(trial.replace(addition, '', 1).encode()).hexdigest() == prior['sha256']
+# The independently qualified observation is now a separate tail. Preserve
+# the original limiter/force/evaluate proof over the byte-identical prefix;
+# the complete current Trial remains hash-pinned above.
+prefix = trial.split('void VehiclePhysicalDynamics::Storage::Capture() {', 1)[0]
+restored = prefix.replace(addition, '', 1).encode()
+review = manifest['reviewed_motion_observation']
+assert len(restored) == review['unchanged_physics_prefix_bytes']
+assert hashlib.sha256(restored).hexdigest() == review['unchanged_physics_prefix_sha256']
+assert len(prefix.encode()) == review['qualified_parent_prefix_bytes']
+assert hashlib.sha256(prefix.encode()).hexdigest() == review['qualified_parent_prefix_sha256']
+# Later already-qualified optional self-contact stages postdate the limiter's
+# original ancestor. Check both exact additions and recover that older prefix.
+inherited_blocks = (
+    """    if(self_contact) {
+        timer.Measure<StepStage::AssembleSelfContact>([&] {
+            self_contact->Assemble(
+                s.owner,token,assembly,candidate().self_contact);
+            return true;
+        });
+    }
+""",
+    """    if(self_contact) {
+        timer.Measure<StepStage::EvaluateSelfContact>([&] {
+            self_contact->SealCandidate(
+                s.owner,token,candidate().mechanics,prepared,
+                candidate().self_contact);
+            return true;
+        });
+    }
+""",
+)
+ancestor = restored.decode()
+for block in inherited_blocks:
+    assert ancestor.count(block) == 1
+    ancestor = ancestor.replace(block, '', 1)
+assert len(ancestor.encode()) == review['original_ancestor_prefix_bytes']
+assert hashlib.sha256(ancestor.encode()).hexdigest() == review['original_ancestor_prefix_sha256']
+
 # The compile correction changes only access to the actual counted-view APIs.
 # Retain and authenticate the original report/source bodies as prior evidence.
 counted_access = {

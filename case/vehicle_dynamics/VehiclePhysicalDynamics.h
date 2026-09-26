@@ -1,6 +1,7 @@
 #pragma once
 #include "../vehicle_runtime/VehiclePhysicalStartup.h"
 #include "MotionSummary.h"
+#include "lib_src/solvers/NodalUniformMotionObserver.h"
 #include "SelfContactObservation.h"
 #include "WallObservation.h"
 #include "StepTiming.h"
@@ -25,9 +26,11 @@ struct Config {
     double maximum_rotation_increment=.2;
     tl::fea::NodalCinStructuralStep structural;
     StepTimingOptions timing;
+    tl::fea::NodalUniformMotionLimits motion_limits;
 };
 struct Forecast {
     vehicle_runtime::Forecast startup;
+    tl::fea::NodalUniformMotionForecast motion;
     std::size_t workspace_bytes=0,peak_host_upper_bound=0;
 };
 struct StepObservation {

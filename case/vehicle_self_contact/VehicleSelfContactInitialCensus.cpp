@@ -438,7 +438,7 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
     result.forecast.physical_owner_device_bytes =
         dynamics.allocations().device_bytes;
     output::Require(result.forecast.physical_owner_device_bytes ==
-            dynamics.forecast().startup.device_bytes,
+            (dynamics.forecast().startup.device_bytes+dynamics.forecast().motion.device_bytes),
         "Actual physical owner/participant allocation differs from forecast");
 
     result.forecast.count_probe =

@@ -30,7 +30,7 @@ RuntimeForecast ComposeForecast(const vehicle_dynamics::Forecast& dynamics, cons
                                 setup.geometry.temporary_bytes,contact.startup_scratch_bytes});
     output::Require(host.Append<std::byte>(scratch,unused),"Complete wall runtime peak exceeds host cap");
     result.peak_host_upper_bound=host.bytes();
-    for (auto bytes : {dynamics.startup.device_bytes,contact.device_bytes}) {
+    for (auto bytes : {dynamics.startup.device_bytes,dynamics.motion.device_bytes,contact.device_bytes}) {
         output::Require(device.Append<std::byte>(bytes,unused),"Complete wall runtime exceeds device cap");
     }
     result.device_bytes=device.bytes();

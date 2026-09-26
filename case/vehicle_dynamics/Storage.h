@@ -16,7 +16,7 @@ struct VehiclePhysicalDynamics::Storage {
     std::unique_ptr<vehicle_startup::TiedCinWitnessActivity> activity;
     std::unique_ptr<detail::WallContribution> wall;
     std::unique_ptr<detail::SelfContactContribution> self_contact;
-    std::array<Fields,2> fields;
+    tl::fea::NodalUniformMotionObserver motion;
     std::array<StepObservation,2> observations;
     tl::fea::NodalTrialToken token;
     tl::fea::NodalPreparedView prepared;
@@ -24,7 +24,6 @@ struct VehiclePhysicalDynamics::Storage {
     unsigned accepted_slot=0;
     bool pending=false;
     ExecutionAccess::State& state() noexcept { return ExecutionAccess::Get(startup); }
-    Fields& candidate_fields() noexcept { return fields[1-accepted_slot]; }
     StepObservation& candidate() noexcept { return observations[1-accepted_slot]; }
     void Prepare();
     void Evaluate();

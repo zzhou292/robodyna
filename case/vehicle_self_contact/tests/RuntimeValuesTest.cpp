@@ -29,7 +29,8 @@ TEST(VehicleSelfContactRuntimeValues,
     dynamics.startup.retained_source_upper_bound = 1000;
     dynamics.startup.retained_host_upper_bound = 2000;
     dynamics.startup.peak_temporary_bytes = 500;
-    dynamics.startup.device_bytes = 100;
+    dynamics.startup.device_bytes = 89;
+    dynamics.motion.device_bytes = 11;
     dynamics.workspace_bytes = 20;
 
     SetupForecast setup;
