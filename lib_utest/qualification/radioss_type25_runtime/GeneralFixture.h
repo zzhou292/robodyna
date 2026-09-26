@@ -48,8 +48,8 @@ struct Source {
     is::Limits limits;limits.max_tasks=128;limits.max_pairs=128;limits.max_host_bytes=16u<<20;limits.max_device_bytes=16u<<20;
     limits.geometric.max_removals=128;limits.tied.search=limits.geometric;return limits;
   }
-  void Prepare(is::Input input) {
-    const auto report=is::PrepareSource(input,InitialLimits(),prepared);
+  void Prepare(is::Input input,is::Limits limits=InitialLimits()) {
+    const auto report=is::PrepareSource(input,limits,prepared);
     if(report.status!=is::Status::Ok)throw std::runtime_error("Genuine initial source preparation failed");
     runtime.margin=prepared.removals().engine_margin;runtime.primary_curvature=prepared.removals().primary_extent;
     runtime.selection.removed_main_by_secondary={}; // General binder uses the producer's exact final CSR.

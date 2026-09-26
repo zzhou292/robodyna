@@ -86,6 +86,13 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   }
   const auto drained=cudaStreamSynchronize(stream);
   if(error!=cudaSuccess||drained!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Native source upload failed");
+  if(prepared) {
+    // Only the primary arena is needed for this handoff. Upload drains both
+    // history/flag slabs and final corners, then retires its private seed
+    // before any paired inventory, maintenance or incidence allocation.
+    const auto seeded=rd::InitialSeedAccess::Upload(*prepared,next->device,stream,next->initialization);
+    if(seeded.status!=TransactionStatus::Ok)return seeded;
+  }
   for(unsigned slab=0;slab<2;++slab) {
     if(next->inventory[slab].Initialize(upload.inventory,limits.inventory,stream)!=candidates::Status::Ok||
        next->maintenance[slab].Initialize(upload.maintenance,limits.maintenance,stream)!=search::Status::Ok)
@@ -93,10 +100,6 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   }
   if(next->incidence.Initialize(incidence_limits,stream)!=assembly::IncidenceStatus::Ok)
     return Error(TransactionStatus::DeviceFailure,"Native incidence initialization failed");
-  if(prepared) {
-    const auto seeded=rd::InitialSeedAccess::Upload(*prepared,next->device,stream,next->initialization);
-    if(seeded.status!=TransactionStatus::Ok)return seeded;
-  }
   next->source.selection=next->device.source;next->source.primary_parent_ids=nullptr;next->source.primary_curvature=nullptr;
   if(!next->state.Attach(owner,source.source_id,next->issuer))return Error(TransactionStatus::PublicationFailure,"Native participant attachment rejected");
   impl_=std::move(next);return {TransactionStatus::Ok,"OK"};

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <cstring>
 #include <array>
+#include <algorithm>
 #include <cmath>
 namespace type25_general_test {
 namespace {
@@ -45,8 +46,9 @@ TEST(NativeGeneralInitialize, GenuineWarmSeedUsesBothExistingSlabsAndOnePhysical
   auto limits=moving_cache_test::Rig::Limits();
   ASSERT_EQ(n::Transaction::GeneralPreflight(source.rig.config,source.runtime,source.prepared,
       source.rig.source.physical.physical,forecast,limits).status,n::TransactionStatus::Ok);
-  EXPECT_GT(forecast.peak_device_bytes,forecast.transaction.device_bytes);
-  EXPECT_EQ(forecast.peak_device_bytes,forecast.transaction.device_bytes+forecast.initializer.peak_device_bytes);
+  EXPECT_EQ(forecast.peak_device_bytes,std::max(forecast.transaction.device_bytes,
+      forecast.transaction.runtime_device_bytes+forecast.initializer.peak_device_bytes));
+  EXPECT_LT(forecast.peak_device_bytes,forecast.transaction.device_bytes+forecast.initializer.peak_device_bytes);
   EXPECT_FALSE(source.rig.owner.accepted().owner_id);
   limits.max_device_bytes=forecast.peak_device_bytes;limits.max_host_bytes=forecast.peak_host_bytes;
   ASSERT_NO_THROW(source.InitializeOwner());
@@ -100,6 +102,51 @@ TEST(NativeGeneralInitialize, CoexistenceCapsAndWrongSourceRejectBeforeOwnerAllo
   runtime=source.runtime;runtime.margin=std::nextafter(runtime.margin,1.);
   EXPECT_EQ(n::Transaction::GeneralPreflight(source.rig.config,runtime,source.prepared,source.rig.source.physical.physical,result,limits).status,n::TransactionStatus::SourceMismatch);
   EXPECT_EQ(result.peak_device_bytes,exact.peak_device_bytes);EXPECT_FALSE(source.rig.owner.accepted().owner_id);
+}
+TEST(NativeGeneralInitialize, SequentialDevicePeakBranchesAdmitExactCapsAndRejectOneByteShort) {
+  for(bool seed_dominant:{false,true}) {
+    SCOPED_TRACE(seed_dominant);
+    Source source;auto initial=Source::InitialLimits();auto limits=moving_cache_test::Rig::Limits();
+    if(seed_dominant){initial.max_tasks=32768;initial.max_pairs=32768;}
+    else {limits.inventory.max_tasks=32768;limits.inventory.max_pairs=32768;}
+    ASSERT_NO_THROW(source.Prepare(source.Input(),initial));
+    n::GeneralTransactionForecast plan;
+    ASSERT_EQ(n::Transaction::GeneralPreflight(source.rig.config,source.runtime,source.prepared,
+        source.rig.source.physical.physical,plan,limits).status,n::TransactionStatus::Ok);
+    const auto overlap=plan.transaction.runtime_device_bytes+plan.initializer.peak_device_bytes;
+    if(seed_dominant)ASSERT_GT(overlap,plan.transaction.device_bytes);
+    else ASSERT_GT(plan.transaction.device_bytes,overlap);
+    EXPECT_EQ(plan.peak_device_bytes,std::max(plan.transaction.device_bytes,overlap));
+    EXPECT_LT(plan.peak_device_bytes,plan.transaction.device_bytes+plan.initializer.peak_device_bytes);
+    EXPECT_EQ(plan.peak_host_bytes,plan.transaction.startup_host_bytes+plan.initializer.retained_host_bytes);
+    ASSERT_NO_THROW(source.InitializeOwner());
+    const auto initial_owner=source.rig.owner.accepted();
+    auto exact=limits;exact.max_device_bytes=plan.peak_device_bytes;exact.max_host_bytes=plan.peak_host_bytes;
+    for(bool host_short:{false,true}) {
+      SCOPED_TRACE(host_short);
+      auto short_limit=exact;
+      if(host_short)--short_limit.max_host_bytes;else --short_limit.max_device_bytes;
+      auto unchanged=plan;
+      EXPECT_EQ(n::Transaction::GeneralPreflight(source.rig.config,source.runtime,source.prepared,
+          source.rig.source.physical.physical,unchanged,short_limit).status,n::TransactionStatus::ResourceLimit);
+      EXPECT_EQ(unchanged.peak_device_bytes,plan.peak_device_bytes);EXPECT_EQ(unchanged.peak_host_bytes,plan.peak_host_bytes);
+      EXPECT_EQ(source.InitializeContact(short_limit).status,n::TransactionStatus::ResourceLimit);
+      EXPECT_FALSE(source.rig.contact.source_info().available);EXPECT_FALSE(source.rig.contact.initialization_diagnostics().available);
+      EXPECT_EQ(source.rig.owner.accepted().owner_id,initial_owner.owner_id);EXPECT_EQ(source.rig.owner.accepted().epoch,0u);
+    }
+    std::uint64_t warm=0;const auto expected=Expected(source.prepared,source.rig.owner,warm);ASSERT_GT(warm,0u);
+    ASSERT_EQ(source.InitializeContact(exact).status,n::TransactionStatus::Ok);
+    EXPECT_EQ(source.rig.contact.allocations().device_bytes,plan.transaction.device_bytes);
+    ASSERT_NO_THROW(source.BindRoster());
+    n::runtime_qualification::InitializationObservation observed;
+    ASSERT_TRUE(n::runtime_qualification::Access::ReadInitialization(source.rig.contact,&observed));SameInitial(observed,expected);
+    moving_cache_test::Attempt attempt;
+    ASSERT_NO_THROW(source.rig.Begin(attempt));
+    ASSERT_EQ(source.rig.contact.AssembleAccepted(source.rig.owner,attempt.token,attempt.assembly).status,n::TransactionStatus::Ok);
+    ASSERT_NO_THROW(source.rig.Prepare(attempt));
+    ASSERT_EQ(source.rig.Commit(attempt).status,tl::fea::ShellPublicationStatus::Success);
+    EXPECT_EQ(source.rig.owner.accepted().epoch,1u);
+  }
 }
 TEST(NativeGeneralInitialize, NumericalPreparationDoesNotInventRuntimeHandoffAuthority) {
   Source source;auto input=source.Input();input.engine_handoff=is::EngineHandoff::Unspecified;

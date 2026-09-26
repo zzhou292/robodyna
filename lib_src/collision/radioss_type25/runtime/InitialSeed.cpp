@@ -2,6 +2,7 @@
 #include "InitialSeed.h"
 #include "../initial_source/Internal.h"
 #include "lib_src/math/ScalarBits.h"
+#include <algorithm>
 #include <cstddef>
 #include <type_traits>
 namespace tlfea::contact::radioss_type25::runtime_detail {
@@ -147,8 +148,14 @@ TransactionReport InitialSeedAccess::Forecast(const is::PreparedSource& source,c
     TransactionLimits limits,GeneralTransactionForecast& output) noexcept {
   if(!source.impl_)return Fail(TransactionStatus::SourceMismatch,"General initial source is unavailable");
   GeneralTransactionForecast next;next.transaction=runtime;next.initializer=source.impl_->forecast;
-  next.peak_device_bytes=runtime.device_bytes;next.peak_host_bytes=runtime.startup_host_bytes;
-  if(!Add(next.initializer.peak_device_bytes,next.peak_device_bytes)||next.peak_device_bytes>limits.max_device_bytes||
+  // Seed production/D2D handoff finishes before auxiliary device workspaces
+  // are allocated. Source staging and the prepared host backing outlive both.
+  auto seed_overlap=runtime.runtime_device_bytes;
+  if(!Add(next.initializer.peak_device_bytes,seed_overlap))
+    return Fail(TransactionStatus::ResourceLimit,"General seed device forecast overflows");
+  next.peak_device_bytes=std::max(runtime.device_bytes,seed_overlap);
+  next.peak_host_bytes=runtime.startup_host_bytes;
+  if(next.peak_device_bytes>limits.max_device_bytes||
       !Add(next.initializer.retained_host_bytes,next.peak_host_bytes)||next.peak_host_bytes>limits.max_host_bytes)
     return Fail(TransactionStatus::ResourceLimit,"General runtime/producer coexistence exceeds cap");
   output=next;return {TransactionStatus::Ok,"OK"};

@@ -15,8 +15,9 @@ struct AcceptedContactBuffer {
 struct GeneralTransactionForecast {
   TransactionForecast transaction;
   initial_source::Forecast initializer;
-  // Runtime remains allocated while one producer and private seed coexist.
-  // Host peak also includes immutable PreparedSource retained backing.
+  // Max of full runtime and primary runtime arena plus one producer peak.
+  // The seed retires before auxiliary runtime allocation. Host peak includes
+  // source staging and immutable PreparedSource retained through both phases.
   std::size_t peak_device_bytes=0,peak_host_bytes=0;
 };
 struct TransactionInitializationDiagnostics {
