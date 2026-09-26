@@ -34,9 +34,13 @@ struct FullLedgerFixture {
   std::vector<std::uint32_t> removal_offsets;
   tl::util::HostArena output,scratch;
   s::Snapshot starter;
+  static tl::fea::type25::Model DeclaredWelds(coefficient_test::SolidFixture& source,bool runtime) {
+    if(runtime)for(auto& damping:source.spring_property.property.damping)damping=0;
+    return source.Springs();
+  }
   explicit FullLedgerFixture(bool with_qbat=false,bool contact_geometry=false)
       : source(contact_geometry),domain(source.Domain()),beams(source.Beams()),
-        welds(source.Springs()),
+        welds(DeclaredWelds(source,contact_geometry)),
         solids(source.Solids(domain)) {
     auto geometry=source.shell_input.Input();
     auto declared_quads=source.shell_input.q;

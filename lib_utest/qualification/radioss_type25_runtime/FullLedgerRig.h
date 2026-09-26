@@ -40,10 +40,13 @@ struct FullLedgerRig {
   static constexpr double Dt=1e-9;
   FullLedgerFixture fixture{false,true};
   fe::solids::Model solid_model;
+  tl::constraints::tied_shell::PostKinChkResult classified;
   tl::constraints::tied_shell::TiedCinAttachmentModel cin;
+  std::array<tl::constraints::tied_shell::cin::WitnessRange,1> ranges{{{0,2}}};
+  std::array<tl::constraints::tied_shell::cin::ActiveWitness,2> witnesses;
   std::vector<double> x,v,w,q,m,j,im,ij;
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
-  fe::ShellBatchStartup startup{fe::ShellBatchStartupKind::ReferenceConstrainedUniformTranslation,{0,0,0}};
+  fe::ShellBatchStartup startup{fe::ShellBatchStartupKind::ReferenceUniformTranslation,{0,0,0}};
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;
   fe::t3::T3Batch t3;
@@ -55,7 +58,7 @@ struct FullLedgerRig {
 
   fe::ShellPhysicalParticipants Participants() {return {&qeph,&t3,nullptr,&welds,&beams,&solids};}
   fe::ShellPhysicalPublicationIdentity Identity() const {return {Configuration,Qualification,startup};}
-  fe::NodalCinWitnessSource Witnesses() const {return {&cin,nullptr,nullptr,0,0};}
+  fe::NodalCinWitnessSource Witnesses() const {return {&cin,ranges.data(),witnesses.data(),ranges.size(),witnesses.size()};}
   n::MovingMainSource Source() const {
     n::MovingMainSource result;
     static_cast<n::ContactSourceInput&>(result)=fixture.Contact();
@@ -73,5 +76,6 @@ struct FullLedgerRig {
  private:
   void PrepareSolidModel();
   void PrepareOwner();
+  void PrepareConstraint();
 };
 } // namespace type25_source_test

@@ -14,31 +14,64 @@ void FullLedgerRig::PrepareSolidModel() {
   nodal_empty_test::Fixture::Require(bool(report),report.message);
   nodal_empty_test::Fixture::Require(solid_model.contributions()->Matches(fixture.solids),"Actual solid mechanics and ledger differ");
 }
+void FullLedgerRig::PrepareConstraint() {
+  namespace tied=tl::constraints::tied_shell;
+  tied::CinAttachmentDeclaration attachment;
+  attachment.original_nsv_row=1;attachment.ordered_master_rank=1;
+  attachment.secondary_source_id=777;
+  attachment.master_source={tied::CinMasterSourceKind::DeclaredShellElement,100,1000};
+  attachment.topology=tied::CinMasterTopology::Quad;
+  attachment.reference_positions[0]=fixture.domain.nodes()[fixture.domain.Find(777)].position;
+  for(unsigned k=0;k<4;++k) {
+    attachment.master_source_ids[k]=10+k;
+    attachment.reference_positions[k+1]=fixture.domain.nodes()[fixture.domain.Find(10+k)].position;
+  }
+  const tied::KinChkSlave slave{777,0,{2,7,7,0,0}};
+  std::array<std::int32_t,8192> decode{};
+  for(std::size_t i=0;i<decode.size();++i)decode[i]=(i&2)!=0;
+  nodal_empty_test::Fixture::Require(bool(tied::PostKinChk({tied::KinChkProfile::NoWallRbeOrCyclic,
+      tied::ClassificationPhase::InterfaceTaggedBeforeKinChk,1,881,{&slave,1},
+      {decode.data(),decode.size()}},&classified)),"Declared CIN classification");
+  nodal_empty_test::Fixture::Require(bool(tied::PrepareCinAttachments(classified,fixture.domain,
+      {&attachment,1},&cin)),"Declared CIN attachment");
+  for(unsigned row=0;row<2;++row) {
+    auto& witness=witnesses[row];witness.source_element_id=100+row;
+    witness.native_parent_index=row;witness.family=tied::cin::WitnessFamily::ShellQuad;
+    for(unsigned k=0;k<4;++k)witness.nodes[k]=fixture.domain.Find(10+k);
+  }
+}
 void FullLedgerRig::PrepareOwner() {
   const auto count=fixture.domain.node_count();
   x.resize(3*count);v.resize(3*count);w.resize(3*count);q.resize(4*count);
   m.resize(count);j.resize(count);im.resize(count);ij.resize(count);
   fixed.resize(count);rotation_fixed.resize(count);present.resize(count);
-  for(auto node:fixture.primary.front().nodes)fixed[node]=7;
+  const auto dependent=fixture.domain.Find(777);
   for(std::size_t i=0;i<count;++i) {
     const auto& value=fixture.ledger.nodes()[i].coefficients;
-    m[i]=value.mass;j[i]=value.isotropic_inertia;present[i]=j[i]>0;
+    m[i]=value.mass;j[i]=value.isotropic_inertia;present[i]=j[i]>0||i==dependent;
     rotation_fixed[i]=fixed[i]==7&&present[i];
-    im[i]=fixed[i]==7?0:1/m[i];ij[i]=rotation_fixed[i]||!present[i]?0:1/j[i];
+    im[i]=i==dependent||fixed[i]==7?0:1/m[i];
+    ij[i]=i==dependent||rotation_fixed[i]||!present[i]?0:1/j[i];
     const auto position=fixture.domain.nodes()[i].position;
     x[3*i]=position.x;x[3*i+1]=position.y;x[3*i+2]=position.z;q[4*i]=1;
     fixture.nodes[i].constraint=fixed[i];
   }
-  const auto report=tl::constraints::tied_shell::PrepareEmptyCinAttachments(fixture.domain,&cin);
-  nodal_empty_test::Fixture::Require(bool(report),"Explicit empty CIN attachment source");
+  // A declared contact set contains the independent T3 nodes only. The genuine
+  // CIN dependent is outside it, so no tied-to-main removal is being invented.
+  fixture.secondary.clear();
+  for(auto local:fixture.shells.t3_nodes(0)) {
+    const auto node=fixture.domain.Find(fixture.shells.active_nodes()[local].source_id);
+    fixture.secondary.push_back({std::uint32_t(node),1e6,.001,0});
+  }
+  fixture.removal_offsets.assign(fixture.secondary.size()+1,0);
   fe::NodalStateConfig config;config.node_count=count;config.fixed_dt=Dt;
   config.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
-  const fe::NodalCinStartup raw{&cin,m.data(),j.data(),nullptr,nullptr,0,Qualification};
+  const fe::NodalCinStartup raw{&cin,m.data(),j.data(),ranges.data(),witnesses.data(),witnesses.size(),Qualification};
   Check(owner.Initialize(config,{x.data(),v.data(),w.data(),count,q.data()},im.data(),
       {fixed.data(),rotation_fixed.data(),ij.data(),present.data()},fixture.rigid,&raw));
 }
 void FullLedgerRig::Initialize(bool attach_contact) {
-  PrepareSolidModel();PrepareOwner();
+  PrepareSolidModel();PrepareConstraint();PrepareOwner();
   fe::qeph::QephBatchConfig qconfig;qconfig.startup=startup;qconfig.owner=owner.accepted();
   qconfig.configuration_id=Configuration;qconfig.qualification_id=Qualification;
   qconfig.element_count=fixture.shells.qeph_count();qconfig.usage=fe::qeph::BatchUsage::CoupledForces;
@@ -55,6 +88,7 @@ void FullLedgerRig::Initialize(bool attach_contact) {
   Check(beams.InitializeMapped(bc,fixture.physical,fixture.rigid,owner,Witnesses()));
   fe::solids::BatchConfig sc;sc.startup=startup;sc.owner=owner.accepted();
   sc.configuration_id=Configuration;sc.qualification_id=Qualification;sc.profile=fe::solids::BatchProfile::PhysicalCinV1;
+  sc.cin_attachment_count=ranges.size();sc.cin_witness_count=witnesses.size();
   Check(solids.InitializeJoined(sc,solid_model));
   // Existing mapped producers establish their real initial caches before the
   // common publisher joins them. This proof is discarded without a time step.
@@ -79,6 +113,13 @@ void FullLedgerRig::Begin(FullLedgerAttempt& a) {
   Check(solids.AssembleAccepted(owner,a.token,a.assembly));
 }
 void FullLedgerRig::Prepare(FullLedgerAttempt& a) {
+  fe::NodalCinAssemblyView cin_view;Check(owner.BorrowCinAssembly(a.token,&cin_view));
+  Check(publication.ValidateAcceptedActivitySources(owner,{&qeph,&t3,nullptr,&welds},fixture.shells.inventory()));
+  std::uint8_t activity[2];fe::qeph::BatchDiagnostics diagnostics;
+  Check(qeph.CopyAcceptedParentActivity(owner.accepted(),activity,2,&diagnostics));
+  for(auto& value:activity)value=value?1:2;
+  Check(cudaMemcpyAsync(cin_view.witness_activity,activity,sizeof(activity),cudaMemcpyHostToDevice,a.assembly.stream));
+  Check(cudaStreamSynchronize(a.assembly.stream));
   Check(owner.SealAssembly(a.token));
   Check(fe::AdvanceStaggeredCin(owner,a.token,{a.assembly.owner_id,a.assembly.accepted.base_epoch,a.assembly.attempt,
     Qualification,Dt,.2,true,{fe::NodalCinStructuralProfile::NativeOrdinaryRigidTrace,.8,true}}));
