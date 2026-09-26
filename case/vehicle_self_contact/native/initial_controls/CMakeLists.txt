@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaInitializerControls LANGUAGES CXX Fortran)
+enable_testing()
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Explicit qualified coherent TL source")
+set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
+include("${CMAKE_CURRENT_LIST_DIR}/../InitializerControlsSource.cmake")
+set(native "${CMAKE_CURRENT_BINARY_DIR}/initial-gap-native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/tests/native/prepare.py"
+  --tl-root "${ROBO_DYNA_TL_ROOT}" --output "${native}" COMMAND_ERROR_IS_FATAL ANY)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS tests/native/prepare.py tests/native/donor.json)
+add_library(initializer_gap_native STATIC "${native}/Gap.F")
+target_compile_options(initializer_gap_native PRIVATE -ffixed-line-length-none -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
+add_executable(initializer_controls_values tests/GapTest.cpp tests/ControlsTest.cpp)
+target_link_libraries(initializer_controls_values PRIVATE robo_dyna_initializer_controls_source initializer_gap_native GTest::gtest_main)
+target_compile_options(initializer_controls_values PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME initializer_controls_values COMMAND initializer_controls_values)
+add_test(NAME initializer_gap_original_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/tests/native/prepare.py"
+  --tl-root "${ROBO_DYNA_TL_ROOT}" --output "${native}" --check)
+set_tests_properties(initializer_controls_values initializer_gap_original_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+option(ROBO_DYNA_INITIALIZER_CONTROLS_ACTUAL "Build explicit complete-source gates" OFF)
+if(ROBO_DYNA_INITIALIZER_CONTROLS_ACTUAL)
+  get_filename_component(app "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
+  add_executable(initializer_controls_actual tests/ActualTest.cpp "${app}/case/vehicle_startup/physical_model/tests/supports/Source.cpp")
+  target_link_libraries(initializer_controls_actual PRIVATE robo_dyna_initializer_controls_source GTest::gtest_main)
+  target_compile_options(initializer_controls_actual PRIVATE -fno-fast-math -ffp-contract=off)
+  # Explicit source-sized forecast/actual filters only; never automatic CTest.
+endif()
+
+if(NOT EXISTS "${ROBO_DYNA_REFERENCE_WORKSPACE}/crash-work/deps")
+  message(FATAL_ERROR "Initializer controls source checks need the pinned evidence workspace")
+endif()
+add_test(NAME initializer_controls_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/tests/verify_source.py"
+  --workspace "${ROBO_DYNA_REFERENCE_WORKSPACE}")
+set_tests_properties(initializer_controls_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
