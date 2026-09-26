@@ -3,6 +3,7 @@
 #include "lib_src/elements/beam18/Reference.h"
 #include "lib_src/collision/RadiossType25GapSource.h"
 #include "lib_src/math/ScalarBits.h"
+#include "lib_utils/BoundedArena.h"
 #include <gtest/gtest.h>
 #include <cmath>
 #include <limits>
