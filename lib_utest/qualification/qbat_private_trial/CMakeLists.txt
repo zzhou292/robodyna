@@ -36,6 +36,11 @@ qbat_private_cuda(qbat_private_mapped_cuda)
 target_link_libraries(qbat_private_mapped_cuda PRIVATE tl_qbat_batch
   tl_nodal_rigid_assembly_binding tl_tied_cin_attachment)
 
+add_executable(qbat_private_consumer Consumer.cpp)
+target_link_libraries(qbat_private_consumer PRIVATE tl_qbat_batch)
+target_compile_features(qbat_private_consumer PRIVATE cxx_std_17)
+add_test(NAME qbat_private_consumer COMMAND qbat_private_consumer)
+
 add_test(NAME qbat_private_body_source COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_LIST_DIR}/verify_force_body.py")
 foreach(module IN ITEMS qbat_mapped_gather qbat_measurement_operands)
