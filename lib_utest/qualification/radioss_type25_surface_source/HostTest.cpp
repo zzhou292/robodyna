@@ -78,7 +78,12 @@ TEST(Type25SurfaceSource, LateInvalidPhysicalRowsAndAliasFailuresPreserveAllPubl
   EXPECT_EQ(s::Build(input,{},b.output,b.scratch,&b.result).status,s::Status::InvalidInput);
   EXPECT_EQ(Bytes(b.output),before);SameSnapshot(b.result,snapshot);
   input=c.Input();
-  EXPECT_EQ(s::Build(input,{},b.output,b.output,&b.result).status,s::Status::InvalidInput);
+  // Reach alias admission with enough capacity for BOTH roles. Passing the
+  // smaller output as scratch would correctly reject capacity first.
+  ASSERT_GE(b.scratch.bytes(),b.forecast.output_bytes);
+  const auto scratch_before=Bytes(b.scratch);
+  EXPECT_EQ(s::Build(input,{},b.scratch,b.scratch,&b.result).status,s::Status::InvalidInput);
+  EXPECT_EQ(Bytes(b.scratch),scratch_before);SameSnapshot(b.result,snapshot);
   EXPECT_EQ(Bytes(b.output),before);
   EXPECT_EQ(s::Build(input,{},b.output,b.scratch,reinterpret_cast<s::Snapshot*>(b.scratch.data())).status,s::Status::InvalidInput);
   EXPECT_EQ(Bytes(b.output),before);
