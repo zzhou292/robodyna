@@ -38,3 +38,17 @@ receipt requirements, wrong owner, issuer destruction and publisher detachment.
 No tolerance or production profile is changed. These adapter tests inherit the
 underlying native numerical qualification; they are not another full-vehicle
 source or native-physics authority.
+
+## Ordered native group
+
+Group owns up to the existing TL native-interface capacity in declared order.
+It binds the exclusive native roster and exposes actual child receipts only
+after every candidate seal succeeds. Observations publish atomically.
+
+Discard revokes native scratch; it cannot undo force additions already made to
+the physical assembly. The enclosing dynamics driver must discard the entire
+physical attempt on any assembly or seal exception. Committed is an infallible
+bookkeeping notification only after successful common physical publication.
+
+The group reports exact device bytes; it does not invent a device allocation
+count that the transaction API does not expose.
