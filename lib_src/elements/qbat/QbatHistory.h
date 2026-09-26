@@ -3,13 +3,21 @@
 #include "QbatForceChecks.h"
 
 namespace tl::fea::qbat {
+namespace detail {
+TL_QBAT_HD inline Status ValidateHistoryPreparation(const Reference& reference,const Material& material,
+    Failure failure,const HistoryValues& values,HistoryStamp stamp) noexcept {
+  if (!ValidMaterial(reference,material,failure) ||
+      !tl::math::Finite(stamp.time) || stamp.time<0 ||
+      !ValidHistory(values,material,stamp.time)) return Status::kInvalidInput;
+  return Status::kSuccess;
+}
+}
 // Explicit prescribed finite history, not a native restart/owner admission.
 // Curve backing remains immutable caller-owned host/device storage.
 TL_QBAT_HD inline Status PreparePrescribedHistory(const Reference& reference,const Material& material,
     Failure failure,const HistoryValues& values,HistoryStamp stamp,History& output) noexcept {
-  if (!detail::ValidMaterial(reference,material,failure) ||
-      !tl::math::Finite(stamp.time) || stamp.time<0 ||
-      !detail::ValidHistory(values,material,stamp.time)) return Status::kInvalidInput;
+  const auto status = detail::ValidateHistoryPreparation(reference,material,failure,values,stamp);
+  if (status != Status::kSuccess) return status;
   History next;
   next.reference_=reference;
   next.material_=material;

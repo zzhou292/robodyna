@@ -43,4 +43,21 @@ TL_QBAT_HD inline Status Advance(const Element& element,const BatchResult& accep
   output=PackResult(proposed);
   return Status::kSuccess;
 }
+// Resident-only partial trial writer. Model identity is already owned/frozen;
+// accepted and trial are distinct slab rows. Failed trial fields are private and
+// cannot pass candidate status/finalization/pending or common publication.
+// Keep Advance above as the original failure-atomic value adapter.
+TL_QBAT_HD inline Status AdvanceIntoTrial(const Element& element,const BatchResult& accepted,
+    const PrescribedInterval& interval,BatchResult& output) noexcept {
+  if (&accepted == &output) return Status::kInvalidInput;
+  // Preserve Advance's initial PreparePrescribedHistory failure status/order,
+  // without constructing a duplicate History containing model identity.
+  const auto status = detail::ValidateHistoryPreparation(element.reference,element.material,element.failure,
+      accepted.history,accepted.stamp);
+  if (status != Status::kSuccess) return status;
+  return detail::EvaluateForceBody(element.reference,element.material,element.failure,
+      accepted.history,accepted.stamp,interval,
+      {output.history,output.stamp,output.kinematics,output.point,
+       output.internal_force_n,output.internal_couple_nm,output.diagnostics});
+}
 } // namespace tl::fea::qbat::batch_detail
