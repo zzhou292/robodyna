@@ -63,12 +63,25 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   NativeNormalResult probe;
   if(EvaluateNativeNormal(config.normal,{}, {},&probe)!=NormalStatus::Ok)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native normal response");
+  const bool complete=config.physical_source==PhysicalSourceProfile::CompleteBoundLedger;
+  if(config.physical_source!=PhysicalSourceProfile::QephT3Only&&!complete)
+    return Fail(TransactionStatus::UnsupportedProfile,"Unknown native physical source profile");
+  if(complete&&static_mass)
+    return Fail(TransactionStatus::UnsupportedProfile,"Complete physical contact requires actual accepted-owner mass");
   const auto& coverage=ledger->scope();
-  if(coverage.uncovered_nodes||coverage.qbat_parents||coverage.type25_connections||coverage.type13_connections||
+  if(coverage.uncovered_nodes||coverage.qeph_parents!=shells->qeph_count()||
+     coverage.t3_parents!=shells->t3_count()||coverage.qbat_parents!=shells->qbat_count())
+    return Fail(complete?TransactionStatus::SourceMismatch:TransactionStatus::UnsupportedProfile,
+      complete?"Contact requires the exact complete physical shell ledger":
+      "First native shell profiles require the complete QEPH/T3 mass ledger");
+  if(!complete&&(coverage.qbat_parents||coverage.type25_connections||coverage.type13_connections||
      coverage.element_mass_records||coverage.solid18_parents||coverage.solid24_parents||coverage.solid6z_parents||
-     coverage.solid18_law44_parents||coverage.solid18_law90_parents||coverage.beam18_parents||
-     coverage.qeph_parents!=shells->qeph_count()||coverage.t3_parents!=shells->t3_count())
+     coverage.solid18_law44_parents||coverage.solid18_law90_parents||coverage.beam18_parents))
     return Fail(TransactionStatus::UnsupportedProfile,"First native shell profiles require the complete QEPH/T3 mass ledger");
+  // Transaction::InitializeSource authenticates this binding and all actual
+  // mechanical participants with the common publisher before entering here.
+  // Extra contributor families affect their real shared nodal coefficients;
+  // this profile creates no substitute mass or constitutive model.
   const auto* failure=physical.failure();
   if(!failure)return Fail(TransactionStatus::SourceMismatch,"Physical failure declaration is missing");
   for(std::size_t i=0;i<failure->parent_count();++i)

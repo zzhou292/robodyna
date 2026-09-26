@@ -52,6 +52,10 @@ struct MovingMainSource : ContactSourceInput {
 // AcceptedOwnerCoefficients consumes accepted CIN transfer/numerical-mass state
 // and physical rigid-member MS. It does not admit additional mass producers.
 enum class ResponseMassPolicy { StaticPhysicalLedger,AcceptedOwnerCoefficients };
+// The complete policy reuses the actual physical ledger and common publisher's
+// authentication of every mechanical participant. It does not widen contact
+// surface topology or failure/activity support.
+enum class PhysicalSourceProfile { QephT3Only, CompleteBoundLedger };
 struct TransactionConfig {
   UnitScale units;
   lifecycle::Profile lifecycle;
@@ -60,6 +64,7 @@ struct TransactionConfig {
   NativeFrictionCoefficients friction_coefficients;
   assembly::Controls assembly;
   ResponseMassPolicy response_mass=ResponseMassPolicy::StaticPhysicalLedger;
+  PhysicalSourceProfile physical_source=PhysicalSourceProfile::QephT3Only;
 };
 inline candidates::Limits FixedMainInventoryLimits() noexcept {
   candidates::Limits limits;limits.max_pairs=65536;limits.max_tasks=65536;return limits;

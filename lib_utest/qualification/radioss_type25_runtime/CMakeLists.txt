@@ -24,7 +24,7 @@ add_test(NAME type25_runtime_consumer COMMAND type25_runtime_consumer)
 set_tests_properties(type25_runtime_consumer PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 
 include("${TL_ROOT}/lib_src/collision/RadiossType25FixedMainStartup.cmake")
-add_executable(type25_runtime_source_host SourceAdmissionTest.cpp)
+add_executable(type25_runtime_source_host SourceAdmissionTest.cpp FullLedgerTest.cpp)
 target_link_libraries(type25_runtime_source_host PRIVATE tl_radioss_type25_transaction
   tl_radioss_type25_fixed_main_startup GTest::gtest_main)
 add_test(NAME type25_runtime_source_host COMMAND type25_runtime_source_host)
@@ -97,3 +97,10 @@ target_link_libraries(type25_runtime_accepted_mass_cuda PRIVATE tl_radioss_type2
 set_target_properties(type25_runtime_accepted_mass_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 add_test(NAME type25_runtime_accepted_mass_cuda COMMAND type25_runtime_accepted_mass_cuda)
 set_tests_properties(type25_runtime_accepted_mass_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_full_ledger_cuda FullLedgerRig.cu FullLedgerCudaTest.cu)
+target_link_libraries(type25_runtime_full_ledger_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_full_ledger_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_full_ledger_cuda COMMAND type25_runtime_full_ledger_cuda)
+set_tests_properties(type25_runtime_full_ledger_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
