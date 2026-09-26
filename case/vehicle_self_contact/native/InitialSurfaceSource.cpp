@@ -43,9 +43,18 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
         values::Forecast actual, probe_capacity;
         const auto source = packed.Input(false);
         const auto probe = packed.Input(true);
-        if (values::Preflight(source, {}, actual).status != values::Status::Ok ||
-            values::Preflight(probe, {}, probe_capacity).status != values::Status::Ok)
-            d::Reject(Status::InvalidInput, "Genuine initial surface descriptors were rejected");
+        const auto part_preflight = values::Preflight(source, {}, actual);
+        if (part_preflight.status != values::Status::Ok) {
+            result.report = d::NumericalFailure(NumericalStage::PartPreflight, part_preflight,
+                "Genuine PART surface descriptors were rejected");
+            return result;
+        }
+        const auto probe_preflight = values::Preflight(probe, {}, probe_capacity);
+        if (probe_preflight.status != values::Status::Ok) {
+            result.report = d::NumericalFailure(NumericalStage::ProbePreflight, probe_preflight,
+                "Genuine SOLID probe descriptors were rejected");
+            return result;
+        }
         const auto output_bytes = std::max(actual.output_bytes, probe_capacity.output_bytes);
         const auto scratch_bytes = std::max(actual.scratch_bytes, probe_capacity.scratch_bytes);
         if (output_bytes > forecast.extraction_output || scratch_bytes > forecast.extraction_scratch ||
@@ -59,16 +68,22 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
         // explicit SOLID clause has no selected shell PART tag, so this probe
         // reveals exactly the faces that reach native shell suppression.
         auto extracted = values::Build(probe, {}, output, scratch, &observed);
-        if (extracted.status != values::Status::Ok)
-            d::Reject(Status::InvalidInput, "Complete physical surface probe rejected");
+        if (extracted.status != values::Status::Ok) {
+            result.report = d::NumericalFailure(NumericalStage::ProbeBuild, extracted,
+                "Complete physical surface probe rejected");
+            return result;
+        }
         const auto membership = d::CertifyMembership(packed, observed, next->certificate);
         if (membership.status != Status::Ready) { result.report = membership; return result; }
         // Boolean internal cancellation is invariant under row permutation:
         // every selected solid remains in the complete existence search. The
         // certificate above proves the only first-shell branch invariant.
         extracted = values::Build(source, {}, output, scratch, &observed);
-        if (extracted.status != values::Status::Ok || !extracted.count_complete)
-            d::Reject(Status::InvalidInput, "Complete authenticated PART extraction rejected");
+        if (extracted.status != values::Status::Ok || !extracted.count_complete) {
+            result.report = d::NumericalFailure(NumericalStage::PartBuild, extracted,
+                "Complete authenticated PART extraction rejected");
+            return result;
+        }
         next->faces.reserve(observed.face_count);
         for (std::size_t i = 0; i < observed.face_count; ++i)
             next->faces.push_back(d::ExternalFace(observed.faces[i], packed, next->geometry));

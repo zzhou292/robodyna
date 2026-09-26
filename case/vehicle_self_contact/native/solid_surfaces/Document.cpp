@@ -14,6 +14,26 @@ const char* Name(Status status) {
     }
     return "unknown";
 }
+const char* Name(NumericalStage stage) {
+    switch (stage) {
+    case NumericalStage::None: return "none";
+    case NumericalStage::ProbePreflight: return "solid_probe_preflight";
+    case NumericalStage::PartPreflight: return "part_preflight";
+    case NumericalStage::ProbeBuild: return "solid_probe_build";
+    case NumericalStage::PartBuild: return "part_build";
+    }
+    return "unknown";
+}
+const char* Name(values::Status status) {
+    switch (status) {
+    case values::Status::Ok: return "ok";
+    case values::Status::InvalidInput: return "invalid_input";
+    case values::Status::UnsupportedProfile: return "unsupported_profile";
+    case values::Status::ResourceLimit: return "resource_limit";
+    case values::Status::UnsupportedArithmetic: return "unsupported_arithmetic";
+    }
+    return "unknown";
+}
 void Bound(const output::Document& document, std::size_t cap) {
     output::Require(cap && cap <= 1u<<20, "Invalid initial source report cap");
     rapidjson::StringBuffer bytes;
@@ -49,6 +69,16 @@ output::Document ResultDocument(const Preparation& result, std::size_t cap) {
     output::Integer(d, "diagnostic_solid_face", result.report.solid_face);
     output::Integer(d, "diagnostic_first_eid", result.report.first_candidate_element);
     output::Integer(d, "diagnostic_conflicting_eid", result.report.conflicting_candidate_element);
+    if (result.report.numerical_stage != NumericalStage::None) {
+        const auto& numerical = result.report.numerical;
+        output::String(d, "numerical_stage", Name(result.report.numerical_stage));
+        output::String(d, "numerical_status", Name(numerical.status));
+        output::String(d, "numerical_row_meaning", "representative table index; family and native reader order not inferred");
+        if (numerical.row != SIZE_MAX) output::Integer(d, "representative_row", numerical.row);
+        if (numerical.node != SIZE_MAX) output::Integer(d, "physical_node", numerical.node);
+        output::Integer(d, "required_faces", numerical.required_faces);
+        output::Boolean(d, "count_complete", numerical.count_complete);
+    }
     output::Require(bool(result.source) == (result.report.status == Status::Ready), "Initial source report/handle disagree");
     if (result.source) {
         const auto& value = *result.source;

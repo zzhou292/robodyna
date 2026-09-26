@@ -8,6 +8,16 @@ struct Failure { Report report; };
 [[noreturn]] inline void Reject(Status status, const char* message) {
     throw Failure{{status, message}};
 }
+inline Report NumericalFailure(NumericalStage stage, values::Report lower, const char* message) {
+    Report result;
+    result.status = lower.status == values::Status::ResourceLimit ? Status::ResourceLimit :
+        (lower.status == values::Status::UnsupportedProfile || lower.status == values::Status::UnsupportedArithmetic)
+            ? Status::UnsupportedSource : Status::InvalidInput;
+    result.reason = message;
+    result.numerical_stage = stage;
+    result.numerical = lower;
+    return result;
+}
 struct Packing {
     std::size_t nodes = 0;
     std::vector<values::Solid> solids;

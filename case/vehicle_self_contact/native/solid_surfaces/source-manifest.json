@@ -16,13 +16,13 @@
     },
     {
       "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
-      "bytes": 7795,
-      "sha256": "3093e0ce845a7028d9f376e0f58f358c152f43c20803642231e7195fa3f94e92"
+      "bytes": 8399,
+      "sha256": "3b7716e4e653b1539c32ae61fdd5b5b4084a54a6f9cd28735983cf30c47fad30"
     },
     {
       "path": "case/vehicle_self_contact/native/InitialSurfaceSource.h",
-      "bytes": 4214,
-      "sha256": "4d9ea9cb435597af971dc48467c49b752af4b1f72967cb0c5508978bdf3128fe"
+      "bytes": 4546,
+      "sha256": "5046dc5d5988bce7116a2d9a7b71b874e1c9ca828b6d7368b92b007ff492b649"
     },
     {
       "path": "case/vehicle_self_contact/native/coated/Inputs.cpp",
@@ -76,13 +76,13 @@
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
-      "bytes": 5366,
-      "sha256": "885b53f29e823c1efd4acf8623a4dd77e1ad05aa50fa518257e5458a868034d7"
+      "bytes": 6926,
+      "sha256": "cd62c3a434c43097dbaa30e95cb9602dfea6cc85e07cd1a8ed08d97d66696785"
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Internal.h",
-      "bytes": 1690,
-      "sha256": "b2a26542a61059ddc9f1442aaeeb3797c112afe2a721062f58a7805c83b80a77"
+      "bytes": 2197,
+      "sha256": "b859cfea22eeb81fd7c8249035b803602d33c68252c1817e431ebefcfced2f29"
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",

@@ -62,4 +62,25 @@ TEST(InitialSurfaceDocuments, FailureHasNoReadyCensusAndBoundedDiagnostics) {
     failure.report.status = Status::Ready;
     EXPECT_THROW(ResultDocument(failure), std::exception);
 }
+TEST(InitialSurfaceDocuments, LowerValueRejectionRetainsTypedStageAndCompleteDiagnostics) {
+    Preparation failed;
+    values::Report lower{values::Status::UnsupportedProfile, 17, 19, 23, true};
+    failed.report = detail::NumericalFailure(NumericalStage::ProbeBuild, lower, "source value rejected");
+    EXPECT_EQ(failed.report.status, Status::UnsupportedSource);
+    EXPECT_EQ(failed.report.numerical_stage, NumericalStage::ProbeBuild);
+    EXPECT_EQ(failed.report.numerical.row, 17u);
+    EXPECT_EQ(failed.report.numerical.node, 19u);
+    const auto document = ResultDocument(failed);
+    EXPECT_STREQ(document["numerical_status"].GetString(), "unsupported_profile");
+    EXPECT_STREQ(document["numerical_stage"].GetString(), "solid_probe_build");
+    EXPECT_EQ(document["representative_row"].GetUint64(), 17u);
+    EXPECT_EQ(document["physical_node"].GetUint64(), 19u);
+    EXPECT_EQ(document["required_faces"].GetUint64(), 23u);
+    EXPECT_TRUE(document["count_complete"].GetBool());
+    EXPECT_FALSE(document.HasMember("faces"));
+    lower = {values::Status::ResourceLimit};
+    const auto capacity = detail::NumericalFailure(NumericalStage::PartBuild, lower, "capacity");
+    EXPECT_EQ(capacity.status, Status::ResourceLimit);
+}
+
 }

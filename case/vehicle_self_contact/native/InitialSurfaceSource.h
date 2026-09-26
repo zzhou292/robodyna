@@ -32,11 +32,16 @@ struct Census {
     values::Counts extraction;
     std::size_t faces = 0, quad_faces = 0, triangle_faces = 0;
 };
+enum class NumericalStage { None, ProbePreflight, PartPreflight, ProbeBuild, PartBuild };
 struct Report {
     Status status = Status::InvalidInput;
     std::string reason;
     std::uint64_t solid_element = 0, first_candidate_element = 0, conflicting_candidate_element = 0;
     std::uint8_t solid_face = 0;
+    NumericalStage numerical_stage = NumericalStage::None;
+    // The lower value producer's row is a representative borrowed table index.
+    // It is not a source EID or an authenticated native reader ordinal.
+    values::Report numerical;
 };
 struct Provenance {
     Stage stage = Stage::InitialClauseBeforeI25Classification;
