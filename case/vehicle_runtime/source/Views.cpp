@@ -9,6 +9,10 @@ const tl::fea::ShellPhysicalBinding& Source::physical() const noexcept {
     if(const auto* old=data_->original()) return old->execution.physical();
     return data_->environment()->physical();
 }
+const vehicle_startup::VehicleShellReferences& Source::vehicle_references() const noexcept {
+    if(const auto* old=data_->original()) return old->execution.model().shell_source().references();
+    return data_->environment()->execution_source().mechanical().vehicle_references();
+}
 const tl::fea::NodalCoefficientLedger& Source::coefficients() const noexcept { return *physical().coefficients(); }
 const tl::fea::NodalRigidAssemblyBinding& Source::rigid() const noexcept { return *physical().execution()->rigid(); }
 const tl::fea::solids::Model& Source::solids() const noexcept {

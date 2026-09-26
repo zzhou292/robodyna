@@ -29,7 +29,7 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
     const auto& step=run.last_accepted_step();
     const auto& d=step.mechanics;
     Require(profile.type45==d.has_type45,"Physical interval profile differs from actual joint participant");
-    const auto* beam_model=capture.mapping().execution().model().structural_beams();
+    const auto* beam_model=capture.mapping().structural_beams();
     Require(profile.beam18==d.has_beam18 && d.has_beam18==bool(beam_model),
         "Physical interval profile differs from actual structural beam participant");
     Require(d.valid && !d.kinetic_available && d.has_qeph && d.has_t3 && d.has_qbat &&

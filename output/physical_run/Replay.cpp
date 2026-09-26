@@ -13,6 +13,7 @@ struct Replay::Data {
     Index index;
     std::size_t host_bytes;
     std::optional<WallReceipt> wall;
+    std::optional<EnvironmentReceipt> environment;
     std::optional<WallComposition> wall_composition;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh;
 };
@@ -25,7 +26,8 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     Require(manifest.identity.source_mapping_sha256==digest,"Physical run mapping differs from caller authority");
     auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));
     Require(records::SameIdentity(manifest.identity,config.identity),"Physical configuration belongs to another run");
-    Require(config.wall==bool(manifest.wall),"Physical wall profile/receipt presence differs");
+    Require(config.wall==bool(manifest.wall) && config.environment==bool(manifest.environment) &&
+        !(manifest.wall&&manifest.environment),"Physical static environment profile/receipt presence differs");
     CheckInventory(root,file,manifest,config.request.total_byte_cap);
     auto mapping=records::source::ReadSourceBundle(root,manifest.source,source,digest,limits.source);
     auto context=mapping.MakeFrameContext(config.identity,config.request.fixed_dt,limits.records);
@@ -38,17 +40,18 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     Require(budget.Append<std::byte>(limits.source.host_bytes,region) &&
         budget.Append<std::byte>(context.retained_payload_bytes(),region) &&
         budget.Append<std::byte>(32*MetadataCap,region) &&
-        budget.Append<std::byte>(std::max(record_workspace,config.wall?WallWorkspaceBytes:0),region) &&
-        budget.Append<std::byte>(config.wall?WallMeshRetainedBytes:0,region),"Physical replay retained/peak buffers exceed host cap");
+        budget.Append<std::byte>(std::max(record_workspace,config.wall?WallWorkspaceBytes:config.environment?EnvironmentWorkspaceBytes:0),region) &&
+        budget.Append<std::byte>(config.wall?WallMeshRetainedBytes:config.environment?EnvironmentRetainedBytes:0,region),"Physical replay retained/peak buffers exceed host cap");
     auto index=ReadIndex(context,config,array_json::Parse(ReadFile(root,manifest.index,MetadataCap),MetadataCap));
     records::activity::ReadDeclaration(root,context,manifest.activity_declaration);
     ValidateRecords(root,context,config,index,128u<<20);
     CheckReferencedInventory(root,context,index,manifest);
     std::optional<WallComposition> composition;
     auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context,&composition):nullptr;
+    if(manifest.environment)wall=ReadEnvironmentArtifacts(root,*manifest.environment,mapping.source().data(),context);
     if(manifest.wall)CheckWallBeamObservation(config.profile.beam18,composition);
     auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes());
-    data->wall=manifest.wall;data->wall_mesh=std::move(wall);
+    data->wall=manifest.wall;data->environment=manifest.environment;data->wall_mesh=std::move(wall);
     data->wall_composition=composition;
     return Replay(std::move(data));
 }
@@ -58,6 +61,7 @@ const Configuration& Replay::configuration() const noexcept {return data_->confi
 const Index& Replay::index() const noexcept {return data_->index;}
 std::size_t Replay::peak_host_bytes() const noexcept {return data_->host_bytes;}
 const WallReceipt* Replay::wall() const noexcept {return data_->wall?&*data_->wall:nullptr;}
+const EnvironmentReceipt* Replay::environment() const noexcept {return data_->environment?&*data_->environment:nullptr;}
 const WallComposition* Replay::wall_composition() const noexcept {
     return data_->wall_composition?&*data_->wall_composition:nullptr;
 }

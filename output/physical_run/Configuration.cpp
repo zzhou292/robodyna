@@ -2,7 +2,7 @@
 #include "output/full_shell/FullShellIdentityFields.h"
 #include "output/BoundedArrayJson.h"
 namespace crash::output::physical_run {
-Document ConfigurationDocument(const Configuration& c) {
+static Document LegacyConfigurationDocument(const Configuration& c) {
     const auto& r=c.request;
     records::CheckIdentity(c.identity);arrays::CheckHash(c.point_layout_sha256);
     Require(r.extra_interval_bytes==ExtraIntervalBytes(c.profile) && !r.extra_frame_bytes,
@@ -27,7 +27,7 @@ Document ConfigurationDocument(const Configuration& c) {
     }
     d.AddMember("static_reservations",files,d.GetAllocator());return d;
 }
-Configuration ReadConfiguration(const Value& v) {
+static Configuration ReadLegacyConfiguration(const Value& v) {
     using namespace array_json;
     const bool wall=v.IsObject() && v.HasMember("wall_case");
     const bool self=v.IsObject() && v.HasMember("extra_interval_bytes");
@@ -59,6 +59,28 @@ Configuration ReadConfiguration(const Value& v) {
     for(const auto& row:rows.GetArray()) {
         Keys(row,{"file","bytes"});r.static_files.push_back({Text(row["file"]),static_cast<std::size_t>(UInt(row["bytes"]))});
     }
-    ConfigurationDocument(c);return c;
+    LegacyConfigurationDocument(c);return c;
+}
+Document ConfigurationDocument(const Configuration& c) {
+    auto doc=LegacyConfigurationDocument(c);
+    if(c.environment) {
+        Require(!c.wall && !c.profile.native_contact && !c.profile.self_contact,
+            "Declared physical environment cannot use legacy M2 wall or tiny native-history profiles");
+        doc["schema"].SetString("robo_dyna.physical_run_configuration.v4",doc.GetAllocator());
+        String(doc,"environment_wall",EnvironmentProfile);
+    }
+    return doc;
+}
+Configuration ReadConfiguration(const Value& value) {
+    if(!value.IsObject() || !value.HasMember("environment_wall"))return ReadLegacyConfiguration(value);
+    using namespace array_json;
+    Require(value.HasMember("schema") && !value.HasMember("wall_case") && Text(value["schema"])=="robo_dyna.physical_run_configuration.v4" &&
+        Text(value["environment_wall"])==EnvironmentProfile,"Unknown declared environment configuration");
+    Document legacy;legacy.CopyFrom(value,legacy.GetAllocator());legacy.RemoveMember("environment_wall");
+    // Delegate the complete unchanged legacy physical-field validator. The new
+    // descriptor adds only static source geometry, never contact history rows.
+    legacy["schema"].SetString("robo_dyna.physical_run_configuration.v1",legacy.GetAllocator());
+    auto out=ReadLegacyConfiguration(legacy);out.environment=true;
+    ConfigurationDocument(out);return out;
 }
 } // namespace crash::output::physical_run

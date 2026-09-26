@@ -1,5 +1,6 @@
 #pragma once
 #include "output/full_shell/activity/ActivityRecord.h"
+#include "FieldTypes.h"
 #include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_src/elements/qbat/QbatBatch.h"
 #include <optional>
@@ -16,6 +17,9 @@ struct Forecast {
 namespace detail {
 Forecast PlanBuffers(const records::Context&,std::size_t physical_nodes,
     std::size_t qeph,std::size_t t3,std::size_t qbat,std::size_t mapping_bytes,Limits);
+// Explicit single-QEPH suffix. Legacy PlanBuffers keeps exact total equality.
+Forecast PlanBuffersWithEnvironment(const records::Context&,std::size_t physical_nodes,
+    FamilyCounts physical,FamilyCounts rendered,std::size_t mapping_bytes,Limits);
 // Unpublished fields may be incomplete after a rejected readback. Frame and
 // packed activity become visible through the same selector only after Finish.
 struct FrameBuffers {

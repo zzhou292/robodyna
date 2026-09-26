@@ -2,6 +2,7 @@
 #include "output/full_shell/FullShellVisualizationSchema.h"
 #include "lib_src/elements/ShellBatchPlasticityBinding.h"
 namespace crash::output::physical_frames {
+struct FamilyCounts { std::size_t qeph=0, t3=0, qbat=0; };
 namespace records=full_shell;
 inline constexpr std::uint32_t QephFamily=1,T3Family=2,QbatFamily=3;
 struct ParentField {
