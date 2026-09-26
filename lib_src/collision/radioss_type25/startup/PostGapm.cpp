@@ -223,6 +223,14 @@ static Report BuildImpl(const Input& input,const MixedSidesSnapshot& sides,const
   *published=next;
   report={Status::Ok};report.neighbor_warnings=warnings;return report;
 }
+Forecast ForecastMixedStarterStorage(std::size_t nodes,std::size_t primaries,
+    std::size_t shells,std::size_t origins,Limits limits) noexcept {
+  d::Layout layout;
+  const auto report=d::MakeLayout(nodes,primaries,limits,layout,
+      TopologyPolicy::NativeMixedSurface,shells,origins);
+  if(layout.forecast.output_bytes)return layout.forecast;
+  Forecast result;result.status=report.status;return result;
+}
 Forecast PreflightMixedStarter(const Input& input,const MixedSidesSnapshot& sides,
     const PostGapmTopology& post,Limits limits) noexcept {
   return PreflightImpl(input,sides,post,limits,nullptr);

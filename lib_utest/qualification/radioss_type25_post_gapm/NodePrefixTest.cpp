@@ -33,6 +33,19 @@ struct Extended {
   s::Report Build() {return s::BuildStarter(input,original.sides.result,original.post,prefix,{},output,scratch,&snapshot);}
 };
 }
+TEST(MixedNodePrefix, CountOnlyStorageForecastMatchesTypedActualExtents) {
+  Extended f;const auto& input=f.input;
+  const auto value=s::ForecastMixedStarterStorage(input.node_count,input.primary_count,
+      input.shell_primary_count,input.raw_origin_count);
+  ASSERT_EQ(value.status,s::Status::Ok);
+  EXPECT_EQ(value.output_bytes,f.forecast.output_bytes);EXPECT_EQ(value.scratch_bytes,f.forecast.scratch_bytes);
+  EXPECT_EQ(value.expanded_mains,f.forecast.expanded_mains);
+  EXPECT_EQ(s::ForecastMixedStarterStorage(0,input.primary_count,input.shell_primary_count,input.raw_origin_count).status,s::Status::InvalidInput);
+  EXPECT_EQ(s::ForecastMixedStarterStorage(input.node_count,input.primary_count,input.primary_count+1,input.raw_origin_count).status,s::Status::InvalidInput);
+  EXPECT_EQ(s::ForecastMixedStarterStorage(input.node_count,input.primary_count,input.shell_primary_count,input.primary_count-1).status,s::Status::InvalidInput);
+  auto limit=s::Limits{};limit.max_output_bytes=value.output_bytes-1;
+  EXPECT_EQ(s::ForecastMixedStarterStorage(input.node_count,input.primary_count,input.shell_primary_count,input.raw_origin_count,limit).status,s::Status::ResourceLimit);
+}
 TEST(MixedNodePrefix, GenuineSidesRemainOriginalWhileWholeNativeUsesCompleteDomain) {
   for(bool si:{false,true}) {
     Extended f(si);const auto original_count=f.original.sides.result.node_count;

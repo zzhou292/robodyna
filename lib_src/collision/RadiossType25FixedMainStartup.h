@@ -27,6 +27,10 @@ Forecast PreflightMixedStarter(const Input&,const MixedSidesSnapshot&,
     const PostGapmTopology&,Limits={}) noexcept;
 Report BuildStarter(const Input&,const MixedSidesSnapshot&,const PostGapmTopology&,
     Limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot*) noexcept;
+// Count-only aligned storage forecast. This performs no borrowed-source or
+// prefix validation; call the typed preflight after real arrays are available.
+Forecast ForecastMixedStarterStorage(std::size_t nodes,std::size_t primaries,
+    std::size_t shell_primaries,std::size_t raw_origins,Limits={}) noexcept;
 // Explicit combined-domain overload. It validates an unchanged original node
 // prefix and genuine original sides before one shared topology build. Added
 // IDs must be unique and all coordinates finite, as in the original admission.
