@@ -2,6 +2,7 @@
 #include "case/vehicle_startup/joints/VehicleJointModel.h"
 #include "lib_src/collision/radioss_type25/source_nodal/Types.h"
 #include "lib_src/collision/radioss_type25/CoefficientTypes.h"
+#include "lib_src/collision/radioss_type25/UnitConversions.h"
 #include <array>
 #include <memory>
 #include <string>
