@@ -15,6 +15,14 @@ struct InitialSourceAccess {
     if(!source.impl_)throw std::logic_error("Missing prepared source");
     return source.impl_->source;
   }
+  static const initial_source::detail::Layout& StoredLayout(const initial_source::PreparedSource& source) {
+    if(!source.impl_)throw std::logic_error("Missing prepared source");
+    return source.impl_->layout;
+  }
+  static initial_source::Limits StoredLimits(const initial_source::PreparedSource& source) {
+    if(!source.impl_)throw std::logic_error("Missing prepared source");
+    return source.impl_->limits;
+  }
   static Result Read(const initial_source::DeviceSeed& source,cudaStream_t stream) {
     if(!source.impl_)throw std::logic_error("Missing private initial seed");
     const auto& p=*source.impl_;Result out;

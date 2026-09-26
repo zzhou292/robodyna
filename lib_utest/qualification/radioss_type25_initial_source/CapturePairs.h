@@ -7,13 +7,15 @@ namespace initial_source_test {
 // Qualification-only transient inventory readback. Ordinary Prepare remains
 // the seed producer; no pair buffer or callback is added to its public API.
 inline std::vector<std::array<int,2>> CapturePairs(const src::PreparedSource& prepared,
-    src::Limits limits,cudaStream_t stream) {
+    cudaStream_t stream) {
   namespace d=src::detail;
   const auto require=[](bool ok){if(!ok)throw std::runtime_error("Bounded qualification pair capture failed");};
   const auto check=[&](cudaError_t status){require(status==cudaSuccess);};
   const auto& owned=n::qualification::InitialSourceAccess::Host(prepared);
-  const auto forecast=src::Preflight(owned.descriptor,limits);require(forecast.status==src::Status::Ok);
-  d::Layout layout;require(d::MakeLayout(owned.descriptor,limits,forecast.cub_bytes,layout)==src::Status::Ok);
+  // The private descriptor owns consumed operands, not the retired admission
+  // tables/flat Starter view. Reuse the actual authenticated stored plan.
+  const auto& layout=n::qualification::InitialSourceAccess::StoredLayout(prepared);
+  const auto limits=n::qualification::InitialSourceAccess::StoredLimits(prepared);
   struct Arena{void* data=nullptr;~Arena(){if(data)cudaFree(data);}};
   struct Drain{cudaStream_t stream;~Drain(){cudaStreamSynchronize(stream);}};
   Arena work,sweep,seed;Drain drain{stream};

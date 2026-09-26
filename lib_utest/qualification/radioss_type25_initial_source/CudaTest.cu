@@ -266,7 +266,7 @@ TEST_F(InitialSourceCuda, WholeNativeGridMatchesFallbackAndNintBoundaryNeighborh
     src::DeviceSeed seed;const auto report=src::Prepare(source,stream,seed);ASSERT_EQ(report.status,src::Status::Ok);
     std::uint64_t cells=1;for(auto axis:report.diagnostics.grid)cells*=std::uint64_t(axis+2);
     EXPECT_EQ(cells,expected.inventory.initialized_voxel_slots);native_cells.push_back(expected.inventory.initialized_voxel_slots);
-    EXPECT_EQ(CapturePairs(source,f.Limits(),stream),expected.inventory.pairs);
+    EXPECT_EQ(CapturePairs(source,stream),expected.inventory.pairs);
     EXPECT_EQ(report.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
     if(separation==1.e14){EXPECT_EQ(report.diagnostics.grid[0],100);EXPECT_EQ(cells,918u);}
   }
@@ -279,7 +279,7 @@ TEST_F(InitialSourceCuda, CompleteVoxelRangesMatchEveryNativePairAcrossSeparated
     // Full history wrapper remains bounded to this complete 114-node packet.
     ASSERT_GT(expected.inventory.pairs.size(),0u);
     src::PreparedSource source;ASSERT_EQ(src::PrepareSource(f.Input(),limits,source).status,src::Status::Ok);
-    EXPECT_EQ(CapturePairs(source,limits,stream),expected.inventory.pairs);
+    EXPECT_EQ(CapturePairs(source,stream),expected.inventory.pairs);
     src::DeviceSeed seed;const auto result=src::Prepare(source,stream,seed);
     ASSERT_EQ(result.status,src::Status::Ok);EXPECT_TRUE(result.counts_complete);
     EXPECT_EQ(result.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
@@ -297,7 +297,7 @@ TEST_F(InitialSourceCuda, CompleteVoxelTaskCountAdmitsExactCapAndRejectsOneShort
   ASSERT_EQ(src::PrepareSource(f.Input(),limits,exact).status,src::Status::Ok);
   src::DeviceSeed accepted;const auto complete=src::Prepare(exact,stream,accepted);
   ASSERT_EQ(complete.status,src::Status::Ok);EXPECT_EQ(complete.diagnostics.tasks,report.diagnostics.tasks);
-  EXPECT_EQ(CapturePairs(exact,limits,stream),expected.inventory.pairs);Same(Access::Read(accepted,stream),expected);
+  EXPECT_EQ(CapturePairs(exact,stream),expected.inventory.pairs);Same(Access::Read(accepted,stream),expected);
   --limits.max_tasks;src::PreparedSource short_source;
   ASSERT_EQ(src::PrepareSource(f.Input(),limits,short_source).status,src::Status::Ok);
   src::DeviceSeed missing;const auto failed=src::Prepare(short_source,stream,missing);
