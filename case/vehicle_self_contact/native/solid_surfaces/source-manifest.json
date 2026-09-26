@@ -66,8 +66,13 @@
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Digest.cpp",
-      "bytes": 3078,
-      "sha256": "70b99327cbf728980be04acbcafce0a78a6ae9598fda192f89d8ce0574a8f865"
+      "bytes": 3079,
+      "sha256": "8d549974e2b57c84fa60797c9530d6fefa112e48c7b91004d530f11f13da7805",
+      "prior_uint8_encoding": {
+        "bytes": 3078,
+        "sha256": "70b99327cbf728980be04acbcafce0a78a6ae9598fda192f89d8ce0574a8f865"
+      },
+      "review": "Supported uint32 digest encoding of retained uint8 Boolean values; no source/math change."
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
