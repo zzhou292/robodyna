@@ -1287,3 +1287,11 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_nodal_seed", ":radioss_type25_search_values", "//lib_utils:bounded_arena"],
 )
+
+cc_library(
+    name = "radioss_type25_interface_surface",
+    srcs = glob(["radioss_type25/surface_interface/*.cpp"]),
+    hdrs = ["RadiossType25InterfaceSurface.h"] + glob(["radioss_type25/surface_interface/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_surface_source", ":radioss_type25_fixed_main_startup"],
+)

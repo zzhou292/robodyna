@@ -9,7 +9,14 @@ TL_MATH_HOST_DEVICE inline bool Valid(ShellSideRole role) {
 TL_MATH_HOST_DEVICE inline bool Resolved(TopologyPolicy policy) {
   return policy == TopologyPolicy::NativeResolvedShellSides;
 }
+TL_MATH_HOST_DEVICE inline bool Mixed(TopologyPolicy policy) {
+  return policy == TopologyPolicy::NativeMixedSurface;
+}
+TL_MATH_HOST_DEVICE inline bool StoresRoles(TopologyPolicy policy) {
+  return Resolved(policy) || Mixed(policy);
+}
 TL_MATH_HOST_DEVICE inline bool Supported(Profile profile, TopologyPolicy policy) {
+  if (profile == Profile::MixedSurface) return Mixed(policy);
   if (profile == Profile::ResolvedShellSides) return Resolved(policy);
   return (profile == Profile::OrdinaryExteriorFixedMain || profile == Profile::OrdinaryExteriorMovingMain) &&
       (policy == TopologyPolicy::ManifoldTwoSided || policy == TopologyPolicy::NativeOrdinaryShell);

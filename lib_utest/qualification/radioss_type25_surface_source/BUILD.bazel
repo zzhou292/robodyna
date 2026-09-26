@@ -12,3 +12,9 @@ cc_test(
     srcs = ["Consumer.cpp"],
     deps = ["//lib_src/collision:radioss_type25_surface_source"],
 )
+
+filegroup(
+    name = "interface_fixture",
+    srcs = ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/radioss_type25_interface_surface:__pkg__"],
+)

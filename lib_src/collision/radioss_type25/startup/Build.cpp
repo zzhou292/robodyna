@@ -13,11 +13,17 @@ void Copy(detail::Data from,detail::Data to,const detail::OutputLayout& p) noexc
   std::copy_n(from.normal_offsets,p.normal_offsets.count,to.normal_offsets);
   std::copy_n(from.normal_mains,p.normal_mains.count,to.normal_mains);
   if(p.primary_roles.count)std::copy_n(from.primary_roles,p.primary_roles.count,to.primary_roles);
+  if(p.primary_identities.count)std::copy_n(from.primary_identities,p.primary_identities.count,to.primary_identities);
+  if(p.raw_origins.count)std::copy_n(from.raw_origins,p.raw_origins.count,to.raw_origins);
+  if(p.raw_origin_to_primary.count)std::copy_n(from.raw_origin_to_primary,p.raw_origin_to_primary.count,to.raw_origin_to_primary);
 }
 }
 Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot* published) noexcept {
-  detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout,input.topology);
+  // Mixed neighbor/normal construction must not assume an all-exterior
+  // IELEM_M mask. Use BuildMixedSides until post-GAPM support is authenticated.
+  if(role_policy::Mixed(input.topology))return {Status::UnsupportedProfile};
+  detail::Layout layout;auto report=detail::MakeLayout(input.node_count,input.primary_count,limits,layout,input.topology,input.shell_primary_count,input.raw_origin_count);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.output_bytes || scratch.bytes()<layout.forecast.scratch_bytes)
     return {Status::ResourceLimit};
@@ -65,6 +71,11 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   next.normal_incidence_count=incidence;next.starter={committed.normals,committed.references,references};
   next.source_generation=input.source_generation;next.profile=input.profile;next.topology=input.topology;
   next.primary_roles=committed.primary_roles;next.primary_role_count=layout.output.primary_roles.count;
+  next.primary_identities=committed.primary_identities;
+  next.primary_identity_count=layout.output.primary_identities.count;
+  next.shell_primary_count=role_policy::Mixed(input.topology)?input.shell_primary_count:0;
+  next.raw_origins=committed.raw_origins;next.raw_origin_to_primary=committed.raw_origin_to_primary;
+  next.raw_origin_count=layout.output.raw_origins.count;
   *published=next;
   Report result{Status::Ok};result.neighbor_warnings=warnings;return result;
 }

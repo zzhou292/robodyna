@@ -13,6 +13,12 @@ Forecast Preflight(std::size_t nodes,std::size_t primary_faces,Limits={}) noexce
 Forecast Preflight(const Input&,Limits={}) noexcept;
 Report BuildStarter(const Input&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,Snapshot*) noexcept;
+// Complete mixed SH2 stage only. TrueG=P+shell_count; no solid partners.
+// The separate Snapshot/BuildStarter interface remains closed for mixed
+// inputs until post-I25GAPM internal-support/erosion semantics are supplied.
+Forecast PreflightMixedSides(const Input&,Limits={}) noexcept;
+Report BuildMixedSides(const Input&,Limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,MixedSidesSnapshot*) noexcept;
 // Separate native fixed-main-ready stage. Snapshot must be an immutable result
 // of BuildStarter for this same input/generation. Structural checks reject bad
 // spans, ranges and reciprocal/reference endpoints; they are not authentication

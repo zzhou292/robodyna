@@ -2,6 +2,7 @@
 #include "Internal.h"
 #include "../search/Ranges.h"
 #include "../../self_contact_filters/Environment.h"
+#include <initializer_list>
 namespace tlfea::contact::radioss_type25::startup::detail {
 bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) noexcept {
   const auto x=reinterpret_cast<std::uintptr_t>(a),y=reinterpret_cast<std::uintptr_t>(b);
@@ -33,6 +34,26 @@ Report CheckInput(const Input& in,const Layout&,const tl::util::HostArena& outpu
         !Disjoint(scratch.data(),scratch.bytes(),pointers[i],bytes[i])) return {Status::InvalidInput};
   for (unsigned i=0;i<4;++i)
     if (!Disjoint(published,published_bytes,pointers[i],bytes[i])) return {Status::InvalidInput};
+  if(role_policy::Mixed(in.topology)) {
+    if(in.primary_identity_count!=in.primary_count || in.shell_primary_count>in.primary_count ||
+        in.raw_origin_count<in.primary_count || !range::Span(in.primary_identities,in.primary_count) ||
+        !range::Span(in.raw_origins,in.raw_origin_count) ||
+        !range::Span(in.raw_origin_to_primary,in.raw_origin_count))return {Status::InvalidInput};
+    const auto identity_bytes=in.primary_count*sizeof(PrimaryFaceIdentity);
+    if(!Disjoint(output.data(),output.bytes(),in.primary_identities,identity_bytes) ||
+        !Disjoint(scratch.data(),scratch.bytes(),in.primary_identities,identity_bytes) ||
+        !Disjoint(published,published_bytes,in.primary_identities,identity_bytes))return {Status::InvalidInput};
+    const void* origin_pointers[]{in.raw_origins,in.raw_origin_to_primary};
+    const std::size_t origin_bytes[]{in.raw_origin_count*sizeof(PrimaryFaceIdentity),in.raw_origin_count*sizeof(std::uint32_t)};
+    for(unsigned i=0;i<2;++i)
+      if(!Disjoint(output.data(),output.bytes(),origin_pointers[i],origin_bytes[i]) ||
+          !Disjoint(scratch.data(),scratch.bytes(),origin_pointers[i],origin_bytes[i]) ||
+          !Disjoint(published,published_bytes,origin_pointers[i],origin_bytes[i]))return {Status::InvalidInput};
+    for(const auto* descriptor:{&output,&scratch})
+      if(!Disjoint(output.data(),output.bytes(),descriptor,sizeof(*descriptor)) ||
+          !Disjoint(scratch.data(),scratch.bytes(),descriptor,sizeof(*descriptor)) ||
+          !Disjoint(published,published_bytes,descriptor,sizeof(*descriptor)))return {Status::InvalidInput};
+  }
   return {Status::Ok};
 }
 } // namespace tlfea::contact::radioss_type25::startup::detail

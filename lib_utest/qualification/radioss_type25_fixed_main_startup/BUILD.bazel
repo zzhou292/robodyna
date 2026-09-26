@@ -23,3 +23,9 @@ filegroup(
     srcs = ["native/original/i25neigh.F"],
     visibility = ["//lib_utest/qualification/radioss_type25_gap_source:__pkg__"],
 )
+
+filegroup(
+    name = "interface_fixture",
+    srcs = ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/radioss_type25_interface_surface:__pkg__"],
+)
