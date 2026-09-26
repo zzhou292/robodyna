@@ -75,7 +75,7 @@ struct Fixture {
         const auto line=std::uint32_t(beam_line); Add<std::uint32_t>("beams_source_lines",&line,1,1);
     }
     template<class T> void Add(const char* name, const T* data, std::size_t count, std::size_t columns) {
-        source::NamedArray array; array.name=name;
+        source::NamedArray array; array.name=name; array.descriptor.file=std::string(name)+".bin";
         array.descriptor.layout={output::arrays::detail::Type<T>::value,count/columns,columns,{}};
         array.bytes=output::arrays::Encode<T>(array.descriptor.layout,data,count);
         array.descriptor.bytes=array.bytes.size(); array.descriptor.sha256=output::Sha256(array.bytes);
