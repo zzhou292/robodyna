@@ -68,3 +68,17 @@ CIN/tied coupling stays a separate next declaration. Keep Irem_i2=1 where actual
 pair-specific CSR permits contact; no blanket slave or same-body deletion, and
 no diagnostic setting3 unless a separately declared case requires it. Full V5
 and matched four-worker performance remain outside this small rigid gate.
+
+
+Initial owning gate disposition: source/host and old fixed/moving GPU gates pass
+at3378. Rigid CUDA1 stops at epoch0 on five raw eigenframe entries only. The
+native/TL frames use distinct proper signed/permuted eigenvectors; nodal X/V/M/J,
+spin and group center checks preceding that comparison passed. Preserve the
+failed CUDA1 receipt. Qualification now pairs each genuine initial frame with
+its own genuine principal moments, compares normalized world inertia, and uses
+E(n)E(0)^T for relative physical rotation at the same force-history phase. The
+original frame budgets (absolute2e-10, relative2e-8), all other comparisons and
+all production code stay unchanged. Four host negatives reject mismatched
+moments, changed physical orientation, wrong motion and invalid/improper frames.
+Captured RBY(10:12) are bit-constant across1001 force2 returns. Only expected
+metadata gains these moments; both binary streams must regenerate byte-identical.

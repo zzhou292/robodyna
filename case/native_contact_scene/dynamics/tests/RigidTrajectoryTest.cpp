@@ -49,6 +49,17 @@ TEST(NativeRigidSceneDynamicsCuda, SourceBoundRigidThousandIntervalsAndActiveDis
     ASSERT_EQ(initial.stamp.rigid_groups.group_count,1u);
     rigid_trajectory_test::Reader group_reference(TYPE25_RIGID_NATIVE_GROUP_FILE);
     auto current_group=group_reference.Read(0);auto force_group=current_group;
+    const auto initial_group=Access::Rigid(dynamics);
+    const auto& inertia=source.physical.rigid().groups()[0].principal.inertia;
+    const auto& captured=metadata["initial_force_principal_moments_native_tonne_mm2"];
+    ASSERT_TRUE(captured.IsArray());
+    ASSERT_EQ(captured.Size(),3u);
+    const rigid_trajectory_test::gauge::Moments actual_moments{inertia.x,inertia.y,inertia.z};
+    const rigid_trajectory_test::gauge::Moments native_moments{captured[0].GetDouble()*.001,captured[1].GetDouble()*.001,captured[2].GetDouble()*.001};
+    rigid_trajectory_test::gauge::Alignment alignment;
+    ASSERT_TRUE(rigid_trajectory_test::gauge::Bind(rigid_trajectory_test::Axes(initial_group),actual_moments,
+        rigid_trajectory_test::Axes(current_group),native_moments,&alignment));
+    RecordProperty("principal_frame_comparison","initial world inertia plus relative force-phase rotation; no eigenvector sign/order identity");
     for(unsigned i=0;i<18;++i) {
         ASSERT_EQ(source.physical.physical().domain()->nodes()[i].source_id,metadata["node_source_ids"][i].GetUint64());
         Number(initial.mass_kg[i],metadata["mass_native_tonne"][i].GetDouble()*1000,0,128*std::numeric_limits<double>::epsilon());
@@ -67,7 +78,7 @@ TEST(NativeRigidSceneDynamicsCuda, SourceBoundRigidThousandIntervalsAndActiveDis
     for(std::uint64_t step=0;step<1000;++step) {
         SCOPED_TRACE(step);const auto wanted=expected.Read(step);
         ASSERT_NO_FATAL_FAILURE(Motion(capture->native_state(),wanted));
-        ASSERT_NO_FATAL_FAILURE(rigid_trajectory_test::Motion(capture->native_state(),Access::Rigid(dynamics),current_group,force_group));
+        ASSERT_NO_FATAL_FAILURE(rigid_trajectory_test::Motion(capture->native_state(),Access::Rigid(dynamics),current_group,force_group,alignment));
         const auto before_group=Access::Rigid(dynamics);
         const auto before_state=capture_test::Copy(capture->native_state());
         const auto before_history=std::vector<native::NativeGeometryHistory>(capture->native_history(),capture->native_history()+18);
@@ -119,7 +130,7 @@ TEST(NativeRigidSceneDynamicsCuda, SourceBoundRigidThousandIntervalsAndActiveDis
         if(HasFailure())return;
     }
     const auto terminal=expected.Read(1000);ASSERT_NO_FATAL_FAILURE(Motion(capture->native_state(),terminal));expected.Finish();
-    ASSERT_NO_FATAL_FAILURE(rigid_trajectory_test::Motion(capture->native_state(),Access::Rigid(dynamics),current_group,force_group));group_reference.Finish();
+    ASSERT_NO_FATAL_FAILURE(rigid_trajectory_test::Motion(capture->native_state(),Access::Rigid(dynamics),current_group,force_group,alignment));group_reference.Finish();
     EXPECT_TRUE(retried);EXPECT_EQ(active,metadata["active_steps"].GetUint64());EXPECT_GE(rebuilds,1u);
     for(unsigned i=0;i<18;++i)EXPECT_EQ(episodes[i],metadata["episodes_by_secondary"][i].GetUint());
     RecordProperty("accepted_physical_intervals","1000");RecordProperty("active_force_discard_retry","passed");

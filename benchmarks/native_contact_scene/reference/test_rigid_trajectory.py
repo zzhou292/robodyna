@@ -56,6 +56,8 @@ class RigidPinnedReference(unittest.TestCase):
         self.assertEqual((metadata['active_steps'],metadata['first_active_step']),(18,302))
         self.assertEqual(metadata['node_source_ids'],tuple(range(1,19)))
         self.assertEqual(metadata['auxiliary_primary_source_id'],19)
+        self.assertEqual(len(metadata['initial_force_principal_moments_native_tonne_mm2']),3)
+        self.assertTrue(all(x>0 for x in metadata['initial_force_principal_moments_native_tonne_mm2']))
         self.assertEqual(metadata['reference_sha256'],hashlib.sha256(contact).hexdigest())
         self.assertEqual(metadata['rigid_reference_sha256'],hashlib.sha256(groups).hexdigest())
         bad=deepcopy(manifest);bad['files']['sequence']['sha256']='0'*64

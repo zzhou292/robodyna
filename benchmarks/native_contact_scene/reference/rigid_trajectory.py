@@ -83,8 +83,13 @@ def convert(workspace,manifest):
         t.require(all(struct.pack('<d',a['MS'][i])==struct.pack('<d',mass[node]) for i,node in enumerate(native)), 'Rigid accepted mass changed')
     t.require(len(rigid)<=t.MAX_BINARY,'Rigid expected binary exceeds cap')
     initial_inertia=entries[0,1]['arrays']['IN']
+    principal=t.array(returns[0,2]['arrays']['RBY'][9:12],3)
+    t.require(all(value>0 for value in principal),'Initial rigid principal moments must be positive')
+    t.require(all(struct.pack('<3d',*t.array(returns[cycle,2]['arrays']['RBY'][9:12],3))==struct.pack('<3d',*principal)
+                  for cycle in range(1001)), 'Rigid principal moments changed within fixed-mass source scope')
     metadata.update(schema='robo_dyna.native_rigid_reference_trajectory.v1',intervals=1000,frames=1001,dt_s=3e-7,
         node_source_ids=physical,secondary_source_ids=secondaries,auxiliary_primary_source_id=primary,
+        initial_force_principal_moments_native_tonne_mm2=principal,
         mass_native_tonne=[mass[node] for node in physical],inertia_native_tonne_mm2=[initial_inertia[internal[node]] for node in physical],
         reference_sha256=hashlib.sha256(reference).hexdigest(),rigid_reference_sha256=hashlib.sha256(rigid).hexdigest(),input_pins=pins,
         scope='Expected observations only; no shipping source coefficients or restart state',

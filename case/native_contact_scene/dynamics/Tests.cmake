@@ -48,6 +48,7 @@ endif()
 
 set(TYPE25_RIGID_NATIVE_REFERENCE_DIR "" CACHE PATH "Pinned expected v3 contact/rigid phases, qualification only")
 if(TYPE25_RIGID_NATIVE_REFERENCE_DIR)
+  target_sources(native_scene_dynamics_host_check PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tests/RigidGaugeTest.cpp")
   set(rigid_contact "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/native-reference.bin")
   set(rigid_groups "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/rigid-reference.bin")
   set(rigid_metadata "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/reference-metadata.json")
