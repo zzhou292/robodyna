@@ -60,3 +60,21 @@ and coated scalar oracles supply numerical expectations. The optional actual
 V5 target must be run separately through a guarded forecast and create-only
 whole-source command; it is never an automatic CTest. No executed pass is
 implied by these instructions.
+
+
+## Optional mixed-face support queries
+
+`SupportQuery` adds a bounded Q4 incidence index for triangular solid-face
+queries. It reuses the original positive DX/ST ranking and corner/material-group
+winner certificate. A matching T3 remains the I25GAPM owner even when native
+INCOQ3 also finds a thicker Q4. Without a T3, all Q4s containing the three query
+nodes are considered; no exact-Q4-key shortcut is used. Empty winners explicitly
+mean no physical shell support. The original selected-shell wrapper, source
+scope, allocation path and forecast remain unchanged.
+
+The index borrows immutable Inputs/Packed for its lifetime. It does not detect
+mutation through other aliases or authenticate caller-made value fixtures.
+Complete source preparation remains the factory's responsibility. New tests
+reuse the complete native INCOQ3/CNEL oracle and preserve the old fifteen groups.
+This slice does not resolve solid support, post-GAPM internal/erosion flags,
+final main K, normals or runtime admission.

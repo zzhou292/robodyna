@@ -55,6 +55,9 @@ struct SupportSelection {
 };
 SupportSelection SelectSupport(const coated::Inputs&, const Packed&, const s::Main&,
     std::size_t physical, bool grouping_context);
+void AccumulateSupport(const Packed&, std::size_t, SupportSelection&, double& thickness, double& young);
+SupportSelection ResolveSupportTies(const coated::Inputs&, const Packed&, const s::Main&,
+    SupportSelection, bool triangle, bool grouping_context);
 void CheckIdentity(const s::Main&, const n::NativeExteriorMainGeometryResult&,
     std::size_t primary, std::uint64_t eid);
 std::string Digest(const Provenance&, const Certificate&, const std::vector<PrimaryBinding>&,
