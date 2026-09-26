@@ -20,8 +20,8 @@ vehicle_run::Endpoint PreparedRun::Session::Accepted() const noexcept {
     const auto stamp = dynamics.accepted();
     return {stamp.epoch, stamp.time};
 }
-void PreparedRun::Session::Prepare() {
-    try { dynamics.PrepareStep(); }
+const vehicle_dynamics::StepObservation& PreparedRun::Session::PrepareObserved() {
+    try { return dynamics.PrepareStep(); }
     catch (const vehicle_dynamics::native_contact::StageError& error) {
         rejected_native = error.failure();
         throw;
@@ -30,6 +30,7 @@ void PreparedRun::Session::Prepare() {
         throw;
     }
 }
+void PreparedRun::Session::Prepare() { (void)PrepareObserved(); }
 void PreparedRun::Session::Commit() { dynamics.CommitStep(); }
 void PreparedRun::Session::Discard() noexcept { dynamics.DiscardStep(); }
 void PreparedRun::Session::Append() {

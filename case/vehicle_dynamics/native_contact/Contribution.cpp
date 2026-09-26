@@ -36,7 +36,7 @@ void Contribution::Require(Operation operation, const native::TransactionReport&
         Contribution& contribution;
         ~Revoke() { contribution.Discard(); }
     } revoke{*this};
-    throw StageError(operation, report);
+    throw StageError(operation, report, source_, transaction_->last_diagnostics());
 }
 [[noreturn]] void Contribution::Reject(Operation operation, const char* message) {
     Discard();

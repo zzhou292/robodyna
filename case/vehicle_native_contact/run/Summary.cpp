@@ -3,6 +3,7 @@
 #include "case/vehicle_run/MechanicsDocument.h"
 #include "output/physical_run/Metadata.h"
 #include "output/BoundedArrayJson.h"
+#include <cmath>
 namespace crash::cases::vehicle_native_contact::run_detail {
 records::RecordFile WriteSummary(const std::filesystem::path& root, const VehicleContactStartup& source,
     const RunConfig& config, const RunForecast& forecast, const vehicle_run::Horizon& horizon, const RunResult& result) {
@@ -80,6 +81,41 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
         Integer(failure, "row", result.rejected_native->row);
         Integer(failure, "occurrence", result.rejected_native->occurrence);
         Integer(failure, "selection_status", static_cast<unsigned>(result.rejected_native->selection_status));
+        const auto& rejected = *result.rejected_native;
+        Boolean(failure, "source_available", rejected.source.available);
+        if (rejected.source.available) Integer(failure, "source_id", rejected.source.source_id);
+        Boolean(failure, "candidate_rebuild_available", rejected.diagnostics.candidate_rebuild_available);
+        if (rejected.diagnostics.candidate_rebuild_available) {
+            const auto& report = rejected.diagnostics.candidate_rebuild;
+            Document rebuild;
+            rebuild.SetObject();
+            String(rebuild, "scope", "last attempted inventory stage; raw report counters, not a complete pair census claim");
+            Integer(rebuild, "status", static_cast<unsigned>(report.status));
+            Integer(rebuild, "failure_row", report.failure_row);
+            Integer(rebuild, "source_id", report.stamp.source.source);
+            Integer(rebuild, "topology_generation", report.stamp.source.topology);
+            Integer(rebuild, "activity_generation", report.stamp.activity);
+            Integer(rebuild, "gap_generation", report.stamp.gaps);
+            Integer(rebuild, "geometry_generation", report.stamp.geometry);
+            Integer(rebuild, "attempt", report.stamp.attempt);
+            Integer(rebuild, "reference_generation", report.stamp.reference);
+            Integer(rebuild, "reported_active_secondaries", report.active_secondaries);
+            Integer(rebuild, "reported_envelope_encounters", report.envelope_encounters);
+            Integer(rebuild, "reported_tasks", report.tasks);
+            Integer(rebuild, "reported_pairs", report.pairs);
+            Integer(rebuild, "own_kernel_launches", report.own_kernel_launches);
+            Integer(rebuild, "sort_calls", report.sort_calls);
+            Integer(rebuild, "scan_calls", report.scan_calls);
+            Integer(rebuild, "host_fences", report.host_fences);
+            Boolean(rebuild, "maximum_secondary_gap_finite", std::isfinite(report.maximum_secondary_gap));
+            if (std::isfinite(report.maximum_secondary_gap)) Number(rebuild, "maximum_secondary_gap", report.maximum_secondary_gap);
+            for (const auto& entry : source.interface_order()) if (entry.native_id == report.stamp.source.source) {
+                const auto index = entry.role == Role::Self ? 0u : 1u;
+                Integer(rebuild, "task_capacity", source.config().transaction[index].inventory.max_tasks);
+                Integer(rebuild, "pair_capacity", source.config().transaction[index].inventory.max_pairs);
+            }
+            array_json::Child(failure, "candidate_rebuild", rebuild);
+        }
         array_json::Child(doc, "rejected_native", std::move(failure));
     }
     if (result.rejected_step_limit_s) Number(doc, "rejected_step_limit_s", *result.rejected_step_limit_s);

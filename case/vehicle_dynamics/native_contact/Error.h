@@ -9,10 +9,14 @@ struct Failure {
     native::TransactionStatus status = native::TransactionStatus::InvalidInput;
     std::size_t row = SIZE_MAX, occurrence = SIZE_MAX;
     native::selection::Status selection_status = native::selection::Status::Ok;
+    // Descriptive values copied before trial cleanup, never acceptance tokens.
+    native::TransactionSourceInfo source;
+    native::TransactionDiagnostics diagnostics;
 };
 class StageError : public std::runtime_error {
   public:
-    StageError(Operation, const native::TransactionReport&);
+    StageError(Operation, const native::TransactionReport&,
+        const native::TransactionSourceInfo& = {}, const native::TransactionDiagnostics& = {});
     const Failure& failure() const noexcept { return failure_; }
   private:
     Failure failure_;

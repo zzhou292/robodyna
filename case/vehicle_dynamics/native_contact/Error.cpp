@@ -20,7 +20,8 @@ std::string Message(Operation operation, const native::TransactionReport& report
         " selection_status=" + std::to_string(int(report.selection_status)) + "]";
 }
 } // namespace
-StageError::StageError(Operation operation, const native::TransactionReport& report)
+StageError::StageError(Operation operation, const native::TransactionReport& report,
+                       const native::TransactionSourceInfo& source, const native::TransactionDiagnostics& diagnostics)
     : std::runtime_error(Message(operation, report)),
-      failure_{operation, report.status, report.row, report.occurrence, report.selection_status} {}
+      failure_{operation, report.status, report.row, report.occurrence, report.selection_status, source, diagnostics} {}
 } // namespace crash::cases::vehicle_dynamics::native_contact

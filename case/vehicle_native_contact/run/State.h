@@ -29,6 +29,7 @@ struct PreparedRun::Session final : vehicle_run::detail::Operations {
     vehicle_run::MechanicsTotals Mechanics() const noexcept override { return mechanics; }
     vehicle_run::SampledShellPlasticityTotals SampledShellPlasticity() const noexcept override { return plasticity; }
     vehicle_dynamics::StepTimingSnapshot MechanicsTiming() const noexcept override { return dynamics.timing(); }
+    const vehicle_dynamics::StepObservation& PrepareObserved();
     void Prepare() override;
     void Commit() override;
     void Discard() noexcept override;

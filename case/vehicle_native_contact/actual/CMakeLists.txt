@@ -29,3 +29,10 @@ target_link_libraries(native_vehicle_runtime_config PRIVATE robo_dyna_vehicle_ru
 target_compile_options(native_vehicle_runtime_config PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME native_vehicle_runtime_config COMMAND native_vehicle_runtime_config)
 set_tests_properties(native_vehicle_runtime_config PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+
+add_executable(native_vehicle_contact_diagnostics
+  "${APP_ROOT}/case/vehicle_dynamics/native_contact/tests/HostTest.cpp")
+target_link_libraries(native_vehicle_contact_diagnostics PRIVATE robo_dyna_native_contact_contribution GTest::gtest_main)
+target_compile_options(native_vehicle_contact_diagnostics PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME native_vehicle_contact_diagnostics COMMAND native_vehicle_contact_diagnostics)
+set_tests_properties(native_vehicle_contact_diagnostics PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

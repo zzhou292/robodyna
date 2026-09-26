@@ -45,19 +45,19 @@ void PreparedRun::Session::VerifyInitialRetry() {
             output::Require(Same(published[i], group->transaction(i).accepted()), "Private attempt changed accepted native publication");
     };
     try {
-        const auto first = dynamics.PrepareStep().native_contact;
+        const auto first = PrepareObserved().native_contact;
         check();
-        dynamics.DiscardStep();
+        Discard();
         check();
-        const auto retry = dynamics.PrepareStep().native_contact;
+        const auto retry = PrepareObserved().native_contact;
         output::Require(first.count == retry.count && retry.count == 2, "Retry interface roster changed");
         for (std::size_t i = 0; i < retry.count; ++i)
             output::Require(first.roles[i] == retry.roles[i] && Same(first.interfaces[i].diagnostics, retry.interfaces[i].diagnostics),
                             "Actual discarded native attempt differs from its retry");
-        dynamics.DiscardStep();
+        Discard();
         check();
     } catch (...) {
-        dynamics.DiscardStep();
+        Discard();
         throw;
     }
 }

@@ -35,7 +35,11 @@ RunResult PreparedRun::Execute(const std::filesystem::path& destination, const v
         if (!result.session_initialized) result.session_startup_s = seconds(start);
         result.loop.kind = vehicle_run::StopKind::StartupFailure;
         result.loop.reason = std::string(error.what()).substr(0, 4096);
-        if (session) result.loop.progress.accepted = session->Accepted();
+        if (session) {
+            result.loop.progress.accepted = session->Accepted();
+            result.rejected_native = session->rejected_native;
+            result.rejected_step_limit_s = session->rejected_step_limit_s;
+        }
         try { result.summary = run_detail::WriteSummary(destination, data_->source, data_->config,
             data_->forecast, data_->horizon, result); }
         catch (const std::exception& failure) { result.summary_error = failure.what(); }
