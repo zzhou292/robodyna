@@ -2,15 +2,6 @@
 #include "Internal.h"
 namespace tlfea::contact::radioss_type25::source_surfaces::detail {
 namespace {
-unsigned Compact(const Solid& solid,unsigned face,std::uint32_t* nodes) {
-  unsigned count=0;
-  for(unsigned k=0;k<4;++k) {
-    const auto node=solid.nodes[Faces[face][k]];bool present=false;
-    for(unsigned j=0;j<count;++j)present=present||nodes[j]==node;
-    if(!present)nodes[count++]=node;
-  }
-  return count;
-}
 void RotateMinimum(const std::uint32_t* nodes,unsigned count,std::uint32_t* rotated) {
   unsigned at=0;
   for(unsigned k=1;k<count;++k)if(nodes[k]<nodes[at])at=k;
@@ -29,7 +20,7 @@ bool IsInternal(const Input& in,const Work& w,std::size_t row,const std::uint32_
     for(unsigned k=0;k<count;++k)all=all&&Contains(solid.nodes,8,key[k]);
     if(!all)continue;
     for(unsigned face=0;face<6;++face) {
-      std::uint32_t candidate[4],rotated[4];const auto corners=Compact(solid,face,candidate);
+      std::uint32_t candidate[4],rotated[4];const auto corners=CompactFace(solid,face,candidate);
       if(corners!=count)continue;
       RotateMinimum(candidate,count,rotated);
       // Exact native oriented-edge criterion after the all-node solid test;
@@ -67,14 +58,14 @@ Report Extract(const Input& in,Work w,Counts& counts,std::size_t& count) noexcep
   if(in.clause.mode!=SurfaceMode::All)
     for(std::size_t row=0;row<in.solid_count;++row)if(w.selected[row])
       for(unsigned face=0;face<6;++face) {
-        std::uint32_t nodes[4];const auto corners=Compact(in.solids[row],face,nodes);
+        std::uint32_t nodes[4];const auto corners=CompactFace(in.solids[row],face,nodes);
         if(corners<3)continue;
         if(IsInternal(in,w,row,nodes,corners))w.face_mask[row]=std::uint8_t(w.face_mask[row]+(1u<<face));
       }
   for(std::size_t row=0;row<in.solid_count;++row)if(w.selected[row])
     for(unsigned face=0;face<6;++face) {
       if(w.face_mask[row]&(1u<<face)){++counts.internal_faces;continue;}
-      std::uint32_t nodes[4];const auto corners=Compact(in.solids[row],face,nodes);
+      std::uint32_t nodes[4];const auto corners=CompactFace(in.solids[row],face,nodes);
       if(corners<3){++counts.degenerate_faces;continue;}
       if(Suppressed(in,w,nodes,corners)){++counts.shell_suppressed_faces;continue;}
       Face value;value.source={ParentKind::Solid,in.solids[row].element_id,in.solids[row].part_id,

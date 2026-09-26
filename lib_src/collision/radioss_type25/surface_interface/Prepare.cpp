@@ -37,6 +37,11 @@ Report Prepare(const Input& in,source::Work work,Vector* points) noexcept {
       const auto& source=in.physical.solids[row];
       if(source.element_id!=face.source.element_id||source.part_id!=face.source.part_id)return {Status::InvalidInput,i};
       original=source.nodes;slots=8;
+      std::uint32_t expected[4]{};
+      const auto count=source_surfaces::detail::CompactFace(source,face.source.solid_face-1,expected);
+      if(count<3)return {Status::InvalidInput,i};
+      if(count==3)expected[3]=expected[2];
+      for(unsigned k=0;k<4;++k)if(face.nodes[k]!=expected[k])return {Status::InvalidInput,i};
     } else {
       const bool tri=face.source.kind==source_surfaces::ParentKind::ShellTriangle;
       if((!tri&&face.source.kind!=source_surfaces::ParentKind::ShellQuad)||triangle!=tri||
@@ -45,6 +50,11 @@ Report Prepare(const Input& in,source::Work work,Vector* points) noexcept {
       const auto& source=(tri?in.physical.triangles:in.physical.quads)[row];
       if(source.element_id!=face.source.element_id||source.part_id!=face.source.part_id)return {Status::InvalidInput,i};
       original=source.nodes;slots=tri?3:4;
+      for(unsigned k=0;k<4;++k) {
+        const unsigned corner=tri&&k==3?2:k;
+        const unsigned source_corner=in.physical.clause.reverse_shell_normals?slots-1-corner:corner;
+        if(face.nodes[k]!=source.nodes[source_corner])return {Status::InvalidInput,i};
+      }
     }
     for(unsigned k=0;k<corners;++k)if(!Contains(original,slots,face.nodes[k]))return {Status::InvalidInput,i};
   }

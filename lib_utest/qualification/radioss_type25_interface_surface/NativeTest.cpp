@@ -5,6 +5,7 @@ TEST(Type25InterfaceNative, CompleteClassificationFilterAndTrueMixedSideCountsMa
   Built only(solid);ASSERT_EQ(only.report.status,f::Status::Ok);
   EXPECT_EQ(only.result.shell_primary_count,0u);EXPECT_EQ(only.result.main_count,only.result.primary_count);
   auto mixed=Mixed();Compare(mixed);Compare(Mixed(true));
+  auto reversed_clause=Mixed();reversed_clause.physical.reverse=true;reversed_clause.Extract();Compare(reversed_clause);
   Built b(mixed);ASSERT_EQ(b.report.status,f::Status::Ok);
   EXPECT_EQ(b.result.shell_primary_count,3u);
   EXPECT_NE(b.result.main_count,2*b.result.primary_count);

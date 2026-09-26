@@ -133,4 +133,25 @@ TEST(Type25InterfaceHost, HostRoundingIsCheckedAndRetryRemainsValid) {
   EXPECT_EQ(report.status,f::Status::UnsupportedArithmetic);EXPECT_EQ(Bytes(b.output),bytes);
   EXPECT_EQ(f::Build(c.Input(),{},b.output,b.scratch,&b.result).status,f::Status::Ok);
 }
+TEST(Type25InterfaceHost, ClaimedFaceOrdinalAndOrderedShellWordsMustBeGenuine) {
+  auto c=Mixed();Built b(c);ASSERT_EQ(b.report.status,f::Status::Ok);
+  const auto bytes=Bytes(b.output);
+  std::size_t solid=0,shell=0;
+  while(solid<c.raw.size()&&c.raw[solid].source.kind!=old::s::ParentKind::Solid)++solid;
+  while(shell<c.raw.size()&&c.raw[shell].source.kind!=old::s::ParentKind::ShellQuad)++shell;
+  ASSERT_LT(solid,c.raw.size());ASSERT_LT(shell,c.raw.size());
+  const auto original=c;
+  c.raw[solid].source.solid_face=std::uint8_t(c.raw[solid].source.solid_face%6+1);
+  EXPECT_EQ(f::Build(c.Input(),{},b.output,b.scratch,&b.result).status,f::Status::InvalidInput);
+  EXPECT_EQ(Bytes(b.output),bytes);
+  c=original;std::swap(c.raw[shell].nodes[1],c.raw[shell].nodes[2]);
+  EXPECT_EQ(f::Build(c.Input(),{},b.output,b.scratch,&b.result).status,f::Status::InvalidInput);
+  EXPECT_EQ(Bytes(b.output),bytes);
+  c=original;std::rotate(c.raw[shell].nodes,c.raw[shell].nodes+1,c.raw[shell].nodes+4);
+  EXPECT_EQ(f::Build(c.Input(),{},b.output,b.scratch,&b.result).status,f::Status::InvalidInput);
+  EXPECT_EQ(Bytes(b.output),bytes);
+  c=original;c.physical.reverse=true;c.Extract();
+  EXPECT_EQ(f::Build(c.Input(),{},b.output,b.scratch,&b.result).status,f::Status::Ok);
+}
+
 }

@@ -28,4 +28,13 @@ Report Extract(const Input&,Work,Counts&,std::size_t&) noexcept;
 bool SelectedPart(const Input&,const Work&,std::uint64_t) noexcept;
 inline constexpr unsigned Faces[6][4]{{3,2,1,0},{4,5,6,7},{0,1,5,4},
   {2,3,7,6},{1,2,6,5},{0,4,7,3}};
+inline unsigned CompactFace(const Solid& solid,unsigned face,std::uint32_t* nodes) {
+  unsigned count=0;
+  for(unsigned k=0;k<4;++k) {
+    const auto node=solid.nodes[Faces[face][k]];bool present=false;
+    for(unsigned j=0;j<count;++j)present=present||nodes[j]==node;
+    if(!present)nodes[count++]=node;
+  }
+  return count;
+}
 }

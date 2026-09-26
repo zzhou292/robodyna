@@ -6,6 +6,11 @@ using complete physical low-order raw8 and Q4/T3 context. NativeRaw8 preserves
 collapsed brick slots; it is not relabeled PENTA. The declared profile is one
 ILEV1/IMBIN0 surface with raw roles1/3/7, no edge or higher-order context.
 
+Every claimed solid face ordinal is checked against the shared native raw-face
+table and exact compaction words. Shell words must match the declared source
+row or its explicit clause reversal; contained but diagonal/permuted packets
+cannot acquire a mislabeled origin.
+
 The source owner supplies genuine early reader order or proves every consumed
 classification invariant. Complete corner-major solid incidence and first
 matching solid are numerical operands. The shared qualified SEG_INS leaf
