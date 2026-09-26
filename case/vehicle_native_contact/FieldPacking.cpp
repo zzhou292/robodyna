@@ -8,31 +8,35 @@ template<class T> bool Span(tl::util::ConstView<T> values) {
     return native::search::detail::Span(values.data(), values.size());
 }
 }
-FieldPackingForecast FieldPacking::Preflight(const FieldInputs& in, FieldPackingLimits limits) {
+FieldPackingForecast FieldPacking::ForecastStorage(std::size_t nodes, std::size_t mains,
+                                                  std::size_t secondaries, FieldPackingLimits limits) {
     using output::Require;
     const FieldPackingLimits hard;
-    const auto& top = in.topology;
-    const auto secondaries = in.secondary_nodes.size();
     Require(limits.nodes && limits.nodes <= hard.nodes && limits.mains && limits.mains <= hard.mains &&
                 limits.secondaries && limits.secondaries <= hard.secondaries &&
-                limits.host_bytes && limits.host_bytes <= hard.host_bytes &&
-                top.node_count && top.node_count <= limits.nodes && top.main_count &&
-                top.main_count <= limits.mains && secondaries && secondaries <= limits.secondaries,
+                limits.host_bytes && limits.host_bytes <= hard.host_bytes && nodes && nodes <= limits.nodes &&
+                mains && mains <= limits.mains && secondaries && secondaries <= limits.secondaries,
             "Contact field packing count/cap is outside its bounded profile");
-    Require(top.source_generation && top.primary_count && top.primary_count <= top.main_count &&
-                in.nodes.size() == top.node_count && in.main_coefficients.size() == top.main_count &&
-                in.main_gaps.size() == top.main_count && in.secondary_coefficients.size() == secondaries &&
-                in.secondary_gaps.size() == secondaries && Span(in.nodes) && Span(in.main_coefficients) &&
-                Span(in.main_gaps) && Span(in.secondary_nodes) && Span(in.secondary_coefficients) &&
-                Span(in.secondary_gaps) && native::search::detail::Span(top.mains, top.main_count),
-            "Contact field packing source extents differ");
     tl::util::BoundedArenaLayout arena(limits.host_bytes);
     tl::util::ArenaRegion unused;
     Require(arena.Append<std::byte>(sizeof(FieldPacking) + 256, unused) &&
-                arena.Append<lifecycle::Main>(2 * top.main_count, unused) &&
+                arena.Append<lifecycle::Main>(2 * mains, unused) &&
                 arena.Append<lifecycle::Secondary>(2 * secondaries, unused),
             "Contact field packing exceeds its host cap");
     return {arena.bytes()};
+}
+FieldPackingForecast FieldPacking::Preflight(const FieldInputs& in, FieldPackingLimits limits) {
+    const auto& top = in.topology;
+    const auto secondaries = in.secondary_nodes.size();
+    const auto result = ForecastStorage(top.node_count, top.main_count, secondaries, limits);
+    output::Require(top.source_generation && top.primary_count && top.primary_count <= top.main_count &&
+                        in.nodes.size() == top.node_count && in.main_coefficients.size() == top.main_count &&
+                        in.main_gaps.size() == top.main_count && in.secondary_coefficients.size() == secondaries &&
+                        in.secondary_gaps.size() == secondaries && Span(in.nodes) && Span(in.main_coefficients) &&
+                        Span(in.main_gaps) && Span(in.secondary_nodes) && Span(in.secondary_coefficients) &&
+                        Span(in.secondary_gaps) && native::search::detail::Span(top.mains, top.main_count),
+                    "Contact field packing source extents differ");
+    return result;
 }
 FieldPacking FieldPacking::Starter(const FieldInputs& in, FieldPackingLimits limits) {
     return Pack(in, in.topology.starter, NormalPhase::StarterBeforeInitialContact, limits);

@@ -37,7 +37,8 @@ Starter cache and fixed-ready cache have distinct uses; no all-active cache is
 installed as initial history.
 
 The general TL initializer consumes the real ordered TYPE2 roster, contributor
-census and auxiliary rigid-primary namespace alongside these source fields.
+census and source-proved complete native-population multiplier tier alongside
+these source fields. Exact unused auxiliary IDs remain explicitly unavailable.
 Its move-only DeviceSeed owns initial history/ICONT and finalized gap corners.
 Transaction initialization creates it on the actual owner stream, copies it to
 both existing transaction slabs, drains, and retires the seed. The app does not
@@ -79,6 +80,31 @@ remain explicitly incomplete where TL reports only exact bytes.
    module's distinct full-vehicle native-group profile owns serialized validation;
    the small coupon's old native-contact profile is not reused.
 
-At this checkpoint the case API depends on the controls/initializer and runtime
-preflight successors still under their owning gates. No simulation or completed
-runtime source is claimed by this design.
+## Owning source/forecast target
+
+`VehicleContactStartup::ForecastPreparation` uses the same private preflight as
+`Prepare`, before source-sized field and PreparedSource allocations. Its result
+contains source/packing and host-preparation bounds only. `Prepare` then derives
+both genuine final removal sets and obtains GeneralPreflight plans; only that
+result has complete runtime and sequential-seed peaks. An aggregate fit of false
+remains reportable and rejects `Initialize` before the physical owner is created.
+`CensusInitialStates` is independent of that runtime fit, checks its own complete
+bounds, and retires each genuine GPU seed before the next interface. Its host
+bound conservatively includes source preparation. Census seeds are never reused
+as runtime history.
+
+The owning project is `actual/CMakeLists.txt`. Build only
+`native_vehicle_contact_actual` and `native_vehicle_case_fields`. CTest runs only
+the three small field groups. Invoke each full-source group separately with
+`ROBO_NATIVE_VEHICLE_CASE_OUTPUT` naming a new directory:
+
+- `NativeVehicleCaseActual.SourceAndHostPreparationForecastBeforeFieldAllocation`
+- `NativeVehicleCaseActual.FinalRemovalPlansExposeCompleteRuntimeAndSequentialSeedPeaksWithoutOwner`
+- `NativeVehicleCaseActual.SequentialGenuineInitialStatesReportWarmSignsAndTiedResetWithoutOwner`
+
+They reuse the same four-handle actual source fixture, preserve lower failure
+reports, and separately time source construction, host case preparation and GPU
+source census. None creates a physical owner or advances a clock. The General
+runtime successor must finish its owning gate before this source can qualify.
+The subsequent accepted-run adapter will reuse the existing RunLoop and output
+native-group profile; a source/forecast pass alone does not claim that run.

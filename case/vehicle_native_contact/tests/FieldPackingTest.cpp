@@ -83,6 +83,8 @@ TEST(NativeVehicleFieldPacking, CountAndCapRejectBeforePayloadAndExactCapacityRe
     Fixture f;
     auto input = f.Input();
     const auto exact = FieldPacking::Preflight(input).retained_bytes;
+    EXPECT_EQ(FieldPacking::ForecastStorage(input.topology.node_count, input.topology.main_count,
+        input.secondary_nodes.size()).retained_bytes, exact);
     FieldPackingLimits limits;
     limits.host_bytes = exact;
     EXPECT_NO_THROW(FieldPacking::Starter(input, limits));

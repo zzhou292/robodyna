@@ -22,6 +22,9 @@ struct FieldPackingLimits {
 struct FieldPackingForecast { std::size_t retained_bytes = 0; };
 class FieldPacking {
   public:
+    // Count-only allocation forecast. It does not validate source descriptors.
+    static FieldPackingForecast ForecastStorage(std::size_t nodes, std::size_t mains,
+        std::size_t secondaries, FieldPackingLimits = {});
     static FieldPackingForecast Preflight(const FieldInputs&, FieldPackingLimits = {});
     static FieldPacking Starter(const FieldInputs&, FieldPackingLimits = {});
     static FieldPacking FixedReady(const FieldInputs&, const native::startup::FixedMainView&,
