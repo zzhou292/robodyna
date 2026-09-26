@@ -13,7 +13,7 @@ bool Output(tl::util::BoundedArenaLayout& a, std::size_t p, std::size_t g,
 }
 }
 Report MakeLayout(std::size_t nodes, std::size_t p, std::size_t s, Limits limits,
-    Layout& out) noexcept {
+    Layout& out,std::size_t auxiliary_nodes) noexcept {
   if (!nodes || !p || !s) return {Status::InvalidInput};
   const Limits hard;
   if (nodes>limits.max_nodes || nodes>hard.max_nodes || p>hard.max_mains/2 ||
@@ -41,6 +41,8 @@ Report MakeLayout(std::size_t nodes, std::size_t p, std::size_t s, Limits limits
       !scratch.Append<std::uint32_t>(g,next.current) || !scratch.Append<std::uint32_t>(g,next.next) ||
       !scratch.Append<std::uint32_t>(g,next.visited) ||
       !scratch.Append<std::uint32_t>(nodes,next.discovered)) return {Status::ResourceLimit};
+  if(auxiliary_nodes&&!scratch.Append<std::uint64_t>(auxiliary_nodes,next.auxiliary_ids))
+    return {Status::ResourceLimit};
   next.forecast={Status::Ok,persistent.bytes(),scratch.bytes(),capacity};
   if (persistent.bytes()>limits.max_output_bytes || scratch.bytes()>limits.max_scratch_bytes)
     next.forecast.status=Status::ResourceLimit;
@@ -58,7 +60,8 @@ Work ConstructWork(tl::util::HostArena& a, const Layout& l) noexcept {
       a.Construct<int>(l.tag),a.Construct<int>(l.expanded),a.Construct<double>(l.distance),
       a.Construct<double>(l.gap),a.Construct<int>(l.segment_tag),
       a.Construct<std::uint32_t>(l.current),a.Construct<std::uint32_t>(l.next),
-      a.Construct<std::uint32_t>(l.visited),a.Construct<std::uint32_t>(l.discovered)};
+      a.Construct<std::uint32_t>(l.visited),a.Construct<std::uint32_t>(l.discovered),
+      l.auxiliary_ids.count?a.Construct<std::uint64_t>(l.auxiliary_ids):nullptr};
 }
 } // namespace tlfea::contact::radioss_type25::search_startup::detail
 namespace tlfea::contact::radioss_type25::search_startup {
@@ -67,5 +70,20 @@ Forecast Preflight(std::size_t nodes, std::size_t primaries, std::size_t seconda
   detail::Layout layout;const auto report=detail::MakeLayout(nodes,primaries,secondaries,limits,layout);
   if (layout.forecast.output_bytes) return layout.forecast;
   Forecast result;result.status=report.status;return result;
+}
+Forecast Preflight(const Input& in,Limits limits) noexcept {
+  detail::Layout layout;
+  if(in.contributors.native_auxiliary_nodes!=in.auxiliary_rigid_primary_count) {
+    Forecast f;f.status=Status::InvalidInput;return f;
+  }
+  if(!limits.max_native_model_nodes||limits.max_native_model_nodes>std::size_t(INT_MAX)||
+      in.contributors.physical_nodes>limits.max_native_model_nodes||
+      in.contributors.native_auxiliary_nodes>limits.max_native_model_nodes-in.contributors.physical_nodes) {
+    Forecast f;f.status=Status::ResourceLimit;return f;
+  }
+  const auto report=detail::MakeLayout(in.mesh.node_count,in.mesh.primary_count,in.secondary_count,
+      limits,layout,in.auxiliary_rigid_primary_count);
+  if(layout.forecast.output_bytes)return layout.forecast;
+  Forecast f;f.status=report.status;return f;
 }
 } // namespace tlfea::contact::radioss_type25::search_startup

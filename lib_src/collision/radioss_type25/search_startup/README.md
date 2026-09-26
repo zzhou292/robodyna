@@ -58,3 +58,26 @@ The ordinary moving-shell Starter profile uses the same initial geometry,
 coefficient/gap fields and complete model census as the fixed profile. This
 producer admits either explicit Starter profile; its initial margin/removal/
 flags do not certify later geometry or replace runtime search maintenance.
+
+
+The original Build entry retains its no-rigid/no-tied/no-CIN contract.
+BuildRigidOnly is a separate complete ordinary-shell path for source-declared
+classical rigid bodies with one generated auxiliary primary per body and no
+TYPE2/CIN. Input carries those actual auxiliary source IDs separately; they must
+be positive, unique and absent from the physical geometry domain. The app source
+binder authenticates their generated-primary provenance, not this numerical
+value utility. Checked physical+auxiliary population supplies native NUMNOD to
+BUMULT. Auxiliary coordinates/mass are not inserted into the physical domain.
+
+BuildGeometricBeforeTied returns the distinct GeometricSnapshot with full actual
+contributor census. Its removal arrays precede real TYPE2 augmentation; they are
+not a final interface source. A genuine complete REMN_I2OP stage is still required
+before that typed result can feed a final source factory. No tied rows, body count
+or other contributor is hidden to fit the legacy API. No owner/clock/receipt or
+same-rigid-body blanket filter is created. Existing geometry/margin/removal
+arithmetic and ordinary2P topology scope remain unchanged.
+
+Preflight(Input) includes bounded auxiliary-ID scratch; the old count-only
+preflight is unchanged for absent auxiliaries. Caller output arenas and full
+result descriptors remain failure-atomic. Source order is never changed by the
+private sorted auxiliary-ID validation index.
