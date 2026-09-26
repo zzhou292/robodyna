@@ -9,8 +9,8 @@ namespace crash::cases::vehicle_wall {
 namespace c = tlfea::contact;
 namespace {
 c::NodalWallMappedSource ContactSource(vehicle_dynamics::ExecutionAccess::State& state) {
-    return {&state.execution.physical(),&state.execution.model().rigid_assembly(),
-        vehicle_runtime::detail::Witnesses(state.attachments),&state.publication,
+    return {&state.source.original_execution().physical(),&state.source.original_execution().model().rigid_assembly(),
+        vehicle_runtime::detail::Witnesses(state.source.original_attachments()),&state.publication,
         {&state.qeph,&state.t3,&state.qbat,&state.type25,&state.type13,&state.solids,state.type45.get(),state.beam18.get()},
         {state.config.configuration_id,state.config.qualification_id,vehicle_runtime::detail::InitialTranslation()}};
 }
@@ -20,7 +20,7 @@ RuntimeForecast VehicleWallStartup::Preflight(const VehicleWallSetup& setup,
     output::Require(bool(dynamics.storage_),"Wall attachment requires a live dynamics owner");
     auto& state=dynamics.storage_->state();
     output::Require(!dynamics.storage_->pending,"Wall attachment requires no pending attempt");
-    detail::CheckSharedSource(setup,state.execution,state.attachments);
+    detail::CheckSharedSource(setup,state.source.original_execution(),state.source.original_attachments());
     output::Require(setup.coverage_report().status==c::PlanarContactStatus::Ok && setup.coverage().covered,
         "Selected finite wall does not cover the complete declared motion envelope");
     const auto source=ContactSource(state);

@@ -40,6 +40,9 @@ class EnvelopeOwnerSource {
     const vehicle_runtime::SourceRoles& roles() const noexcept;
     const tl::fea::ShellBatchStartup& startup() const noexcept;
     const EnvelopeOwnerForecast& forecast() const noexcept;
+    // Retained graph only: constructor scratch and unused module reservations
+    // remain in forecast().peak_bytes and are not charged as live runtime data.
+    std::size_t retained_host_upper_bound(std::size_t cap) const;
     tl::fea::NodalCinWitnessSource witness_source() const noexcept;
     vehicle_runtime::detail::OwnerPacking PackOwner(std::size_t cap) const;
   private:

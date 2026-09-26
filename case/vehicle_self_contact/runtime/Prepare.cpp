@@ -21,7 +21,7 @@ struct PhysicalSource {
 PhysicalSource Source(
     vehicle_dynamics::ExecutionAccess::State& state) noexcept {
     return {
-        &state.execution.physical(),
+        &state.source.original_execution().physical(),
         {&state.qeph, &state.t3, &state.qbat, &state.type25,
          &state.type13, &state.solids, state.type45.get(),
          state.beam18.get()},

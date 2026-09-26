@@ -45,6 +45,7 @@ struct StepObservation {
     tl::fea::NodalCinStructuralLimit structural_limiter;
     WallObservation wall;
     SelfContactObservation self_contact;
+    bool motion_includes_fixed_environment=false;
 };
 class StepSizeError : public std::runtime_error {
   public:
@@ -64,6 +65,8 @@ class StepSizeError : public std::runtime_error {
 // the sole owner and every declared history. DiscardStep preserves accepted results.
 class VehiclePhysicalDynamics {
   public:
+    static Forecast Preflight(const vehicle_runtime::Source&,Config={});
+    static VehiclePhysicalDynamics Prepare(const vehicle_runtime::Source&,Config={});
     static Forecast Preflight(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,
         Config={},const vehicle_runtime::JointModel* = nullptr);
     static VehiclePhysicalDynamics Prepare(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,

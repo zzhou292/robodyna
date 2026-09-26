@@ -3,7 +3,7 @@
 namespace crash::cases::vehicle_runtime {
 void VehiclePhysicalStartup::Storage::InspectConnections(InitialInspection& out) {
     {
-        const auto count = execution.model().coefficients().type25()->connection_count();
+        const auto count = source.coefficients().type25()->connection_count();
         std::vector<tl::fea::type25::Evaluation> rows(count);
         tl::fea::type25::BatchDiagnostics diagnostics;
         detail::RequireSuccess(type25.CopyAcceptedResults(out.stamp,rows.data(),rows.size(),&diagnostics));
@@ -12,7 +12,7 @@ void VehiclePhysicalStartup::Storage::InspectConnections(InitialInspection& out)
         out.type25_connections = count;
     }
     {
-        const auto count = execution.model().beams().connection_count();
+        const auto count = source.beams().connection_count();
         std::vector<tl::fea::type13::Evaluation> rows(count);
         tl::fea::type13::BatchDiagnostics diagnostics;
         detail::RequireSuccess(type13.CopyAcceptedResults(out.stamp,rows.data(),rows.size(),&diagnostics));

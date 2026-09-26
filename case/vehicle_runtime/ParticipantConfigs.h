@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "SourceIdentity.h"
+#include "Source.h"
 namespace crash::cases::vehicle_runtime::detail {
 struct ParticipantConfigs {
     tl::fea::qeph::QephBatchConfig qeph;
@@ -11,6 +12,10 @@ struct ParticipantConfigs {
     tl::fea::solids::BatchConfig solids;
     tl::fea::ShellPhysicalPublicationIdentity publication;
 };
+ParticipantConfigs ConfigureParticipants(const Config&,const Source&,const tl::fea::NodalStamp&);
+tl::fea::NodalStamp DescriptiveStamp(const Config&,const Source&) noexcept;
+tl::fea::NodalCinStartup CinStartup(const Config&,const Source&,
+    const double* mass=nullptr,const double* inertia=nullptr) noexcept;
 ParticipantConfigs ConfigureParticipants(const Config&,const Execution&,const Attachments&,
                                         const tl::fea::NodalStamp&);
 tl::fea::NodalStamp DescriptiveStamp(const Config&,const Execution&) noexcept;

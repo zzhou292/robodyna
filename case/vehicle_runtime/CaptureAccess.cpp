@@ -8,11 +8,11 @@ AcceptedCaptureScope CaptureAccess::Scope(VehiclePhysicalStartup& run) {
     AcceptedCaptureScope out;
     out.stamp=s.owner.accepted();
     RequireSuccess(s.publication.CopyAcceptedPhysicalDiagnostics(out.stamp,&out.diagnostics));
-    output::Require(bool(s.type45)==bool(s.joint_model) && out.diagnostics.has_type45==bool(s.type45),
+    output::Require(bool(s.type45)==bool(s.source.joints()) && out.diagnostics.has_type45==bool(s.type45),
         "Accepted joint participant differs from actual retained startup");
     if(s.type45) {
-        out.type45_source_instance_id=s.joint_model->model().source_instance_id();
-        out.type45_joint_count=s.joint_model->model().joints().size();
+        out.type45_source_instance_id=(*s.source.joints()).source_instance_id();
+        out.type45_joint_count=(*s.source.joints()).joints().size();
         tl::fea::type45::BatchDiagnostics actual;
         RequireSuccess(s.type45->CopyAcceptedDiagnostics(out.stamp,&actual));
         const auto& common=out.diagnostics.type45;
@@ -27,7 +27,7 @@ AcceptedCaptureScope CaptureAccess::Scope(VehiclePhysicalStartup& run) {
             actual.automatic_stiffness_initialized==common.automatic_stiffness_initialized,
             "Accepted joint publication differs from actual batch");
     }
-    const auto* model=s.execution.model().structural_beams();
+    const auto* model=s.source.structural_beams();
     output::Require(bool(s.beam18)==bool(model) && out.diagnostics.has_beam18==bool(s.beam18),
         "Accepted structural beam participant differs from actual retained startup");
     if(s.beam18) {

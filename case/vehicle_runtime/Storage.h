@@ -6,18 +6,13 @@
 #include <optional>
 namespace crash::cases::vehicle_runtime {
 struct VehiclePhysicalStartup::Storage {
-    Storage(const Execution& e,const Attachments& a,Config c,Forecast f,const JointModel* joints)
-        : execution(e),attachments(a),config(c),forecast(f) {
-        if(joints) joint_model.emplace(*joints);
-    }
-    // Reverse destruction releases the publication claim, participants, then
-    // the sole owner. All immutable source handles outlive those consumers.
-    Execution execution;
-    Attachments attachments;
+    Storage(Source input,Config c,Forecast f) : source(std::move(input)),config(c),forecast(f) {}
+    // Reverse destruction releases publication, participants, owner, then
+    // the complete actual immutable source graph.
+    Source source;
     Config config;
     Forecast forecast;
     SourceRoles roles;
-    std::optional<JointModel> joint_model;
     tl::fea::FENodalState owner;
     tl::fea::qeph::QephBatch qeph;
     tl::fea::t3::T3Batch t3;

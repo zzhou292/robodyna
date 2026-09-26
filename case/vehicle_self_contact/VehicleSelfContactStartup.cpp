@@ -21,7 +21,7 @@ struct PhysicalSource {
 PhysicalSource Source(
     vehicle_dynamics::ExecutionAccess::State& state) noexcept {
     return {
-        &state.execution.physical(),
+        &state.source.original_execution().physical(),
         {&state.qeph, &state.t3, &state.qbat, &state.type25,
          &state.type13, &state.solids, state.type45.get(),
          state.beam18.get()},
@@ -97,10 +97,10 @@ void CheckSource(
     const VehicleSelfContactSetup& setup,
     vehicle_dynamics::ExecutionAccess::State& state) {
     output::Require(
-        &setup.execution().physical() == &state.execution.physical() &&
+        &setup.execution().physical() == &state.source.original_execution().physical() &&
             &setup.attachments().witnesses() ==
-                &state.attachments.witnesses() &&
-            setup.selected().MatchesPhysical(state.execution.physical()),
+                &state.source.original_attachments().witnesses() &&
+            setup.selected().MatchesPhysical(state.source.original_execution().physical()),
         "Self-contact setup must retain the exact dynamics physical source");
 }
 

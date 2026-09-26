@@ -152,6 +152,7 @@ void VehiclePhysicalDynamics::Storage::Capture() {
         "Prepared physical observation identity differs");
     auto& out=candidate();
     out.proposed_time=observed.prepared.proposed_time;
+    out.motion_includes_fixed_environment=state().source.kind()==vehicle_runtime::SourceKind::VehicleWithEnvironment;
     timer.Measure<StepStage::ObserveMotion>([&] {
         const auto& value=observed.motion;
         out.uniform_motion={value.nodes,value.maximum_position_error,value.maximum_velocity_error,

@@ -24,15 +24,15 @@ void VehiclePhysicalStartup::Storage::BindInitialCaches() {
     // No SealAssembly, kick, drift or accepted-history publication occurs.
 }
 void VehiclePhysicalStartup::Storage::InitializePublication() {
-    const auto c = detail::ConfigureParticipants(config,execution,attachments,owner.accepted());
+    const auto c = detail::ConfigureParticipants(config,source,owner.accepted());
     if(type45) {
-        detail::RequireSuccess(publication.InitializePhysicalWithJoints(owner,execution.physical(),
-            execution.model().rigid_assembly(),detail::Witnesses(attachments),joint_model->model(),
+        detail::RequireSuccess(publication.InitializePhysicalWithJoints(owner,source.physical(),
+            source.rigid(),source.witness_source(),(*source.joints()),
             {&qeph,&t3,&qbat,&type25,&type13,&solids,type45.get(),beam18.get()},c.publication,config.limits.publisher));
         return;
     }
-    detail::RequireSuccess(publication.InitializePhysical(owner,execution.physical(),
-        execution.model().rigid_assembly(),detail::Witnesses(attachments),
+    detail::RequireSuccess(publication.InitializePhysical(owner,source.physical(),
+        source.rigid(),source.witness_source(),
         {&qeph,&t3,&qbat,&type25,&type13,&solids,nullptr,beam18.get()},c.publication,config.limits.publisher));
 }
 } // namespace crash::cases::vehicle_runtime

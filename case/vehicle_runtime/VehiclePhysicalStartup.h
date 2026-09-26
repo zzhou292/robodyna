@@ -14,6 +14,7 @@ struct InitialInspection {
     std::size_t one_point_parents = 0, three_point_parents = 0, four_point_parents = 0;
     std::size_t type25_connections = 0, type13_connections = 0, solid_parents = 0;
     std::size_t type45_joints = 0, structural_beams = 0;
+    std::size_t zero_point_parents = 0;
 };
 // One initial physical owner and its complete immutable source composition.
 // The public surface deliberately has no interval advance or mutable owner.
@@ -21,6 +22,8 @@ struct InitialInspection {
 // full vehicle trajectory require subsequent explicit case admission.
 class VehiclePhysicalStartup {
   public:
+    static Forecast Preflight(const Source&,Config = {});
+    static VehiclePhysicalStartup Prepare(const Source&,Config = {});
     static Forecast Preflight(const Execution&,const Attachments&,Config = {},const JointModel* = nullptr);
     static VehiclePhysicalStartup Prepare(const Execution&,const Attachments&,Config = {},const JointModel* = nullptr);
     ~VehiclePhysicalStartup();
@@ -29,8 +32,10 @@ class VehiclePhysicalStartup {
     VehiclePhysicalStartup(const VehiclePhysicalStartup&) = delete;
     VehiclePhysicalStartup& operator=(const VehiclePhysicalStartup&) = delete;
     const Forecast& forecast() const noexcept;
-    const Execution& execution() const noexcept;
-    const Attachments& attachments() const noexcept;
+    const Source& source() const noexcept;
+    // Original-only adapters reject an explicitly combined environment source.
+    const Execution& execution() const;
+    const Attachments& attachments() const;
     tl::fea::NodalStamp accepted() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
     // Complete native readbacks are visited one family at a time. The result is
