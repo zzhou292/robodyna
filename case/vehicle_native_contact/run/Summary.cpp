@@ -91,6 +91,9 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
             rebuild.SetObject();
             String(rebuild, "scope", "last attempted inventory stage; raw report counters, not a complete pair census claim");
             Integer(rebuild, "status", static_cast<unsigned>(report.status));
+            Integer(rebuild, "enumeration_strategy", static_cast<unsigned>(report.strategy));
+            Boolean(rebuild, "encounters_counted", report.encounters_counted);
+            Boolean(rebuild, "pairs_counted", report.pairs_counted);
             Integer(rebuild, "failure_row", report.failure_row);
             Integer(rebuild, "source_id", report.stamp.source.source);
             Integer(rebuild, "topology_generation", report.stamp.source.topology);
@@ -111,6 +114,7 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
             if (std::isfinite(report.maximum_secondary_gap)) Number(rebuild, "maximum_secondary_gap", report.maximum_secondary_gap);
             for (const auto& entry : source.interface_order()) if (entry.native_id == report.stamp.source.source) {
                 const auto index = entry.role == Role::Self ? 0u : 1u;
+                Integer(rebuild, "encounter_capacity", source.config().transaction[index].inventory.max_encounters);
                 Integer(rebuild, "task_capacity", source.config().transaction[index].inventory.max_tasks);
                 Integer(rebuild, "pair_capacity", source.config().transaction[index].inventory.max_pairs);
             }

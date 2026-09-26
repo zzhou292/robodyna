@@ -13,7 +13,13 @@ inline Config PreviewResources() {
     config.initialization[1].max_pairs = 65536;
     config.initialization[1].max_tasks = 65536;
     config.transaction[0].inventory.max_pairs = std::size_t{2} << 20;
+    config.transaction[0].inventory.strategy = n::candidates::EnumerationStrategy::CompactGrid;
+    config.transaction[0].inventory.max_encounters = std::size_t{16} << 20;
     config.transaction[1].inventory.max_pairs = std::size_t{1} << 18;
+    // Wall remains on the unchanged strategy until its own counts justify an
+    // alternative. This policy changes storage/enumeration, never pair filters.
+    config.transaction[1].inventory.strategy = n::candidates::EnumerationStrategy::LegacyAxisSweep;
+    config.transaction[1].inventory.max_encounters = 0;
     return config;
 }
 } // namespace crash::cases::vehicle_native_contact::test

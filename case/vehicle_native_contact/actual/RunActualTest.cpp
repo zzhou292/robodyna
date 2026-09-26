@@ -59,6 +59,8 @@ void RunAcceptedQualification(bool execute, bool preview) {
             output::String(one, "role", i == 0 ? "self" : "mesh_wall");
             output::Integer(one, "initializer_max_pairs", config.initialization[i].max_pairs);
             output::Integer(one, "initializer_max_tasks", config.initialization[i].max_tasks);
+            output::Integer(one, "runtime_enumeration_strategy", static_cast<unsigned>(config.transaction[i].inventory.strategy));
+            output::Integer(one, "runtime_max_encounters", config.transaction[i].inventory.max_encounters);
             output::Integer(one, "runtime_max_pairs", config.transaction[i].inventory.max_pairs);
             output::Integer(one, "runtime_max_tasks", config.transaction[i].inventory.max_tasks);
             output::Integer(one, "runtime_optimized_entries", config.transaction[i].optimized_candidates);
