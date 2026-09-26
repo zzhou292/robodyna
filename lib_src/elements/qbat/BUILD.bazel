@@ -13,7 +13,7 @@ cc_library(
     name = "force",
     hdrs = ["QbatForceTypes.h", "QbatForceChecks.h", "QbatHistory.h", "QbatVelocityCorrection.h",
             "QbatStrain.h", "QbatForceCoefficients.h", "QbatMaterialPoint.h", "QbatViscosity.h",
-            "QbatForceAssembly.h", "QbatForce.h"],
+            "QbatForceAssembly.h", "QbatForceBody.h", "QbatForce.h"],
     deps = [":geometry", "//lib_src/elements/qeph:kinematics", "//lib_src/elements/qeph:force",
             "//lib_src/elements/sections:shell_layered_j2", "//lib_src/elements/sections:shell_law44_membrane_point",
             "//lib_src/materials:law44_membrane", "//lib_src/materials:law44_scope", "//lib_src/materials/failure:shell_constant_plastic_failure"],

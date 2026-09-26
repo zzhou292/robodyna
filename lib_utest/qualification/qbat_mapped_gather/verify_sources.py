@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Authenticate complete frozen serial sources and unchanged numerical leaves."""
 from pathlib import Path
-import hashlib,json
+import hashlib,json,runpy
 here=Path(__file__).resolve().parent
 root=here.parents[2]
 raw=(here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest()=="7a4293e04acb72d315c5a751f1f07609a6294f3cea5ebd4d91e4b59b34ae43a1"
+assert hashlib.sha256(raw).hexdigest()=="74058dfa0619abc6af0698b5d09093eeff81288f6f6001137c36a284077c21f5"
 manifest=json.loads(raw)
 for row in manifest['files']:
     path=Path(row['path'])
@@ -19,6 +19,7 @@ for row in manifest['baselines']:
         value=value.replace(new,old)
     raw=value.encode()
     assert len(raw)==row['bytes'] and hashlib.sha256(raw).hexdigest()==row['sha256'],row['path']
+runpy.run_path(str(root/'lib_utest/qualification/qbat_private_trial/verify_force_body.py'))['verify']()
 print(json.dumps({'status':'passed','records':len(manifest['files']),
     'frozen_complete_sources':len(manifest['baselines']),
     'baseline':manifest['baseline_commit'],'numerical_execution':False}))

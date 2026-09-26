@@ -83,7 +83,7 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
     interval.sample_index=view.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[parent].nodes,view.kinematics,
         interval.position_endpoint,interval.velocity_midpoint,interval.omega_midpoint);
-    s.candidate_status[parent]=AdvanceIntoTrial(s.model.element[parent],accepted->element[parent],interval,trial->element[parent]);
+    s.candidate_status[parent]=Advance(s.model.element[parent],accepted->element[parent],interval,trial->element[parent]);
   }
 }
 __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,
