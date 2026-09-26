@@ -21,5 +21,17 @@ int main() {
   s::Snapshot result;if(s::Build(in,{},output,scratch,&result).status!=s::Status::Ok)return 4;
   if(result.removal_count!=0||result.margin<=0||result.source_generation!=1)return 5;
   for(unsigned i=0;i<4;++i)if(result.initial_contact[i]!=0)return 6;
+  const std::uint64_t primary_id=5;
+  in.contributors.rigid_bodies=1;in.contributors.native_auxiliary_nodes=1;
+  in.auxiliary_rigid_primary_ids=&primary_id;in.auxiliary_rigid_primary_count=1;
+  const auto more=s::Preflight(in);tl::util::HostArena rigid_output,rigid_scratch;
+  if(more.status!=s::Status::Ok||!rigid_output.Initialize(more.output_bytes)||!rigid_scratch.Initialize(more.scratch_bytes))return 7;
+  if(s::BuildRigidOnly(in,{},rigid_output,rigid_scratch,&result).status!=s::Status::Ok||result.native_model_nodes!=5)return 8;
+  in.contributors.rigid_bodies=0;in.contributors.native_auxiliary_nodes=0;
+  in.auxiliary_rigid_primary_ids=nullptr;in.auxiliary_rigid_primary_count=0;
+  in.contributors.tied_interfaces=1;in.contributors.cin_links=1;
+  s::GeometricSnapshot pending;
+  if(s::BuildGeometricBeforeTied(in,{},rigid_output,rigid_scratch,&pending).status!=s::Status::Ok||
+      pending.geometry.native_model_nodes!=4||pending.contributors.cin_links!=1)return 9;
   return 0;
 }

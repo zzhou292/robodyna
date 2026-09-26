@@ -1,23 +1,32 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "../../RadiossType25SearchStartup.h"
 #include "Internal.h"
+#include "../search/Ranges.h"
 namespace tlfea::contact::radioss_type25::search_startup {
-Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
-    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+namespace {
+Report BuildValue(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,void* descriptor,std::size_t descriptor_bytes,
+    detail::Context context,Snapshot& value) noexcept {
+  std::size_t native_nodes=0;
+  auto report=detail::ResolveContext(in,limits,context,native_nodes);
+  if(report.status!=Status::Ok)return report;
   detail::Layout layout;
-  auto report=detail::MakeLayout(in.mesh.node_count,in.mesh.primary_count,in.secondary_count,limits,layout);
+  report=detail::MakeLayout(in.mesh.node_count,in.mesh.primary_count,in.secondary_count,
+      limits,layout,in.auxiliary_rigid_primary_count);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.output_bytes || scratch.bytes()<layout.forecast.scratch_bytes)
     return {Status::ResourceLimit};
-  report=detail::Admit(in,layout,limits,output,scratch,published);
+  report=detail::Admit(in,layout,limits,output,scratch,descriptor,descriptor_bytes);
   if(report.status!=Status::Ok)return report;
   auto staged=detail::Construct(scratch,layout.output);
   auto work=detail::ConstructWork(scratch,layout);
+  report=detail::CheckAuxiliaryIds(in,work);
+  if(report.status!=Status::Ok)return report;
   double secondary_gap=0,gap=0;
   report=detail::Prepare(in,work,secondary_gap,gap);
   if(report.status!=Status::Ok)return report;
   Snapshot next;
-  auto status=ResolveMultiplier(in.contributors.physical_nodes,&next.multiplier);
+  auto status=ResolveMultiplier(native_nodes,&next.multiplier);
   if(status!=Status::Ok)return {status};
   report=detail::Margin(in,work.points,next.multiplier,gap,limits,next.mean_length,next.margin);
   if(report.status!=Status::Ok)return report;
@@ -42,6 +51,35 @@ Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
   next.initial_contact=committed.contact;
   next.main_count=in.main_count;next.secondary_count=in.secondary_count;
   next.source_generation=in.mesh.source_generation;
-  *published=next;return report;
+  next.native_model_nodes=native_nodes;
+  value=next;return report;
+}
+}
+Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+  if(!search::detail::Span(published,1))return {Status::InvalidInput};
+  Snapshot next;
+  const auto report=BuildValue(in,limits,output,scratch,published,sizeof(*published),
+      detail::Context::LegacyNoKinematics,next);
+  if(report.status==Status::Ok)*published=next;
+  return report;
+}
+Report BuildRigidOnly(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+  if(!search::detail::Span(published,1))return {Status::InvalidInput};
+  Snapshot next;
+  const auto report=BuildValue(in,limits,output,scratch,published,sizeof(*published),
+      detail::Context::RigidOnly,next);
+  if(report.status==Status::Ok)*published=next;
+  return report;
+}
+Report BuildGeometricBeforeTied(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,GeometricSnapshot* published) noexcept {
+  if(!search::detail::Span(published,1))return {Status::InvalidInput};
+  Snapshot next;
+  const auto report=BuildValue(in,limits,output,scratch,published,sizeof(*published),
+      detail::Context::BeforeTied,next);
+  if(report.status==Status::Ok)*published={next,in.contributors};
+  return report;
 }
 } // namespace tlfea::contact::radioss_type25::search_startup

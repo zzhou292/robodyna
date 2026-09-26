@@ -14,8 +14,12 @@ NativeResult Oracle(const s::Input& in) {
   const auto n=in.mesh.node_count,g=in.main_count,ns=in.secondary_count,p=in.topology.primary_count;
   Need(n&&n<=4096&&g&&g<=512&&ns&&ns<=4096&&g==2*p&&in.topology.mains&&in.secondary&&in.main_gaps);
   Need(in.mesh.positions.valid()&&in.mesh.positions.node_count==n&&(in.profile.curvature==0||in.profile.curvature==1));
-  const int counts[]{int(n),int(g),int(ns),int(p),in.profile.curvature};
-  std::vector<double>x(3*n),gaps(ns),stiffness(ns);
+  Need(in.contributors.native_auxiliary_nodes<=4096-n);
+  const auto native_nodes=n+in.contributors.native_auxiliary_nodes;
+  const int counts[]{int(native_nodes),int(g),int(ns),int(p),in.profile.curvature};
+  // Auxiliary primaries are absent from every face/secondary. Their coordinates
+  // are unused by these original routines; full native node/tag extents remain.
+  std::vector<double>x(3*native_nodes),gaps(ns),stiffness(ns);
   std::vector<int>irect(4*g),roles(g),nodes(ns);
   const double length=in.mesh.coordinates==tlfea::contact::radioss_type25::startup::Coordinates::Native?1.:in.mesh.units.length_m;
   Need(std::isfinite(length)&&length>0);

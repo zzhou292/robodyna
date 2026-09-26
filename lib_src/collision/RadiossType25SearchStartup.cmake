@@ -1,6 +1,7 @@
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25FixedMainStartup.cmake")
 add_library(tl_radioss_type25_search_startup STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/search_startup/Context.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/search_startup/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/search_startup/Admission.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/search_startup/Multiplier.cpp"

@@ -45,7 +45,7 @@ target_link_libraries(type25_search_startup_oracle PUBLIC tl_radioss_type25_sear
 # No OpenMP flag: this reference deliberately owns serial native preprocessing.
 target_compile_options(type25_search_startup_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-ffixed-line-length-none;-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_search_startup_host HostTest.cpp ObservedTest.cpp)
+add_executable(type25_search_startup_host HostTest.cpp ObservedTest.cpp ContextTest.cpp)
 target_include_directories(type25_search_startup_host PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(type25_search_startup_host PRIVATE type25_search_startup_oracle GTest::gtest_main)
 add_test(NAME type25_search_startup_host COMMAND type25_search_startup_host)

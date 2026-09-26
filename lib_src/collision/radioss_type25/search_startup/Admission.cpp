@@ -12,7 +12,7 @@ bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) noexcep
 }
 }
 Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& output,
-    const tl::util::HostArena& scratch,const Snapshot* result) noexcept {
+    const tl::util::HostArena& scratch,const void* result,std::size_t result_bytes) noexcept {
   namespace r=search::detail;
   const auto& p=in.profile;const auto& c=in.contributors;const auto& mesh=in.mesh;const auto& top=in.topology;
   if (p.level!=1 || p.gap_mode!=1 || p.neighbor_removal!=2 || p.initial_penetration!=5 ||
@@ -20,8 +20,7 @@ Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& out
       p.gap_load_cards!=LoadCards::Absent ||
       (p.initialization!=Initialization::SerialNative && p.initialization!=Initialization::InvariantNoExpansion) ||
       c.census!=Census::CompleteDeclaredModel || c.physical_nodes!=mesh.node_count ||
-      c.physical_shells<mesh.primary_count || c.tied_interfaces || c.rigid_bodies || c.cin_links ||
-      c.other_interfaces || c.unsupported_elements ||
+      c.physical_shells<mesh.primary_count || c.other_interfaces || c.unsupported_elements ||
       (mesh.profile!=startup::Profile::OrdinaryExteriorFixedMain &&
        mesh.profile!=startup::Profile::OrdinaryExteriorMovingMain) ||
       (mesh.topology!=startup::TopologyPolicy::ManifoldTwoSided &&
@@ -34,7 +33,8 @@ Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& out
       top.primary_count!=mesh.primary_count || top.main_count!=g || in.main_count!=g ||
       !r::Span(mesh.node_source_ids,n) || !r::Span(mesh.primary,mesh.primary_count) ||
       !r::VectorSpan(mesh.positions,n,positions_bytes) || !r::Span(top.mains,g) ||
-      !r::Span(in.secondary,s) || !r::Span(in.main_gaps,g) || !r::Span(result,1)) return {Status::InvalidInput};
+      !r::Span(in.secondary,s) || !r::Span(in.main_gaps,g) || !r::Span(static_cast<const std::byte*>(result),result_bytes) ||
+      !r::Span(in.auxiliary_rigid_primary_ids,in.auxiliary_rigid_primary_count)) return {Status::InvalidInput};
   if (mesh.coordinates!=startup::Coordinates::Native && mesh.coordinates!=startup::Coordinates::Si)
     return {Status::InvalidInput};
   if (mesh.coordinates==startup::Coordinates::Si) {
@@ -42,16 +42,17 @@ Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& out
     if (!units_detail::Make(mesh.units,factors)) return {Status::InvalidInput};
   }
   struct Range {const void* pointer;std::size_t bytes;};
-  const Range reads[]{{&in,sizeof(in)},{mesh.node_source_ids,n*sizeof(std::uint64_t)},
+  const Range reads[]{{&in,sizeof(in)},{&output,sizeof(output)},{&scratch,sizeof(scratch)},
+      {in.auxiliary_rigid_primary_ids,in.auxiliary_rigid_primary_count*sizeof(std::uint64_t)},{mesh.node_source_ids,n*sizeof(std::uint64_t)},
       {mesh.primary,mesh.primary_count*sizeof(startup::PrimaryFace)},{mesh.positions.data,positions_bytes},
       {top.mains,g*sizeof(startup::Main)},{in.secondary,s*sizeof(Secondary)},{in.main_gaps,g*sizeof(double)}};
   if (!Disjoint(output.data(),output.bytes(),scratch.data(),scratch.bytes()) ||
-      !Disjoint(output.data(),output.bytes(),result,sizeof(*result)) ||
-      !Disjoint(scratch.data(),scratch.bytes(),result,sizeof(*result)))return {Status::InvalidInput};
+      !Disjoint(output.data(),output.bytes(),result,result_bytes) ||
+      !Disjoint(scratch.data(),scratch.bytes(),result,result_bytes))return {Status::InvalidInput};
   for (const auto& read:reads)
     if (!Disjoint(output.data(),output.bytes(),read.pointer,read.bytes) ||
         !Disjoint(scratch.data(),scratch.bytes(),read.pointer,read.bytes) ||
-        !Disjoint(result,sizeof(*result),read.pointer,read.bytes))return {Status::InvalidInput};
+        !Disjoint(result,result_bytes,read.pointer,read.bytes))return {Status::InvalidInput};
   constexpr unsigned reverse[]{1,0,3,2};
   for (std::size_t m=0;m<g;++m) {
     const auto primary=m<mesh.primary_count?m:m-mesh.primary_count;
