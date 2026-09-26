@@ -18,7 +18,7 @@ __global__ void CheckNodes(Device d,tl::fea::NodalAssemblyView view) {
     const auto code=d.source.nodes[node].constraint;
     const unsigned world=((code&1)<<2)|(code&2)|((code&4)>>2);
     if(view.translation_fixed_bits[node]!=world||!SupportedConstraint(code,d.source.nodes[node].skew)||
-       !normal_detail::Nonnegative(d.native_mass[node]))Fail(d,node,TransactionStatus::SourceMismatch);
+       (d.native_mass&&!normal_detail::Nonnegative(d.native_mass[node])))Fail(d,node,TransactionStatus::SourceMismatch);
     for(unsigned c=0;c<3;++c)
       if(!tl::math::Finite(view.accepted.position_xyz[3*node+c])||
          !tl::math::Finite(view.accepted.velocity_xyz[3*node+c]))Fail(d,node,TransactionStatus::NumericalFailure);
@@ -96,7 +96,7 @@ __global__ void ForceRank(Device d,std::size_t count) {
   if(!threadIdx.x&&!blockIdx.x)d.control->kept=d.positive_offsets[count];
 }
 __global__ void ResponseRows(Device d,lifecycle::Input input,TransactionConfig config,
-    units_detail::Factors units,double kick,unsigned trial) {
+    units_detail::Factors units,MassOperands mass,double kick,unsigned trial) {
   for(std::size_t row=blockIdx.x*blockDim.x+threadIdx.x;row<d.source.secondary_count;row+=blockDim.x*gridDim.x) {
     auto history=d.row_results[row].value.history;
     const auto begin=d.candidate_offsets[row],end=d.candidate_offsets[row+1];
@@ -108,7 +108,7 @@ __global__ void ResponseRows(Device d,lifecycle::Input input,TransactionConfig c
       const auto cohort=d.force_rank[first]/d.force_packet_size;std::size_t last=first+1;
       while(last<end&&(d.force_rank[last]==UINT32_MAX||d.force_rank[last]/d.force_packet_size==cohort))++last;
       const auto result=RespondRowCohort(config,input,d.occurrences,d.geometry,first,last,
-          d.native_mass,units,kick,history.row,d.finalized,d.responses,d.row_packets);
+          mass,units,kick,history.row,d.finalized,d.responses,d.row_packets);
       if(result.status!=TransactionStatus::Ok){Fail(d,row,result.status);break;}
       first=last;
     }
@@ -202,8 +202,8 @@ cudaError_t Order(Device d,std::size_t count,cudaStream_t s) noexcept {
   if(e!=cudaSuccess)return e;ForceRank<<<Blocks(count),128,0,s>>>(d,count);return cudaPeekAtLastError();
 }
 cudaError_t Respond(Device d,lifecycle::Input input,const TransactionConfig& config,const units_detail::Factors& units,
-    double kick,unsigned trial,std::size_t count,std::size_t kept,cudaStream_t s) noexcept {
-  ResponseRows<<<Blocks(d.source.secondary_count),128,0,s>>>(d,input,config,units,kick,trial);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
+    MassOperands mass,double kick,unsigned trial,std::size_t count,std::size_t kept,cudaStream_t s) noexcept {
+  ResponseRows<<<Blocks(d.source.secondary_count),128,0,s>>>(d,input,config,units,mass,kick,trial);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
   PackForces<<<Blocks(count),128,0,s>>>(d,count,kept);e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
   Diagnostics<<<1,1,0,s>>>(d,count,units);return cudaPeekAtLastError();
 }

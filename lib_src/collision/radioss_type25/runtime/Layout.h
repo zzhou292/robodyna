@@ -47,6 +47,7 @@ struct Device {
   std::size_t primary_count=0,raw_capacity=0,candidate_capacity=0,sliding_capacity=0;
   unsigned force_packet_size=0;
 };
-bool MakeLayout(const ContactSourceInput&,TransactionLimits,std::size_t cub_bytes,Layout&,NormalShape={}) noexcept;
+bool MakeLayout(const ContactSourceInput&,TransactionLimits,std::size_t cub_bytes,Layout&,NormalShape={},
+    ResponseMassPolicy=ResponseMassPolicy::StaticPhysicalLedger) noexcept;
 Device Bind(void*,const Layout&,const ContactSourceInput&,TransactionLimits,NormalShape={}) noexcept;
 } // namespace tlfea::contact::radioss_type25::runtime_detail

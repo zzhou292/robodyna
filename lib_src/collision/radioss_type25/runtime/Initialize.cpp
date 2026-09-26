@@ -20,7 +20,7 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   if(!stamp.owner_id||stamp.epoch||stamp.time!=0||!stamp.has_rotations||
      stamp.temporal_scheme!=fe::NodalTemporalScheme::StaggeredHalfKickStart||
      stamp.velocity_phase!=fe::NodalVelocityPhase::Collocated||stamp.reactions_valid||
-     stamp.rigid_groups.group_count)
+     (config.response_mass==ResponseMassPolicy::StaticPhysicalLedger&&stamp.rigid_groups.group_count))
     return Error(TransactionStatus::UnsupportedProfile,"Fresh conventional fixed-step staggered owner required");
   const auto authenticated=publication.ValidatePhysicalSources(owner,physical,participants,identity);
   if(authenticated.status!=fe::ShellPublicationStatus::Success)
@@ -44,7 +44,7 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   if(rd::QueryScratch(source.selection.secondary_count,limits.optimized_candidates,cub)!=cudaSuccess)
     return Error(TransactionStatus::DeviceFailure,"Native runtime scratch query failed");
   const rd::NormalShape normal{upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation};
-  rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout,normal))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
+  rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout,normal,config.response_mass))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
   TransactionForecast forecast;forecast.raw_pair_capacity=limits.inventory.max_pairs;
   forecast.optimized_capacity=limits.optimized_candidates;forecast.sliding_capacity=limits.sliding_entries;
   forecast.runtime_device_bytes=layout.bytes;forecast.normal_device_bytes=layout.normal.bytes;

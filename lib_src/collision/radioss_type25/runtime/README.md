@@ -85,3 +85,28 @@ this owner integration and a full source-derived moving trajectory require their
 own actual GPU gates. No generic nonplanar/vehicle/performance claim follows from
 source compilation or a small cache recurrence. The retained fixed coupon and
 videos remain separate qualified evidence.
+
+## Response mass policy
+
+`TransactionConfig::response_mass` defaults to `StaticPhysicalLedger`, retaining
+its immutable native mass cache and exclusion of rigid groups/CIN witnesses.
+The explicit `AcceptedOwnerCoefficients` profile instead borrows the existing
+owner's accepted SI raw-M slab during each authenticated assembly attempt. Each
+consumed secondary/main coefficient is divided by the native mass scale in
+source slot order, including repeated/zero-weight slots. Genuine zero dependent
+mass is retained; negative/nonfinite and nonzero-to-zero conversions reject the
+trial. The profile allocates no contact mass cache and never reconstructs mass
+from constrained inverses or rigid totals.
+
+This extends only the existing ordinary QEPH/T3 physical source profile with
+already admitted disjoint rigid/CIN compositions. Initial physical identity and
+complete witnesses remain authenticated by the common physical publisher. CIN's
+intrinsic transferred/numerical mass is allowed; target mass scaling, additional
+mass producers, generated/virtual contact nodes, erosion/release and other
+physical families remain outside this profile. Missing witnesses cannot be
+provided by contact. The borrow ends with the current accepted assembly; owner
+commit/discard and contact publication keep their existing authority and phase.
+
+Focused value and owner tests do not establish a matched rigid/CIN contact scene
+or V5 tied-removal admission. A tied secondary excluded by the declared native
+contact source must not be reinserted to force positive zero-MSI contact.

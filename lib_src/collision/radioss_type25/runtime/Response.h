@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Types.h"
+#include "MassOperands.h"
 #include "../IsotropicResponse.h"
 #include "../geometry/HistoryRow.h"
 #include "../assembly/Endpoints.h"
@@ -9,9 +10,9 @@ namespace tlfea::contact::radioss_type25::runtime_detail {
 // Per-occurrence FOR3 arguments. Only a complete, selected native geometry may
 // enter this factory. Raw masses are finite physical coefficients, including
 // fully constrained nodes. Subtract each main velocity in native source order.
-TL_MATH_HOST_DEVICE inline NativeFrictionInput ForceInput(const lifecycle::Input& input,
+TL_MATH_HOST_DEVICE inline bool ForceInput(const lifecycle::Input& input,
     const lifecycle::Occurrence& occurrence,const NativeGeometryFinalResult& geometry,
-    const double* native_mass,const units_detail::Factors& units,double previous_kick) {
+    MassOperands mass,const units_detail::Factors& units,double previous_kick,NativeFrictionInput& result) {
   NativeFrictionInput out;
   const auto row=occurrence.selected.key.history_index;
   const auto& secondary=input.source.secondary[row];
@@ -19,12 +20,13 @@ TL_MATH_HOST_DEVICE inline NativeFrictionInput ForceInput(const lifecycle::Input
   out.normal.penetration=geometry.penetration;
   out.normal.stiffness=geometry.geometry.incoming_stiffness;
   out.normal.dt=input.step.previous_dt;out.normal.time=input.step.time;out.dt12=previous_kick;
-  out.normal.secondary_mass=native_mass[secondary.node];
+  if(!NativeMass(mass,secondary.node,units,out.normal.secondary_mass))return false;
   out.normal_axis=geometry.geometry.normal;
   auto velocity=lifecycle::detail::Velocity(input,secondary.node,units);
   for(unsigned slot=0;slot<4;++slot) {
     const auto node=main.nodes[slot];const auto h=geometry.geometry.weights[slot];
-    out.normal.weights[slot]=h;out.normal.main_mass[slot]=native_mass[node];
+    out.normal.weights[slot]=h;
+    if(!NativeMass(mass,node,units,out.normal.main_mass[slot]))return false;
     out.main_vertices[slot]=lifecycle::detail::Position(input,node,units);
     const auto main_velocity=lifecycle::detail::Velocity(input,node,units);
     velocity.x=velocity.x-h*main_velocity.x;
@@ -33,7 +35,7 @@ TL_MATH_HOST_DEVICE inline NativeFrictionInput ForceInput(const lifecycle::Input
   }
   out.relative_velocity=velocity;
   out.normal.normal_velocity=tl::math::fixed3::Dot(out.normal_axis,velocity);
-  return out;
+  result=out;return true;
 }
 // Source order within one original NVSIZ cohort, restricted to a single history
 // writer. Other rows cannot alter these offsets or response histories. Cohort
@@ -42,7 +44,7 @@ TL_MATH_HOST_DEVICE inline NativeFrictionInput ForceInput(const lifecycle::Input
 TL_MATH_HOST_DEVICE inline TransactionReport RespondRowCohort(
     const TransactionConfig& config,const lifecycle::Input& input,
     const lifecycle::Occurrence* occurrences,const NativeRawGeometryResult* raw,
-    std::size_t first,std::size_t last,const double* native_mass,
+    std::size_t first,std::size_t last,MassOperands mass,
     const units_detail::Factors& units,double previous_kick,
     NativeContactRow& history,NativeGeometryFinalResult* finalized,
     NativeFrictionResult* responses,assembly::SiEndpoints* packets) {
@@ -58,7 +60,9 @@ TL_MATH_HOST_DEVICE inline TransactionReport RespondRowCohort(
   for(std::size_t i=first;i<last;++i) {
     responses[i]={};packets[i]={};
     if(!occurrences[i].selected.enabled)continue;
-    const auto arguments=ForceInput(input,occurrences[i],finalized[i],native_mass,units,previous_kick);
+    NativeFrictionInput arguments;
+    if(!ForceInput(input,occurrences[i],finalized[i],mass,units,previous_kick,arguments))
+      return {TransactionStatus::NumericalFailure,"Native response mass is not representable",SIZE_MAX,i};
     const auto status=EvaluateNativeFriction(config.normal,config.friction,
         config.friction_coefficients,arguments,history.history,&responses[i]);
     if(status!=NormalStatus::Ok)

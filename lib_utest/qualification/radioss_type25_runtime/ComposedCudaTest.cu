@@ -110,11 +110,19 @@ n::NativeFrictionInput Arguments(const Fixture& f,const l::Occurrence& o,
   in.normal.normal_velocity=in.normal_axis.x*in.relative_velocity.x+in.normal_axis.y*in.relative_velocity.y+
       in.normal_axis.z*in.relative_velocity.z;return in;
 }
-void CompareComplete(Fixture f,unsigned packet) {
+void CompareComplete(Fixture f,unsigned packet,double mass_scale=0,bool zero_secondary=false) {
   const auto reference=type25_lifecycle_test::OracleLifecycle(f.Input());NumericalRig gpu(f,packet);
   const auto count=gpu.Classify();const auto classified=gpu.Classification(count);
   type25_lifecycle_test::Same(classified,reference);
-  const double kick=.0005;gpu.Fence(rd::Respond(gpu.d,gpu.input,gpu.config,gpu.units,kick,1,count,gpu.control.kept,gpu.stream));
+  const double kick=.0005;
+  auto response_units=gpu.units;rd::MassOperands operands{gpu.d.native_mass};
+  if(mass_scale) {
+    if(zero_secondary)for(const auto& row:f.secondary)gpu.mass[row.node]=0;
+    auto si=gpu.mass;for(auto& value:si)value*=mass_scale;
+    gpu.Copy(si.data(),gpu.layout.native_mass);Check(cudaStreamSynchronize(gpu.stream));
+    response_units.mass=mass_scale;operands.units=rd::MassOperands::Units::Si;
+  }
+  gpu.Fence(rd::Respond(gpu.d,gpu.input,gpu.config,response_units,operands,kick,1,count,gpu.control.kept,gpu.stream));
   auto rows=reference.rows;std::vector<n::NativeGeometryHistory> histories;
   for(const auto& row:rows)histories.push_back(row.history);
   std::vector<std::size_t> kept;for(std::size_t i=0;i<count;++i)if(reference.occurrences[i].secondary>0)kept.push_back(i);
@@ -167,5 +175,14 @@ TEST(NativeType25RuntimeCuda,NativeFreeFixedSkewTagsRemainLiteralThroughClassifi
 }
 TEST(NativeType25RuntimeCuda,EmptyOptimizedSetPreservesIncomingNodalValues) {
   Fixture f;f.positions[20]=100;f.spatial.clear();f.Rebuild();CompareComplete(f,2);
+}
+TEST(NativeType25RuntimeCuda, SiAcceptedMassOperandsMatchCompleteNativeResponseIncludingZeroMsi) {
+  // Numerical packets only: zero MSI here makes no tied-removal/source claim.
+  // All non-mass units stay native to isolate this conversion from other bridges.
+  for(double scale:{.125,2.,1000.})for(bool zero:{false,true}) {
+    SCOPED_TRACE(scale);
+    SCOPED_TRACE(zero);
+    Fixture f;f.velocities[20]=-1.;CompareComplete(f,128,scale,zero);
+  }
 }
 } // namespace

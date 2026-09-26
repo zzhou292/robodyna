@@ -48,6 +48,10 @@ struct MovingMainSource : ContactSourceInput {
   startup::Snapshot starter;
   normal_activation::Profile activation;
 };
+// Response mass is a source/owner contract, not a mass-scaling switch.
+// AcceptedOwnerCoefficients consumes accepted CIN transfer/numerical-mass state
+// and physical rigid-member MS. It does not admit additional mass producers.
+enum class ResponseMassPolicy { StaticPhysicalLedger,AcceptedOwnerCoefficients };
 struct TransactionConfig {
   UnitScale units;
   lifecycle::Profile lifecycle;
@@ -55,6 +59,7 @@ struct TransactionConfig {
   FrictionControls friction;
   NativeFrictionCoefficients friction_coefficients;
   assembly::Controls assembly;
+  ResponseMassPolicy response_mass=ResponseMassPolicy::StaticPhysicalLedger;
 };
 inline candidates::Limits FixedMainInventoryLimits() noexcept {
   candidates::Limits limits;limits.max_pairs=65536;limits.max_tasks=65536;return limits;

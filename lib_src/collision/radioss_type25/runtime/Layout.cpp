@@ -2,8 +2,9 @@
 #include "Layout.h"
 #include <climits>
 namespace tlfea::contact::radioss_type25::runtime_detail {
-bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::size_t cub,Layout& out,NormalShape normal) noexcept {
+bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::size_t cub,Layout& out,NormalShape normal,ResponseMassPolicy mass_policy) noexcept {
   const auto& s=source.selection;const auto rows=s.secondary_count,cap=limits.optimized_candidates;
+  if(mass_policy!=ResponseMassPolicy::StaticPhysicalLedger&&mass_policy!=ResponseMassPolicy::AcceptedOwnerCoefficients)return false;
   if(!source.force_packet_size||cap>INT_MAX/5||limits.inventory.max_pairs>=INT_MAX||
      rows>=INT_MAX||limits.sliding_entries>=INT_MAX||!limits.max_device_bytes)return false;
   if(normal.enabled&&(!source.primary_main_count||source.primary_main_count>INT_MAX/8||
@@ -18,7 +19,8 @@ bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::s
   ADD(std::uint32_t,s.removed_main_by_secondary.offset_count,removed_offsets);
   ADD(std::uint32_t,s.removed_main_by_secondary.entry_count,removed_entries);
   for(unsigned i=0;i<2;++i){ADD(lifecycle::Secondary,rows,secondary[i]);ADD(NativeGeometryHistory,rows,history[i]);}
-  ADD(double,s.node_count,native_mass);ADD(Vector,s.node_count,reference_positions);
+  ADD(double,mass_policy==ResponseMassPolicy::StaticPhysicalLedger?s.node_count:0,native_mass);
+  ADD(Vector,s.node_count,reference_positions);
   ADD(double,rows,secondary_stiffness);ADD(double,rows,secondary_gaps);
   ADD(double,source.primary_main_count,main_stiffness);ADD(double,source.primary_main_count,main_gaps);
   ADD(double,source.primary_main_count,main_curvature);
@@ -64,7 +66,8 @@ Device Bind(void* arena,const Layout& l,const ContactSourceInput& source,Transac
   d.source.removed_main_by_secondary.entries=tl::util::ArenaPointer<std::uint32_t>(arena,l.removed_entries);
   for(unsigned i=0;i<2;++i){BIND(secondary[i],lifecycle::Secondary);BIND(history[i],NativeGeometryHistory);}
   d.source.secondary=d.secondary[0];
-  BIND(native_mass,double);BIND(reference_positions,Vector);
+  if(l.native_mass.bytes)BIND(native_mass,double);
+  BIND(reference_positions,Vector);
   BIND(secondary_stiffness,double);BIND(secondary_gaps,double);BIND(main_stiffness,double);BIND(main_gaps,double);BIND(main_curvature,double);
   BIND(spatial,lifecycle::SpatialOccurrence);BIND(spatial_offsets,std::uint32_t);BIND(spatial_entries,std::uint32_t);
   BIND(prepared,lifecycle::PreparedRow);BIND(row_results,lifecycle::RowStageResult);

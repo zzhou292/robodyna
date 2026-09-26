@@ -62,10 +62,11 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   if(check.status!=fe::NodalStatus::Ok)return p.Fail(Error(TransactionStatus::OwnerFailure,check.message));
   auto publication=p.publication->ValidatePhysicalAssembly(owner,token,view);
   if(publication.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,publication.message));
+  const bool static_mass=p.config.response_mass==ResponseMassPolicy::StaticPhysicalLedger;
   const auto accepted=p.state.Accepted(owner);double drift=0,kick=0;
   if(!accepted.available||!p.issuer.configured()||accepted.generation==UINT64_MAX||
      !Phase(accepted.stamp,drift,kick)||view.stream!=p.stream||
-     !view.translation_fixed_bits||!view.rotation_fixed||p.issuer.witness_count_)
+     !view.translation_fixed_bits||!view.rotation_fixed||(static_mass&&p.issuer.witness_count_))
     return p.Fail(Error(TransactionStatus::UnsupportedProfile,"Native owner/source/phase is not admitted"));
   if(p.phase!=Impl::Phase::Idle) {
     if(view.attempt==p.assembly_view.attempt)return p.Fail(Error(TransactionStatus::StaleAttempt,"Native assembly already ran for this attempt"));
@@ -76,8 +77,22 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   fe::NodalCinAssemblyView cin;
   check=fe::shell_physical_owner::BorrowAssembly(owner,token,accepted.stamp,view,p.issuer.witness_count_,&cin);
   if(check.status!=fe::NodalStatus::Ok)return p.Fail(Error(TransactionStatus::OwnerFailure,check.message));
-  if(cin.witness_count||cin.node_count!=p.source.selection.node_count||!cin.translational_stiffness)
-    return p.Fail(Error(TransactionStatus::UnsupportedProfile,"First native profile excludes CIN coefficient transfers"));
+  if((static_mass&&cin.witness_count)||cin.node_count!=p.source.selection.node_count||!cin.translational_stiffness)
+    return p.Fail(Error(TransactionStatus::UnsupportedProfile,"Native coefficient assembly scope is not admitted"));
+  rd::MassOperands mass{p.device.native_mass,rd::MassOperands::Units::Native};
+  if(!static_mass) {
+    // This local borrow cannot escape the accepted force stage. Authenticate
+    // against the same live token and CIN assembly before any response launch.
+    fe::NodalAcceptedRawMassView raw_mass;
+    check=owner.BorrowAcceptedRawMass(token,&raw_mass);
+    if(check.status==fe::NodalStatus::Ok)check=owner.AuthenticateAcceptedRawMass(token,raw_mass);
+    if(check.status!=fe::NodalStatus::Ok)return p.Fail(Error(TransactionStatus::OwnerFailure,check.message));
+    if(raw_mass.owner_id!=view.owner_id||raw_mass.base_epoch!=accepted.stamp.epoch||
+       raw_mass.attempt!=view.attempt||raw_mass.node_count!=p.source.selection.node_count||
+       raw_mass.qualification_id!=cin.qualification_id||raw_mass.stream!=p.stream)
+      return p.Fail(Error(TransactionStatus::SourceMismatch,"Accepted response mass differs from the physical attempt"));
+    mass={raw_mass.mass_kg,rd::MassOperands::Units::Si};
+  }
   const auto pending=cudaGetLastError();
   if(pending!=cudaSuccess)return p.Fail(Error(TransactionStatus::DeviceFailure,"Pending CUDA error before native assembly"));
   auto status=p.Fence(rd::ValidateCurrent(p.device,view,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
@@ -157,7 +172,7 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   status=p.Fence(rd::Complete(p.device,input,p.units,count,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   status=p.Fence(rd::Order(p.device,count,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   const auto kept=std::size_t(p.control.kept);p.diagnostics.kept_occurrences=kept;
-  status=p.Fence(rd::Respond(p.device,input,p.config,p.units,kick/p.units.time,p.trial_selectors.history,count,kept,p.stream));
+  status=p.Fence(rd::Respond(p.device,input,p.config,p.units,mass,kick/p.units.time,p.trial_selectors.history,count,kept,p.stream));
   if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   p.diagnostics.active_forces=p.control.active;p.diagnostics.elastic_energy=p.control.elastic_energy;
   p.diagnostics.damping_work=p.control.damping_work;p.diagnostics.friction_work=p.control.friction_work;

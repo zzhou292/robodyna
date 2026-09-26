@@ -56,6 +56,10 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   // source branch. These controls must not be admitted and silently ignored.
   if(source.drad!=0||source.gap_load!=0)
     return Fail(TransactionStatus::UnsupportedProfile,"Native OPTCD requires zero DRAD and DGAPLOAD");
+  if(config.response_mass!=ResponseMassPolicy::StaticPhysicalLedger&&
+     config.response_mass!=ResponseMassPolicy::AcceptedOwnerCoefficients)
+    return Fail(TransactionStatus::UnsupportedProfile,"Unknown native response mass policy");
+  const bool static_mass=config.response_mass==ResponseMassPolicy::StaticPhysicalLedger;
   NativeNormalResult probe;
   if(EvaluateNativeNormal(config.normal,{}, {},&probe)!=NormalStatus::Ok)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native normal response");
@@ -76,21 +80,22 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
 #define CHARGE(type,count) if(!host.Append<type>(count,ignored))return Fail(TransactionStatus::ResourceLimit,"Source startup byte cap exceeded")
   CHARGE(std::uint64_t,s.node_count);CHARGE(int,s.node_count);CHARGE(std::uint32_t,s.secondary_count+4*p);
   CHARGE(candidates::Main,p);CHARGE(NativeGeometryHistory,s.secondary_count);CHARGE(Vector,2*s.node_count);
-  CHARGE(double,s.node_count+2*s.secondary_count+3*p);CHARGE(std::uint64_t,2*(p+1));
+  CHARGE(double,(static_mass?s.node_count:0)+2*s.secondary_count+3*p);CHARGE(std::uint64_t,2*(p+1));
   CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,shells->qeph_count()+shells->t3_count());
   CHARGE(std::uint64_t,p);CHARGE(std::uint32_t,s.secondary_count+1);
 #undef CHARGE
   SourceStaging next;next.bytes=host.bytes();next.ids.resize(s.node_count);next.codes.resize(s.node_count);
-  next.positions.resize(s.node_count);next.native_mass.resize(s.node_count);
+  next.positions.resize(s.node_count);if(static_mass)next.native_mass.resize(s.node_count);
   std::vector<Vector> zero_velocity(s.node_count);
   for(std::size_t node=0;node<s.node_count;++node) {
     if(s.nodes[node].source_id!=domain->nodes()[node].source_id||!SupportedConstraint(s.nodes[node].constraint,s.nodes[node].skew))
       return Fail(TransactionStatus::SourceMismatch,"Contact node identity/constraint differs from physical source",node);
     next.ids[node]=s.nodes[node].source_id;next.codes[node]=s.nodes[node].constraint;next.positions[node]=domain->nodes()[node].position;
     const double mass=ledger->nodes()[node].coefficients.mass;
-    if(!(mass>0)||!tl::math::Finite(mass)||!tl::math::Finite(mass/units.mass)||!(mass/units.mass>0))
+    if(!(mass>0)||!tl::math::Finite(mass)||
+       (static_mass&&(!tl::math::Finite(mass/units.mass)||!(mass/units.mass>0))))
       return Fail(TransactionStatus::SourceMismatch,"Physical raw contact mass is invalid",node);
-    next.native_mass[node]=mass/units.mass;
+    if(static_mass)next.native_mass[node]=mass/units.mass;
   }
   next.history.resize(s.secondary_count);next.secondary_nodes.resize(s.secondary_count);
   next.secondary_stiffness.resize(s.secondary_count);next.secondary_gaps.resize(s.secondary_count);
