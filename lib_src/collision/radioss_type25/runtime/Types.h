@@ -106,5 +106,11 @@ struct TransactionDiagnostics {
   bool reference_rebuilt=false;
   // Native per-attempt sums in source occurrence order, converted once to SI.
   double elastic_energy=0,damping_work=0,friction_work=0;
+  // Last attempted inventory Stage report, preserved through common discard
+  // and cleared at the next validated assembly. Its stamp identifies the
+  // attempt. Availability implies neither complete pair counts nor success:
+  // a task-cap rejection has one scan/fence and has not counted pairs yet.
+  bool candidate_rebuild_available=false;
+  candidates::Report candidate_rebuild;
 };
 } // namespace tlfea::contact::radioss_type25

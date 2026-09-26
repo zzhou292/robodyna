@@ -6,6 +6,16 @@
 #include <cstring>
 namespace moving_cache_test {
 namespace q=n::runtime_qualification;namespace c=n::current_normals;
+void SameCandidateReport(const n::candidates::Report& a,const n::candidates::Report& b) {
+  EXPECT_EQ(a.status,b.status);EXPECT_EQ(a.failure_row,b.failure_row);
+  EXPECT_EQ(a.stamp.source.source,b.stamp.source.source);EXPECT_EQ(a.stamp.source.topology,b.stamp.source.topology);
+  EXPECT_EQ(a.stamp.activity,b.stamp.activity);EXPECT_EQ(a.stamp.gaps,b.stamp.gaps);
+  EXPECT_EQ(a.stamp.geometry,b.stamp.geometry);EXPECT_EQ(a.stamp.attempt,b.stamp.attempt);EXPECT_EQ(a.stamp.reference,b.stamp.reference);
+  EXPECT_EQ(a.active_secondaries,b.active_secondaries);EXPECT_EQ(a.envelope_encounters,b.envelope_encounters);
+  EXPECT_EQ(a.tasks,b.tasks);EXPECT_EQ(a.pairs,b.pairs);EXPECT_EQ(a.maximum_secondary_gap,b.maximum_secondary_gap);
+  EXPECT_EQ(a.own_kernel_launches,b.own_kernel_launches);EXPECT_EQ(a.sort_calls,b.sort_calls);
+  EXPECT_EQ(a.scan_calls,b.scan_calls);EXPECT_EQ(a.host_fences,b.host_fences);
+}
 void Same(const q::NormalObservation& a,const q::NormalObservation& b) {
   ASSERT_EQ(a.face.size(),b.face.size());ASSERT_EQ(a.references.size(),b.references.size());
   EXPECT_EQ(std::memcmp(a.face.data(),b.face.data(),a.face.size()*sizeof(n::StoredNormal)),0);
@@ -84,6 +94,45 @@ TEST(NativeMovingCacheCuda, CompleteOptimizedCapacityRejectsBeforeNormalCacheCan
     q::NormalObservation unchanged;ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&unchanged));Same(unchanged,original);
     EXPECT_EQ(unchanged.accepted.generation,0u);EXPECT_EQ(rig.Positions(),x);
     EXPECT_FALSE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&unchanged));rig.Discard();
+  }
+}
+TEST(NativeMovingCacheCuda, ExactCandidateTaskAndPairFailuresSurviveCommonDiscardAndRefreshOnRetry) {
+  for(bool task_cap:{false,true}) {
+    SCOPED_TRACE(task_cap);
+    Rig rig;for(auto& row:rig.source.secondary)row.gap=.04;
+    for(auto& main:rig.source.mains){main.maximum_gap=.04;for(auto& gap:main.gap)gap=.04;}
+    auto limits=rig.Limits();
+    if(task_cap)limits.inventory.max_tasks=1;else limits.inventory.max_pairs=1;
+    ASSERT_NO_THROW(rig.Initialize(limits));
+    EXPECT_FALSE(rig.contact.last_diagnostics().candidate_rebuild_available);
+    const auto original_positions=rig.Positions();q::NormalObservation original;
+    ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&original));
+    std::uint64_t previous_attempt=0;
+    for(unsigned retry=0;retry<2;++retry) {
+      SCOPED_TRACE(retry);
+      Attempt attempt;
+      ASSERT_NO_THROW(rig.Begin(attempt));
+      const auto failure=rig.contact.AssembleAccepted(rig.owner,attempt.token,attempt.assembly);
+      ASSERT_EQ(failure.status,n::TransactionStatus::ResourceLimit)<<failure.message;
+      const auto diagnostics=rig.contact.last_diagnostics();ASSERT_TRUE(diagnostics.candidate_rebuild_available);
+      const auto& report=diagnostics.candidate_rebuild;EXPECT_EQ(report.status,n::candidates::Status::ResourceLimit);
+      EXPECT_EQ(report.stamp.attempt,attempt.assembly.attempt);EXPECT_NE(report.stamp.attempt,previous_attempt);
+      previous_attempt=report.stamp.attempt;EXPECT_GT(report.active_secondaries,0u);EXPECT_GT(report.envelope_encounters,0u);
+      if(task_cap) {
+        EXPECT_GT(report.tasks,limits.inventory.max_tasks);EXPECT_EQ(report.pairs,0u);
+        EXPECT_EQ(report.host_fences,1u);EXPECT_EQ(report.scan_calls,1u);
+      } else {
+        EXPECT_LE(report.tasks,limits.inventory.max_tasks);EXPECT_GT(report.pairs,limits.inventory.max_pairs);
+        EXPECT_EQ(report.host_fences,2u);EXPECT_EQ(report.scan_calls,2u);
+      }
+      n::candidates::Report actual;
+      ASSERT_TRUE(q::Access::ReadCandidateReport(rig.contact,attempt.assembly.attempt,&actual));SameCandidateReport(report,actual);
+      rig.Discard();const auto retained=rig.contact.last_diagnostics();ASSERT_TRUE(retained.candidate_rebuild_available);
+      SameCandidateReport(retained.candidate_rebuild,report);
+      EXPECT_EQ(rig.owner.accepted().epoch,0u);EXPECT_EQ(rig.Positions(),original_positions);
+      q::NormalObservation unchanged;ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&unchanged));Same(unchanged,original);
+      EXPECT_EQ(unchanged.accepted.generation,0u);EXPECT_EQ(diagnostics.active_forces,0u);
+    }
   }
 }
 TEST(NativeMovingCacheCuda, InactiveMainCacheSurvivesPhysicalMotionAndRepeatedSelectorSwaps) {

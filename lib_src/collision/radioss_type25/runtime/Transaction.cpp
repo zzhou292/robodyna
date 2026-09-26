@@ -133,6 +133,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
     query.margin=p.source.margin*p.units.length;query.gap_load=p.source.gap_load*p.units.length;
     query.drad=p.source.drad*p.units.length;query.stored_motion=budget.budget.stored_motion*p.units.length;query.previous_dt=drift;
     const auto candidate_status=p.inventory[reference].Stage(query);
+    p.diagnostics.candidate_rebuild=p.inventory[reference].last_report();
+    p.diagnostics.candidate_rebuild_available=true;
     if(candidate_status!=candidates::Status::Ok)return p.Fail(Error(candidate_status==candidates::Status::DeviceFailure?
         TransactionStatus::DeviceFailure:candidate_status==candidates::Status::ResourceLimit?TransactionStatus::ResourceLimit:
         TransactionStatus::NumericalFailure,"Complete native candidate rebuild rejected"));

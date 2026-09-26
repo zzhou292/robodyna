@@ -29,6 +29,14 @@ struct InitializationObservation {
 class Access {
  public:
   static std::size_t FixedHostBytes() noexcept {return sizeof(Transaction)+sizeof(Transaction::Impl);}
+  static bool ReadCandidateReport(const Transaction& value,std::uint64_t attempt,candidates::Report* output) {
+    if(!value.impl_||!output||!attempt)return false;
+    for(const auto& inventory:value.impl_->inventory) {
+      const auto report=inventory.last_report();
+      if(report.stamp.attempt==attempt){*output=report;return true;}
+    }
+    return false;
+  }
   static bool ReadInitialization(const Transaction& value,InitializationObservation* output) {
     if(!value.impl_||!output)return false;const auto& p=*value.impl_;
     const auto accepted=p.state.Accepted(*p.owner);
