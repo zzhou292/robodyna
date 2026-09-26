@@ -38,7 +38,14 @@ struct FullLedgerFixture {
       : source(contact_geometry),domain(source.Domain()),beams(source.Beams()),
         welds(source.Springs()),
         solids(source.Solids(domain)) {
-    const auto geometry=source.shell_input.Input();
+    auto geometry=source.shell_input.Input();
+    auto declared_quads=source.shell_input.q;
+    if(contact_geometry) {
+      // The GPU coupon explicitly declares centered no-failure layers. Offset
+      // glass requires its real Tab1 policy and belongs to the failure gate.
+      for(auto& quad:declared_quads)quad.reference.placement=tl::fea::ShellReferencePlacement::Centered;
+      geometry.shells.qeph=declared_quads.data();
+    }
     const auto shell_report=with_qbat?shells.InitializeFormulations(geometry):shells.Initialize(geometry.shells);
     EXPECT_EQ(shell_report.status,tl::fea::ShellBindingStatus::Success);
     EXPECT_TRUE(mapping.Initialize(shells,domain));
