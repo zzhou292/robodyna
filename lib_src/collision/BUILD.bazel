@@ -1224,6 +1224,14 @@ cc_library(
             "//lib_utils:bounded_arena"],
 )
 
+cc_library(
+    name = "radioss_type25_gap_source",
+    srcs = glob(["radioss_type25/source_gaps/*.cpp"]),
+    hdrs = ["RadiossType25GapSource.h"] + glob(["radioss_type25/source_gaps/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_shell_source", ":radioss_type25_fixed_main_startup"],
+)
+
 # Bounded host startup topology and distinct native float normal stages.
 cc_library(
     name = "radioss_type25_fixed_main_startup",

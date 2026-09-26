@@ -17,3 +17,9 @@ filegroup(
     srcs = ["native/original/starter_mvsiz_p.inc"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "gap_source_donor",
+    srcs = ["native/original/i25neigh.F"],
+    visibility = ["//lib_utest/qualification/radioss_type25_gap_source:__pkg__"],
+)

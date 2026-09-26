@@ -21,5 +21,6 @@ cc_test(
 filegroup(
     name = "native_source_files",
     srcs = ["native/prepare.py", "native/source-manifest.json"] + glob(["native/*.F.in", "native/original/*"]),
-    visibility = ["//lib_utest/qualification/radioss_type25_nodal_seed:__pkg__"],
+    visibility = ["//lib_utest/qualification/radioss_type25_nodal_seed:__pkg__",
+        "//lib_utest/qualification/radioss_type25_gap_source:__pkg__"],
 )
