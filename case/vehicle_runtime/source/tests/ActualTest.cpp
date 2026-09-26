@@ -13,6 +13,10 @@ TEST(EnvelopeRuntimeActual, CompleteSourceForecastBeforeOwnerAllocation) {
     EXPECT_EQ(config.solids.startup.kind,source.startup().kind);
     EXPECT_EQ(config.publication.startup.kind,source.startup().kind);
     EXPECT_TRUE(forecast.has_type45);EXPECT_TRUE(forecast.has_beam18);
+    const auto retained=OwnerSource().retained_host_upper_bound(RuntimeConfig().limits.host_bytes);
+    EXPECT_LE(retained,OwnerSource().forecast().current_phase);
+    EXPECT_EQ(OwnerSource().retained_host_upper_bound(retained),retained);
+    EXPECT_THROW(OwnerSource().retained_host_upper_bound(retained-1),std::exception);
     EXPECT_THROW(source.original_execution(),std::exception);
     EXPECT_THROW(source.original_attachments(),std::exception);
     auto roles=source.roles();const auto wall=OwnerSource().execution_source().mechanical().environment_parent().domain_nodes[0];

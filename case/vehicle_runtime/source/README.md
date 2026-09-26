@@ -9,6 +9,6 @@ views. The shared accessors create no numerical state.
 
 The existing startup, participant and dynamics implementations consume these
 views. Original-only accessors reject the environment source explicitly. Source
-handles outlive all GPU consumers. The environment's complete current-phase
-budget is conservatively retained until a public owning retained-graph bound is
-available; no guessed overlap is subtracted.
+handles outlive all GPU consumers. The environment producer reports its retained graph separately from historical
+construction peaks, with exact shared witness backing checks. No guessed overlap
+or unused module reservation is charged as a live runtime allocation.

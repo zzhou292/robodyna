@@ -95,6 +95,28 @@ tl::fea::NodalCinWitnessSource EnvelopeOwnerSource::witness_source() const noexc
     const auto& values=witnesses().data();
     return {&attachments().model(),values.ranges.data(),values.witnesses.data(),values.ranges.size(),values.witnesses.size()};
 }
+std::size_t EnvelopeOwnerSource::retained_host_upper_bound(std::size_t cap) const {
+    const auto& roster=witnesses().data();
+    // PreparePhysical copied these exact shared handles. Their source backing
+    // is already retained by execution/attachments below; only its owning
+    // object and actual roster vectors are additional.
+    d::Require(&witnesses().shells()==physical().shells() &&
+        witnesses().model().rows().data==attachments().model().rows().data,
+        "Retained witness accounting requires exact shared physical/CIN backing");
+    tl::util::BoundedArenaLayout bytes(cap);tl::util::ArenaRegion unused;
+    for(const auto count:{execution_source().retained_host_upper_bound(cap),
+            attachments().forecast().total_host_bytes,witnesses().forecast().fixed_bytes,
+            joint_source().forecast().total_bytes,joints().owned_payload_bytes(),
+            sizeof(EnvelopeOwnerSource)+sizeof(Data)+std::size_t{128}})
+        d::Require(bytes.Append<std::byte>(count,unused),"Retained combined owner source exceeds cap");
+    d::Require(bytes.Append<vehicle_startup::cin_stage::WitnessRange>(roster.ranges.capacity(),unused) &&
+        bytes.Append<vehicle_startup::cin_stage::ActiveWitness>(roster.witnesses.capacity(),unused) &&
+        bytes.Append<vehicle_startup::TiedCinWitnessOrigin>(roster.origins.capacity(),unused) &&
+        bytes.Append<std::uint32_t>(joint_source_rows().capacity(),unused) &&
+        bytes.Append<std::uint8_t>(roles().node.capacity(),unused),"Retained combined source vector capacity exceeds cap");
+    d::Require(bytes.bytes()<=forecast().current_phase,"Retained source exceeds its original complete construction bound");
+    return bytes.bytes();
+}
 vehicle_runtime::detail::OwnerPacking EnvelopeOwnerSource::PackOwner(std::size_t cap) const {
     const auto& source=data_->execution.mechanical();
     auto packed=vehicle_runtime::detail::PackOwner(source.coefficients(),source.rigid_assembly(),data_->roles,
