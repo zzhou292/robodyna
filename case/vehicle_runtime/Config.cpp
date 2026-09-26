@@ -7,7 +7,7 @@ void CheckConfig(const Config& config) {
     output::Require(config.configuration_id && config.qualification_id &&
         std::isfinite(config.reserved_step_s) && config.reserved_step_s >= 1e-12 &&
         config.limits.host_bytes && config.limits.host_bytes <= hard.host_bytes &&
-        config.limits.device_bytes && config.limits.device_bytes <= hard.device_bytes,
+        config.limits.device_bytes && config.limits.device_bytes <= Limits::maximum_device_bytes,
         "Invalid bounded initial-only vehicle configuration");
 }
 tl::fea::ShellBatchStartup InitialTranslation() noexcept {
