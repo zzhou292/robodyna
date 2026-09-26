@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(TLPhysicalActivePrefix LANGUAGES CXX C CUDA)
 enable_testing()
+find_package(CUDAToolkit REQUIRED)
 set(PHYSICAL_PUBLICATION_CUDA ON CACHE BOOL "Reuse actual physical owner" FORCE)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../physical_publication" physical-publication)
 add_executable(physical_active_prefix_cuda CudaTest.cu
