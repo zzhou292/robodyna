@@ -3,6 +3,7 @@
 #include "Origins.h"
 #include "../../selection/lifecycle/Admission.h"
 #include "lib_utils/BoundedStartupArray.h"
+#include "lib_utils/BoundedArena.h"
 #include <new>
 namespace tlfea::contact::radioss_type25::runtime_detail {
 namespace {
