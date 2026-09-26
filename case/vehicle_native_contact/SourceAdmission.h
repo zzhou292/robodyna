@@ -1,7 +1,7 @@
 #pragma once
 #include "case/vehicle_wall/native/FiniteWallContactSource.h"
 #include "case/vehicle_self_contact/native/MixedStarterSource.h"
-#include "case/vehicle_dynamics/native_contact/Group.h"
+#include "case/vehicle_dynamics/native_contact/Observation.h"
 namespace crash::cases::vehicle_self_contact::native::initial_controls { class InitializerControlsSource; }
 namespace crash::cases::vehicle_native_contact::detail {
 using OwnerSource = vehicle_wall::native::EnvelopeOwnerSource;
