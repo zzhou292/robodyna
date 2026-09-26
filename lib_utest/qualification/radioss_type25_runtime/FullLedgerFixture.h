@@ -34,8 +34,8 @@ struct FullLedgerFixture {
   std::vector<std::uint32_t> removal_offsets;
   tl::util::HostArena output,scratch;
   s::Snapshot starter;
-  explicit FullLedgerFixture(bool with_qbat=false)
-      : domain(source.Domain()),beams(source.Beams()),
+  explicit FullLedgerFixture(bool with_qbat=false,bool contact_geometry=false)
+      : source(contact_geometry),domain(source.Domain()),beams(source.Beams()),
         welds(source.Springs()),
         solids(source.Solids(domain)) {
     const auto geometry=source.shell_input.Input();
@@ -91,7 +91,7 @@ struct FullLedgerFixture {
       add(shells.t3_source_id(i),n::ShellLayout::Triangle3,shells.t3_nodes(i));
     // The second coincident QEPH layer remains a genuine mass contributor,
     // outside this declared synthetic contact selection.
-    s::Input input;input.profile=s::Profile::OrdinaryExteriorFixedMain;
+    s::Input input;input.profile=contact_geometry?s::Profile::OrdinaryExteriorMovingMain:s::Profile::OrdinaryExteriorFixedMain;
     input.topology=s::TopologyPolicy::NativeOrdinaryShell;input.node_source_ids=ids.data();input.node_count=ids.size();
     input.positions={positions.data(),std::uint32_t(ids.size()),3,1};
     input.primary=primary.data();input.primary_count=primary.size();input.source_generation=7;
