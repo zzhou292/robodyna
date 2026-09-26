@@ -24,7 +24,7 @@ tl::fea::ShellFormulationCollectionInput Inputs::Borrow(std::size_t nodes) const
     return {{qeph.empty()?nullptr:qeph.data(),t3.empty()?nullptr:t3.data(),qeph.size(),t3.size(),nodes},
             qbat.empty()?nullptr:qbat.data(),qbat.size()};
 }
-Inputs Pack(const VehicleShellReferences& refs) {
+Inputs Pack(const VehicleShellReferences& refs, std::size_t extra_qeph) {
     const auto& source=refs.source();const auto& canonical=source.canonical().data();
     const auto ids=Decode<std::uint64_t>(canonical,"node_ids");
     const auto connections=Decode<std::uint32_t>(canonical,"shells_node_indices");
@@ -36,7 +36,9 @@ Inputs Pack(const VehicleShellReferences& refs) {
         output::Require(mapping.at(c)==SIZE_MAX,"Repeated canonical shell-local node");mapping[c]=n;
     }
     Inputs out;const auto& count=refs.counts();
-    out.qeph.reserve(count.qeph_succeeded);out.t3.reserve(count.t3_succeeded);out.qbat.reserve(count.qbat_succeeded);
+    output::Require(extra_qeph <= 1 && count.qeph_succeeded <= SIZE_MAX-extra_qeph,
+        "Shell source packing admits at most one explicit QEPH environment suffix");
+    out.qeph.reserve(count.qeph_succeeded+extra_qeph);out.t3.reserve(count.t3_succeeded);out.qbat.reserve(count.qbat_succeeded);
     for(std::size_t e=0;e<refs.rows().size();++e) {
         const auto& row=refs.rows()[e];const auto& parent=source.parents().at(e);
         const auto* native=refs.resolution()->native_mapping(e);

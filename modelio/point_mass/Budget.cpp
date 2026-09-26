@@ -46,4 +46,16 @@ Forecast VehiclePointMassSource::Preflight(const physical_scope::PhysicalScope& 
     output::Require(result.total_bytes <= limits.host_bytes, "Earlier physical-source phase exceeds point-mass cap");
     return result;
 }
+Forecast VehiclePointMassSource::PreflightEmbedded(const physical_scope::DomainEmbedding& embedding,
+    Limits limits) {
+    auto f = Preflight(embedding.source(), embedding.domain(), limits);
+    const auto extra = embedding.incremental_backing_bytes();
+    output::Require(f.current_phase <= limits.host_bytes && extra <= limits.host_bytes - f.current_phase,
+        "Embedded point-mass source and original-domain authority exceed cap");
+    f.current_phase += extra;
+    f.previous_phase = std::max(f.previous_phase, embedding.forecast().peak_bytes);
+    f.total_bytes = std::max(f.previous_phase, f.current_phase);
+    output::Require(f.total_bytes <= limits.host_bytes, "Complete embedded point-mass construction exceeds cap");
+    return f;
+}
 } // namespace crash::modelio::point_mass

@@ -52,4 +52,13 @@ Forecast VehicleType25Source::Preflight(const physical_scope::PhysicalScope& sou
     Require(result.total_bytes <= limits.host_bytes, "Complete vehicle TYPE25 source phase exceeds cap");
     return result;
 }
+Forecast VehicleType25Source::PreflightEmbedded(const physical_scope::DomainEmbedding& embedding,
+    Declaration declaration, Limits limits) {
+    auto f = Preflight(embedding.source(), embedding.domain(), declaration, limits);
+    detail::Add(f.current_phase, embedding.incremental_backing_bytes(), 1, limits.host_bytes);
+    f.previous_phase = std::max(f.previous_phase, embedding.forecast().peak_bytes);
+    f.total_bytes = std::max(f.previous_phase, f.current_phase);
+    detail::Require(f.total_bytes <= limits.host_bytes, "Complete embedded TYPE25 construction exceeds cap");
+    return f;
+}
 } // namespace crash::modelio::type25
