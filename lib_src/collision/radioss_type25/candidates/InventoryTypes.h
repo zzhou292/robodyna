@@ -50,12 +50,20 @@ struct Current {
   DomainPolicy domain_policy=DomainPolicy::Bounded;
 };
 struct Pair {std::uint32_t secondary_row=0,main_occurrence=0;};
+enum class EnumerationStrategy { LegacyAxisSweep, CompactGrid };
 struct Limits {
   std::size_t max_nodes=524288,max_secondaries=524288,max_mains=1048576;
   std::size_t max_removals=16777216,max_tasks=1048576,max_pairs=16777216;
   std::size_t max_device_bytes=std::size_t{2}<<30,max_host_bytes=std::size_t{128}<<20;
+  EnumerationStrategy strategy=EnumerationStrategy::LegacyAxisSweep;
+  // CompactGrid only: explicit complete coarse-encounter storage, <=32Mi
+  // uint32 ordinals. Zero for the unchanged legacy allocation profile.
+  std::size_t max_encounters=0;
 };
-struct Forecast {std::size_t device_bytes=0,startup_host_bytes=0,cub_bytes=0;};
+struct Forecast {
+  std::size_t device_bytes=0,startup_host_bytes=0,cub_bytes=0;
+  std::size_t index_device_bytes=0; // Included in device_bytes; CompactGrid only.
+};
 struct Report {
   QueryStamp stamp;
   Status status=Status::Ok;
@@ -63,5 +71,7 @@ struct Report {
   std::uint64_t active_secondaries=0,envelope_encounters=0,tasks=0,pairs=0;
   double maximum_secondary_gap=0;
   unsigned own_kernel_launches=0,sort_calls=0,scan_calls=0,host_fences=0;
+  EnumerationStrategy strategy=EnumerationStrategy::LegacyAxisSweep;
+  bool encounters_counted=false,pairs_counted=false;
 };
 } // namespace tlfea::contact::radioss_type25::candidates
