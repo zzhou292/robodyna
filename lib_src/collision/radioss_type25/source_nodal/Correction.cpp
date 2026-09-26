@@ -48,6 +48,19 @@ bool Separate(const Input& in,const Layout& layout,void* scratch,std::size_t byt
   return Disjoint(writes[0],writes[1]);
 }
 }
+Status EvaluateFactor(const Solid& solid, FactorResult* output) noexcept {
+  if (!output) return Status::InvalidInput;
+  FactorResult next;
+  if (solid.control == 1) {
+    if (!c::Nonnegative(solid.bulk) || !c::Nonnegative(solid.controlled_bulk))
+      return Status::InvalidInput;
+    next.active = true;
+    next.value = solid.controlled_bulk / c::Max(native_constant::em20, solid.bulk);
+    if (!c::Finite(next.value)) return Status::NonfiniteResult;
+  }
+  *output = next;
+  return Status::Ok;
+}
 Report Preflight(const Input& in,Limits limits,Forecast& out) noexcept {
   Layout layout;const auto report=Prepare(in,limits,layout);
   if(report.status==Status::Ok)out=layout.forecast;
@@ -63,8 +76,10 @@ Report Apply(const Input& in,Limits limits,void* scratch,std::size_t bytes,Outpu
   for(std::size_t i=0;i<in.solid_count;++i) {
     const auto& s=in.solids[i];if(s.control!=1)continue;
     // EM20 is in native pressure units; correction is after the complete sum.
-    const double factor=s.controlled_bulk/c::Max(native_constant::em20,s.bulk);
-    if(!c::Finite(factor))return {Status::NonfiniteResult,i};
+    FactorResult resolved;
+    const auto factor_status = EvaluateFactor(s, &resolved);
+    if (factor_status != Status::Ok) return {factor_status, i};
+    const double factor = resolved.value;
     maximum_factor=c::Max(maximum_factor,factor);
     for(auto n:s.nodes)if(!tags[n]) {
       const double value=factor*values[n];

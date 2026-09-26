@@ -34,4 +34,22 @@ struct Report {
   std::size_t type24_occurrence = SIZE_MAX;
   std::uint32_t node = UINT32_MAX;
 };
+// The inactive value is API-defined metadata: no native factor was read or
+// computed when control!=1. It must not be treated as a numerical observation.
+struct FactorResult { bool active = false; double value = 0; };
+struct OrderInput {
+  const Solid* solids = nullptr;
+  std::size_t solid_count = 0, node_count = 0;
+};
+struct OrderCertificate {
+  std::size_t node_count = 0, solid_count = 0;
+  std::size_t controlled_solids = 0, affected_nodes = 0;
+};
+enum class OrderStatus { Ok, InvalidInput, ResourceLimit, NonfiniteResult, NeedsNativeStorageOrder };
+struct OrderReport {
+  OrderStatus status = OrderStatus::InvalidInput;
+  std::size_t first_solid = SIZE_MAX, conflicting_solid = SIZE_MAX;
+  std::uint32_t node = UINT32_MAX;
+};
+
 }
