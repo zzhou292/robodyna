@@ -1,0 +1,123 @@
+{
+  "app_base": "97647e8bf5901e9a55e3b436c22d61f8fb66becc",
+  "qualified_value_pin": "b80ec828bdc1055863cd9bc83a41a482c69313ab",
+  "scope": "Bound source identity and source-order invariance; no native ordinal/runtime assertion",
+  "default_proof_sha256": "8b476743ac3bb6f185645888c7a5d43d7ed98119727f7273678b68ab54086527",
+  "app_files": [
+    {
+      "path": "case/vehicle_self_contact/native/CorrectedNodalSource.h",
+      "bytes": 4733,
+      "sha256": "1572043b997216d74ce71846894ec3122c74289a35a0083a1b3a98e99e587d93"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cmake",
+      "bytes": 1018,
+      "sha256": "0285190f6894eb30c9fe71cc0e86c245b72f78d857989e2980aa26d5255eccb5"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
+      "bytes": 7795,
+      "sha256": "3093e0ce845a7028d9f376e0f58f358c152f43c20803642231e7195fa3f94e92"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.h",
+      "bytes": 4214,
+      "sha256": "4d9ea9cb435597af971dc48467c49b752af4b1f72967cb0c5508978bdf3128fe"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Inputs.cpp",
+      "bytes": 15270,
+      "sha256": "409541757eb42bbcb3e687c37897db08715d0eb66b4be5408f16415708d52e7c"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Reader.cpp",
+      "bytes": 2219,
+      "sha256": "039443e06f0025796d3c58717522e3f161964d4373aa42bcf7f1a7dce1f0f2c2"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Types.h",
+      "bytes": 2469,
+      "sha256": "2e5f2930a6197e63f46da04688c676245e440588140f51bf11f80d4a5aed4b68"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/nodal_correction/Context.cpp",
+      "bytes": 8238,
+      "sha256": "ef4baad1864591b776220aacc209fa23a73a86e61c4948ad307c39af892b419e"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Budget.cpp",
+      "bytes": 4833,
+      "sha256": "b6ffb7e9911317933bdb4d040024e13ae9694c485d4860d2c43b0ef89fd8064d"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/CMakeLists.txt",
+      "bytes": 2502,
+      "sha256": "7e106b80ea36a35cbd5e0657e2712b67d91719f3963fba16ce89fdb5629008c1"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Certificate.cpp",
+      "bytes": 4490,
+      "sha256": "f0e05f698e7b32fded362781688dabe1fe52fc70cd60959fcb88eed086fa029a"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Context.cpp",
+      "bytes": 3847,
+      "sha256": "70a13a8d0fdb6fccefcf2612dac066369f93a53890e534cfbdcbddb5307534cf"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Digest.cpp",
+      "bytes": 3078,
+      "sha256": "70b99327cbf728980be04acbcafce0a78a6ae9598fda192f89d8ce0574a8f865"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
+      "bytes": 5366,
+      "sha256": "885b53f29e823c1efd4acf8623a4dd77e1ad05aa50fa518257e5458a868034d7"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Internal.h",
+      "bytes": 1690,
+      "sha256": "b2a26542a61059ddc9f1442aaeeb3797c112afe2a721062f58a7805c83b80a77"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
+      "bytes": 6099,
+      "sha256": "deea32750878335f310da977aaf4c92cacf344dd407152ba3f8d33b5bfcd335b"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/README.md",
+      "bytes": 2808,
+      "sha256": "fa3a63b0c567df1178752ee3e090a59fb240897be729657c46e97276453d6e4b"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/SOURCE_PROOF.md",
+      "bytes": 5179,
+      "sha256": "70c8347678e7d5708042638a18a09243941c2870e9e056eceb21218208a41be2"
+    },
+    {
+      "path": "modelio/native_spring_ids/ImportContext.h",
+      "bytes": 1337,
+      "sha256": "e9a6260c84067298ce43cbcea68833ccebb9f7d10451748bffdec1607d4bee95"
+    },
+    {
+      "path": "modelio/self_contact/Cards.cpp",
+      "bytes": 4896,
+      "sha256": "e34eada9a6a2931bece1d7930ede8cf939df47043314fc654bd5d1254b72d218"
+    },
+    {
+      "path": "modelio/self_contact/OriginalSelection.h",
+      "bytes": 3379,
+      "sha256": "c6f403d765fe54364c252f3b496e9c471f4f80203dd64777422ab259b820750f"
+    },
+    {
+      "path": "modelio/self_contact/PartSets.cpp",
+      "bytes": 3307,
+      "sha256": "01a26b187c7f3e33a91e01f8c1722d97055ed0d4ce5eb6a77bab41d49e2c5b46"
+    },
+    {
+      "path": "modelio/self_contact/PartSets.h",
+      "bytes": 821,
+      "sha256": "bf8710b3ac351d784cf3681bfa9cc63d7609c11644106cb70f7c8d07e998f75d"
+    }
+  ]
+}
