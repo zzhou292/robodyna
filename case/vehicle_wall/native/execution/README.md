@@ -37,3 +37,9 @@ witness parity and genuine joint/packing maps. Existing original execution,
 wall/source and mechanical value tests remain in the owning gate. Full-source
 stages are explicit individual invocations, never implicit CTest jobs. Geometry,
 coefficient, native leaf, force/cache and publication equations are unchanged.
+
+The original post-KINCHK fixture is constructed through its genuine tied-search
+CUDA assessment. Enable CUDA for that existing .cu implementation and retain
+GPU admission on the two full-source stages using Post(). Small value tests and
+the first execution forecast do not invoke that search. This is source geometry
+assessment, not a nodal owner, time integration or contact-force run.

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(RoboDynaEnvelopeExecutionSource LANGUAGES CXX)
+project(RoboDynaEnvelopeExecutionSource LANGUAGES CXX CUDA)
 enable_testing()
 find_package(Chrono REQUIRED CONFIG)
 find_package(GTest REQUIRED)
