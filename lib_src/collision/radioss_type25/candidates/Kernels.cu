@@ -53,8 +53,12 @@ __global__ void MainRanges(Device d,Current in) {
   for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<d.main_count;i+=blockDim.x*gridDim.x) {
     d.ranges[i]={};d.task_counts[i]=0;
     const auto m=d.mains[i].source;
-    if(!Nonnegative(in.main_stiffness[i])){Fail(d,d.secondary_count+i,Status::InvalidInput);continue;}
-    if(in.main_stiffness[i]==0.)continue;
+    const double stiffness=in.main_stiffness[i];
+    if(!(d.main_coefficient_domain==MainCoefficientDomain::NativeSigned?
+         tl::math::Finite(stiffness):Nonnegative(stiffness))){Fail(d,d.secondary_count+i,Status::InvalidInput);continue;}
+    // Literal local I25TRIVOX STF<=ZERO exclusion, including native negative
+    // internal-face markers. Source metadata and the exact face roster remain.
+    if(stiffness<=0.)continue;
     bool valid=Nonnegative(Gap(d,in.main_gaps[i]))&&Nonnegative(Gap(d,in.main_curvature[i]));
     ScreenRow row;row.margin=in.margin;row.curvature=Gap(d,in.main_curvature[i]);row.main_gap=Gap(d,in.main_gaps[i]);
     row.secondary_gap=__longlong_as_double(static_cast<long long>(d.control->maximum_gap_bits));

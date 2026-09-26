@@ -14,7 +14,9 @@ Status CheckSource(const Source& s,Limits l) noexcept {
   if(!units_detail::Make(s.units,factors)||(s.input_units!=InputUnits::Native&&s.input_units!=InputUnits::Si))return Status::InvalidInput;
   if(!s.stamp.source||!s.stamp.topology||!s.physical_nodes||s.primary_main_count<0||std::size_t(s.primary_main_count)!=s.mains)
     return Status::InvalidInput;
-  if(s.processors!=1||s.edge_mode!=0||s.gap_mode!=1||s.level!=1||s.neighbor_removal!=2)
+  if(s.processors!=1||s.edge_mode!=0||s.gap_mode!=1||s.level!=1||s.neighbor_removal!=2||
+      (s.main_coefficient_domain!=MainCoefficientDomain::Nonnegative&&
+       s.main_coefficient_domain!=MainCoefficientDomain::NativeSigned))
     return Status::UnsupportedProfile;
   if(s.physical_nodes>l.max_nodes||s.secondaries>l.max_secondaries||s.mains>l.max_mains||
      s.removals>l.max_removals)return Status::ResourceLimit;

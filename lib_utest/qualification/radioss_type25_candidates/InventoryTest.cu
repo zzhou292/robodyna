@@ -140,3 +140,27 @@ TEST(NativeCandidateInventory,AllFiniteSiDomainHasNoExtremeBoundConversion) {
   scene.positions[3*scene.secondaries[0]]=INFINITY;
   EXPECT_EQ(inventory.Stage(si),c::Status::InvalidInput);
 }
+
+TEST(NativeCandidateInventory,SignedNativeMainMarkersRetainRosterAndSkipNativeInactiveFields) {
+  Scene scene;c::Inventory inventory;auto source=scene.Source();
+  source.main_coefficient_domain=tlfea::contact::radioss_type25::MainCoefficientDomain::NativeSigned;
+  ASSERT_EQ(inventory.Initialize(source,Limits(),scene.stream),c::Status::Ok);
+  auto current=scene.Current();
+  const auto all=Reference(scene,current);ASSERT_FALSE(all.empty());
+  scene.main_stiffness[0]=-123.5;scene.main_gaps[0]=NAN;scene.curvature[0]=NAN;
+  const auto inactive=Reference(scene,current);ASSERT_LT(inactive.size(),all.size());
+  ASSERT_EQ(inventory.Stage(current),c::Status::Ok);Check(inventory,inactive,scene.secondaries.size());
+  // A numerical failure publishes no new view. The original complete source
+  // face remains: a later positive coefficient can be queried without rebuild.
+  scene.main_stiffness[0]=NAN;EXPECT_EQ(inventory.Stage(current),c::Status::InvalidInput);
+  EXPECT_EQ(inventory.view().pairs(),nullptr);
+  scene.main_stiffness[0]=1;scene.main_gaps[0]=.125;scene.curvature[0]=.03125;
+  ASSERT_EQ(inventory.Stage(current),c::Status::Ok);Check(inventory,all,scene.secondaries.size());
+}
+TEST(NativeCandidateInventory,LegacyNegativeMainAndUnknownDomainRemainRejected) {
+  Scene scene;c::Inventory legacy;auto source=scene.Source();
+  ASSERT_EQ(legacy.Initialize(source,Limits(),scene.stream),c::Status::Ok);
+  scene.main_stiffness[0]=-1;EXPECT_EQ(legacy.Stage(scene.Current()),c::Status::InvalidInput);
+  source.main_coefficient_domain=static_cast<tlfea::contact::radioss_type25::MainCoefficientDomain>(91);
+  c::Forecast forecast;EXPECT_EQ(c::Inventory::Preflight(source,Limits(),forecast),c::Status::UnsupportedProfile);
+}

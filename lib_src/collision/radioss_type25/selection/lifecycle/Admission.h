@@ -28,7 +28,9 @@ TL_MATH_HOST_DEVICE inline Status Validate(const Input& input) {
   if(!values::Supported(profile.selection)||!g::Supported(profile.geometry)||
      profile.coefficient.stiffness_formulation!=4||
      profile.coefficient.mass_timestep_augmentation!=0||profile.neighbor_removal!=2||
-     profile.optcd_response_precision<0||profile.optcd_response_precision>2)return Status::UnsupportedProfile;
+     profile.optcd_response_precision<0||profile.optcd_response_precision>2||
+     (profile.main_coefficient_domain!=MainCoefficientDomain::Nonnegative&&
+      profile.main_coefficient_domain!=MainCoefficientDomain::NativeSigned))return Status::UnsupportedProfile;
   if(!normal_detail::Nonnegative(profile.minimum_coefficient)||
      !normal_detail::Nonnegative(profile.maximum_coefficient)||
      profile.minimum_coefficient>profile.maximum_coefficient||
@@ -62,7 +64,8 @@ TL_MATH_HOST_DEVICE inline Status Validate(const Input& input) {
     if(main.global_id<=0||main.segment_type==INT_MIN||
        std::int64_t(main.segment_type)<-2*std::int64_t(source.main_count)||
        std::int64_t(main.segment_type)>2*std::int64_t(source.main_count)||
-       !normal_detail::Nonnegative(main.coefficient)||!normal_detail::Nonnegative(main.maximum_gap))
+       !(profile.main_coefficient_domain==MainCoefficientDomain::NativeSigned?
+         tl::math::Finite(main.coefficient):normal_detail::Nonnegative(main.coefficient))||!normal_detail::Nonnegative(main.maximum_gap))
       return Status::InvalidInput;
     for(unsigned j=0;j<4;++j)
       if(main.nodes[j]>=source.node_count||main.normal_reference[j]<=0||

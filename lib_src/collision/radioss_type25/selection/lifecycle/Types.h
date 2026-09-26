@@ -52,6 +52,7 @@ struct Profile {
   double minimum_coefficient=0,maximum_coefficient=0;
   int neighbor_removal=-1; // Selected FLAGREMN=2.
   int optcd_response_precision=-1; // Explicit raw IRESP0/1/2; 1 uses special PREC, 0/2 use EM8; -1 unknown rejects.
+  MainCoefficientDomain main_coefficient_domain=MainCoefficientDomain::Nonnegative;
 };
 struct Step {
   double time=0,previous_dt=0; // Supplied native TT / DT1, never an owned clock.

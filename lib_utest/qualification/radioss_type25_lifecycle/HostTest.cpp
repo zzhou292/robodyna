@@ -147,4 +147,20 @@ TEST(Type25Lifecycle, LateRowFailureRetainsCompleteGlobalRequiredCountAndPriorOu
   Same(out,before,true);
   f.mains[2].coefficient=400;Same(RunLifecycleFixture(f),OracleLifecycle(f.Input()));
 }
+TEST(Type25Lifecycle, ExplicitSignedInactiveMainsMatchNativeWithoutChangingLegacyAdmission) {
+  for(bool retained:{false,true}) {
+    Fixture f;const auto before=RunLifecycleFixture(f);auto out=before;
+    if(retained){f.Retained();f.positions[18]=5;f.mains[2].coefficient=-400;}
+    else f.mains[0].coefficient=-400;
+    EXPECT_EQ(l::EvaluateNativeLifecycleHost(f.Input(),Fixture::Limits(),&out).status,n::selection::Status::InvalidInput);
+    Same(out,before,true);
+    f.profile.main_coefficient_domain=n::MainCoefficientDomain::NativeSigned;
+    const auto actual=RunLifecycleFixture(f);Same(actual,OracleLifecycle(f.Input()));
+    if(!retained)EXPECT_EQ(actual.rows[0].optimized_count,0u);
+    else EXPECT_EQ(actual.rows[0].sliding_count,0u);
+    f.profile.main_coefficient_domain=static_cast<n::MainCoefficientDomain>(91);
+    EXPECT_EQ(l::EvaluateNativeLifecycleHost(f.Input(),Fixture::Limits(),&out).status,n::selection::Status::UnsupportedProfile);
+    Same(out,before,true);
+  }
+}
 } // namespace type25_lifecycle_test

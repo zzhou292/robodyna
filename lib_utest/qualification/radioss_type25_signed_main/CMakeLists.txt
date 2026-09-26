@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType25SignedMain LANGUAGES CXX CUDA Fortran)
+enable_testing()
+find_package(CUDAToolkit REQUIRED)
+set(TYPE25_CANDIDATE_CUDA ON CACHE BOOL "Candidate GPU qualification" FORCE)
+set(TYPE25_LIFECYCLE_CUDA ON CACHE BOOL "Lifecycle GPU qualification" FORCE)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_candidates" candidates)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_lifecycle" lifecycle)

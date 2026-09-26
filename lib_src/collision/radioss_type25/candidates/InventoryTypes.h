@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Types.h"
+#include "../Types.h"
 #include "../UnitConversions.h"
 #include "../../SurfaceContactTypes.h"
 namespace tlfea::contact::radioss_type25::candidates {
@@ -30,6 +31,7 @@ struct Source {
   const std::uint32_t* removal_nodes=nullptr;
   int primary_main_count=0; // P=IPARI4-IPARI42, equal to mains; never classification total G.
   int processors=1,edge_mode=0,gap_mode=1,level=1,neighbor_removal=2;
+  MainCoefficientDomain main_coefficient_domain=MainCoefficientDomain::Nonnegative;
 };
 // DEVICE fields and scalar/domain controls follow Source.input_units, borrowed
 // immutably until synchronous

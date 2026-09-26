@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 namespace tlfea::contact::radioss_type25 {
+// Native source keeps negative internal/nonexposed main coefficients. They are
+// inactive in TRIVOX/OPTCD; they are not a request for negative force stiffness.
+// Legacy packets remain nonnegative unless the explicit mixed source opts in.
+enum class MainCoefficientDomain { Nonnegative, NativeSigned };
 enum class NormalStatus { Ok, InvalidInput, UnsupportedProfile, NonfiniteResult };
 // Different types prevent accidental use of SI values in native-unit algebra.
 struct NativeUnitsTag {};
