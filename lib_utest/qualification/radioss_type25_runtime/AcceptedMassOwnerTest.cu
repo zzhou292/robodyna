@@ -91,14 +91,13 @@ TEST(NativeType25AcceptedMassCuda, StaticPolicyStillRejectsRealCinAndMissingWitn
     CinRig rig;rig.Initialize();const auto before=rig.Raw();Attempt a;
     Check(rig.owner.BeginTrial(&a.token,&a.assembly));
     Check(rig.triangle.AssembleMappedAccepted(rig.owner,a.token,a.assembly)); // Actual Q4 witness absent.
-    Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly));
     fe::NodalCinAssemblyView cin_view;Check(rig.owner.BorrowCinAssembly(a.token,&cin_view));
     std::uint8_t flag=99;type25_friction_test::Drain drain{a.assembly.stream};
     ASSERT_EQ(cudaMemcpyAsync(&flag,cin_view.witness_activity,1,cudaMemcpyDeviceToHost,a.assembly.stream),cudaSuccess);
     ASSERT_EQ(cudaStreamSynchronize(a.assembly.stream),cudaSuccess);EXPECT_EQ(flag,0);
-    Check(rig.owner.SealAssembly(a.token));
-    EXPECT_NE(fe::AdvanceStaggeredCin(rig.owner,a.token,{a.assembly.owner_id,a.assembly.accepted.base_epoch,a.assembly.attempt,
-        rig.source.physical.Qualification,rig.source.physical.fixed_dt,.2,true}).status,fe::NodalStatus::Ok);
+    // The common publisher rejects the missing actual physical participant
+    // even before contact can write its force/STI scratch or the owner advances.
+    EXPECT_EQ(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly).status,n::TransactionStatus::PublicationFailure);
     rig.Discard();SameBits(rig.Raw(),before);EXPECT_EQ(rig.contact.accepted().generation,0u);
     Attempt retry;rig.Begin(retry);Check(rig.contact.AssembleAccepted(rig.owner,retry.token,retry.assembly));
     rig.Prepare(retry);Check(rig.Commit(retry));EXPECT_EQ(rig.owner.accepted().epoch,1u);

@@ -60,6 +60,22 @@ struct CinRig: moving_cache_test::Rig {
     Check(contact.Initialize(config,source.Source(),owner,publication,f.physical,Participants(),Identity(),Limits()));
     Check(publication.ConfigurePhysicalScratchParticipation(owner,f.physical,Participants(),Identity(),{{},contact.roster_entry()}));
   }
+  void Prepare(Attempt& a) {
+    const auto require=[](fe::NodalReport r,const char* stage) {
+      if(r.status!=fe::NodalStatus::Ok)throw std::runtime_error(std::string(stage)+": "+r.message+
+          " status="+std::to_string(unsigned(r.status))+" node="+std::to_string(r.node)+" dt="+std::to_string(r.stable_dt));
+    };
+    require(owner.SealAssembly(a.token),"CIN seal");
+    require(fe::AdvanceStaggeredCin(owner,a.token,{a.assembly.owner_id,a.assembly.accepted.base_epoch,a.assembly.attempt,
+      nodal_empty_test::Fixture::Qualification,source.physical.fixed_dt,.2,true,
+      {fe::NodalCinStructuralProfile::NativeOrdinaryRigidTrace,.8,true}}),"CIN advance");
+    require(owner.BorrowPrepared(a.token,&a.prepared),"CIN candidate borrow");
+    Check(quad.EvaluateCandidate(owner,a.token,a.prepared,&a.material.qeph));
+    Check(triangle.EvaluateCandidate(owner,a.token,a.prepared,&a.material.t3));
+    Check(publication.PreparePhysical(owner,a.token,{&a.material.qeph,&a.material.t3},&a.common));
+    Check(contact.SealCandidate(owner,a.token,a.prepared,a.common,&a.contact));
+    Check(publication.SealPhysicalScratchParticipation(owner,a.token,{nullptr,&a.contact}));
+  }
   std::vector<double> Raw() {
     const auto count=source.nodes.size();std::vector<double> out(2*count+3);fe::NodalStamp stamp;
     Check(owner.CopyAcceptedCin({out.data(),out.data()+count,out.data()+2*count,out.data()+2*count+1,
@@ -72,6 +88,7 @@ struct RigidRig: moving_cache_test::Rig {
   fe::rigid::NodalRigidPartTopology topology;
   fe::rigid::NodalRigidPartAssemblyModel parts;
   fe::NodalRigidAssemblyBinding rigid;
+  fe::ShellBatchPlasticityBinding catalog;fe::ShellBatchFailureBinding failure;
   fe::ShellExecutionBinding execution;fe::ShellPhysicalBinding physical;
   RigidRig():moving_cache_test::Rig(true) {
     config.response_mass=n::ResponseMassPolicy::AcceptedOwnerCoefficients;
@@ -89,8 +106,19 @@ struct RigidRig: moving_cache_test::Rig {
     f.Require(bool(topology.Initialize(input)),"Synthetic rigid topology");
     f.Require(bool(parts.Initialize(topology,f.ledger,{1,1})),"Physical rigid aggregate");
     f.Require(bool(rigid.Initialize(parts)),"Physical rigid binding");
-    f.Require(execution.Initialize(f.catalog,f.ledger,rigid).status==fe::ShellPlasticityBindingStatus::Success,"Rigid execution roles");
-    f.Require(bool(physical.InitializeExecution({&f.shells,&f.catalog,&f.failure,nullptr},f.ledger,execution)),"Rigid physical binding");
+    auto declared=nodal_empty_test::SmallSource();
+    auto& law1=declared.materials[0];law1.law=fe::ShellSectionLaw::LayeredLaw1Nip3;
+    law1.hardening=tl::material::ShellPlasticityHardeningKind::Tabulated;law1.curve_id=0;law1.linear={};law1.rate={};
+    declared.parents[0].execution={fe::ShellParentExecutionPolicy::GlobalLaw1Npt0,{fe::ShellLaw1Thickness::Accepted,1.}};
+    auto skin=law1;skin.material_id=2;skin.law=fe::ShellSectionLaw::RigidSkin;declared.materials.push_back(skin);
+    declared.sections.push_back({2,.002,0,fe::ShellSectionFormulation::Nonconstitutive});
+    declared.parents[1].material_id=2;declared.parents[1].section_id=2;
+    f.Require(catalog.InitializeExecutionCatalog(f.shells,declared.Catalog()).status==fe::ShellPlasticityBindingStatus::Success,"Declared rigid-skin catalog");
+    std::array<fe::ShellFailureParentInput,2> no_failures{};
+    for(unsigned i=0;i<2;++i){no_failures[i].source=declared.parents[i];no_failures[i].policy=fe::ShellFailurePolicy::None;}
+    f.Require(failure.InitializeExecution(catalog,no_failures.data(),no_failures.size()).status==fe::ShellPlasticityBindingStatus::Success,"Rigid-skin failure declarations");
+    f.Require(execution.Initialize(catalog,f.ledger,rigid).status==fe::ShellPlasticityBindingStatus::Success,"Rigid execution roles");
+    f.Require(bool(physical.InitializeExecution({&f.shells,&catalog,&failure,nullptr},f.ledger,execution)),"Rigid physical binding");
   }
   n::TransactionReport Initialize() {
     auto& f=source.physical;const auto cin_source=f.Cin();
