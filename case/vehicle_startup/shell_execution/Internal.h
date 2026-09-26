@@ -14,6 +14,12 @@ struct VehicleShellExecution::Storage {
 };
 namespace detail {
 using output::Require;
+// Checks every original source row and its dense family prefix. A caller must
+// separately authenticate any additional environment parents and actual domain.
+const VehicleSectionResolution& CheckOriginalReferencePrefix(const VehicleShellReferences&,
+    const fe::ShellBatchBinding&);
+Law1ExecutionPolicy ResolvePolicy(const VehicleShellReferences&,Law1ExecutionProfile);
+void PackOriginalReferenceSource(const VehicleShellReferences&,Packing&,const Law1ExecutionPolicy&);
 const VehicleSectionResolution& CheckSource(const physical_model::VehiclePhysicalModel&);
 void PackSource(const physical_model::VehiclePhysicalModel&, Packing&);
 void PackSource(const physical_model::VehiclePhysicalModel&, Packing&,const Law1ExecutionPolicy&);

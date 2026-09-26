@@ -1,8 +1,12 @@
 """Declared converter-style group metadata; never a physical member mass source."""
-from .definition import rigid_patch
+from .definition import rigid_patch, TiedPatch
 
 
 def reference_rigid_body(scene, mesh):
+    if scene.definition_version == 4:
+        if not isinstance(scene.coupling, TiedPatch):
+            raise ValueError('Version4 requires a genuine declared tied coupling')
+        return None
     if scene.definition_version != 3:
         if scene.coupling is not None:
             raise ValueError('Legacy source cannot contain a coupling declaration')

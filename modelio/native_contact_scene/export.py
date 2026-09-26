@@ -10,6 +10,7 @@ from .definition import load
 from .mesh import build
 from .native import starter, engine
 from .coupling import reference_rigid_body
+from .tied import reference_tied_interface
 
 
 def export(source, destination):
@@ -33,6 +34,8 @@ def export(source, destination):
               'source_sha256':hashlib.sha256(source_bytes).hexdigest(), 'scene':exported_scene, 'mesh':asdict(mesh)}
     if scene.definition_version == 3:
         record['reference_rigid_body'] = reference_rigid_body(scene, mesh)
+    if scene.definition_version == 4:
+        record['reference_tied_interface'] = reference_tied_interface(scene, mesh)
     if source.read_bytes() != source_bytes:
         raise ValueError('Scene declaration changed during export')
     destination = Path(destination)

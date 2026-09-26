@@ -1,5 +1,6 @@
 #pragma once
 #include "modelio/physical_scope/PhysicalScope.h"
+#include "modelio/physical_scope/DomainEmbedding.h"
 #include "modelio/source_assembly/SourceAssemblySpotweldInput.h"
 #include "lib_src/assembly/NodalNodeDomain.h"
 #include "lib_src/elements/type25/Type25Model.h"
@@ -29,12 +30,26 @@ class VehicleType25Source {
                               Declaration, Limits = {});
     static VehicleType25Source Prepare(const physical_scope::PhysicalScope&, const tl::fea::NodalNodeDomain&,
                                       Declaration, Limits = {});
+    // Explicit additive-domain path; only authentic original spotwelds are
+    // mapped. The suffix receives no invented connector or coefficient source.
+    static Forecast PreflightEmbedded(const physical_scope::DomainEmbedding&, Declaration, Limits = {});
+    // Forecast-only shape path; no certificate/readiness is manufactured.
+    static Forecast PreflightEmbedded(const physical_scope::PhysicalScope&,const tl::fea::NodalNodeDomain&,
+        const physical_scope::DomainEmbeddingForecast&,Declaration,Limits = {});
+
+    static VehicleType25Source PrepareEmbedded(const physical_scope::DomainEmbedding&, Declaration, Limits = {});
+    // Embedded limits bound the complete CURRENT contributor phase. The already
+    // admitted earlier embedding peak remains reported in previous_phase/total.
+    const physical_scope::DomainEmbedding* embedding() const noexcept;
     const physical_scope::PhysicalScope& source() const noexcept;
     const tl::fea::NodalNodeDomain& domain() const noexcept;
     const native::Model& model() const noexcept;
     Declaration declaration() const noexcept;
     const Forecast& forecast() const noexcept;
   private:
+    static VehicleType25Source PrepareChecked(const physical_scope::PhysicalScope&,
+        const tl::fea::NodalNodeDomain&, Declaration, Limits, Forecast,
+        const physical_scope::DomainEmbedding*);
     struct Storage;
     explicit VehicleType25Source(std::shared_ptr<const Storage> storage) : storage_(std::move(storage)) {}
     std::shared_ptr<const Storage> storage_;

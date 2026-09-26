@@ -1,0 +1,83 @@
+{
+  "schema": "robo_dyna.native_contact_scene.v4",
+  "units": {
+    "length": "mm",
+    "mass": "tonne",
+    "time": "s"
+  },
+  "wall": {
+    "x_mm": [
+      -20,
+      0,
+      20
+    ],
+    "y_mm": [
+      -20,
+      0,
+      20
+    ],
+    "z_mm": 0,
+    "dz_dx": 0
+  },
+  "patch": {
+    "x_mm": [
+      -5,
+      5
+    ],
+    "y_mm": [
+      -5,
+      5
+    ],
+    "z_mm": 2,
+    "dz_dx": 0,
+    "velocity_mm_s": [
+      1000,
+      0,
+      -10000
+    ]
+  },
+  "material": {
+    "law": "law44_linear",
+    "density_tonne_mm3": 7.85e-09,
+    "young_n_mm2": 210000,
+    "poisson": 0.3,
+    "yield_n_mm2": 250,
+    "plastic_hardening_n_mm2": 1000,
+    "rate_c_per_s": 40,
+    "rate_p": 5,
+    "rate_filter_hz": 10000
+  },
+  "thickness_mm": 1,
+  "run": {
+    "end_time_s": 0.0003,
+    "nodal_scale": 0.8,
+    "animation_interval_s": 1e-05,
+    "time_step_cap_s": 3e-07
+  },
+  "contact_surface": "all_shells",
+  "coupling": {
+    "kind": "tied_patch",
+    "dependent": {
+      "x_mm": [
+        -3.75,
+        1.25
+      ],
+      "y_mm": [
+        -1.25,
+        3.75
+      ],
+      "z_mm": 2,
+      "dz_dx": 0
+    },
+    "ignore": 2,
+    "spotflag": 28,
+    "level": 0,
+    "search": 0,
+    "deletion": 1,
+    "search_distance_mm": 0.0,
+    "stiffness_scale": 1.0,
+    "viscosity": 0.05,
+    "stiffness_mode": 2,
+    "tied_secondary_removal": 1
+  }
+}

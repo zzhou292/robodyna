@@ -1,5 +1,6 @@
 #pragma once
 #include "modelio/physical_scope/PhysicalScope.h"
+#include "modelio/physical_scope/DomainEmbedding.h"
 #include "lib_src/assembly/ElementMassContributions.h"
 
 namespace crash::modelio::point_mass {
@@ -25,11 +26,25 @@ class VehiclePointMassSource {
     static Forecast Preflight(const physical_scope::PhysicalScope&, const tl::fea::NodalNodeDomain&, Limits = {});
     static VehiclePointMassSource Prepare(const physical_scope::PhysicalScope&, const tl::fea::NodalNodeDomain&,
                                          Limits = {});
+    // Explicit additive-domain path. The immutable certificate proves every
+    // original node/card association; this producer adds no suffix mass itself.
+    static Forecast PreflightEmbedded(const physical_scope::DomainEmbedding&, Limits = {});
+    // Forecast-only shape path used by the outer composition before preparing
+    // the certificate. PrepareEmbedded still requires immutable source authority.
+    static Forecast PreflightEmbedded(const physical_scope::PhysicalScope&,const tl::fea::NodalNodeDomain&,
+        const physical_scope::DomainEmbeddingForecast&,Limits = {});
+
+    static VehiclePointMassSource PrepareEmbedded(const physical_scope::DomainEmbedding&, Limits = {});
+    // Embedded limits bound the complete CURRENT contributor phase. The already
+    // admitted earlier embedding peak remains reported in previous_phase/total.
+    const physical_scope::DomainEmbedding* embedding() const noexcept;
     const physical_scope::PhysicalScope& source() const noexcept;
     const tl::fea::ElementMassContributions& contributions() const noexcept;
     const std::vector<Disposition>& dispositions() const noexcept;
     const Forecast& forecast() const noexcept;
   private:
+    static VehiclePointMassSource PrepareChecked(const physical_scope::PhysicalScope&,
+        const tl::fea::NodalNodeDomain&, Limits, Forecast, const physical_scope::DomainEmbedding*);
     struct Storage;
     explicit VehiclePointMassSource(std::shared_ptr<const Storage> data) : storage_(std::move(data)) {}
     std::shared_ptr<const Storage> storage_;

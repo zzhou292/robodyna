@@ -1,16 +1,19 @@
 """Reference-only Radioss2024 deck export. No process or production mechanics calls."""
 from .cards import ints, reals, node_group
 from .coupling import reference_rigid_body
+from .tied import reference_tied_interface
 
 
 def starter(scene, mesh):
-    if (scene.definition_version, scene.contact_surface) not in ((1, 'fixed_wall'), (2, 'all_shells'), (3, 'all_shells')):
+    if (scene.definition_version, scene.contact_surface) not in ((1, 'fixed_wall'), (2, 'all_shells'), (3, 'all_shells'), (4, 'all_shells')):
         raise ValueError('Unqualified scene contact surface declaration')
     rigid = reference_rigid_body(scene, mesh)
+    tied = reference_tied_interface(scene, mesh)
     material = scene.material
     unit = ''.join(s.rjust(20) for s in ('Mg','mm','s'))
     out = ['#RADIOSS STARTER', '/BEGIN', 'contact_scene', ints(2024), unit, unit,
-           '/TITLE', ('Finite triangle wall and declared rigid shell patch' if rigid else
+           '/TITLE', ('Finite triangle wall and declared TYPE2 shell patches' if tied else
+                      'Finite triangle wall and declared rigid shell patch' if rigid else
                       'Finite triangle wall and free elastoplastic shell patch'),
            '/MAT/LAW44/1', 'Explicit analytic LAW44 steel', reals(material.density_tonne_mm3),
            reals(material.young_n_mm2,material.poisson),
@@ -22,13 +25,19 @@ def starter(scene, mesh):
            ints(3)+' '*10+reals(scene.thickness_mm,5./6.)+' '*10+ints(1,2,0)]
     for identifier, title in ((1,'Fixed finite wall'),(2,'Moving rigid patch' if rigid else 'Moving elastoplastic patch')):
         out += [f'/PART/{identifier}', title, ints(1,1,0)]
+    if tied:
+        out += ['/PART/3', 'Real elastoplastic dependent patch', ints(1,1,0)]
     out += ['/NODE'] + [ints(n.id)+reals(*n.xyz_mm) for n in mesh.nodes]
     if rigid:
         out += [ints(rigid['primary']['id'])+reals(*rigid['primary']['xyz_mm'])]
     out += ['/SH3N/1'] + [ints(e.id,*e.nodes) for e in mesh.wall]
-    out += ['/SHELL/2'] + [ints(e.id,*e.nodes) for e in mesh.patch]
+    out += ['/SHELL/2'] + [ints(e.id,*e.nodes) for e in mesh.patch if e.part == 2]
+    if tied:
+        out += ['/SHELL/3'] + [ints(e.id,*e.nodes) for e in mesh.patch if e.part == 3]
     out += node_group(1,'Fixed wall nodes',mesh.wall_nodes)
     out += node_group(2,'Moving patch nodes',mesh.patch_nodes)
+    if tied:
+        out += node_group(3, 'TYPE2 dependent physical nodes', tied['secondary_node_ids'])
     velocity_group = 2
     if rigid:
         # The auxiliary native primary belongs to the group initialization only,
@@ -59,7 +68,15 @@ def starter(scene, mesh):
             reals(1.,.1,0.,0.,1e30),
             ints(0,0,1,5)+reals(.05)+ints(0,0)+reals(0.),
             ints(2,0)+reals(1.)+ints(0,0)+reals(0.)+ints(0,0),
-            reals(0.,0.,0.,0.,.1), reals(-.001), '/END']
+            reals(0.,0.,0.,0.,.1), reals(-.001)]
+    if tied:
+        out += ['/SURF/SEG/2', 'One real physical TYPE2 master Q4',
+                ints(tied['master_source_element_id'], *tied['master_node_ids']),
+                '/INTER/TYPE2/2', 'Declared ILEV28 tied patch; actual CIN branch pending',
+                ints(3,2,tied['ignore'],tied['spotflag'],tied['level'],tied['search'],tied['deletion'])+
+                ' '*10+reals(tied['search_distance_mm']),
+                reals(tied['stiffness_scale'],tied['viscosity'])+' '*20+ints(tied['stiffness_mode'])]
+    out += ['/END']
     return '\n'.join(out)+'\n'
 
 

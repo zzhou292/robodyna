@@ -11,7 +11,7 @@ std::unique_ptr<TiedCinWitnessActivity> TiedCinWitnessActivity::Create(const Tie
     const auto forecast=Forecast(roster,limits);
     auto next=std::make_unique<Impl>(roster);
     next->forecast=forecast;
-    const auto& binding=roster.binding().shells();
+    const auto& binding=roster.shells();
     next->qeph.resize(binding.qeph_count());
     next->t3.resize(binding.t3_count());
     next->qbat.resize(binding.qbat_count());

@@ -19,27 +19,22 @@ std::uint64_t SourceId(const fe::ShellBatchBinding& binding, const source::Nativ
     }
 }
 }
-const VehicleSectionResolution& CheckSource(const physical_model::VehiclePhysicalModel& model) {
-    const auto& shell_source = model.shell_source();
-    const auto& references = shell_source.references();
+const VehicleSectionResolution& CheckOriginalReferencePrefix(const VehicleShellReferences& references,
+    const fe::ShellBatchBinding& binding) {
     const auto* resolution = references.resolution();
     Require(resolution && resolution->resolution_key().profile == source::ResolutionProfile::OriginalRigidPartsV1 &&
         resolution->includes_glass() && resolution->rigid_source(), "Complete original shell execution requires retained rigid/midlayer resolution");
     const auto& counts = resolution->counts();
-    const auto& binding = shell_source.shells();
     Require(counts.parts == 867 && counts.shells == 349645 && counts.unresolved_shells == 0 &&
         counts.rigid_parts == 22 && counts.rigid_shells == 5102 && counts.midlayer_shells == 4251 &&
         resolution->parents().size() == counts.shells && resolution->parts().size() == counts.parts &&
         resolution->source().parts().size() == counts.parts && references.rows().size() == counts.shells &&
         references.counts().succeeded == counts.shells && references.counts().rejected == 0 &&
-        references.counts().unresolved == 0 && binding.qeph_count() == 324094 &&
-        binding.t3_count() == 21301 && binding.qbat_count() == 4250,
+        references.counts().unresolved == 0 && binding.qeph_count() >= 324094 &&
+        binding.t3_count() >= 21301 && binding.qbat_count() >= 4250,
         "Complete original shell execution coverage changed");
-    Require(&resolution->source().canonical().data() == &references.source().canonical().data() &&
-        &references.source().canonical().data() == &model.source_domain().source().tied_source().canonical().data() &&
-        model.coefficients().shells() && model.coefficients().shells()->Matches(binding, model.source_domain().domain()) &&
-        model.rigid_assembly().coefficients()->Matches(model.coefficients()),
-        "Execution source, native reference, domain and actual rigid ledger authorities differ");
+    Require(&resolution->source().canonical().data() == &references.source().canonical().data(),
+        "Execution resolution and original references do not share canonical authority");
     source::NativeFormulationCounts seen;
     for (std::size_t i = 0; i < counts.shells; ++i) {
         const auto& parent = resolution->parents()[i];
@@ -71,13 +66,28 @@ const VehicleSectionResolution& CheckSource(const physical_model::VehiclePhysica
                 "Native binding family index names another original source EID");
     }
     const auto& expected = resolution->native_counts();
-    Require(seen.qeph == expected.qeph && seen.t3 == expected.t3 && seen.qbat == expected.qbat &&
-        seen.qeph == binding.qeph_count() && seen.t3 == binding.t3_count() && seen.qbat == binding.qbat_count(),
+    Require(seen.qeph == expected.qeph && seen.t3 == expected.t3 && seen.qbat == expected.qbat,
         "Complete execution formulation totals differ from native binding");
     return *resolution;
 }
-Law1ExecutionPolicy ResolvePolicy(const physical_model::VehiclePhysicalModel& model, Law1ExecutionProfile profile) {
+const VehicleSectionResolution& CheckSource(const physical_model::VehiclePhysicalModel& model) {
     const auto& references = model.shell_source().references();
+    const auto& binding = model.shell_source().shells();
+    Require(binding.qeph_count() == 324094 && binding.t3_count() == 21301 && binding.qbat_count() == 4250,
+        "Complete original shell execution coverage changed");
+    const auto& resolved = CheckOriginalReferencePrefix(references, binding);
+    const auto* resolution = &resolved;
+    Require(&resolution->source().canonical().data() == &references.source().canonical().data() &&
+        &references.source().canonical().data() == &model.source_domain().source().tied_source().canonical().data() &&
+        model.coefficients().shells() && model.coefficients().shells()->Matches(binding, model.source_domain().domain()) &&
+        model.rigid_assembly().coefficients()->Matches(model.coefficients()),
+        "Execution source, native reference, domain and actual rigid ledger authorities differ");
+    return resolved;
+}
+Law1ExecutionPolicy ResolvePolicy(const physical_model::VehiclePhysicalModel& model, Law1ExecutionProfile profile) {
+    return ResolvePolicy(model.shell_source().references(), profile);
+}
+Law1ExecutionPolicy ResolvePolicy(const VehicleShellReferences& references, Law1ExecutionProfile profile) {
     const auto& units = references.source().canonical().data().inputs.units;
     const auto policy = Law1ExecutionPolicy::Resolve(profile,
         {units.mass_to_kg, units.length_to_m, units.time_to_s}, references.qeph_metric());
@@ -110,7 +120,11 @@ void PackSource(const physical_model::VehiclePhysicalModel& model, Packing& pack
     PackSource(model, packed, ResolvePolicy(model, Law1ExecutionProfile::LegacyLayered));
 }
 void PackSource(const physical_model::VehiclePhysicalModel& model, Packing& packed, const Law1ExecutionPolicy& policy) {
-    const auto& resolution = *model.shell_source().references().resolution();
+    PackOriginalReferenceSource(model.shell_source().references(), packed, policy);
+}
+void PackOriginalReferenceSource(const VehicleShellReferences& references, Packing& packed,
+    const Law1ExecutionPolicy& policy) {
+    const auto& resolution = *references.resolution();
     for (std::size_t part = 0; part < resolution.parts().size(); ++part) {
         const auto* material = resolution.material(part);
         const auto* section = resolution.section(part);

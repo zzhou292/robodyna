@@ -17,7 +17,11 @@ fe::NodalRigidGroupMember PlainMember(const fe::NodalNodeDomain& domain, const f
 }
 void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain& selection,
                   const fe::NodalCoefficientLedger& ledger, std::size_t cap, fe::NodalRigidGroupModel& model) {
-    const auto& domain = selection.domain();
+    PreparePlain(selection, selection.domain(), ledger, cap, model);
+}
+void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain& selection,
+                  const fe::NodalNodeDomain& domain, const fe::NodalCoefficientLedger& ledger,
+                  std::size_t cap, fe::NodalRigidGroupModel& model) {
     std::vector<fe::NodalRigidGroupMember> members;
     std::vector<fe::NodalRigidGroupInput> groups;
     members.reserve(selection.counts().plain_members);

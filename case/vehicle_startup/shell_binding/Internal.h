@@ -11,5 +11,5 @@ struct Inputs {
     tl::fea::ShellFormulationCollectionInput Borrow(std::size_t nodes) const noexcept;
 };
 VehicleShellBindingForecast Forecast(const VehicleShellReferences&,VehicleShellBindingLimits,std::size_t fixed);
-Inputs Pack(const VehicleShellReferences&);
+Inputs Pack(const VehicleShellReferences&, std::size_t extra_qeph = 0);
 }

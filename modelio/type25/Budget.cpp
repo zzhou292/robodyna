@@ -52,4 +52,23 @@ Forecast VehicleType25Source::Preflight(const physical_scope::PhysicalScope& sou
     Require(result.total_bytes <= limits.host_bytes, "Complete vehicle TYPE25 source phase exceeds cap");
     return result;
 }
+Forecast VehicleType25Source::PreflightEmbedded(const physical_scope::DomainEmbedding& embedding,
+    Declaration declaration, Limits limits) {
+    return PreflightEmbedded(embedding.source(),embedding.domain(),embedding.forecast(),declaration,limits);
+}
+Forecast VehicleType25Source::PreflightEmbedded(const physical_scope::PhysicalScope& source,
+    const tl::fea::NodalNodeDomain& domain,const physical_scope::DomainEmbeddingForecast& embedding,
+    Declaration declaration,Limits limits) {
+    auto f = Preflight(source, domain, declaration, limits);
+    detail::Require(embedding.object>=sizeof(physical_scope::DomainEmbedding)&&embedding.original_domain&&
+        embedding.source==source.forecast().total_bytes&&embedding.complete_domain==domain.owned_payload_bytes(),
+        "Embedded TYPE25 forecast differs from its actual input shape");
+    detail::Add(f.current_phase, embedding.object, 1, limits.host_bytes);
+    detail::Add(f.current_phase, embedding.original_domain, 1, limits.host_bytes);
+    // Current retained backing remains inside the existing local cap; the
+    // separately admitted prior embedding peak is reported, not reallocated.
+    f.previous_phase = std::max(f.previous_phase, embedding.peak_bytes);
+    f.total_bytes = std::max(f.previous_phase, f.current_phase);
+    return f;
+}
 } // namespace crash::modelio::type25

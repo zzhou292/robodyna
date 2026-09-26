@@ -8,6 +8,7 @@ include("${ROBO_DYNA_TL_ROOT}/lib_src/assembly/Beam18NodeContributions.cmake")
 add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_src/elements/solids" "${CMAKE_CURRENT_BINARY_DIR}/tl_solid_model")
 add_library(robo_dyna_vehicle_physical_model STATIC
   "${CMAKE_CURRENT_LIST_DIR}/VehiclePhysicalModel.cpp" "${CMAKE_CURRENT_LIST_DIR}/Budget.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/Components.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/StructuralBeams.cpp" "${CMAKE_CURRENT_LIST_DIR}/BeamModel.cpp" "${CMAKE_CURRENT_LIST_DIR}/SolidModel.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/PlainGroups.cpp")
 target_link_libraries(robo_dyna_vehicle_physical_model PUBLIC robo_dyna_vehicle_shell_binding

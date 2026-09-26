@@ -41,5 +41,10 @@ def _grid(grid, first_node, first_element, part, triangles):
 def build(scene):
     wall_nodes, wall = _grid(scene.wall, 1, 1, 1, True)
     patch_nodes, patch = _grid(scene.patch, len(wall_nodes)+1, len(wall)+1, 2, False)
+    if scene.definition_version == 4:
+        dependent_nodes, dependent = _grid(scene.coupling.dependent, len(wall_nodes)+len(patch_nodes)+1,
+                                          len(wall)+len(patch)+1, 3, False)
+        patch_nodes += dependent_nodes
+        patch += dependent
     return Mesh(wall_nodes+patch_nodes, wall, patch,
                 tuple(n.id for n in wall_nodes), tuple(n.id for n in patch_nodes))

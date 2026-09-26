@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include <optional>
 #include "output/BoundedArrayIO.h"
 
 namespace crash::modelio::type25 {
@@ -6,6 +7,7 @@ struct VehicleType25Source::Storage {
     Storage(const physical_scope::PhysicalScope& source, const tl::fea::NodalNodeDomain& domain,
             Declaration declaration) : source(source), domain(domain), declaration(declaration) {}
     physical_scope::PhysicalScope source;
+    std::optional<physical_scope::DomainEmbedding> embedding;
     tl::fea::NodalNodeDomain domain;
     Declaration declaration;
     native::Model model;
@@ -14,8 +16,19 @@ struct VehicleType25Source::Storage {
 VehicleType25Source VehicleType25Source::Prepare(const physical_scope::PhysicalScope& source,
     const tl::fea::NodalNodeDomain& domain, Declaration declaration, Limits limits) {
     const auto forecast = Preflight(source, domain, declaration, limits);
+    return PrepareChecked(source, domain, declaration, limits, forecast, nullptr);
+}
+VehicleType25Source VehicleType25Source::PrepareEmbedded(const physical_scope::DomainEmbedding& embedding,
+    Declaration declaration, Limits limits) {
+    const auto forecast = PreflightEmbedded(embedding, declaration, limits);
+    return PrepareChecked(embedding.source(), embedding.domain(), declaration, limits, forecast, &embedding);
+}
+VehicleType25Source VehicleType25Source::PrepareChecked(const physical_scope::PhysicalScope& source,
+    const tl::fea::NodalNodeDomain& domain, Declaration declaration, Limits limits,
+    Forecast forecast, const physical_scope::DomainEmbedding* embedding) {
     auto next = std::make_shared<Storage>(source, domain, declaration);
-    physical_scope::ValidateDeclaredDomain(source, domain);
+    if (embedding) next->embedding.emplace(*embedding);
+    else physical_scope::ValidateDeclaredDomain(source, domain);
     const auto connections = detail::Pack(source.data().spotwelds, domain);
     const native::PropertyInput property{declaration.generated_property_id, assembly::ResolvedSpotweldProperty()};
     native::ModelInput input;
@@ -36,6 +49,9 @@ VehicleType25Source VehicleType25Source::Prepare(const physical_scope::PhysicalS
                     "Vehicle TYPE25 native startup exceeded reservation");
     next->forecast = forecast;
     return VehicleType25Source(std::move(next));
+}
+const physical_scope::DomainEmbedding* VehicleType25Source::embedding() const noexcept {
+    return storage_->embedding ? &*storage_->embedding : nullptr;
 }
 const physical_scope::PhysicalScope& VehicleType25Source::source() const noexcept { return storage_->source; }
 const tl::fea::NodalNodeDomain& VehicleType25Source::domain() const noexcept { return storage_->domain; }

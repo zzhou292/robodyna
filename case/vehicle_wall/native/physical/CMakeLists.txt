@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaEnvelopePhysicalSource LANGUAGES CXX)
+enable_testing()
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Explicit qualified TL source")
+set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
+include("${CMAKE_CURRENT_LIST_DIR}/../EnvelopePhysicalSource.cmake")
+add_executable(envelope_physical_values tests/DomainTest.cpp tests/ShellPackingTest.cpp)
+target_link_libraries(envelope_physical_values PRIVATE robo_dyna_envelope_physical_source GTest::gtest_main)
+target_compile_options(envelope_physical_values PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME envelope_physical_values COMMAND envelope_physical_values)
+set_tests_properties(envelope_physical_values PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/.." wall-source-regression)
+
+option(ROBO_DYNA_ENVELOPE_PHYSICAL_ACTUAL "Build guarded complete original+environment source comparison" OFF)
+if(ROBO_DYNA_ENVELOPE_PHYSICAL_ACTUAL)
+  get_filename_component(_env_app "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
+  include("${_env_app}/case/vehicle_startup/joints/VehicleJointModel.cmake")
+  add_executable(envelope_physical_actual tests/ActualTest.cpp
+    "${_env_app}/case/vehicle_startup/physical_model/tests/supports/Source.cpp")
+  target_link_libraries(envelope_physical_actual PRIVATE
+    robo_dyna_envelope_physical_source robo_dyna_vehicle_joint_model GTest::gtest_main)
+  target_compile_options(envelope_physical_actual PRIVATE -fno-fast-math -ffp-contract=off)
+  # Explicit guarded forecast/actual invocation only; no whole-source CTest.
+endif()

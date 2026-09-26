@@ -6,6 +6,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../type13/SourceType13.cmake")
 include("${ROBO_DYNA_TL_ROOT}/lib_src/assembly/NodalNodeDomain.cmake")
 add_library(robo_dyna_physical_scope STATIC
   "${CMAKE_CURRENT_LIST_DIR}/CanonicalDomain.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/DomainEmbedding.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/PhysicalScope.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Budget.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Connections.cpp"

@@ -9,7 +9,8 @@ target_link_libraries(native_scene_material_test PRIVATE robo_dyna_native_scene_
 target_compile_options(native_scene_material_test PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME native_scene_material COMMAND native_scene_material_test)
 add_test(NAME native_scene_export COMMAND "${Python3_EXECUTABLE}" -B -m unittest
-  benchmarks.native_contact_scene.test_scene benchmarks.native_contact_scene.reference.test_abi modelio.native_contact_scene.test_surface)
+  benchmarks.native_contact_scene.test_scene benchmarks.native_contact_scene.reference.test_abi modelio.native_contact_scene.test_surface
+  modelio.native_contact_scene.test_coupling modelio.native_contact_scene.test_tied)
 add_test(NAME native_scene_json_compat COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
   -s benchmarks/accepted_payloads -p "test_*.py")
 set_tests_properties(native_scene_material native_scene_export native_scene_json_compat PROPERTIES
