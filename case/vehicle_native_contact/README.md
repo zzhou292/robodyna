@@ -1,0 +1,84 @@
+# Full vehicle native contact case
+
+This module composes the existing full-family physical source, genuine mixed
+vehicle interface and the declared finite mesh wall. `VehiclePhysicalDynamics`
+remains the sole owner, clock and step loop. Its native group hooks are owned by
+the dynamics module. This worktree does not modify those hooks.
+
+## Source boundary
+
+The typed case factory accepts `EnvelopeOwnerSource`, `MixedStarterSource`,
+`FiniteWallContactSource` and `InitializerControlsSource`. It verifies the exact
+combined physical domain, the original prefix/canonical authority, the same
+retained PostGapm source, and the same declared wall. Owning `SharesStorage`
+queries establish shared retention before any budget subtraction. Geometry or
+digest equality alone never grants a lifetime discount.
+
+The self interface keeps its original selected NSV and mixed P/G/partner maps.
+The new wall interface uses every retained vehicle physical node plus the four
+wall nodes. Both contact sources use the actual complete physical domain. No
+source node is added to model a generated rigid primary, no selected parent is
+removed, and no material failure policy is disabled.
+
+The authenticated controls table supplies original interface IDs and native
+storage ordinals. The factory filters its TYPE25 entries to the selected self
+and declared wall roles while preserving their source order. It verifies both
+entries exactly once and never derives order from a role enum, a guessed ID or
+an observed native table. The complete table, including TYPE2, remains available
+to the initializer.
+
+## Packing and initialization
+
+Only absent runtime DTO arrays are packed. Topology, source coordinates, raw
+origins, resolved supports, coefficients and pre-BUC gap fields are borrowed
+from the immutable source handles. Node constraints come from the authenticated
+complete owner packing already retained by the finite-wall source. The wall's
+Starter cache and fixed-ready cache have distinct uses; no all-active cache is
+installed as initial history.
+
+The general TL initializer consumes the real ordered TYPE2 roster, contributor
+census and auxiliary rigid-primary namespace alongside these source fields.
+Its move-only DeviceSeed owns initial history/ICONT and finalized gap corners.
+Transaction initialization creates it on the actual owner stream, copies it to
+both existing transaction slabs, drains, and retires the seed. The app does not
+create a host history facade or initialize warm rows to zero.
+
+The case retains every borrowed input through the drain. Runtime initialization
+reauthenticates the actual common physical binding, all mechanical participants
+and `source.startup()`. After both transactions initialize, the case adopts them
+in the authenticated declaration order and calls the private native-group
+installer once. A failure destroys the incomplete case and its private contact
+transactions; no accepted interval has been published.
+
+## Resource phases
+
+The complete forecast reports source construction peaks separately from current
+retention. It charges the owner graph and contact graph conservatively, except
+for duplicate owning handles proved with `SharesStorage`. Source packing,
+physical startup and the two contact initializations are explicit phases. Both
+runtime transactions coexist; initialization scratch/DeviceSeed for one
+interface may retire before the next is built. The forecast must include whichever
+real seed/runtime overlap TL initialization uses, not assume they are disjoint.
+
+Use public physical, transaction and initializer forecasts. Do not copy CUDA/CUB
+private layout formulas. Product host allowance remains 20,000,000,000 bytes;
+current complete-source guards are 18 GiB sampled RSS and 4 affinity CPUs. Device
+payload bounds do not include driver/context memory. Runtime allocation counts
+remain explicitly incomplete where TL reports only exact bytes.
+
+## Qualification sequence
+
+1. Source admission and lifetime/budget checks, including exact shared backing,
+   foreign domains, wrong wall, missing/repeated interface roles and cap edges.
+2. Complete-source forecast with both real interfaces and the actual owner graph.
+3. Initializer source/native/GPU gates, then actual startup diagnostics without
+   stepping. Every warm-row/removal count comes from the producer.
+4. Actual common-owner contact prepare/discard/retry and a short accepted prefix,
+   with both group observations tied to one epoch and force-base stamp.
+5. Existing RunLoop and accepted archive path, then Chrono replay. The output
+   module's distinct full-vehicle native-group profile owns serialized validation;
+   the small coupon's old native-contact profile is not reused.
+
+At this checkpoint the case API depends on the controls/initializer and runtime
+preflight successors still under their owning gates. No simulation or completed
+runtime source is claimed by this design.

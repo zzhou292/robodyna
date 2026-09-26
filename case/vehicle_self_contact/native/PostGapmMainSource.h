@@ -57,6 +57,8 @@ struct Preparation;
 // erosion update. Scalar GAPMIN/search controls remain separate authority.
 class PostGapmMainSource {
   public:
+    // Exact immutable backing identity; no geometry/hash equivalence claim.
+    bool SharesStorage(const PostGapmMainSource& other) const noexcept { return data_ == other.data_; }
     static Forecast Preflight(const Mixed&, const GapOperands&, Limits = {});
     static Preparation Prepare(const Mixed&, const GapOperands&, const std::string& combine_member, Limits = {});
     PostGapmMainSource(const PostGapmMainSource&) noexcept = default;

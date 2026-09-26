@@ -7,6 +7,8 @@ struct Preparation;
 // NSV/main arrays, accepted state or runtime-ready authority exists here.
 class WallSource {
   public:
+    // Exact immutable backing identity; no geometry/hash equivalence claim.
+    bool SharesStorage(const WallSource& other) const noexcept { return data_ == other.data_; }
     static Forecast Preflight(const modelio::physical_domain::VehiclePhysicalDomain&,
         const modelio::native_spring_ids::ImportMembers&,Limits={});
     static Preparation Prepare(const modelio::physical_domain::VehiclePhysicalDomain&,
