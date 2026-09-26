@@ -168,16 +168,20 @@ TEST_F(InitialSourceCuda, GenuineMixedPostGapmSourceUsesTrueExpandedCountAndFina
   }
 }
 TEST_F(InitialSourceCuda, FixedMainSkewOneAndAllFixedSecondaryMatchWholeNativeMaskPacking) {
-  for(bool all_fixed:{false,true}) {
-    SCOPED_TRACE(all_fixed);
+  for(unsigned mode:{0u,1u,2u}) {
+    SCOPED_TRACE(mode);
     Fixture f;
     for(auto node:f.main_nodes){f.nodes[node].constraint=7;f.nodes[node].skew=1;}
-    if(all_fixed)for(auto& node:f.nodes){node.constraint=7;node.skew=1;}
+    if(mode)for(auto& node:f.nodes){node.constraint=7;node.skew=1;}
+    // Native PEN3A465-492 tests shared fixed axes AND near-coplanarity along
+    // that axis (<EM03*DD). All-fixed alone does not remove off-plane pairs.
+    // This third source packet makes the Z-axis condition genuinely true.
+    if(mode==2)for(const auto& row:f.secondary)f.mesh.positions[3*row.node+2]=0.;
     const auto expected=Oracle(f);src::PreparedSource source;
     ASSERT_EQ(src::PrepareSource(f.Input(),f.Limits(),source).status,src::Status::Ok);
     src::DeviceSeed seed;const auto report=src::Prepare(source,stream,seed);ASSERT_EQ(report.status,src::Status::Ok);
     EXPECT_EQ(report.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
-    if(all_fixed)EXPECT_EQ(report.diagnostics.pairs,0u);
+    if(mode==2)EXPECT_EQ(report.diagnostics.pairs,0u);
     else EXPECT_GT(report.diagnostics.pairs,0u);
   }
 }
