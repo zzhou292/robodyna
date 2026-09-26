@@ -6,10 +6,9 @@ namespace crash::cases::vehicle_runtime {
 std::size_t Source::retained_host_upper_bound(std::size_t cap) const {
     const auto* old=data_->original();
     const auto bytes=old?detail::SourceBytes(old->execution,old->attachments,cap):
-        data_->environment()->forecast().current_phase;
-    // The environment producer's complete current-phase bound includes its
-    // retained graph plus now-retired construction reservations. Keep this
-    // conservative bound; never subtract guessed shared/private payloads.
+        data_->environment()->retained_host_upper_bound(cap);
+    // Owning source APIs report retained graph bounds separately from their
+    // historical constructor peaks. Never derive private layout discounts here.
     tl::util::BoundedArenaLayout layout(cap);tl::util::ArenaRegion unused;
     output::Require(layout.Append<std::byte>(bytes,unused) &&
         layout.Append<std::byte>(sizeof(Source)+sizeof(Data)+128,unused),
