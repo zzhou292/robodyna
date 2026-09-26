@@ -54,10 +54,10 @@ TEST(NativeGeneralInitialize, GenuineWarmSeedUsesBothExistingSlabsAndOnePhysical
   const auto diagnostics=source.rig.contact.initialization_diagnostics();ASSERT_TRUE(diagnostics.available);
   EXPECT_EQ(diagnostics.values.warm_after_tied,warm);EXPECT_EQ(diagnostics.identity.source.topology,7u);
   EXPECT_EQ(diagnostics.identity.source.runtime_topology,3u);
+  ASSERT_NO_THROW(source.BindRoster());
   n::runtime_qualification::InitializationObservation observed;
   ASSERT_TRUE(n::runtime_qualification::Access::ReadInitialization(source.rig.contact,&observed));SameInitial(observed,expected);
   EXPECT_EQ(source.rig.owner.accepted().epoch,0u);EXPECT_EQ(source.rig.contact.allocations().device_bytes,forecast.transaction.device_bytes);
-  ASSERT_NO_THROW(source.BindRoster());
   moving_cache_test::Attempt attempt;ASSERT_NO_THROW(source.rig.Begin(attempt));
   ASSERT_EQ(source.rig.contact.AssembleAccepted(source.rig.owner,attempt.token,attempt.assembly).status,n::TransactionStatus::Ok);
   ASSERT_NO_THROW(source.rig.Prepare(attempt));
@@ -137,6 +137,7 @@ TEST(NativeGeneralInitialize, FixedReadyPhaseIsAuthenticatedSeparatelyFromStarte
   report=rig.contact.GeneralInitialize(rig.config,source.runtime,source.ready,source.prepared,rig.owner,rig.publication,
       rig.source.physical.physical,rig.Participants(),rig.Identity(),moving_cache_test::Rig::Limits());
   ASSERT_EQ(report.status,n::TransactionStatus::Ok);
+  ASSERT_NO_THROW(source.base.BindRoster());
   n::runtime_qualification::InitializationObservation observed;
   ASSERT_TRUE(n::runtime_qualification::Access::ReadInitialization(rig.contact,&observed));SameInitial(observed,expected);
   EXPECT_EQ(rig.owner.accepted().epoch,0u);
@@ -202,6 +203,8 @@ TEST(NativeGeneralInitialize, GenuineMixedSupportsAndCinRosterBindCompletePhysic
     continue;
   }
   ASSERT_EQ(report.status,n::TransactionStatus::Ok)<<report.message;
+  ASSERT_EQ(rig.publication.ConfigurePhysicalScratchParticipation(rig.owner,f.physical,rig.Participants(),rig.Identity(),
+      {{},rig.contact.roster_entry()}).status,tl::fea::ShellPublicationStatus::Success);
   n::runtime_qualification::InitializationObservation actual;ASSERT_TRUE(n::runtime_qualification::Access::ReadInitialization(rig.contact,&actual));SameInitial(actual,expected);
   EXPECT_EQ(rig.owner.accepted().epoch,0u);EXPECT_EQ(rig.contact.source_info().expanded_mains,5u);
   EXPECT_EQ(rig.contact.initialization_diagnostics().identity.primaries,3u);
