@@ -3,7 +3,8 @@
 #include "../CoefficientTypes.h"
 #include "../FrictionTypes.h"
 namespace tlfea::contact::radioss_type25 {
-// Arithmetic for an already-proved unique exterior EightSlot support only.
+// Raw geometry packet for an already-proved EightSlot support.
+// Exterior and internal entries have separate source-defined result channels.
 // It does not establish membership, X versus projected X_C, material ownership,
 // topology or input source authenticity. All coordinates are native lengths.
 struct NativeExteriorMainGeometryInput {

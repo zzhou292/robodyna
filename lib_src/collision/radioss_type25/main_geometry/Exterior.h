@@ -2,10 +2,7 @@
 // OpenRadioss a62b27e6 INSOL3D unique-support geometry and VOLINT.
 // Copyright (C) 2026 Siemens; see ../LICENSE.md.
 #pragma once
-#include "Types.h"
-#include "../normal_math/DoubleFace.h"
-#include "lib_src/elements/solid_common/BrickFrame.h"
-#include "lib_src/math/ScalarBits.h"
+#include "Reader.h"
 namespace tlfea::contact::radioss_type25 {
 TL_MATH_HOST_DEVICE inline CoefficientStatus EvaluateNativeExteriorMainGeometry(
     const NativeExteriorMainGeometryInput& in, NativeExteriorMainGeometryResult* output) noexcept {
@@ -39,15 +36,11 @@ TL_MATH_HOST_DEVICE inline CoefficientStatus EvaluateNativeExteriorMainGeometry(
   const Vector delta{solid_center.x-face_center.x, solid_center.y-face_center.y,
                      solid_center.z-face_center.z};
   const double projection = b::Dot(face.normal, delta);
-  Vector r, s, t;
-  b::Directions(in.solid_raw, r, s, t);
-  const Vector cofactors = b::Cross(r, s);
-  // Same directions as CHECKVOLUME_8N, different native determinant reduction.
-  // Do not replace this with SignedCenterVolume or a structural volume cache.
-  const double volume = (1./64.)*b::Dot(t, cofactors);
-  if (!b::Finite(face_center) || !b::Finite(delta) || !tl::math::Finite(projection) ||
-      !b::Finite(r) || !b::Finite(s) || !b::Finite(t) || !b::Finite(cofactors) ||
-      !tl::math::Finite(volume)) return CoefficientStatus::NonfiniteResult;
+  double volume;
+  const auto volume_status = EvaluateNativeEightSlotReaderVolume(in.solid_raw, &volume);
+  if (volume_status != CoefficientStatus::Ok) return volume_status;
+  if (!b::Finite(face_center) || !b::Finite(delta) || !tl::math::Finite(projection))
+    return CoefficientStatus::NonfiniteResult;
 
   NativeExteriorMainGeometryResult next;
   next.normal_before_orientation = face.normal;
