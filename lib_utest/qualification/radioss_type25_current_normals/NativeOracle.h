@@ -18,4 +18,7 @@ struct NativeResult {
 // Complete original NORMP FLAG1/2 and FREE_BOUND execute in that one oracle.
 // Inactive WNOD scratch is deliberately not exposed as defined observations.
 NativeResult Oracle(const c::Input&);
+// Explicit mixed scalar marshalling only; complete unchanged native NORMP
+// receives actualG, encoded roles and supplied cache/activity.
+NativeResult OracleMixed(const c::Input&);
 }

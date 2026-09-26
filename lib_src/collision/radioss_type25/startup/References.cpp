@@ -4,8 +4,9 @@
 #include <algorithm>
 namespace tlfea::contact::radioss_type25::startup::detail {
 Report References(const Input& in,Data data,int* root,int* tags,std::uint32_t* node_refs,
-    std::size_t& reference_count,std::size_t& incidence_count) noexcept {
-  const auto g=2*in.primary_count; int vertices=0;
+    std::size_t& reference_count,std::size_t& incidence_count,const PostGapmTopology* post,
+    const Edge* solid_edges,std::size_t solid_edge_count,int* solid_neighbor_ids) noexcept {
+  const auto g=data.main_count; int vertices=0;
   for(std::size_t m=0;m<g;++m) {
     auto& main=data.mains[m];
     for(unsigned k=0;k<3;++k) { main.normal_reference[k]=++vertices; root[vertices-1]=vertices; }
@@ -19,14 +20,35 @@ Report References(const Input& in,Data data,int* root,int* tags,std::uint32_t* n
   };
   for(std::size_t m=0;m<g;++m) {
     const auto& main=data.mains[m];
+    std::size_t extra[5]{};
+    const bool additional=post && post->final_solid_erosion==SolidErosion::Enabled && tags[m]>0 &&
+        post->final_support[m].first.kind==PhysicalSupportKind::EightSlotSolid;
+    if(additional && !SolidNeighborLists(data,solid_edges,solid_edge_count,m,solid_neighbor_ids,extra))
+      return {Status::ResourceLimit,data.expanded_to_primary[m]};
     for(unsigned k=0;k<4;++k) {
       if(k==2 && main.nodes[2]==main.nodes[3]) continue;
-      if(!main.neighbors[k]) continue;
-      const auto& other=data.mains[std::size_t(main.neighbors[k]-1)];
-      const unsigned slot=unsigned(main.neighbor_edges[k]-1);
-      merge(main.normal_reference[k],other.normal_reference[(slot+1)%4]);
-      merge(main.normal_reference[(k+1)%4],other.normal_reference[slot]);
+      if(main.neighbors[k]) {
+        const auto& other=data.mains[std::size_t(main.neighbors[k]-1)];
+        const unsigned slot=unsigned(main.neighbor_edges[k]-1);
+        merge(main.normal_reference[k],other.normal_reference[(slot+1)%4]);
+        merge(main.normal_reference[(k+1)%4],other.normal_reference[slot]);
+      }
+      // Native order is ordinary neighbor first, THEN every extra solid list
+      // entry at this edge. Extra lists do not write MVOISIN/EVOISIN.
+      if(additional)for(auto at=extra[k];at<extra[k+1];++at) {
+        const auto id=solid_neighbor_ids[at];
+        if(!id || id==main.neighbors[k])continue;
+        const auto& other=data.mains[std::size_t(id-1)];
+        for(unsigned j=0;j<4;++j) {
+          if(j==2 && other.nodes[2]==other.nodes[3])continue;
+          if(main.nodes[(k+1)%4]==other.nodes[j] && main.nodes[k]==other.nodes[(j+1)%4]) {
+            merge(main.normal_reference[k],other.normal_reference[(j+1)%4]);
+            merge(main.normal_reference[(k+1)%4],other.normal_reference[j]);
+          }
+        }
+      }
     }
+    if(additional)std::fill_n(solid_neighbor_ids,extra[4],0);
   }
   // Keep the exact source's direct-parent update above and its later closure;
   // replacing it with another union heuristic could change reference numbering.

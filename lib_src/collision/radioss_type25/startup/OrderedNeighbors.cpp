@@ -74,13 +74,21 @@ bool Collect(Data data,const Edge* edges,std::size_t count,std::size_t self,
 }
 }
 Report OrderedNeighbors(const Input& in,Data data,const Vector* points,Edge* edges,
-    int* ice,double* angles,double* sides) noexcept {
-  const auto g=2*in.primary_count,count=BuildEdges(data,g,edges);
+    int* ice,double* angles,double* sides,const PostGapmTopology* post,int* solid_tags) noexcept {
+  const auto g=data.main_count;
+  const auto count=BuildEdges(data,g,edges,post,post?EdgePopulation::External:EdgePopulation::All);
+  if(post)std::fill_n(solid_tags,g,0);
   Report report{Status::Ok};
   auto fail=[&](Status status,std::size_t m,std::size_t node=SIZE_MAX) {
     report.status=status;report.primary=data.expanded_to_primary[m];report.node=node;return report;
   };
   for(std::size_t m=0;m<g;++m) {
+    if(post && post->final_support[m].second_solid_source_id) {
+      // Original ordinary incidence/neighbor pass excludes internal segments.
+      // IDEL1 later marks them for the additional solid-only union pass.
+      solid_tags[m]=post->final_solid_erosion==SolidErosion::Enabled?1:0;
+      continue;
+    }
     auto& main=data.mains[m];std::size_t ne=0;
     for(unsigned edge=0;edge<4;++edge) {
       const auto before=ne;
@@ -91,6 +99,8 @@ Report OrderedNeighbors(const Input& in,Data data,const Vector* points,Edge* edg
       if(!Collect(data,edges,count,m,i1,i2,ice,ne,g))return fail(Status::ResourceLimit,m,i1);
       const auto candidates=ne-before;
       if(candidates>1) {
+        if(post && post->final_solid_erosion==SolidErosion::Enabled &&
+            post->final_support[m].first.kind==PhysicalSupportKind::EightSlotSolid)solid_tags[m]=1;
         if(candidates>g)return fail(Status::ResourceLimit,m,i1);
         if(!neighbor_geometry::Scores(main,data.mains,points,i1,i2,ice+before,candidates,angles,sides))
           return fail(Status::NonfiniteResult,m,i1);
@@ -134,4 +144,20 @@ Report OrderedNeighbors(const Input& in,Data data,const Vector* points,Edge* edg
   }
   return report;
 }
+// Original IDEL1 MNEIGH_SOLID lists are pure functions of the now-immutable
+// MVOISIN, solid-support incidence and face words. Reconstruct one complete
+// main's four lists before its reference unions. Preserve cross-edge ADD_ID
+// deduplication and each edge's original main-ID insertion order; no dense
+// NMAX*4*NRTM_S allocation or scan of all G faces is needed.
+bool SolidNeighborLists(Data data,const Edge* edges,std::size_t count,std::size_t main,
+    int* ids,std::size_t (&offsets)[5]) noexcept {
+  std::size_t used=0;offsets[0]=0;
+  const auto& face=data.mains[main];
+  for(unsigned edge=0;edge<4;++edge) {
+    if(!Collect(data,edges,count,main,face.nodes[edge],face.nodes[(edge+1)%4],ids,used,data.main_count))return false;
+    offsets[edge+1]=used;
+  }
+  return true;
+}
+
 } // namespace tlfea::contact::radioss_type25::startup::detail

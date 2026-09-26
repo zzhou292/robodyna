@@ -14,6 +14,11 @@ Report Evaluate(const Input& in,Limits limits,void* scratch,std::size_t bytes,Ou
   detail::Layout layout;double length=1;auto report=detail::Plan(in,limits,layout,length);
   if(report.status!=Status::Ok)return report;
   report=detail::Storage(in,layout,scratch,bytes,output);if(report.status!=Status::Ok)return report;
+  return detail::Execute(in,layout,length,scratch,output);
+}
+namespace detail {
+Report Execute(const Input& in,const Layout& layout,double length,void* scratch,Output output) noexcept {
+  Report report;
   const auto work=detail::Construct(scratch,layout);const auto& t=in.topology;
   std::memcpy(work.normal,in.prior_normals,in.prior_count*sizeof(StoredNormal));
   for(std::size_t i=0;i<t.primary_count;++i){report=detail::Primary(in,work,i,length);if(report.status!=Status::Ok)return report;}
@@ -29,4 +34,6 @@ Report Evaluate(const Input& in,Limits limits,void* scratch,std::size_t bytes,Ou
   std::memcpy(output.references,work.references,output.reference_count*sizeof(startup::NormalReference));
   return {Status::Ok};
 }
+} // namespace detail
+
 } // namespace tlfea::contact::radioss_type25::current_normals

@@ -14,10 +14,12 @@ namespace type25_current_normals_test::device {
 constexpr std::size_t Nodes=256,Primaries=160,Mains=2*Primaries,References=4*Mains,Normals=4*Mains;
 struct Image {
   c::Input in;
+  bool mixed_preflight=false; c::Report mixed_admission;
   n::startup::Main mains[Mains];double positions[3*Nodes],coefficient[Mains];
   std::uint32_t active[Mains],tags[Nodes],free_ids[Mains],offsets[References+1],entries[Normals];
   n::StoredNormal prior[Normals];
   n::startup::ShellSideRole primary_roles[Primaries];
+  std::uint32_t partners[Primaries];
 };
 struct Published {
   n::StoredNormal first[Normals],normals[Normals];
@@ -34,6 +36,7 @@ __device__ inline c::Input Bind(const Image& image) {
   auto in=image.in;in.topology.mains=image.mains;in.topology.normal_to_main.offsets=image.offsets;
   in.topology.normal_to_main.entries=image.entries;in.positions.data=image.positions;
   in.topology.primary_roles=image.in.topology.primary_roles?image.primary_roles:nullptr;
+  in.topology.mixed_maps.primary_to_partner=image.in.topology.mixed_maps.primary_to_partner?image.partners:nullptr;
   in.main_coefficients=image.coefficient;in.main_active=image.active;in.node_tag=image.tags;
   in.free_main_ids=in.free_count?image.free_ids:nullptr;in.prior_normals=image.prior;return in;
 }
@@ -43,7 +46,14 @@ __device__ inline c::detail::Work Work(State& state) {
 __device__ inline std::size_t Item(std::size_t i,std::size_t size,bool reverse) {return reverse?size-1-i:i;}
 __global__ void Admit(const Image* image,State* state,c::Limits limits) {
   if(blockIdx.x||threadIdx.x)return;
-  state->report=c::detail::Validate(Bind(*image),limits,state->length);
+  if(image->mixed_preflight) {
+    // Rich source identity is HOST-only and was authenticated before upload.
+    // Revalidate borrowed current operands on device; only the compact map is
+    // carried to the same private numerical stages used by the runtime.
+    state->report=image->mixed_admission;
+    if(state->report.status==c::Status::Ok)
+      state->report=c::detail::DynamicFields(Bind(*image),state->length);
+  } else state->report=c::detail::Validate(Bind(*image),limits,state->length);
 }
 __global__ void CopyPrior(const Image* image,State* state) {
   if(state->report.status!=c::Status::Ok)return;
@@ -122,6 +132,7 @@ inline void Pack(const c::Input& in,Image& image) {
   // Fixtures retain authentic P-element backing even when testing a malformed
   // declared role count. Preserve that count/nullness for device admission.
   if(t.primary_roles)Copy(image.primary_roles,t.primary_roles,t.primary_count);
+  if(t.mixed_maps.primary_to_partner)Copy(image.partners,t.mixed_maps.primary_to_partner,t.primary_count);
   Copy(image.mains,t.mains,t.main_count);Copy(image.coefficient,in.main_coefficients,in.coefficient_count);
   Copy(image.active,in.main_active,in.active_count);Copy(image.tags,in.node_tag,in.tag_count);
   Copy(image.free_ids,in.free_main_ids,in.free_count);Copy(image.prior,in.prior_normals,in.prior_count);
@@ -137,10 +148,15 @@ struct Observation {c::Report report;NativeResult values;bool publication_unchan
 class CurrentNormalsCuda : public type25_friction_test::PacketCuda<> {
  protected:
   Published last_{};bool initialized_=false;
-  Observation EvaluateDevice(const c::Input& in,unsigned threads,bool reverse,c::Limits cap) {
+  Observation EvaluateDevice(const c::Input& in,unsigned threads,bool reverse,c::Limits cap,
+      const n::startup::Snapshot* mixed_source=nullptr) {
     static_assert(sizeof(Image)<=Capacity*RowBytes&&sizeof(State)<=Capacity*RowBytes);
     if(!threads||threads>64)throw std::runtime_error("Unsupported qualification launch shape");
     auto host=std::make_unique<Image>();Pack(in,*host);auto unchanged=std::make_unique<Image>();
+    if(mixed_source) {
+      c::Forecast forecast;host->mixed_preflight=true;
+      host->mixed_admission=c::Preflight(in,*mixed_source,cap,forecast);
+    }
     auto next=std::make_unique<State>();auto result=std::make_unique<State>();
     if(!initialized_) {std::memset(&last_,0xa5,sizeof(last_));initialized_=true;}
     next->published=last_;

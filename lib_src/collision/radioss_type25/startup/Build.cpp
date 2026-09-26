@@ -3,8 +3,17 @@
 #include "Internal.h"
 #include <algorithm>
 namespace tlfea::contact::radioss_type25::startup {
-namespace {
-void Copy(detail::Data from,detail::Data to,const detail::OutputLayout& p) noexcept {
+namespace detail {
+void CopyPostGapm(const PostGapmTopology& from,Data to) noexcept {
+  std::copy_n(from.primary_corners,from.primary_count,to.post_corners);
+  std::copy_n(from.before_shell,from.before_shell_count,to.post_before);
+  std::copy_n(from.final_support,from.main_count,to.post_support);
+  *to.post_gapm=from;
+  to.post_gapm->primary_corners=to.post_corners;
+  to.post_gapm->before_shell=to.post_before;
+  to.post_gapm->final_support=to.post_support;
+}
+void CopyOutput(Data from,Data to,const OutputLayout& p) noexcept {
   std::copy_n(from.mains,p.mains.count,to.mains);
   std::copy_n(from.expanded_to_primary,p.expanded_to_primary.count,to.expanded_to_primary);
   std::copy_n(from.primary_to_partner,p.primary_to_partner.count,to.primary_to_partner);
@@ -16,6 +25,7 @@ void Copy(detail::Data from,detail::Data to,const detail::OutputLayout& p) noexc
   if(p.primary_identities.count)std::copy_n(from.primary_identities,p.primary_identities.count,to.primary_identities);
   if(p.raw_origins.count)std::copy_n(from.raw_origins,p.raw_origins.count,to.raw_origins);
   if(p.raw_origin_to_primary.count)std::copy_n(from.raw_origin_to_primary,p.raw_origin_to_primary.count,to.raw_origin_to_primary);
+  if(p.post_gapm.count)CopyPostGapm(*from.post_gapm,to);
 }
 }
 Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output,
@@ -62,7 +72,7 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   if(report.status!=Status::Ok)return report;
   // All rejection points precede caller output construction. Trivial value
   // construction/copies below cannot fail, allocate, or borrow source storage.
-  auto committed=detail::Construct(output,layout.output);Copy(staged,committed,layout.output);
+  auto committed=detail::Construct(output,layout.output);detail::CopyOutput(staged,committed,layout.output);
   Snapshot next;
   next.mains=committed.mains;next.node_count=input.node_count;next.primary_count=input.primary_count;
   next.main_count=layout.forecast.expanded_mains;

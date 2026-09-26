@@ -1,0 +1,54 @@
+{
+  "schema": "type25-post-gapm-native-v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "parent_native": "lib_utest/qualification/radioss_type25_fixed_main_startup/native",
+  "parent_manifest_sha256": "2260ea62b5d307a3f97c531288085df1224e353151af5235e7f63895fd8e17bc",
+  "parent_reuse": [
+    "Expand.F",
+    "Neighborhood.F",
+    "I25NEIGH_SEG_EN.F",
+    "I25NEIGH_SEG_E.F",
+    "I25NEIGH_REMOVEALLBUT1.F",
+    "I25NEIGH_SEG_OPP.F",
+    "ADD_ID.F",
+    "INTAB.F",
+    "SAME_SEG.F",
+    "StarterNormals.F",
+    "ReadyNormals.F",
+    "FreeMain.F",
+    "CsrWrapper.F"
+  ],
+  "controls": {
+    "NSPMD": 1,
+    "NTHREAD": 1,
+    "IEDGE": 0,
+    "NEDGE": 0,
+    "SOL_EDGE": 0,
+    "IDEL_SOLID": "explicit0or1",
+    "NRTM_SH": "actualS",
+    "NRTM": "actualP+S"
+  },
+  "abi": "26 pointer arguments; counts4; post corners4xP/support2xG/IDEL; no VALUE counts",
+  "bound": {
+    "nodes": 256,
+    "primaries": 160,
+    "expanded": 320
+  },
+  "source_files": [
+    {
+      "path": "Wrapper.F90",
+      "bytes": 5825,
+      "sha256": "6c7b6d9b2f91197c220a0ab0578c1cf43f46a5df6bf59a63ad42d8fb2a909049"
+    },
+    {
+      "path": "../NativeOracle.cpp",
+      "bytes": 7316,
+      "sha256": "b4b25b6e542b56c25b79c49e09939e06ea51a47a4f20522ceb69e890072ad44a"
+    },
+    {
+      "path": "../NativeOracle.h",
+      "bytes": 633,
+      "sha256": "8011e70cff66f23abba5edfb097c582f3f4d5ce65b83081c3cf04dafe95fe3ff"
+    }
+  ]
+}

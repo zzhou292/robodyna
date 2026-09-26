@@ -30,7 +30,7 @@ struct Topology {
   startup::TopologyPolicy source_topology = startup::TopologyPolicy::ManifoldTwoSided;
   const startup::ShellSideRole* primary_roles = nullptr;
   std::size_t primary_role_count = 0;
-  // DRAFT mixed numerical handoff. No host Snapshot pointer may be carried
+  // Mixed numerical handoff. No host Snapshot pointer may be carried
   // into the shared CUDA arithmetic. Legacy profiles require this empty.
   MixedNormalMaps mixed_maps;
 };
@@ -55,20 +55,26 @@ struct Output {
 struct Limits {
   std::size_t nodes=1048576,primaries=1048576,references=8388608,incidences=8388608;
   std::size_t scratch_bytes=std::size_t{1}<<30;
+  std::size_t source_validation_bytes=std::size_t{32}<<20; // Mixed HOST admission only.
 };
-struct Forecast {std::size_t scratch_bytes=0,output_bytes=0;};
+struct Forecast {
+  std::size_t scratch_bytes=0,output_bytes=0;
+  std::size_t source_validation_bytes=0; // Separate temporary HOST source-admission peak.
+};
 struct Report {Status status=Status::InvalidInput;std::size_t main=SIZE_MAX,reference=SIZE_MAX,node=SIZE_MAX;};
 // Allocation-free host value producer (declared here; staged implementation in
 // the owning module). CUDA kernels share its private per-item arithmetic.
 Report Preflight(const Input&,Limits,Forecast&) noexcept;
 Report Evaluate(const Input&,Limits,void* scratch,std::size_t scratch_bytes,Output) noexcept;
-// DRAFT source-only overloads: implementations/qualification follow. These are
+// Explicit mixed-source overloads. These are
 // HOST admission entrypoints. They verify the full owned snapshot, post-GAPM
 // support, raw origins and true maps before shared numerical stages run. The
 // old entrypoints remain closed for MixedSurfaceLocal. Runtime validates once
 // in its host source binding, then uploads only MixedNormalMaps for its private
 // CUDA stage helpers; no partial/fabricated Snapshot or rich metadata upload.
-Report ValidateMixedSource(const Topology&,const startup::Snapshot&) noexcept;
+std::size_t MixedSourceValidationBytes(std::size_t primaries) noexcept;
+Report ValidateMixedSource(const Topology&,const startup::Snapshot&,
+    std::size_t max_host_bytes=std::size_t{32}<<20) noexcept;
 Report Preflight(const Input&,const startup::Snapshot&,Limits,Forecast&) noexcept;
 Report Evaluate(const Input&,const startup::Snapshot&,Limits,void* scratch,
     std::size_t scratch_bytes,Output) noexcept;

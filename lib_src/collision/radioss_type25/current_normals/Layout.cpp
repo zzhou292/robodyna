@@ -10,6 +10,9 @@ Report Plan(const Input& in,Limits limits,Layout& output,double& length) noexcep
     return {Status::UnsupportedProfile};
   if(!self_contact_filters::CompatibleHostArithmetic())return {Status::UnsupportedArithmetic};
   const auto admitted=Validate(in,limits,length);if(admitted.status!=Status::Ok)return admitted;
+  return MakeLayout(in,limits,output);
+}
+Report MakeLayout(const Input& in,Limits limits,Layout& output) noexcept {
   Layout next;tl::util::BoundedArenaLayout arena(limits.scratch_bytes);
   const auto& t=in.topology;
   if(!arena.Append<StoredNormal>(4*t.main_count,next.normal)||!arena.Append<StoredNormal>(4*t.main_count,next.neighbor)||
@@ -36,6 +39,7 @@ bool InputDisjoint(const Input& in,const void* target,std::size_t bytes) noexcep
     {&in,sizeof(in),alignof(Input)},
     {t.mains,t.main_count*sizeof(startup::Main),alignof(startup::Main)},
     {t.primary_roles,t.primary_role_count*sizeof(startup::ShellSideRole),alignof(startup::ShellSideRole)},
+    {t.mixed_maps.primary_to_partner,t.mixed_maps.primary_count*sizeof(std::uint32_t),alignof(std::uint32_t)},
     {csr.offsets,csr.offset_count*sizeof(std::uint32_t),alignof(std::uint32_t)},
     {csr.entries,csr.entry_count*sizeof(std::uint32_t),alignof(std::uint32_t)},
     {in.positions.data,(std::size_t(last)+1)*sizeof(double),alignof(double)},
