@@ -15,6 +15,7 @@ void SameCandidateReport(const n::candidates::Report& a,const n::candidates::Rep
   EXPECT_EQ(a.tasks,b.tasks);EXPECT_EQ(a.pairs,b.pairs);EXPECT_EQ(a.maximum_secondary_gap,b.maximum_secondary_gap);
   EXPECT_EQ(a.own_kernel_launches,b.own_kernel_launches);EXPECT_EQ(a.sort_calls,b.sort_calls);
   EXPECT_EQ(a.scan_calls,b.scan_calls);EXPECT_EQ(a.host_fences,b.host_fences);
+  EXPECT_EQ(a.strategy,b.strategy);EXPECT_EQ(a.encounters_counted,b.encounters_counted);EXPECT_EQ(a.pairs_counted,b.pairs_counted);
 }
 void Same(const q::NormalObservation& a,const q::NormalObservation& b) {
   ASSERT_EQ(a.face.size(),b.face.size());ASSERT_EQ(a.references.size(),b.references.size());
@@ -134,6 +135,44 @@ TEST(NativeMovingCacheCuda, ExactCandidateTaskAndPairFailuresSurviveCommonDiscar
       EXPECT_EQ(unchanged.accepted.generation,0u);EXPECT_EQ(diagnostics.active_forces,0u);
     }
   }
+}
+TEST(NativeMovingCacheCuda, CompactInventoryUsesPairedForecastAndRealOwnerCommitDiscardRetry) {
+  Rig rig;for(auto& row:rig.source.secondary)row.gap=.04;
+  for(auto& main:rig.source.mains){main.maximum_gap=.04;for(auto& gap:main.gap)gap=.04;}
+  auto limits=rig.Limits();n::TransactionForecast legacy,compact;
+  ASSERT_EQ(n::Transaction::Preflight(rig.config,rig.source.Source(),rig.source.physical.physical,legacy,limits).status,n::TransactionStatus::Ok);
+  limits.inventory.strategy=n::candidates::EnumerationStrategy::CompactGrid;limits.inventory.max_encounters=128;
+  ASSERT_EQ(n::Transaction::Preflight(rig.config,rig.source.Source(),rig.source.physical.physical,compact,limits).status,n::TransactionStatus::Ok);
+  EXPECT_GT(compact.inventory_device_bytes,legacy.inventory_device_bytes);
+  EXPECT_EQ(compact.device_bytes-legacy.device_bytes,compact.inventory_device_bytes-legacy.inventory_device_bytes);
+  EXPECT_EQ(compact.runtime_device_bytes,legacy.runtime_device_bytes);
+  limits.max_device_bytes=compact.device_bytes;limits.max_host_bytes=compact.startup_host_bytes;
+  ASSERT_NO_THROW(rig.Initialize(limits));
+  EXPECT_EQ(rig.contact.allocations().device_bytes,compact.device_bytes);
+  q::NormalObservation original,first,retry;
+  ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&original));const auto x=rig.Positions();
+  Attempt rejected;
+  ASSERT_NO_THROW(rig.Begin(rejected));
+  ASSERT_EQ(rig.contact.AssembleAccepted(rig.owner,rejected.token,rejected.assembly).status,n::TransactionStatus::Ok);
+  const auto diagnostics=rig.contact.last_diagnostics();ASSERT_TRUE(diagnostics.candidate_rebuild_available);
+  EXPECT_EQ(diagnostics.candidate_rebuild.strategy,n::candidates::EnumerationStrategy::CompactGrid);
+  EXPECT_TRUE(diagnostics.candidate_rebuild.encounters_counted);EXPECT_TRUE(diagnostics.candidate_rebuild.pairs_counted);
+  EXPECT_GT(diagnostics.active_forces,0u);
+  ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,rejected.token,rejected.assembly,&first));
+  ASSERT_NO_THROW(rig.Prepare(rejected));
+  EXPECT_NE(rig.Commit(rejected,false).status,fe::ShellPublicationStatus::Success);
+  rig.Discard();q::NormalObservation unchanged;
+  ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&unchanged));Same(unchanged,original);
+  EXPECT_EQ(rig.owner.accepted().epoch,0u);EXPECT_EQ(rig.Positions(),x);
+  Attempt attempt;
+  ASSERT_NO_THROW(rig.Begin(attempt));
+  ASSERT_EQ(rig.contact.AssembleAccepted(rig.owner,attempt.token,attempt.assembly).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(rig.contact.last_diagnostics().active_forces,diagnostics.active_forces);
+  EXPECT_EQ(rig.contact.last_diagnostics().candidate_rebuild.pairs,diagnostics.candidate_rebuild.pairs);
+  ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,attempt.token,attempt.assembly,&retry));Same(retry,first);
+  ASSERT_NO_THROW(rig.Prepare(attempt));
+  ASSERT_EQ(rig.Commit(attempt).status,fe::ShellPublicationStatus::Success);
+  EXPECT_EQ(rig.owner.accepted().epoch,1u);EXPECT_TRUE(rig.contact.accepted().available);
 }
 TEST(NativeMovingCacheCuda, InactiveMainCacheSurvivesPhysicalMotionAndRepeatedSelectorSwaps) {
   Rig rig;rig.source.mains[1].coefficient=0;rig.source.mains[3].coefficient=0;rig.Initialize();
