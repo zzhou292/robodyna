@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_values",
+    size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h", "NativeOracle.h",
+        "//lib_utest/qualification/radioss_type25_surface_source:interface_fixture",
+        "//lib_utest/qualification/radioss_type25_fixed_main_startup:interface_fixture"],
+    deps = ["//lib_src/collision:radioss_type25_interface_surface", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "consumer",
+    size = "small",
+    srcs = ["Consumer.cpp"],
+    deps = ["//lib_src/collision:radioss_type25_interface_surface"],
+)

@@ -99,3 +99,22 @@ include the sizeof-based table and alignment. Legacy forecasts and null/count0
 role tables are unchanged. Generalized fixed-ready and runtime source admission
 remain closed for this new profile. Current-normal value evaluation has its own
 explicit resolved-shell profile and owning native/CUDA gates.
+
+## Explicit mixed side stage
+
+MixedSurface/NativeMixedSurface inputs use PreflightMixedSides and
+BuildMixedSides, with true G=P+shell_count. Solid partner0 is explicit absence;
+only shell/coating primaries append an opposite. The result is a distinct
+MixedSidesSnapshot with no normal/readiness view.
+
+Mixed inputs carry every raw source identity and raw-to-primary occurrence map.
+SingleSourceFace keeps its original parent/localface. MultipleOrigins requires
+count>=2 and unavailable parent/localface/source_id0. The primary ordinal and
+global main ID identify the contact face, never a fabricated original EID.
+These fields are source provenance, not later mechanical support/removal owners.
+
+BuildStarter/Preflight(Input) reject the mixed profile until genuine
+post-I25GAPM IELEM_M internal-support and final erosion disposition are provided.
+Selected-clause exterior geometry does not justify an all-zero support mask.
+Existing ordinary, general and resolved-coating normal/neighbor equations and
+legacy arena region order remain unchanged.

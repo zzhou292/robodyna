@@ -9,7 +9,8 @@ struct FaceKey { std::uint32_t nodes[4]{},count=0,ordinal=0; };
 struct Identity { std::uint64_t id=0; std::uint32_t ordinal=0; };
 struct OutputLayout {
   tl::util::ArenaRegion mains,expanded_to_primary,primary_to_partner;
-  tl::util::ArenaRegion normals,references,normal_offsets,normal_mains,primary_roles;
+  tl::util::ArenaRegion normals,references,normal_offsets,normal_mains,primary_roles,primary_identities;
+  tl::util::ArenaRegion raw_origins,raw_origin_to_primary;
 };
 struct Layout {
   OutputLayout output;
@@ -26,10 +27,14 @@ struct Data {
   std::uint32_t* normal_offsets=nullptr;
   std::uint32_t* normal_mains=nullptr;
   ShellSideRole* primary_roles = nullptr;
+  PrimaryFaceIdentity* primary_identities = nullptr;
+  std::size_t main_count=0;
+  PrimaryFaceIdentity* raw_origins=nullptr;
+  std::uint32_t* raw_origin_to_primary=nullptr;
 };
 bool Disjoint(const void*,std::size_t,const void*,std::size_t) noexcept;
 Report MakeLayout(std::size_t nodes,std::size_t primary,Limits,Layout&,
-    TopologyPolicy=TopologyPolicy::ManifoldTwoSided) noexcept;
+    TopologyPolicy=TopologyPolicy::ManifoldTwoSided,std::size_t shell_primary_count=0,std::size_t raw_origin_count=0,bool sides_only=false) noexcept;
 Data Construct(tl::util::HostArena&,const OutputLayout&) noexcept;
 Report CheckInput(const Input&,const Layout&,const tl::util::HostArena&,
     const tl::util::HostArena&,const void*,std::size_t) noexcept;

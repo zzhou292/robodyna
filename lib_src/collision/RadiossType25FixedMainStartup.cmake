@@ -10,6 +10,7 @@ add_library(tl_radioss_type25_fixed_main_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Normals.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/SnapshotChecks.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/Build.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/MixedSides.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/startup/FixedMain.cpp")
 target_link_libraries(tl_radioss_type25_fixed_main_startup PUBLIC tl_radioss_type25_normal)
 # Host startup only: no CUDA language/runtime, Fortran, GTest or physical owner.
