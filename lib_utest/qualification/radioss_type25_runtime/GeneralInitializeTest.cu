@@ -170,7 +170,7 @@ TEST(NativeGeneralInitialize, GenuineMixedSupportsAndCinRosterBindCompletePhysic
     solids.push_back(solid);
   };
   add(f.source.a,8);add(f.source.b,8);add(f.source.c,6);
-  n::tied_removal::Main tied_main;const auto attachment=rig.cin.rows()[0];
+  n::tied_removal::Main tied_main;const auto attachment=rig.cin.rows().data[0];
   for(unsigned k=0;k<4;++k)tied_main.nodes[k]=std::uint32_t(attachment.master_domain_nodes[k]);
   const n::tied_removal::Row tied_row{std::uint32_t(attachment.secondary_domain_node),1,0};
   const n::tied_removal::Interface tie{881,1,28,&tied_main,1,&tied_row,1};
