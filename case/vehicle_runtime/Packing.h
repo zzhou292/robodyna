@@ -1,5 +1,6 @@
 #pragma once
 #include "SourceRoles.h"
+#include "lib_src/elements/ShellBatchStartup.h"
 #include "lib_src/solvers/FENodalState.h"
 namespace crash::cases::vehicle_runtime::detail {
 struct OwnerPacking {
