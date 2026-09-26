@@ -62,6 +62,10 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   if(check.status!=fe::NodalStatus::Ok)return p.Fail(Error(TransactionStatus::OwnerFailure,check.message));
   auto publication=p.publication->ValidatePhysicalAssembly(owner,token,view);
   if(publication.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,publication.message));
+  // Enforce explicit group order before any numerical kernel/force write.
+  publication=p.issuer.CheckNativeContactAssembly(owner,token,view);
+  if(publication.status!=fe::ShellPublicationStatus::Success)
+    return p.Fail(Error(TransactionStatus::PublicationFailure,publication.message));
   const bool static_mass=p.config.response_mass==ResponseMassPolicy::StaticPhysicalLedger;
   const auto accepted=p.state.Accepted(owner);double drift=0,kick=0;
   if(!accepted.available||!p.issuer.configured()||accepted.generation==UINT64_MAX||
@@ -186,7 +190,7 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   const auto incidence=p.incidence.view();if(!p.incidence.IsCurrent(incidence))return p.Fail(Error(TransactionStatus::StaleAttempt,"Native ASS0 incidence expired"));
   status=p.Fence(rd::Gather(p.device,schedule,incidence.incidence(),view,cin,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   status=p.Fence(rd::Apply(p.device,view,cin,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
-  publication=p.issuer.RecordSelfContactAcceptedAssembly(p.source.source_id,owner,token,view);
+  publication=p.issuer.RecordNativeContactAcceptedAssembly(p.source.source_id,owner,token,view);
   if(publication.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,publication.message));
   return {TransactionStatus::Ok,"OK"};
 }
@@ -208,7 +212,7 @@ TransactionReport Transaction::SealCandidate(fe::FENodalState& owner,const fe::N
   if(valid.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,valid.message));
   if(!p.state.Stage(view,p.trial_selectors))return p.Fail(Error(TransactionStatus::PublicationFailure,"Native selector plan rejected"));
   fe::ShellPhysicalScratchParticipationReceipt result;
-  const auto sealed=p.issuer.SealSelfContactCandidate(p.source.source_id,owner,token,view,&result);
+  const auto sealed=p.issuer.SealNativeContactCandidate(p.source.source_id,owner,token,view,&result);
   if(sealed.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,sealed.message));
   p.phase=Impl::Phase::Sealed;*output=result;return {TransactionStatus::Ok,"OK"};
 }

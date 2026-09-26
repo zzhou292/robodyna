@@ -8,7 +8,7 @@ filegroup(
     srcs = [
         "BUILD.bazel",
         "ShellBatchPublication.cmake",
-        "publication/PhysicalScratchParticipationState.h",
+        "publication/PhysicalScratchParticipationState.h", "publication/ScratchRoster.h",
         "publication/PhysicalState.h",
         "publication/PhysicalTransaction.cpp",
         "publication/ShellPhysicalScratchParticipation.cpp",
@@ -168,7 +168,7 @@ cuda_library(
             "ShellBatchFormulationPreflight.cpp", "ShellBatchFormulationPublication.cpp"],
     hdrs = ["ShellBatchPublication.h", "ShellPhysicalPublication.h",
             "publication/PhysicalState.h", "publication/PhysicalChecks.h",
-            "publication/PhysicalScratchParticipationState.h",
+            "publication/PhysicalScratchParticipationState.h", "publication/ScratchRoster.h",
             "publication/ShellPhysicalScratchParticipation.h", "publication/NativeContactPublicationState.h", "ShellBatchPublicationStorage.h",
             "ShellBatchPublicationImpl.h", "ShellBatchPublicationValues.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],

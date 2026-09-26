@@ -5,6 +5,7 @@
 #include "lib_src/elements/publication/PhysicalState.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
 #include <cstring>
+#include <cstddef>
 #include <type_traits>
 
 namespace physical_publication_test {
@@ -168,9 +169,15 @@ TEST(PhysicalPublicationValues,
   EXPECT_FALSE((std::is_constructible_v<Receipt,fe::NodalValidationReceipt>));
   EXPECT_FALSE((std::is_convertible_v<fe::NodalValidationReceipt,Receipt>));
   EXPECT_FALSE(Receipt{}.valid());
-  static_assert(sizeof(Issuer)==120);
+  // Explicit slot adds8 issuer bytes; the trailing native view adds16 roster
+  // bytes. The opaque receipt is unchanged. Legacy fields retain their prefix.
+  static_assert(sizeof(Issuer)==128);
   static_assert(sizeof(Receipt)==288);
-  static_assert(sizeof(fe::ShellPhysicalScratchRoster)==32);
+  static_assert(sizeof(fe::ShellPhysicalScratchRoster)==48);
+  static_assert(offsetof(fe::ShellPhysicalScratchRoster,mapped_wall)==0);
+  static_assert(offsetof(fe::ShellPhysicalScratchRoster,self_contact)==16);
+  static_assert(offsetof(fe::ShellPhysicalScratchRoster,native_interfaces)==32);
+  static_assert(sizeof(fe::shell_publication_detail::PhysicalScratchParticipationState)==144);
   RecordProperty("scratch_participation_issuer_bytes",std::to_string(sizeof(Issuer)));
   RecordProperty("scratch_participation_receipt_bytes",std::to_string(sizeof(Receipt)));
   RecordProperty("scratch_participation_roster_bytes",
@@ -187,8 +194,8 @@ TEST(PhysicalPublicationValues,
   fe::ShellPhysicalScratchRoster self_only{{},{self,self_source}};
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       self_only,{},forecast).status,fe::ShellPublicationStatus::Success);
-  EXPECT_EQ(forecast.publication_host_bytes,112u);
-  EXPECT_EQ(forecast.total_host_bytes,232u);
+  EXPECT_EQ(forecast.publication_host_bytes,144u);
+  EXPECT_EQ(forecast.total_host_bytes,272u);
   RecordProperty("scratch_participation_publication_bytes",
       std::to_string(forecast.publication_host_bytes));
   RecordProperty("scratch_participation_self_only_total_bytes",
@@ -208,7 +215,7 @@ TEST(PhysicalPublicationValues,
                                       {self,self_source}};
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       both,{},forecast).status,fe::ShellPublicationStatus::Success);
-  EXPECT_EQ(forecast.total_host_bytes,352u);
+  EXPECT_EQ(forecast.total_host_bytes,400u);
   RecordProperty("scratch_participation_wall_self_total_bytes",
       std::to_string(forecast.total_host_bytes));
   EXPECT_EQ(forecast.configured_issuer_host_bytes,2*sizeof(Issuer));
