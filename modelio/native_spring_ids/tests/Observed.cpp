@@ -27,6 +27,9 @@ std::size_t Index(std::string_view field) {
     Require(value<=std::numeric_limits<std::size_t>::max(),"Observed SPRING evidence index overflow");
     return static_cast<std::size_t>(value);
 }
+std::optional<std::size_t> OptionalIndex(std::string_view field) {
+    return field.empty() ? std::nullopt : std::optional<std::size_t>{Index(field)};
+}
 template<std::size_t Columns,class Accept>
 void Rows(const std::string& data,std::string_view header,Accept accept) {
     // Both pinned files use the unquoted CSV subset and CRLF. Keep this bounded
@@ -66,7 +69,7 @@ Observed LoadObserved(const std::filesystem::path& directory) {
             ObservedGenerated row;
             row.keyword=fields[0];row.source_id=Integer(fields[1]);row.native_id=Integer(fields[2]);
             row.node1=Integer(fields[3]);row.node2=Integer(fields[4]);row.output_line=Index(fields[5]);
-            row.source_keyword_line=Index(fields[6]);row.source_id_line=Index(fields[7]);
+            row.source_keyword_line=OptionalIndex(fields[6]);row.source_id_line=OptionalIndex(fields[7]);
             if(row.keyword=="*CONSTRAINED_SPOTWELD_ID")++welds;
             else {
                 Require(row.keyword=="*CONSTRAINED_JOINT_CYLINDRICAL_ID" ||

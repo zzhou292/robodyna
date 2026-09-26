@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 namespace crash::modelio::native_spring_ids::test {
@@ -11,7 +12,9 @@ namespace crash::modelio::native_spring_ids::test {
 struct ObservedGenerated {
     std::string keyword;
     std::uint64_t source_id = 0, native_id = 0, node1 = 0, node2 = 0;
-    std::size_t output_line = 0, source_keyword_line = 0, source_id_line = 0;
+    std::size_t output_line = 0;
+    // The original joint extraction did not record these two source lines.
+    std::optional<std::size_t> source_keyword_line, source_id_line;
 };
 struct ObservedNative {
     std::uint64_t native_id = 0, property_id = 0, node1 = 0, node2 = 0;
