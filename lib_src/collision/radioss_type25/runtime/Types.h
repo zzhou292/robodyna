@@ -51,6 +51,13 @@ struct MovingMainSource : ContactSourceInput {
   startup::Snapshot starter;
   normal_activation::Profile activation;
 };
+// Mixed physical contact faces retain rich, genuine post-GAPM provenance.
+// primary_parent_ids must be null: coalesced faces have no single physical EID.
+// The producer owns this complete immutable snapshot until Initialize drains.
+struct MixedMovingMainSource : ContactSourceInput {
+  startup::Snapshot starter;
+  normal_activation::Profile activation;
+};
 // Response mass is a source/owner contract, not a mass-scaling switch.
 // AcceptedOwnerCoefficients consumes accepted CIN transfer/numerical-mass state
 // and physical rigid-member MS. It does not admit additional mass producers.

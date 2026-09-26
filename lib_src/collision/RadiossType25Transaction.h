@@ -31,6 +31,10 @@ class Transaction {
       tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
       const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
+  TransactionReport Initialize(const TransactionConfig&,const MixedMovingMainSource&,
+      tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
   tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
   // Distinct native-only group registration; old roster_entry remains valid
   // for the legacy single-native self-contact slot.

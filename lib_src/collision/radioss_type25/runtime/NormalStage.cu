@@ -47,7 +47,7 @@ normal_activation::Input Activation(Device d,lifecycle::Input input,std::size_t 
       count?d.sorted_slots:nullptr,count,d.normal.free_mains,d.normal.shape.free_count};
 }
 current_normals::Input Normals(Device d,lifecycle::Input input,unsigned accepted) {
-  current_normals::Input result;result.profile=current_normals::Profile::OrdinaryShellLocal;
+  current_normals::Input result;result.profile=d.normal.shape.mixed?current_normals::Profile::MixedSurfaceLocal:current_normals::Profile::OrdinaryShellLocal;
   result.free_roster=normal_activation::FreeRosterPolicy::FreshComplete;result.topology=d.normal.topology;
   result.positions=input.current.positions;result.coordinates=startup::Coordinates::Si;result.units=input.current.native_units;
   result.main_coefficients=d.normal.coefficients;result.coefficient_count=d.source.main_count;

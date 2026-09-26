@@ -43,7 +43,7 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   std::size_t cub=0;
   if(rd::QueryScratch(source.selection.secondary_count,limits.optimized_candidates,cub)!=cudaSuccess)
     return Error(TransactionStatus::DeviceFailure,"Native runtime scratch query failed");
-  const rd::NormalShape normal{upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation};
+  const rd::NormalShape normal{upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation,upload.moving.mixed};
   rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout,normal,config.response_mass))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
   TransactionForecast forecast;forecast.raw_pair_capacity=limits.inventory.max_pairs;
   forecast.optimized_capacity=limits.optimized_candidates;forecast.sliding_capacity=limits.sliding_entries;
@@ -106,6 +106,7 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   copy(upload.main_stiffness.data(),layout.main_stiffness);copy(upload.main_gaps.data(),layout.main_gaps);copy(upload.main_curvature.data(),layout.main_curvature);
   if(normal.enabled) {
     copy(upload.moving.topology.mains,layout.normal.topology);
+    if(normal.mixed)copy(upload.moving.starter.primary_to_partner,layout.normal.partners);
     copy(upload.moving.main_coefficients.data(),layout.normal.coefficients);
     copy(upload.moving.free_main_ids.data(),layout.normal.free_mains);
     for(unsigned slab=0;slab<2;++slab) {
@@ -133,6 +134,12 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
   return InitializeSource(config,source,owner,publication,physical,participants,identity,limits);
 }
 TransactionReport Transaction::Initialize(const TransactionConfig& config,const MovingMainSource& source,
+    fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
+    const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
+    TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits);
+}
+TransactionReport Transaction::Initialize(const TransactionConfig& config,const MixedMovingMainSource& source,
     fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
     const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
     TransactionLimits limits) noexcept {

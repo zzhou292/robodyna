@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Source.h"
+#include "PhysicalMainSource.h"
 #include "../selection/lifecycle/Admission.h"
 #include "../assembly/Endpoints.h"
 #include "lib_src/elements/ShellBatchFailureBinding.h"
@@ -20,15 +21,16 @@ bool Scale(double value,double factor,double& output) {
 }
 }
 TransactionReport PrepareSourceChecked(const TransactionConfig& config,const ContactSourceInput& source,
-    const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,bool require_fixed,SourceStaging& out) noexcept try {
+    const tl::fea::ShellPhysicalBinding& physical,TransactionLimits limits,bool require_fixed,SourceStaging& out,const startup::Snapshot* mixed) noexcept try {
   const auto& s=source.selection;const auto p=source.primary_main_count;
   const auto* domain=physical.domain();const auto* shells=physical.shells();const auto* ledger=physical.coefficients();
   units_detail::Factors units;
   if(!physical.prepared()||!domain||!shells||!ledger||!source.source_id||!source.topology_generation||!s.generation||
      !units_detail::Make(config.units,units)||source.native_workers!=1||!source.force_packet_size||
-     source.force_packet_size>INT_MAX||!p||p>INT_MAX/2||s.main_count!=2*p||!s.secondary_count||
+     source.force_packet_size>INT_MAX||!p||p>INT_MAX/2||
+     (mixed?(s.main_count<p||s.main_count>2*p||source.primary_parent_ids!=nullptr):s.main_count!=2*p)||!s.secondary_count||
      s.node_count!=domain->node_count()||!s.nodes||!s.mains||!s.secondary||
-     !lifecycle::detail::Span(source.primary_parent_ids,p)||!lifecycle::detail::Span(source.primary_curvature,p))
+     (!mixed&&!lifecycle::detail::Span(source.primary_parent_ids,p))||!lifecycle::detail::Span(source.primary_curvature,p))
     return Fail(TransactionStatus::InvalidInput,"Incomplete native shell contact source");
   if(s.node_count>UINT32_MAX||s.secondary_count>=INT_MAX||s.node_count>limits.inventory.max_nodes||
      s.secondary_count>limits.inventory.max_secondaries||p>limits.inventory.max_mains||
@@ -69,6 +71,8 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
     return Fail(TransactionStatus::UnsupportedProfile,"Unknown native physical source profile");
   if(complete&&static_mass)
     return Fail(TransactionStatus::UnsupportedProfile,"Complete physical contact requires actual accepted-owner mass");
+  if(config.lifecycle.main_coefficient_domain!=(mixed?MainCoefficientDomain::NativeSigned:MainCoefficientDomain::Nonnegative))
+    return Fail(TransactionStatus::UnsupportedProfile,"Contact main coefficient domain differs from explicit source profile");
   const auto& coverage=ledger->scope();
   if(coverage.uncovered_nodes||coverage.qeph_parents!=shells->qeph_count()||
      coverage.t3_parents!=shells->t3_count()||coverage.qbat_parents!=shells->qbat_count())
@@ -94,6 +98,13 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   for(std::size_t i=0;i<failure->parent_count();++i)
     if(!failure->parent(i)||(!active_prefix&&failure->parent(i)->policy!=tl::fea::ShellFailurePolicy::None))
       return Fail(TransactionStatus::UnsupportedProfile,"Contact activity changes are not admitted",i);
+  PhysicalMainValidation main_validation;
+  if(mixed) {
+    if(require_fixed||!complete||!active_prefix)
+      return Fail(TransactionStatus::UnsupportedProfile,"Mixed contact requires the complete all-active physical profile");
+    main_validation=ValidateMixedPhysicalMains(physical,*mixed,limits.max_host_bytes);
+    if(main_validation.report.status!=TransactionStatus::Ok)return main_validation.report;
+  }
   // Bound all startup vectors before reading metadata or allocating them. The
   // complete layout accounts simultaneous validation and removal transposition.
   tl::util::BoundedArenaLayout host(limits.max_host_bytes);tl::util::ArenaRegion ignored;
@@ -101,8 +112,9 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   CHARGE(std::uint64_t,s.node_count);CHARGE(int,s.node_count);CHARGE(std::uint32_t,s.secondary_count+4*p);
   CHARGE(candidates::Main,p);CHARGE(NativeGeometryHistory,s.secondary_count);CHARGE(Vector,2*s.node_count);
   CHARGE(double,(static_mass?s.node_count:0)+2*s.secondary_count+3*p);CHARGE(std::uint64_t,2*(p+1));
-  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
-  CHARGE(std::uint64_t,p);CHARGE(std::uint32_t,s.secondary_count+1);
+  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,mixed?0:shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
+  CHARGE(std::uint64_t,mixed?0:p);CHARGE(std::uint32_t,s.secondary_count+1);
+  CHARGE(std::byte,main_validation.startup_host_bytes);
 #undef CHARGE
   SourceStaging next;next.bytes=host.bytes();next.ids.resize(s.node_count);next.codes.resize(s.node_count);
   next.positions.resize(s.node_count);if(static_mass)next.native_mass.resize(s.node_count);
@@ -135,32 +147,39 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   input.spatial_by_secondary={empty_offsets.data(),empty_offsets.size(),nullptr,0};
   const auto admitted=lifecycle::detail::Validate(input);
   if(admitted!=selection::Status::Ok)return {TransactionStatus::InvalidInput,"Native lifecycle source admission failed",SIZE_MAX,SIZE_MAX,admitted};
-  std::vector<Parent> parents;
-  parents.reserve(shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
-  for(std::size_t i=0;i<shells->qeph_count();++i)parents.push_back({shells->qeph_source_id(i),ParentFamily::Qeph,i});
-  for(std::size_t i=0;i<shells->t3_count();++i)parents.push_back({shells->t3_source_id(i),ParentFamily::T3,i});
-  if(active_prefix)for(std::size_t i=0;i<shells->qbat_count();++i)
-    parents.push_back({shells->qbat_source_id(i),ParentFamily::Qbat,i});
-  std::sort(parents.begin(),parents.end(),[](auto a,auto b){return a.id<b.id;});
-  std::vector<std::uint64_t> selected(source.primary_parent_ids,source.primary_parent_ids+p);
-  std::sort(selected.begin(),selected.end());
-  for(std::size_t i=1;i<p;++i)if(selected[i]==selected[i-1])return Fail(TransactionStatus::SourceMismatch,"Repeated physical primary source",i);
+  if(!mixed) {
+    std::vector<Parent> parents;
+    parents.reserve(shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
+    for(std::size_t i=0;i<shells->qeph_count();++i)parents.push_back({shells->qeph_source_id(i),ParentFamily::Qeph,i});
+    for(std::size_t i=0;i<shells->t3_count();++i)parents.push_back({shells->t3_source_id(i),ParentFamily::T3,i});
+    if(active_prefix)for(std::size_t i=0;i<shells->qbat_count();++i)
+      parents.push_back({shells->qbat_source_id(i),ParentFamily::Qbat,i});
+    std::sort(parents.begin(),parents.end(),[](auto a,auto b){return a.id<b.id;});
+    std::vector<std::uint64_t> selected(source.primary_parent_ids,source.primary_parent_ids+p);
+    std::sort(selected.begin(),selected.end());
+    for(std::size_t i=1;i<p;++i)if(selected[i]==selected[i-1])return Fail(TransactionStatus::SourceMismatch,"Repeated physical primary source",i);
+    for(std::size_t i=0;i<p;++i) {
+      const auto id=source.primary_parent_ids[i];const auto it=std::lower_bound(parents.begin(),parents.end(),id,[](auto a,auto b){return a.id<b;});
+      if(it==parents.end()||it->id!=id)return Fail(TransactionStatus::SourceMismatch,"Primary is not a physical shell",i);
+      const auto& main=s.mains[i];const auto& opposite=s.mains[p+i];
+      if(main.global_id!=int(i+1)||opposite.global_id!=int(p+i+1)||main.segment_type!=int(p+i+1)||opposite.segment_type!=-int(i+1))
+        return Fail(TransactionStatus::SourceMismatch,"Primary/opposite native role map is not the complete ordinary prefix",i);
+      const bool triangle=it->family==ParentFamily::T3;
+      for(unsigned slot=0;slot<4;++slot) {
+        const auto local=triangle?shells->t3_nodes(it->index)[slot<3?slot:2]:
+          it->family==ParentFamily::Qbat?shells->qbat_nodes(it->index)[slot]:shells->qeph_nodes(it->index)[slot];
+        const auto source_node=shells->active_nodes()[local].source_id;
+        if(next.ids[main.nodes[slot]]!=source_node||(require_fixed&&s.nodes[main.nodes[slot]].constraint!=7))
+          return Fail(TransactionStatus::SourceMismatch,"Primary ordered connectivity/fixed domain differs from physical shell",i);
+        const unsigned reverse=slot==0?1:slot==1?0:triangle?2:slot==2?3:2;
+        if(opposite.nodes[slot]!=main.nodes[reverse])return Fail(TransactionStatus::SourceMismatch,"Opposite connectivity is not native SH2SURF order",i);
+      }
+    }
+  }
   next.primary.resize(p);next.main_nodes.resize(4*p);next.main_stiffness.resize(p);next.main_gaps.resize(p);next.main_curvature.resize(p);
   for(std::size_t i=0;i<p;++i) {
-    const auto id=source.primary_parent_ids[i];const auto it=std::lower_bound(parents.begin(),parents.end(),id,[](auto a,auto b){return a.id<b;});
-    if(it==parents.end()||it->id!=id)return Fail(TransactionStatus::SourceMismatch,"Primary is not a physical shell",i);
-    const auto& main=s.mains[i];const auto& opposite=s.mains[p+i];
-    if(main.global_id!=int(i+1)||opposite.global_id!=int(p+i+1)||main.segment_type!=int(p+i+1)||opposite.segment_type!=-int(i+1))
-      return Fail(TransactionStatus::SourceMismatch,"Primary/opposite native role map is not the complete ordinary prefix",i);
-    const bool triangle=it->family==ParentFamily::T3;
+    const auto& main=s.mains[i];
     for(unsigned slot=0;slot<4;++slot) {
-      const auto local=triangle?shells->t3_nodes(it->index)[slot<3?slot:2]:
-        it->family==ParentFamily::Qbat?shells->qbat_nodes(it->index)[slot]:shells->qeph_nodes(it->index)[slot];
-      const auto source_node=shells->active_nodes()[local].source_id;
-      if(next.ids[main.nodes[slot]]!=source_node||(require_fixed&&s.nodes[main.nodes[slot]].constraint!=7))
-        return Fail(TransactionStatus::SourceMismatch,"Primary ordered connectivity/fixed domain differs from physical shell",i);
-      const unsigned reverse=slot==0?1:slot==1?0:triangle?2:slot==2?3:2;
-      if(opposite.nodes[slot]!=main.nodes[reverse])return Fail(TransactionStatus::SourceMismatch,"Opposite connectivity is not native SH2SURF order",i);
       next.primary[i].nodes[slot]=main.nodes[slot];next.main_nodes[4*i+slot]=main.nodes[slot];
     }
     if(!normal_detail::Nonnegative(source.primary_curvature[i]))return Fail(TransactionStatus::InvalidInput,"Invalid main curvature",i);
@@ -188,6 +207,7 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   next.inventory.secondary_nodes=next.secondary_nodes.data();next.inventory.main=next.primary.data();
   next.inventory.removal_offsets=next.removal_offsets.data();next.inventory.removal_nodes=next.removal_nodes.data();
   next.inventory.primary_main_count=int(p);
+  next.inventory.main_coefficient_domain=config.lifecycle.main_coefficient_domain;
   next.maintenance.stamp={source.source_id,source.topology_generation,s.generation};next.maintenance.units=config.units;
   next.maintenance.input_units=search::InputUnits::Si;next.maintenance.physical_nodes=s.node_count;
   next.maintenance.secondary_nodes=next.secondary_nodes.data();next.maintenance.secondaries=s.secondary_count;

@@ -8,7 +8,7 @@ bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::s
   if(!source.force_packet_size||cap>INT_MAX/5||limits.inventory.max_pairs>=INT_MAX||
      rows>=INT_MAX||limits.sliding_entries>=INT_MAX||!limits.max_device_bytes)return false;
   if(normal.enabled&&(!source.primary_main_count||source.primary_main_count>INT_MAX/8||
-      s.main_count!=2*source.primary_main_count||!s.normal_count||s.normal_count>4*s.main_count||
+      (normal.mixed?(s.main_count<source.primary_main_count||s.main_count>2*source.primary_main_count):s.main_count!=2*source.primary_main_count)||!s.normal_count||s.normal_count>4*s.main_count||
       normal.free_count>s.main_count))return false;
   tl::util::BoundedArenaLayout a(limits.max_device_bytes);Layout l;
 #define ADD(type,count,name) if(!a.Append<type>(count,l.name))return false
@@ -39,6 +39,7 @@ bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::s
   ADD(assembly::SiNodalValue,s.node_count,nodal_output);ADD(Control,1,control);
   if(normal.enabled) {
     const auto before=a.bytes();
+    if(normal.mixed){ADD(std::uint32_t,source.primary_main_count,normal.partners);}
     ADD(startup::Main,s.main_count,normal.topology);ADD(double,s.main_count,normal.coefficients);
     ADD(std::uint32_t,normal.free_count,normal.free_mains);ADD(lifecycle::OptimizedRow,rows,normal.optimized);
     for(unsigned i=0;i<2;++i) {
@@ -85,6 +86,11 @@ Device Bind(void* arena,const Layout& l,const ContactSourceInput& source,Transac
 #define NBIND(name,type) d.normal.name=tl::util::ArenaPointer<type>(arena,l.normal.name)
     d.normal.topology={tl::util::ArenaPointer<startup::Main>(arena,l.normal.topology),s.node_count,
         source.primary_main_count,s.main_count,s.normal_count,d.source.normal_to_main};
+    if(normal.mixed) {
+      d.normal.topology.source_profile=startup::Profile::MixedSurface;
+      d.normal.topology.source_topology=startup::TopologyPolicy::NativeMixedSurface;
+      d.normal.topology.mixed_maps={tl::util::ArenaPointer<std::uint32_t>(arena,l.normal.partners),source.primary_main_count};
+    }
     NBIND(coefficients,double);NBIND(free_mains,std::uint32_t);NBIND(optimized,lifecycle::OptimizedRow);
     for(unsigned i=0;i<2;++i){NBIND(face[i],StoredNormal);NBIND(references[i],startup::NormalReference);}
     NBIND(active,std::uint32_t);NBIND(tags,std::uint32_t);NBIND(neighbor,StoredNormal);

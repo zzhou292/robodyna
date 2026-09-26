@@ -10,9 +10,10 @@ struct NormalShape {
   bool enabled=false;
   std::size_t free_count=0;
   normal_activation::Profile activation;
+  bool mixed=false;
 };
 struct NormalLayout {
-  tl::util::ArenaRegion topology,coefficients,free_mains,optimized;
+  tl::util::ArenaRegion topology,coefficients,free_mains,optimized,partners;
   tl::util::ArenaRegion face[2],references[2],active,tags,neighbor,eligible,tage,slots;
   std::size_t bytes=0;
 };

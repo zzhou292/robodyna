@@ -12,7 +12,7 @@ add_library(tl_radioss_type25_transaction STATIC
   "${_type25_runtime}/physical_main/Index.cpp"
   "${_type25_runtime}/physical_main/Origins.cpp"
   "${_type25_runtime}/physical_main/Validate.cpp"
-  "${_type25_runtime}/Layout.cpp" "${_type25_runtime}/Source.cpp" "${_type25_runtime}/MovingSource.cpp"
+  "${_type25_runtime}/Layout.cpp" "${_type25_runtime}/Source.cpp" "${_type25_runtime}/MovingSource.cpp" "${_type25_runtime}/MixedSource.cpp"
   "${_type25_runtime}/Initialize.cpp" "${_type25_runtime}/Transaction.cpp"
   "${_type25_runtime}/Kernels.cu" "${_type25_runtime}/NormalStage.cu")
 target_link_libraries(tl_radioss_type25_transaction PUBLIC

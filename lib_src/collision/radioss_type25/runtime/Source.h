@@ -11,7 +11,7 @@ struct MovingSourceStaging {
   normal_activation::Profile activation;
   std::vector<std::uint32_t> free_main_ids;
   std::vector<double> main_coefficients;
-  bool enabled=false;
+  bool enabled=false,mixed=false;
 };
 // Startup-only staging. Destroyed after all copies drain; no second nodal owner.
 struct SourceStaging {
@@ -31,8 +31,10 @@ TransactionReport PrepareSource(const TransactionConfig&,const FixedMainSource&,
     const tl::fea::ShellPhysicalBinding&,TransactionLimits,SourceStaging&) noexcept;
 TransactionReport PrepareSource(const TransactionConfig&,const MovingMainSource&,
     const tl::fea::ShellPhysicalBinding&,TransactionLimits,SourceStaging&) noexcept;
+TransactionReport PrepareSource(const TransactionConfig&,const MixedMovingMainSource&,
+    const tl::fea::ShellPhysicalBinding&,TransactionLimits,SourceStaging&) noexcept;
 // Shared physical and scalar admission. Only the explicit source overloads
 // select require_fixed; no caller-selected flag expands the public profile.
 TransactionReport PrepareSourceChecked(const TransactionConfig&,const ContactSourceInput&,
-    const tl::fea::ShellPhysicalBinding&,TransactionLimits,bool require_fixed,SourceStaging&) noexcept;
+    const tl::fea::ShellPhysicalBinding&,TransactionLimits,bool require_fixed,SourceStaging&,const startup::Snapshot* mixed=nullptr) noexcept;
 } // namespace tlfea::contact::radioss_type25::runtime_detail
