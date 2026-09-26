@@ -10,13 +10,13 @@ namespace coefficient_detail {
 enum class VolumeDomain { Positive, SignedNonzero };
 TL_MATH_HOST_DEVICE inline CoefficientStatus SolidMainContribution(
     const NativeSolidMainCoefficientInput& in, NativeSolidMainCoefficientResult* output,
-    VolumeDomain domain) {
+    VolumeDomain domain, MainFaceKind expected_face=MainFaceKind::OrdinaryExterior) {
   using namespace coefficient_detail;
   if (!output || !Finite(in.scale) || !Nonnegative(in.fill) || !Positive(in.area) ||
       !(domain == VolumeDomain::Positive ? Positive(in.volume) : (Finite(in.volume) && in.volume != 0.)) ||
       !Nonnegative(in.bulk) || !Nonnegative(in.controlled_bulk))
     return CoefficientStatus::InvalidInput;
-  if (in.face != MainFaceKind::OrdinaryExterior || in.scale < 0 ||
+  if (in.face != expected_face || in.scale < 0 ||
       (in.layout != SolidLayout::EightSlot && in.layout != SolidLayout::TenNode &&
        in.layout != SolidLayout::TwentyNode && in.layout != SolidLayout::SixteenNode))
     return CoefficientStatus::UnsupportedProfile;
