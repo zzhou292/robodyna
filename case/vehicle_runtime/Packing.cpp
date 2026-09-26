@@ -1,6 +1,7 @@
 #include "Packing.h"
 #include "output/ArtifactIO.h"
 #include "lib_utils/BoundedArena.h"
+#include "lib_src/solvers/NodalTrialIdentity.h"
 #include <cmath>
 #include <cstring>
 namespace crash::cases::vehicle_runtime::detail {
@@ -83,5 +84,50 @@ OwnerPacking PackOwner(const tl::fea::NodalCoefficientLedger& ledger,
             "Native source reciprocal exceeds finite owner domain");
     }
     return next;
+}
+void ApplyConstrainedStartup(OwnerPacking& packing,const tl::fea::ShellBatchStartup& startup,
+    tl::util::ConstView<std::uint8_t> translation_fixed,tl::util::ConstView<std::uint8_t> rotation_fixed) {
+    using output::Require;
+    namespace start=tl::fea::shell_startup_detail;
+    const auto count=packing.mass.size();
+    Require(startup.kind==tl::fea::ShellBatchStartupKind::ReferenceConstrainedUniformTranslation&&
+        start::ValidStartup(startup,true,true)&&count&&count<=tl::fea::MaxActiveNodalStateNodes&&
+        translation_fixed.size()==count&&rotation_fixed.size()==count&&
+        translation_fixed.data()&&rotation_fixed.data()&&packing.velocity.size()==3*count&&
+        packing.fixed.size()==count&&packing.rotation_fixed.size()==count&&packing.rotation_present.size()==count&&
+        packing.inverse_mass.size()==count&&packing.inverse_inertia.size()==count,
+        "Constrained startup packing shape or descriptor differs");
+    const auto disjoint=[&](const std::uint8_t* input) {
+        using tl::fea::trial_identity::Disjoint;
+        return Disjoint(input,count,&packing,sizeof(packing))&&
+            Disjoint(input,count,packing.velocity.data(),3*count*sizeof(double))&&
+            Disjoint(input,count,packing.inverse_mass.data(),count*sizeof(double))&&
+            Disjoint(input,count,packing.inverse_inertia.data(),count*sizeof(double))&&
+            Disjoint(input,count,packing.fixed.data(),count)&&
+            Disjoint(input,count,packing.rotation_fixed.data(),count);
+    };
+    Require(disjoint(translation_fixed.data())&&disjoint(rotation_fixed.data()),
+        "Constrained mask input overlaps mutable owner packing");
+    for(std::size_t node=0;node<count;++node) {
+        Require(std::isfinite(packing.inverse_mass[node])&&packing.inverse_mass[node]>=0&&
+            std::isfinite(packing.inverse_inertia[node])&&packing.inverse_inertia[node]>=0,
+            "Constrained projection cannot repair invalid source reciprocals");
+        Require(packing.fixed[node]<=7&&translation_fixed[node]<=7&&packing.rotation_fixed[node]<=1&&
+            rotation_fixed[node]<=1&&packing.rotation_present[node]<=1,
+            "Constrained startup has an invalid fixed/presence mask");
+        const auto prior=start::ProjectVelocity(startup.uniform_velocity,packing.fixed[node]);
+        Require(Bits(packing.velocity[3*node],prior.x)&&Bits(packing.velocity[3*node+1],prior.y)&&
+            Bits(packing.velocity[3*node+2],prior.z)&&
+            (!(packing.rotation_fixed[node]|rotation_fixed[node])||packing.rotation_present[node]),
+            "Packing does not represent the declared uniform source before projection");
+    }
+    for(std::size_t node=0;node<count;++node) {
+        packing.fixed[node]|=translation_fixed[node];
+        packing.rotation_fixed[node]|=rotation_fixed[node];
+        const auto velocity=start::ProjectVelocity(startup.uniform_velocity,packing.fixed[node]);
+        packing.velocity[3*node]=velocity.x;packing.velocity[3*node+1]=velocity.y;packing.velocity[3*node+2]=velocity.z;
+        if(packing.fixed[node]==7)packing.inverse_mass[node]=0;
+        if(packing.rotation_fixed[node])packing.inverse_inertia[node]=0;
+    }
 }
 } // namespace crash::cases::vehicle_runtime::detail

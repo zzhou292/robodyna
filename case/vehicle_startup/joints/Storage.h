@@ -1,5 +1,6 @@
 #pragma once
 #include "VehicleJointModel.h"
+#include "SourceMapping.h"
 namespace crash::cases::vehicle_startup::joints {
 struct VehicleJointModel::Storage {
     Storage(const Physical& p,const Source& s,Forecast f):physical(p),source(s),forecast(f) {}
@@ -9,7 +10,4 @@ struct VehicleJointModel::Storage {
     tl::fea::type45::Model model;
     std::vector<std::uint32_t> rows;
 };
-namespace detail {
-tl::fea::type45::JointInput Pack(const modelio::type45::Row&,const modelio::type45::Data&);
-}
 } // namespace crash::cases::vehicle_startup::joints

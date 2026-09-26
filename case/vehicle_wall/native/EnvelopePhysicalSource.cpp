@@ -107,4 +107,19 @@ const tl::fea::NodalCoefficientLedger& EnvelopePhysicalSource::coefficients() co
 const tl::fea::NodalRigidGroupModel& EnvelopePhysicalSource::plain_groups() const noexcept { return data_->components->plain; }
 const tl::fea::NodalRigidAssemblyBinding& EnvelopePhysicalSource::rigid_assembly() const noexcept { return data_->components->rigid; }
 const EnvelopePhysicalForecast& EnvelopePhysicalSource::forecast() const noexcept { return data_->forecast; }
+std::size_t EnvelopePhysicalSource::retained_host_upper_bound(std::size_t cap) const {
+    // As in vehicle_runtime/SourceBudget: opaque app-source bounds remain
+    // conservative, while actual reported native graphs replace constructor
+    // reservations and retired packing. Rigid retains the complete ledger and
+    // its shell/TYPE13/TYPE25/beam coefficient graph; solid reference models are
+    // retained separately. No guessed private sizes or value-based discounts.
+    tl::util::BoundedArenaLayout bytes(cap);tl::util::ArenaRegion unused;
+    for(const auto count:{wall().forecast().peak_bytes,vehicle_references().forecast().total_bytes,
+            point_masses().forecast().current_phase,welds().forecast().current_phase,
+            rigid_assembly().owned_payload_bytes(),solids().owned_payload_bytes(),
+            sizeof(EnvelopePhysicalSource)+sizeof(Data)+std::size_t{4096}})
+        d::Require(bytes.Append<std::byte>(count,unused),"Retained combined mechanical source exceeds cap");
+    return bytes.bytes();
+}
+
 }

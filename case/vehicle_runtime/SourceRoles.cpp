@@ -6,11 +6,21 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
                               std::size_t max_nodes) {
     using output::Require;
     const auto& physical = source.physical();
-    const auto& domain = physical.source_domain().domain();
-    const auto& rigid = physical.rigid_assembly();
-    const auto& cin = source.attachments().model();
+    return ResolvePhysicalSourceRoles(physical.coefficients(),physical.rigid_assembly(),
+        source.attachments().model(),physical.beams(),physical.structural_beams(),max_nodes);
+}
+SourceRoles ResolvePhysicalSourceRoles(const tl::fea::NodalCoefficientLedger& ledger,
+    const tl::fea::NodalRigidAssemblyBinding& rigid,
+    const tl::constraints::tied_shell::TiedCinAttachmentModel& cin,
+    const tl::fea::type13::Model& beams,const tl::fea::beam18::Model* structural,std::size_t max_nodes) {
+    using output::Require;
+    Require(ledger.prepared()&&ledger.domain()&&rigid.prepared()&&rigid.coefficients()&&
+        rigid.coefficients()->Matches(ledger)&&cin.prepared()&&cin.domain()&&ledger.shells()&&
+        ledger.type13()&&ledger.type13()->Matches(beams,*ledger.domain()),
+        "Source roles need the actual coherent physical coefficient and constraint graph");
+    const auto& domain=*ledger.domain();
     Require(max_nodes && max_nodes <= 524288 && domain.node_count() <= max_nodes &&
-        physical.coefficients().domain()->SharesStorage(domain) && cin.domain()->SharesStorage(domain),
+        ledger.domain()->SharesStorage(domain) && cin.domain()->SharesStorage(domain),
         "Runtime source-role domain exceeds scope or differs from physical coefficients/CIN");
     SourceRoles out;
     out.node.resize(domain.node_count());
@@ -19,7 +29,7 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
         Require(node < out.node.size(), "Runtime source role names a node outside the physical domain");
         out.node[node] |= role;
     };
-    const auto map = physical.coefficients().shells()->mapping();
+    const auto map = ledger.shells()->mapping();
     for (auto node : map) mark(node,Shell);
     for (const auto& group : rigid.groups()) {
         const auto role = group.source_kind == tl::fea::RigidBindingSourceKind::Part ? Part : PlainRigid;
@@ -33,7 +43,6 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
         mark(rows.data[i].secondary_domain_node,CinSecondary);
         for (auto node : rows.data[i].master_domain_nodes) mark(node,CinMaster);
     }
-    const auto& beams = physical.beams();
     for (std::size_t c = 0; c < beams.connection_count(); ++c) {
         for (unsigned slot = 0; slot < 2; ++slot) {
             tl::fea::type13::EndpointContribution endpoint;
@@ -43,8 +52,8 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
                     "TYPE13 endpoint identity differs from physical source domain");
         }
     }
-    if (const auto* structural = physical.structural_beams()) {
-        const auto* coefficients = physical.coefficients().beam18();
+    if (structural) {
+        const auto* coefficients = ledger.beam18();
         Require(coefficients && coefficients->model()->Matches(*structural) &&
             structural->domain()->SharesStorage(domain), "Structural beam role authority differs from the ledger");
         for (std::size_t parent = 0; parent < structural->parents().size(); ++parent)
@@ -55,8 +64,8 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
                 Require(domain.nodes()[endpoint.global_node].source_id == endpoint.source_node_id,
                         "Structural beam endpoint identity differs from physical domain");
             }
-    } else Require(!physical.coefficients().beam18(), "Unexpected structural beam coefficient authority");
-    const auto* welds = physical.coefficients().type25();
+    } else Require(!ledger.beam18(), "Unexpected structural beam coefficient authority");
+    const auto* welds = ledger.type25();
     Require(welds, "Complete runtime source-role census requires retained TYPE25 model");
     for (std::size_t c = 0; c < welds->connection_count(); ++c) {
         const auto& connection = welds->connections()[c];

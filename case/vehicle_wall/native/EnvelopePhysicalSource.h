@@ -46,6 +46,9 @@ class EnvelopePhysicalSource {
     const tl::fea::NodalRigidGroupModel& plain_groups() const noexcept;
     const tl::fea::NodalRigidAssemblyBinding& rigid_assembly() const noexcept;
     const EnvelopePhysicalForecast& forecast() const noexcept;
+    // Complete retained graph bound for the next source stage; constructor
+    // scratch/cap peaks remain separately available in forecast().
+    std::size_t retained_host_upper_bound(std::size_t cap) const;
   private:
     struct Data;
     explicit EnvelopePhysicalSource(std::shared_ptr<const Data> data) : data_(std::move(data)) {}

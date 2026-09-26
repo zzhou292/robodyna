@@ -12,6 +12,12 @@ struct SourceRoles {
 };
 // Source incidence only. Does not admit constraints, reciprocal coefficients,
 // rotational DOFs or a CUDA owner. N3 never receives an endpoint role.
+// Incidence-only value path over genuine already-prepared source components.
+// Higher-level factories retain/authenticate their immutable source authorities.
+SourceRoles ResolvePhysicalSourceRoles(const tl::fea::NodalCoefficientLedger&,
+    const tl::fea::NodalRigidAssemblyBinding&,
+    const tl::constraints::tied_shell::TiedCinAttachmentModel&, const tl::fea::type13::Model&,
+    const tl::fea::beam18::Model*, std::size_t max_nodes = 524288);
 SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::VehiclePhysicalAttachments&,
                               std::size_t max_nodes = 524288);
 } // namespace crash::cases::vehicle_runtime
