@@ -1250,6 +1250,14 @@ cc_library(
     deps = [":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
 )
 
+cc_library(
+    name = "radioss_type25_tied_removal",
+    srcs = glob(["radioss_type25/tied_removal/*.cpp"]),
+    hdrs = ["RadiossType25TiedRemoval.h"] + glob(["radioss_type25/tied_removal/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_search_startup"],
+)
+
 # Current native TAGNOD/ACTNOR value producer; no float-normal or owner state.
 cc_library(
     name = "radioss_type25_normal_activation",
