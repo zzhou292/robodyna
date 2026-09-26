@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLNodalMotionObserver LANGUAGES CXX CUDA)
+enable_testing()
+find_package(GTest REQUIRED)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_subdirectory("${TL_ROOT}/lib_src/solvers" owner)
+add_executable(nodal_motion_observer_host HostTest.cpp)
+add_executable(nodal_motion_observer_cuda CudaTest.cu CinTest.cu
+  "${TL_ROOT}/lib_utest/qualification/nodal_rigid_group/PreparedSnapshotCudaProbe.cpp")
+target_link_options(nodal_motion_observer_cuda PRIVATE -Wl,--wrap=cudaMemcpyAsync)
+foreach(target nodal_motion_observer_host nodal_motion_observer_cuda)
+  target_link_libraries(${target} PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+  set_target_properties(${target} PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME ${target} COMMAND ${target})
+  set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endforeach()
