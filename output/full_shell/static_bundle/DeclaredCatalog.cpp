@@ -25,7 +25,8 @@ void ReadDeclaredCatalog(CanonicalData& d,const Value& doc) {
     Keys(doc,{"schema","purpose","source_format","member","units","formulation_scheme","keyword_annotations","counts","materials","sections","parts","arrays"});
     Require(Text(doc["schema"])==DeclaredCanonicalSchema&&Text(doc["purpose"])=="declared_shell_geometry_only_not_simulation_or_restart"&&
         (Text(doc["source_format"])=="robo_dyna.native_contact_scene.v1"||
-         Text(doc["source_format"])=="robo_dyna.native_contact_scene.v2")&&Text(doc["formulation_scheme"])=="openradioss_property_type1_ishell"&&
+         Text(doc["source_format"])=="robo_dyna.native_contact_scene.v2"||
+         Text(doc["source_format"])=="robo_dyna.native_contact_scene.v3")&&Text(doc["formulation_scheme"])=="openradioss_property_type1_ishell"&&
         Text(doc["keyword_annotations"])=="not_applicable_zero_channels","Unknown declared shell source semantics");
     Member(d,doc["member"]);UnitsMatch(d,doc["units"]);
     const auto& counts=doc["counts"];Keys(counts,{"nodes","shells","solids","beams"});
@@ -55,7 +56,9 @@ void CheckDeclaredMemberFormat(const Value& canonical,const std::string& bytes) 
     // Only the declared source envelope is interpreted here. Geometry and
     // constitutive admission remain in their owning source/physical factories.
     const auto member=Parse(bytes,4u<<20);const auto format=Text(canonical["source_format"]);
-    if(format=="robo_dyna.native_contact_scene.v2")
+    if(format=="robo_dyna.native_contact_scene.v3")
+        Keys(member,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface","coupling"});
+    else if(format=="robo_dyna.native_contact_scene.v2")
         Keys(member,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface"});
     else Keys(member,{"schema","units","wall","patch","material","thickness_mm","run"});
     Require(Text(member["schema"])==format,"Declared source-format provenance differs from authenticated member");

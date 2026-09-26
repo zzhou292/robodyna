@@ -19,10 +19,16 @@ struct SourceParent {
     std::array<std::uint32_t,4> nodes{}; // Zero-based original exported-node order; repeated T3 slot4.
 };
 enum class DeclaredContactSurface { FixedWall, AllShells };
+struct DeclaredRigidPatch {
+    std::uint64_t source_part_id=0,reference_body_id=0,reference_primary_id=0;
+    tl::math::Vec3 reference_primary_mm;
+    std::vector<std::uint64_t> member_source_ids,centroid_source_order;
+};
 struct DeclaredData {
     DeclaredContactSurface contact_surface=DeclaredContactSurface::FixedWall;
     std::string export_sha256,definition_sha256,definition_bytes,definition_schema;
     NativeMaterial material;
+    std::optional<DeclaredRigidPatch> rigid_patch;
     std::vector<SourceNode> nodes;
     std::vector<SourceParent> wall,patch;
     std::vector<std::uint32_t> wall_nodes,patch_nodes;

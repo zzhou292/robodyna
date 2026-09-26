@@ -21,6 +21,8 @@ MovingContactSource MovingContactSource::Prepare(const PhysicalSource& physical,
     const auto plan=cd::PlanContact(physical,identity,limits,cd::MainMotion::MovingShells,sizeof(Data));
     auto out=std::make_shared<Data>(physical);
     cd::BuildContact(*out,out->source,identity,limits,plan);
+    if(physical.declared().data().rigid_patch)
+        out->config.response_mass=n::ResponseMassPolicy::AcceptedOwnerCoefficients;
     out->source.starter=out->topology;
     out->source.activation={0,0,1,2,1,n::normal_activation::FreeRosterPolicy::FreshComplete};
     return MovingContactSource(std::move(out));

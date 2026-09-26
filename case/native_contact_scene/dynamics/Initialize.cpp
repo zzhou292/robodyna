@@ -6,8 +6,11 @@ void NativeSceneDynamics::Storage::Initialize() {
     {
         vehicle_runtime::SourceRoles roles;
         // PhysicalSource admits only a complete QEPH/T3 ledger: every node has
-        // genuine shell incidence and no rigid/CIN/other-family membership.
+        // genuine shell incidence; optional PART membership is authenticated
+        // by the prepared binding, never inferred from source node numbering.
         roles.node.assign(binding.domain()->node_count(),vehicle_runtime::Shell);
+        for(const auto& member:physical.rigid().members())
+            roles.node.at(member.domain_node)|=vehicle_runtime::Part;
         auto packing=vehicle_runtime::detail::PackOwner(*binding.coefficients(),physical.rigid(),roles,
             physical.startup().uniform_velocity,forecast.packing_bytes);
         packing.fixed=physical.translation_fixed_bits();packing.rotation_fixed=physical.rotation_fixed();

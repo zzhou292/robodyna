@@ -18,6 +18,8 @@ class ContactSelection {
     }
     Kind kind() const noexcept {return std::holds_alternative<ContactSource>(value_)?Kind::FixedWall:Kind::MovingShells;}
     const char* profile_name() const noexcept {
+        if(physical_source().declared().data().rigid_patch)
+            return "ordinary_rigid_patch_moving_shells_accepted_owner_mass_native_activation_local_single_worker";
         return kind()==Kind::FixedWall?"ordinary_fixed_main_all_active_ready_normals_local_single_worker":
             "ordinary_moving_shells_starter_cache_native_activation_local_single_worker";
     }

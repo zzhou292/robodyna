@@ -110,8 +110,10 @@ ArchiveSource ArchiveSource::Write(const PhysicalSource& physical,const std::fil
     const auto parent=[&](std::size_t canonical_parent,tl::fea::ShellBindingFamily family,std::size_t index) {
         const auto* role=binding.execution()->parent(family,index);
         const auto& row=family==tl::fea::ShellBindingFamily::T3?declared.wall[index]:declared.patch[index];
+        const bool rigid=declared.rigid_patch&&row.part==declared.rigid_patch->source_part_id;
+        const auto law=rigid?tl::fea::ShellSectionLaw::RigidSkin:tl::fea::ShellSectionLaw::LayeredLaw44Nip3;
         Require(role&&role->source.source_parent_id==row.id&&role->source.source_part_id==row.part&&
-            role->law==tl::fea::ShellSectionLaw::LayeredLaw44Nip3&&role->material_points==3,
+            role->law==law&&role->material_points==(rigid?0u:3u),
             "Declared archive source/material role differs from physical execution");
         const auto wire_family=physical_frames::Family(family);
         native.push_back({std::uint32_t(canonical_parent),wire_family,std::uint32_t(index),role->material_points,physical_frames::Plasticity(role->law)});
