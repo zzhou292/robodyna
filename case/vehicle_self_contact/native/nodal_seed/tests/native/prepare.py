@@ -41,7 +41,10 @@ def prepare(tl_root):
     assert 'pm(32,i) = bulk' in result['generic_pm.inc']
     assert 'if (ilaw /= 42)' in result['reader_keep_bulk.inc']
     assert 'PM(107,IMAT) = TWO*MAX(PM(32,IMAT),PM(100,IMAT))' in result['updated_high.inc']
-    result['Constants.F90']=source.constants(donors['constant_mod.F'],list(result.values())).replace('selection_constants','law42_contact_slot_constants')
+    # Fortran identifiers are case-insensitive. Normalize only discovery copies;
+    # every emitted original source block above remains byte-for-byte unchanged.
+    discovery=[text.upper() for text in result.values()]
+    result['Constants.F90']=source.constants(donors['constant_mod.F'],discovery).replace('selection_constants','law42_contact_slot_constants')
     result['ContactSlots.F']=(ROOT/'ContactSlots.F').read_text()
     return result
 if __name__=='__main__':
