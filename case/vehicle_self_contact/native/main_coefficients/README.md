@@ -78,3 +78,21 @@ Complete source preparation remains the factory's responsibility. New tests
 reuse the complete native INCOQ3/CNEL oracle and preserve the old fifteen groups.
 This slice does not resolve solid support, post-GAPM internal/erosion flags,
 final main K, normals or runtime admission.
+
+
+## Solid membership query
+
+`SolidSupportQuery` consumes complete reader-phase raw8 rows and the complete
+initial emitted-solid flags. Native TAGELEMS makes repeated raw incidences one
+matching solid; the index preserves that set while leaving all raw rows intact.
+For one/two matches, source EID uniqueness proves the maximum-ID NEL and the
+TYPE25 flag-collapse result independent of representative traversal. With more
+than two, every match remains reported, but the first-two owner pair is explicitly
+unavailable as `NeedsNativeReaderOrder`. Empty membership is separate from an
+invented zero-valued support.
+
+This source query does not compute K/gaps or publish a post-GAPM topology source.
+Independent whole INSOL3D/NORMA1D/CNEL coupons observe the actual owner pair,
+warning, primary orientation and no-match preservation channels. A later complete
+source composition must retain pre-shell internal count even if INCOQ3 overrides
+the final owner, and must derive the final IDEL_SOLID after that native phase.

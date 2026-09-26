@@ -9,6 +9,7 @@ add_library(robo_dyna_selected_shell_main_source STATIC
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/ShellValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/Certificate.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/SupportQuery.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/SolidSupportQuery.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/Compose.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/Budget.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main_coefficients/Digest.cpp")
