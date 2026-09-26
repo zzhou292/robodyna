@@ -11,7 +11,17 @@
 namespace tlfea::contact::radioss_type25::runtime_detail {
 namespace {
 TransactionReport Fail(TransactionStatus s,const char* m,std::size_t row=SIZE_MAX){return {s,m,row};}
-struct Parent {std::uint64_t id=0;bool triangle=false;std::size_t index=0;};
+struct Parent {
+  std::uint64_t id=0;
+  tl::fea::ShellBindingFamily family=tl::fea::ShellBindingFamily::Qeph;
+  std::size_t index=0;
+  bool triangle() const noexcept { return family==tl::fea::ShellBindingFamily::T3; }
+  std::size_t LocalNode(const tl::fea::ShellBatchBinding& shells,unsigned slot) const noexcept {
+    if(triangle())return shells.t3_nodes(index)[slot<3?slot:2];
+    if(family==tl::fea::ShellBindingFamily::Qbat)return shells.qbat_nodes(index)[slot];
+    return shells.qeph_nodes(index)[slot];
+  }
+};
 bool Scale(double value,double factor,double& output) {
   const double next=value*factor;
   if(!tl::math::Finite(value)||!tl::math::Finite(next)||(value!=0&&next==0))return false;
@@ -63,12 +73,25 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   NativeNormalResult probe;
   if(EvaluateNativeNormal(config.normal,{}, {},&probe)!=NormalStatus::Ok)
     return Fail(TransactionStatus::UnsupportedProfile,"Unsupported native normal response");
+  const bool complete=config.physical_source==PhysicalSourceProfile::CompleteBoundLedger;
+  if(config.physical_source!=PhysicalSourceProfile::QephT3Only&&!complete)
+    return Fail(TransactionStatus::UnsupportedProfile,"Unknown native physical source profile");
+  if(complete&&static_mass)
+    return Fail(TransactionStatus::UnsupportedProfile,"Complete physical contact requires actual accepted-owner mass");
   const auto& coverage=ledger->scope();
-  if(coverage.uncovered_nodes||coverage.qbat_parents||coverage.type25_connections||coverage.type13_connections||
+  if(coverage.uncovered_nodes||coverage.qeph_parents!=shells->qeph_count()||
+     coverage.t3_parents!=shells->t3_count()||coverage.qbat_parents!=shells->qbat_count())
+    return Fail(complete?TransactionStatus::SourceMismatch:TransactionStatus::UnsupportedProfile,
+      complete?"Contact requires the exact complete physical shell ledger":
+      "First native shell profiles require the complete QEPH/T3 mass ledger");
+  if(!complete&&(coverage.qbat_parents||coverage.type25_connections||coverage.type13_connections||
      coverage.element_mass_records||coverage.solid18_parents||coverage.solid24_parents||coverage.solid6z_parents||
-     coverage.solid18_law44_parents||coverage.solid18_law90_parents||coverage.beam18_parents||
-     coverage.qeph_parents!=shells->qeph_count()||coverage.t3_parents!=shells->t3_count())
+     coverage.solid18_law44_parents||coverage.solid18_law90_parents||coverage.beam18_parents))
     return Fail(TransactionStatus::UnsupportedProfile,"First native shell profiles require the complete QEPH/T3 mass ledger");
+  // Transaction::InitializeSource authenticates this binding and all actual
+  // mechanical participants with the common publisher before entering here.
+  // Extra contributor families affect their real shared nodal coefficients;
+  // this profile creates no substitute mass or constitutive model.
   const auto* failure=physical.failure();
   if(!failure)return Fail(TransactionStatus::SourceMismatch,"Physical failure declaration is missing");
   for(std::size_t i=0;i<failure->parent_count();++i)
@@ -81,7 +104,7 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   CHARGE(std::uint64_t,s.node_count);CHARGE(int,s.node_count);CHARGE(std::uint32_t,s.secondary_count+4*p);
   CHARGE(candidates::Main,p);CHARGE(NativeGeometryHistory,s.secondary_count);CHARGE(Vector,2*s.node_count);
   CHARGE(double,(static_mass?s.node_count:0)+2*s.secondary_count+3*p);CHARGE(std::uint64_t,2*(p+1));
-  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,shells->qeph_count()+shells->t3_count());
+  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,shells->qeph_count()+shells->t3_count()+shells->qbat_count());
   CHARGE(std::uint64_t,p);CHARGE(std::uint32_t,s.secondary_count+1);
 #undef CHARGE
   SourceStaging next;next.bytes=host.bytes();next.ids.resize(s.node_count);next.codes.resize(s.node_count);
@@ -115,9 +138,10 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   input.spatial_by_secondary={empty_offsets.data(),empty_offsets.size(),nullptr,0};
   const auto admitted=lifecycle::detail::Validate(input);
   if(admitted!=selection::Status::Ok)return {TransactionStatus::InvalidInput,"Native lifecycle source admission failed",SIZE_MAX,SIZE_MAX,admitted};
-  std::vector<Parent> parents;parents.reserve(shells->qeph_count()+shells->t3_count());
-  for(std::size_t i=0;i<shells->qeph_count();++i)parents.push_back({shells->qeph_source_id(i),false,i});
-  for(std::size_t i=0;i<shells->t3_count();++i)parents.push_back({shells->t3_source_id(i),true,i});
+  std::vector<Parent> parents;parents.reserve(shells->qeph_count()+shells->t3_count()+shells->qbat_count());
+  for(std::size_t i=0;i<shells->qeph_count();++i)parents.push_back({shells->qeph_source_id(i),tl::fea::ShellBindingFamily::Qeph,i});
+  for(std::size_t i=0;i<shells->t3_count();++i)parents.push_back({shells->t3_source_id(i),tl::fea::ShellBindingFamily::T3,i});
+  for(std::size_t i=0;i<shells->qbat_count();++i)parents.push_back({shells->qbat_source_id(i),tl::fea::ShellBindingFamily::Qbat,i});
   std::sort(parents.begin(),parents.end(),[](auto a,auto b){return a.id<b.id;});
   std::vector<std::uint64_t> selected(source.primary_parent_ids,source.primary_parent_ids+p);
   std::sort(selected.begin(),selected.end());
@@ -130,11 +154,11 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
     if(main.global_id!=int(i+1)||opposite.global_id!=int(p+i+1)||main.segment_type!=int(p+i+1)||opposite.segment_type!=-int(i+1))
       return Fail(TransactionStatus::SourceMismatch,"Primary/opposite native role map is not the complete ordinary prefix",i);
     for(unsigned slot=0;slot<4;++slot) {
-      const auto local=it->triangle?shells->t3_nodes(it->index)[slot<3?slot:2]:shells->qeph_nodes(it->index)[slot];
+      const auto local=it->LocalNode(*shells,slot);
       const auto source_node=shells->active_nodes()[local].source_id;
       if(next.ids[main.nodes[slot]]!=source_node||(require_fixed&&s.nodes[main.nodes[slot]].constraint!=7))
         return Fail(TransactionStatus::SourceMismatch,"Primary ordered connectivity/fixed domain differs from physical shell",i);
-      const unsigned reverse=slot==0?1:slot==1?0:it->triangle?2:slot==2?3:2;
+      const unsigned reverse=slot==0?1:slot==1?0:it->triangle()?2:slot==2?3:2;
       if(opposite.nodes[slot]!=main.nodes[reverse])return Fail(TransactionStatus::SourceMismatch,"Opposite connectivity is not native SH2SURF order",i);
       next.primary[i].nodes[slot]=main.nodes[slot];next.main_nodes[4*i+slot]=main.nodes[slot];
     }

@@ -110,3 +110,18 @@ commit/discard and contact publication keep their existing authority and phase.
 Focused value and owner tests do not establish a matched rigid/CIN contact scene
 or V5 tied-removal admission. A tied secondary excluded by the declared native
 contact source must not be reinserted to force positive zero-MSI contact.
+
+
+An explicit CompleteBoundLedger source profile admits the existing complete
+physical coefficient ledger, including non-shell mass contributors and actual
+QBAT contact nodes. The QephT3Only default keeps its previous contributor gate.
+CompleteBoundLedger requires AcceptedOwnerCoefficients; Transaction initialization
+first authenticates the actual physical binding and every participant through
+the common publisher. The contact path creates no alternate mass model or
+constitutive solver. Host source preparation alone cannot prove that runtime
+participant authentication has executed.
+
+This opt-in preserves the ordinary two-sided surface and all-None failure
+restrictions. Mixed solid/coated faces, activity/removal and released constraints
+need their own implementation and qualification. It does not admit the Yaris
+runtime or permit disabling its material failure laws.
