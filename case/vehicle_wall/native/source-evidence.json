@@ -39,6 +39,17 @@
         1807
       ],
       "rule": "Fresh PO CreateNode obtains max existing node ID plus one"
+    },
+    {
+      "path_from_workspace": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/Keyword971/ACCELEROMETER/element_seatbelt_accelerometer.cfg",
+      "bytes": 3830,
+      "sha256": "65ec52d99b796f2e9a88d8e5a22071040bc76dd20cb1f2d846f8f93e77e0c7a1",
+      "git_blob_sha1": "1c3233469b431f3c78e8228b64da4c67ef31e251",
+      "lines": [
+        84,
+        93
+      ],
+      "rule": "SBACID is an explicit10-column definition; do not parse it as an8-column raw element ID"
     }
   ],
   "upstream_authorities": [

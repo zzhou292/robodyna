@@ -19,7 +19,7 @@ struct NamespaceFixture {
     std::vector<std::pair<std::string,std::string>> storage;
     std::string wall_sha;
     std::size_t next=0;
-    explicit NamespaceFixture(std::uint64_t offset=10000,const std::string& extra={}) {
+    explicit NamespaceFixture(std::uint64_t offset=10000,const std::string& extra={},bool accelerometers=false) {
         helper::FileBuilder main("yaris-coarse-v1l.key"),auxiliary("aux.key"),wall("wall.key"),entry("combine.key");
         main.Add("*KEYWORD");
         std::vector<std::string> nodes;
@@ -34,7 +34,10 @@ struct NamespaceFixture {
         main.Add("*CONSTRAINED_JOINT_SPHERICAL_ID",{helper::Card({31}),helper::Card({4,5})});
         if(!extra.empty())main.Add(extra.c_str(),{helper::Card({999999})});
         main.Add("*END");
-        auxiliary.Add("*KEYWORD");auxiliary.Add("*ELEMENT_DISCRETE",{helper::Card({100,12,4,5},8)});auxiliary.Add("*END");
+        auxiliary.Add("*KEYWORD");auxiliary.Add("*ELEMENT_DISCRETE",{helper::Card({100,12,4,5},8)});
+        if(accelerometers)auxiliary.Add("*ELEMENT_SEATBELT_ACCELEROMETER",
+            {helper::Card({5000001,1,2,3}),helper::Card({5000002,3,4,5})});
+        auxiliary.Add("*END");
         wall.Add("*KEYWORD");wall.Add("*NODE",{helper::Card({1},8),helper::Card({2},8),helper::Card({3},8),helper::Card({4},8)});
         wall.Add("*PART",{"original display",helper::Card({13,13,13})});
         wall.Add("*SECTION_SHELL",{helper::Card({13,2}),"         1         1         1         1"});

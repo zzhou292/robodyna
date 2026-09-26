@@ -17,6 +17,12 @@ enum class Kind : std::uint32_t {
     Node, Shell, Solid, Beam, Mass, Discrete, Seatbelt, Part, Material, Section,
     NodeSet, PartSet, SegmentSet, Curve, Frame, Transform, RigidWall, Airbag, RigidBody, Weld, Joint, Other
 };
+const char* KindName(Kind kind) {
+    static constexpr const char* names[]{"NODE","SHELL","SOLID","BEAM","MASS","DISCRETE","SEATBELT_ACCELEROMETER",
+        "PART","MATERIAL","SECTION","NODE_SET","PART_SET","SEGMENT_SET","CURVE","FRAME","TRANSFORM",
+        "RIGID_WALL","AIRBAG","RIGID_BODY","WELD","JOINT","OTHER"};
+    return names[static_cast<unsigned>(kind)];
+}
 struct Entry {std::uint64_t id=0;Kind kind=Kind::Other;std::uint32_t member=0;std::size_t row=0;};
 struct Spec {Kind kind;unsigned card=0,width=10;bool rows=false,canonical=false;};
 std::optional<Spec> Definition(const std::string& key) {
@@ -26,7 +32,8 @@ std::optional<Spec> Definition(const std::string& key) {
     if(key=="*ELEMENT_BEAM")return Spec{Kind::Beam,0,8,true,true};
     if(key=="*ELEMENT_MASS")return Spec{Kind::Mass,0,8,true,false};
     if(key=="*ELEMENT_DISCRETE")return Spec{Kind::Discrete,0,8,true,false};
-    if(key=="*ELEMENT_SEATBELT_ACCELEROMETER")return Spec{Kind::Seatbelt,0,8,true,false};
+    // Keyword971 ACCELEROMETER format uses10-column SBACID, unlike raw8 elements.
+    if(key=="*ELEMENT_SEATBELT_ACCELEROMETER")return Spec{Kind::Seatbelt,0,10,true,false};
     if(key=="*PART")return Spec{Kind::Part,1};
     if(key=="*SECTION_SHELL"||key=="*SECTION_SOLID"||key=="*SECTION_BEAM"||key=="*SECTION_DISCRETE")
         return Spec{Kind::Section};
@@ -226,8 +233,18 @@ std::pair<NamespaceReport,AllocatedIds> NamespaceValues(const source::CanonicalD
     for(const auto& row:c.joints)add(row.original_id,Kind::Joint,inventory_ordinals.at(row.location.file),row.location.line,0);
     std::sort(entries.begin(),entries.end(),[](const auto& a,const auto& b){return std::tie(a.kind,a.id)<std::tie(b.kind,b.id);});
     for(std::size_t i=0;i<entries.size();++i) {
-        if(i&&entries[i].kind==entries[i-1].kind&&entries[i].id==entries[i-1].id)
-            Reject(Status::IdentityMismatch,"Duplicate definition in a complete declared namespace",{},entries[i].row,entries[i].id);
+        if(i&&entries[i].kind==entries[i-1].kind&&entries[i].id==entries[i-1].id) {
+            const auto filename=[&](std::uint32_t ordinal) {
+                std::uint32_t at=0;
+                for(const auto& member:inventory.GetObject())if(at++==ordinal)
+                    return std::string(member.name.GetString(),member.name.GetStringLength());
+                return std::string("unknown_inventory_member");
+            };
+            const auto& first=entries[i-1];
+            Reject(Status::IdentityMismatch,std::string("Duplicate ")+KindName(entries[i].kind)+
+                " definition; first="+filename(first.member)+":"+std::to_string(first.row),
+                filename(entries[i].member),entries[i].row,entries[i].id);
+        }
         result.maximum_declared=std::max(result.maximum_declared,entries[i].id);
     }
     // Complete authenticated SPRING precursor/weld/joint census. This is only

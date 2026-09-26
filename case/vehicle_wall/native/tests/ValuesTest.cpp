@@ -66,6 +66,12 @@ TEST(EnvelopeWallSource, CompleteNamespaceIncludesTransformedAndOmittedDefinitio
     EXPECT_EQ(result.first.display_young_native,200000.);
     NamespaceFixture changed(20000);const auto other=changed.Build();
     EXPECT_NE(other.first.digest,result.first.digest);EXPECT_EQ(other.second.nodes[0],21002u);
+    // Native SBACID is10 columns: an8-column read collapses these distinct IDs.
+    NamespaceFixture sensors(10000,{},true);
+    const auto sensor_namespace=sensors.Build();
+    EXPECT_EQ(sensor_namespace.first.maximum_declared,5000002u);
+    EXPECT_EQ(sensor_namespace.second.nodes[0],5000003u);
+    EXPECT_EQ(sensor_namespace.first.definitions,result.first.definitions+2);
 }
 TEST(EnvelopeWallSource, NamespaceCollisionOverflowUnknownCardsAndCapsReject) {
     NamespaceFixture collision(0);

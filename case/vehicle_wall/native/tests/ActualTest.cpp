@@ -136,7 +136,9 @@ TEST(NativeEnvelopeWallActual, ForecastRejectsOneByteShortWithoutDomainPublicati
 TEST(NativeEnvelopeWallActual, CompleteSourceAllocatesFreshIdsAndPreservesEveryVehicleNode) {
     ASSERT_NO_FATAL_FAILURE(SourceCounts());
     const auto prepared = WallSource::Prepare(physical::Domain(), Members().Input(), Wall(), WallBytes(), DeclaredWall());
-    ASSERT_EQ(prepared.report.status, Status::Ready) << prepared.report.reason;
+    ASSERT_EQ(prepared.report.status, Status::Ready) << prepared.report.reason
+        << " file=" << prepared.report.file << " row=" << prepared.report.row
+        << " source_id=" << prepared.report.source_id;
     ASSERT_TRUE(prepared.source);
     const auto& source = *prepared.source;
     const auto& original = physical::Domain().domain();
