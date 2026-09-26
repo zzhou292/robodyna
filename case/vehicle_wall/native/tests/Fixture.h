@@ -20,7 +20,7 @@ struct NamespaceFixture {
     std::string wall_sha;
     std::size_t next=0;
     explicit NamespaceFixture(std::uint64_t offset=10000,const std::string& extra={}) {
-        helper::FileBuilder main("main.key"),auxiliary("aux.key"),wall("wall.key"),entry("combine.key");
+        helper::FileBuilder main("yaris-coarse-v1l.key"),auxiliary("aux.key"),wall("wall.key"),entry("combine.key");
         main.Add("*KEYWORD");
         std::vector<std::string> nodes;
         for(unsigned id=1;id<=6;++id)nodes.push_back(helper::Card({id},8));
