@@ -1,14 +1,17 @@
 """Reference-only Radioss2024 deck export. No process or production mechanics calls."""
 from .cards import ints, reals, node_group
+from .coupling import reference_rigid_body
 
 
 def starter(scene, mesh):
-    if (scene.definition_version, scene.contact_surface) not in ((1, 'fixed_wall'), (2, 'all_shells')):
+    if (scene.definition_version, scene.contact_surface) not in ((1, 'fixed_wall'), (2, 'all_shells'), (3, 'all_shells')):
         raise ValueError('Unqualified scene contact surface declaration')
+    rigid = reference_rigid_body(scene, mesh)
     material = scene.material
     unit = ''.join(s.rjust(20) for s in ('Mg','mm','s'))
     out = ['#RADIOSS STARTER', '/BEGIN', 'contact_scene', ints(2024), unit, unit,
-           '/TITLE', 'Finite triangle wall and free elastoplastic shell patch',
+           '/TITLE', ('Finite triangle wall and declared rigid shell patch' if rigid else
+                      'Finite triangle wall and free elastoplastic shell patch'),
            '/MAT/LAW44/1', 'Explicit analytic LAW44 steel', reals(material.density_tonne_mm3),
            reals(material.young_n_mm2,material.poisson),
            reals(material.yield_n_mm2,material.plastic_hardening_n_mm2,1.,0.,1e30),
@@ -17,15 +20,28 @@ def starter(scene, mesh):
            '/PROP/TYPE1/1', 'Layered LAW44 QEPH and C0, NIP3 ITHICK1',
            ints(24,2,1,2,0)+' '*10+reals(1.), reals(0.,0.,0.,.015,.015),
            ints(3)+' '*10+reals(scene.thickness_mm,5./6.)+' '*10+ints(1,2,0)]
-    for identifier, title in ((1,'Fixed finite wall'),(2,'Moving elastoplastic patch')):
+    for identifier, title in ((1,'Fixed finite wall'),(2,'Moving rigid patch' if rigid else 'Moving elastoplastic patch')):
         out += [f'/PART/{identifier}', title, ints(1,1,0)]
     out += ['/NODE'] + [ints(n.id)+reals(*n.xyz_mm) for n in mesh.nodes]
+    if rigid:
+        out += [ints(rigid['primary']['id'])+reals(*rigid['primary']['xyz_mm'])]
     out += ['/SH3N/1'] + [ints(e.id,*e.nodes) for e in mesh.wall]
     out += ['/SHELL/2'] + [ints(e.id,*e.nodes) for e in mesh.patch]
     out += node_group(1,'Fixed wall nodes',mesh.wall_nodes)
     out += node_group(2,'Moving patch nodes',mesh.patch_nodes)
+    velocity_group = 2
+    if rigid:
+        # The auxiliary native primary belongs to the group initialization only,
+        # never to the declared physical mesh or TYPE25 surface/secondary group.
+        velocity_group = 3
+        out += node_group(3,'Uniform initial group translation',mesh.patch_nodes+(rigid['primary']['id'],))
+        out += ['/RBODY/1','Declared converted-part rigid patch',
+                ints(rigid['primary']['id'],0,0,rigid['inertia_mode'])+
+                reals(rigid['converter_mass_tonne'])+ints(2,0,rigid['center_of_gravity'],0),
+                reals(*rigid['converter_inertia_tonne_mm2']),
+                reals(*rigid['off_diagonal_inertia_tonne_mm2']),ints(0,2,0)]
     out += ['/BCS/1','Fixed wall translations and rotations','   111 111'+ints(0,1),
-            '/INIVEL/TRA/1','Initial patch velocity',reals(*scene.velocity_mm_s)+ints(2,0),
+            '/INIVEL/TRA/1','Initial patch velocity',reals(*scene.velocity_mm_s)+ints(velocity_group,0),
             '/SURF/SEG/1',('Finite wall triangles' if scene.contact_surface == 'fixed_wall' else 'Complete declared wall and moving shell surface')]
     out += [ints(e.id,*e.nodes,0) for e in mesh.wall]
     if scene.contact_surface == 'all_shells':
