@@ -137,6 +137,27 @@ TEST(NativeMovingCacheCuda, ExactCandidateTaskAndPairFailuresSurviveCommonDiscar
   }
 }
 TEST(NativeMovingCacheCuda, CompactInventoryUsesPairedForecastAndRealOwnerCommitDiscardRetry) {
+  // Whole native DST3_3:929-969 records/subtracts initial PENE_OLD(5) at
+  // TIME0; FOR3:239 skips zero shifted penetration. Confirm the same physical
+  // phase with the legacy inventory before testing compact positive force.
+  std::uint64_t legacy_pairs=0,legacy_active=0;
+  {
+    Rig legacy_rig;for(auto& row:legacy_rig.source.secondary)row.gap=.04;
+    for(auto& main:legacy_rig.source.mains){main.maximum_gap=.04;for(auto& gap:main.gap)gap=.04;}
+    ASSERT_NO_THROW(legacy_rig.Initialize());
+    Attempt warmup;
+    ASSERT_NO_THROW(legacy_rig.Begin(warmup));
+    ASSERT_EQ(legacy_rig.contact.AssembleAccepted(legacy_rig.owner,warmup.token,warmup.assembly).status,n::TransactionStatus::Ok);
+    EXPECT_EQ(legacy_rig.contact.last_diagnostics().active_forces,0u);
+    legacy_pairs=legacy_rig.contact.last_diagnostics().raw_candidates;
+    ASSERT_NO_THROW(legacy_rig.Prepare(warmup));
+    ASSERT_EQ(legacy_rig.Commit(warmup).status,fe::ShellPublicationStatus::Success);
+    Attempt active;
+    ASSERT_NO_THROW(legacy_rig.Begin(active));
+    ASSERT_EQ(legacy_rig.contact.AssembleAccepted(legacy_rig.owner,active.token,active.assembly).status,n::TransactionStatus::Ok);
+    legacy_active=legacy_rig.contact.last_diagnostics().active_forces;ASSERT_GT(legacy_active,0u);
+    legacy_rig.Discard();
+  }
   Rig rig;for(auto& row:rig.source.secondary)row.gap=.04;
   for(auto& main:rig.source.mains){main.maximum_gap=.04;for(auto& gap:main.gap)gap=.04;}
   auto limits=rig.Limits();n::TransactionForecast legacy,compact;
@@ -149,30 +170,38 @@ TEST(NativeMovingCacheCuda, CompactInventoryUsesPairedForecastAndRealOwnerCommit
   limits.max_device_bytes=compact.device_bytes;limits.max_host_bytes=compact.startup_host_bytes;
   ASSERT_NO_THROW(rig.Initialize(limits));
   EXPECT_EQ(rig.contact.allocations().device_bytes,compact.device_bytes);
+  Attempt warmup;
+  ASSERT_NO_THROW(rig.Begin(warmup));
+  ASSERT_EQ(rig.contact.AssembleAccepted(rig.owner,warmup.token,warmup.assembly).status,n::TransactionStatus::Ok);
+  const auto initial=rig.contact.last_diagnostics();ASSERT_TRUE(initial.candidate_rebuild_available);
+  EXPECT_EQ(initial.candidate_rebuild.strategy,n::candidates::EnumerationStrategy::CompactGrid);
+  EXPECT_TRUE(initial.candidate_rebuild.encounters_counted);EXPECT_TRUE(initial.candidate_rebuild.pairs_counted);
+  EXPECT_EQ(initial.active_forces,0u);EXPECT_EQ(initial.raw_candidates,legacy_pairs);
+  ASSERT_NO_THROW(rig.Prepare(warmup));
+  ASSERT_EQ(rig.Commit(warmup).status,fe::ShellPublicationStatus::Success);
   q::NormalObservation original,first,retry;
   ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&original));const auto x=rig.Positions();
   Attempt rejected;
   ASSERT_NO_THROW(rig.Begin(rejected));
   ASSERT_EQ(rig.contact.AssembleAccepted(rig.owner,rejected.token,rejected.assembly).status,n::TransactionStatus::Ok);
-  const auto diagnostics=rig.contact.last_diagnostics();ASSERT_TRUE(diagnostics.candidate_rebuild_available);
-  EXPECT_EQ(diagnostics.candidate_rebuild.strategy,n::candidates::EnumerationStrategy::CompactGrid);
-  EXPECT_TRUE(diagnostics.candidate_rebuild.encounters_counted);EXPECT_TRUE(diagnostics.candidate_rebuild.pairs_counted);
+  const auto diagnostics=rig.contact.last_diagnostics();
   EXPECT_GT(diagnostics.active_forces,0u);
+  EXPECT_EQ(diagnostics.active_forces,legacy_active);
   ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,rejected.token,rejected.assembly,&first));
   ASSERT_NO_THROW(rig.Prepare(rejected));
   EXPECT_NE(rig.Commit(rejected,false).status,fe::ShellPublicationStatus::Success);
   rig.Discard();q::NormalObservation unchanged;
   ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&unchanged));Same(unchanged,original);
-  EXPECT_EQ(rig.owner.accepted().epoch,0u);EXPECT_EQ(rig.Positions(),x);
+  EXPECT_EQ(rig.owner.accepted().epoch,1u);EXPECT_EQ(rig.Positions(),x);
   Attempt attempt;
   ASSERT_NO_THROW(rig.Begin(attempt));
   ASSERT_EQ(rig.contact.AssembleAccepted(rig.owner,attempt.token,attempt.assembly).status,n::TransactionStatus::Ok);
   EXPECT_EQ(rig.contact.last_diagnostics().active_forces,diagnostics.active_forces);
-  EXPECT_EQ(rig.contact.last_diagnostics().candidate_rebuild.pairs,diagnostics.candidate_rebuild.pairs);
+  EXPECT_EQ(rig.contact.last_diagnostics().raw_candidates,diagnostics.raw_candidates);
   ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,attempt.token,attempt.assembly,&retry));Same(retry,first);
   ASSERT_NO_THROW(rig.Prepare(attempt));
   ASSERT_EQ(rig.Commit(attempt).status,fe::ShellPublicationStatus::Success);
-  EXPECT_EQ(rig.owner.accepted().epoch,1u);EXPECT_TRUE(rig.contact.accepted().available);
+  EXPECT_EQ(rig.owner.accepted().epoch,2u);EXPECT_TRUE(rig.contact.accepted().available);
 }
 TEST(NativeMovingCacheCuda, InactiveMainCacheSurvivesPhysicalMotionAndRepeatedSelectorSwaps) {
   Rig rig;rig.source.mains[1].coefficient=0;rig.source.mains[3].coefficient=0;rig.Initialize();
