@@ -1,3 +1,4 @@
+#include "lib_utils/BoundedArena.h"
 #include "mixed_interface/Internal.h"
 #include <algorithm>
 namespace crash::cases::vehicle_self_contact::native::mixed_interface {
@@ -125,4 +126,16 @@ const Certificate& MixedInterfaceSource::certificate() const noexcept { return d
 const Provenance& MixedInterfaceSource::provenance() const noexcept { return data_->provenance; }
 const Forecast& MixedInterfaceSource::forecast() const noexcept { return data_->forecast; }
 const AdmissionCensus& MixedInterfaceSource::admission_census() const noexcept { return data_->census; }
+}
+
+namespace crash::cases::vehicle_self_contact::native::mixed_interface {
+
+std::size_t MixedInterfaceSource::retained_host_upper_bound(std::size_t cap) const {
+    tl::util::BoundedArenaLayout bytes(cap); tl::util::ArenaRegion unused;
+    const auto add=[&](std::size_t count) { output::Require(bytes.Append<std::byte>(count,unused),"Retained mixed interface source exceeds cap"); };
+    add(initial().retained_host_upper_bound(cap));add(sizeof(MixedInterfaceSource)+sizeof(Data)+4096);
+    add(data_->interface_arena.bytes());add(data_->sides_arena.bytes());add(data_->roles.capacity()*sizeof(RoleObservation));
+    for(const auto* text:{&data_->provenance.source_digest,&data_->provenance.initial_digest,&data_->provenance.output_digest})add(text->capacity()+1);
+    return bytes.bytes();
+}
 }

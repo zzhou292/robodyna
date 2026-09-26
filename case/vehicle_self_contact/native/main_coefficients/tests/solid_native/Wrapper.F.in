@@ -1,0 +1,63 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Bounded qualification tables; no production support-selection call.
+      SUBROUTINE RD_SOLID_SUPPORT(COUNTS,NODES,EIDS,FLAGS,FACE,X,
+     .                           SEED,OUT,AREA,LINKED) BIND(C)
+      USE ISO_C_BINDING
+      USE SOLID_SUPPORT_OBSERVATION
+      IMPLICIT NONE
+#include "com04_c.inc"
+      INTEGER(C_INT),INTENT(IN)::COUNTS(2),NODES(8,*),EIDS(*),
+     . FLAGS(*),FACE(4),SEED(2)
+      REAL(C_DOUBLE),INTENT(IN)::X(3,*)
+      INTEGER(C_INT),INTENT(OUT)::OUT(11),LINKED(64)
+      REAL(C_DOUBLE),INTENT(OUT)::AREA
+      INTEGER IXS(11,64),IXS10(6,1),IXS16(8,1),IXS20(12,1),
+     . IRECT(4,1),KNOD2ELS(257),NOD2ELS(512),TAGELEMS(64),
+     . INDEXE(64),IELEM_M(2),FLAG_ELEM_INTER25(1,64),NEL,NINV,
+     . I,J,K,N
+      LOGICAL PRINT_ERROR
+      NUMNOD=COUNTS(1)
+      NUMELS=COUNTS(2)
+      NUMELS8=NUMELS
+      NUMELS10=0
+      NUMELS16=0
+      NUMELS20=0
+      NINTER25=1
+      IPRI=0
+      IXS=0
+      IXS10=0
+      IXS16=0
+      IXS20=0
+      KNOD2ELS=0
+      NOD2ELS=0
+      TAGELEMS=0
+      INDEXE=0
+      FLAG_ELEM_INTER25=0
+      DO I=1,NUMELS
+        IXS(1,I)=1
+        IXS(2:9,I)=NODES(:,I)
+        IXS(10,I)=1
+        IXS(11,I)=EIDS(I)
+        FLAG_ELEM_INTER25(1,I)=FLAGS(I)
+      ENDDO
+      IRECT(:,1)=FACE
+      IELEM_M=SEED
+      LINKED=-71
+      AREA=17.25D0
+      NINV=0
+      observed_matches=0
+      observed_effective=0
+      warning_calls=0
+@COUNTS@
+@FILL@
+      CALL RD_SOURCE_INSOL3D(X,IRECT,IXS,1,NEL,1,AREA,1,
+     . KNOD2ELS,NOD2ELS,0,IXS10,IXS16,IXS20,TAGELEMS,INDEXE,
+     . NINV,IELEM_M,LINKED,PRINT_ERROR,1,25,FLAG_ELEM_INTER25)
+      OUT(1)=NEL
+      OUT(2:3)=IELEM_M
+      OUT(4)=observed_matches
+      OUT(5)=observed_effective
+      OUT(6)=MERGE(1,0,PRINT_ERROR)
+      OUT(7)=NINV
+      OUT(8:11)=IRECT(:,1)
+      END

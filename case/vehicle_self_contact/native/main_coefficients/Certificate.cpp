@@ -22,6 +22,18 @@ FaceKey Key(const coated::Shell& shell, std::size_t physical) {
     if (key.arity == 3)key.nodes[3] = UINT32_MAX;
     return key;
 }
+void AccumulateSupport(const Packed& packed, std::size_t i, SupportSelection& result,
+    double& thickness, double& young) {
+    const auto& value = packed.parts.at(packed.shells.at(i).part).coefficient;
+    // Positive ordinary property1 TYPE25: exact INCOQ3 DX then ST policy.
+    if (value.property_thickness>thickness ||
+        (value.property_thickness == thickness && value.young>young)) {
+        thickness = value.property_thickness;
+        young = value.young;
+        result.winners.clear();
+    }
+    if (value.property_thickness == thickness && value.young == young)result.winners.push_back(i);
+}
 SupportSelection SelectSupport(const coated::Inputs& input, const Packed& packed, const s::Main& main,
     std::size_t physical, bool grouping_context) {
     auto key = Key(input.shells.at(physical), 0);
@@ -29,19 +41,18 @@ SupportSelection SelectSupport(const coated::Inputs& input, const Packed& packed
     SupportSelection result; double thickness = 0, young = 0;
     for (auto at = start; at != packed.keys.end() && SameKey(*at, key); ++at) {
         const auto i = at->physical;
-        const auto& value = packed.parts.at(packed.shells.at(i).part).coefficient;
-        // Positive ordinary property1 TYPE25: exact INCOQ3 DX then ST policy.
-        if (value.property_thickness>thickness ||
-            (value.property_thickness == thickness && value.young>young)) {
-            thickness = value.property_thickness; young = value.young; result.winners.clear();
-        }
-        if (value.property_thickness == thickness && value.young == young)result.winners.push_back(i);
+        AccumulateSupport(packed, i, result, thickness, young);
     }
     Require(!result.winners.empty(),"Selected primary has no physical shell support");
+    return ResolveSupportTies(input, packed, main, std::move(result),
+        input.shells[physical].primary.layout == n::ShellLayout::Triangle3, grouping_context);
+}
+SupportSelection ResolveSupportTies(const coated::Inputs& input, const Packed& packed,
+    const s::Main& main, SupportSelection result, bool triangle, bool grouping_context) {
+    if (result.winners.empty()) return result;
     if (result.winners.size() == 1) {
         result.owner = result.winners.front(); result.proof = OwnerProof::UniqueBest; return result;
     }
-    const bool triangle = input.shells[physical].primary.layout == n::ShellLayout::Triangle3;
     const auto corner = [&](std::size_t i) {
         const auto& nodes = input.shells[i].primary.nodes;
         for (unsigned k = 0; k<(triangle?3u:4u); ++k)if (nodes[k] == main.nodes[0])return k;
@@ -72,6 +83,7 @@ SupportSelection SelectSupport(const coated::Inputs& input, const Packed& packed
     result.proof = OwnerProof::NativeMaterialGroupOrder;
     return result;
 }
+
 void CheckIdentity(const s::Main& main, const n::NativeExteriorMainGeometryResult& geometry,
     std::size_t primary, std::uint64_t eid) {
     for (unsigned k = 0; k<4; ++k)

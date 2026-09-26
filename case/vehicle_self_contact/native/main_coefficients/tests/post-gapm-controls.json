@@ -1,0 +1,42 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "fresh regular AUTOMATIC_SINGLE_SURFACE -> TYPE25; explicit Idel1 survives default normalization",
+  "files": [
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontacts.cxx",
+      "bytes": 51410,
+      "sha256": "e2c1e1644d0678ce128ac84fbdf96c7d6800c9a291b0a7212b4a0db522be538a",
+      "git_blob": "c33307f2b25e81206516e95664b51c16b6cdda2f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/radioss2026/INTER/inter_type25.cfg",
+      "bytes": 36726,
+      "sha256": "dae800fdd8803af80eb9a4e7114b0b6a737887593534994d4477ea62fb2e6e58",
+      "git_blob": "1366b7b587bb564802705d6641ec3ee8110f5e76"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/int25/hm_read_inter_type25.F",
+      "bytes": 45794,
+      "sha256": "826b36999df24b969079a2350a2e8f79ae5bb88be5dec01084a4d0241b20178e",
+      "git_blob": "ddcf2bcc0cf6086243b80caa0b26375268c603f5"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/interf1/definter.F",
+      "bytes": 10875,
+      "sha256": "be655a12555d1dd4e9d4871d9babed8a0a025d0bc2105a2010b9e094381eded0",
+      "git_blob": "47cb7dd19df15031d7365a93bb4ed7adab37aa8d"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/inter3d1/i25surfi.F",
+      "bytes": 27552,
+      "sha256": "f47b140133ddd3eea5e01e0b42309ee7ee27360cf7ae9fc40b9db7cfe781a7db",
+      "git_blob": "fc03db70db0a48fdf25f7cf3bac5ac3572d76bb2"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/inter3d1/i25sti3.F",
+      "bytes": 47033,
+      "sha256": "98ce3a1610b733dec229ad367da1f3cd81ef87f4a752d3e1a4b4e1006d0923ce",
+      "git_blob": "6c94936fef735f9495b1b0f6a6b2a403c161648c"
+    }
+  ]
+}

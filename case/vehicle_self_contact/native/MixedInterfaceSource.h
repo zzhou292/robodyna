@@ -81,6 +81,8 @@ class MixedInterfaceSource {
     const Certificate& certificate() const noexcept;
     const Provenance& provenance() const noexcept;
     const Forecast& forecast() const noexcept;
+    // Retained source payload bound; excludes this producer's retired scratch.
+    std::size_t retained_host_upper_bound(std::size_t cap) const;
     const AdmissionCensus& admission_census() const noexcept;
   private:
     struct Data;

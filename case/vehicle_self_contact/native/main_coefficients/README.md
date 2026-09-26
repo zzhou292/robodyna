@@ -60,3 +60,39 @@ and coated scalar oracles supply numerical expectations. The optional actual
 V5 target must be run separately through a guarded forecast and create-only
 whole-source command; it is never an automatic CTest. No executed pass is
 implied by these instructions.
+
+
+## Optional mixed-face support queries
+
+`SupportQuery` adds a bounded Q4 incidence index for triangular solid-face
+queries. It reuses the original positive DX/ST ranking and corner/material-group
+winner certificate. A matching T3 remains the I25GAPM owner even when native
+INCOQ3 also finds a thicker Q4. Without a T3, all Q4s containing the three query
+nodes are considered; no exact-Q4-key shortcut is used. Empty winners explicitly
+mean no physical shell support. The original selected-shell wrapper, source
+scope, allocation path and forecast remain unchanged.
+
+The index borrows immutable Inputs/Packed for its lifetime. It does not detect
+mutation through other aliases or authenticate caller-made value fixtures.
+Complete source preparation remains the factory's responsibility. New tests
+reuse the complete native INCOQ3/CNEL oracle and preserve the old fifteen groups.
+This slice does not resolve solid support, post-GAPM internal/erosion flags,
+final main K, normals or runtime admission.
+
+
+## Solid membership query
+
+`SolidSupportQuery` consumes complete reader-phase raw8 rows and the complete
+initial emitted-solid flags. Native TAGELEMS makes repeated raw incidences one
+matching solid; the index preserves that set while leaving all raw rows intact.
+For one/two matches, source EID uniqueness proves the maximum-ID NEL and the
+TYPE25 flag-collapse result independent of representative traversal. With more
+than two, every match remains reported, but the first-two owner pair is explicitly
+unavailable as `NeedsNativeReaderOrder`. Empty membership is separate from an
+invented zero-valued support.
+
+This source query does not compute K/gaps or publish a post-GAPM topology source.
+Independent whole INSOL3D/NORMA1D/CNEL coupons observe the actual owner pair,
+warning, primary orientation and no-match preservation channels. A later complete
+source composition must retain pre-shell internal count even if INCOQ3 overrides
+the final owner, and must derive the final IDEL_SOLID after that native phase.
