@@ -5,10 +5,11 @@
 #include <vector>
 namespace crash::cases::vehicle_native_contact::detail {
 namespace native = tlfea::contact::radioss_type25;
+namespace lifecycle = native::selection::lifecycle;
 enum class NormalPhase { StarterBeforeInitialContact, FixedReady };
 struct FieldInputs {
     const native::startup::Snapshot& topology;
-    tl::util::ConstView<native::lifecycle::Node> nodes;
+    tl::util::ConstView<lifecycle::Node> nodes;
     tl::util::ConstView<double> main_coefficients;
     tl::util::ConstView<native::source_gaps::MainGapFields> main_gaps;
     tl::util::ConstView<std::uint32_t> secondary_nodes;
@@ -29,16 +30,16 @@ class FieldPacking {
     FieldPacking& operator=(FieldPacking&&) noexcept = default;
     FieldPacking(const FieldPacking&) = delete;
     FieldPacking& operator=(const FieldPacking&) = delete;
-    native::lifecycle::SourceView view() const noexcept;
+    lifecycle::SourceView view() const noexcept;
     NormalPhase phase() const noexcept { return phase_; }
     const FieldPackingForecast& forecast() const noexcept { return forecast_; }
   private:
     FieldPacking() = default;
     static FieldPacking Pack(const FieldInputs&, const native::startup::NormalView&,
                              NormalPhase, FieldPackingLimits);
-    native::lifecycle::SourceView borrowed_;
-    std::vector<native::lifecycle::Main> mains_;
-    std::vector<native::lifecycle::Secondary> secondary_;
+    lifecycle::SourceView borrowed_;
+    std::vector<lifecycle::Main> mains_;
+    std::vector<lifecycle::Secondary> secondary_;
     FieldPackingForecast forecast_;
     NormalPhase phase_ = NormalPhase::StarterBeforeInitialContact;
 };

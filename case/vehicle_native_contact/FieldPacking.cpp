@@ -29,8 +29,8 @@ FieldPackingForecast FieldPacking::Preflight(const FieldInputs& in, FieldPacking
     tl::util::BoundedArenaLayout arena(limits.host_bytes);
     tl::util::ArenaRegion unused;
     Require(arena.Append<std::byte>(sizeof(FieldPacking) + 256, unused) &&
-                arena.Append<native::lifecycle::Main>(2 * top.main_count, unused) &&
-                arena.Append<native::lifecycle::Secondary>(2 * secondaries, unused),
+                arena.Append<lifecycle::Main>(2 * top.main_count, unused) &&
+                arena.Append<lifecycle::Secondary>(2 * secondaries, unused),
             "Contact field packing exceeds its host cap");
     return {arena.bytes()};
 }
@@ -95,7 +95,7 @@ FieldPacking FieldPacking::Pack(const FieldInputs& in, const native::startup::No
     result.borrowed_.generation = top.source_generation;
     return result;
 }
-native::lifecycle::SourceView FieldPacking::view() const noexcept {
+lifecycle::SourceView FieldPacking::view() const noexcept {
     auto result = borrowed_;
     result.mains = mains_.data();
     result.main_count = mains_.size();

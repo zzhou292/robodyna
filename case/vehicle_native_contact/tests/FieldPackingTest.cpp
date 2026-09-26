@@ -7,7 +7,7 @@ namespace old = type25_startup_test;
 struct Fixture {
     old::Case source = old::Grid(2, 1, 2);
     old::Built built{source};
-    std::vector<native::lifecycle::Node> nodes;
+    std::vector<lifecycle::Node> nodes;
     std::vector<std::uint32_t> nsv;
     std::vector<double> coefficients, gaps;
     std::vector<native::source_gaps::MainGapFields> main_gaps;
