@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Source.h"
 #include "../current_normals/Types.h"
+#include "../normal_math/FloatNormals.h"
 #include "../selection/lifecycle/Admission.h"
 #include "../normal_activation/Values.h"
 #include "lib_src/math/ScalarBits.h"
