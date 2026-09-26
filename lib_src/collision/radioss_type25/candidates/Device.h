@@ -13,7 +13,10 @@ struct Device {
   Task* tasks=nullptr;unsigned long long* pair_counts=nullptr;unsigned long long* pair_offsets=nullptr;
   std::uint64_t* pair_keys=nullptr;std::uint64_t* sorted_pair_keys=nullptr;
   Pair* pairs=nullptr;std::uint64_t* secondary_offsets=nullptr;Control* control=nullptr;
+  unsigned long long* encounter_counts=nullptr;unsigned long long* encounter_offsets=nullptr;
+  std::uint32_t* encounter_ordinals=nullptr;GridControl* grid=nullptr;
   void* cub=nullptr;std::size_t cub_bytes=0,nodes=0,secondary_count=0,main_count=0,task_capacity=0,pair_capacity=0;
+  EnumerationStrategy strategy=EnumerationStrategy::LegacyAxisSweep;std::size_t encounter_capacity=0;
   MainCoefficientDomain main_coefficient_domain=MainCoefficientDomain::Nonnegative;
   int primary_main_count=0;bool si=false;double length=1,velocity=1,time=1;
 };
@@ -28,8 +31,13 @@ inline Device Bind(void* base,const Layout& l,const Source& s,Limits limits) noe
   BIND(tasks,Task);BIND(pair_counts,unsigned long long);BIND(pair_offsets,unsigned long long);
   BIND(pair_keys,std::uint64_t);BIND(sorted_pair_keys,std::uint64_t);BIND(pairs,Pair);
   BIND(secondary_offsets,std::uint64_t);BIND(control,Control);BIND(cub,std::byte);
+  if(limits.strategy==EnumerationStrategy::CompactGrid) {
+    BIND(encounter_counts,unsigned long long);BIND(encounter_offsets,unsigned long long);
+    BIND(encounter_ordinals,std::uint32_t);BIND(grid,GridControl);
+  }
 #undef BIND
   d.cub_bytes=l.cub.bytes;d.nodes=s.physical_nodes;d.secondary_count=s.secondaries;d.main_count=s.mains;
-  d.task_capacity=limits.max_tasks;d.pair_capacity=limits.max_pairs;d.primary_main_count=s.primary_main_count;d.main_coefficient_domain=s.main_coefficient_domain;return d;
+  d.task_capacity=limits.max_tasks;d.pair_capacity=limits.max_pairs;d.primary_main_count=s.primary_main_count;d.main_coefficient_domain=s.main_coefficient_domain;
+  d.strategy=limits.strategy;d.encounter_capacity=limits.max_encounters;return d;
 }
 } // namespace tlfea::contact::radioss_type25::candidates::detail

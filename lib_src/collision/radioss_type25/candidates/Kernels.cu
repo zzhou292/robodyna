@@ -4,6 +4,7 @@
 #include "Launch.h"
 #include "Packing.h"
 #include "Sweep.cuh"
+#include "DeviceRead.cuh"
 #include <cub/cub.cuh>
 #include <math_constants.h>
 #include <algorithm>
@@ -11,11 +12,6 @@
 namespace tlfea::contact::radioss_type25::candidates::detail {
 namespace {
 unsigned Blocks(std::size_t n) {return unsigned(std::min<std::size_t>(256,(n+255)/256));}
-__device__ Vector Read(Device d,VectorView view,std::uint32_t i,bool velocity=false) {
-  const auto v=view.at(i);const double divisor=d.si?(velocity?d.velocity:d.length):1.;
-  return {v.x/divisor,v.y/divisor,v.z/divisor};
-}
-__device__ double Gap(Device d,double x){return d.si?x/d.length:x;}
 __device__ void Fail(Device d,std::size_t row,Status status) {
   sweep::Failure(d,row,status);
 }
@@ -26,6 +22,10 @@ __device__ bool InDomain(Vector x,const Bounds& b) {
 __global__ void Reset(Device d) {
   if(threadIdx.x||blockIdx.x)return;*d.control={};
   d.task_counts[d.main_count]=0;
+  if(d.strategy==EnumerationStrategy::CompactGrid) {
+    *d.grid={};for(unsigned k=0;k<3;++k)d.grid->lower_bits[k]=~0ull;
+    d.encounter_counts[d.main_count]=0;
+  }
 }
 __global__ void SecondaryKeys(Device d,Current in) {
   for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<d.secondary_count;i+=blockDim.x*gridDim.x) {
@@ -39,6 +39,14 @@ __global__ void SecondaryKeys(Device d,Current in) {
     const double gap=Gap(d,in.secondary_gaps[i]);
     if(!Nonnegative(gap)){Fail(d,i,Status::InvalidInput);continue;}
     d.keys[i]=x.x;
+    if(d.strategy==EnumerationStrategy::CompactGrid) {
+      const double xyz[]{x.x,x.y,x.z};
+      for(unsigned k=0;k<3;++k) {
+        const auto bits=static_cast<unsigned long long>(__double_as_longlong(xyz[k]));
+        const auto ordered=(bits>>63)?~bits:(bits^(1ull<<63));
+        atomicMin(&d.grid->lower_bits[k],ordered);atomicMax(&d.grid->upper_bits[k],ordered);
+      }
+    }
     atomicAdd(&d.control->active,1ull);
     atomicMax(&d.control->maximum_gap_bits,static_cast<unsigned long long>(__double_as_longlong(gap==0.?0.:gap)));
   }
@@ -53,25 +61,9 @@ __device__ std::uint32_t Lower(const double* keys,std::uint32_t n,double x,bool 
 __global__ void MainRanges(Device d,Current in) {
   for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<d.main_count;i+=blockDim.x*gridDim.x) {
     d.ranges[i]={};d.task_counts[i]=0;
-    const auto m=d.mains[i].source;
-    const double stiffness=in.main_stiffness[i];
-    if(!(d.main_coefficient_domain==MainCoefficientDomain::NativeSigned?
-         tl::math::Finite(stiffness):Nonnegative(stiffness))){Fail(d,d.secondary_count+i,Status::InvalidInput);continue;}
-    // Literal local I25TRIVOX STF<=ZERO exclusion, including native negative
-    // internal-face markers. Source metadata and the exact face roster remain.
-    if(stiffness<=0.)continue;
-    bool valid=Nonnegative(Gap(d,in.main_gaps[i]))&&Nonnegative(Gap(d,in.main_curvature[i]));
-    ScreenRow row;row.margin=in.margin;row.curvature=Gap(d,in.main_curvature[i]);row.main_gap=Gap(d,in.main_gaps[i]);
-    row.secondary_gap=__longlong_as_double(static_cast<long long>(d.control->maximum_gap_bits));
-    row.gap_load=in.gap_load;row.drad=in.drad;row.stored_motion=in.stored_motion;
-    for(unsigned j=0;j<4;++j) {
-      row.vertices[j]=Read(d,in.positions,m.nodes[j]);
-      valid=valid&&tl::math::fixed3::Finite(row.vertices[j]);
-    }
-    if(!valid){Fail(d,d.secondary_count+i,Status::InvalidInput);continue;}
-    if(in.main_stiffness[i]==0.||!d.control->active)continue;
-    Envelope envelope;const auto status=ScreenBounds(row,&envelope);
+    Envelope envelope;bool enabled=false;const auto status=MainEnvelope(d,in,i,envelope,enabled);
     if(status!=Status::Ok){Fail(d,d.secondary_count+i,status);continue;}
+    if(!enabled)continue;
     Range range;
     range.first=Lower(d.sorted_keys,d.secondary_count,envelope.bounds.minimum.x,false);
     range.last=Lower(d.sorted_keys,d.secondary_count,envelope.bounds.maximum.x,true);
@@ -88,8 +80,11 @@ __device__ bool Removed(Device d,std::uint32_t main,std::uint32_t node) {
   return lo<d.removal_offsets[main+1]&&d.removals[lo]==node;
 }
 __device__ bool Candidate(Device d,const Current& in,const Task& task,unsigned lane,std::uint64_t& key) {
+  if(d.strategy==EnumerationStrategy::CompactGrid&&d.grid->packing_failed)return false;
   if(task.first+lane>=task.last)return false;
-  const auto secondary=d.sorted_ordinals[task.first+lane],node=d.secondary[secondary];
+  const auto secondary=d.strategy==EnumerationStrategy::CompactGrid?
+      d.encounter_ordinals[task.first+lane]:d.sorted_ordinals[task.first+lane];
+  const auto node=d.secondary[secondary];
   const auto m=d.mains[task.main];
   for(unsigned j=0;j<4;++j)if(node==m.source.nodes[j])return false;
   if(Removed(d,task.main,node))return false;
@@ -136,13 +131,17 @@ cudaError_t BuildRanges(Device d,const Current& in,cudaStream_t stream) noexcept
   if(d.secondary_count) {
     SecondaryKeys<<<Blocks(d.secondary_count),256,0,stream>>>(d,in);
     error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;
+    if(d.strategy==EnumerationStrategy::CompactGrid) {
+      error=FinishCompactKeys(d,in,stream);if(error!=cudaSuccess)return error;
+    }
     auto bytes=d.cub_bytes;
     error=cub::DeviceRadixSort::SortPairs(d.cub,bytes,d.keys,d.sorted_keys,d.ordinals,d.sorted_ordinals,
         int(d.secondary_count),0,64,stream);if(error!=cudaSuccess)return error;
   }
   if(d.main_count) {
-    MainRanges<<<Blocks(d.main_count),256,0,stream>>>(d,in);
-    error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;
+    if(d.strategy==EnumerationStrategy::CompactGrid)error=BuildCompactRanges(d,in,stream);
+    else {MainRanges<<<Blocks(d.main_count),256,0,stream>>>(d,in);error=cudaPeekAtLastError();}
+    if(error!=cudaSuccess)return error;
   }
   auto bytes=d.cub_bytes;
   error=cub::DeviceScan::ExclusiveSum(d.cub,bytes,d.task_counts,d.task_offsets,int(d.main_count+1),stream);
@@ -150,6 +149,9 @@ cudaError_t BuildRanges(Device d,const Current& in,cudaStream_t stream) noexcept
   TaskTotal<<<1,1,0,stream>>>(d);return cudaPeekAtLastError();
 }
 cudaError_t CountPairs(Device d,const Current& in,std::size_t tasks,cudaStream_t stream) noexcept {
+  if(d.strategy==EnumerationStrategy::CompactGrid) {
+    const auto error=FillCompactEncounters(d,in,stream);if(error!=cudaSuccess)return error;
+  }
   // tasks may be zero; initialize the scan sentinel without launching zero grids.
   sweep::BuildTasks<<<std::max(1u,Blocks(d.main_count)),256,0,stream>>>(d,tasks);
   auto error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;

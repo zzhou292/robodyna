@@ -109,7 +109,7 @@ struct TransactionDiagnostics {
   // Last attempted inventory Stage report, preserved through common discard
   // and cleared at the next validated assembly. Its stamp identifies the
   // attempt. Availability implies neither complete pair counts nor success:
-  // a task-cap rejection has one scan/fence and has not counted pairs yet.
+  // encounters_counted/pairs_counted distinguish completed count stages.
   bool candidate_rebuild_available=false;
   candidates::Report candidate_rebuild;
 };

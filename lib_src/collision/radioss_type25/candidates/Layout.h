@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "InventoryTypes.h"
+#include "CompactGrid.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::candidates::detail {
 inline constexpr unsigned TaskWidth=256;
@@ -14,6 +15,7 @@ struct Layout {
   tl::util::ArenaRegion ids,codes,secondary,mains,ranks,removal_offsets,removals;
   tl::util::ArenaRegion keys,sorted_keys,ordinals,sorted_ordinals,ranges,task_counts,task_offsets,tasks;
   tl::util::ArenaRegion pair_counts,pair_offsets,pair_keys,sorted_pair_keys,pairs,secondary_offsets,control,cub;
+  tl::util::ArenaRegion encounter_counts,encounter_offsets,encounter_ordinals,grid;
   Forecast forecast;
 };
 // Policy-neutral allocation shape for the shared sweep. This is private storage,

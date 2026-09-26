@@ -3,7 +3,15 @@
 #include "../search/Ranges.h"
 #include <climits>
 namespace tlfea::contact::radioss_type25::candidates::detail {
+namespace {
+Status CheckStrategy(Limits l) noexcept {
+  if(l.strategy==EnumerationStrategy::LegacyAxisSweep)return l.max_encounters?Status::InvalidInput:Status::Ok;
+  if(l.strategy!=EnumerationStrategy::CompactGrid)return Status::UnsupportedProfile;
+  return !l.max_encounters||l.max_encounters>MaximumCompactEncounters?Status::ResourceLimit:Status::Ok;
+}
+}
 Status CheckSource(const Source& s,Limits l) noexcept {
+  const auto strategy=CheckStrategy(l);if(strategy!=Status::Ok)return strategy;
   const Limits hard;
   if(!l.max_nodes||l.max_nodes>hard.max_nodes||!l.max_secondaries||l.max_secondaries>hard.max_secondaries||
      !l.max_mains||l.max_mains>hard.max_mains||!l.max_removals||l.max_removals>hard.max_removals||
@@ -41,6 +49,7 @@ Status MakeLayout(const Source& s,Limits l,std::size_t scratch,std::size_t owner
   return MakeStorageLayout({s.physical_nodes,s.secondaries,s.mains,s.removals},l,scratch,owner,out);
 }
 Status MakeStorageLayout(StorageShape s,Limits l,std::size_t scratch,std::size_t owner,Layout& out) noexcept {
+  const auto strategy=CheckStrategy(l);if(strategy!=Status::Ok)return strategy;
   const Limits hard;
   if(!s.nodes||s.nodes>l.max_nodes||s.nodes>hard.max_nodes||s.secondaries>l.max_secondaries||
       s.secondaries>hard.max_secondaries||s.mains>l.max_mains||s.mains>hard.max_mains||
@@ -59,6 +68,14 @@ Status MakeStorageLayout(StorageShape s,Limits l,std::size_t scratch,std::size_t
      !a.Append<std::uint64_t>(l.max_pairs,n.sorted_pair_keys)||!a.Append<Pair>(l.max_pairs,n.pairs)||
      !a.Append<std::uint64_t>(s.secondaries+1,n.secondary_offsets)||!a.Append<Control>(1,n.control)||
      !a.Append<std::byte>(scratch,n.cub))return Status::ResourceLimit;
+  if(l.strategy==EnumerationStrategy::CompactGrid) {
+    const auto before=a.bytes();
+    if(!a.Append<unsigned long long>(s.mains+1,n.encounter_counts)||
+       !a.Append<unsigned long long>(s.mains+1,n.encounter_offsets)||
+       !a.Append<std::uint32_t>(l.max_encounters,n.encounter_ordinals)||
+       !a.Append<GridControl>(1,n.grid))return Status::ResourceLimit;
+    n.forecast.index_device_bytes=a.bytes()-before;
+  }
   n.forecast.device_bytes=a.bytes();n.forecast.cub_bytes=scratch;
   tl::util::BoundedArenaLayout host(l.max_host_bytes);tl::util::ArenaRegion ignored;
   if(!host.Append<std::byte>(owner,ignored)||!host.Append<std::uint64_t>(s.nodes,ignored)||

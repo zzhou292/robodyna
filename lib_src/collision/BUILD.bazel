@@ -1152,7 +1152,7 @@ cc_library(
 )
 cuda_library(
     name = "radioss_type25_candidate_device",
-    srcs = ["radioss_type25/candidates/Kernels.cu"],
+    srcs = ["radioss_type25/candidates/Kernels.cu", "radioss_type25/candidates/CompactGrid.cu"],
     deps = [":radioss_type25_candidate_values"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
 )

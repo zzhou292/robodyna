@@ -8,4 +8,7 @@ cudaError_t QueryScratch(const Source&,Limits,std::size_t&) noexcept;
 cudaError_t BuildRanges(Device,const Current&,cudaStream_t) noexcept;
 cudaError_t CountPairs(Device,const Current&,std::size_t,cudaStream_t) noexcept;
 cudaError_t FillPairs(Device,const Current&,std::size_t,std::size_t,cudaStream_t) noexcept;
+cudaError_t FinishCompactKeys(Device,const Current&,cudaStream_t) noexcept;
+cudaError_t BuildCompactRanges(Device,const Current&,cudaStream_t) noexcept;
+cudaError_t FillCompactEncounters(Device,const Current&,cudaStream_t) noexcept;
 } // namespace tlfea::contact::radioss_type25::candidates::detail

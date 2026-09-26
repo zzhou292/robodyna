@@ -50,7 +50,7 @@ Status Inventory::Impl::Fence(cudaError_t error) noexcept {
 }
 Status Inventory::Stage(const Current& in) noexcept {
   if(!impl_)return Status::NotInitialized;
-  auto& p=*impl_;p.pending=false;p.report={};p.report.stamp=in.stamp;
+  auto& p=*impl_;p.pending=false;p.report={};p.report.stamp=in.stamp;p.report.strategy=p.limits.strategy;
   if(p.sequence==UINT64_MAX){p.usable=false;p.report.status=Status::ResourceLimit;return p.report.status;}
   ++p.sequence;
   auto status=p.Check(in);if(status!=Status::Ok){p.report.status=status;return status;}
@@ -68,12 +68,21 @@ Status Inventory::Stage(const Current& in) noexcept {
   if(error==cudaSuccess)error=detail::BuildRanges(p.device,native,p.stream);
   p.report.own_kernel_launches=2+(p.source.secondaries?1:0)+(p.source.mains?1:0);
   p.report.sort_calls=p.source.secondaries?1:0;p.report.scan_calls=1;
+  if(p.limits.strategy==EnumerationStrategy::CompactGrid) {
+    p.report.own_kernel_launches+=p.source.secondaries?2:0;
+    p.report.scan_calls+=p.source.mains?1:0;
+  }
   status=p.Fence(error);
+  p.report.encounters_counted=status==Status::Ok;
+  if(status==Status::Ok&&p.limits.strategy==EnumerationStrategy::CompactGrid&&
+      p.control.encounters>p.limits.max_encounters)status=Status::ResourceLimit;
   if(status==Status::Ok&&p.control.tasks>p.limits.max_tasks)status=Status::ResourceLimit;
   if(status==Status::Ok) {
     error=detail::CountPairs(p.device,native,p.control.tasks,p.stream);
     p.report.own_kernel_launches+=2+(p.control.tasks?1:0);++p.report.scan_calls;
+    if(p.limits.strategy==EnumerationStrategy::CompactGrid&&p.source.mains)++p.report.own_kernel_launches;
     status=p.Fence(error);
+    p.report.pairs_counted=status==Status::Ok;
     if(status==Status::Ok&&p.control.pairs>p.limits.max_pairs)status=Status::ResourceLimit;
   }
   if(status==Status::Ok) {
