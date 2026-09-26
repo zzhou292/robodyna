@@ -24,6 +24,7 @@ TEST(NativeSceneContactSource, CompletePhysicalContributionsAndProducedSourceSco
     EXPECT_GT(s.margin,0);EXPECT_EQ(s.gap_load,0);EXPECT_EQ(s.drad,0);EXPECT_EQ(s.force_packet_size,128u);EXPECT_EQ(s.native_workers,1);
     EXPECT_EQ(source.config().units.length_m,.001);EXPECT_EQ(source.config().lifecycle.optcd_response_precision,0);
     EXPECT_EQ(source.preprocessing(),n::search_startup::Initialization::InvariantNoExpansion);
+    EXPECT_EQ(source.forecast().native_model_nodes,18u);
     for(std::size_t i=0;i<l.secondary_count;++i) {
         const auto& row=l.secondary[i];EXPECT_EQ(l.nodes[row.node].source_id,i+1);
         // Independent uniform-material expectation; noncontact patch shells must contribute too.

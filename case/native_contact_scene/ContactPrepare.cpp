@@ -3,6 +3,28 @@
 #include <algorithm>
 namespace crash::cases::native_scene::contact_detail {
 using output::Require;
+namespace {
+void SourceContext(const PhysicalSource& physical,n::search_startup::Input& input) {
+    const auto& d=physical.declared().data();auto& c=input.contributors;
+    Require(physical.cin().explicitly_empty(),"Tied source requires genuine later removal augmentation");
+    c.census=n::search_startup::Census::CompleteDeclaredModel;
+    c.physical_nodes=d.nodes.size();c.physical_shells=d.wall.size()+d.patch.size();
+    // The strict declared schemas have one TYPE25 and no TYPE2/other interface.
+    // Do not repurpose these counts as merely 'contributors used by this leaf'.
+    c.tied_interfaces=0;c.cin_links=physical.cin().rows().count;
+    c.other_interfaces=0;c.unsupported_elements=0;
+    if(d.rigid_patch) {
+        const auto& declaration=*d.rigid_patch;const auto* parts=physical.rigid().parts();
+        Require(parts&&parts->topology()&&parts->topology()->part_count()==1&&
+            physical.rigid().groups().size()==1&&parts->topology()->parts()[0].source_part_id==declaration.source_part_id&&
+            physical.physical().domain()->Find(declaration.reference_primary_id)==SIZE_MAX,
+            "Declared generated rigid primary differs from actual physical PART scope");
+        c.rigid_bodies=parts->topology()->part_count();c.native_auxiliary_nodes=1;
+        input.auxiliary_rigid_primary_ids=&declaration.reference_primary_id;
+        input.auxiliary_rigid_primary_count=1;
+    } else Require(physical.rigid().explicitly_empty(),"Missing rigid source declaration");
+}
+}
 ContactPlan PlanContact(const PhysicalSource& physical,ContactIdentity identity,ContactLimits limits,
     MainMotion motion,std::size_t object_bytes) {
     const auto& d=physical.declared().data();
@@ -25,7 +47,10 @@ ContactPlan PlanContact(const PhysicalSource& physical,ContactIdentity identity,
     search_limits.max_mains=2*limits.physical_shells;search_limits.max_secondaries=limits.nodes;
     search_limits.max_output_bytes=limits.host_bytes;search_limits.max_scratch_bytes=limits.scratch_bytes;
     plan.topology=n::startup::Preflight(nodes,primary,plan.topology_limits);
-    plan.search=n::search_startup::Preflight(nodes,primary,nodes,search_limits);
+    n::search_startup::Input search_descriptor;SourceContext(physical,search_descriptor);
+    search_descriptor.mesh.node_count=nodes;search_descriptor.mesh.primary_count=primary;search_descriptor.secondary_count=nodes;
+    search_limits.max_native_model_nodes=limits.nodes+search_descriptor.contributors.native_auxiliary_nodes;
+    plan.search=n::search_startup::Preflight(search_descriptor,search_limits);
     Require(plan.topology.status==n::startup::Status::Ok&&plan.search.status==n::search_startup::Status::Ok,
         "Contact topology/search source preflight rejected");
     plan.rows=PlanRows(nodes,shells,primary,plan.topology.maximum_references,limits.host_bytes);
@@ -87,11 +112,14 @@ void BuildContact(ContactStorage& out,n::ContactSourceInput& source,ContactIdent
     }
     for(std::size_t i=0;i<nodes;++i)rows.search_secondary[i]={rows.secondary_nodes[i],rows.secondary_fields[i].stiffness,rows.secondary_fields[i].gap};
     n::search_startup::Input search_input;search_input.mesh=mesh;search_input.topology=out.topology;
-    search_input.contributors={n::search_startup::Census::CompleteDeclaredModel,nodes,shells,0,0,0,0,0};
+    SourceContext(out.physical,search_input);
     search_input.profile=SearchProfile(limits.preprocessing);search_input.secondary=rows.search_secondary;
     search_input.secondary_count=nodes;search_input.main_gaps=rows.expanded_gaps;search_input.main_count=2*primary;
-    Require(n::search_startup::Build(search_input,plan.search_limits,out.search_arena,scratch,&out.search).status==n::search_startup::Status::Ok,
-        "Native margin/removal/initial-contact source rejected");
+    const auto search_report=search_input.contributors.rigid_bodies?
+        n::search_startup::BuildRigidOnly(search_input,plan.search_limits,out.search_arena,scratch,&out.search):
+        n::search_startup::Build(search_input,plan.search_limits,out.search_arena,scratch,&out.search);
+    Require(search_report.status==n::search_startup::Status::Ok,"Native margin/removal/initial-contact source rejected");
+    out.forecast.native_model_nodes=out.search.native_model_nodes;
     FillRuntimeRows(out.physical,rows,out.topology,normals,out.search);
     source.source_id=identity.source;source.topology_generation=identity.topology;
     source.primary_main_count=primary;source.primary_parent_ids=rows.parent_ids;source.primary_curvature=out.search.primary_extent;

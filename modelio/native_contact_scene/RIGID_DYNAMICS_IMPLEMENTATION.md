@@ -82,3 +82,13 @@ all production code stay unchanged. Four host negatives reject mismatched
 moments, changed physical orientation, wrong motion and invalid/improper frames.
 Captured RBY(10:12) are bit-constant across1001 force2 returns. Only expected
 metadata gains these moments; both binary streams must regenerate byte-identical.
+
+
+Truthful preprocessing source successor: the complete model census now comes
+from the strict declaration and actual PART/empty-CIN binding. The actual generated
+primary ID is supplied separately from physical nodes, and context-aware preflight
+charges its private identity-validation scratch. Rigid v3 uses BuildRigidOnly,
+with1real body/1auxiliary and native NUMNOD19; v1/v2 keep Build and NUMNOD18. Both
+remain18-node physical/contact domains. Source forecast records the returned
+native population count. No known body/tied count is zeroed to fit the old API.
+The tied case remains explicitly rejected until genuine removal augmentation.

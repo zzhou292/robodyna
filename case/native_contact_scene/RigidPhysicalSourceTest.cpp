@@ -33,6 +33,8 @@ TEST(RigidScenePhysicalSource, MovingSourceUsesAcceptedMassAndArchiveKeepsPhysic
     const auto p=PhysicalSource::Prepare(RigidDeclared(),771);const auto c=MovingContactSource::Prepare(p,{1,1,1});
     EXPECT_EQ(c.config().response_mass,native::ResponseMassPolicy::AcceptedOwnerCoefficients);
     EXPECT_EQ(c.source().selection.node_count,18u);EXPECT_EQ(c.source().primary_main_count,12u);
+    EXPECT_EQ(c.forecast().native_model_nodes,19u);
+    EXPECT_EQ(p.rigid().parts()->topology()->part_count(),1u);
     output::full_shell::test::Directory directory;
     EXPECT_NO_THROW(ArchiveSource::Write(p,directory.path));
     EXPECT_THROW(ContactSource::Prepare(p,{1,1,1}),std::exception);
