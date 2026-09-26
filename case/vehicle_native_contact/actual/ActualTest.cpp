@@ -7,7 +7,7 @@ void CheckPreparationGuard(const Forecast& plan) {
     output::Require(plan.host_preparation_ceiling <= GuardBytes - ExportBytes,
                     "Complete host preparation plus report exceeds the unchanged18GiB qualification guard");
 }
-template<class F> void Run(const char* name, F body) {
+template<class F> void RunQualification(const char* name, F body) {
     const auto destination = Destination();
     auto doc = Document(name);
     const auto begin = Clock::now();
@@ -28,7 +28,7 @@ template<class F> void Run(const char* name, F body) {
 }
 }
 TEST(NativeVehicleCaseActual, SourceAndHostPreparationForecastBeforeFieldAllocation) {
-    Run("host_preparation_forecast", [](auto& doc, const auto& source) {
+    RunQualification("host_preparation_forecast", [](auto& doc, const auto& source) {
         const auto start = Clock::now();
         const auto plan = VehicleContactStartup::ForecastPreparation(source.owner, source.self, source.wall, source.controls);
         Plan(doc, plan, false);
@@ -52,7 +52,7 @@ TEST(NativeVehicleCaseActual, SourceAndHostPreparationForecastBeforeFieldAllocat
     });
 }
 TEST(NativeVehicleCaseActual, FinalRemovalPlansExposeCompleteRuntimeAndSequentialSeedPeaksWithoutOwner) {
-    Run("complete_case_forecast", [](auto& doc, const auto& source) {
+    RunQualification("complete_case_forecast", [](auto& doc, const auto& source) {
         const auto early = VehicleContactStartup::ForecastPreparation(source.owner, source.self, source.wall, source.controls);
         CheckPreparationGuard(early);
         const auto start = Clock::now();
@@ -71,7 +71,7 @@ TEST(NativeVehicleCaseActual, FinalRemovalPlansExposeCompleteRuntimeAndSequentia
     });
 }
 TEST(NativeVehicleCaseActual, SequentialGenuineInitialStatesReportWarmSignsAndTiedResetWithoutOwner) {
-    Run("initial_state_census", [](auto& doc, const auto& source) {
+    RunQualification("initial_state_census", [](auto& doc, const auto& source) {
         const auto early = VehicleContactStartup::ForecastPreparation(source.owner, source.self, source.wall, source.controls);
         CheckPreparationGuard(early);
         const auto start = Clock::now();
