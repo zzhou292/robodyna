@@ -1,0 +1,26 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Aggregate source gap controls and genuine S1 NSV/MSR order; no search scalar/history defaults inferred",
+  "gap_profile": {
+    "IGTYP": 1,
+    "IINTTHICK": 0,
+    "ILEV": 1,
+    "IGAP": 1,
+    "IGAP0": 0,
+    "ITHK25": 0,
+    "GAPSCALE": 1,
+    "GAPMAX_S": "EP20*EP10",
+    "GAPMAX_M": "EP20*EP10"
+  },
+  "gap_audit": {
+    "path": "planning/openradioss-alignment-2026-09-24/V5_GAP_SOURCE_EVIDENCE.json",
+    "bytes": 25980,
+    "sha256": "1b6b89e24e7898866df3ef6a332439b14161b721fa1e7a9652c1068cc5a178f6"
+  },
+  "roster_sort": {
+    "path": "crash-work/deps/openradioss-search-defaults-3/i25sors.F",
+    "bytes": 5615,
+    "sha256": "f0bc73d6cb880adb314c6ba5ae9bdedadf100a007d6e938f2cf3e99f25b42966"
+  },
+  "erosion_proof": "../../main_coefficients/tests/post-gapm-controls.json"
+}

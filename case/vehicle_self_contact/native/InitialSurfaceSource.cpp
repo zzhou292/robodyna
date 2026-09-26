@@ -1,3 +1,4 @@
+#include "lib_utils/BoundedArena.h"
 #include "solid_surfaces/Internal.h"
 #include <algorithm>
 namespace crash::cases::vehicle_self_contact::native::initial_surfaces {
@@ -145,4 +146,22 @@ const Certificate& InitialSurfaceSource::certificate() const noexcept { return d
 const Census& InitialSurfaceSource::census() const noexcept { return data_->census; }
 const Provenance& InitialSurfaceSource::provenance() const noexcept { return data_->provenance; }
 const Forecast& InitialSurfaceSource::forecast() const noexcept { return data_->forecast; }
+}
+
+namespace crash::cases::vehicle_self_contact::native::initial_surfaces {
+
+std::size_t InitialSurfaceSource::retained_host_upper_bound(std::size_t cap) const {
+    tl::util::BoundedArenaLayout bytes(cap); tl::util::ArenaRegion unused;
+    const auto add=[&](std::size_t count) { output::Require(bytes.Append<std::byte>(count,unused),"Retained initial surface source exceeds cap"); };
+    // Context's public bound remains conservative; no private native layout or
+    // guessed overlap is subtracted. Selection reports its actual own payload.
+    add(context().forecast().peak_bytes); add(selection().data().owned_payload_bytes);
+    add(sizeof(InitialSurfaceSource)+sizeof(Data)+4096);
+    const auto& g=data_->geometry;
+    add(g.nodes.capacity()*sizeof(coated::Node));add(g.shells.capacity()*sizeof(coated::Shell));add(g.solids.capacity()*sizeof(coated::Solid));
+    add(data_->faces.capacity()*sizeof(Face));add(data_->origin_groups.capacity()*sizeof(OriginGroup));add(data_->solid_flags.capacity());
+    for(const auto* text:{&data_->provenance.source_digest,&data_->provenance.selection_digest,&data_->provenance.input_digest,
+            &data_->provenance.output_digest,&data_->provenance.control_rule})add(text->capacity()+1);
+    return bytes.bytes();
+}
 }

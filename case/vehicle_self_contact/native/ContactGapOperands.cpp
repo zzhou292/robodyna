@@ -1,3 +1,4 @@
+#include "lib_utils/BoundedArena.h"
 #include "gap_operands/Internal.h"
 namespace crash::cases::vehicle_self_contact::native::gap_operands {
 namespace d=detail;
@@ -87,4 +88,20 @@ const Counts& ContactGapOperands::counts() const noexcept { return data_->values
 const SourceProof& ContactGapOperands::proof() const noexcept { return data_->values.proof; }
 const Provenance& ContactGapOperands::provenance() const noexcept { return data_->provenance; }
 const Forecast& ContactGapOperands::forecast() const noexcept { return data_->forecast; }
+}
+
+namespace crash::cases::vehicle_self_contact::native::gap_operands {
+
+std::size_t ContactGapOperands::additional_retained_upper_bound(std::size_t cap) const {
+    tl::util::BoundedArenaLayout bytes(cap); tl::util::ArenaRegion unused;
+    const auto add=[&](std::size_t count) { output::Require(bytes.Append<std::byte>(count,unused),"Retained gap operands exceed cap"); };
+    // Caller must separately retain/authenticate corrected(). This explicit
+    // additional bound never claims the shared context has no payload.
+    add(sizeof(ContactGapOperands)+sizeof(Data)+4096);
+    add(data_->values.shells.capacity()*sizeof(values::PhysicalShell));add(data_->values.beams.capacity()*sizeof(values::Line));
+    add(data_->values.springs.capacity()*sizeof(values::Spring));add(data_->values.bindings.capacity()*sizeof(Binding));
+    for(const auto* text:{&data_->provenance.source_digest,&data_->provenance.contributor_digest,
+            &data_->provenance.property_digest,&data_->provenance.operand_digest})add(text->capacity()+1);
+    return bytes.bytes();
+}
 }

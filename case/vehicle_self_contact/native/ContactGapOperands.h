@@ -60,6 +60,8 @@ class ContactGapOperands {
     const SourceProof& proof() const noexcept;
     const Provenance& provenance() const noexcept;
     const Forecast& forecast() const noexcept;
+    // Retained source payload bound; excludes this producer's retired scratch.
+    std::size_t additional_retained_upper_bound(std::size_t cap) const;
   private:
     struct Data;
     explicit ContactGapOperands(std::shared_ptr<const Data> data):data_(std::move(data)){}
