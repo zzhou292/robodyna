@@ -9,3 +9,12 @@ The explicit shell-source overload requires PhysicalShellsWithNodalSeed and a co
 This nodal extension does not expand the primary-face coefficient profile. Requested main outputs still require separately authenticated ordinary-exterior roles. Coated physical shells may contribute to the whole-model ET/count ledger while their primary coefficient outputs remain unadmitted by this API.
 
 Caller-provided scratch is private and may contain a partial reduction on failure; public outputs and preflight forecasts remain unchanged on failure. Required bytes are forecast before source dereference/allocation; the adapter itself allocates nothing.
+
+Post-ASSTIFI correction is a separate entry point in
+`RadiossType25NodalCorrection.h`. It preserves native EightSlot storage order,
+first-solid tagging and the subsequent TYPE24/IGSTI-1 global-factor tail. Its
+PM32/PM107 and ordered inputs require source binding; coefficients here are
+native startup contact K, never structural STI or physical nodal M. Repeated
+secondary occurrences remain repeated and virtual secondaries are skipped.
+No per-step CPU work is introduced. Both accumulation and correction use this
+package's same bounded host arena/range utilities and publish only success.
