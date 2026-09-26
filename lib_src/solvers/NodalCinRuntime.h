@@ -38,6 +38,17 @@ struct NodalCinWitnessSource {
   const constraints::tied_shell::cin::ActiveWitness* witnesses = nullptr;
   std::size_t range_count = 0, witness_count = 0;
 };
+// Current scalar MS coefficients, before inversion, in SI kg. They may include
+// previously accepted CIN transfer/numerical mass; they are not necessarily the
+// original physical ledger. A zero dependent mass is real state. No mutable
+// coefficient or standalone advancement/publication authority is exposed.
+struct NodalAcceptedRawMassView {
+  const double* mass_kg = nullptr;
+  std::size_t node_count = 0;
+  std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0;
+  std::uint64_t qualification_id = 0;
+  cudaStream_t stream = nullptr;
+};
 struct NodalCinAssemblyView {
   std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0, qualification_id = 0;
   double* translational_stiffness = nullptr;
