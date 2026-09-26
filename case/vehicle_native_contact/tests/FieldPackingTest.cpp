@@ -95,7 +95,7 @@ TEST(NativeVehicleFieldPacking, CountAndCapRejectBeforePayloadAndExactCapacityRe
         input.secondary_nodes, input.secondary_coefficients, input.secondary_gaps};
     EXPECT_THROW(FieldPacking::Preflight(bad), std::exception);
     auto malformed = input;
-    malformed.secondary_gaps = {};
+    malformed.secondary_gaps = {nullptr, 0};
     EXPECT_THROW(FieldPacking::Starter(malformed), std::exception);
     EXPECT_NO_THROW(FieldPacking::Starter(input));
 }
