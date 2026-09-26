@@ -32,8 +32,11 @@
     },
     {
       "path": "lib_src/elements/qeph/QephHistory.h",
-      "bytes": 3493,
-      "sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3"
+      "bytes": 3593,
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878",
+      "prior_sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3",
+      "prior_bytes": 3493,
+      "followup": "Inherited qualified projection-working-length identity comparison; exact two-line expansion reviewed against b939. No history arithmetic change in this slice."
     }
   ]
 }

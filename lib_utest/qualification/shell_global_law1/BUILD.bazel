@@ -6,6 +6,6 @@ cc_test(
 )
 cc_test(
     name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
-    data = ["verify_sources.py", "source-proof.json", "//lib_src/elements/qeph:global_law1_source", "//lib_src/elements/t3:global_law1_source"],
+    data = ["//lib_utest/qualification/qeph_private_trial:source_data", "verify_sources.py", "source-proof.json", "//lib_src/elements/qeph:global_law1_source", "//lib_src/elements/t3:global_law1_source"],
     copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
 )

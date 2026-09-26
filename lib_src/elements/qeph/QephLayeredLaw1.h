@@ -26,23 +26,23 @@ TL_QEPH_HD inline Status InitializeLayeredLaw1History(const ReferenceData& r,
 }
 // Native NPT3 LAW1 elastic stabilization; ITHICK1 updates physical thickness.
 // Force projection and total stress/stabilization work retain the owning paths.
-TL_QEPH_HD inline Status EvaluateLayeredLaw1Force(const ReferenceData& r,const tl::material::ShellElasticLaw1PointParameters& parameters,
-    const LayeredLaw1History& accepted,
-    const PrescribedInterval& interval,LayeredLaw1ForceTrial& output) noexcept {
+namespace detail {
+TL_QEPH_HD inline Status EvaluateLayeredLaw1IntoTrial(const ReferenceData& r,const tl::material::ShellElasticLaw1PointParameters& parameters,
+    const History& base,const sections::ShellLayeredLaw1History& accepted_section,
+    const PrescribedInterval& interval,ForceTrial& candidate,
+    sections::ShellLayeredLaw1Result& section) noexcept {
   if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
-  const auto& base=accepted.shell;
   if(!sections::MatchesLayeredMaterial(parameters,r.input)||
-     !sections::MatchesLayeredSectionResultants(accepted.section,base.data())) return Status::kInvalidInput;
+     !sections::MatchesLayeredSectionResultants(accepted_section,base.data())) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!detail::ValidHistoryValues(base.data())||!tl::math::Finite(stamp.time)||stamp.time<0||
      interval.base_time!=stamp.time||stamp.sample_index==UINT64_MAX||
      interval.sample_index!=stamp.sample_index+1) return Status::kInvalidInput;
+  candidate=ForceTrial{};
   detail::GeometryWork geometry;
   const auto status=detail::PrepareGeometry(r,interval,geometry);
   if(status!=Status::kSuccess) return status;
-  LayeredLaw1ForceTrial staged;
-  auto& candidate=staged.force;
   candidate.kinematics=geometry.values; // Before native CNDT3 length mutation.
   detail::MaterialWork material;
   auto coefficients_input=r.input;
@@ -57,15 +57,13 @@ TL_QEPH_HD inline Status EvaluateLayeredLaw1Force(const ReferenceData& r,const t
   section_input.reference_thickness=material.thickness;
   section_input.reported_thickness=proposed.thickness;
   section_input.transverse_shear_modulus=material.gs;
-  sections::ShellLayeredLaw1Result section;
-  if(!sections::UpdateShellLayeredLaw1(parameters,accepted.section,section_input,section))
+  if(!sections::UpdateShellLayeredLaw1(parameters,accepted_section,section_input,section))
     return Status::kNonfiniteResult;
   const double dtinv=material.dt/::fmax(material.dt*material.dt,detail::force_constant::em20);
   const double viscosity=detail::force_constant::onep414*material.dm*material.rho*
       material.sound_speed*::sqrt(geometry.values.area)*dtinv;
   if(!sections::ApplyLayeredSectionWork(section,dx,material.thickness,geometry.values.area,viscosity,proposed))
     return Status::kNonfiniteResult;
-  staged.proposed_section=section.history;
   detail::StiffnessDiagnostics(geometry,material,candidate.diagnostics);
   detail::LocalForceWork local;
   detail::ElasticForces(geometry,material,proposed,local);
@@ -85,6 +83,19 @@ TL_QEPH_HD inline Status EvaluateLayeredLaw1Force(const ReferenceData& r,const t
   const auto preparation=PreparePrescribedHistory(r,proposed,
       {interval.base_time+interval.dt,interval.sample_index},candidate.proposed_history);
   if(preparation!=Status::kSuccess) return Status::kNonfiniteResult;
+  return Status::kSuccess;
+}
+} // namespace detail
+TL_QEPH_HD inline Status EvaluateLayeredLaw1Force(const ReferenceData& r,
+    const tl::material::ShellElasticLaw1PointParameters& parameters,
+    const LayeredLaw1History& accepted,const PrescribedInterval& interval,
+    LayeredLaw1ForceTrial& output) noexcept {
+  LayeredLaw1ForceTrial staged;
+  sections::ShellLayeredLaw1Result section;
+  const auto status=detail::EvaluateLayeredLaw1IntoTrial(r,parameters,accepted.shell,
+      accepted.section,interval,staged.force,section);
+  if(status!=Status::kSuccess) return status;
+  staged.proposed_section=section.history;
   output=staged;
   return Status::kSuccess;
 }

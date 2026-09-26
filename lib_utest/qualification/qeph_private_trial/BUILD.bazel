@@ -1,0 +1,5 @@
+filegroup(
+    name = "source_data",
+    srcs = ["verify_sources.py", "source-proof.json", "//lib_src/elements/qeph:private_trial_source"],
+    visibility = ["//lib_utest/qualification/shell_global_law1:__pkg__"],
+)

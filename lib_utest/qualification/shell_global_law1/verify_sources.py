@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Only the shared evaluator's coefficient input changes; old math stays pinned."""
 from pathlib import Path
-import hashlib,json
+import hashlib,json,runpy
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[2]
 def body(s,name):
@@ -17,7 +17,12 @@ def main():
     pins=json.loads((HERE/'source-proof.json').read_text())
     for path,pin in pins['functions'].items():
         s=(ROOT/path).read_text()
-        actual=body(s,'inline Status EvaluateForceWithThickness(')
+        if path.endswith('/qeph/QephForce.h'):
+            proof=runpy.run_path(str(HERE.parent/'qeph_private_trial/verify_sources.py'))
+            proof['verify']()
+            actual=proof['original_global'](s)
+        else:
+            actual=body(s,'inline Status EvaluateForceWithThickness(')
         explicit='  auto coefficient_input=r.input;\n  coefficient_input.thickness=coefficient_thickness;\n'
         if actual.count(explicit)!=1:raise ValueError('Unexpected coefficient routing')
         actual=actual.replace(explicit,'').replace('PrepareMaterial(coefficient_input,','PrepareMaterial(r.input,')

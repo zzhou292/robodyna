@@ -15,18 +15,20 @@ namespace tl::fea::qeph {
 // reference/time and next sample identity; every output/base byte survives
 // failure, including late reported-thickness or force/diagnostic arithmetic.
 namespace detail {
-TL_QEPH_HD inline Status EvaluateForceWithThickness(const ReferenceData& r,const History& base,
-    const PrescribedInterval& interval,double coefficient_thickness,ForceTrial& output) noexcept {
+// Private resident worker. Output is a distinct unpublished trial cell; it may
+// be incomplete on failure. Public wrappers below retain atomic publication.
+TL_QEPH_HD inline Status EvaluateForceWithThicknessIntoTrial(const ReferenceData& r,const History& base,
+    const PrescribedInterval& interval,double coefficient_thickness,ForceTrial& candidate) noexcept {
   if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!detail::ValidHistoryValues(base.data())||!tl::math::Finite(stamp.time)||stamp.time<0||
      interval.base_time!=stamp.time||stamp.sample_index==UINT64_MAX||
      interval.sample_index!=stamp.sample_index+1) return Status::kInvalidInput;
+  candidate=ForceTrial{}; // Reset every field when retrying the same trial slab.
   detail::GeometryWork geometry;
   const auto status=detail::PrepareGeometry(r,interval,geometry);
   if(status!=Status::kSuccess) return status;
-  ForceTrial candidate;
   candidate.kinematics=geometry.values; // Before native CNDT3 length mutation.
   detail::MaterialWork material;
   auto coefficient_input=r.input;
@@ -54,8 +56,21 @@ TL_QEPH_HD inline Status EvaluateForceWithThickness(const ReferenceData& r,const
   const auto preparation=PreparePrescribedHistory(r,proposed,
       {interval.base_time+interval.dt,interval.sample_index},candidate.proposed_history);
   if(preparation!=Status::kSuccess) return Status::kNonfiniteResult;
-  output=candidate;
   return Status::kSuccess;
+}
+TL_QEPH_HD inline Status EvaluateForceWithThickness(const ReferenceData& r,const History& base,
+    const PrescribedInterval& interval,double coefficient_thickness,ForceTrial& output) noexcept {
+  ForceTrial candidate;
+  const auto status=EvaluateForceWithThicknessIntoTrial(r,base,interval,coefficient_thickness,candidate);
+  if(status==Status::kSuccess) output=candidate;
+  return status;
+}
+TL_QEPH_HD inline Status EvaluateGlobalLaw1IntoTrial(const ShellGlobalLaw1Profile& profile,
+    const ReferenceData& r,const History& base,const PrescribedInterval& interval,
+    ForceTrial& output) noexcept {
+  if(!shell_global_law1::Valid(profile)) return Status::kInvalidInput;
+  const double thickness=shell_global_law1::QephCoefficientThickness(profile,r.input.thickness,base.data().thickness);
+  return EvaluateForceWithThicknessIntoTrial(r,base,interval,thickness,output);
 }
 } // namespace detail
 

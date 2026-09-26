@@ -315,8 +315,11 @@
     },
     {
       "path": "lib_src/elements/qeph/QephForce.h",
-      "bytes": 4529,
-      "sha256": "baa62c03f8575d1fa7d8da62db6716829606e82b6521af575e22e270c4650ede"
+      "bytes": 5612,
+      "sha256": "7bdfa1ab27fe155d131bb035b9663082b5d291b63c1a567e47056da6810158eb",
+      "prior_sha256": "baa62c03f8575d1fa7d8da62db6716829606e82b6521af575e22e270c4650ede",
+      "prior_bytes": 4529,
+      "followup": "Private resident trial destination; exact original numerical body is reconstructed and checked by qeph_private_trial/verify_sources.py; public staging retained."
     },
     {
       "path": "lib_src/elements/qeph/QephForceData.h",
@@ -370,8 +373,11 @@
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredForceCore.h",
-      "sha256": "268daa778e9aa4ccdc15b8a3807a0798badbf37d98e4f8136d69d90861f13383",
-      "bytes": 5012
+      "sha256": "d0ed04f5724fb98420035f60581a55a28f0661cf9e9e5ba15965d6a1bc3a9c88",
+      "bytes": 5790,
+      "prior_sha256": "268daa778e9aa4ccdc15b8a3807a0798badbf37d98e4f8136d69d90861f13383",
+      "prior_bytes": 5012,
+      "followup": "Private resident trial destination; exact original numerical body is reconstructed and checked by qeph_private_trial/verify_sources.py; public staging retained."
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredJ2Failure.h",

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Authenticate frozen diagnostics and unchanged material/ordered reduction bodies."""
 from pathlib import Path
-import hashlib,json
+import hashlib,json,runpy
 here=Path(__file__).resolve().parent
 root=here.parents[2]
 raw=(here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest()=="f166a1fbd8846030ce748602053b33f79a27cf11a0369e5ba4bfbb0041dec469"
+assert hashlib.sha256(raw).hexdigest()=="00a89587dc2c6c808eca445a593bc2380d01ec6f1b167b60b2b7a04788b33441"
 manifest=json.loads(raw)
 for row in manifest['files']:
     path=Path(row['path'])
@@ -24,12 +24,13 @@ def function(text,name):
     return text[start:end]
 old=(here/'reference/QephBatchKernels.cu').read_text()
 current=(root/'lib_src/elements/qeph/QephBatchKernels.cu').read_text()
-for name in ('CandidateElements','FinalizeCandidate'):
-    assert function(old,name)==function(current,name),name
+assert function(old,'FinalizeCandidate')==function(current,'FinalizeCandidate'),'FinalizeCandidate'
+private=runpy.run_path(str(here.parent/'qeph_private_trial/verify_sources.py'))
+private['verify']()
 old=(here/'reference/QephBatchDiagnostics.h').read_text()
 current=(root/'lib_src/elements/qeph/QephBatchDiagnostics.h').read_text()
 parent=function(current,'MeasureParents')
 assert old[old.index('  unsigned material_parent=0;'):old.index('} // namespace')].strip()==parent[parent.index('  unsigned material_parent=0;'):].strip()
 old_nodes=old[old.index('  auto& d=out.diagnostics;'):old.index('  unsigned material_parent=0;')]
 assert old_nodes in function(current,'Measure')
-print(json.dumps({'status':'passed','records':len(manifest['files']),'baseline':manifest['baseline_commit'],'unchanged_bodies':['CandidateElements','FinalizeCandidate','MeasureNodes','MeasureParents'],'numerical_execution':False}))
+print(json.dumps({'status':'passed','records':len(manifest['files']),'baseline':manifest['baseline_commit'],'unchanged_bodies':['FinalizeCandidate','MeasureNodes','MeasureParents'],'candidate_dispatch':'reviewed private-trial storage; exact force bodies separately checked','numerical_execution':False}))

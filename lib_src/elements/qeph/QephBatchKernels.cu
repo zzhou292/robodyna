@@ -87,28 +87,17 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
         failure->state[1u-accepted_slab][e]=ShellBatchFailureState{};
       }
     } else if(failure&&mixed)
-      element_status[e]=EvaluateFailureSection(s.model.element[e].reference,accepted->element[e].proposed_history,
+      element_status[e]=EvaluateFailureSectionIntoTrial(s.model.element[e].reference,accepted->element[e].proposed_history,
         interval,*mixed,*failure,accepted_slab,e,trial->element[e]);
     else if(mixed)
-      element_status[e]=EvaluateMixedSection(s.model.element[e].reference,accepted->element[e].proposed_history,
+      element_status[e]=EvaluateMixedSectionIntoTrial(s.model.element[e].reference,accepted->element[e].proposed_history,
         interval,*mixed,accepted_slab,e,trial->element[e]);
     else if(!plasticity)
-      element_status[e]=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
-    else {
-      const auto& old_section=plasticity->section[accepted_slab][e];
-      const LayeredJ2History base{accepted->element[e].proposed_history,old_section.history};
-      LayeredJ2ForceTrial candidate;
-      element_status[e]=EvaluateLayeredJ2Force(s.model.element[e].reference,plasticity->parameters[e],base,interval,candidate);
-      if(element_status[e]==Status::kSuccess) {
-        ShellBatchSectionState section;
-        section.history=candidate.proposed_section; section.diagnostics=candidate.section_diagnostics;
-        section.cumulative_plastic_work_J=old_section.cumulative_plastic_work_J+
-            candidate.section_diagnostics.plastic_work_density_increment*
-            base.shell.data().thickness*candidate.force.kinematics.area;
-        if(!tl::math::Finite(section.cumulative_plastic_work_J)) element_status[e]=Status::kNonfiniteResult;
-        else { trial->element[e]=candidate.force; plasticity->section[1u-accepted_slab][e]=section; }
-      }
-    }
+      element_status[e]=detail::EvaluateForceWithThicknessIntoTrial(s.model.element[e].reference,
+        accepted->element[e].proposed_history,interval,s.model.element[e].reference.input.thickness,trial->element[e]);
+    else
+      element_status[e]=EvaluatePlasticSection(s.model.element[e].reference,accepted->element[e].proposed_history,
+        interval,*plasticity,accepted_slab,e,trial->element[e]);
   }
 }
 __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,

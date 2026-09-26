@@ -112,3 +112,10 @@ filegroup(
     srcs = ["QephForce.h"],
     visibility = ["//lib_utest/qualification/shell_global_law1:__pkg__"],
 )
+
+filegroup(
+    name = "private_trial_source",
+    srcs = ["QephForce.h", "QephLayeredForceCore.h", "QephLayeredLaw1.h",
+            "QephBatchLayeredSection.h", "QephBatchFailureSection.h", "QephBatchKernels.cu"],
+    visibility = ["//lib_utest/qualification/qeph_private_trial:__pkg__"],
+)

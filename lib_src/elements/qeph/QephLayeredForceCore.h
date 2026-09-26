@@ -7,10 +7,12 @@
 #include "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h"
 
 namespace tl::fea::qeph::detail {
-template<class Accepted,class Trial,class Adapter>
-TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const sections::PointParameters& parameters,
-    const Accepted& accepted,const PrescribedInterval& interval,Trial& output,const Adapter& adapter) noexcept {
-  const auto& base=accepted.shell;
+template<class Adapter>
+// Only a private, nonaliasing resident trial may be partially written. The
+// numerical leaves and all validation order are shared with the value wrapper.
+TL_QEPH_HD inline Status EvaluateLayeredForceIntoTrial(const ReferenceData& r,const sections::PointParameters& parameters,
+    const History& base,const PrescribedInterval& interval,ForceTrial& candidate,
+    typename Adapter::Result& section,const Adapter& adapter) noexcept {
   if(!sections::ValidLayeredJ2Parameters(parameters)||
      !sections::MatchesLayeredJ2Material(parameters,r.input)||
      !adapter.Matches(base.data(),r.input.placement)) return Status::kInvalidInput;
@@ -19,11 +21,10 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
   if(!ValidHistoryValues(base.data(),Adapter::admits_failure)||!tl::math::Finite(stamp.time)||stamp.time<0||
      interval.base_time!=stamp.time||stamp.sample_index==UINT64_MAX||
      interval.sample_index!=stamp.sample_index+1) return Status::kInvalidInput;
+  candidate=ForceTrial{};
   GeometryWork geometry;
   const auto status=PrepareGeometry(r,interval,geometry);
   if(status!=Status::kSuccess) return status;
-  Trial staged;
-  auto& candidate=staged.force;
   candidate.kinematics=geometry.values; // Before native CNDT3 length mutation.
   MaterialWork material;
   auto coefficients_input=r.input;
@@ -40,7 +41,6 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
   section_input.reported_thickness=proposed.thickness;
   section_input.transverse_shear_modulus=material.gs;
   section_input.dt=material.dt;
-  typename Adapter::Result section;
   if(adapter.Update(section_input,interval.base_time+interval.dt,section)!=sections::PointStatus::Ok)
     return Status::kNonfiniteResult;
   // SIGEPS44C replaces the startup SSP before MULAWC viscosity and CNDT3.
@@ -51,7 +51,6 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
       material.sound_speed*::sqrt(geometry.values.area)*dtinv;
   if(!adapter.Apply(section,dx,material.thickness,geometry.values.area,viscosity,proposed,r.input.placement))
     return Status::kNonfiniteResult;
-  Adapter::Publish(section,staged);
   StiffnessDiagnostics(geometry,material,candidate.diagnostics,proposed.active);
   LocalForceWork local;
   ElasticForces(geometry,material,proposed,local);
@@ -75,6 +74,19 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
       PrepareFailurePrescribedHistory(r,proposed,{interval.base_time+interval.dt,interval.sample_index},candidate.proposed_history):
       PreparePrescribedHistory(r,proposed,{interval.base_time+interval.dt,interval.sample_index},candidate.proposed_history);
   if(preparation!=Status::kSuccess) return Status::kNonfiniteResult;
+  return Status::kSuccess;
+}
+// Public value callers continue to stage every force/history/section field and
+// publish only success, including when accepted history aliases output history.
+template<class Accepted,class Trial,class Adapter>
+TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const sections::PointParameters& parameters,
+    const Accepted& accepted,const PrescribedInterval& interval,Trial& output,const Adapter& adapter) noexcept {
+  Trial staged;
+  typename Adapter::Result section;
+  const auto status=EvaluateLayeredForceIntoTrial(r,parameters,accepted.shell,interval,
+      staged.force,section,adapter);
+  if(status!=Status::kSuccess) return status;
+  Adapter::Publish(section,staged);
   output=staged;
   return Status::kSuccess;
 }
