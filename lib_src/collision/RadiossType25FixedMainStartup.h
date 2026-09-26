@@ -20,14 +20,28 @@ Report BuildStarter(const Input&,Limits,tl::util::HostArena& output,
 Forecast PreflightMixedSides(const Input&,Limits={}) noexcept;
 Report BuildMixedSides(const Input&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,MixedSidesSnapshot*) noexcept;
-// DRAFT source contract: implementation/qualification follows in this isolated
-// branch. Clone genuine sides, apply only primary permutations, then construct
+// Clone genuine sides, apply only primary permutations, then construct
 // neighbors/reference CSR/Starter normals from authentic post-GAPM support.
 // The original BuildStarter overload continues to reject mixed input.
 Forecast PreflightMixedStarter(const Input&,const MixedSidesSnapshot&,
     const PostGapmTopology&,Limits={}) noexcept;
 Report BuildStarter(const Input&,const MixedSidesSnapshot&,const PostGapmTopology&,
     Limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot*) noexcept;
+// Count-only aligned storage forecast. This performs no borrowed-source or
+// prefix validation; call the typed preflight after real arrays are available.
+Forecast ForecastMixedStarterStorage(std::size_t nodes,std::size_t primaries,
+    std::size_t shell_primaries,std::size_t raw_origins,Limits={}) noexcept;
+// Explicit combined-domain overload. It validates an unchanged original node
+// prefix and genuine original sides before one shared topology build. Added
+// IDs must be unique and all coordinates finite, as in the original admission.
+// No contact face may reference the added suffix. Old overloads stay exact.
+// Prefix preflight requires an explicit Limits argument, preserving legacy
+// calls whose fourth argument is an empty Limits initializer.
+Forecast PreflightMixedStarter(const Input&,const MixedSidesSnapshot&,
+    const PostGapmTopology&,const NodePrefixExtension&,Limits) noexcept;
+Report BuildStarter(const Input&,const MixedSidesSnapshot&,const PostGapmTopology&,
+    const NodePrefixExtension&,Limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot*) noexcept;
 // Separate native fixed-main-ready stage. Snapshot must be an immutable result
 // of BuildStarter for this same input/generation. Structural checks reject bad
 // spans, ranges and reciprocal/reference endpoints; they are not authentication

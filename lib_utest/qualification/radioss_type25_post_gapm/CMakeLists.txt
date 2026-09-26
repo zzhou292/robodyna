@@ -13,7 +13,7 @@ include("${TL_ROOT}/lib_src/collision/RadiossType25InterfaceSurface.cmake")
 # Reuse complete old startup/current-normal qualification and unchanged donors.
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_current_normals" current-regression)
 include("${CMAKE_CURRENT_LIST_DIR}/native/Native.cmake")
-add_executable(type25_post_gapm_host HostTest.cpp)
+add_executable(type25_post_gapm_host HostTest.cpp NodePrefixTest.cpp)
 target_link_libraries(type25_post_gapm_host PRIVATE tl_radioss_type25_interface_surface
   tl_radioss_type25_current_normals type25_post_gapm_oracle type25_current_normals_oracle GTest::gtest_main)
 target_compile_features(type25_post_gapm_host PRIVATE cxx_std_17)

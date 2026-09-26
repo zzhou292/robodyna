@@ -1239,7 +1239,7 @@ cc_library(
     hdrs = ["RadiossType25FixedMainStartup.h"] + glob(["radioss_type25/startup/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_coefficients", ":radioss_type25_local_geometry", ":radioss_type25_normal_math",
-            ":radioss_type25_search_values", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena"],
+            ":radioss_type25_search_values", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena", "//lib_src/math:scalar_bits"],
 )
 
 cc_library(

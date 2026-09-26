@@ -2,6 +2,7 @@
 #include "../../RadiossType25FixedMainStartup.h"
 #include "Internal.h"
 #include "../search/Ranges.h"
+#include "lib_src/math/ScalarBits.h"
 #include <algorithm>
 namespace tlfea::contact::radioss_type25::startup {
 namespace {
@@ -11,12 +12,12 @@ bool Same(const PrimaryFaceIdentity& a,const PrimaryFaceIdentity& b) noexcept {
   return a.kind==b.kind && a.physical_parent_id==b.physical_parent_id && a.local_face==b.local_face &&
       a.origin==b.origin && a.origin_count==b.origin_count;
 }
-Report Descriptors(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post) noexcept {
+Report Descriptors(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post,const NodePrefixExtension* extension) noexcept {
   const auto p=input.primary_count,g=p+input.shell_primary_count,raw=input.raw_origin_count;
   if(input.profile!=Profile::MixedSurface || input.topology!=TopologyPolicy::NativeMixedSurface)
     return {Status::UnsupportedProfile};
   if(sides.primary_count!=p || sides.shell_primary_count!=input.shell_primary_count || sides.main_count!=g ||
-      sides.node_count!=input.node_count || sides.raw_origin_count!=raw || !input.source_generation ||
+      sides.node_count!=(extension?extension->node_count:input.node_count) || sides.raw_origin_count!=raw || !input.source_generation ||
       sides.source_generation!=input.source_generation || post.source_generation!=input.source_generation ||
       post.phase!=PostGapmPhase::FinalizedBeforeNeighbors || post.primary_count!=p || post.before_shell_count!=p ||
       post.main_count!=g || !range::Span(sides.mains,g) || !range::Span(sides.primary_to_partner,p) ||
@@ -67,6 +68,34 @@ Report Descriptors(const Input& input,const MixedSidesSnapshot& sides,const Post
     return {Status::InvalidInput};
   return {Status::Ok};
 }
+Report Prefix(const Input& input,const NodePrefixExtension& prefix) noexcept {
+  if(!prefix.node_count || prefix.node_count>=input.node_count || input.coordinates!=prefix.coordinates ||
+      !range::Span(prefix.node_source_ids,prefix.node_count) || !range::Span(input.node_source_ids,input.node_count) ||
+      !range::Span(input.primary,input.primary_count))return {Status::InvalidInput};
+  std::size_t old_bytes=0,new_bytes=0;
+  if(!range::VectorSpan(prefix.positions,prefix.node_count,old_bytes) ||
+      !range::VectorSpan(input.positions,input.node_count,new_bytes))return {Status::InvalidInput};
+  if(input.coordinates==Coordinates::Si &&
+      (!tl::math::SameScalarBits(input.units.mass_kg,prefix.units.mass_kg) ||
+       !tl::math::SameScalarBits(input.units.length_m,prefix.units.length_m) ||
+       !tl::math::SameScalarBits(input.units.time_s,prefix.units.time_s)))return {Status::InvalidInput};
+  for(std::size_t i=0;i<prefix.node_count;++i) {
+    const auto a=input.positions.at(std::uint32_t(i)),b=prefix.positions.at(std::uint32_t(i));
+    if(input.node_source_ids[i]!=prefix.node_source_ids[i] ||
+        !tl::math::SameScalarBits(a.x,b.x) || !tl::math::SameScalarBits(a.y,b.y) ||
+        !tl::math::SameScalarBits(a.z,b.z))return {Status::InvalidInput,SIZE_MAX,i};
+  }
+  for(std::size_t i=0;i<input.primary_count;++i)for(auto node:input.primary[i].nodes)
+    if(node>=prefix.node_count)return {Status::InvalidInput,i,node};
+  return {Status::Ok};
+}
+bool PrefixDisjoint(const NodePrefixExtension& prefix,const void* target,std::size_t bytes) noexcept {
+  std::size_t position_bytes=0;
+  if(!range::VectorSpan(prefix.positions,prefix.node_count,position_bytes))return false;
+  return d::Disjoint(target,bytes,&prefix,sizeof(prefix)) &&
+      d::Disjoint(target,bytes,prefix.node_source_ids,prefix.node_count*sizeof(std::uint64_t)) &&
+      d::Disjoint(target,bytes,prefix.positions.data,position_bytes);
+}
 bool SourceDisjoint(const MixedSidesSnapshot& s,const PostGapmTopology& p,
     const void* target,std::size_t bytes) noexcept {
   struct Range {const void* pointer;std::size_t bytes;};
@@ -102,20 +131,22 @@ Report SameSides(const Input& input,const MixedSidesSnapshot& sides,d::Data expe
   return {Status::Ok};
 }
 }
-Forecast PreflightMixedStarter(const Input& input,const MixedSidesSnapshot& sides,
-    const PostGapmTopology& post,Limits limits) noexcept {
+static Forecast PreflightImpl(const Input& input,const MixedSidesSnapshot& sides,
+    const PostGapmTopology& post,Limits limits,const NodePrefixExtension* extension) noexcept {
   if(input.profile!=Profile::MixedSurface || input.topology!=TopologyPolicy::NativeMixedSurface) {
     Forecast f;f.status=Status::UnsupportedProfile;return f;
   }
   d::Layout layout;
   auto report=d::MakeLayout(input.node_count,input.primary_count,limits,layout,input.topology,
       input.shell_primary_count,input.raw_origin_count);
-  if(report.status==Status::Ok)report=Descriptors(input,sides,post);
+  if(report.status==Status::Ok)report=Descriptors(input,sides,post,extension);
+  if(report.status==Status::Ok && extension)report=Prefix(input,*extension);
   if(report.status!=Status::Ok) {Forecast f;f.status=report.status;return f;}
   return layout.forecast;
 }
-Report BuildStarter(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post,
-    Limits limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot* published) noexcept {
+static Report BuildImpl(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post,
+    Limits limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot* published,
+    const NodePrefixExtension* extension) noexcept {
   if(input.profile!=Profile::MixedSurface || input.topology!=TopologyPolicy::NativeMixedSurface)
     return {Status::UnsupportedProfile};
   d::Layout layout;
@@ -126,7 +157,13 @@ Report BuildStarter(const Input& input,const MixedSidesSnapshot& sides,const Pos
     return {Status::ResourceLimit};
   report=d::CheckInput(input,layout,output,scratch,published,sizeof(Snapshot));
   if(report.status!=Status::Ok)return report;
-  report=Descriptors(input,sides,post);if(report.status!=Status::Ok)return report;
+  report=Descriptors(input,sides,post,extension);if(report.status!=Status::Ok)return report;
+  if(extension) {
+    report=Prefix(input,*extension);if(report.status!=Status::Ok)return report;
+    if(!PrefixDisjoint(*extension,output.data(),output.bytes()) ||
+        !PrefixDisjoint(*extension,scratch.data(),scratch.bytes()) ||
+        !PrefixDisjoint(*extension,published,sizeof(*published)))return {Status::InvalidInput};
+  }
   if(!SourceDisjoint(sides,post,output.data(),output.bytes()) ||
       !SourceDisjoint(sides,post,scratch.data(),scratch.bytes()) ||
       !SourceDisjoint(sides,post,published,sizeof(*published)))return {Status::InvalidInput};
@@ -186,4 +223,30 @@ Report BuildStarter(const Input& input,const MixedSidesSnapshot& sides,const Pos
   *published=next;
   report={Status::Ok};report.neighbor_warnings=warnings;return report;
 }
+Forecast ForecastMixedStarterStorage(std::size_t nodes,std::size_t primaries,
+    std::size_t shells,std::size_t origins,Limits limits) noexcept {
+  d::Layout layout;
+  const auto report=d::MakeLayout(nodes,primaries,limits,layout,
+      TopologyPolicy::NativeMixedSurface,shells,origins);
+  if(layout.forecast.output_bytes)return layout.forecast;
+  Forecast result;result.status=report.status;return result;
+}
+Forecast PreflightMixedStarter(const Input& input,const MixedSidesSnapshot& sides,
+    const PostGapmTopology& post,Limits limits) noexcept {
+  return PreflightImpl(input,sides,post,limits,nullptr);
+}
+Forecast PreflightMixedStarter(const Input& input,const MixedSidesSnapshot& sides,
+    const PostGapmTopology& post,const NodePrefixExtension& prefix,Limits limits) noexcept {
+  return PreflightImpl(input,sides,post,limits,&prefix);
+}
+Report BuildStarter(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post,
+    Limits limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot* result) noexcept {
+  return BuildImpl(input,sides,post,limits,output,scratch,result,nullptr);
+}
+Report BuildStarter(const Input& input,const MixedSidesSnapshot& sides,const PostGapmTopology& post,
+    const NodePrefixExtension& prefix,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* result) noexcept {
+  return BuildImpl(input,sides,post,limits,output,scratch,result,&prefix);
+}
+
 }
