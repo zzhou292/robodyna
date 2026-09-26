@@ -50,4 +50,7 @@ tl::util::ConstView<detail::OrderedInterface> VehicleContactStartup::interface_o
     return {data_->forecast.sources.interfaces.data(), data_->forecast.sources.interfaces.size()};
 }
 n::initial_source::Input VehicleContactStartup::source_input(Role role) const { return data_->InitialInput(role); }
+const n::initial_source::PreparedSource& VehicleContactStartup::prepared_source(Role role) const {
+    return data_->prepared[detail::RoleIndex(role)];
+}
 } // namespace crash::cases::vehicle_native_contact
