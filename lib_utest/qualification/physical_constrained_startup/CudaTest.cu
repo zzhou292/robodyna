@@ -66,11 +66,11 @@ TEST(ConstrainedStartupCuda, WrongProjectedFieldsAndWrongDescriptorRejectBeforeP
   fe::type25::BatchConfig c;c.owner=rig.owner.accepted();c.configuration_id=common::Configuration;
   c.qualification_id=common::Qualification;c.element_count=2;c.startup=rig.fixture.startup;
   c.startup.uniform_velocity.y=.25;
-  EXPECT_EQ(batch.InitializeMapped(c,rig.fixture.physical,rig.owner,rig.fixture.WitnessSource()).status,
+  EXPECT_EQ(batch.InitializeMapped(c,rig.fixture.physical,rig.owner,rig.fixture.WitnessSource(),fe::type25::CapacityProfile::Legacy).status,
       fe::type25::BatchStatus::InvalidInput);
   EXPECT_EQ(batch.allocations().device_bytes,0u);
   c.startup=rig.fixture.startup;
-  ASSERT_TRUE(common::Good(batch.InitializeMapped(c,rig.fixture.physical,rig.owner,rig.fixture.WitnessSource())));
+  ASSERT_TRUE(common::Good(batch.InitializeMapped(c,rig.fixture.physical,rig.owner,rig.fixture.WitnessSource(),fe::type25::CapacityProfile::Legacy)));
   EXPECT_EQ(rig.owner.accepted().epoch,0u);
 }
 
