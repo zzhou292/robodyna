@@ -3,50 +3,19 @@
 #include "../ShellPhysicalOwner.h"
 #include "PhysicalScratchParticipationState.h"
 #include "NativeContactPublicationState.h"
+#include "ScratchRoster.h"
 #include <atomic>
 #include <limits>
 #include <new>
 
 namespace tl::fea {
 namespace {
-using shell_publication_detail::PhysicalScratchKindCount;
-using shell_publication_detail::PhysicalScratchKindIndex;
 using shell_publication_detail::PhysicalScratchParticipationState;
-
-const ShellPhysicalScratchRosterEntry& RosterEntry(
-    const ShellPhysicalScratchRoster& roster,
-    ShellPhysicalScratchContributorKind kind) noexcept {
-  return kind == ShellPhysicalScratchContributorKind::MappedWall
-      ? roster.mapped_wall : roster.self_contact;
-}
-const ShellPhysicalScratchParticipationReceipt* ReceiptEntry(
-    const ShellPhysicalScratchReceiptRoster& roster,
-    ShellPhysicalScratchContributorKind kind) noexcept {
-  return kind == ShellPhysicalScratchContributorKind::MappedWall
-      ? roster.mapped_wall : roster.self_contact;
-}
-ShellPhysicalScratchContributorKind Kind(std::size_t slot) noexcept {
-  return slot == 0 ? ShellPhysicalScratchContributorKind::MappedWall
-                   : ShellPhysicalScratchContributorKind::SelfContact;
-}
-bool Present(const ShellPhysicalScratchRosterEntry& entry) noexcept {
-  return entry.issuer != nullptr || entry.source_id != 0;
-}
-bool Complete(const ShellPhysicalScratchRosterEntry& entry) noexcept {
-  return entry.issuer != nullptr && entry.source_id != 0;
-}
-bool RosterShape(const ShellPhysicalScratchRoster& roster,
-                 std::size_t& count) noexcept {
-  count = 0;
-  for (std::size_t slot = 0; slot < PhysicalScratchKindCount; ++slot) {
-    const auto& entry = RosterEntry(roster,Kind(slot));
-    if (Present(entry) && !Complete(entry)) return false;
-    if (Complete(entry)) ++count;
-  }
-  return count != 0 &&
-      (!Complete(roster.mapped_wall) || !Complete(roster.self_contact) ||
-       roster.mapped_wall.issuer != roster.self_contact.issuer);
-}
+using shell_publication_detail::NormalizedScratchRoster;
+using shell_publication_detail::NormalizeScratchRoster;
+using shell_publication_detail::ScratchReceiptShape;
+using shell_publication_detail::ScratchReceipt;
+using shell_publication_detail::ScratchSpan;
 std::uint64_t NextIssuerLifetime() noexcept {
   static std::atomic<std::uint64_t> next{1};
   const auto value=next.fetch_add(1,std::memory_order_relaxed);
@@ -107,7 +76,7 @@ void PhysicalState::DiscardScratchParticipation() noexcept {
   participation->sealed_owner_id = 0;
   participation->sealed_base_epoch = 0;
   participation->sealed_attempt = 0;
-  for (std::size_t slot = 0; slot < PhysicalScratchKindCount; ++slot) {
+  for (std::size_t slot = 0; slot < participation->entry_count; ++slot) {
     participation->sealed_generation[slot] = 0;
     if (participation->entries[slot].issuer)
       participation->entries[slot].issuer->DiscardTrial();
@@ -124,13 +93,14 @@ ShellPhysicalScratchParticipation::~ShellPhysicalScratchParticipation() noexcept
 void ShellPhysicalScratchParticipation::Bind(
     ShellBatchPublication& publication,FENodalState& owner,
     ShellPhysicalScratchContributorKind kind,std::uint64_t source_id,
-    std::size_t witness_count) noexcept {
+    std::size_t witness_count, std::size_t slot) noexcept {
   publication_=&publication;
   owner_=&owner;
   kind_=kind;
   source_id_=source_id;
   binding_id_=NextIssuerLifetime();
   witness_count_=witness_count;
+  slot_=slot;
   phase_=Phase::Idle;
   if(native_contact_)native_contact_->Bind(publication,owner,lifetime_id_,binding_id_);
 }
@@ -146,6 +116,7 @@ void ShellPhysicalScratchParticipation::Unbind(
   owner_id_=base_epoch_=attempt_=0;
   last_base_epoch_=last_attempt_=generation_=0;
   witness_count_=0;
+  slot_=SIZE_MAX;
   phase_=Phase::Idle;
 }
 void ShellPhysicalScratchParticipation::DiscardTrial() noexcept {
@@ -171,88 +142,84 @@ ShellBatchPublication::ForecastPhysicalScratchParticipation(
     const ShellPhysicalScratchParticipationLimits& limits,
     ShellPhysicalScratchParticipationForecast& output) noexcept {
   using trial_identity::Disjoint;
-  std::size_t count=0;
-  if (!RosterShape(roster,count))
-    return {S::InvalidInput,
-            "Scratch participation roster entries are incomplete, empty or duplicate"};
-  if (!limits.max_host_bytes ||
-      limits.max_host_bytes > MaxShellPhysicalScratchParticipationHostBytes)
-    return {S::ResourceLimit,
-            "Scratch participation host limit is outside the fixed profile"};
-  if (!Disjoint(&output,sizeof(output),&roster,sizeof(roster)) ||
-      !Disjoint(&output,sizeof(output),&limits,sizeof(limits)))
-    return {S::InvalidInput,
-            "Scratch participation forecast overlaps its input"};
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
-    const auto& entry=RosterEntry(roster,Kind(slot));
-    if (!Complete(entry)) continue;
-    if (!Disjoint(&output,sizeof(output),entry.issuer,sizeof(*entry.issuer)))
-      return {S::InvalidInput,
-              "Scratch participation forecast overlaps an issuer"};
+  NormalizedScratchRoster normalized;
+  const auto shape = NormalizeScratchRoster(roster, limits, normalized);
+  if (shape.status != S::Success) return shape;
+  if (!limits.max_host_bytes || limits.max_host_bytes > MaxShellPhysicalScratchParticipationHostBytes)
+    return {S::ResourceLimit, "Scratch participation host limit is outside the fixed profile"};
+  if (!Disjoint(&output, sizeof(output), &roster, sizeof(roster)) ||
+      !Disjoint(&output, sizeof(output), &limits, sizeof(limits)) ||
+      (normalized.native && !Disjoint(&output, sizeof(output), roster.native_interfaces.entries,
+          normalized.slots * sizeof(NativeContactRosterEntry))))
+    return {S::InvalidInput, "Scratch participation forecast overlaps its input"};
+  for (std::size_t slot = 0; slot < normalized.slots; ++slot) {
+    const auto& entry = normalized.entries[slot];
+    if (entry.issuer && !Disjoint(&output, sizeof(output), entry.issuer, sizeof(*entry.issuer)))
+      return {S::InvalidInput, "Scratch participation forecast overlaps an issuer"};
   }
   ShellPhysicalScratchParticipationForecast next;
-  next.publication_host_bytes=sizeof(PhysicalScratchParticipationState);
-  next.configured_issuer_host_bytes=count*sizeof(ShellPhysicalScratchParticipation);
-  if (next.publication_host_bytes >
-      std::numeric_limits<std::size_t>::max()-next.configured_issuer_host_bytes)
-    return {S::ResourceLimit,
-            "Scratch participation host byte arithmetic overflowed"};
-  next.total_host_bytes=next.publication_host_bytes+
-      next.configured_issuer_host_bytes;
-  if (next.total_host_bytes>limits.max_host_bytes)
-    return {S::ResourceLimit,
-            "Scratch participation fixed host payload exceeds its cap"};
-  output=next;
+  next.publication_host_bytes = sizeof(PhysicalScratchParticipationState);
+  next.configured_issuer_host_bytes = normalized.present * sizeof(ShellPhysicalScratchParticipation);
+  if (next.publication_host_bytes > SIZE_MAX - next.configured_issuer_host_bytes)
+    return {S::ResourceLimit, "Scratch participation host byte arithmetic overflowed"};
+  next.total_host_bytes = next.publication_host_bytes + next.configured_issuer_host_bytes;
+  if (next.total_host_bytes > limits.max_host_bytes)
+    return {S::ResourceLimit, "Scratch participation fixed host payload exceeds its cap"};
+  output = next;
   return Ok();
 }
 
 ShellPublicationReport
 ShellBatchPublication::ConfigurePhysicalScratchParticipation(
-    FENodalState& owner,const ShellPhysicalBinding& binding,
+    FENodalState& owner, const ShellPhysicalBinding& binding,
     const ShellPhysicalParticipants& participants,
     const ShellPhysicalPublicationIdentity& identity,
     const ShellPhysicalScratchRoster& roster,
     const ShellPhysicalScratchParticipationLimits& limits) noexcept {
   if (!impl_ || !impl_->physical)
-    return {S::NotInitialized,"Physical publication is not initialized"};
-  auto& state=*impl_;
-  auto& physical=*state.physical;
+    return {S::NotInitialized, "Physical publication is not initialized"};
+  auto& state = *impl_;
+  auto& physical = *state.physical;
   if (physical.HasScratchParticipation())
-    return {S::InvalidInput,
-            "Physical scratch participation roster is already configured"};
-  if (physical.owner!=&owner || state.pending || owner.accepted().epoch!=0 ||
-      physical.accepted_stamp.epoch!=0 ||
-      !trial_identity::SameStamp(owner.accepted(),physical.accepted_stamp))
-    return {S::StaleTrial,
-            "Scratch participation must bind the actual owner before interval 1"};
-  const auto source=ValidatePhysicalSources(owner,binding,participants,identity);
-  if (source.status!=S::Success) return source;
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
-    const auto& entry=RosterEntry(roster,Kind(slot));
-    if(entry.issuer&&entry.issuer->native_contact_&&
-       (Kind(slot)!=ShellPhysicalScratchContributorKind::SelfContact||
-        !entry.issuer->native_contact_->CanBind(owner,entry.source_id)))
-      return {S::ParticipationFailure,"Native contact state differs from the fixed source/owner slot"};
-    if (entry.issuer && entry.issuer->configured())
-      return {S::InvalidInput,
-              "Scratch participation issuer is already configured"};
-  }
+    return {S::InvalidInput, "Physical scratch participation roster is already configured"};
+  if (physical.owner != &owner || state.pending || owner.accepted().epoch != 0 ||
+      physical.accepted_stamp.epoch != 0 ||
+      !trial_identity::SameStamp(owner.accepted(), physical.accepted_stamp))
+    return {S::StaleTrial, "Scratch participation must bind the actual owner before interval 1"};
+  const auto source = ValidatePhysicalSources(owner, binding, participants, identity);
+  if (source.status != S::Success) return source;
   ShellPhysicalScratchParticipationForecast forecast;
-  const auto planned=ForecastPhysicalScratchParticipation(roster,limits,forecast);
-  if (planned.status!=S::Success) return planned;
-  auto* participation=new(std::nothrow) PhysicalScratchParticipationState;
+  const auto planned = ForecastPhysicalScratchParticipation(roster, limits, forecast);
+  if (planned.status != S::Success) return planned;
+  NormalizedScratchRoster normalized;
+  const auto shaped = NormalizeScratchRoster(roster, limits, normalized);
+  if (shaped.status != S::Success) return shaped;
+  for (std::size_t slot = 0; slot < normalized.slots; ++slot) {
+    const auto& entry = normalized.entries[slot];
+    if (!entry.issuer) continue;
+    const auto* native = entry.issuer->native_contact_;
+    if ((normalized.native && !native) || (native &&
+        (entry.kind == ShellPhysicalScratchContributorKind::MappedWall ||
+         !native->CanBind(owner, entry.source_id))))
+      return {S::ParticipationFailure, "Native contact state differs from the fixed source/owner slot"};
+    if (entry.issuer->configured())
+      return {S::InvalidInput, "Scratch participation issuer is already configured"};
+  }
+  auto* participation = new(std::nothrow) PhysicalScratchParticipationState;
   if (!participation)
-    return {S::ResourceLimit,
-            "Scratch participation fixed host allocation failed"};
-  participation->cin_attachment_count=physical.runtime.CinAttachmentCount();
-  participation->cin_witness_count=physical.runtime.CinWitnessCount();
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
-    const auto kind=Kind(slot);
-    const auto& entry=RosterEntry(roster,kind);
-    participation->entries[slot]={entry.issuer,entry.source_id};
+    return {S::ResourceLimit, "Scratch participation fixed host allocation failed"};
+  participation->cin_attachment_count = physical.runtime.CinAttachmentCount();
+  participation->cin_witness_count = physical.runtime.CinWitnessCount();
+  participation->entry_count = normalized.slots;
+  participation->native_group = normalized.native;
+  // Every source/lifetime/cap check finished before the first bind. The fixed
+  // normalization is copied once; this final loop cannot fail.
+  for (std::size_t slot = 0; slot < normalized.slots; ++slot) {
+    const auto& entry = normalized.entries[slot];
+    participation->entries[slot] = entry;
     if (entry.issuer)
-      entry.issuer->Bind(*this,owner,kind,entry.source_id,
-                         participation->cin_witness_count);
+      entry.issuer->Bind(*this, owner, entry.kind, entry.source_id,
+                        participation->cin_witness_count, slot);
   }
   physical.runtime.SetScratchParticipation(participation);
   return Ok();
@@ -311,6 +278,80 @@ ShellPhysicalScratchParticipation::RecordSelfContactAcceptedAssembly(
       *this,source_id,owner,token,view);
 }
 
+ShellPublicationReport ShellPhysicalScratchParticipation::CheckNativeContactAssembly(
+    FENodalState& owner, const NodalTrialToken& token, const NodalAssemblyView& view) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized, "Native scratch issuer is not configured"};
+  return publication_->CheckNativePhysicalScratchAssemblyOrder(*this, owner, token, view);
+}
+ShellPublicationReport ShellPhysicalScratchParticipation::RecordNativeContactAcceptedAssembly(
+    std::uint64_t source, FENodalState& owner, const NodalTrialToken& token,
+    const NodalAssemblyView& view) noexcept {
+  const auto order = CheckNativeContactAssembly(owner, token, view);
+  if (order.status != ShellPublicationStatus::Success) return order;
+  return publication_->RecordPhysicalScratchAssembly(*this, source, owner, token, view);
+}
+ShellPublicationReport ShellPhysicalScratchParticipation::SealNativeContactCandidate(
+    std::uint64_t source, FENodalState& owner, const NodalTrialToken& token,
+    const NodalPreparedView& view, ShellPhysicalScratchParticipationReceipt* output) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized, "Native scratch issuer is not configured"};
+  // Only the concrete native transaction can call this private entrypoint.
+  if (!native_contact_ || (kind_ != ShellPhysicalScratchContributorKind::SelfContact &&
+                          kind_ != ShellPhysicalScratchContributorKind::NativeContact)) {
+    if (owner_) owner_->Discard();
+    publication_->DiscardTrial();
+    return {ShellPublicationStatus::ParticipationFailure, "Native candidate lacks its typed native issuer"};
+  }
+  return publication_->SealPhysicalScratchCandidate(*this, source, owner, token, view, output);
+}
+ShellPublicationReport ShellBatchPublication::CheckNativePhysicalScratchAssemblyOrder(
+    ShellPhysicalScratchParticipation& issuer, FENodalState& owner,
+    const NodalTrialToken& token, const NodalAssemblyView& view) noexcept {
+  auto fail = [&](ShellPublicationReport report) {
+    if (impl_ && impl_->physical && impl_->physical->owner) impl_->physical->owner->Discard();
+    else owner.Discard();
+    if (impl_) impl_->Discard();
+    return report;
+  };
+  if (!impl_ || !impl_->physical)
+    return fail({S::NotInitialized, "Physical publication is not initialized"});
+  auto& physical = *impl_->physical;
+  const auto* group = physical.ScratchParticipation();
+  const auto slot = issuer.slot_;
+  if (!group || slot >= group->entry_count || !issuer.native_contact_ ||
+      group->entries[slot].issuer != &issuer || group->entries[slot].source_id != issuer.source_id_ ||
+      group->entries[slot].kind != issuer.kind_ || issuer.publication_ != this ||
+      issuer.owner_ != &owner || physical.owner != &owner ||
+      (issuer.kind_ != ShellPhysicalScratchContributorKind::SelfContact &&
+       issuer.kind_ != ShellPhysicalScratchContributorKind::NativeContact))
+    return fail({S::ParticipationFailure, "Native assembly has a foreign or missing group binding"});
+  if (!group->native_group) return Ok(); // Preserve legacy single-native attempt checks.
+  // Every mandatory member must still exist, even if this is slot0. A
+  // tombstone cannot permit another partial force assembly before rejection.
+  for (std::size_t i = 0; i < group->entry_count; ++i) {
+    const auto& entry = group->entries[i];
+    const auto* member = entry.issuer;
+    if (!member || !member->native_contact_ || member->publication_ != this ||
+        member->owner_ != &owner || member->slot_ != i ||
+        member->kind_ != entry.kind || member->source_id_ != entry.source_id)
+      return fail({S::ParticipationFailure, "Native group contains a revoked mandatory member"});
+  }
+  const auto authenticated = owner.AuthenticateAssemblyView(token, view);
+  if (authenticated.status != NodalStatus::Ok)
+    return fail({S::ParticipationFailure, authenticated.message, authenticated.status});
+  if (issuer.phase_ != ShellPhysicalScratchParticipation::Phase::Idle)
+    return fail({S::ParticipationFailure, "Native group member assembly was already recorded"});
+  for (std::size_t i = 0; i < slot; ++i) {
+    const auto* prior = group->entries[i].issuer;
+    if (!prior || prior->phase_ != ShellPhysicalScratchParticipation::Phase::AssemblyRecorded ||
+        prior->owner_id_ != view.owner_id || prior->base_epoch_ != view.accepted.base_epoch ||
+        prior->attempt_ != view.attempt || prior->stream_ != view.stream)
+      return fail({S::ParticipationFailure, "Native group accepted assembly is out of declared order"});
+  }
+  return Ok();
+}
+
 ShellPublicationReport ShellBatchPublication::RecordPhysicalScratchAssembly(
     ShellPhysicalScratchParticipation& issuer,std::uint64_t source_id,
     FENodalState& owner,const NodalTrialToken& token,
@@ -327,9 +368,10 @@ ShellPublicationReport ShellBatchPublication::RecordPhysicalScratchAssembly(
   auto& state=*impl_;
   auto& physical=*state.physical;
   auto* participation=physical.ScratchParticipation();
-  const auto slot=PhysicalScratchKindIndex(issuer.kind_);
-  if (!participation || slot>=PhysicalScratchKindCount ||
+  const auto slot=issuer.slot_;
+  if (!participation || slot>=participation->entry_count ||
       participation->entries[slot].issuer!=&issuer ||
+      participation->entries[slot].kind!=issuer.kind_ ||
       participation->entries[slot].source_id!=issuer.source_id_ ||
       issuer.publication_!=this || issuer.owner_!=physical.owner ||
       issuer.witness_count_!=participation->cin_witness_count)
@@ -442,9 +484,10 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchCandidate(
   auto& state=*impl_;
   auto& physical=*state.physical;
   auto* participation=physical.ScratchParticipation();
-  const auto slot=PhysicalScratchKindIndex(issuer.kind_);
-  if (!participation || slot>=PhysicalScratchKindCount ||
+  const auto slot=issuer.slot_;
+  if (!participation || slot>=participation->entry_count ||
       participation->entries[slot].issuer!=&issuer ||
+      participation->entries[slot].kind!=issuer.kind_ ||
       participation->entries[slot].source_id!=issuer.source_id_ ||
       issuer.publication_!=this || issuer.owner_!=physical.owner ||
       issuer.witness_count_!=participation->cin_witness_count)
@@ -514,6 +557,8 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
   auto& state=*impl_;
   auto& physical=*state.physical;
   auto* participation=physical.ScratchParticipation();
+  if (!ScratchReceiptShape(receipts, participation))
+    return fail({S::ParticipationFailure, "Native receipt group is malformed or mixed with legacy slots"});
   if (!participation) {
     if (!receipts.mapped_wall && !receipts.self_contact) return Ok();
     return fail({S::ParticipationFailure,
@@ -536,11 +581,11 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
   if (!trial_identity::SamePrepared(authentic,state.candidate_view))
     return fail({S::ParticipationFailure,
                  "Scratch roster seal differs from structural preparation"});
-  std::uint64_t generations[PhysicalScratchKindCount]{};
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
-    const auto kind=Kind(slot);
+  std::uint64_t generations[shell_publication_detail::PhysicalScratchSlotCapacity]{};
+  for (std::size_t slot=0;slot<participation->entry_count;++slot) {
     const auto& expected=participation->entries[slot];
-    const auto* receipt=ReceiptEntry(receipts,kind);
+    const auto kind=expected.kind;
+    const auto* receipt=ScratchReceipt(receipts,*participation,slot);
     if (!expected.source_id) {
       if (receipt)
         return fail({S::ParticipationFailure,
@@ -552,6 +597,11 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
           kind==ShellPhysicalScratchContributorKind::MappedWall
               ? "Configured MappedWall is missing its final receipt"
               : "Configured SelfContact is missing its final receipt"});
+    if (!ScratchSpan(receipt,std::size_t{1}))
+      return fail({S::ParticipationFailure,"Scratch receipt is null or misaligned"});
+    for(std::size_t prior=0;prior<slot;++prior)
+      if(receipt==ScratchReceipt(receipts,*participation,prior))
+        return fail({S::ParticipationFailure,"A scratch receipt cannot satisfy two group members"});
     const auto& issuer=*expected.issuer;
     if (!receipt->valid() || receipt->issuer_!=expected.issuer ||
         receipt->publication_!=this || receipt->owner_!=&owner ||
@@ -561,7 +611,7 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
         receipt->generation_!=issuer.generation_ ||
         issuer.phase_!=ShellPhysicalScratchParticipation::Phase::CandidateSealed ||
         issuer.publication_!=this || issuer.owner_!=&owner ||
-        issuer.kind_!=kind || issuer.source_id_!=expected.source_id ||
+        issuer.kind_!=kind || issuer.slot_!=slot || issuer.source_id_!=expected.source_id ||
         issuer.witness_count_!=participation->cin_witness_count ||
         issuer.owner_id_!=authentic.owner_id ||
         issuer.base_epoch_!=authentic.kinematics.base_epoch ||
@@ -571,6 +621,8 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
           kind==ShellPhysicalScratchContributorKind::MappedWall
               ? "MappedWall receipt is stale, foreign, replayed or mismatched"
               : "SelfContact receipt is stale, foreign, replayed or mismatched"});
+    if(issuer.native_contact_&&!issuer.native_contact_->Ready(owner,authentic,issuer.generation_))
+      return fail({S::ParticipationFailure,"Native group history is not completely ready"});
     generations[slot]=receipt->generation_;
   }
   participation->sealed_owner=&owner;
@@ -578,7 +630,7 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
   participation->sealed_owner_id=authentic.owner_id;
   participation->sealed_base_epoch=authentic.kinematics.base_epoch;
   participation->sealed_attempt=authentic.attempt;
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot)
+  for (std::size_t slot=0;slot<participation->entry_count;++slot)
     participation->sealed_generation[slot]=generations[slot];
   participation->sealed=true;
   return Ok();
@@ -597,7 +649,7 @@ ShellPublicationReport ShellBatchPublication::ValidatePhysicalScratchSeal(
       participation->sealed_attempt!=authentic.attempt)
     return {S::ParticipationFailure,
             "Configured scratch participation is not sealed for this attempt"};
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
+  for (std::size_t slot=0;slot<participation->entry_count;++slot) {
     const auto& entry=participation->entries[slot];
     if (!entry.source_id) continue;
     if (!entry.issuer)
@@ -605,7 +657,7 @@ ShellPublicationReport ShellBatchPublication::ValidatePhysicalScratchSeal(
               "Configured scratch issuer no longer belongs to the publication"};
     const auto& issuer=*entry.issuer;
     if (issuer.publication_!=this || issuer.owner_!=&owner ||
-        issuer.kind_!=Kind(slot) || issuer.source_id_!=entry.source_id ||
+        issuer.kind_!=entry.kind || issuer.slot_!=slot || issuer.source_id_!=entry.source_id ||
         issuer.witness_count_!=participation->cin_witness_count ||
         issuer.phase_!=ShellPhysicalScratchParticipation::Phase::CandidateSealed ||
         issuer.owner_id_!=authentic.owner_id ||
@@ -625,7 +677,7 @@ void ShellBatchPublication::ConsumePhysicalScratchSeal() noexcept {
   if (!impl_ || !impl_->physical) return;
   auto* participation=impl_->physical->ScratchParticipation();
   if (!participation) return;
-  for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot)
+  for (std::size_t slot=0;slot<participation->entry_count;++slot)
     if (participation->entries[slot].issuer)
       participation->entries[slot].issuer->Consume();
   participation->sealed=false;
@@ -639,8 +691,10 @@ void ShellBatchPublication::ConsumePhysicalScratchSeal() noexcept {
 void ShellBatchPublication::PublishNativeContactState(const NodalStamp& stamp) noexcept {
   auto* participation=impl_->physical->ScratchParticipation();
   if(!participation)return;
-  const auto* issuer=participation->entries[PhysicalScratchKindIndex(ShellPhysicalScratchContributorKind::SelfContact)].issuer;
-  if(issuer&&issuer->native_contact_)issuer->native_contact_->Publish(stamp);
+  for(std::size_t slot=0;slot<participation->entry_count;++slot) {
+    const auto* issuer=participation->entries[slot].issuer;
+    if(issuer&&issuer->native_contact_)issuer->native_contact_->Publish(stamp);
+  }
 }
 
 void ShellBatchPublication::ReleasePhysicalScratchParticipation(
@@ -651,6 +705,12 @@ void ShellBatchPublication::ReleasePhysicalScratchParticipation(
   }
   auto* participation=impl_->physical->ScratchParticipation();
   if (participation) {
+    if (participation->native_group) {
+      // Revocation is whole-group. Keep the departed member's source-ID
+      // tombstone so no later candidate can omit this mandatory interface.
+      if (impl_->physical->owner) impl_->physical->owner->Discard();
+      impl_->Discard();
+    }
     for (auto& entry:participation->entries)
       if (entry.issuer==&issuer) entry.issuer=nullptr;
     participation->sealed=false;

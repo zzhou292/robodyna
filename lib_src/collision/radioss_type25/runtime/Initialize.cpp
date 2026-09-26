@@ -125,6 +125,10 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
 fe::ShellPhysicalScratchRosterEntry Transaction::roster_entry() noexcept {
   return impl_?fe::ShellPhysicalScratchRosterEntry{&impl_->issuer,impl_->source.source_id}:fe::ShellPhysicalScratchRosterEntry{};
 }
+fe::NativeContactRosterEntry Transaction::native_roster_entry() noexcept {
+  return impl_ ? fe::NativeContactRosterEntry{&impl_->issuer, impl_->source.source_id}
+               : fe::NativeContactRosterEntry{};
+}
 TransactionSourceInfo Transaction::source_info() const noexcept {
   if(!impl_)return {};const auto& s=impl_->source;
   return {s.source_id,s.topology_generation,s.selection.generation,s.selection.node_count,

@@ -109,7 +109,7 @@ class ShellBatchPublication {
   static ShellPublicationReport ForecastPhysical(const ShellPhysicalBinding&,
       std::size_t cin_attachments,const ShellPublicationLimits&,
       ShellPhysicalPublicationForecast&) noexcept;
-  // Exact fixed host footprint for the optional two-slot scratch roster.  This
+  // Exact bounded host footprint for the optional legacy/native scratch roster.  This
   // forecast is separate so an absent roster preserves the old physical
   // publication forecast and allocation behavior exactly.
   static ShellPublicationReport ForecastPhysicalScratchParticipation(
@@ -129,7 +129,7 @@ class ShellBatchPublication {
       const ShellPublicationLimits& limits={});
   // One-time opt-in before interval 1.  The actual physical binding,
   // participants, publication identity and owner are reauthenticated before
-  // either fixed roster slot is bound. Configured issuers remain alive through
+  // any legacy slot or native group member is bound. Configured issuers remain alive through
   // all transaction calls; destroying one revokes its mandatory slot. No call
   // preserves every legacy path.
   ShellPublicationReport ConfigurePhysicalScratchParticipation(
@@ -191,6 +191,9 @@ class ShellBatchPublication {
   NodalAllocationInfo allocations() const noexcept;
  private:
   friend class ShellPhysicalScratchParticipation;
+  ShellPublicationReport CheckNativePhysicalScratchAssemblyOrder(
+      ShellPhysicalScratchParticipation&, FENodalState&, const NodalTrialToken&,
+      const NodalAssemblyView&) noexcept;
   ShellPublicationReport RecordPhysicalScratchAssembly(
       ShellPhysicalScratchParticipation&,std::uint64_t,FENodalState&,
       const NodalTrialToken&,const NodalAssemblyView&) noexcept;

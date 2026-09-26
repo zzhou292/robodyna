@@ -32,6 +32,9 @@ class Transaction {
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
       const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
   tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
+  // Distinct native-only group registration; old roster_entry remains valid
+  // for the legacy single-native self-contact slot.
+  tl::fea::NativeContactRosterEntry native_roster_entry() noexcept;
   // Requires complete physical material assembly into this exact live view.
   // Contact forces use accepted X_n/V and history, not proposed endpoint fields.
   TransactionReport AssembleAccepted(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,

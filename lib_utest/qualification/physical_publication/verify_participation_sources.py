@@ -30,6 +30,7 @@ def require(text: str, token: str, where: Path) -> None:
 
 header = HEADER.read_text()
 source = SOURCE.read_text()
+roster_source = (ROOT / "lib_src/elements/publication/ScratchRoster.h").read_text()
 transaction = TRANSACTION.read_text()
 for token in (
     "MappedWall = 0",
@@ -57,7 +58,7 @@ for forbidden in (
     "cudaStreamSynchronize",
     "cudaGetLastError",
 ):
-    if forbidden in source:
+    if forbidden in source or forbidden in roster_source:
         raise RuntimeError(f"{SOURCE}: forbidden per-attempt/device operation {forbidden!r}")
 for token in (
     "ForecastPhysicalScratchParticipation",
