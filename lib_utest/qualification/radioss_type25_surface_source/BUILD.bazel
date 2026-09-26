@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_values",
+    size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/collision:radioss_type25_surface_source", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "consumer",
+    size = "small",
+    srcs = ["Consumer.cpp"],
+    deps = ["//lib_src/collision:radioss_type25_surface_source"],
+)

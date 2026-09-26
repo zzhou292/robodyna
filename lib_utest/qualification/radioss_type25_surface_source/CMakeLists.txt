@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType25SurfaceSource LANGUAGES CXX Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25SurfaceSource.cmake")
+# Reuse the qualified ordinary solid coefficient oracle for a separate signed
+# source-domain audit. Its unchanged positive-only public API is a control.
+add_subdirectory("../radioss_type25_coefficients" coefficient-regression)
+include("${CMAKE_CURRENT_LIST_DIR}/native/Native.cmake")
+add_executable(type25_surface_source_host HostTest.cpp NativeTest.cpp SignedOrdinaryTest.cpp)
+target_link_libraries(type25_surface_source_host PRIVATE tl_radioss_type25_surface_source
+  type25_surface_source_native type25_coefficient_oracle GTest::gtest_main)
+target_compile_options(type25_surface_source_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME type25_surface_source_host COMMAND type25_surface_source_host)
+set_tests_properties(type25_surface_source_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+add_executable(type25_surface_source_consumer Consumer.cpp)
+target_link_libraries(type25_surface_source_consumer PRIVATE tl_radioss_type25_surface_source)
+add_test(NAME type25_surface_source_consumer COMMAND type25_surface_source_consumer)
