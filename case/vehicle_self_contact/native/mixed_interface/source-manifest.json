@@ -1,0 +1,165 @@
+{
+  "schema": "robo_dyna.mixed_interface_source_proof.v1",
+  "app_base": "ad5eedd8fa9cc036478f30367b59949bb4508e6c",
+  "qualified_tl_stage": "7e3c5589b5608c169ca3714134ba12f6a5e15277",
+  "scope": "complete immutable source; unique selected membership; IN24/filter/SH2 only",
+  "app_files": [
+    {
+      "path": "case/vehicle_self_contact/native/MixedInterfaceSource.cmake",
+      "bytes": 938,
+      "sha256": "3ccb8b93aa5da17b8265986a0a0f3c3b841fd9d72a8175e9d5a36a90387423ba"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/MixedInterfaceSource.cpp",
+      "bytes": 7267,
+      "sha256": "ca2aaf9dc8cdb95686722f93c9f481630ebb1b6156394f7ae889a69c0978a6ba"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/MixedInterfaceSource.h",
+      "bytes": 4563,
+      "sha256": "bce9ef0c2abb838987e2ccb7f509dc7991eef672eba8a097732737faee2f0b25"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Membership.cpp",
+      "bytes": 6910,
+      "sha256": "40aff98cc8b2cb0fb52cf71c4bd76c35493a868f118e1f876a1fd7439fd67e41"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Budget.cpp",
+      "bytes": 4106,
+      "sha256": "a500d4b5c447e51141d5b2db8e21311ca15bc7504077fd888c9c62f3e547ffbb"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/CMakeLists.txt",
+      "bytes": 2400,
+      "sha256": "ac50456a7dee53d80fdb990a4a7bd973800ec680d9b9d959e7dd1993cec8648d"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Census.cpp",
+      "bytes": 4493,
+      "sha256": "31ddbb8f868f3fc9ed212cb10300d85895256e9faced52274e73d24b9b56ce9f"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Certificate.cpp",
+      "bytes": 6534,
+      "sha256": "158fc34a8874fb2f4845b119379e065f9235dcf7d7df156c948bb1e86f68e851"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Digest.cpp",
+      "bytes": 3369,
+      "sha256": "522d53f305ed1859962c794f677e8ec4ef95ce4cb8b260fb7470b4361f96fa7f"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Document.cpp",
+      "bytes": 8138,
+      "sha256": "00d90871b3c2df452199ff001d38f96e84c1ba1248100a136576155608446df1"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Internal.h",
+      "bytes": 1585,
+      "sha256": "0baa6d85a65534e0109ade287df1df9a68049d7b8713d6191b2cfd1e96369992"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/Packing.cpp",
+      "bytes": 4808,
+      "sha256": "2025aad8cde26fce3aff2047b0e80bbeed032137e9c9706991933934e1ecad4d"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/README.md",
+      "bytes": 3130,
+      "sha256": "65bfeadcb8a5edcad0ad6794ec84c2b827f2496dfe9cdec19964f4b285ca24d7"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/tests/ActualTest.cpp",
+      "bytes": 7632,
+      "sha256": "e1eb9b7a15ce6b7c0513fc06dcd4280ac0799114d03066b8bc7a6ef7871e5313"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/tests/Consumer.cpp",
+      "bytes": 566,
+      "sha256": "f98b57faaf0460e448a633edfc499bd817c821d08bd4279d0f8ba2a6da000e8a"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/tests/Fixture.h",
+      "bytes": 2539,
+      "sha256": "af8c4bdc92189f9d887022838a8fc2ace589a570160356136ce624f2070f2bae"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/tests/ValuesTest.cpp",
+      "bytes": 5900,
+      "sha256": "007dfd9154f11ff385f4bfa66ef842a20df1d8c7862a7626427eb29d1c6aa1b9"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/verify_sources.py",
+      "bytes": 1940,
+      "sha256": "222f9a08ded78597ddff920adb1d398f5755276077a8e019b90b7b710799420c"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
+      "bytes": 6646,
+      "sha256": "d8b2c7be451789305af3b44e0f3298823fd3aa43869b28bc6c87c730c6720f22"
+    },
+    {
+      "path": "case/vehicle_startup/ReferenceGeometry.cpp",
+      "bytes": 4248,
+      "sha256": "4dd927943ff821d1f55881ee224a40076f97e3506fb19014a44878eae50d57b4"
+    },
+    {
+      "path": "modelio/tied_shell/GeometryCensus.cpp",
+      "bytes": 5787,
+      "sha256": "3a592edf558df7369bed39dc20eca3e8ac65e627227d3890014d1d9f7425cfe3"
+    },
+    {
+      "path": "modelio/tied_shell/TiedShellDeclaration.h",
+      "bytes": 4688,
+      "sha256": "9902a20de2f50d5f9f678c3ec31ea1372ecba1d80568bbe9cf6757d9148c67b5"
+    },
+    {
+      "path": "modelio/vehicle_sections/VehicleSectionResolution.cpp",
+      "bytes": 4376,
+      "sha256": "37bd9e21b50efa19b6910ea1b7f74fe6843603a3a15df194aa9b914767c7bb1d"
+    }
+  ],
+  "tl_files": [
+    {
+      "path": "lib_src/collision/RadiossType25InterfaceSurface.h",
+      "bytes": 795,
+      "sha256": "2d1b9ec177cd05779a22b262245c9408f6e63f0a75780a0715f0764effb6fd6c"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/surface_interface/Types.h",
+      "bytes": 2358,
+      "sha256": "5645323cef6917414c4b52520871b9ea27ad8139047dfb396bca36f86d9b01ad"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/surface_interface/Prepare.cpp",
+      "bytes": 3567,
+      "sha256": "ecddd1d4c1d11ebf609aa8353c6d8489db9ae67a43e2b1bd4900c07ffab8d7d2"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/surface_interface/Classify.cpp",
+      "bytes": 1815,
+      "sha256": "98a16917b87830da636ccb64a18c45458b9858f23e024f180957d553885e90cd"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/surface_interface/Filter.cpp",
+      "bytes": 2959,
+      "sha256": "9f4e171e3e55666897475f2e9153491f5578c6c72cf02e87f769ff21bff0fef9"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/startup/Types.h",
+      "bytes": 7337,
+      "sha256": "586591c2aaeb54208b446c3dcdfb2334c69f8a3da4630f6eaa92fb1119ddae98"
+    },
+    {
+      "path": "lib_src/collision/radioss_type25/startup/MixedSides.cpp",
+      "bytes": 3019,
+      "sha256": "ce97bfa4ee01b4b7f87bd8b70fe49158ad6cdde3e0980ce09364ff75d16dad4e"
+    },
+    {
+      "path": "lib_utest/qualification/radioss_type25_interface_surface/native/source-manifest.json",
+      "bytes": 1135,
+      "sha256": "5d52786a6c262ea5b24524accbd505d65f3f99cbab0788fb57b7a055cadc4a1e"
+    }
+  ]
+}
