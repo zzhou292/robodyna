@@ -17,7 +17,7 @@ add_library(nodal_correction_oracle STATIC NativeOracle.cpp "${native}/Correctio
 target_link_libraries(nodal_correction_oracle PUBLIC tl_radioss_type25_nodal_seed)
 target_compile_options(nodal_correction_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(nodal_correction_host HostTest.cpp)
+add_executable(nodal_correction_host HostTest.cpp OrderTest.cpp)
 target_link_libraries(nodal_correction_host PRIVATE nodal_correction_oracle GTest::gtest_main)
 target_compile_options(nodal_correction_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME nodal_correction_host COMMAND nodal_correction_host)

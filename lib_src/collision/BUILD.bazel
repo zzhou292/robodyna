@@ -1202,10 +1202,10 @@ cc_library(
 
 cc_library(
     name = "radioss_type25_nodal_seed",
-    srcs = ["radioss_type25/source_nodal/Build.cpp", "radioss_type25/source_nodal/Correction.cpp"],
+    srcs = ["radioss_type25/source_nodal/Build.cpp", "radioss_type25/source_nodal/Correction.cpp", "radioss_type25/source_nodal/OrderCertificate.cpp"],
     hdrs = ["RadiossType25NodalSeed.h", "RadiossType25NodalCorrection.h"] + glob(["radioss_type25/source_nodal/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":radioss_type25_coefficients", ":radioss_type25_search_values", "//lib_utils:bounded_arena"],
+    deps = [":radioss_type25_coefficients", ":radioss_type25_search_values", "//lib_utils:bounded_arena", "//lib_src/math:scalar_bits"],
 )
 
 cc_library(
