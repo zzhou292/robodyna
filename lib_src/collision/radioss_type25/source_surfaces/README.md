@@ -38,3 +38,11 @@ range and alias before private typed construction, validates every physical row,
 then publishes only a complete success. Output and Snapshot are unchanged on
 failure. No truncation, coordinate welding, atomics, device state or per-step
 work appears here. Native oracle code is a qualification-only dependency.
+
+NativeRaw8 is a separate explicit reader-brick value profile. It retains all
+eight source occurrences even for collapsed edges; the original face compaction,
+corner-major incidence, internal test and shell suppression consume them without
+changes. Hex8 still requires eight distinct nodes and DeclaredPenta6 still
+requires its exact repeated-slot representation. No source PID/material dispatch,
+coordinate repair, PENTA remapping, face deletion shortcut or physical geometry
+admission is introduced. The caller must supply an authentic native raw8 packet.

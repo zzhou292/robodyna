@@ -40,12 +40,13 @@ Report Prepare(const Input& in,Work w,Counts& counts) noexcept {
   for(std::size_t i=0;i<in.solid_count;++i) {
     const auto& row=in.solids[i];
     if(!row.element_id||!row.part_id)return {Status::InvalidInput,i};
-    if(row.topology!=SolidTopology::Hex8&&row.topology!=SolidTopology::DeclaredPenta6)
+    if(row.topology!=SolidTopology::Hex8&&row.topology!=SolidTopology::DeclaredPenta6&&
+        row.topology!=SolidTopology::NativeRaw8)
       return {Status::UnsupportedProfile,i};
     for(unsigned k=0;k<8;++k)if(row.nodes[k]>=in.node_count)return {Status::InvalidInput,i,row.nodes[k]};
     if(row.topology==SolidTopology::DeclaredPenta6&&(row.nodes[3]!=row.nodes[0]||row.nodes[7]!=row.nodes[4]))
       return {Status::InvalidInput,i};
-    for(unsigned k=0;k<8;++k) {
+    for(unsigned k=0;k<8 && row.topology!=SolidTopology::NativeRaw8;++k) {
       if(row.topology==SolidTopology::DeclaredPenta6&&(k==3||k==7))continue;
       for(unsigned j=0;j<k;++j) {
         if(row.topology==SolidTopology::DeclaredPenta6&&(j==3||j==7))continue;

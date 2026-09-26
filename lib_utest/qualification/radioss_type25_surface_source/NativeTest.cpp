@@ -57,4 +57,55 @@ TEST(Type25SurfaceSourceNative, GeneratedCorpusPreservesEveryFaceAndStableFiveWo
     Compare(c);
   }
 }
+TEST(Type25SurfaceSourceNative, ExplicitRawBrickSlotsRetainNativeCompactionAndClauseBehavior) {
+  // Native BRICK packet with two collapsed top edges, unlike declared PENTA's
+  // slots4=1/8=5. Reordering it into a different family would change face IDs.
+  const s::Solid source{601,10,s::SolidTopology::NativeRaw8,{0,1,2,3,4,4,5,5}};
+  for(unsigned rotate=0;rotate<8;++rotate) {
+    SCOPED_TRACE(rotate);
+    auto c=SingleHex();
+    c.solids={source};
+    for(unsigned k=0;k<8;++k)c.solids[0].nodes[k]=source.nodes[(k+rotate)%8];
+    for(const auto mode:{s::SurfaceMode::Exterior,s::SurfaceMode::ExteriorShellEdges,s::SurfaceMode::All}) {
+      c.mode=mode;Compare(c);
+      c.kind=s::ClauseKind::Solids;c.parts.clear();c.selected={0};Compare(c);
+      c.kind=s::ClauseKind::Parts;c.parts={10};c.selected.clear();
+    }
+  }
+  auto c=SingleHex();c.solids={source};
+  c.quads={{701,20,{0,1,2,3}},{702,10,{0,1,2,3}}};
+  c.triangles={{703,20,{0,1,4,4}},{704,10,{0,1,4,4}}};
+  Compare(c);
+  std::reverse(c.quads.begin(),c.quads.end());
+  std::reverse(c.triangles.begin(),c.triangles.end());
+  Compare(c);
+  c.quads.clear();c.triangles.clear();
+  Built compact(c);ASSERT_EQ(compact.report.status,s::Status::Ok);
+  EXPECT_EQ(compact.result.face_count,5u);
+  EXPECT_EQ(compact.result.counts.degenerate_faces,1u);
+  std::size_t triangles=0;
+  for(std::size_t i=0;i<compact.result.face_count;++i)
+    triangles+=compact.result.faces[i].nodes[2]==compact.result.faces[i].nodes[3];
+  EXPECT_EQ(triangles,2u);
+}
+TEST(Type25SurfaceSourceNative, RawBrickProfileIsExplicitAndPreservesStrictLegacyRejection) {
+  auto c=SingleHex();
+  c.solids[0].nodes[5]=c.solids[0].nodes[4];
+  c.solids[0].nodes[7]=c.solids[0].nodes[6];
+  Built strict(c);EXPECT_EQ(strict.report.status,s::Status::UnsupportedProfile);
+  EXPECT_THROW(Oracle(c.Input()),std::invalid_argument);
+  c.solids[0].topology=s::SolidTopology::DeclaredPenta6;
+  Built wrong_family(c);EXPECT_EQ(wrong_family.report.status,s::Status::InvalidInput);
+  c.solids[0].topology=s::SolidTopology::NativeRaw8;
+  Compare(c);
+  Built admitted(c);ASSERT_EQ(admitted.report.status,s::Status::Ok);
+  const auto prior=admitted.result;
+  const auto bytes=Bytes(admitted.output);
+  c.solids[0].nodes[7]=static_cast<std::uint32_t>(c.nodes);
+  EXPECT_EQ(s::Build(c.Input(),{},admitted.output,admitted.scratch,&admitted.result).status,s::Status::InvalidInput);
+  EXPECT_EQ(Bytes(admitted.output),bytes);SameSnapshot(admitted.result,prior);
+  // No repeat removal or node rewriting occurs even when a whole raw face
+  // degenerates below three distinct nodes; native handles that face locally.
+}
+
 }

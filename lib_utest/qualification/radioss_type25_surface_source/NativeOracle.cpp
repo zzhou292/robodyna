@@ -53,7 +53,8 @@ NativeResult Oracle(const s::Input& input) {
     for (std::size_t i = 0; i < input.solid_count; ++i) {
         const auto& solid = input.solids[i];
         Check(solid.element_id && solid.part_id, "Surface oracle solid identity");
-        Check(solid.topology == s::SolidTopology::Hex8 || solid.topology == s::SolidTopology::DeclaredPenta6,
+        Check(solid.topology == s::SolidTopology::Hex8 || solid.topology == s::SolidTopology::DeclaredPenta6 ||
+            solid.topology == s::SolidTopology::NativeRaw8,
             "Surface oracle solid topology");
         std::set<std::uint32_t> unique;
         for (unsigned k = 0; k < 8; ++k) {
@@ -61,9 +62,10 @@ NativeResult Oracle(const s::Input& input) {
             snodes[8*i+k] = int(solid.nodes[k])+1;
             unique.insert(solid.nodes[k]);
         }
-        Check(solid.topology == s::SolidTopology::Hex8 ? unique.size() == 8 :
-            unique.size() == 6 && solid.nodes[3] == solid.nodes[0] && solid.nodes[7] == solid.nodes[4],
-            "Surface oracle declared H8/PENTA reader slots");
+        Check(solid.topology == s::SolidTopology::NativeRaw8 ||
+            (solid.topology == s::SolidTopology::Hex8 ? unique.size() == 8 :
+             unique.size() == 6 && solid.nodes[3] == solid.nodes[0] && solid.nodes[7] == solid.nodes[4]),
+            "Surface oracle declared H8/PENTA/raw8 reader slots");
         part_map.emplace(solid.part_id, 0);
     }
     for (std::size_t i = 0; i < input.quad_count; ++i) {
