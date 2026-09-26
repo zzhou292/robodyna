@@ -18,7 +18,7 @@ TEST(VehicleSelfContactRuntimeValues,
                   vehicle_dynamics::StepStage::AssembleSelfContact), 30u);
     EXPECT_EQ(static_cast<std::size_t>(
                   vehicle_dynamics::StepStage::EvaluateSelfContact), 31u);
-    EXPECT_EQ(vehicle_dynamics::StepStageCount, 32u);
+    EXPECT_EQ(vehicle_dynamics::StepStageCount, 34u);
     EXPECT_EQ(RuntimeConfig{}.source_id, 0u);
     EXPECT_EQ(RuntimeConfig{}.event_capacity, 0u);
 }

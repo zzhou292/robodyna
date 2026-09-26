@@ -7,7 +7,8 @@ enum class StepStage : std::size_t {
     UploadWitness,SealAssembly,AdvanceCin,BorrowPrepared,EvaluateQeph,EvaluateT3,
     EvaluateQbat,EvaluateType25,EvaluateType13,EvaluateSolids,EvaluateType45,
     PreparePublication,EvaluateWall,CaptureFields,ObserveMotion,Commit,Discard,
-    AssembleBeam18,EvaluateBeam18,AssembleSelfContact,EvaluateSelfContact,Count
+    AssembleBeam18,EvaluateBeam18,AssembleSelfContact,EvaluateSelfContact,
+    AssembleNativeContact,EvaluateNativeContact,Count
 };
 inline constexpr std::size_t StepStageCount=static_cast<std::size_t>(StepStage::Count);
 inline constexpr const char* StepStageNames[]{
@@ -16,7 +17,8 @@ inline constexpr const char* StepStageNames[]{
     "upload_witness","seal_assembly","advance_cin","borrow_prepared","evaluate_qeph","evaluate_t3",
     "evaluate_qbat","evaluate_type25","evaluate_type13","evaluate_solids","evaluate_type45",
     "prepare_publication","evaluate_wall","capture_fields","observe_motion","commit","discard",
-    "assemble_beam18","evaluate_beam18","assemble_self_contact","evaluate_self_contact"
+    "assemble_beam18","evaluate_beam18","assemble_self_contact","evaluate_self_contact",
+    "assemble_native_contact","evaluate_native_contact"
 };
 static_assert(sizeof(StepStageNames)/sizeof(*StepStageNames)==StepStageCount);
 struct StepTimingOptions {bool enabled=false;};

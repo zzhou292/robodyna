@@ -52,3 +52,21 @@ bookkeeping notification only after successful common physical publication.
 
 The group reports exact device bytes; it does not invent a device allocation
 count that the transaction API does not expose.
+
+## Vehicle stepping integration
+
+The typed `vehicle_native_contact::VehicleContactStartup` factory is the only
+friend allowed to install a group. It must forecast and initialize genuine
+sources against the existing physical owner before installation. The private
+installer rechecks the unchanged initial owner, exclusive contact profile,
+device cap and actual publisher roster.
+
+The existing `VehiclePhysicalDynamics` loop assembles the group after structural
+forces, seals both contact histories after the common material preparation, and
+requires the complete group receipt before its one common commit. Every thrown
+stage discards both contact trials, the physical owner and its publication.
+Native observations are separate from the legacy M2 self-contact observations.
+
+`allocations().device_bytes` includes native contact payload. Its allocation
+count is explicitly marked incomplete because the native transaction API
+publishes bytes but does not publish an allocation count.

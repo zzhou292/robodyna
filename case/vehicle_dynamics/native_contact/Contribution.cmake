@@ -1,4 +1,7 @@
 include_guard(GLOBAL)
+# This concrete runtime requires the GPU maintenance target even when a host
+# source module has already included its values-only build description.
+set(TYPE25_SEARCH_CUDA ON)
 include("${ROBO_DYNA_TL_ROOT}/lib_src/collision/RadiossType25Transaction.cmake")
 add_library(robo_dyna_native_contact_contribution STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Contribution.cpp" "${CMAKE_CURRENT_LIST_DIR}/Error.cpp"

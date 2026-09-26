@@ -2,12 +2,6 @@
 #include "Contribution.h"
 #include <array>
 namespace crash::cases::vehicle_dynamics::native_contact {
-enum class Role { Self, MeshWall };
-struct GroupObservation {
-    std::size_t count=0;
-    std::array<Role,tl::fea::MaxNativeContactInterfaces> roles{};
-    std::array<Observation,tl::fea::MaxNativeContactInterfaces> interfaces{};
-};
 struct GroupInput {
     Role role=Role::Self;
     std::unique_ptr<native::Transaction> transaction;

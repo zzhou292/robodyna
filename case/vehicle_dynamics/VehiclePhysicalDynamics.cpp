@@ -63,8 +63,9 @@ VehiclePhysicalDynamics& VehiclePhysicalDynamics::operator=(VehiclePhysicalDynam
 const Forecast& VehiclePhysicalDynamics::forecast() const noexcept { return storage_->forecast; }
 StepTimingSnapshot VehiclePhysicalDynamics::timing() const noexcept { return storage_->timer.snapshot(); }
 tl::fea::NodalStamp VehiclePhysicalDynamics::accepted() const noexcept { return storage_->stamp; }
-tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
-    auto result=storage_->startup.allocations();
+AllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
+    const auto physical=storage_->startup.allocations();
+    AllocationInfo result{physical.device_bytes,physical.device_allocations,true};
     const auto observation=storage_->motion.allocations();
     result.device_bytes+=observation.device_bytes;
     result.device_allocations+=observation.device_allocations;
@@ -78,7 +79,14 @@ tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexce
         result.device_bytes+=self.device_bytes;
         result.device_allocations+=self.device_allocations;
     }
+    if(storage_->native_contact) {
+        result.device_bytes+=storage_->native_contact->device_bytes();
+        result.device_allocation_count_complete=false;
+    }
     return result;
+}
+const native_contact::Group* VehiclePhysicalDynamics::native_contact_group() const noexcept {
+    return storage_->native_contact.get();
 }
 const vehicle_wall::VehicleWallSetup* VehiclePhysicalDynamics::wall_setup() const noexcept {
     return storage_->wall ? &storage_->wall->setup() : nullptr;
@@ -122,7 +130,13 @@ void VehiclePhysicalDynamics::CommitStep() {
     auto& state=s.state();
     const auto& view=s.prepared;
     tl::fea::ShellPublicationReport report;
-    if(s.wall || s.self_contact) {
+    if(s.native_contact) {
+        report=state.publication.SealPhysicalScratchParticipation(state.owner,s.token,s.native_contact->scratch_receipts());
+        if(report.status!=tl::fea::ShellPublicationStatus::Success) {
+            s.Discard();
+            detail::Require(report,"Native group scratch participation");
+        }
+    } else if(s.wall || s.self_contact) {
         const auto wall=s.wall?s.wall->scratch_receipts():
             tl::fea::ShellPhysicalScratchReceiptRoster{};
         const auto self_contact=s.self_contact?
@@ -144,6 +158,7 @@ void VehiclePhysicalDynamics::CommitStep() {
     });
     if(static_cast<int>(report.status)!=0) { s.Discard();detail::Require(report,"Physical publication"); }
     // No allocation, device call, readback or other fallible work after success.
+    if(s.native_contact)s.native_contact->Committed();
     s.stamp=state.owner.accepted();s.accepted_slot=1-s.accepted_slot;s.pending=false;
 }
 void VehiclePhysicalDynamics::DiscardStep() noexcept { storage_->Discard(); }
@@ -153,6 +168,7 @@ const StepObservation& VehiclePhysicalDynamics::last_accepted_step() const {
 }
 void VehiclePhysicalDynamics::Storage::Discard() noexcept {
     timer.Measure<StepStage::Discard>([&] {
+        if(native_contact) native_contact->Discard();
         if(wall) wall->Discard();
         if(self_contact) self_contact->Discard();
         state().owner.Discard();

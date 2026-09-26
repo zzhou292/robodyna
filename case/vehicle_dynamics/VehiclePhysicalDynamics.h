@@ -5,6 +5,7 @@
 #include "SelfContactObservation.h"
 #include "WallObservation.h"
 #include "StepTiming.h"
+#include "native_contact/Observation.h"
 #include "lib_src/solvers/NodalCinStructuralLimit.h"
 #include <stdexcept>
 
@@ -18,7 +19,15 @@ class VehicleSelfContactInitialCensus;
 class CandidateRigidCouponAccess;
 struct RuntimeForecast;
 }
+namespace crash::cases::vehicle_native_contact { class VehicleContactStartup; }
 namespace crash::cases::vehicle_dynamics {
+namespace native_contact { class Group; }
+struct AllocationInfo {
+    std::size_t device_bytes=0,device_allocations=0;
+    // Byte accounting is complete. The native transaction reports payload
+    // bytes but has no allocator-count API; its presence makes this false.
+    bool device_allocation_count_complete=true;
+};
 namespace capture { class VehicleAcceptedFrames; }
 struct Config {
     vehicle_runtime::Config startup;
@@ -46,6 +55,7 @@ struct StepObservation {
     WallObservation wall;
     SelfContactObservation self_contact;
     bool motion_includes_fixed_environment=false;
+    native_contact::GroupObservation native_contact;
 };
 class StepSizeError : public std::runtime_error {
   public:
@@ -78,7 +88,8 @@ class VehiclePhysicalDynamics {
     VehiclePhysicalDynamics& operator=(const VehiclePhysicalDynamics&)=delete;
     const Forecast& forecast() const noexcept;
     tl::fea::NodalStamp accepted() const noexcept;
-    tl::fea::NodalAllocationInfo allocations() const noexcept;
+    AllocationInfo allocations() const noexcept;
+    const native_contact::Group* native_contact_group() const noexcept;
     StepTimingSnapshot timing() const noexcept;
     // Null on the unchanged free-flight profile. Returned source/budget views
     // remain immutable and valid while the dynamics object is alive.
@@ -98,6 +109,10 @@ class VehiclePhysicalDynamics {
     const StepObservation& last_accepted_step() const;
   private:
     friend class capture::VehicleAcceptedFrames;
+    friend class vehicle_native_contact::VehicleContactStartup;
+    // Only the typed case factory may attach initialized native sources. This
+    // reauthenticates the real owner and installs one exclusive native roster.
+    void InstallNativeContact(std::unique_ptr<native_contact::Group>);
     friend class vehicle_wall::VehicleWallStartup;
     friend class vehicle_wall::LoadedWall;
     friend class vehicle_self_contact::VehicleSelfContactStartup;

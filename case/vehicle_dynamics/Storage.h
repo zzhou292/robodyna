@@ -3,6 +3,7 @@
 #include "ExecutionAccess.h"
 #include "SelfContactContribution.h"
 #include "WallContribution.h"
+#include "native_contact/Group.h"
 #include "../vehicle_startup/TiedCinWitnessActivity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <array>
@@ -16,6 +17,7 @@ struct VehiclePhysicalDynamics::Storage {
     std::unique_ptr<vehicle_startup::TiedCinWitnessActivity> activity;
     std::unique_ptr<detail::WallContribution> wall;
     std::unique_ptr<detail::SelfContactContribution> self_contact;
+    std::unique_ptr<native_contact::Group> native_contact;
     tl::fea::NodalUniformMotionObserver motion;
     std::array<StepObservation,2> observations;
     tl::fea::NodalTrialToken token;
