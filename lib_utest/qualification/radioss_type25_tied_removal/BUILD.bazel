@@ -1,0 +1,5 @@
+cc_test(
+    name = "consumer",
+    srcs = ["Consumer.cpp"],
+    deps = ["//lib_src/collision:radioss_type25_tied_removal"],
+)
