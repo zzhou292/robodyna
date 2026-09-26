@@ -7,7 +7,7 @@
 namespace crash::cases::vehicle_runtime {
 inline constexpr double InitialSpeedMps = 35.0 * 0.44704;
 struct Limits {
-    // Explicit caller-selected payload ceiling. The default stays4GiB; a
+    // Explicit caller-selected payload ceiling. The default stays 4GiB; a
     // larger request still needs the complete case forecast and process guard.
     static constexpr std::size_t maximum_device_bytes = std::size_t{6} << 30;
     std::size_t host_bytes = std::size_t{20} * 1000 * 1000 * 1000;
