@@ -1,13 +1,14 @@
-include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Normal.cmake")
 set(_type25_search "${CMAKE_CURRENT_LIST_DIR}/radioss_type25/search")
+if(NOT TARGET tl_radioss_type25_search_values)
 add_library(tl_radioss_type25_search_values STATIC "${_type25_search}/Layout.cpp" "${_type25_search}/Preflight.cpp")
 target_link_libraries(tl_radioss_type25_search_values PUBLIC tl_radioss_type25_normal)
 target_compile_options(tl_radioss_type25_search_values PUBLIC
   "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"
   "$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+endif()
 option(TYPE25_SEARCH_CUDA "Build bounded native search maintenance on CUDA" OFF)
-if(TYPE25_SEARCH_CUDA)
+if(TYPE25_SEARCH_CUDA AND NOT TARGET tl_radioss_type25_search)
   find_package(CUDAToolkit REQUIRED)
   get_property(_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
   if(NOT "CUDA" IN_LIST _languages)

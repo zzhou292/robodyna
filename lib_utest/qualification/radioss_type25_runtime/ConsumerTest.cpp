@@ -12,3 +12,14 @@ TEST(NativeType25RuntimeConsumer,StableLifetimeAndUninitializedBoundary) {
   EXPECT_EQ(transaction.roster_entry().issuer,nullptr);
   EXPECT_EQ(transaction.CopyAccepted({},nullptr).status,n::TransactionStatus::NotInitialized);
 }
+
+TEST(NativeType25RuntimeConsumer,PreflightNeedsRealSourceAndPreservesOutputOnFailure) {
+  n::TransactionForecast output;output.device_bytes=791;
+  tl::fea::ShellPhysicalBinding physical;
+  EXPECT_NE(n::Transaction::Preflight({},n::FixedMainSource{},physical,output).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(output.device_bytes,791u);
+  EXPECT_NE(n::Transaction::Preflight({},n::MovingMainSource{},physical,output).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(output.device_bytes,791u);
+  EXPECT_NE(n::Transaction::Preflight({},n::MixedMovingMainSource{},physical,output).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(output.device_bytes,791u);
+}

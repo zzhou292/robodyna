@@ -120,3 +120,10 @@ target_link_libraries(type25_runtime_mixed_cuda PRIVATE tl_radioss_type25_transa
   tl_radioss_type25_fixed_main_startup type25_current_normals_oracle GTest::gtest_main CUDA::cudart)
 set_target_properties(type25_runtime_mixed_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 add_test(NAME type25_runtime_mixed_cuda COMMAND type25_runtime_mixed_cuda)
+
+add_executable(type25_runtime_preflight_cuda FullLedgerRig.cu PreflightTest.cu)
+target_link_libraries(type25_runtime_preflight_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_preflight_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_preflight_cuda COMMAND type25_runtime_preflight_cuda)
+set_tests_properties(type25_runtime_preflight_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)

@@ -21,6 +21,17 @@ struct AcceptedContactBuffer {
 class Transaction {
  public:
   Transaction();~Transaction();
+  // Exact shared source/layout forecast before any owner or transaction device
+  // allocation. Host source staging and CUDA scratch-size queries are bounded
+  // by limits. Success does not authenticate a live publisher or accepted state.
+  // Failure leaves output unchanged. Initialize repeats this same plan.
+  static TransactionReport Preflight(const TransactionConfig&,const FixedMainSource&,
+      const tl::fea::ShellPhysicalBinding&,TransactionForecast&,TransactionLimits={}) noexcept;
+  static TransactionReport Preflight(const TransactionConfig&,const MovingMainSource&,
+      const tl::fea::ShellPhysicalBinding&,TransactionForecast&,TransactionLimits={}) noexcept;
+  static TransactionReport Preflight(const TransactionConfig&,const MixedMovingMainSource&,
+      const tl::fea::ShellPhysicalBinding&,TransactionForecast&,TransactionLimits={}) noexcept;
+
   Transaction(const Transaction&)=delete;Transaction& operator=(const Transaction&)=delete;
   Transaction(Transaction&&)=delete;Transaction& operator=(Transaction&&)=delete;
   TransactionReport Initialize(const TransactionConfig&,const FixedMainSource&,

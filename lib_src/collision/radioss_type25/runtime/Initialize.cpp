@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "Planning.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <new>
 namespace tlfea::contact::radioss_type25 {
 namespace fe=tl::fea;namespace rd=runtime_detail;
 namespace {
 TransactionReport Error(TransactionStatus s,const char* message){return {s,message};}
-bool Add(std::size_t value,std::size_t& sum){if(value>SIZE_MAX-sum)return false;sum+=value;return true;}
 }
 Transaction::Transaction()=default;Transaction::~Transaction()=default;
 Transaction::Impl::~Impl(){if(stream)cudaStreamSynchronize(stream);if(arena)cudaFree(arena);}
@@ -25,57 +25,15 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   const auto authenticated=publication.ValidatePhysicalSources(owner,physical,participants,identity);
   if(authenticated.status!=fe::ShellPublicationStatus::Success)
     return Error(TransactionStatus::PublicationFailure,authenticated.message);
-  rd::SourceStaging upload;auto status=rd::PrepareSource(config,source,physical,limits,upload);
+  rd::Plan plan(limits);
+  auto status=rd::PreparePlan(config,source,physical,limits,sizeof(Transaction)+sizeof(Impl),plan);
   if(status.status!=TransactionStatus::Ok)return status;
   cudaStream_t stream=nullptr;
   const auto borrowed=owner.BorrowOwnerStream(&stream);
   if(borrowed.status!=fe::NodalStatus::Ok)return Error(TransactionStatus::OwnerFailure,borrowed.message);
-  candidates::Forecast inventory;search::Forecast maintenance;assembly::IncidenceForecast incidence;
-  const auto candidates_status=candidates::Inventory::Preflight(upload.inventory,limits.inventory,inventory);
-  if(candidates_status!=candidates::Status::Ok)return Error(candidates_status==candidates::Status::DeviceFailure?
-      TransactionStatus::DeviceFailure:TransactionStatus::ResourceLimit,"Native candidate preflight rejected");
-  if(search::Maintenance::Preflight(upload.maintenance,limits.maintenance,maintenance)!=search::Status::Ok)
-    return Error(TransactionStatus::ResourceLimit,"Native maintenance preflight rejected");
-  assembly::IncidenceLimits incidence_limits{limits.optimized_candidates,source.selection.node_count,
-    limits.optimized_candidates/source.force_packet_size+(limits.optimized_candidates%source.force_packet_size!=0),limits.max_device_bytes};
-  if(assembly::DeviceIncidenceBuilder::Preflight(incidence_limits,incidence)!=assembly::IncidenceStatus::Ok)
-    return Error(TransactionStatus::ResourceLimit,"Native ASS0 incidence preflight rejected");
-  std::size_t cub=0;
-  if(rd::QueryScratch(source.selection.secondary_count,limits.optimized_candidates,cub)!=cudaSuccess)
-    return Error(TransactionStatus::DeviceFailure,"Native runtime scratch query failed");
-  const rd::NormalShape normal{upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation,upload.moving.mixed};
-  rd::Layout layout;if(!rd::MakeLayout(source,limits,cub,layout,normal,config.response_mass))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
-  TransactionForecast forecast;forecast.raw_pair_capacity=limits.inventory.max_pairs;
-  forecast.optimized_capacity=limits.optimized_candidates;forecast.sliding_capacity=limits.sliding_entries;
-  forecast.runtime_device_bytes=layout.bytes;forecast.normal_device_bytes=layout.normal.bytes;
-  if(!Add(inventory.device_bytes,forecast.inventory_device_bytes)||!Add(inventory.device_bytes,forecast.inventory_device_bytes)||
-     !Add(maintenance.device_bytes,forecast.maintenance_device_bytes)||!Add(maintenance.device_bytes,forecast.maintenance_device_bytes))
-    return Error(TransactionStatus::ResourceLimit,"Native paired arena forecast overflow");
-  forecast.incidence_device_bytes=incidence.device_bytes;
-  if(!Add(layout.bytes,forecast.device_bytes)||!Add(forecast.inventory_device_bytes,forecast.device_bytes)||
-     !Add(forecast.maintenance_device_bytes,forecast.device_bytes)||!Add(incidence.device_bytes,forecast.device_bytes)||
-     forecast.device_bytes>limits.max_device_bytes)
-    return Error(TransactionStatus::ResourceLimit,"Complete native device forecast exceeds cap");
-  tl::util::BoundedArenaLayout readback_layout(limits.max_host_bytes);tl::util::ArenaRegion rows,secondary;
-  if(!readback_layout.Append<NativeGeometryHistory>(source.selection.secondary_count,rows)||
-     !readback_layout.Append<lifecycle::Secondary>(source.selection.secondary_count,secondary))
-    return Error(TransactionStatus::ResourceLimit,"Native readback forecast exceeds cap");
-  fe::ActivePrefixForecast activity;
-  if(config.activity==ContactActivityPolicy::AllActivePrefix) {
-    const auto checked=fe::PhysicalActivePrefix::Preflight(physical,{limits.max_host_bytes},activity);
-    if(checked.status!=fe::ActivePrefixStatus::Ok)
-      return Error(TransactionStatus::ResourceLimit,checked.message);
-  }
-  forecast.host_bytes=sizeof(Transaction)+sizeof(Impl);
-  // The member handle is already counted inside Impl; only its owned backing
-  // and retained activity scratch are additional payload.
-  if(activity.owned_host_bytes&&!Add(activity.owned_host_bytes-sizeof(fe::PhysicalActivePrefix),forecast.host_bytes))
-    return Error(TransactionStatus::ResourceLimit,"Native activity forecast overflows");
-  if(!Add(readback_layout.bytes(),forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||
-     !Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(incidence.host_bytes,forecast.host_bytes)||
-     !Add(forecast.host_bytes,forecast.startup_host_bytes)||!Add(upload.bytes+sizeof(upload),forecast.startup_host_bytes)||
-     forecast.startup_host_bytes>limits.max_host_bytes)
-    return Error(TransactionStatus::ResourceLimit,"Complete native host forecast exceeds cap");
+  auto& upload=plan.upload;const auto& forecast=plan.forecast;const auto& layout=plan.layout;
+  const auto& normal=plan.normal;const auto& incidence_limits=plan.incidence_limits;
+  const auto& readback_layout=plan.readback;const auto& rows=plan.rows;const auto& secondary=plan.secondary;
   auto next=std::make_unique<Impl>(physical);next->owner=&owner;next->publication=&publication;
   next->participants=participants;next->identity=identity;next->config=config;next->source=source;
   next->limits=limits;next->forecast=forecast;next->layout=layout;next->stream=stream;
