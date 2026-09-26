@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "lib_src/collision/RadiossType25Transaction.h"
+#include "lib_src/assembly/ShellPhysicalBinding.h"
 #include <gtest/gtest.h>
 #include <type_traits>
 namespace n=tlfea::contact::radioss_type25;
