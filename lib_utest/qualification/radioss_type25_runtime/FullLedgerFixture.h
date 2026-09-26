@@ -38,7 +38,7 @@ struct FullLedgerFixture {
     if(runtime)for(auto& damping:source.spring_property.property.damping)damping=0;
     return source.Springs();
   }
-  explicit FullLedgerFixture(bool with_qbat=false,bool contact_geometry=false)
+  explicit FullLedgerFixture(bool with_qbat=false,bool contact_geometry=false,double failure_strain=2.5)
       : source(contact_geometry),domain(source.Domain()),beams(source.Beams()),
         welds(DeclaredWelds(source,contact_geometry)),
         solids(source.Solids(domain)) {
@@ -77,7 +77,7 @@ struct FullLedgerFixture {
     for(unsigned i=0;i<4;++i){policies[i].source=p[i];policies[i].policy=tl::fea::ShellFailurePolicy::None;}
     if(with_qbat)for(unsigned i=2;i<4;++i){
       policies[i].policy=tl::fea::ShellFailurePolicy::ConstantAllPoints;
-      policies[i].constant.failure_strain=2.5;
+      policies[i].constant.failure_strain=failure_strain;
     }
     EXPECT_EQ(failure.InitializeExecution(catalog,policies,parent_count).status,tl::fea::ShellPlasticityBindingStatus::Success);
     EXPECT_TRUE(rigid.InitializeEmpty(ledger));

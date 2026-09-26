@@ -6,6 +6,7 @@
 #include "lib_src/collision/RadiossType25AssemblyDevice.h"
 #include "Launch.h"
 #include "Source.h"
+#include "lib_src/elements/publication/PhysicalActivePrefix.h"
 namespace tlfea::contact::radioss_type25 {
 struct Transaction::Impl {
   explicit Impl(const tl::fea::ShellPhysicalBinding& value):physical(value){}
@@ -13,6 +14,7 @@ struct Transaction::Impl {
   tl::fea::ShellPhysicalBinding physical;
   tl::fea::ShellPhysicalParticipants participants;
   tl::fea::ShellPhysicalPublicationIdentity identity;
+  tl::fea::PhysicalActivePrefix active_prefix;
   tl::fea::FENodalState* owner=nullptr;
   tl::fea::ShellBatchPublication* publication=nullptr;
   tl::fea::ShellPhysicalScratchParticipation issuer;

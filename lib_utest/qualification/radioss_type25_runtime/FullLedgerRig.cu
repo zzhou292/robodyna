@@ -86,6 +86,12 @@ void FullLedgerRig::Initialize(bool attach_contact) {
   tconfig.configuration_id=Configuration;tconfig.qualification_id=Qualification;
   tconfig.element_count=fixture.shells.t3_count();tconfig.usage=fe::t3::BatchUsage::CoupledForces;
   Check(t3.InitializeMapped(tconfig,fixture.physical,owner,Witnesses()));
+  if(fixture.shells.qbat_count()) {
+    fe::qbat::BatchConfig bc;bc.startup=startup;bc.owner=owner.accepted();
+    bc.configuration_id=Configuration;bc.qualification_id=Qualification;
+    bc.element_count=fixture.shells.qbat_count();bc.usage=fe::qbat::BatchUsage::CoupledForces;
+    Check(qbat.InitializeMapped(bc,fixture.physical,owner,Witnesses()));
+  }
   fe::type25::BatchConfig wc;wc.startup=startup;wc.owner=owner.accepted();
   wc.configuration_id=Configuration;wc.qualification_id=Qualification;wc.element_count=fixture.welds.connection_count();
   Check(welds.InitializeMapped(wc,fixture.physical,owner,Witnesses(),fe::type25::CapacityProfile::Legacy));
@@ -101,12 +107,13 @@ void FullLedgerRig::Initialize(bool attach_contact) {
   FullLedgerAttempt proof;Check(owner.BeginTrial(&proof.token,&proof.assembly));
   Check(qeph.AssembleMappedAccepted(owner,proof.token,proof.assembly));
   Check(t3.AssembleMappedAccepted(owner,proof.token,proof.assembly));
+  if(fixture.shells.qbat_count())Check(qbat.AssembleMappedAccepted(owner,proof.token,proof.assembly));
   Check(welds.AssembleMappedAccepted(owner,proof.token,proof.assembly));
   Check(beams.AssembleMappedAccepted(owner,proof.token,proof.assembly));
   Discard();
   Check(publication.InitializePhysical(owner,fixture.physical,fixture.rigid,Witnesses(),Participants(),Identity()));
   if(attach_contact) {
-    Check(contact.Initialize(fixture.Config(),Source(),owner,publication,fixture.physical,Participants(),Identity()));
+    Check(contact.Initialize(Config(),Source(),owner,publication,fixture.physical,Participants(),Identity()));
     Check(publication.ConfigurePhysicalScratchParticipation(owner,fixture.physical,Participants(),Identity(),{{},contact.roster_entry()}));
   }
 }
@@ -114,6 +121,7 @@ void FullLedgerRig::Begin(FullLedgerAttempt& a) {
   Check(owner.BeginTrial(&a.token,&a.assembly));
   Check(qeph.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(t3.AssembleMappedAccepted(owner,a.token,a.assembly));
+  if(fixture.shells.qbat_count())Check(qbat.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(welds.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(beams.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(solids.AssembleAccepted(owner,a.token,a.assembly));
@@ -126,7 +134,7 @@ void FullLedgerRig::Begin(FullLedgerAttempt& a) {
 }
 void FullLedgerRig::Prepare(FullLedgerAttempt& a) {
   fe::NodalCinAssemblyView cin_view;Check(owner.BorrowCinAssembly(a.token,&cin_view));
-  Check(publication.ValidateAcceptedActivitySources(owner,{&qeph,&t3,nullptr,&welds},fixture.shells.inventory()));
+  Check(publication.ValidateAcceptedActivitySources(owner,{&qeph,&t3,fixture.shells.qbat_count()?&qbat:nullptr,&welds},fixture.shells.inventory()));
   std::uint8_t activity[2];fe::qeph::BatchDiagnostics diagnostics;
   Check(qeph.CopyAcceptedParentActivity(owner.accepted(),activity,2,&diagnostics));
   for(auto& value:activity)value=value?1:2;
@@ -138,10 +146,11 @@ void FullLedgerRig::Prepare(FullLedgerAttempt& a) {
   Check(owner.BorrowPrepared(a.token,&a.prepared));
   Check(qeph.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.qeph));
   Check(t3.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.t3));
+  if(fixture.shells.qbat_count())Check(qbat.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.qbat));
   Check(welds.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.type25));
   Check(beams.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.type13));
   Check(solids.EvaluateCandidate(owner,a.token,a.prepared,&a.candidates.solids));
-  Check(publication.PreparePhysical(owner,a.token,{&a.candidates.qeph,&a.candidates.t3,nullptr,
+  Check(publication.PreparePhysical(owner,a.token,{&a.candidates.qeph,&a.candidates.t3,fixture.shells.qbat_count()?&a.candidates.qbat:nullptr,
     &a.candidates.type25,&a.candidates.type13,&a.candidates.solids},&a.common));
 }
 void FullLedgerRig::Seal(FullLedgerAttempt& a) {
@@ -154,7 +163,7 @@ fe::ShellPublicationReport FullLedgerRig::Commit(FullLedgerAttempt& a,bool accep
 }
 void FullLedgerRig::Discard() {
   contact.DiscardTrial();publication.DiscardTrial();
-  qeph.DiscardTrial();t3.DiscardTrial();welds.DiscardTrial();beams.DiscardTrial();solids.DiscardTrial();owner.Discard();
+  qeph.DiscardTrial();t3.DiscardTrial();qbat.DiscardTrial();welds.DiscardTrial();beams.DiscardTrial();solids.DiscardTrial();owner.Discard();
 }
 std::vector<double> FullLedgerRig::Force(const FullLedgerAttempt& a) {
   fe::NodalCinAssemblyView cin_view;Check(owner.BorrowCinAssembly(a.token,&cin_view));

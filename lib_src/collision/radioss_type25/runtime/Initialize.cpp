@@ -60,7 +60,17 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   if(!readback_layout.Append<NativeGeometryHistory>(source.selection.secondary_count,rows)||
      !readback_layout.Append<lifecycle::Secondary>(source.selection.secondary_count,secondary))
     return Error(TransactionStatus::ResourceLimit,"Native readback forecast exceeds cap");
+  fe::ActivePrefixForecast activity;
+  if(config.activity==ContactActivityPolicy::AllActivePrefix) {
+    const auto checked=fe::PhysicalActivePrefix::Preflight(physical,{limits.max_host_bytes},activity);
+    if(checked.status!=fe::ActivePrefixStatus::Ok)
+      return Error(TransactionStatus::ResourceLimit,checked.message);
+  }
   forecast.host_bytes=sizeof(Transaction)+sizeof(Impl);
+  // The member handle is already counted inside Impl; only its owned backing
+  // and retained activity scratch are additional payload.
+  if(activity.owned_host_bytes&&!Add(activity.owned_host_bytes-sizeof(fe::PhysicalActivePrefix),forecast.host_bytes))
+    return Error(TransactionStatus::ResourceLimit,"Native activity forecast overflows");
   if(!Add(readback_layout.bytes(),forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||
      !Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(incidence.host_bytes,forecast.host_bytes)||
      !Add(forecast.host_bytes,forecast.startup_host_bytes)||!Add(upload.bytes+sizeof(upload),forecast.startup_host_bytes)||
@@ -69,6 +79,12 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   auto next=std::make_unique<Impl>(physical);next->owner=&owner;next->publication=&publication;
   next->participants=participants;next->identity=identity;next->config=config;next->source=source;
   next->limits=limits;next->forecast=forecast;next->layout=layout;next->stream=stream;
+  if(config.activity==ContactActivityPolicy::AllActivePrefix) {
+    const auto checked=next->active_prefix.Initialize(owner,publication,physical,participants,identity,{limits.max_host_bytes});
+    if(checked.status!=fe::ActivePrefixStatus::Ok)
+      return Error(checked.status==fe::ActivePrefixStatus::InactiveParent?TransactionStatus::ActivityChange:
+        TransactionStatus::PublicationFailure,checked.message);
+  }
   if(!units_detail::Make(config.units,next->units))return Error(TransactionStatus::InvalidInput,"Invalid native units");
   if(!next->readback.Initialize(readback_layout.bytes())||!next->readback.Construct<NativeGeometryHistory>(rows)||
      !next->readback.Construct<lifecycle::Secondary>(secondary))return Error(TransactionStatus::ResourceLimit,"Native readback allocation failed");

@@ -210,6 +210,15 @@ TransactionReport Transaction::SealCandidate(fe::FENodalState& owner,const fe::N
     return p.Fail(Error(TransactionStatus::StaleAttempt,"Native candidate does not match its accepted force stage"));
   const auto valid=p.publication->ValidatePhysicalCandidate(owner,token,physical,view);
   if(valid.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,valid.message));
+  if(p.config.activity==ContactActivityPolicy::AllActivePrefix) {
+    // Initialization authenticated a wholly active epoch0. Every later owner
+    // commit requires this mandatory participant's receipt, proving the active
+    // accepted prefix by induction without another full accepted-state read.
+    const auto checked=p.active_prefix.CheckPrepared(owner,*p.publication,token,physical,view);
+    if(checked.status!=fe::ActivePrefixStatus::Ok)
+      return p.Fail({checked.status==fe::ActivePrefixStatus::InactiveParent?TransactionStatus::ActivityChange:
+          TransactionStatus::PublicationFailure,checked.message,checked.parent});
+  }
   if(!p.state.Stage(view,p.trial_selectors))return p.Fail(Error(TransactionStatus::PublicationFailure,"Native selector plan rejected"));
   fe::ShellPhysicalScratchParticipationReceipt result;
   const auto sealed=p.issuer.SealNativeContactCandidate(p.source.source_id,owner,token,view,&result);

@@ -18,7 +18,7 @@ TL_MATH_HOST_DEVICE inline bool SupportedConstraint(int code,int skew) noexcept 
 }
 enum class TransactionStatus { Ok,InvalidInput,UnsupportedProfile,ResourceLimit,
   NotInitialized,AlreadyInitialized,StaleAttempt,SourceMismatch,OwnerFailure,
-  PublicationFailure,NumericalFailure,DeviceFailure,Unusable };
+  PublicationFailure,NumericalFailure,DeviceFailure,Unusable,ActivityChange };
 struct TransactionReport {
   TransactionStatus status=TransactionStatus::InvalidInput;
   const char* message="Invalid native contact transaction";
@@ -38,6 +38,9 @@ struct ContactSourceInput {
   double margin=0,gap_load=0,drad=0;
   unsigned force_packet_size=0; // Actual native NVSIZ; never CUDA block size.
   int native_workers=0; // First numerical profile requires exactly one.
+  // Resolved native ITHK. Mandatory in the all-active profile; it is source
+  // policy, not a claim that activity alone makes contact gaps constant.
+  int contact_thickness_update=-1;
 };
 // The explicit wrappers select admissible source semantics. There is no public
 // Transaction initializer accepting ContactSourceInput alone.
@@ -56,6 +59,7 @@ enum class ResponseMassPolicy { StaticPhysicalLedger,AcceptedOwnerCoefficients }
 // authentication of every mechanical participant. It does not widen contact
 // surface topology or failure/activity support.
 enum class PhysicalSourceProfile { QephT3Only, CompleteBoundLedger };
+enum class ContactActivityPolicy { NoDeclaredFailure, AllActivePrefix };
 struct TransactionConfig {
   UnitScale units;
   lifecycle::Profile lifecycle;
@@ -65,6 +69,7 @@ struct TransactionConfig {
   assembly::Controls assembly;
   ResponseMassPolicy response_mass=ResponseMassPolicy::StaticPhysicalLedger;
   PhysicalSourceProfile physical_source=PhysicalSourceProfile::QephT3Only;
+  ContactActivityPolicy activity=ContactActivityPolicy::NoDeclaredFailure;
 };
 inline candidates::Limits FixedMainInventoryLimits() noexcept {
   candidates::Limits limits;limits.max_pairs=65536;limits.max_tasks=65536;return limits;

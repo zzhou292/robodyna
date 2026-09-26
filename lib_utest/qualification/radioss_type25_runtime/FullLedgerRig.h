@@ -38,7 +38,8 @@ struct FullLedgerAttempt {
 struct FullLedgerRig {
   static constexpr std::uint64_t Configuration=7191,Qualification=7192;
   static constexpr double Dt=1e-9;
-  FullLedgerFixture fixture{false,true};
+  explicit FullLedgerRig(bool with_qbat=false,double failure_strain=2.5):fixture(with_qbat,true,failure_strain){}
+  FullLedgerFixture fixture;
   fe::solids::Model solid_model;
   tl::constraints::tied_shell::PostKinChkResult classified;
   tl::constraints::tied_shell::TiedCinAttachmentModel cin;
@@ -50,18 +51,26 @@ struct FullLedgerRig {
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;
   fe::t3::T3Batch t3;
+  fe::qbat::Batch qbat;
   fe::type25::Batch welds;
   fe::type13::Batch beams;
   fe::solids::Batch solids;
   fe::ShellBatchPublication publication;
   n::Transaction contact; // Retires before its borrowed publisher/owner.
 
-  fe::ShellPhysicalParticipants Participants() {return {&qeph,&t3,nullptr,&welds,&beams,&solids};}
+  fe::ShellPhysicalParticipants Participants() {return {&qeph,&t3,fixture.shells.qbat_count()?&qbat:nullptr,&welds,&beams,&solids};}
   fe::ShellPhysicalPublicationIdentity Identity() const {return {Configuration,Qualification,startup};}
   fe::NodalCinWitnessSource Witnesses() const {return {&cin,ranges.data(),witnesses.data(),ranges.size(),witnesses.size()};}
+  n::TransactionConfig Config() const {
+    auto result=fixture.Config();
+    if(fixture.shells.qbat_count())result.activity=n::ContactActivityPolicy::AllActivePrefix;
+    return result;
+  }
   n::MovingMainSource Source() const {
     n::MovingMainSource result;
     static_cast<n::ContactSourceInput&>(result)=fixture.Contact();
+    // Explicit constant-thickness contact in this synthetic declaration.
+    if(fixture.shells.qbat_count())result.contact_thickness_update=0;
     result.starter=fixture.starter;
     result.activation={0,0,1,2,1,n::normal_activation::FreeRosterPolicy::FreshComplete};
     return result;
