@@ -4,9 +4,38 @@
 #include "lib_src/constraints/tied_shell/TiedSearch.h"
 #include "lib_utils/BoundedArena.h"
 #include <algorithm>
+#include <sstream>
 namespace crash::cases::native_scene {
 namespace t=tl::constraints::tied_shell;
 using output::Require;
+namespace {
+void CheckFinalizedRows(const t::FinalizationMaps& maps) {
+    // Whole native I2TID3 always flushes these message accumulators, including
+    // the empty error1078 accumulator. Flush is not an emitted warning/error.
+    constexpr unsigned flushes[]{1071,1078,1079,1873,1157,1158,1872};
+    bool valid=maps.slaves==std::vector<std::uint32_t>{0,1,2,3}&&
+        maps.main_nodes==std::vector<std::uint32_t>{0,1,2,3}&&
+        maps.selected_masters==std::vector<std::uint64_t>{1,1,1,1}&&maps.dispositions.size()==4&&
+        maps.messages.size()==7;
+    for(auto disposition:maps.dispositions)valid=valid&&disposition==t::FinalizationDisposition::Kept;
+    for(std::size_t i=0;i<maps.messages.size();++i) {
+        const auto& message=maps.messages[i];
+        valid=valid&&i<7&&message.id==flushes[i]&&message.action==t::NativeMessageAction::Flush&&
+            message.original_slave==SIZE_MAX&&message.ordered_master==0&&
+            message.s==0&&message.t==0&&message.selection_distance==0;
+    }
+    if(valid)return;
+    std::ostringstream diagnostic;
+    diagnostic<<"Named CIN finalized scope differs: slaves=";
+    for(auto value:maps.slaves)diagnostic<<value<<',';
+    diagnostic<<" mains=";for(auto value:maps.main_nodes)diagnostic<<value<<',';
+    diagnostic<<" dispositions=";for(auto value:maps.dispositions)diagnostic<<int(value)<<',';
+    diagnostic<<" messages(id/action/severity/row)=";
+    for(const auto& message:maps.messages)diagnostic<<message.id<<'/'<<int(message.action)<<'/'<<
+        int(message.severity)<<'/'<<message.original_slave<<',';
+    throw std::runtime_error(diagnostic.str());
+}
+}
 struct TiedSource::Data {
     std::array<t::WorkingSearchInput,4> inputs;
     t::FinalizedSearch finalized;
@@ -65,8 +94,7 @@ TiedSource TiedSource::Prepare(const modelio::native_scene::DeclaredSource& sour
     final.main_nodes=main_nodes.data();final.main_node_count=4;final.choices=choices.data();final.node_count=17;
     Require(bool(t::FinalizeSearch(final,&out->finalized,{17,1,4,remaining()})),"TYPE2 finalization rejected");
     const auto& maps=*out->finalized.data();
-    Require(maps.slaves.size()==4&&maps.main_nodes.size()==4&&maps.messages.empty(),
-        "Named first CIN source must retain every finalized row without warning/removal");
+    CheckFinalizedRows(maps);
     Require(retained.Append<std::byte>(maps.owned_payload_bytes,ignored),"Finalized source retention exceeds cap");
     std::array<t::ClassificationNode,17> nodes{};
     std::array<std::uint32_t,17> all{};

@@ -31,7 +31,19 @@ TEST(TiedScenePreparation, ActualPhysicalParentsProduceMInertiaAndCompleteCinMod
 TEST(TiedScenePreparation, NativeValueStagesDeriveEveryDispositionAndUseRealSecondaryThickness) {
     const auto physical=PhysicalSource::Prepare(Declaration(),773);const auto& source=*physical.tied_source();
     const auto* final=source.search().data();ASSERT_NE(final,nullptr);EXPECT_EQ(final->slaves,(std::vector<std::uint32_t>{0,1,2,3}));
-    EXPECT_TRUE(final->messages.empty());EXPECT_EQ(final->selected_masters,(std::vector<std::uint64_t>{1,1,1,1}));
+    EXPECT_EQ(final->selected_masters,(std::vector<std::uint64_t>{1,1,1,1}));
+    ASSERT_EQ(final->messages.size(),7u);
+    constexpr unsigned flushes[]{1071,1078,1079,1873,1157,1158,1872};
+    for(unsigned i=0;i<7;++i) {
+        EXPECT_EQ(final->messages[i].id,flushes[i]);
+        EXPECT_EQ(final->messages[i].action,tl::constraints::tied_shell::NativeMessageAction::Flush);
+        EXPECT_EQ(final->messages[i].original_slave,SIZE_MAX);
+    }
+    for(auto disposition:final->dispositions)
+        EXPECT_EQ(disposition,tl::constraints::tied_shell::FinalizationDisposition::Kept);
+    RecordProperty("retained_secondary_rows",int(final->slaves.size()));
+    RecordProperty("retained_main_nodes",int(final->main_nodes.size()));
+    RecordProperty("empty_native_flush_records",int(final->messages.size()));
     const auto interfaces=source.classification().interfaces();ASSERT_EQ(interfaces.count,2u);
     EXPECT_FALSE(interfaces.data[0].selected);EXPECT_TRUE(interfaces.data[1].selected);
     const auto flags=source.classification().irupt();const auto offset=interfaces.data[1].slave_offset;
