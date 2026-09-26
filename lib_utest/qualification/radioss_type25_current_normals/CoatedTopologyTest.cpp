@@ -91,7 +91,8 @@ TEST(CoatedCurrentNormals, DeclaredCoatingCacheRetainsInactiveAndTriangleUnusedB
 TEST(CoatedCurrentNormals, Engine129BoundarySiAndLargeEncodedPartnerRemainNative) {
   CoatedFixture f(Coated(Grid(11, 13)));
   ASSERT_EQ(f.mesh.primary.size(), 143u);
-  ASSERT_GT(f.built.startup.mains.back().segment_type < 0 ? -f.built.startup.mains.back().segment_type : 0,
+  const auto last_role = f.built.startup.mains[f.built.startup.main_count - 1].segment_type;
+  ASSERT_GT(last_role < 0 ? -last_role : 0,
       int(f.built.startup.main_count));
   Same(EvaluateHostNormals(f.Input()), Oracle(f.Input(true)));
   f.mesh.units = s::Coordinates::Si;
