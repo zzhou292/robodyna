@@ -93,7 +93,7 @@ Preparation SelectedShellMainSource::Prepare(const c::CorrectedNodalSource& sour
             "Selected main roster changed during native surface ordering");
         const auto& canonical = selection.canonical().data();
         const auto& declared = selection.data();
-        const coated::Provenance bound{canonical.inputs.canonical_manifest, canonical.inputs.scope_report,
+        const native::Provenance bound{canonical.inputs.canonical_manifest, canonical.inputs.scope_report,
             canonical.inputs.source_member, declared.auxiliary_sha256, declared.combine_sha256, canonical.inputs.units};
         next->provenance.units = input.units;
         next->provenance.input_digest = coated::detail::InputDigest(input, classified, &order, {},
