@@ -108,3 +108,38 @@ source census. None creates a physical owner or advances a clock. The General
 runtime successor must finish its owning gate before this source can qualify.
 The subsequent accepted-run adapter will reuse the existing RunLoop and output
 native-group profile; a source/forecast pass alone does not claim that run.
+
+## Accepted native run
+
+`PreparedRun` is a thin adapter over the existing `vehicle_run::detail::RunLoop`.
+It retains the prepared case and actual environment mapping, preflights complete
+capture/archive coexistence before owner creation, and selects the output
+`native_group` profile. Its default 31 samples use the existing 2GiB archive cap;
+the owning preview target explicitly selects `FullRunByteCap` and reports the
+concrete forecast before a launch. It never silently shortens the requested
+horizon or changes a contact/material policy.
+
+The optional initial retry probe is outside timed runtime. It checks unchanged
+accepted owner/group publication and exact frame/activity bits while a trial is
+pending and after discard, then compares the two genuine attempt diagnostics.
+It does not copy full contact history. A source failure, physics rejection or
+I/O failure retains the real accepted endpoint and closes a truthful prefix
+where the existing writer permits it. The owning preview test still fails if
+the requested horizon was not completed.
+
+The full actual target adds separate `CompleteOutputForecastBeforeTheOwner`,
+`TwoNativeInterfacesRetryAndPublishTwoIntervalsWithClosedArchive`,
+`ExplicitPreviewOutputForecastBeforeTheOwner`, and
+`ExplicitPreviewHorizonUsesTheExistingRunLoopAndAcceptedArchive` groups. The
+preview groups require explicit `ROBO_NATIVE_VEHICLE_DURATION_S` and
+`ROBO_NATIVE_VEHICLE_SAMPLES`. They use the reviewed 5GiB steady payload cap,
+unchanged 6GiB sequential initialization cap, and the 18GiB qualification guard.
+Every invocation needs a fresh `ROBO_NATIVE_VEHICLE_CASE_OUTPUT`; actual accepted
+archives live in its `accepted/archive` child with a separate viewer-input and
+summary. Source construction, host case preparation, output preparation, session
+startup, optional retry and timed runtime are reported separately. Detailed
+per-stage counters remain available through `RunResult.loop.progress.mechanics_timing`
+when the source config explicitly enables profiling; benchmark runs leave that
+profiling disabled. Complete-domain uniform-motion departure includes the fixed
+wall and is not labeled vehicle deformation. Saved native plastic fields and
+accepted interface counters remain distinct observations.

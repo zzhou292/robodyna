@@ -79,6 +79,9 @@ class VehicleContactStartup {
     // Immutable borrowed original operands, before BUC/history production.
     // Available for independent source qualification; lifetime is this case.
     n::initial_source::Input source_input(Role) const;
+    // Read-only opaque preparation for independent qualification. No mutable
+    // operands, history injection or physical acceptance are exposed.
+    const n::initial_source::PreparedSource& prepared_source(Role) const;
     // Optional source-only census. Seeds are computed sequentially and retired;
     // none is supplied to runtime or published as a physical state.
     std::array<InitialCensus, 2> CensusInitialStates() const;

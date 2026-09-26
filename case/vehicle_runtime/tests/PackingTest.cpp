@@ -73,4 +73,16 @@ TEST(VehicleRuntimePacking, ExplicitInitialDescriptorAndLimits) {
     EXPECT_THROW(detail::CheckConfig(config),std::runtime_error);
     EXPECT_THROW(detail::PackingBytes(tl::fea::MaxActiveNodalStateNodes+1,1u<<20),std::runtime_error);
 }
+TEST(VehicleRuntimePacking, ExplicitDevicePayloadCeilingKeepsDefaultAndRejectsOverCap) {
+    Config config;
+    EXPECT_EQ(config.limits.device_bytes, std::size_t{4} << 30);
+    config.limits.device_bytes = std::size_t{5} << 30;
+    EXPECT_NO_THROW(detail::CheckConfig(config));
+    config.limits.device_bytes = Limits::maximum_device_bytes;
+    EXPECT_NO_THROW(detail::CheckConfig(config));
+    ++config.limits.device_bytes;
+    EXPECT_THROW(detail::CheckConfig(config), std::runtime_error);
+    config.limits.device_bytes = 0;
+    EXPECT_THROW(detail::CheckConfig(config), std::runtime_error);
+}
 } // namespace crash::cases::vehicle_runtime::test
