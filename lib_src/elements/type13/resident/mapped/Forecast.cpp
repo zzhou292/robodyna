@@ -17,7 +17,7 @@ BatchReport MakeForecast(const BatchConfig& config, const ShellPhysicalBinding& 
     return {BatchStatus::InvalidInput, "Mapped TYPE13 requires the complete physical/rigid/CIN scope"};
   }
   const auto& source = *physical.coefficients()->type13();
-  const auto checked = batch_detail::SourceGeometryPreflight(config, source);
+  const auto checked = batch_detail::SourceGeometryPreflight(config, source, true);
   if (!checked) return checked;
   if (!source.domain()->SharesStorage(*physical.domain()) ||
       !cin.model || !cin.model->prepared() ||

@@ -68,6 +68,16 @@ TL_SHELL_STARTUP_HD inline bool MatchesInitialNode(const ShellBatchStartup& s,tl
   return s.kind==ShellBatchStartupKind::ReferenceUniformTranslation&&
     SameVector(velocity,s.uniform_velocity)&&q[0]==1&&q[1]==0&&q[2]==0&&q[3]==0;
 }
+// Startup-only proof for a physical participant whose consumed endpoints
+// have independently passed the actual owner's free-world-DOF query. The full
+// domain may also contain unrelated fixed shells. No endpoint cache is changed.
+TL_SHELL_STARTUP_HD inline bool MatchesInitialFreePhysicalNode(const ShellBatchStartup& s,
+    tl::math::Vec3 x,tl::math::Vec3 reference,tl::math::Vec3 velocity,
+    tl::math::Vec3 omega,const double* q) noexcept {
+  return s.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation ?
+      MatchesConstrainedInitialNode(s,0,x,reference,velocity,omega,q) :
+      MatchesInitialNode(s,x,reference,velocity,omega,q);
+}
 // Same binary64 node order and scalar arithmetic as native kinetic diagnostics.
 // Host metadata preflight admits the operation domain; measured K0 comes from
 // actual authenticated owner fields. Failure preserves the partial sum.

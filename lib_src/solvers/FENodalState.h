@@ -330,6 +330,11 @@ class FENodalState {
   // retained at startup. Valid at any accepted epoch; no device read/allocation.
   // Complete non-rigid coefficients and current CIN values remain separate.
   NodalReport ValidateRigidAssemblyBinding(const NodalRigidAssemblyBinding&) const noexcept;
+  // Read-only immutable role predicate for translation-only participants.
+  // Requires zero actual world translation masks; zero dependent inverse mass,
+  // rigid/CIN membership and absent rotations are permitted. It does not prove
+  // velocity/source identity; complete startup authentication remains required.
+  NodalReport ValidateFreeTranslationalNodes(const std::size_t*,std::size_t count) const noexcept;
   // Immutable source-role query only: present rotations and unfixed world DOFs.
   // Authentic PART/CIN zero inverses are allowed; no coefficients are inferred.
   NodalReport ValidateFreeRotationalNodes(const std::size_t*,std::size_t count) const noexcept;

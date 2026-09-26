@@ -10,6 +10,9 @@ struct Snapshot {
   std::vector<std::uint64_t> beam;
 };
 struct Rig {
+  explicit Rig(fe::ShellBatchStartup startup={},bool independent_shell=false)
+      : mixed(false,2.5,false,existing::ContactConstraintLayout::Legacy,false,.05,
+              startup,independent_shell,independent_shell) {}
   Source source;
   b::Batch beam;
   // Destroy this actual publisher before beam and source above. Its six

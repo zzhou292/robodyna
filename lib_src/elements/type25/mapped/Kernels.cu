@@ -24,7 +24,7 @@ __device__ bool MappedNode(const DeviceModel& model,const NodalAssemblyView& vie
   const auto* q=view.accepted.orientation_wxyz+4*node;
   return tl::math::fixed3::Finite(position) && tl::math::fixed3::Finite(velocity) && tl::math::fixed3::Finite(omega) &&
       tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]}) &&
-      (!initial || shell_startup_detail::MatchesInitialNode(model.config.startup,position,
+      (!initial || shell_startup_detail::MatchesInitialFreePhysicalNode(model.config.startup,position,
           model.nodes[node].reference,velocity,omega,q));
 }
 __global__ void AssembleMapped(Storage* storage,const Slab* accepted,NodalAssemblyView view,

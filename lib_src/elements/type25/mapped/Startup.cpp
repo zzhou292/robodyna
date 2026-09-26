@@ -27,7 +27,7 @@ BatchReport MakeForecast(const BatchConfig& config,const ShellPhysicalBinding& p
       owner.velocity_phase!=NodalVelocityPhase::Collocated || !detail::Positive(owner.fixed_dt) ||
       owner.reactions_valid || owner.reaction_base_epoch || owner.reaction_time!=0 ||
       owner.reaction_kick_dt!=0 || !config.configuration_id || !config.qualification_id ||
-      !shell_startup_detail::ValidStartup(config.startup,true) ||
+      !shell_startup_detail::ValidStartup(config.startup,true,true) ||
       config.element_count!=model.connection_count() || owner.node_count!=model.global_node_count() ||
       owner.node_count!=physical.domain()->node_count()) {
     return {BatchStatus::InvalidInput,"Mapped TYPE25 requires the complete model and fresh physical owner"};

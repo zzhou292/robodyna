@@ -15,8 +15,8 @@
       "sha256": "bfd5785c2c73c30d72b8e77cd8acec12662320e571f277afe790464b9d1f5335"
     },
     "lib_utest/qualification/beam18_publication/Fixture.h": {
-      "bytes": 1475,
-      "sha256": "436b7c9ccb9efb3f74b23c2b90ee0cbec700b83e869f95c734667898a14e821d"
+      "bytes": 1698,
+      "sha256": "4f30097c1a8ad5dfb550b20471be86a9867575fc1679f43162d328857265e597"
     },
     "lib_utest/qualification/beam18_publication/HostTest.cpp": {
       "bytes": 2220,
@@ -39,16 +39,16 @@
       "sha256": "b3c7485a52dc52a548a0f1eb49325417f1f4c87a48b92d9ea997b61237d358f1"
     },
     "lib_utest/qualification/beam18_publication/Source.cpp": {
-      "bytes": 3000,
-      "sha256": "35dd3cb2b4853be6a1e1cb379983f0159f58fd25593324e5101c7dd97b22bbf5"
+      "bytes": 3050,
+      "sha256": "02710d6434d70b00b54610e354a0c123805e555a871469173bdb1c9379b0ed01"
     },
     "lib_utest/qualification/beam18_publication/Source.h": {
       "bytes": 821,
       "sha256": "dc6c2f9d51019915037cfe845f793b59b006d9580cc065cb83d681d2e8b4b4dc"
     },
     "lib_utest/qualification/beam18_publication/Startup.cu": {
-      "bytes": 3887,
-      "sha256": "4919bd806d0a05d32b7bd1ff2e7a79e13861ecb645acc3b79493380b6e7ac6a9"
+      "bytes": 4044,
+      "sha256": "8f2a93c7ded7ad4509c79ea9e609e1adddeda6b0b91bceab3abb9aff2d90000e"
     },
     "lib_utest/qualification/beam18_publication/Values.cpp": {
       "bytes": 1885,
@@ -58,5 +58,6 @@
       "bytes": 787,
       "sha256": "cc5664a17e1d06015ea814205afe9dc060dc5291a2022d62e86c0bfa67edb04f"
     }
-  }
+  },
+  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged."
 }

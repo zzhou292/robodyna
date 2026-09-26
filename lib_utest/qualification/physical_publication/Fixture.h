@@ -57,7 +57,8 @@ struct Fixture {
                    bool interior_edge_contact=false,
                    double adjacent_apex_x=.05,
                    fe::ShellBatchStartup declared_startup={},
-                   bool separate_adjacent_contact=false);
+                   bool separate_adjacent_contact=false,
+                   bool detached_adjacent_triangle=false);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();

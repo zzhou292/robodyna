@@ -23,6 +23,25 @@ NodalReport FENodalState::ValidateNonRigidNodes(const std::size_t* nodes,std::si
   }
   return {NodalStatus::Ok,"OK"};
 }
+NodalReport FENodalState::ValidateFreeTranslationalNodes(const std::size_t* nodes,
+    std::size_t count) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized,"Owner is not initialized"};
+  const auto& state=*impl_;
+  if (!state.usable) return {NodalStatus::DeviceFailure,"CUDA owner is poisoned"};
+  const auto n=state.stamp.node_count;
+  if (count>n) return {NodalStatus::ResourceLimit,"Translation node query exceeds the actual owner"};
+  const std::size_t fields=state.stamp.has_rotations ? (state.stamp.has_rotation_presence?4:3) : 1;
+  if (!nodes || !count || state.constraint_staging.size()!=fields*n)
+    return {NodalStatus::InvalidInput,"Translation node query requires complete immutable masks"};
+  for (std::size_t i=0;i<count;++i) {
+    const auto node=nodes[i];
+    if (node>=n) return {NodalStatus::InvalidInput,"Translation node query index exceeds the actual owner"};
+    if (state.constraint_staging[node] ||
+        (state.stamp.has_rotations && state.constraint_staging[n+node]))
+      return {NodalStatus::InvalidInput,"Participant requires free world translations",static_cast<std::uint32_t>(node)};
+  }
+  return {NodalStatus::Ok,"Actual owner nodes have free world translations"};
+}
 NodalReport FENodalState::ValidateFreeRotationalNodes(const std::size_t* nodes,
     std::size_t count) const noexcept {
   if (!impl_) return {NodalStatus::NotInitialized,"Owner is not initialized"};

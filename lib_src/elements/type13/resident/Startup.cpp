@@ -6,7 +6,7 @@
 
 namespace tl::fea::type13::batch_detail {
 BatchReport SourceGeometryPreflight(const BatchConfig& config,
-                            const Type13NodeContributions& source) noexcept {
+                            const Type13NodeContributions& source, bool physical_constrained) noexcept {
   const auto& owner = config.owner;
   if (!owner.owner_id || owner.epoch || owner.time != 0 ||
       owner.velocity_time != 0 || !owner.has_rotations ||
@@ -15,7 +15,7 @@ BatchReport SourceGeometryPreflight(const BatchConfig& config,
       !detail::Positive(owner.fixed_dt) || owner.reactions_valid ||
       owner.reaction_base_epoch || owner.reaction_time != 0 ||
       owner.reaction_kick_dt != 0 || !config.configuration_id ||
-      !config.qualification_id || !shell_startup_detail::ValidStartup(config.startup, true) ||
+      !config.qualification_id || !shell_startup_detail::ValidStartup(config.startup, true, physical_constrained) ||
       (config.assembly != BatchAssembly::OrdinaryForces &&
        config.assembly != BatchAssembly::CinNativeStiffness)) {
     return {BatchStatus::InvalidInput, "TYPE13 requires explicit fresh staggered startup"};

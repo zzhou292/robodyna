@@ -18,6 +18,13 @@ BatchReport Batch::PreflightAttach(FENodalState& owner,const ShellPhysicalBindin
       !trial_identity::SameStamp(owner.accepted(),s.accepted_stamp))
     return {BatchStatus::InvalidInput,"Joint publication requires the same complete initial authorities"};
   auto checked=owner.ValidateRigidAssemblyBinding(*model.rigid_binding());
+  if(checked.status==NodalStatus::Ok &&
+      config.startup.kind==ShellBatchStartupKind::ReferenceConstrainedUniformTranslation) {
+    for (const auto& joint : model.joints()) {
+      checked=owner.ValidateFreeRotationalNodes(joint.domain_nodes,2);
+      if(checked.status!=NodalStatus::Ok)break;
+    }
+  }
   if(checked.status==NodalStatus::Ok)
     checked=shell_physical_owner::AuthenticateInitial(*physical.coefficients(),owner,s.accepted_stamp,
         config.startup,cin,s.layout.proof);

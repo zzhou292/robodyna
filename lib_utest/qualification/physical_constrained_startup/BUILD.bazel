@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host", size = "small", srcs = ["HostTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements:shell_batch_startup", "@googletest//:gtest_main"],
+)
+# Actual full owner/CIN and family initialization use the owning CMake gate.
