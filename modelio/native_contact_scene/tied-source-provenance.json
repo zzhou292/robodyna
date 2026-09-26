@@ -1,0 +1,42 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Version4 declaration/card source provenance only; no observed CIN classification/force or trajectory claim",
+  "files": [
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/int02/hm_read_inter_type02.F",
+      "bytes": 23216,
+      "sha256": "facfaef602efb72b1c5f869a4bbb93c4c7553e73961c91fb467db2d5d4dd7c4d",
+      "git_blob": "579ff7bebe9db822b06cce746607e19ba97a893c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/hm_cfg_files/config/CFG/radioss2025/INTER/inter_type2.cfg",
+      "bytes": 25393,
+      "sha256": "3d4deaf7f0476b928b97224da8387e0ae43e3c4b9ae1ee2897e6581c4a8853a9",
+      "git_blob": "5bb4fda68bbc4d5ae398d77bdbe8c69dfcd65e52"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/inter3d1/i2dst3.F",
+      "bytes": 13415,
+      "sha256": "eaf326d1ef89e34f1d9fdda9edfb0c7682cfb43952be6b34538a266b12159e19",
+      "git_blob": "6917e961760b4e777234bb04f284a8a40326aac6"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/inter3d1/i2_dtn_28.F",
+      "bytes": 16925,
+      "sha256": "3088534fdeea504d2a5147d8cbdac1a0b6a780a0860ad04e37d6c97eea10c3ed",
+      "git_blob": "7162e043738368f3c9ca73d8a280336840140c3d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/engine/source/interfaces/interf/i2for28_cin.F",
+      "bytes": 16266,
+      "sha256": "4625048acc41c3f8361bdabe142dbc9ebd68b183c00c119d496daa6231a5495c",
+      "git_blob": "7244b940955a63931c40c2e3e3601bd5498be0dd"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/inter3d1/iniend.F",
+      "bytes": 17966,
+      "sha256": "3673b4a5ddce84b44188c7ed89b989911f7338d85514b56d4753951ee61c01d4",
+      "git_blob": "9fe4d1601331572c3ff8ea0339cdd0f451c6ee20"
+    }
+  ]
+}

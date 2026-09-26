@@ -16,7 +16,7 @@ TiedCinActivityReport TiedCinWitnessActivity::UploadAttempt(tl::fea::FENodalStat
     if (!state.roster.runtime_mappable())
         return reject({Status::PendingPositiveShellWitness,"CIN shell roster has pending domain/count obligations"});
     const auto& roster=state.roster.data();
-    const tl::fea::NodalCinWitnessSource source{&state.roster.attachments().model(),roster.ranges.data(),
+    const tl::fea::NodalCinWitnessSource source{&state.roster.model(),roster.ranges.data(),
         roster.witnesses.data(),roster.ranges.size(),roster.witnesses.size()};
     const auto checked=owner.ValidateCinWitnessSource(source);
     if (checked.status==tl::fea::NodalStatus::DeviceFailure) {
@@ -34,7 +34,7 @@ TiedCinActivityReport TiedCinWitnessActivity::UploadAttempt(tl::fea::FENodalStat
     if (borrowed.status!=tl::fea::NodalStatus::Ok ||
         view.owner_id!=state.stamp.owner_id || view.base_epoch!=state.stamp.epoch || !view.attempt ||
         !view.qualification_id || view.witness_count!=state.accepted.size() ||
-        view.node_count!=state.roster.attachments().model().domain()->node_count())
+        view.node_count!=state.roster.model().domain()->node_count())
         return reject({Status::StaleOwner,"CIN activity destination is not the authentic open attempt"});
     auto error=cudaMemcpyAsync(view.witness_activity,state.accepted.data(),state.accepted.size(),
                                cudaMemcpyHostToDevice,view.stream);

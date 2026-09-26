@@ -28,7 +28,7 @@ TiedCinActivityReport TiedCinWitnessActivity::Capture(const tl::fea::FENodalStat
         bool physical) {
     auto& state=*impl_;
     if (state.poisoned) return {Status::DeviceFailure,"CIN activity adapter is poisoned"};
-    const auto& binding=state.roster.binding().shells();
+    const auto& binding=state.roster.shells();
     const auto checked=publication.ValidateAcceptedActivitySources(owner,participants,binding.inventory());
     if (checked.status==tl::fea::ShellPublicationStatus::DeviceFailure) {
         state.poisoned=true;
