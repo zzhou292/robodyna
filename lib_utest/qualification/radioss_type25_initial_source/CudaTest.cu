@@ -173,17 +173,44 @@ TEST_F(InitialSourceCuda, FixedMainSkewOneAndAllFixedSecondaryMatchWholeNativeMa
     Fixture f;
     for(auto node:f.main_nodes){f.nodes[node].constraint=7;f.nodes[node].skew=1;}
     if(mode)for(auto& node:f.nodes){node.constraint=7;node.skew=1;}
-    // Native PEN3A465-492 tests shared fixed axes AND near-coplanarity along
-    // that axis (<EM03*DD). All-fixed alone does not remove off-plane pairs.
-    // This third source packet makes the Z-axis condition genuinely true.
+    // PEN3A457 restricts fixed-axis screening to solids/coatings. Ordinary
+    // shell sides retain candidate eligibility even when fixed and coplanar.
     if(mode==2)for(const auto& row:f.secondary)f.mesh.positions[3*row.node+2]=0.;
     const auto expected=Oracle(f);src::PreparedSource source;
     ASSERT_EQ(src::PrepareSource(f.Input(),f.Limits(),source).status,src::Status::Ok);
     src::DeviceSeed seed;const auto report=src::Prepare(source,stream,seed);ASSERT_EQ(report.status,src::Status::Ok);
     EXPECT_EQ(report.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
-    if(mode==2)EXPECT_EQ(report.diagnostics.pairs,0u);
-    else EXPECT_GT(report.diagnostics.pairs,0u);
+    EXPECT_GT(report.diagnostics.pairs,0u);
   }
+}
+TEST_F(InitialSourceCuda, GenuineMixedSolidPairExercisesNativeFixedAxisScreen) {
+  MixedFixture f(0,false);const auto geometry=f.Geometry();
+  const auto before=NativeInventory(f.Inventory(geometry));
+  // This genuine source has node2 at(2,0,0), absent from all solid/shell
+  // incidence, and a real solid/coating bottom face in z0. The native result
+  // must explicitly contain that pair before the shared fixedZ screen.
+  const auto found=std::find_if(before.pairs.begin(),before.pairs.end(),[&](const auto& pair) {
+    if(f.secondary[std::size_t(pair[0]-1)].node!=2)return false;
+    const auto& main=f.native.mains[std::size_t(pair[1]-1)];
+    if(main.segment_type!=0&&main.segment_type<=int(f.mains.size()))return false;
+    for(auto node:main.nodes)if(f.topology.input.positions.at(node).z!=0)return false;
+    return true;
+  });
+  ASSERT_NE(found,before.pairs.end());const auto affected=*found;
+  for(auto& node:f.nodes){node.constraint=7;node.skew=1;}
+  Expected expected;expected.geometric=geometry;expected.inventory=NativeInventory(f.Inventory(geometry));
+  EXPECT_EQ(std::find(expected.inventory.pairs.begin(),expected.inventory.pairs.end(),affected),expected.inventory.pairs.end());
+  EXPECT_LT(expected.inventory.pairs.size(),before.pairs.size());
+  expected.generation=f.Input().mesh.source_generation;
+  for(const auto& row:f.secondary)expected.source_ids.push_back(f.nodes[row.node].source_id);
+  expected.before_tied=FullInitialHistory(f.Search(),f.native,expected.inventory.corner_gaps,expected.inventory.pairs);expected.rows=expected.before_tied.rows;
+  std::vector<std::array<int,4>> keys(expected.rows.size());
+  for(std::size_t row=0;row<keys.size();++row)std::copy_n(expected.rows[row].irtlm,4,keys[row].data());
+  NativePreparedMain(f.mains.size(),keys);
+  for(std::size_t row=0;row<keys.size();++row)std::copy_n(keys[row].data(),4,expected.rows[row].irtlm);
+  src::PreparedSource source;ASSERT_EQ(src::PrepareSource(f.Input(),f.Limits(),source).status,src::Status::Ok);
+  src::DeviceSeed seed;const auto report=src::Prepare(source,stream,seed);ASSERT_EQ(report.status,src::Status::Ok);
+  EXPECT_EQ(report.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
 }
 TEST_F(InitialSourceCuda, CompleteWarmInitializationCrossesNative128LaneCohorts) {
   auto mesh=Fixture::Mesh(0,false);
