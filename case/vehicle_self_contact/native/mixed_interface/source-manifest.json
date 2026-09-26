@@ -71,8 +71,8 @@
     },
     {
       "path": "case/vehicle_self_contact/native/mixed_interface/tests/ActualTest.cpp",
-      "bytes": 7632,
-      "sha256": "e1eb9b7a15ce6b7c0513fc06dcd4280ac0799114d03066b8bc7a6ef7871e5313"
+      "bytes": 6725,
+      "sha256": "cc7d552afbe024e3a42240d51172da88f5189ed9389ee72f6be5266086e7d733"
     },
     {
       "path": "case/vehicle_self_contact/native/mixed_interface/tests/Consumer.cpp",
@@ -118,6 +118,11 @@
       "path": "modelio/vehicle_sections/VehicleSectionResolution.cpp",
       "bytes": 4376,
       "sha256": "37bd9e21b50efa19b6910ea1b7f74fe6843603a3a15df194aa9b914767c7bb1d"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/mixed_interface/tests/ActualFixture.h",
+      "bytes": 1299,
+      "sha256": "59518d62e6ef171c8864d274d7762c3f9f365d4a3aa5fca59da0bd4ed551f099"
     }
   ],
   "tl_files": [

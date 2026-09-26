@@ -28,3 +28,20 @@ if(ROBO_DYNA_SELECTED_MAIN_ACTUAL_TESTS)
   target_compile_options(selected_shell_main_actual PRIVATE -fno-fast-math -ffp-contract=off)
   # Source-sized forecast and one assessment run only under the guarded lane.
 endif()
+
+option(ROBO_DYNA_MIXED_SUPPORT_ACTUAL_TESTS "Build explicit complete mixed support-query census" OFF)
+if(ROBO_DYNA_MIXED_SUPPORT_ACTUAL_TESTS)
+  if(NOT EXISTS "${ROBO_DYNA_REFERENCE_WORKSPACE}/crash-work/deps")
+    message(FATAL_ERROR "Post-GAPM source assessment requires the pinned reference workspace")
+  endif()
+  add_test(NAME post_gapm_controls_source COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/tests/verify_postgapm_controls.py"
+    --workspace "${ROBO_DYNA_REFERENCE_WORKSPACE}")
+  include("${CMAKE_CURRENT_LIST_DIR}/../MixedInterfaceSource.cmake")
+  add_executable(mixed_main_support_actual tests/SupportActualTest.cpp
+    "${ROBO_MAIN_SOURCE_ROOT}/case/vehicle_startup/physical_model/tests/supports/Source.cpp")
+  target_link_libraries(mixed_main_support_actual PRIVATE robo_dyna_selected_shell_main_source
+    robo_dyna_mixed_interface_source GTest::gtest_main)
+  target_compile_options(mixed_main_support_actual PRIVATE -fno-fast-math -ffp-contract=off)
+  # One explicit bounded source census, never an implicit CTest/full-model run.
+endif()
