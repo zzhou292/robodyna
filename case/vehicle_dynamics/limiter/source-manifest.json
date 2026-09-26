@@ -122,6 +122,11 @@
     "baseline_commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
     "unchanged_physics_prefix_bytes": 5914,
     "unchanged_physics_prefix_sha256": "8402517cefa5a92f0b6e55d47e4a14f949901f39b66e98a1d8f3ea91fd4e4a3d",
-    "scope": "Only Capture replaced by authenticated complete-slab GPU observation; Prepare/Evaluate including limiter unchanged. Original whole-file priors remain historical evidence."
+    "scope": "Only Capture replaced by authenticated complete-slab GPU observation; Prepare/Evaluate including limiter unchanged. Original whole-file priors remain historical evidence.",
+    "qualified_parent_prefix_bytes": 6118,
+    "qualified_parent_prefix_sha256": "028245de749b199a1c7c65a04c5c20042c63138d8b0dbbf4bf030c13667d32bc",
+    "original_ancestor_prefix_bytes": 5414,
+    "original_ancestor_prefix_sha256": "91607f7690842a502f38303753d9f36eaaef9c9c10dc719aec9b07b525b1432e",
+    "inherited_self_contact_additions": "Reviewed complete optional AssembleSelfContact and EvaluateSelfContact blocks from qualified a52; preserve exact blocks, remove only for older cf3073 proof comparison."
   }
 }

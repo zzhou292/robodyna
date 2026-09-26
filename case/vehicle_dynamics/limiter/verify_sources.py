@@ -7,7 +7,7 @@ import json
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = 'deebda9e0712c575dc0b632ae68bed268140177c605f6fec8015ade70c180fd9'
+EXPECTED = '1b9d3248239b621bd61e56a75d5fcd3d142f2fa1f989ef71056418d000318f42'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -30,6 +30,36 @@ restored = prefix.replace(addition, '', 1).encode()
 review = manifest['reviewed_motion_observation']
 assert len(restored) == review['unchanged_physics_prefix_bytes']
 assert hashlib.sha256(restored).hexdigest() == review['unchanged_physics_prefix_sha256']
+assert len(prefix.encode()) == review['qualified_parent_prefix_bytes']
+assert hashlib.sha256(prefix.encode()).hexdigest() == review['qualified_parent_prefix_sha256']
+# Later already-qualified optional self-contact stages postdate the limiter's
+# original ancestor. Check both exact additions and recover that older prefix.
+inherited_blocks = (
+    """    if(self_contact) {
+        timer.Measure<StepStage::AssembleSelfContact>([&] {
+            self_contact->Assemble(
+                s.owner,token,assembly,candidate().self_contact);
+            return true;
+        });
+    }
+""",
+    """    if(self_contact) {
+        timer.Measure<StepStage::EvaluateSelfContact>([&] {
+            self_contact->SealCandidate(
+                s.owner,token,candidate().mechanics,prepared,
+                candidate().self_contact);
+            return true;
+        });
+    }
+""",
+)
+ancestor = restored.decode()
+for block in inherited_blocks:
+    assert ancestor.count(block) == 1
+    ancestor = ancestor.replace(block, '', 1)
+assert len(ancestor.encode()) == review['original_ancestor_prefix_bytes']
+assert hashlib.sha256(ancestor.encode()).hexdigest() == review['original_ancestor_prefix_sha256']
+
 # The compile correction changes only access to the actual counted-view APIs.
 # Retain and authenticate the original report/source bodies as prior evidence.
 counted_access = {
