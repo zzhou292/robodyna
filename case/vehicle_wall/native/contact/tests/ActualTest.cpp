@@ -53,7 +53,11 @@ TEST(FiniteWallActual, AllRetainedNodesUseActualWallTopologyKAndInterfaceSpecifi
     const auto made=FiniteWallContactSource::Prepare(owner,vehicle,Declared());
     output::Document doc;doc.SetObject();output::String(doc,"schema","robo_dyna.finite_wall_interface_source.v1");
     output::Integer(doc,"status",std::uint64_t(made.report.status));output::String(doc,"reason",made.report.reason);
-    output::Integer(doc,"numerical_stage",std::uint64_t(made.report.numerical_stage));ForecastFields(doc,f);
+    output::Integer(doc,"numerical_stage",std::uint64_t(made.report.numerical_stage));
+    output::Integer(doc,"gap_status",std::uint64_t(made.report.gaps.status));
+    output::Integer(doc,"gap_field",std::uint64_t(made.report.gaps.field));
+    output::Integer(doc,"gap_input_row",made.report.gaps.input_row);
+    ForecastFields(doc,f);
     if(made.source) {
         output::String(doc,"output_digest",made.source->provenance().output_digest);
         output::Integer(doc,"interface_id",made.source->provenance().interface_id);

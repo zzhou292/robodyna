@@ -2,6 +2,7 @@
 #include "../FiniteWallContactSource.h"
 #include "lib_src/collision/RadiossType25ShellSource.h"
 namespace crash::cases::vehicle_wall::native::wall_interface::detail {
+n::source_gaps::Limits WallGapLimits(Limits) noexcept;
 Controls DeclaredControls(n::UnitScale,double friction);
 Controls ResolveControls(const WallSource&,const VehicleSource&,Declaration);
 struct Component {

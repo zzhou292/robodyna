@@ -1,6 +1,18 @@
 #include "Internal.h"
 #include <algorithm>
 namespace crash::cases::vehicle_wall::native::wall_interface::detail {
+n::source_gaps::Limits WallGapLimits(Limits limits) noexcept {
+    n::source_gaps::Limits result;
+    result.nodes=limits.nodes;
+    result.shells=limits.shells;
+    result.mains=2;
+    result.secondaries=limits.nodes;
+    result.main_nodes=4;
+    // The component reservation is an outer bound. The existing leaf keeps
+    // its own independent hard output cap even when the component is larger.
+    result.output_bytes=std::min(limits.own_bytes,result.output_bytes);
+    return result;
+}
 std::vector<n::source_gaps::PhysicalShell> GapShells(tl::util::ConstView<n::source_gaps::PhysicalShell> original,
     std::size_t quads,const n::source_gaps::PhysicalShell& wall,std::size_t cap) {
     if(quads>original.size() || wall.layout!=n::ShellLayout::Quad4 || original.size()>524288 ||
@@ -31,8 +43,15 @@ void BuildGaps(Fields& out,const VehicleSource& vehicle,const Component& compone
     input.main_nodes=out.msr.data();input.main_node_count=out.msr.size();
     n::source_gaps::Forecast actual;
     auto report=n::source_gaps::Preflight(input,plan.gap_limits,actual);
-    if(report.status!=n::source_gaps::Status::Ok || actual.scratch_bytes>plan.forecast.gap_scratch)
-        Reject(Status::ResourceLimit,"Complete wall-specific gap source forecast rejected");
+    if(report.status!=n::source_gaps::Status::Ok || actual.scratch_bytes>plan.forecast.gap_scratch) {
+        Report failure;
+        failure.status=report.status==n::source_gaps::Status::ResourceLimit ||
+            actual.scratch_bytes>plan.forecast.gap_scratch ? Status::ResourceLimit : Status::InvalidInput;
+        failure.reason="Complete wall-specific gap source forecast rejected";
+        failure.numerical_stage=NumericalStage::Gaps;
+        failure.gaps=report;
+        throw Failure{std::move(failure)};
+    }
     tl::util::HostArena scratch;
     if(!scratch.Initialize(actual.scratch_bytes))Reject(Status::ResourceLimit,"Wall gap source scratch allocation failed");
     report=n::source_gaps::Build(input,plan.gap_limits,scratch.data(),scratch.bytes(),

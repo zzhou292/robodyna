@@ -31,9 +31,7 @@ Plan Budget(const EnvelopeOwnerSource& owner,const VehicleSource& vehicle,Declar
     f.constraint_packing=vehicle_runtime::detail::PackingBytes(nodes,limits.own_bytes);
     f.coefficient_scratch=1u<<20;
     f.topology_scratch=std::max(plan.topology.scratch_bytes,plan.topology.ready_scratch_bytes);
-    plan.gap_limits.nodes=limits.nodes;plan.gap_limits.shells=limits.shells;
-    plan.gap_limits.mains=2;plan.gap_limits.secondaries=limits.nodes;plan.gap_limits.main_nodes=4;
-    plan.gap_limits.output_bytes=limits.own_bytes;
+    plan.gap_limits=WallGapLimits(limits);
     f.gap_scratch=plan.gap_limits.scratch_bytes; // Enforced public leaf ceiling before packing real shells.
     if(plan.shape.shells>SIZE_MAX/(2*sizeof(n::source_gaps::PhysicalShell)))
         Reject(Status::ResourceLimit,"Wall gap roster reservation overflows");

@@ -49,6 +49,31 @@ TEST(FiniteWallValues, WallMaskDiffersFromSelfWhileBeamAndSpringGapsSurviveInNat
     f.main_nodes={0,1,2,3};const auto self=gap_source_test::Oracle(f.Input());
     EXPECT_NE(output::Bits(actual.result.secondary[0]),output::Bits(self.secondary[0]));
 }
+TEST(FiniteWallValues, CompleteComponentLimitKeepsLeafOutputCapAndNativeGapResult) {
+    gap_source_test::Fixture fixture;
+    const auto input=fixture.Input();
+    auto limits=d::WallGapLimits(Limits{});
+    EXPECT_EQ(limits.output_bytes,n::source_gaps::Limits{}.output_bytes);
+    n::source_gaps::Forecast forecast;
+    ASSERT_EQ(n::source_gaps::Preflight(input,limits,forecast).status,n::source_gaps::Status::Ok);
+    tl::util::HostArena scratch;
+    ASSERT_TRUE(scratch.Initialize(forecast.scratch_bytes));
+    std::vector<double> secondary(input.secondary_count),main_nodes(input.main_node_count);
+    std::vector<n::source_gaps::MainGapFields> mains(input.main_count);
+    const auto report=n::source_gaps::Build(input,limits,scratch.data(),scratch.bytes(),
+        {secondary.data(),secondary.size(),main_nodes.data(),main_nodes.size(),mains.data(),mains.size()});
+    ASSERT_EQ(report.status,n::source_gaps::Status::Ok);
+    const auto native=gap_source_test::Oracle(input);
+    for(std::size_t i=0;i<secondary.size();++i)Exact(secondary[i],native.secondary[i]);
+    for(std::size_t i=0;i<main_nodes.size();++i)Exact(main_nodes[i],native.main_nodes[i]);
+    for(std::size_t i=0;i<mains.size();++i)
+        for(unsigned k=0;k<4;++k)Exact(mains[i].corner[k],native.mains[i].corner[k]);
+    auto outer=Limits{};
+    outer.own_bytes=forecast.output_bytes;
+    EXPECT_EQ(n::source_gaps::Preflight(input,d::WallGapLimits(outer),forecast).status,n::source_gaps::Status::Ok);
+    --outer.own_bytes;
+    EXPECT_EQ(n::source_gaps::Preflight(input,d::WallGapLimits(outer),forecast).status,n::source_gaps::Status::ResourceLimit);
+}
 TEST(FiniteWallValues, ConstantWallFrictionUsesExistingNativeModelWithoutCopiedForceMath) {
     const auto controls=d::DeclaredControls(Units(.001,1000),.6);
     for(double speed:{0.,1.,100.,1000.})for(double pressure_scale:{.25,1.,4.}) {
