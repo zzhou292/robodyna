@@ -334,10 +334,10 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
     const auto cin = active.cin();
     output::Require(initial_stamp.epoch == 0 &&
             initial_stamp.time == 0 &&
-            setup.MatchesSource(state.execution, state.attachments,
+            setup.MatchesSource(state.source.original_execution(), state.source.original_attachments(),
                                 setup.original()) &&
-            &setup.physical() == &state.execution.physical() &&
-            setup.surface().MatchesPhysical(state.execution.physical()) &&
+            &setup.physical() == &state.source.original_execution().physical() &&
+            setup.surface().MatchesPhysical(state.source.original_execution().physical()) &&
             setup.facets().surface() &&
             setup.facets().surface()->SharesStorage(setup.surface()) &&
             active.facets() &&
@@ -360,10 +360,10 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
         state.beam18.get()};
     const auto participant_configs =
         vehicle_runtime::detail::ConfigureParticipants(
-            state.config, state.execution, state.attachments,
+            state.config, state.source.original_execution(), state.source.original_attachments(),
             initial_stamp);
     auto publication = state.publication.ValidatePhysicalSources(
-        state.owner, state.execution.physical(), participants,
+        state.owner, state.source.original_execution().physical(), participants,
         participant_configs.publication);
     output::Require(publication.status ==
             fe::ShellPublicationStatus::Success,
@@ -373,7 +373,7 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
     output::Require(owner_report.status == fe::NodalStatus::Ok,
         owner_report.message);
     owner_report = state.owner.ValidateCinWitnessSource(
-        vehicle_runtime::detail::Witnesses(state.attachments));
+        vehicle_runtime::detail::Witnesses(state.source.original_attachments()));
     output::Require(owner_report.status == fe::NodalStatus::Ok,
         owner_report.message);
 

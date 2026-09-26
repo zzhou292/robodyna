@@ -3,7 +3,7 @@
 namespace crash::cases::vehicle_runtime {
 void VehiclePhysicalStartup::Storage::InspectStructuralBeams(InitialInspection& output) {
     if(!beam18) return;
-    const auto* model=execution.model().structural_beams();
+    const auto* model=source.structural_beams();
     std::vector<tl::fea::beam18::Result> rows(model->parents().size());
     output::Require(rows.capacity()<=forecast.readback_temporary_bytes/sizeof(rows[0]),
         "Structural beam readback allocation exceeds the complete forecast");

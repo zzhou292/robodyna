@@ -5,16 +5,15 @@
 #include <cmath>
 
 namespace crash::cases::vehicle_dynamics {
-Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
-    const vehicle_runtime::Attachments& a,Config config,const vehicle_runtime::JointModel* joints) {
+Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Source& source,Config config) {
     output::Require(tl::fea::ValidCinStructuralStep(config.structural),"Invalid physical structural timestep policy");
     output::Require(std::isfinite(config.maximum_rotation_increment) &&
         config.maximum_rotation_increment>0 && config.maximum_rotation_increment<=.2,
         "Physical free-flight rotation bound must be positive and at most 0.2 rad");
     Forecast result;
-    result.startup=vehicle_runtime::VehiclePhysicalStartup::Preflight(e,a,config.startup,joints);
-    const auto activity=vehicle_startup::TiedCinWitnessActivity::Forecast(a.witnesses());
-    const auto n=e.model().coefficients().nodes().size();
+    result.startup=vehicle_runtime::VehiclePhysicalStartup::Preflight(source,config.startup);
+    const auto activity=vehicle_startup::TiedCinWitnessActivity::Forecast(source.witnesses());
+    const auto n=source.coefficients().nodes().size();
     result.motion=tl::fea::NodalUniformMotionObserver::Preflight(n,config.motion_limits);
     detail::Require(result.motion.report,"Physical motion observation capacity");
     output::Require(result.motion.device_bytes<=config.startup.limits.device_bytes &&
@@ -33,15 +32,22 @@ Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
     result.peak_host_upper_bound=result.startup.peak_host_upper_bound+result.workspace_bytes;
     return result;
 }
-VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::Execution& e,
-    const vehicle_runtime::Attachments& a,Config config,const vehicle_runtime::JointModel* joints) {
-    const auto forecast=Preflight(e,a,config,joints);
-    auto startup=vehicle_runtime::VehiclePhysicalStartup::Prepare(e,a,config.startup,joints);
+Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& execution,
+    const vehicle_runtime::Attachments& attachments,Config config,const vehicle_runtime::JointModel* joints) {
+    return Preflight(vehicle_runtime::Source::Original(execution,attachments,joints),config);
+}
+VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::Execution& execution,
+    const vehicle_runtime::Attachments& attachments,Config config,const vehicle_runtime::JointModel* joints) {
+    return Prepare(vehicle_runtime::Source::Original(execution,attachments,joints),config);
+}
+VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::Source& source,Config config) {
+    const auto forecast=Preflight(source,config);
+    auto startup=vehicle_runtime::VehiclePhysicalStartup::Prepare(source,config.startup);
     return VehiclePhysicalDynamics(std::make_unique<Storage>(std::move(startup),config,forecast));
 }
 VehiclePhysicalDynamics::Storage::Storage(vehicle_runtime::VehiclePhysicalStartup&& value,Config c,Forecast f)
     :startup(std::move(value)),config(c),forecast(f),timer(c.timing),
-     activity(vehicle_startup::TiedCinWitnessActivity::Create(startup.attachments().witnesses())),
+     activity(vehicle_startup::TiedCinWitnessActivity::Create(startup.source().witnesses())),
      stamp(startup.accepted()) {
     // Startup already authenticates original owner coordinates against the
     // complete physical domain. The observer captures that same initial X once.

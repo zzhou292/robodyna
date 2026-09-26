@@ -2,7 +2,7 @@
 #include "Reports.h"
 namespace crash::cases::vehicle_runtime {
 void VehiclePhysicalStartup::Storage::InspectSolids(InitialInspection& out) {
-    const auto& model = execution.model().solids();
+    const auto& model = source.solids();
     std::vector<tl::fea::solids::Result18> a(model.solid18().size());
     std::vector<tl::fea::solids::Result24> b(model.solid24().size());
     std::vector<tl::fea::solids::Result6z> c(model.solid6z().size());

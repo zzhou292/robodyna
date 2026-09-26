@@ -19,8 +19,11 @@ if(NOT TARGET tl_beam18_batch)
   include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/beam18/resident/Batch.cmake")
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/Values.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../vehicle_wall/native/EnvelopeOwnerSource.cmake")
 add_library(robo_dyna_vehicle_physical_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/VehiclePhysicalStartup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/source/Admission.cpp" "${CMAKE_CURRENT_LIST_DIR}/source/Views.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/source/Budget.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/CaptureAccess.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceIdentity.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceBudget.cpp" "${CMAKE_CURRENT_LIST_DIR}/Forecast.cpp"
@@ -35,6 +38,6 @@ add_library(robo_dyna_vehicle_physical_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/InspectConnections.cpp" "${CMAKE_CURRENT_LIST_DIR}/InspectSolids.cpp")
 target_link_libraries(robo_dyna_vehicle_physical_startup PUBLIC robo_dyna_vehicle_runtime_values
   robo_dyna_vehicle_shell_execution robo_dyna_vehicle_physical_attachments tl_shell_batch_publication
-  robo_dyna_vehicle_joint_model tl_type45_batch tl_beam18_batch)
+  robo_dyna_vehicle_joint_model robo_dyna_envelope_owner_source tl_type45_batch tl_beam18_batch)
 target_compile_features(robo_dyna_vehicle_physical_startup PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_vehicle_physical_startup PRIVATE -fno-fast-math -ffp-contract=off)

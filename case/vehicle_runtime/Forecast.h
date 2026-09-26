@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "SourceIdentity.h"
+#include "Source.h"
 #include <array>
 namespace crash::cases::vehicle_startup::joints { class VehicleJointModel; }
 namespace crash::cases::vehicle_runtime {
@@ -25,6 +26,7 @@ struct Forecast {
 };
 namespace detail {
 std::size_t SourceBytes(const Execution&,const Attachments&,std::size_t cap);
+Forecast ForecastStartup(const Config&,const Source&,std::size_t fixed_bytes);
 Forecast ForecastStartup(const Config&,const Execution&,const Attachments&,std::size_t fixed_bytes,
     const vehicle_startup::joints::VehicleJointModel* = nullptr);
 } // namespace detail

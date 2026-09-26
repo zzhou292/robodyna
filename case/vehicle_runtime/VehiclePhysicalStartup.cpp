@@ -6,29 +6,36 @@ VehiclePhysicalStartup::VehiclePhysicalStartup(std::unique_ptr<Storage> value) :
 VehiclePhysicalStartup::~VehiclePhysicalStartup() = default;
 VehiclePhysicalStartup::VehiclePhysicalStartup(VehiclePhysicalStartup&&) noexcept = default;
 VehiclePhysicalStartup& VehiclePhysicalStartup::operator=(VehiclePhysicalStartup&&) noexcept = default;
-Forecast VehiclePhysicalStartup::Preflight(const Execution& execution,const Attachments& attachments,Config config,
-    const JointModel* joints) {
-    return detail::ForecastStartup(config,execution,attachments,sizeof(Storage)+sizeof(VehiclePhysicalStartup),joints);
+Forecast VehiclePhysicalStartup::Preflight(const Source& source,Config config) {
+    return detail::ForecastStartup(config,source,sizeof(Storage)+sizeof(VehiclePhysicalStartup));
+}
+Forecast VehiclePhysicalStartup::Preflight(const Execution& execution,const Attachments& attachments,
+    Config config,const JointModel* joints) {
+    return Preflight(Source::Original(execution,attachments,joints),config);
 }
 VehiclePhysicalStartup VehiclePhysicalStartup::Prepare(const Execution& execution,
     const Attachments& attachments,Config config,const JointModel* joints) {
-    const auto forecast = Preflight(execution,attachments,config,joints);
-    auto staged = std::make_unique<Storage>(execution,attachments,config,forecast,joints);
-    staged->roles = ResolveSourceRoles(attachments);
-    output::Require(staged->roles.capacity_bytes() <= execution.physical().domain()->node_count(),
-                    "Source role capacity exceeds forecast");
+    return Prepare(Source::Original(execution,attachments,joints),config);
+}
+VehiclePhysicalStartup VehiclePhysicalStartup::Prepare(const Source& source,Config config) {
+    const auto forecast=Preflight(source,config);
+    auto staged=std::make_unique<Storage>(source,config,forecast);
+    staged->roles=source.roles();
+    output::Require(staged->roles.capacity_bytes()<=source.physical().domain()->node_count(),
+        "Source role capacity exceeds forecast");
     staged->InitializeOwner();
     staged->InitializeParticipants();
     staged->InitializeJoints();
     staged->BindInitialCaches();
     staged->InitializePublication();
-    output::Require(staged->Allocations().device_bytes == forecast.device_bytes,
-                    "Actual native allocations disagree with complete startup forecast");
+    output::Require(staged->Allocations().device_bytes==forecast.device_bytes,
+        "Actual native allocations disagree with complete startup forecast");
     return VehiclePhysicalStartup(std::move(staged));
 }
 const Forecast& VehiclePhysicalStartup::forecast() const noexcept { return storage_->forecast; }
-const Execution& VehiclePhysicalStartup::execution() const noexcept { return storage_->execution; }
-const Attachments& VehiclePhysicalStartup::attachments() const noexcept { return storage_->attachments; }
+const Source& VehiclePhysicalStartup::source() const noexcept { return storage_->source; }
+const Execution& VehiclePhysicalStartup::execution() const { return storage_->source.original_execution(); }
+const Attachments& VehiclePhysicalStartup::attachments() const { return storage_->source.original_attachments(); }
 tl::fea::NodalStamp VehiclePhysicalStartup::accepted() const noexcept { return storage_->owner.accepted(); }
 tl::fea::NodalAllocationInfo VehiclePhysicalStartup::allocations() const noexcept { return storage_->Allocations(); }
 tl::fea::NodalAllocationInfo VehiclePhysicalStartup::Storage::Allocations() const noexcept {

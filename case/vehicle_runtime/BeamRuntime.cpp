@@ -1,7 +1,27 @@
 #include "BeamRuntime.h"
 #include "ParticipantConfigs.h"
+#include "ParticipantControls.h"
 #include "Reports.h"
 namespace crash::cases::vehicle_runtime::detail {
+namespace {
+tl::fea::beam18::BatchConfig BeamConfig(const Config& config,const tl::fea::NodalStamp& stamp,
+    const tl::fea::ShellBatchStartup& startup,const tl::fea::NodalCinWitnessSource& witness) {
+    tl::fea::beam18::BatchConfig out;
+    SetParticipantIdentity(out,config,stamp,startup);SetCinCounts(out,witness);
+    out.profile=tl::fea::beam18::BatchProfile::PhysicalCinCircularFourPointLaw44V1;
+    out.limits=config.limits.structural_beams;return out;
+}
+void BeamForecast(const tl::fea::beam18::BatchConfig& config,const tl::fea::beam18::Model& model,Forecast& out) {
+    RequireSuccess(tl::fea::beam18::Batch::Forecast(config,model,out.structural_beams));
+    const auto retained=model.owned_payload_bytes();
+    output::Require(retained>=sizeof(model),"Structural beam Model retained size is invalid");
+    const auto shared=retained-sizeof(model);
+    output::Require(out.structural_beams.startup_host_bytes>=shared,
+        "Structural beam complete startup source partition is inconsistent");
+    // The authenticated source ledger already retains this exact Model.
+    out.has_beam18=true;out.structural_beam_incremental_host_bytes=out.structural_beams.startup_host_bytes-shared;
+}
+}
 void CheckBeamSource(const Execution& execution) {
     const auto& physical=execution.model();
     const auto* model=physical.structural_beams();
@@ -18,29 +38,23 @@ void CheckBeamSource(const Execution& execution) {
 }
 tl::fea::beam18::BatchConfig ConfigureStructuralBeams(const Config& config,const Attachments& attachments,
     const tl::fea::NodalStamp& stamp) {
-    tl::fea::beam18::BatchConfig out;
-    out.owner=stamp; out.configuration_id=config.configuration_id; out.qualification_id=config.qualification_id;
-    out.startup=InitialTranslation();
-    out.profile=tl::fea::beam18::BatchProfile::PhysicalCinCircularFourPointLaw44V1;
-    out.cin_attachment_count=attachments.witnesses().data().ranges.size();
-    out.cin_witness_count=attachments.witnesses().data().witnesses.size();
-    out.limits=config.limits.structural_beams;
-    return out;
+    return BeamConfig(config,stamp,InitialTranslation(),Witnesses(attachments));
+}
+tl::fea::beam18::BatchConfig ConfigureStructuralBeams(const Config& config,const Source& source,
+    const tl::fea::NodalStamp& stamp) {
+    return BeamConfig(config,stamp,source.startup(),source.witness_source());
 }
 void ForecastStructuralBeams(const Config& config,const Execution& execution,const Attachments& attachments,Forecast& out) {
     CheckBeamSource(execution);
-    const auto* model=execution.model().structural_beams();
-    if(!model) return;
-    RequireSuccess(tl::fea::beam18::Batch::Forecast(
-        ConfigureStructuralBeams(config,attachments,DescriptiveStamp(config,execution)),*model,out.structural_beams));
-    const auto retained=model->owned_payload_bytes();
-    output::Require(retained>=sizeof(*model),"Structural beam Model retained size is invalid");
-    const auto shared=retained-sizeof(*model);
-    output::Require(out.structural_beams.startup_host_bytes>=shared,
-        "Structural beam complete startup source partition is inconsistent");
-    // SourceBytes already retains this exact Model through ledger.beam18().
-    // Conservatively reserve all remaining upload/proof/readback workspace.
-    out.has_beam18=true;
-    out.structural_beam_incremental_host_bytes=out.structural_beams.startup_host_bytes-shared;
+    if(const auto* model=execution.model().structural_beams())
+        BeamForecast(ConfigureStructuralBeams(config,attachments,DescriptiveStamp(config,execution)),*model,out);
 }
-} // namespace crash::cases::vehicle_runtime::detail
+void ForecastStructuralBeams(const Config& config,const Source& source,Forecast& out) {
+    const auto* model=source.structural_beams();
+    if(!model)return;
+    const auto* coefficient=source.coefficients().beam18();
+    output::Require(coefficient && coefficient->model()->SharesStorage(*model) &&
+        model->domain()->SharesStorage(*source.physical().domain()),"Runtime structural beam source differs");
+    BeamForecast(ConfigureStructuralBeams(config,source,DescriptiveStamp(config,source)),*model,out);
+}
+}

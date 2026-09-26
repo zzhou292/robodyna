@@ -13,21 +13,22 @@ template<class T> void ReadDevice(std::vector<T>& out,const T* data,cudaStream_t
 void VehiclePhysicalStartup::Storage::InspectOwner(InitialInspection& out) {
     // Reuse one complete packing payload for all channels; no simultaneous
     // second full nodal snapshot. Immutable source values remain the oracle.
-    auto values = detail::PackOwner(execution.model().coefficients(),execution.model().rigid_assembly(),
-        roles,{InitialSpeedMps,0,0},forecast.packing_bytes);
+    auto values = source.PackOwner(roles,forecast.packing_bytes);
     const auto n = roles.node.size();
     tl::fea::NodalStamp stamp;
     detail::RequireSuccess(owner.CopyAccepted({values.position.data(),values.velocity.data(),n,
         values.orientation.data(),values.spin.data()},&stamp));
     output::Require(stamp.owner_id==out.stamp.owner_id && stamp.epoch==0 && stamp.time==0,
                     "Initial nodal readback stamp changed");
-    const auto& ledger = execution.model().coefficients();
+    const auto& ledger = source.coefficients();
     for (std::size_t i=0;i<n;++i) {
         const auto x = ledger.domain()->nodes()[i].position;
         output::Require(Bits(values.position[3*i],x.x) && Bits(values.position[3*i+1],x.y) &&
             Bits(values.position[3*i+2],x.z),"Initial node coordinates differ from canonical physical source");
-        output::Require(Bits(values.velocity[3*i],InitialSpeedMps) && values.velocity[3*i+1]==0 &&
-            values.velocity[3*i+2]==0,"Initial velocity differs from explicit 35 mph +X");
+        const auto velocity=tl::fea::shell_startup_detail::ProjectVelocity(
+            source.startup().uniform_velocity,source.translation_fixed(i));
+        output::Require(Bits(values.velocity[3*i],velocity.x) && Bits(values.velocity[3*i+1],velocity.y) &&
+            Bits(values.velocity[3*i+2],velocity.z),"Initial velocity differs from the actual declared constraints");
         output::Require(values.orientation[4*i]==1 && values.orientation[4*i+1]==0 &&
             values.orientation[4*i+2]==0 && values.orientation[4*i+3]==0 &&
             values.spin[3*i]==0 && values.spin[3*i+1]==0 && values.spin[3*i+2]==0,
@@ -53,15 +54,15 @@ void VehiclePhysicalStartup::Storage::InspectOwner(InitialInspection& out) {
         const auto c = ledger.nodes()[i].coefficients;
         const bool dependent = roles.node[i]&CinSecondary;
         const bool present = roles.node[i]!=0;
-        const double inverse_mass = dependent || c.mass==0 ? 0 : 1/c.mass;
-        const double inverse_inertia = dependent || !present || c.isotropic_inertia==0 ? 0 : 1/c.isotropic_inertia;
+        const double inverse_mass = dependent || source.translation_fixed(i)==7 || c.mass==0 ? 0 : 1/c.mass;
+        const double inverse_inertia = dependent || source.rotation_fixed(i) || !present || c.isotropic_inertia==0 ? 0 : 1/c.isotropic_inertia;
         output::Require(Bits(values.inverse_mass[i],inverse_mass) && Bits(values.inverse_inertia[i],inverse_inertia) &&
-            values.fixed[i]==0 && values.rotation_fixed[i]==0 && values.rotation_present[i]==present,
+            values.fixed[i]==source.translation_fixed(i) && values.rotation_fixed[i]==source.rotation_fixed(i) && values.rotation_present[i]==present,
             "Initial inverse coefficients or explicit DOF roles differ");
         out.absent_rotations += !present;
         out.cin_secondaries += dependent;
     }
-    const auto rows = attachments.attachments().model().rows();
+    const auto rows = source.cin().model().rows();
     output::Require(rows.count<=values.velocity.size(),"CIN snapshot exceeds reusable readback capacity");
     // The velocity/spin channels have already passed and now hold SMAS/SINER.
     detail::RequireSuccess(owner.CopyAcceptedCin({values.mass.data(),values.inertia.data(),
