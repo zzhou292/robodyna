@@ -3,6 +3,7 @@
 #include "../../coated/tests/ActualFixture.h"
 #include "output/BoundedArrayJson.h"
 #include <algorithm>
+#include <cstdlib>
 namespace crash::cases::vehicle_self_contact::native::main_coefficients::test {
 namespace physical = vehicle_startup::physical_model::supports_test;
 namespace seed = nodal_seed;
@@ -63,26 +64,64 @@ std::filesystem::path Destination() {
     output::Require(std::filesystem::create_directory(path), "Selected main source destination already exists");
     return path;
 }
+output::arrays::Limits ExportFileLimits() {
+    // BoundedArrayIO's 32 MiB ceiling is a hard per-file contract. Keep it;
+    // the separate 256 MiB export reservation is a total working-set bound.
+    return {output::kArtifactFileCap, UINT32_MAX, 13};
+}
+output::Document WriteBindings(const std::filesystem::path& path,
+    const std::vector<std::uint64_t>& values, std::size_t rows,
+    output::arrays::Limits limits = ExportFileLimits()) {
+    constexpr std::size_t columns = 13;
+    output::Require(limits.file_bytes && limits.file_bytes <= output::kArtifactFileCap,
+        "Qualification binding file limit exceeds the existing codec cap");
+    output::Require(rows <= SIZE_MAX/columns && values.size() == rows*columns,
+        "Complete qualification binding shape differs");
+    const auto chunk_rows = limits.file_bytes / sizeof(std::uint64_t) / columns;
+    output::Require(chunk_rows > 0, "Qualification binding chunk cannot hold a row");
+    output::Document document;
+    document.SetObject();
+    output::String(document, "schema", "robo_dyna.qualification_binding_row_chunks.v1");
+    output::Integer(document, "rows", rows);
+    output::Integer(document, "columns", columns);
+    output::Integer(document, "file_byte_limit", limits.file_bytes);
+    output::Value chunks(rapidjson::kArrayType);
+    for (std::size_t first = 0; first < rows;) {
+        const auto count = std::min(chunk_rows, rows-first);
+        const auto descriptor = output::arrays::Write<std::uint64_t>(path,
+            "primary-source-bindings-"+std::to_string(first)+".bin",
+            {output::arrays::Scalar::UInt64, count, columns, {"contact_eid","contact_pid","support_eid","support_pid",
+                "solid_eid","solid_pid","contact_physical","support_physical","winner_begin","winner_count",
+                "partner","role","owner_proof"}}, values.data()+first*columns, count*columns, limits);
+        output::Document chunk;
+        chunk.SetObject();
+        output::Integer(chunk, "row_begin", first);
+        output::array_json::Child(chunk, "array", output::arrays::DescriptorDocument(descriptor, limits));
+        output::Value stored;
+        stored.CopyFrom(chunk, document.GetAllocator());
+        chunks.PushBack(stored, document.GetAllocator());
+        first += count;
+    }
+    document.AddMember("chunks", chunks, document.GetAllocator());
+    return document;
+}
 void Write(const SelectedShellMainSource& source) {
     const auto budget = WorkingBytes(source.forecast());
     const auto path=Destination();
     const auto values=source.coefficients();
     const auto k=output::arrays::Write<double>(path,"expanded-main-K.bin",
-        {output::arrays::Scalar::Float64,values.size(),1,{"native_K"}}, values.data(), values.size());
+        {output::arrays::Scalar::Float64,values.size(),1,{"native_K"}}, values.data(), values.size(), ExportFileLimits());
     std::vector<std::uint64_t> bindings;
     bindings.reserve(source.bindings().size()*13);
     for (const auto& b : source.bindings()) bindings.insert(bindings.end(), {b.contact_element,b.contact_part,
         b.support_element,b.support_part,b.solid_element,b.solid_part,b.contact_physical,b.support_physical,
         b.winner_begin,b.winner_count,b.partner,std::uint64_t(b.role),std::uint64_t(b.owner)});
-    const auto binding=output::arrays::Write<std::uint64_t>(path,"primary-source-bindings.bin",
-        {output::arrays::Scalar::UInt64,source.bindings().size(),13,{"contact_eid","contact_pid","support_eid","support_pid",
-            "solid_eid","solid_pid","contact_physical","support_physical","winner_begin","winner_count","partner","role","owner_proof"}},
-        bindings.data(),bindings.size());
+    const auto binding_chunks = WriteBindings(path, bindings, source.bindings().size());
     std::vector<std::uint64_t> owners;
     owners.reserve(source.possible_owners().size()*3);
     for (const auto& owner : source.possible_owners()) owners.insert(owners.end(), {owner.element,owner.part,owner.physical});
     const auto owner_array=output::arrays::Write<std::uint64_t>(path,"candidate-support-owners.bin",
-        {output::arrays::Scalar::UInt64,source.possible_owners().size(),3,{"eid","pid","physical_parent"}},owners.data(),owners.size());
+        {output::arrays::Scalar::UInt64,source.possible_owners().size(),3,{"eid","pid","physical_parent"}},owners.data(),owners.size(),ExportFileLimits());
     const auto& cert=source.certificate();
     output::Document doc; doc.SetObject();
     output::String(doc,"schema","robo_dyna.selected_shell_main_source.v1");
@@ -106,11 +145,49 @@ void Write(const SelectedShellMainSource& source) {
     output::Boolean(doc,"orientation_identity",cert.orientation_identity); output::Boolean(doc,"owners_complete",cert.owners_complete);
     output::Boolean(doc,"grouping_controls_certified",cert.grouping_controls_certified);
     output::Boolean(doc,"runtime_admitted",false);
-    output::array_json::Child(doc,"coefficients",output::arrays::DescriptorDocument(k));
-    output::array_json::Child(doc,"bindings",output::arrays::DescriptorDocument(binding));
-    output::array_json::Child(doc,"candidate_owners",output::arrays::DescriptorDocument(owner_array));
+    output::array_json::Child(doc,"coefficients",output::arrays::DescriptorDocument(k,ExportFileLimits()));
+    output::array_json::Child(doc,"binding_chunks",binding_chunks);
+    output::array_json::Child(doc,"candidate_owners",output::arrays::DescriptorDocument(owner_array,ExportFileLimits()));
     output::WriteJson(path/"source.json",doc);
 }
+}
+TEST(SelectedShellMainExport, ChunkBoundariesPreserveEveryRowAndColumn) {
+    char pattern[] = "/tmp/selected-main-binding-chunks-XXXXXX";
+    const auto* created = ::mkdtemp(pattern);
+    ASSERT_NE(created, nullptr);
+    struct Cleanup {
+        std::filesystem::path path;
+        ~Cleanup() { std::error_code ignored; std::filesystem::remove_all(path, ignored); }
+    } cleanup{created};
+    auto limits = ExportFileLimits();
+    limits.file_bytes = 5*13*sizeof(std::uint64_t);
+    for (const std::size_t rows : {5u, 6u, 11u}) {
+        SCOPED_TRACE(rows);
+        const auto directory = cleanup.path/std::to_string(rows);
+        ASSERT_TRUE(std::filesystem::create_directory(directory));
+        std::vector<std::uint64_t> original(rows*13);
+        for (std::size_t row = 0; row < rows; ++row)
+            for (std::size_t column = 0; column < 13; ++column) original[row*13+column] = row*100+column;
+        const auto document = WriteBindings(directory, original, rows, limits);
+        ASSERT_EQ(document["rows"].GetUint64(), rows);
+        ASSERT_EQ(document["columns"].GetUint64(), 13u);
+        ASSERT_EQ(document["chunks"].Size(), (rows+4)/5);
+        std::size_t next = 0;
+        std::vector<std::uint64_t> restored;
+        for (const auto& chunk : document["chunks"].GetArray()) {
+            ASSERT_EQ(chunk["row_begin"].GetUint64(), next);
+            const auto descriptor = output::arrays::ParseDescriptor(chunk["array"], limits);
+            ASSERT_EQ(descriptor.layout.columns, 13u);
+            ASSERT_EQ(descriptor.layout.rows, std::min<std::size_t>(5, rows-next));
+            ASSERT_EQ(descriptor.bytes, descriptor.layout.rows*13*sizeof(std::uint64_t));
+            ASSERT_LE(descriptor.bytes, limits.file_bytes);
+            const auto words = output::arrays::Read<std::uint64_t>(directory, descriptor, limits);
+            restored.insert(restored.end(), words.begin(), words.end());
+            next += descriptor.layout.rows;
+        }
+        EXPECT_EQ(next, rows);
+        EXPECT_EQ(restored, original);
+    }
 }
 TEST(SelectedShellMainActual, ForecastAndExactCapRejectBeforePublishing) {
     ASSERT_NO_FATAL_FAILURE(coated::test::SourceCounts());
