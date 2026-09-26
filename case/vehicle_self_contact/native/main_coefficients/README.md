@@ -1,0 +1,62 @@
+# Selected V5 shell main coefficient source
+
+This startup source handle derives all selected shell main coefficients from the
+complete retained physical assembly. It keeps declared contact-parent identity
+separate from the physical shell supplying INCOQ3 material/thickness operands.
+No captured coefficient, owner, normal, volume or role table enters production.
+
+The input is a Ready `CorrectedNodalSource`, its shared `OriginalSelection`, the
+authenticated original coordinate member and the authenticated combine member.
+The corrected handle supplies closed import/property/material authority only;
+its later global nodal K is never substituted for main K. Outputs remain native
+units, explicitly tagged by `provenance().units`.
+
+`CoefficientValuesReady` means complete K. `certificate().owners_complete` is a
+separate requirement for any later owner-sensitive binding. Every exact best
+DX/ST candidate is retained. Unknown same-supergroup order may still publish
+bit-identical K with unresolved ownership; no arbitrary EID becomes IELEM_M.
+Known ownership is external EID/PID plus the actual physical parent index, not a
+fabricated absolute native IXC/IXTG row. This product supplies neither solid
+contact faces nor gaps, friction, erosion/removal, interface/runtime admission.
+
+The source phase is after shell CGRHEAD/CGRTAILS and rebuilt BUILD_CNEL, before
+INITIA. It is distinct from HM_SET's earlier whole-model surface suppression.
+Native incidence is corner-major. Q4 chooses the first equal positive DX/ST;
+T3 chooses the last. Equal-card candidates with preserved distinct material IDs
+can be ranked between native supergroups only after the closed pre-MID control
+certificate. Same-group graph reordering remains unresolved.
+
+That certificate authenticates combine bytes/block hashes through the existing
+source reader. No optional CONTROL_TIMESTEP card is admitted: the converter
+only creates /AMS for optional IMSCLOptFlag1/2/3; HM_READ_SMS explicitly starts
+ISMS=0 and sets it only while reading /AMS. It does not alter mass scaling or
+any timestep. Independent MAT_ADD/thermal/adaptive/XFEM modifiers disable the
+group certificate. Compared PART controls require an authenticated blank
+EOSID/HGID/GRAV/ADPOPT/TMID tail; material/property control cards must match
+apart from IDs and NLOC. Equal node sets share the node-based rigid coverage;
+intrinsic rigid material grouping is excluded. No PID-specific rule exists.
+
+Existing source-native coordinate, V5 reader raw8, membership, unsigned surface
+ordering and resolved-shell topology producers are reused. Every coated primary
+is checked against native INSOL3D's orientation permutation. Nonidentity rejects
+without publication; partners/tags are never rebuilt. The admitted unprojected
+source route is independent of mechanical NLOC. Finite negative pre-INITIA PENTA
+volume is preserved through the qualified signed coating scalar; no ABS or later
+mechanics reorientation is applied. Complete source defaults establish FILLSOL1,
+element override0 and scale1. Material PM32/PM107 come from the qualified typed
+post-UPDMAT accessor with separate effective property control.
+
+The immutable handle retains the shared OriginalSelection and corrected source
+authorities, one output topology arena, one expanded K vector,
+source/owner bindings and the full candidate roster. Forecast charges shared
+corrected backing, temporary packing, DOMs, sorted keys, copied metadata and
+chunked meaningful-field hashing before construction. Failure publishes no
+handle. Native topology warnings remain available through `topology_report()`.
+
+Qualification is host startup only. `tests/native` copies complete original
+INCOQ3 plus exact BUILD_CNEL Q4/T3 incidence blocks and original MY_ORDERS. It is
+serial, bounded and never linked by production. Existing independent ordinary
+and coated scalar oracles supply numerical expectations. The optional actual
+V5 target must be run separately through a guarded forecast and create-only
+whole-source command; it is never an automatic CTest. No executed pass is
+implied by these instructions.
