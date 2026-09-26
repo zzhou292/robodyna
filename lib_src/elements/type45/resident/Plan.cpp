@@ -9,7 +9,7 @@ BatchReport Plan(const BatchConfig& c,const Model& model,ArenaLayout& output) no
       o.reactions_valid || o.reaction_base_epoch || o.reaction_time!=0 || o.reaction_kick_dt!=0 ||
       o.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart ||
       o.velocity_phase!=NodalVelocityPhase::Collocated || !detail::Positive(o.fixed_dt) ||
-      !c.configuration_id || !c.qualification_id || !shell_startup_detail::ValidStartup(c.startup,true) ||
+      !c.configuration_id || !c.qualification_id || !shell_startup_detail::ValidStartup(c.startup,true,true) ||
       c.profile!=BatchProfile::PhysicalAggregateV1 || !c.cin_witness_count ||
       c.cin_witness_count>NodalCinLimits{}.max_witnesses ||
       o.node_count!=model.domain()->node_count() ||

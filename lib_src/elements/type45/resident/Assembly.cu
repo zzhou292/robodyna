@@ -25,7 +25,7 @@ __device__ bool CheckEndpoints(Storage& s,unsigned slab,const NodalAssemblyView&
       const auto* q=v.accepted.orientation_wxyz+4*n;
       if(!detail::Finite(x) || !detail::Finite(velocity) || !detail::Finite(omega) ||
           !tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]}) ||
-          (!v.accepted.base_epoch && !shell_startup_detail::MatchesInitialNode(
+          (!v.accepted.base_epoch && !shell_startup_detail::MatchesInitialFreePhysicalNode(
               s.config.startup,x,joint.geometry.position_m[e],velocity,omega,q))) {
         s.control.status=BatchStatus::InvalidInput;s.control.joint=j;s.control.node=n;return false;
       }

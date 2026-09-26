@@ -30,10 +30,10 @@ struct Rig {
                bool interior_edge_contact=false,
                double adjacent_apex_x=.05,
                fe::ShellBatchStartup declared_startup={},
-               bool separate_adjacent_contact=false)
+               bool separate_adjacent_contact=false, bool detached_adjacent_triangle=false)
       : fixture(surface_rigid,t3_failure,contact_geometry,constraints,
                 interior_edge_contact,adjacent_apex_x,declared_startup,
-                separate_adjacent_contact) {}
+                separate_adjacent_contact, detached_adjacent_triangle) {}
   Fixture fixture;
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;

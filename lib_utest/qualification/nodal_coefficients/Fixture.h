@@ -25,9 +25,9 @@ struct Fixture {
   explicit Fixture(bool contact_geometry = false,
                    bool distinct_contact_t3 = false,
                    bool interior_edge_contact = false, double adjacent_apex_x = .05,
-                   bool separate_adjacent = false)
+                   bool separate_adjacent = false, bool detached_triangle = false)
       : shell_input(contact_geometry,distinct_contact_t3,
-                    interior_edge_contact, adjacent_apex_x, separate_adjacent) {
+                    interior_edge_contact, adjacent_apex_x, separate_adjacent, detached_triangle) {
     EXPECT_EQ(shells.InitializeFormulations(shell_input.Input()).status,fe::ShellBindingStatus::Success);
     nodes.resize(shells.node_count() + 2);
     for(std::size_t n=0;n<shells.node_count();++n) {

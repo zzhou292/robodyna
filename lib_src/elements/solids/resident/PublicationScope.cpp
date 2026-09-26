@@ -27,6 +27,36 @@ BatchReport Batch::PreflightAttach(FENodalState& owner, const NodalCoefficientLe
     return {BatchStatus::InvalidInput, "Solid publication requires the same complete initial authorities"};
   }
   auto report = owner.ValidateRigidAssemblyBinding(rigid);
+  if (report.status == NodalStatus::Ok &&
+      config.startup.kind == ShellBatchStartupKind::ReferenceConstrainedUniformTranslation) {
+    // TT0 force/history caches use one common velocity for every actual parent
+    // slot. Unrelated fixed shell nodes are allowed; constrained solid support
+    // needs a separate cache implementation. Rotations and inverse M are not
+    // part of this translation-only role proof.
+    const auto support = [&](const auto& parents, Family family, unsigned slots) -> BatchReport {
+      for (std::size_t p=0;p<parents.size();++p) {
+        std::size_t distinct[8], count=0;
+        for (unsigned slot=0;slot<slots;++slot) {
+          const auto node=parents[p].domain_nodes[slot];
+          bool seen=false;
+          for (std::size_t i=0;i<count;++i) seen=seen || distinct[i]==node;
+          if (!seen) distinct[count++]=node;
+        }
+        const auto checked=owner.ValidateFreeTranslationalNodes(distinct,count);
+        if (checked.status!=NodalStatus::Ok) {
+          if (checked.status==NodalStatus::DeviceFailure) state.usable=false;
+          return {BatchStatus::NodalFailure,checked.message,family,p,checked.node,0,checked.status};
+        }
+      }
+      return {};
+    };
+    auto checked=support(model.solid18(),Family::Solid18,batch_detail::Traits18::nodes);
+    if (checked) checked=support(model.solid24(),Family::Solid24,batch_detail::Traits24::nodes);
+    if (checked) checked=support(model.solid6z(),Family::Solid6z,batch_detail::Traits6z::nodes);
+    if (checked) checked=support(model.solid18_law44(),Family::Solid18Law44,batch_detail::Traits18Law44::nodes);
+    if (checked) checked=support(model.solid18_law90(),Family::Solid18Law90,batch_detail::Traits18Law90::nodes);
+    if (!checked) return checked;
+  }
   if (report.status == NodalStatus::Ok) {
     report = shell_physical_owner::AuthenticateInitial(ledger, owner, state.accepted_stamp,
         config.startup, cin, state.layout.proof);

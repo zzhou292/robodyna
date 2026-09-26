@@ -50,12 +50,14 @@ struct Fixture {
   bool distinct_contact_t3 = false;
   bool interior_edge_contact = false;
   bool separate_adjacent_contact = false;
+  bool detached_adjacent_triangle = false;
   explicit Fixture(bool contact = false, bool distinct_t3 = false,
                    bool interior_ee = false, double adjacent_apex_x = .05,
-                   bool separate_adjacent = false)
+                   bool separate_adjacent = false, bool detached_triangle = false)
       : contact_geometry(contact || interior_ee),
         distinct_contact_t3(distinct_t3),
-        interior_edge_contact(interior_ee), separate_adjacent_contact(separate_adjacent) {
+        interior_edge_contact(interior_ee), separate_adjacent_contact(separate_adjacent),
+        detached_adjacent_triangle(detached_triangle) {
     const tl::math::Vec3 x[]{
         {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
         interior_ee ? tl::math::Vec3{-.01,.01,.00025}
@@ -117,6 +119,15 @@ struct Fixture {
       t.reference.node_ids[1] = 14;
       t.reference.node_ids[2] = 22;
     }
+    if (detached_adjacent_triangle) {
+      // Same source geometry, distinct typed T3 corner identities. This leaves
+      // Q4 20--23 an independent fixed-shell island and all moving contributor
+      // endpoints/CIN masters unchanged. No physical coordinate welding.
+      EXPECT_TRUE(separate_adjacent_contact);
+      t.nodes = {9,4,10};
+      t.reference.node_ids[0] = 24;
+      t.reference.node_ids[2] = 25;
+    }
     contact_t[0]=t;
     contact_t[1]=t;
     contact_t[1].source_parent_id=104;
@@ -131,7 +142,8 @@ struct Fixture {
   fe::ShellFormulationCollectionInput Input() const {
     return {{q.data(),distinct_contact_t3 ? contact_t.data() : &t,
              2,distinct_contact_t3 ? 2u : 1u,
-             distinct_contact_t3 ? 10u : (separate_adjacent_contact ? 9u : (contact_geometry ? 7u : 5u))},
+             distinct_contact_t3 ? 10u : (detached_adjacent_triangle ? 11u :
+                (separate_adjacent_contact ? 9u : (contact_geometry ? 7u : 5u)))},
             &b,1};
   }
 };

@@ -39,8 +39,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Plan.cpp",
-      "bytes": 4454,
-      "sha256": "6beccbd7afb75d915852147f5f123304249abbe1dc9ae6d88665e3a6cb7f73e8"
+      "bytes": 4460,
+      "sha256": "2536d56f17df4044a8303d4f70f8c3f6472dc46ff7fc33bb3e33575ee599e3d0"
     },
     {
       "path": "lib_src/materials/law44/solid/BUILD.bazel",
@@ -233,5 +233,6 @@
       "lib_src/elements/solids/resident/ResultValidation.h",
       "lib_src/elements/solids/resident/ResultValidation.cu"
     ]
-  }
+  },
+  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged."
 }

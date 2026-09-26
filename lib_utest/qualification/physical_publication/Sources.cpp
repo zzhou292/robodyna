@@ -7,11 +7,12 @@ namespace physical_publication_test {
 Fixture::Fixture(bool surface,double failure,bool contact_geometry,
                  ContactConstraintLayout constraints,
                  bool interior_edge_contact, double adjacent_apex_x,
-                 fe::ShellBatchStartup declared_startup, bool separate_adjacent_contact)
+                 fe::ShellBatchStartup declared_startup, bool separate_adjacent_contact,
+                 bool detached_adjacent_triangle)
     : source(contact_geometry,
              constraints == ContactConstraintLayout::SameMergedParts ||
              constraints == ContactConstraintLayout::MergedPartAndPlain,
-             interior_edge_contact, adjacent_apex_x, separate_adjacent_contact),
+             interior_edge_contact, adjacent_apex_x, separate_adjacent_contact, detached_adjacent_triangle),
       startup(declared_startup), surface_rigid(surface),t3_failure(failure),
       contact_constraints(constraints) {
   source.nodes.push_back({778,{.06,-.01,.003}});

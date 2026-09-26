@@ -31,8 +31,10 @@ __device__ bool CheckEndpoints(Storage& state, const NodalAssemblyView& view,
       if (!tl::math::fixed3::Finite(x) || !tl::math::fixed3::Finite(v) ||
           !tl::math::fixed3::Finite(w) ||
           !tl::math::UnitQuaternion({q[0], q[1], q[2], q[3]}) ||
-          (initial && !shell_startup_detail::MatchesInitialNode(
-              state.model.config.startup, x, element.reference.position_m[local], v, w, q))) {
+          (initial && !(mapped ? shell_startup_detail::MatchesInitialFreePhysicalNode(
+              state.model.config.startup, x, element.reference.position_m[local], v, w, q) :
+              shell_startup_detail::MatchesInitialNode(
+              state.model.config.startup, x, element.reference.position_m[local], v, w, q)))) {
         state.control.status = BatchStatus::InvalidInput;
         state.control.element = e;
         state.control.node = node;

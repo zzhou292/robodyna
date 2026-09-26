@@ -31,7 +31,7 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
       owner.velocity_phase != NodalVelocityPhase::Collocated ||
       !tl::math::Finite(owner.fixed_dt) || owner.fixed_dt <= 0 ||
       !config.configuration_id || !config.qualification_id ||
-      !shell_startup_detail::ValidStartup(config.startup, true) ||
+      !shell_startup_detail::ValidStartup(config.startup, true, true) ||
       !config.cin_witness_count || config.cin_witness_count > NodalCinLimits{}.max_witnesses ||
       !DeclaredRigidScope(owner.rigid_groups, owner.node_count) ||
       owner.node_count != model.domain()->node_count()) {

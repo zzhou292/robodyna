@@ -3,10 +3,10 @@
 
 namespace type45_resident_test {
 joint::BatchConfig Rig::Config() const {
-  joint::BatchConfig c;c.owner=physical.owner.accepted();
+  joint::BatchConfig c;c.owner=physical.owner.accepted();c.startup=physical.fixture.startup;
   c.configuration_id=common::Configuration;c.qualification_id=common::Qualification;
   c.profile=joint::BatchProfile::PhysicalAggregateV1;
-  c.cin_attachment_count=physical.fixture.ranges.size();c.cin_witness_count=physical.fixture.witnesses.size();
+  c.cin_attachment_count=physical.fixture.ranges.size();c.cin_witness_count=physical.fixture.WitnessCount();
   return c;
 }
 fe::ShellPhysicalParticipants Rig::Participants() {auto p=physical.Participants();p.type45=&joints;return p;}

@@ -23,6 +23,9 @@ namespace joint=fe::type45;
 namespace common=physical_publication_test;
 using common::Good;
 struct Rig {
+  explicit Rig(fe::ShellBatchStartup startup={},bool independent_shell=false)
+      : physical(false,2.5,false,common::ContactConstraintLayout::Legacy,false,.05,
+                 startup,independent_shell,independent_shell) {}
   joint::Model model;
   joint::Batch joints;
   common::Rig physical; // Its publication is destroyed before the joint batch.

@@ -44,8 +44,8 @@ bool Source::Initialize(existing::Fixture& f) {
     f.m[n]=ledger.nodes()[n].coefficients.mass;
     f.j[n]=ledger.nodes()[n].coefficients.isotropic_inertia;
     f.present[n]=f.j[n]>0 || rigid.FindMember(n);
-    f.im[n]=f.m[n]>0 ? 1/f.m[n] : 0;
-    f.ij[n]=f.j[n]>0 ? 1/f.j[n] : 0;
+    f.im[n]=f.fixed[n]==7 ? 0 : (f.m[n]>0 ? 1/f.m[n] : 0);
+    f.ij[n]=f.rotation_fixed[n] ? 0 : (f.j[n]>0 ? 1/f.j[n] : 0);
   }
   f.im[f.domain.Find(901)]=0; f.ij[f.domain.Find(901)]=0;
   return true; // Caller curve arrays and parent declarations die here.

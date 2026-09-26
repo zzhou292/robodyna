@@ -12,7 +12,8 @@ BatchReport BuildStartup(const BatchConfig&, const Type13NodeContributions&,
                           BatchDiagnostics&);
 BatchReport SourceForecast(const BatchConfig&, const Type13NodeContributions&,
     std::size_t private_bytes, BatchForecast&) noexcept;
-BatchReport SourceGeometryPreflight(const BatchConfig&, const Type13NodeContributions&) noexcept;
+BatchReport SourceGeometryPreflight(const BatchConfig&, const Type13NodeContributions&,
+    bool physical_constrained=false) noexcept;
 BatchReport BuildSourceValues(const BatchConfig&, const Type13NodeContributions&,
     util::HostArena&, const ArenaLayout&, Storage&, BatchDiagnostics&);
 BatchReport SourcePreflight(const BatchConfig&, const Type13NodeContributions&) noexcept;

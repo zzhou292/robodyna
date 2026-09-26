@@ -108,8 +108,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Plan.cpp",
-      "bytes": 4454,
-      "sha256": "6beccbd7afb75d915852147f5f123304249abbe1dc9ae6d88665e3a6cb7f73e8"
+      "bytes": 4460,
+      "sha256": "2536d56f17df4044a8303d4f70f8c3f6472dc46ff7fc33bb3e33575ee599e3d0"
     },
     {
       "path": "lib_src/elements/solids/resident/Publication.cpp",
@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/PublicationScope.cpp",
-      "bytes": 3159,
-      "sha256": "8396edae629074e02cee53bdca45b4afbbe5bb131fdd821c9fc6dab55aff93e8"
+      "bytes": 4934,
+      "sha256": "71870e95fd70ef0d5d9d00dc487330a76fac30cd05a63314f342c6b1488de84e"
     },
     {
       "path": "lib_src/elements/solids/resident/README.md",
@@ -397,5 +397,6 @@
       "lib_src/elements/solids/resident/ResultValidation.h",
       "lib_src/elements/solids/resident/ResultValidation.cu"
     ]
-  }
+  },
+  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged."
 }
