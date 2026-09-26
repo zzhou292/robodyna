@@ -2,5 +2,6 @@
 int main() {
     using Source = crash::cases::vehicle_self_contact::native::nodal_correction::CorrectedNodalSource;
     auto* volatile prepare = &Source::Prepare;
-    return prepare ? 0 : 1;
+    auto volatile slots = &Source::material_slots;
+    return prepare && slots ? 0 : 1;
 }
