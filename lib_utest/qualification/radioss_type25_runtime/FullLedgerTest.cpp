@@ -5,9 +5,9 @@ namespace {
 rd::SourceStaging Sentinel(){rd::SourceStaging out;out.bytes=991;out.ids={88};return out;}
 void Unchanged(const rd::SourceStaging& out){EXPECT_EQ(out.bytes,991u);EXPECT_EQ(out.ids,(std::vector<std::uint64_t>{88}));}
 }
-TEST(NativeType25FullLedger, ActualContributorsAndQbatConnectivityStayInOneSourceDomain) {
+TEST(NativeType25FullLedger, ActualNonShellContributorsStayInOneSourceDomain) {
   FullLedgerFixture f;const auto& scope=f.ledger.scope();
-  ASSERT_EQ(scope.uncovered_nodes,0u);EXPECT_EQ(scope.qbat_parents,1u);
+  ASSERT_EQ(scope.uncovered_nodes,0u);EXPECT_EQ(scope.qbat_parents,0u);
   EXPECT_GT(scope.type25_connections,0u);EXPECT_GT(scope.type13_connections,0u);EXPECT_EQ(scope.element_mass_records,1u);
   EXPECT_EQ(scope.solid18_parents,1u);EXPECT_EQ(scope.solid24_parents,1u);EXPECT_EQ(scope.solid6z_parents,1u);
   rd::SourceStaging output;
@@ -15,9 +15,9 @@ TEST(NativeType25FullLedger, ActualContributorsAndQbatConnectivityStayInOneSourc
   ASSERT_EQ(report.status,n::TransactionStatus::Ok)<<report.message;
   EXPECT_EQ(output.ids,f.ids);EXPECT_TRUE(output.native_mass.empty()); // Actual owner mass is borrowed during assembly.
   ASSERT_EQ(output.primary.size(),2u);
-  const auto& qbat=f.source.shells.qbat_nodes(0);
+  const auto& quad=f.shells.qeph_nodes(0);
   for(unsigned k=0;k<4;++k)
-    EXPECT_EQ(output.ids[output.primary.back().nodes[k]],f.source.shells.active_nodes()[qbat[k]].source_id);
+    EXPECT_EQ(output.ids[output.primary.front().nodes[k]],f.shells.active_nodes()[quad[k]].source_id);
   EXPECT_GT(f.ledger.nodes()[f.domain.Find(10)].coefficients.solid18_mass,0);
   EXPECT_GT(f.ledger.nodes()[f.domain.Find(777)].coefficients.element_mass,0);
 }
@@ -32,17 +32,17 @@ TEST(NativeType25FullLedger, LegacyDefaultStaticMassAndUnknownProfilesRemainReje
     Unchanged(out);
   }
 }
-TEST(NativeType25FullLedger, QbatSourceIdentityAndOrderedNodesCannotBeReplacedByAnotherFamily) {
+TEST(NativeType25FullLedger, SelectedShellIdentityAndOrderedNodesCannotBeReplacedByAnotherFamily) {
   FullLedgerFixture f;const auto last=f.parents.size()-1;
-  auto out=Sentinel();f.parents[last]=999;
+  auto out=Sentinel();f.parents[last]=9100; // Real solid source ID is not a shell contact primitive.
   EXPECT_EQ(rd::PrepareSource(f.Config(),f.Contact(),f.physical,{},out).status,n::TransactionStatus::SourceMismatch);Unchanged(out);
-  f.parents[last]=103;
+  f.parents[last]=102;
   std::swap(f.mains[last].nodes[0],f.mains[last].nodes[1]);
   EXPECT_NE(rd::PrepareSource(f.Config(),f.Contact(),f.physical,{},out).status,n::TransactionStatus::Ok);Unchanged(out);
   std::swap(f.mains[last].nodes[0],f.mains[last].nodes[1]);
   EXPECT_EQ(rd::PrepareSource(f.Config(),f.Contact(),f.physical,{},out).status,n::TransactionStatus::Ok);
 }
-TEST(NativeType25FullLedger, MaterialFailureNeedsItsOwnLifecycleAdmission) {
+TEST(NativeType25FullLedger, MandatoryNip1AndQbatFailureNeedsItsOwnLifecycleAdmission) {
   FullLedgerFixture f(true);auto out=Sentinel();
   const auto report=rd::PrepareSource(f.Config(),f.Contact(),f.physical,{},out);
   EXPECT_EQ(report.status,n::TransactionStatus::UnsupportedProfile);EXPECT_STREQ(report.message,"Contact activity changes are not admitted");Unchanged(out);
