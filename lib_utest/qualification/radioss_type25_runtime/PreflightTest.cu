@@ -37,12 +37,16 @@ TEST(NativeRuntimePreflight, MovingPlanBeforeOwnerMatchesExactCapInitialization)
 }
 TEST(NativeRuntimePreflight, GenuineMixedPlanIncludesActivityAndMatchesActualAllocation) {
   type25_source_test::FullLedgerRig rig(true);
+  // This existing fixture finalizes its declared T3-only secondary roster and
+  // constraints while creating the physical owner. Freeze those genuine source
+  // fields before forecasting the contact; the moving test covers pre-owner use.
+  ASSERT_NO_THROW(rig.Initialize(false));
   type25_source_test::MixedRuntimeSource source(rig.fixture);n::TransactionForecast plan;
-  EXPECT_EQ(rig.owner.accepted().owner_id,0u);
+  const auto initial=rig.owner.accepted();EXPECT_FALSE(rig.contact.source_info().available);
   ASSERT_EQ(n::Transaction::Preflight(source.Config(),source.Source(),rig.fixture.physical,plan).status,n::TransactionStatus::Ok);
-  EXPECT_EQ(rig.owner.accepted().owner_id,0u);
+  EXPECT_EQ(rig.owner.accepted().owner_id,initial.owner_id);EXPECT_EQ(rig.owner.accepted().epoch,initial.epoch);
   ShortCaps(source.Config(),source.Source(),rig.fixture.physical,{},plan);
-  ASSERT_NO_THROW(rig.Initialize(false));n::TransactionLimits limits;
+  n::TransactionLimits limits;
   limits.max_device_bytes=plan.device_bytes;limits.max_host_bytes=plan.startup_host_bytes;
   const auto made=rig.contact.Initialize(source.Config(),source.Source(),rig.owner,rig.publication,
       rig.fixture.physical,rig.Participants(),rig.Identity(),limits);
