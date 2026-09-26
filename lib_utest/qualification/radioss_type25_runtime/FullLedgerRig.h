@@ -44,7 +44,7 @@ struct FullLedgerRig {
   tl::constraints::tied_shell::PostKinChkResult classified;
   tl::constraints::tied_shell::TiedCinAttachmentModel cin;
   std::array<tl::constraints::tied_shell::cin::WitnessRange,1> ranges{{{0,2}}};
-  std::array<tl::constraints::tied_shell::cin::ActiveWitness,2> witnesses;
+  std::array<tl::constraints::tied_shell::cin::ActiveWitness,3> witnesses;
   std::vector<double> x,v,w,q,m,j,im,ij;
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
   fe::ShellBatchStartup startup{fe::ShellBatchStartupKind::ReferenceUniformTranslation,{0,0,0}};
@@ -60,7 +60,8 @@ struct FullLedgerRig {
 
   fe::ShellPhysicalParticipants Participants() {return {&qeph,&t3,fixture.shells.qbat_count()?&qbat:nullptr,&welds,&beams,&solids};}
   fe::ShellPhysicalPublicationIdentity Identity() const {return {Configuration,Qualification,startup};}
-  fe::NodalCinWitnessSource Witnesses() const {return {&cin,ranges.data(),witnesses.data(),ranges.size(),witnesses.size()};}
+  std::size_t WitnessCount() const {return fixture.shells.qbat_count()?3:2;}
+  fe::NodalCinWitnessSource Witnesses() const {return {&cin,ranges.data(),witnesses.data(),ranges.size(),WitnessCount()};}
   n::TransactionConfig Config() const {
     auto result=fixture.Config();
     if(fixture.shells.qbat_count())result.activity=n::ContactActivityPolicy::AllActivePrefix;

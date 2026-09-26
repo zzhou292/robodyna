@@ -40,9 +40,10 @@ void FullLedgerRig::PrepareConstraint() {
       {decode.data(),decode.size()}},&classified)),"Declared CIN classification");
   nodal_empty_test::Fixture::Require(bool(tied::PrepareCinAttachments(classified,fixture.domain,
       {&attachment,1},&cin)),"Declared CIN attachment");
-  for(unsigned row=0;row<2;++row) {
-    auto& witness=witnesses[row];witness.source_element_id=100+row;
-    witness.native_parent_index=row;witness.family=tied::cin::WitnessFamily::ShellQuad;
+  ranges[0].count=WitnessCount();
+  for(unsigned row=0;row<WitnessCount();++row) {
+    auto& witness=witnesses[row];witness.source_element_id=row==2?103:100+row;
+    witness.native_parent_index=row==2?0:row;witness.family=tied::cin::WitnessFamily::ShellQuad;
     for(unsigned k=0;k<4;++k)witness.nodes[k]=fixture.domain.Find(10+k);
   }
 }
@@ -72,7 +73,7 @@ void FullLedgerRig::PrepareOwner() {
   fixture.removal_offsets.assign(fixture.secondary.size()+1,0);
   fe::NodalStateConfig config;config.node_count=count;config.fixed_dt=Dt;
   config.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
-  const fe::NodalCinStartup raw{&cin,m.data(),j.data(),ranges.data(),witnesses.data(),witnesses.size(),Qualification};
+  const fe::NodalCinStartup raw{&cin,m.data(),j.data(),ranges.data(),witnesses.data(),WitnessCount(),Qualification};
   Check(owner.Initialize(config,{x.data(),v.data(),w.data(),count,q.data()},im.data(),
       {fixed.data(),rotation_fixed.data(),ij.data(),present.data()},fixture.rigid,&raw));
 }
@@ -100,7 +101,7 @@ void FullLedgerRig::Initialize(bool attach_contact) {
   Check(beams.InitializeMapped(bc,fixture.physical,fixture.rigid,owner,Witnesses()));
   fe::solids::BatchConfig sc;sc.startup=startup;sc.owner=owner.accepted();
   sc.configuration_id=Configuration;sc.qualification_id=Qualification;sc.profile=fe::solids::BatchProfile::PhysicalCinV1;
-  sc.cin_attachment_count=ranges.size();sc.cin_witness_count=witnesses.size();
+  sc.cin_attachment_count=ranges.size();sc.cin_witness_count=WitnessCount();
   Check(solids.InitializeJoined(sc,solid_model));
   // Existing mapped producers establish their real initial caches before the
   // common publisher joins them. This proof is discarded without a time step.
@@ -135,10 +136,14 @@ void FullLedgerRig::Begin(FullLedgerAttempt& a) {
 void FullLedgerRig::Prepare(FullLedgerAttempt& a) {
   fe::NodalCinAssemblyView cin_view;Check(owner.BorrowCinAssembly(a.token,&cin_view));
   Check(publication.ValidateAcceptedActivitySources(owner,{&qeph,&t3,fixture.shells.qbat_count()?&qbat:nullptr,&welds},fixture.shells.inventory()));
-  std::uint8_t activity[2];fe::qeph::BatchDiagnostics diagnostics;
+  std::uint8_t activity[3]{};fe::qeph::BatchDiagnostics diagnostics;
   Check(qeph.CopyAcceptedParentActivity(owner.accepted(),activity,2,&diagnostics));
+  if(fixture.shells.qbat_count()) {
+    fe::qbat::BatchDiagnostics qbat_diagnostics;
+    Check(qbat.CopyAcceptedParentActivity(owner.accepted(),activity+2,1,&qbat_diagnostics));
+  }
   for(auto& value:activity)value=value?1:2;
-  Check(cudaMemcpyAsync(cin_view.witness_activity,activity,sizeof(activity),cudaMemcpyHostToDevice,a.assembly.stream));
+  Check(cudaMemcpyAsync(cin_view.witness_activity,activity,WitnessCount()*sizeof(activity[0]),cudaMemcpyHostToDevice,a.assembly.stream));
   Check(cudaStreamSynchronize(a.assembly.stream));
   Check(owner.SealAssembly(a.token));
   Check(fe::AdvanceStaggeredCin(owner,a.token,{a.assembly.owner_id,a.assembly.accepted.base_epoch,a.assembly.attempt,
