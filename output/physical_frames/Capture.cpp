@@ -1,4 +1,6 @@
 #include "CaptureState.h"
+#include "EnvironmentFields.h"
+#include "case/vehicle_wall/native/EnvelopePhysicalSource.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 namespace crash::output::physical_frames {
 void PhysicalAcceptedFrames::Capture(Run& run) {
@@ -11,9 +13,18 @@ void PhysicalAcceptedFrames::Capture(Run& run) {
     Require(tl::fea::trial_identity::SameStamp(stamp,before.stamp),"Nodal accepted stamp changed during capture");
     auto& frame=s.frames.Staging();
     detail::StagePositions(s.mapping.physical_nodes(),s.positions.data(),s.forecast.physical_nodes,frame);
-    const auto& counts=s.mapping.execution().resolution().native_counts();
+    const auto counts=s.mapping.physical_counts();
+    const auto rendered=s.mapping.render_counts();
     detail::CheckReadback(before,Access::Qeph(run,stamp,s.layered.data(),s.flags.data(),counts.qeph));
-    detail::StageLayered(s.context,s.mapping.parents(),QephFamily,s.layered.data(),s.flags.data(),counts.qeph,
+    if(const auto* environment=s.mapping.environment()) {
+        const auto& parent=environment->environment_parent();
+        const detail::FixedEnvironmentField fixed{parent.qeph_index,parent.domain_nodes,environment->wall().geometry().reference_m};
+        detail::CheckFixedEnvironment(fixed,s.positions.data(),s.velocities.data(),s.forecast.physical_nodes,
+            s.layered.data(),s.flags.data(),counts.qeph);
+    }
+    // The complete actual QEPH family was read and its declared wall suffix
+    // validated. Existing exact-count field staging receives the vehicle prefix.
+    detail::StageLayered(s.context,s.mapping.parents(),QephFamily,s.layered.data(),s.flags.data(),rendered.qeph,
         frame,s.frames.flags);
     detail::CheckReadback(before,Access::T3(run,stamp,s.layered.data(),s.flags.data(),counts.t3));
     detail::StageLayered(s.context,s.mapping.parents(),T3Family,s.layered.data(),s.flags.data(),counts.t3,

@@ -31,7 +31,8 @@ void RunArchive::Sample(const records::FrameRecord& frame,const records::activit
 }
 records::RecordFile RunArchive::Close(bool prefix,const std::string& reason) {
     auto& s=*data_;Require(!failed() && !s.closed,"Physical run is closed or poisoned");
-    Require(s.configuration.wall==bool(s.manifest.wall),"Physical wall receipt is incomplete");
+    Require(s.configuration.wall==bool(s.manifest.wall) &&
+        s.configuration.environment==bool(s.manifest.environment),"Physical static environment receipt is incomplete");
     s.index.final=s.intervals->sequence().last;s.index.accepted_intervals=s.index.final.epoch;
     Require(prefix ? (s.index.accepted_intervals<s.index.planned_intervals && !reason.empty() && reason.size()<=4096) :
         (s.index.accepted_intervals==s.index.planned_intervals && reason.empty()),"Physical completion/prefix endpoint differs");

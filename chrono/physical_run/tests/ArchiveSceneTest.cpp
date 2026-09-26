@@ -1,4 +1,9 @@
 #include "../Scene.h"
+#include "chrono/ReplayVisuals.h"
+#include "chrono/assets/ChVisualModel.h"
+#include "chrono/physics/ChBody.h"
+#include <algorithm>
+#include <limits>
 #include "output/physical_run/ViewerInput.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -22,7 +27,42 @@ TEST(PhysicalSceneArchive, ExactOriginalArchiveWallActivityAndFailedSeekPreserve
         const auto mesh=scene.geometry()->mesh();
         ASSERT_NE(scene.bounds(),nullptr);const auto bounds=*scene.bounds();
         EXPECT_FALSE(scene.moving_shape()->IsFixedConnectivity());
-        EXPECT_EQ(scene.system().GetBodies().size(),replay.wall()?2u:1u);
+        EXPECT_EQ(scene.system().GetBodies().size(),(replay.wall()||replay.environment())?2u:1u);
+        if(replay.environment()) {
+            std::array<double,3> vehicle_low,vehicle_high;
+            vehicle_low.fill(std::numeric_limits<double>::infinity());
+            vehicle_high.fill(-std::numeric_limits<double>::infinity());
+            for(std::size_t i=0;i<replay.index().frames.size();++i) {
+                const auto sample=replay.ReadSample(i);
+                for(std::size_t k=0;k<sample.frame.position_xyz.size();++k) {
+                    vehicle_low[k%3]=std::min(vehicle_low[k%3],sample.frame.position_xyz[k]);
+                    vehicle_high[k%3]=std::max(vehicle_high[k%3],sample.frame.position_xyz[k]);
+                }
+            }
+            ReplayCamera expected;
+            ASSERT_TRUE(MakeBoundsCamera(vehicle_low,vehicle_high,{-1.,-1.,.45},.85,
+                ReplayVertical::Z,options.view,expected));
+            EXPECT_EQ(scene.camera()->position,expected.position);EXPECT_EQ(scene.camera()->target,expected.target);
+            const auto model=scene.system().GetBodies().back()->GetVisualModel();
+            ASSERT_TRUE(model);ASSERT_EQ(model->GetShapeInstances().size(),1u);
+            const auto wall=std::dynamic_pointer_cast<chrono::ChVisualShapeTriangleMesh>(model->GetShape(0));
+            ASSERT_TRUE(wall);ASSERT_TRUE(wall->GetMesh());
+            ASSERT_EQ(wall->GetMesh()->GetNumVertices(),4u);ASSERT_EQ(wall->GetMesh()->GetNumTriangles(),2u);
+            for(std::size_t n=0;n<4;++n)for(unsigned k=0;k<3;++k) {
+                const double x=wall->GetMesh()->GetCoordsVertices()[n][k];
+                EXPECT_EQ(output::Bits(x),output::Bits(replay.wall_mesh()->GetCoordsVertices()[n][k]));
+                EXPECT_GE(x,bounds.low[k]);EXPECT_LE(x,bounds.high[k]);
+            }
+            if(colors==ReplayColorMode::PartId) {
+                const auto expected_color=ReplayPartColor(replay.environment()->part_id,seed);
+                ASSERT_EQ(wall->GetMesh()->GetCoordsColors().size(),4u);
+                for(const auto& color:wall->GetMesh()->GetCoordsColors()) {
+                    EXPECT_EQ(color.R,expected_color.R);EXPECT_EQ(color.G,expected_color.G);EXPECT_EQ(color.B,expected_color.B);
+                }
+            }
+            ReplayClipping clipping;ASSERT_TRUE(MakeReplayClipping(*scene.camera(),bounds,clipping));
+            EXPECT_GT(clipping.near_m,0.);EXPECT_GT(clipping.far_m,clipping.maximum_depth_m);
+        }
         for(std::size_t i=0;i<replay.index().frames.size();++i) {
             ASSERT_EQ(scene.Publish(i).status,ReplaySceneStatus::Ok);
             const auto sample=replay.ReadSample(i);

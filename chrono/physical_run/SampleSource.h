@@ -18,6 +18,7 @@ class SampleSource {
     const std::vector<output::physical_run::FrameFiles>& frames() const noexcept;
     output::physical_run::Sample ReadSample(std::size_t) const;
     const output::physical_run::WallReceipt* wall() const noexcept;
+    const output::physical_run::EnvironmentReceipt* environment() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;
     const std::string& stop_reason() const noexcept;
   private:

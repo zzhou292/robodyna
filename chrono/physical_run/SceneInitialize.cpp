@@ -1,6 +1,7 @@
 #include "SceneState.h"
 #include "chrono/ReplayVisuals.h"
 #include "chrono/ReplayDisplayGeometry.h"
+#include "chrono/ReplayPartColors.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
 #include "chrono/physics/ChBody.h"
 namespace crash::visual::physical_run {
@@ -21,8 +22,11 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
             output::Require(MakeFixedCamera(*options.fixed_camera, next->camera),
                 "Invalid explicit physical replay camera");
         } else {
-        // Fit the complete archived motion and wall with room around the model.
-            output::Require(MakeBoundsCamera(scan.low,scan.high,{-1.,-1.,.45},.85,ReplayVertical::Z,
+            // Declared physical environment is excluded from vehicle framing;
+            // next->bounds still contains all motion and wall for exact clipping.
+            const auto& low=replay.environment()?scan.vehicle_low:scan.low;
+            const auto& high=replay.environment()?scan.vehicle_high:scan.high;
+            output::Require(MakeBoundsCamera(low,high,{-1.,-1.,.45},.85,ReplayVertical::Z,
                 options.view,next->camera),"Invalid physical replay camera bounds");
         }
         full_shell::FrameGeometryOptions geometry;
@@ -44,8 +48,14 @@ ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions opti
         next->system.SetGravitationalAcceleration(chrono::VNULL);
         next->system.AddBody(MakeReplayCarrier("physical accepted shell surface",next->shape));
         if(const auto wall=replay.wall_mesh()) {
-            auto shape=MakeReplayShape(CopyReplayGeometry(*wall),false,true);
-            next->system.AddBody(MakeReplayCarrier("authenticated selected wall",shape));
+            auto mesh=CopyReplayGeometry(*wall);
+            const bool part_color=replay.environment() && next->geometry.color_mode()==ReplayColorMode::PartId;
+            if(part_color) {
+                mesh->GetCoordsColors().assign(mesh->GetNumVertices(),ReplayPartColor(replay.environment()->part_id,options.part_palette_seed));
+                mesh->GetIndicesColors()=mesh->GetIndicesVertices();
+            }
+            auto shape=MakeReplayShape(mesh,false,true,part_color);
+            next->system.AddBody(MakeReplayCarrier(replay.environment()?"declared fixed physical wall":"authenticated selected wall",shape));
         }
         next->stamp={0,replay.context().identity().owner,initial.frame.stamp.epoch,initial.frame.stamp.time};
         next->system.SetChTime(next->stamp.time);

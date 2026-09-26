@@ -10,7 +10,7 @@ if(ROBO_DYNA_PHYSICAL_CAPTURE_RUNTIME)
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/PhysicalFrames.cmake")
 add_executable(robo_dyna_physical_capture_values_check tests/ValuesTest.cpp tests/JointPhaseTest.cpp
-  tests/GlobalLaw1FieldsTest.cpp)
+  tests/GlobalLaw1FieldsTest.cpp tests/EnvironmentFieldsTest.cpp)
 target_link_libraries(robo_dyna_physical_capture_values_check PRIVATE robo_dyna_physical_frame_values GTest::gtest_main)
 target_compile_options(robo_dyna_physical_capture_values_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME physical_capture_values COMMAND robo_dyna_physical_capture_values_check)

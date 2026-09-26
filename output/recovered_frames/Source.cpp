@@ -6,6 +6,7 @@ LoadedSource LoadSource(const std::filesystem::path& root,const Description& des
         (128u<<20)<=limits.host_bytes-limits.source.host_bytes,"Recovery source/record workspace exceeds host cap");
     auto config=run::ReadConfiguration(array_json::Parse(
         run::ReadFile(root,description.configuration,run::MetadataCap),run::MetadataCap));
+    Require(!config.environment,"Declared environment recovery requires a separately qualified descriptor");
     Require(config.identity.source_mapping_sha256==description.mapping_sha256 &&
         config.wall==bool(description.wall),"Recovered configuration/source/wall profile differs");
     auto mapping=records::source::ReadSourceBundle(root,description.source_bundle,description.source,

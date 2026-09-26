@@ -19,6 +19,8 @@ records::source::BundleRequest MakeRequest(const records::Context&,std::uint64_t
     double requested_duration,std::size_t samples,std::size_t total_byte_cap=records::TotalByteCap);
 records::source::BundleRequest MakeWallRequest(const records::Context&,std::uint64_t planned_intervals,
     double requested_duration,std::size_t samples,std::size_t total_byte_cap=records::TotalByteCap);
+records::source::BundleRequest MakeEnvironmentRequest(const records::Context&,std::uint64_t planned_intervals,
+    double requested_duration,std::size_t samples,std::size_t total_byte_cap=records::TotalByteCap);
 // One externally serialized output session. Append follows common acceptance;
 // it never prepares, advances or commits physics. I/O failure poisons this run.
 class RunArchive {
@@ -33,6 +35,12 @@ class RunArchive {
         const records::Context&,records::source::BundleRequest,Profile,Limits={});
     static RunArchive PrepareWithWall(const std::filesystem::path&,const cases::vehicle_wall::VehicleWallSetup&,
         const physical_frames::Mapping&,const records::Context&,records::source::BundleRequest,Profile,Limits={});
+    // Actual immutable elastic environment source; no canonical wall/M2 setup
+    // identity and no tiny-scene native-history observation is fabricated.
+    static Forecast PreflightWithEnvironment(const physical_frames::Mapping&,const records::Context&,
+        records::source::BundleRequest,Profile,Limits={});
+    static RunArchive PrepareWithEnvironment(const std::filesystem::path&,const physical_frames::Mapping&,
+        const records::Context&,records::source::BundleRequest,Profile,Limits={});
     ~RunArchive();
     RunArchive(RunArchive&&) noexcept;
     RunArchive& operator=(RunArchive&&) noexcept;
@@ -50,9 +58,9 @@ class RunArchive {
     explicit RunArchive(std::unique_ptr<Data>);
     records::RecordFile Close(bool,const std::string&);
     static Forecast PreflightCore(const records::source::PreparedSourceMapping&,const records::Context&,
-        records::source::BundleRequest,Profile,Limits,bool wall);
+        records::source::BundleRequest,Profile,Limits,bool wall,bool environment=false);
     static RunArchive PrepareCore(const std::filesystem::path&,const records::source::PreparedSourceMapping&,
-        const records::Context&,records::source::BundleRequest,Profile,Limits,bool wall);
+        const records::Context&,records::source::BundleRequest,Profile,Limits,bool wall,bool environment=false);
     std::unique_ptr<Data> data_;
 };
 } // namespace crash::output::physical_run

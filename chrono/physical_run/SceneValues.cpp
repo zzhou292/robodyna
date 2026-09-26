@@ -42,6 +42,7 @@ ScanValues Scan(const SampleSource& replay) {
         for(std::size_t n=0;n<sample.frame.position_xyz.size();++n) position(n%3,sample.frame.position_xyz[n]);
         for(double p:sample.frame.plastic_points) values.plastic_maximum=std::max(values.plastic_maximum,p);
     }
+    values.vehicle_low=values.low;values.vehicle_high=values.high;
     if(const auto wall=replay.wall_mesh())
         for(const auto& v:wall->GetCoordsVertices()) for(unsigned a=0;a<3;++a) position(a,v[a]);
     if(replay.context().points() && values.plastic_maximum==0) values.plastic_maximum=1;

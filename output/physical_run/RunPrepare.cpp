@@ -12,14 +12,19 @@ records::source::BundleRequest MakeRequest(const records::Context& c,std::uint64
     records::activity::PlanWithActivity(c,r,"parent-activity.json");return request;
 }
 namespace detail {
-void ValidateRequest(const records::PlanRequest& r,Profile p,bool wall) {
+void ValidateRequest(const records::PlanRequest& r,Profile p,bool wall,bool environment) {
     Require(r.extra_interval_bytes==ExtraIntervalBytes(p) && !r.extra_frame_bytes,
         "Physical run optional storage differs from its observation profile");
-    Require(r.static_files.size()==(wall?10u:3u),"Physical run static reservation count differs from named profile");
+    Require(!(wall&&environment) && r.static_files.size()==(wall?10u:environment?6u:3u),"Physical run static reservation count differs from named profile");
     for(const auto* name:{"manifest.json","frame-index.json","configuration.json"}) {
         bool found=false;
         for(const auto& f:r.static_files)if(f.file==name)found=f.bytes==MetadataCap;
         Require(found,"Physical run metadata reservation differs from writer cap");
+    }
+    if(environment)for(const auto* name:EnvironmentFiles) {
+        bool found=false;
+        for(const auto& f:r.static_files)if(f.file==name)found=f.bytes==EnvironmentFileCap;
+        Require(found,"Declared environment reservation differs from writer cap");
     }
     if(wall)for(const auto* name:WallFiles) {
         bool found=false;
@@ -48,9 +53,9 @@ Forecast RunArchive::Preflight(const records::source::PreparedSourceMapping& map
     return PreflightCore(mapping,context,std::move(request),profile,limits,false);
 }
 Forecast RunArchive::PreflightCore(const records::source::PreparedSourceMapping& mapping,const records::Context& context,
-    records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
+    records::source::BundleRequest request,Profile profile,Limits limits,bool wall,bool environment) {
     if(!request.archive.extra_interval_bytes)request.archive.extra_interval_bytes=ExtraIntervalBytes(profile);
-    detail::ValidateRequest(request.archive,profile,wall);
+    detail::ValidateRequest(request.archive,profile,wall,environment);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,std::move(request));
     return detail::ForecastRun(context,frame_archive,profile,limits,wall);
 }
@@ -59,13 +64,13 @@ RunArchive RunArchive::Prepare(const std::filesystem::path& root,const records::
     return PrepareCore(root,mapping,context,std::move(request),profile,limits,false);
 }
 RunArchive RunArchive::PrepareCore(const std::filesystem::path& root,const records::source::PreparedSourceMapping& mapping,
-    const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
+    const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits,bool wall,bool environment) {
     if(!request.archive.extra_interval_bytes)request.archive.extra_interval_bytes=ExtraIntervalBytes(profile);
-    detail::ValidateRequest(request.archive,profile,wall);
+    detail::ValidateRequest(request.archive,profile,wall,environment);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,request);
     const auto forecast=detail::ForecastRun(context,frame_archive,profile,limits,wall);
     for(const auto& reserve:frame_archive.source_bundle().reservations())request.archive.static_files.push_back(reserve);
-    Configuration config{context.identity(),profile,request.archive,context.point_layout_sha256(),wall};
+    Configuration config{context.identity(),profile,request.archive,context.point_layout_sha256(),wall,environment};
     ConfigurationDocument(config);
     Require(std::filesystem::symlink_status(root).type()==std::filesystem::file_type::directory &&
         std::filesystem::is_empty(root),"Physical run needs a real empty destination directory");

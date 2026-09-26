@@ -3,7 +3,7 @@
 #include "chrono/physics/ChSystemNSC.h"
 namespace crash::visual::physical_run {
 struct ScanValues {
-    std::array<double,3> low,high;
+    std::array<double,3> low,high,vehicle_low,vehicle_high;
     double plastic_maximum=0;
 };
 ScanValues Scan(const SampleSource&);

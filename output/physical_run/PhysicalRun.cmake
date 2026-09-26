@@ -10,6 +10,7 @@ add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Manifest.cpp" "${CMAKE_CURRENT_LIST_DIR}/Inventory.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReferencedInventory.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/WallFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/WallRead.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/EnvironmentFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/EnvironmentRead.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RunPrepare.cpp" "${CMAKE_CURRENT_LIST_DIR}/RunWrite.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Replay.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReplayRecords.cpp")
 target_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive robo_dyna_wall_composition)
@@ -32,4 +33,15 @@ if(ROBO_DYNA_PHYSICAL_RUN_WALL)
   target_link_libraries(robo_dyna_physical_run_wall PUBLIC robo_dyna_physical_run_records
     robo_dyna_vehicle_wall_setup robo_dyna_physical_accepted_frames)
   target_compile_options(robo_dyna_physical_run_wall PRIVATE -fno-fast-math -ffp-contract=off)
+endif()
+
+option(ROBO_DYNA_PHYSICAL_RUN_ENVIRONMENT "Build source-bound declared physical environment archive" OFF)
+if(ROBO_DYNA_PHYSICAL_RUN_ENVIRONMENT)
+  if(NOT TARGET robo_dyna_physical_accepted_frames)
+    message(FATAL_ERROR "Declared environment archive requires the real full physical capture target")
+  endif()
+  add_library(robo_dyna_physical_run_environment STATIC "${CMAKE_CURRENT_LIST_DIR}/EnvironmentPrepare.cpp")
+  target_link_libraries(robo_dyna_physical_run_environment PUBLIC robo_dyna_physical_run_records robo_dyna_physical_accepted_frames)
+  target_compile_features(robo_dyna_physical_run_environment PUBLIC cxx_std_17)
+  target_compile_options(robo_dyna_physical_run_environment PRIVATE -fno-fast-math -ffp-contract=off)
 endif()

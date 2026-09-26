@@ -10,7 +10,8 @@ find_package(CUDAToolkit REQUIRED)
 find_package(Eigen3 REQUIRED)
 add_library(robo_dyna_physical_frame_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Buffers.cpp" "${CMAKE_CURRENT_LIST_DIR}/Fields.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/MappingRoles.cpp" "${CMAKE_CURRENT_LIST_DIR}/Phase.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/MappingRoles.cpp" "${CMAKE_CURRENT_LIST_DIR}/Phase.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/EnvironmentFields.cpp")
 include("${CMAKE_CURRENT_LIST_DIR}/FrameArchive.cmake")
 target_link_libraries(robo_dyna_physical_frame_values PUBLIC robo_dyna_physical_frame_archive Eigen3::Eigen CUDA::cudart)
 target_include_directories(robo_dyna_physical_frame_values PUBLIC "${ROBO_DYNA_TL_ROOT}" "${ROBO_DYNA_TL_ROOT}/lib_src")

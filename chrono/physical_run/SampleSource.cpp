@@ -28,6 +28,9 @@ output::physical_run::Sample SampleSource::ReadSample(std::size_t index) const {
 const output::physical_run::WallReceipt* SampleSource::wall() const noexcept {
     return std::visit([](const auto& r) {return r.wall();}, value_);
 }
+const output::physical_run::EnvironmentReceipt* SampleSource::environment() const noexcept {
+    const auto* source=normal();return source?source->environment():nullptr;
+}
 std::shared_ptr<const chrono::ChTriangleMeshConnected> SampleSource::wall_mesh() const noexcept {
     return std::visit([](const auto& r) {return r.wall_mesh();}, value_);
 }

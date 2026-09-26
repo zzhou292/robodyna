@@ -6,6 +6,7 @@
 #include <memory>
 namespace tl::fea::type45 { class Model; }
 namespace crash::cases::vehicle_wall::native { class EnvelopeOwnerSource; }
+namespace crash::cases::vehicle_startup { class VehicleShellReferences; }
 namespace crash::cases::vehicle_startup::joints { class VehicleJointModel; }
 namespace crash::cases::vehicle_runtime {
 enum class SourceKind { OriginalVehicle, VehicleWithEnvironment };
@@ -19,6 +20,7 @@ class Source {
     static Source WithEnvironment(const vehicle_wall::native::EnvelopeOwnerSource&);
     SourceKind kind() const noexcept;
     const tl::fea::ShellPhysicalBinding& physical() const noexcept;
+    const vehicle_startup::VehicleShellReferences& vehicle_references() const noexcept;
     const tl::fea::NodalCoefficientLedger& coefficients() const noexcept;
     const tl::fea::NodalRigidAssemblyBinding& rigid() const noexcept;
     const tl::fea::solids::Model& solids() const noexcept;

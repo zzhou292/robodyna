@@ -30,6 +30,7 @@ records::RecordFile Recover(const std::filesystem::path& source,const std::files
     description.activity_declaration=InspectFile(source,"parent-activity.json",records::activity::MetadataByteCap);
     const auto config=run::ReadConfiguration(array_json::Parse(
         run::ReadFile(source,description.configuration,run::MetadataCap),run::MetadataCap));
+    Require(!config.environment,"Declared environment recovery requires a separately qualified descriptor");
     if(config.wall) {
         run::WallReceipt wall;
         wall.source_instance_id=config.identity.source_instance;
