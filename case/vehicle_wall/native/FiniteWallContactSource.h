@@ -80,6 +80,8 @@ class FiniteWallContactSource {
     tl::util::ConstView<double> global_coefficients() const noexcept;
     tl::util::ConstView<double> secondary_coefficients() const noexcept;
     tl::util::ConstView<double> secondary_gaps() const noexcept;
+    // Completed interface-specific GAPS_MN/GAPS_MX before general initialization.
+    const n::source_gaps::Report& gap_report() const noexcept;
     tl::util::ConstView<double> main_coefficients() const noexcept;
     // I25INI_GAP_N values before BUC corner1 normalization.
     tl::util::ConstView<n::source_gaps::MainGapFields> main_gaps() const noexcept;

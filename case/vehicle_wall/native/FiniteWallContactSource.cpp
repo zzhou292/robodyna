@@ -76,6 +76,7 @@ tl::util::ConstView<std::uint32_t> FiniteWallContactSource::main_nodes() const n
 tl::util::ConstView<double> FiniteWallContactSource::global_coefficients() const noexcept{return {data_->fields.global_k.data(),data_->fields.global_k.size()};}
 tl::util::ConstView<double> FiniteWallContactSource::secondary_coefficients() const noexcept{return {data_->fields.secondary_k.data(),data_->fields.secondary_k.size()};}
 tl::util::ConstView<double> FiniteWallContactSource::secondary_gaps() const noexcept{return {data_->fields.secondary_gap.data(),data_->fields.secondary_gap.size()};}
+const n::source_gaps::Report& FiniteWallContactSource::gap_report() const noexcept{return data_->fields.gaps;}
 tl::util::ConstView<double> FiniteWallContactSource::main_coefficients() const noexcept{return {data_->fields.main_k.data(),data_->fields.main_k.size()};}
 tl::util::ConstView<n::source_gaps::MainGapFields> FiniteWallContactSource::main_gaps() const noexcept{return {data_->fields.main_gaps.data(),data_->fields.main_gaps.size()};}
 }
