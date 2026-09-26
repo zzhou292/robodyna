@@ -14,7 +14,8 @@ Report Prepare(const Input& in,source::Work work,Vector* points) noexcept {
   const auto prepared=source::Prepare(in.physical,work,unused);
   if(prepared.status!=source_surfaces::Status::Ok)return FromPhysical(prepared);
   for(std::size_t i=0;i<in.physical.node_count;++i) {
-    const auto value=in.positions.at(static_cast<std::uint32_t>(i));
+    const auto supplied=in.positions.at(static_cast<std::uint32_t>(i));
+    const Vector value{supplied.x,supplied.y,supplied.z};
     if(!startup::coating_detail::Finite(value))return {Status::InvalidInput,SIZE_MAX,SIZE_MAX,i};
     points[i]=value;
     if(in.coordinates==startup::Coordinates::Si)
