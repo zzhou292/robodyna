@@ -17,7 +17,12 @@ bool Output(tl::util::BoundedArenaLayout& arena,std::size_t p,std::size_t g,Outp
       (!role_policy::Mixed(policy) ||
        (arena.Append<PrimaryFaceIdentity>(p,out.primary_identities) &&
         arena.Append<PrimaryFaceIdentity>(raw,out.raw_origins) &&
-        arena.Append<std::uint32_t>(raw,out.raw_origin_to_primary)));
+        arena.Append<std::uint32_t>(raw,out.raw_origin_to_primary))) &&
+      (!role_policy::Mixed(policy) || sides_only ||
+       (arena.Append<PostGapmTopology>(1,out.post_gapm) &&
+        arena.Append<PrimaryCornerPermutation>(p,out.post_corners) &&
+        arena.Append<PreShellSolidSupport>(p,out.post_before) &&
+        arena.Append<PostGapmMainSupport>(g,out.post_support)));
 }
 }
 Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output,TopologyPolicy policy,std::size_t shells,std::size_t raw,bool sides_only) noexcept {
@@ -60,7 +65,10 @@ Report MakeLayout(std::size_t nodes,std::size_t p,Limits limits,Layout& output,T
   const auto ready_scratch=policy==TopologyPolicy::ManifoldTwoSided?scratch.bytes():0;
   next.forecast={Status::Ok,persistent.bytes(),scratch.bytes(),ready.bytes(),ready_scratch,g,sides_only?0:4*g,sides_only?0:4*g};
   // Output's exact same prefix layout is used for private staging. The dead
-  // sorted-edge region is later placement-constructed as neighbor-normal scratch;
+  // sorted-edge region is first reusable for mixed IDEL1 solid-support buckets,
+  // with the existing candidate IDs holding one main's four deduplicated lists.
+  // Tags then become reference labels. Finally the dead sorted-edge region is
+  // placement-constructed as neighbor-normal scratch;
   // no edge pointer survives that phase transition and no extra allocation exists.
   static_assert(sizeof(Edge)>=sizeof(StoredNormal));
   if (persistent.bytes()>limits.max_output_bytes || ready.bytes()>limits.max_output_bytes ||
@@ -78,7 +86,11 @@ Data Construct(tl::util::HostArena& arena,const OutputLayout& p) noexcept {
       p.primary_identities.count ? arena.Construct<PrimaryFaceIdentity>(p.primary_identities) : nullptr,
       p.mains.count,
       p.raw_origins.count ? arena.Construct<PrimaryFaceIdentity>(p.raw_origins) : nullptr,
-      p.raw_origin_to_primary.count ? arena.Construct<std::uint32_t>(p.raw_origin_to_primary) : nullptr};
+      p.raw_origin_to_primary.count ? arena.Construct<std::uint32_t>(p.raw_origin_to_primary) : nullptr,
+      p.post_gapm.count ? arena.Construct<PostGapmTopology>(p.post_gapm) : nullptr,
+      p.post_corners.count ? arena.Construct<PrimaryCornerPermutation>(p.post_corners) : nullptr,
+      p.post_before.count ? arena.Construct<PreShellSolidSupport>(p.post_before) : nullptr,
+      p.post_support.count ? arena.Construct<PostGapmMainSupport>(p.post_support) : nullptr};
 }
 } // namespace tlfea::contact::radioss_type25::startup::detail
 namespace tlfea::contact::radioss_type25::startup {

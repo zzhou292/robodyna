@@ -39,15 +39,17 @@ TL_MATH_HOST_DEVICE inline Report Primary(const Input& in,Work w,std::size_t mai
     const auto result=fp::Primary(x,quad,fp::ReadyFloor(),normal);
     if(!result.valid)return {Status::NonfiniteResult,main,SIZE_MAX,result.bad_corner<4?m.nodes[result.bad_corner]:SIZE_MAX};
   }
-  // Admission authenticates one positive encoded partner for this primary.
-  // Reuse the qualified native subtract-G decode for coating tags.
-  const auto opposite=std::size_t(normal_activation::detail::Partner(m.segment_type,in.topology.main_count)-1);
+  // Mixed host admission proves the actual optional partner map once. The
+  // GPU stage reads only that compact map; solid primaries write no partner.
+  const auto partner=in.profile==Profile::MixedSurfaceLocal ? in.topology.mixed_maps.primary_to_partner[main] :
+      std::uint32_t(normal_activation::detail::Partner(m.segment_type,in.topology.main_count));
+  const auto opposite=partner?std::size_t(partner-1):0;
   constexpr unsigned reverse[]{0,3,2,1};
   for(unsigned k=0;k<4;++k) {
     if(!quad&&k==2)continue;
     const auto value=quad?normal[k]:normal[0];
     w.normal[4*main+k]=value;
-    w.normal[4*opposite+(quad?reverse[k]:k)]=fp::Negate(value);
+    if(partner)w.normal[4*opposite+(quad?reverse[k]:k)]=fp::Negate(value);
   }
   return {Status::Ok};
 }

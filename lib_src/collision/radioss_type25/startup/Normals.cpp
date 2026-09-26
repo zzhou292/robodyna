@@ -3,11 +3,12 @@
 #include <initializer_list>
 namespace tlfea::contact::radioss_type25::startup::detail {
 Report StarterNormals(const Vector* points,Data data,std::size_t p,std::size_t g,
-    std::size_t references,StoredNormal* previous) noexcept {
-  const float floor=fp::StarterFloor();auto report=fp::Primary(points,data,p,floor);
+    std::size_t references,StoredNormal* previous,const PostGapmTopology* post) noexcept {
+  const float floor=fp::StarterFloor();auto report=fp::Primary(points,data,p,floor,post);
   if(report.status!=Status::Ok)return report;
-  report=fp::FreeEdges(points,data,g,floor);if(report.status!=Status::Ok)return report;
+  report=fp::FreeEdges(points,data,g,floor,post);if(report.status!=Status::Ok)return report;
   for(std::size_t m=0;m<g;++m) {
+    if(post && post->final_support[m].second_solid_source_id)continue;
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
       if(main.neighbors[k] || (k==2 && main.nodes[2]==main.nodes[3]))continue;
@@ -20,7 +21,7 @@ Report StarterNormals(const Vector* points,Data data,std::size_t p,std::size_t g
     }
   }
   (void)references;
-  return fp::AverageNeighbors(data,g,floor,previous);
+  return fp::AverageNeighbors(data,g,floor,previous,post);
 }
 Report FixedNormals(const Vector* points,Data data,std::size_t p,std::size_t g,
     std::size_t references,StoredNormal* previous,int* first_slot,int* second_slot) noexcept {

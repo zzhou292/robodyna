@@ -20,9 +20,13 @@ inline float StarterFloor() noexcept {
   const float power=std::pow(10.0f,30.0f); return 1.0f/power;
 }
 using normal_math::ReadyFloor;
-inline Report Primary(const Vector* points,Data data,std::size_t p,float floor) noexcept {
+inline Report Primary(const Vector* points,Data data,std::size_t p,float floor,
+    const PostGapmTopology* post=nullptr) noexcept {
   constexpr unsigned opposite_slot[]{0,3,2,1};
   for(std::size_t m=0;m<p;++m) {
+    if(post && post->final_support[m].second_solid_source_id)continue;
+    const auto partner=post?data.primary_to_partner[m]:std::uint32_t(p+m+1);
+    const auto opposite=partner?std::size_t(partner-1):0;
     const auto& main=data.mains[m];Vector current[4];
     for(unsigned k=0;k<4;++k)current[k]=points[main.nodes[k]];
     const bool quad=main.nodes[2]!=main.nodes[3];StoredNormal normal[4];
@@ -31,20 +35,24 @@ inline Report Primary(const Vector* points,Data data,std::size_t p,float floor) 
     if(quad) {
       for(unsigned k=0;k<4;++k) {
         if(!Finite(normal[k]))return {Status::NonfiniteResult,m};
-        data.normals[4*m+k]=normal[k];data.normals[4*(p+m)+opposite_slot[k]]=Negate(normal[k]);
+        data.normals[4*m+k]=normal[k];
+        if(partner)data.normals[4*opposite+opposite_slot[k]]=Negate(normal[k]);
       }
     } else {
       if(!Finite(normal[0]))return {Status::NonfiniteResult,m};
       for(unsigned k:{0u,1u,3u}) {
-        data.normals[4*m+k]=normal[0];data.normals[4*(p+m)+k]=Negate(normal[0]);
+        data.normals[4*m+k]=normal[0];
+        if(partner)data.normals[4*opposite+k]=Negate(normal[0]);
       }
       // Original T3 slot3 is initialized positive zero and never negated.
     }
   }
   return {Status::Ok};
 }
-inline Report FreeEdges(const Vector* points,Data data,std::size_t g,float floor) noexcept {
+inline Report FreeEdges(const Vector* points,Data data,std::size_t g,float floor,
+    const PostGapmTopology* post=nullptr) noexcept {
   for(std::size_t m=0;m<g;++m) {
+    if(post && post->final_support[m].second_solid_source_id)continue;
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
       if(main.neighbors[k] || (k==2 && main.nodes[2]==main.nodes[3]))continue;
@@ -56,8 +64,10 @@ inline Report FreeEdges(const Vector* points,Data data,std::size_t g,float floor
   }
   return {Status::Ok};
 }
-inline Report AverageNeighbors(Data data,std::size_t g,float floor,StoredNormal* previous) noexcept {
+inline Report AverageNeighbors(Data data,std::size_t g,float floor,StoredNormal* previous,
+    const PostGapmTopology* post=nullptr) noexcept {
   for(std::size_t m=0;m<g;++m) {
+    if(post && post->final_support[m].second_solid_source_id)continue;
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
       if(k==2 && main.nodes[2]==main.nodes[3])continue;
@@ -65,6 +75,7 @@ inline Report AverageNeighbors(Data data,std::size_t g,float floor,StoredNormal*
     }
   }
   for(std::size_t m=0;m<g;++m) {
+    if(post && post->final_support[m].second_solid_source_id)continue;
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
       if(!main.neighbors[k] || (k==2 && main.nodes[2]==main.nodes[3]))continue;

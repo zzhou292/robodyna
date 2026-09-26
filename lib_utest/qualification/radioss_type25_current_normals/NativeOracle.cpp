@@ -18,13 +18,17 @@ template<class T> bool Span(const T* ptr,std::size_t count) {
 }
 bool Finite(n::StoredNormal v){return std::isfinite(v.x)&&std::isfinite(v.y)&&std::isfinite(v.z);}
 }
-NativeResult Oracle(const c::Input& in) {
+static NativeResult OracleImpl(const c::Input& in,bool mixed) {
   static_assert(sizeof(int)==4&&sizeof(float)==4&&sizeof(double)==8&&std::numeric_limits<float>::is_iec559);
   const auto& t=in.topology;const auto N=t.nodes,P=t.primary_count,G=t.main_count,R=t.references;
   const bool resolved=in.profile==c::Profile::ResolvedShellSidesLocal;
-  Need((resolved||in.profile==c::Profile::OrdinaryShellLocal)&&in.free_roster==n::normal_activation::FreeRosterPolicy::FreshComplete);
-  Need(N&&N<=256&&P&&P<=160&&G==2*P&&R&&R<=4*G&&in.free_count<=G);
-  if(resolved) {
+  Need((resolved||in.profile==c::Profile::OrdinaryShellLocal||(mixed&&in.profile==c::Profile::MixedSurfaceLocal))&&in.free_roster==n::normal_activation::FreeRosterPolicy::FreshComplete);
+  Need(N&&N<=256&&P&&P<=160&&(mixed?(G>=P&&G<=2*P):G==2*P)&&R&&R<=4*G&&in.free_count<=G);
+  if(mixed) {
+    Need(in.profile==c::Profile::MixedSurfaceLocal&&t.source_profile==n::startup::Profile::MixedSurface&&
+        t.source_topology==n::startup::TopologyPolicy::NativeMixedSurface&&t.primary_role_count==P&&Span(t.primary_roles,P));
+    Need(t.mixed_maps.primary_count==P&&Span(t.mixed_maps.primary_to_partner,P));
+  } else if(resolved) {
     Need(t.source_profile==n::startup::Profile::ResolvedShellSides&&t.source_topology==n::startup::TopologyPolicy::NativeResolvedShellSides);
     Need(t.primary_role_count==P&&Span(t.primary_roles,P));
     for(std::size_t i=0;i<P;++i)Need(t.primary_roles[i]==n::startup::ShellSideRole::Ordinary||
@@ -72,4 +76,6 @@ NativeResult Oracle(const c::Input& in) {
   for(int i=0;i<edge_count;++i)out.free_edges.push_back({free_edges[4*i],free_edges[4*i+1],free_edges[4*i+2],free_edges[4*i+3]});
   return out;
 }
+NativeResult Oracle(const c::Input& in) {return OracleImpl(in,false);}
+NativeResult OracleMixed(const c::Input& in) {return OracleImpl(in,true);}
 }

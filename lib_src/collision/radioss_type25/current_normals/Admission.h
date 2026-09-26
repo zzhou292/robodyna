@@ -5,32 +5,13 @@
 #include "../startup/RolePolicy.h"
 namespace tlfea::contact::radioss_type25::current_normals::detail {
 namespace ld=selection::lifecycle::detail;
-TL_MATH_HOST_DEVICE inline Report ValidateTopology(const Topology& t,RolePolicy policy=RolePolicy::OrdinaryOnly) {
-  if (!t.nodes || t.nodes>UINT32_MAX || !t.primary_count || t.primary_count>INT_MAX/8 ||
-      t.main_count!=2*t.primary_count || !t.references || t.references>4*t.main_count)
-    return {Status::InvalidInput};
-  const bool resolved = policy == RolePolicy::ResolvedShellSides;
-  if (resolved) {
-    if (t.source_profile!=startup::Profile::ResolvedShellSides ||
-        t.source_topology!=startup::TopologyPolicy::NativeResolvedShellSides)
-      return {Status::UnsupportedProfile};
-    if (t.primary_role_count!=t.primary_count || !ld::Span(t.primary_roles,t.primary_role_count))
-      return {Status::InvalidInput};
-  } else {
-    if (policy!=RolePolicy::OrdinaryOnly || t.primary_roles || t.primary_role_count ||
-        (t.source_profile!=startup::Profile::Unspecified &&
-         t.source_profile!=startup::Profile::OrdinaryExteriorFixedMain &&
-         t.source_profile!=startup::Profile::OrdinaryExteriorMovingMain) ||
-        (t.source_topology!=startup::TopologyPolicy::ManifoldTwoSided &&
-         t.source_topology!=startup::TopologyPolicy::NativeOrdinaryShell))
-      return {Status::UnsupportedProfile};
-  }
+TL_MATH_HOST_DEVICE inline Report MainFields(const Topology& t,bool require_source_id,std::size_t& expected) {
   if(!ld::Span(t.mains,t.main_count)||!ld::CsrValid(t.normal_to_main,t.references,t.main_count,true))
     return {Status::InvalidInput};
-  std::size_t expected=0;
+  expected=0;
   for(std::size_t i=0;i<t.main_count;++i) {
     const auto& m=t.mains[i];const bool tri=m.nodes[2]==m.nodes[3];const unsigned slots=tri?3:4;
-    if(!m.source_id||m.global_id!=int(i+1) ||
+    if((require_source_id&&!m.source_id)||m.global_id!=int(i+1) ||
         std::int64_t(m.segment_type)<-2*std::int64_t(t.main_count) ||
         std::int64_t(m.segment_type)>2*std::int64_t(t.main_count))
       return {Status::UnsupportedTopology,i};
@@ -46,21 +27,9 @@ TL_MATH_HOST_DEVICE inline Report ValidateTopology(const Topology& t,RolePolicy 
     if(tri&&(m.neighbors[2]!=0||m.neighbor_edges[2]!=0))return {Status::UnsupportedTopology,i};
     expected+=slots;
   }
-  for(std::size_t i=0;i<t.primary_count;++i) {
-    const auto& m=t.mains[i];const auto& opposite=t.mains[t.primary_count+i];
-    const auto role = resolved ? t.primary_roles[i] : startup::ShellSideRole::Ordinary;
-    if (!startup::role_policy::Valid(role)) return {Status::UnsupportedTopology,i};
-    const auto offset = role == startup::ShellSideRole::Ordinary ? std::int64_t{0} : std::int64_t(t.main_count);
-    if (std::int64_t(m.segment_type)!=std::int64_t(t.primary_count+i+1)+offset ||
-        std::int64_t(opposite.segment_type)!=-(std::int64_t(i+1)+offset) || m.source_id!=opposite.source_id)
-      return {Status::UnsupportedTopology,i};
-    const bool tri=m.nodes[2]==m.nodes[3];
-    constexpr unsigned quad_reverse[]{1,0,3,2},triangle_reverse[]{1,0,2,2};
-    for(unsigned k=0;k<4;++k)
-      if(opposite.nodes[k]!=m.nodes[tri?triangle_reverse[k]:quad_reverse[k]])return {Status::UnsupportedTopology,i};
-    // Opposite sides may have different normal-reference IDs at the SAME node.
-    // Do not weld them together; each reference's node identity is checked below.
-  }
+  return {Status::Ok};
+}
+TL_MATH_HOST_DEVICE inline Report ReferenceIncidence(const Topology& t,std::size_t expected) {
   const auto& csr=t.normal_to_main;
   if(csr.entry_count!=expected)return {Status::UnsupportedTopology};
   for(std::size_t ref=0;ref<t.references;++ref) {
@@ -78,19 +47,49 @@ TL_MATH_HOST_DEVICE inline Report ValidateTopology(const Topology& t,RolePolicy 
   // exact total equals all unique source corners, proving complete coverage.
   return {Status::Ok};
 }
-TL_MATH_HOST_DEVICE inline Report Validate(const Input& in,Limits cap,double& length) {
+TL_MATH_HOST_DEVICE inline Report ValidateTopology(const Topology& t,RolePolicy policy=RolePolicy::OrdinaryOnly) {
+  if (!t.nodes || t.nodes>UINT32_MAX || !t.primary_count || t.primary_count>INT_MAX/8 ||
+      t.main_count!=2*t.primary_count || !t.references || t.references>4*t.main_count)
+    return {Status::InvalidInput};
+  if(t.mixed_maps.primary_to_partner || t.mixed_maps.primary_count)return {Status::UnsupportedProfile};
+  const bool resolved = policy == RolePolicy::ResolvedShellSides;
+  if (resolved) {
+    if (t.source_profile!=startup::Profile::ResolvedShellSides ||
+        t.source_topology!=startup::TopologyPolicy::NativeResolvedShellSides)
+      return {Status::UnsupportedProfile};
+    if (t.primary_role_count!=t.primary_count || !ld::Span(t.primary_roles,t.primary_role_count))
+      return {Status::InvalidInput};
+  } else {
+    if (policy!=RolePolicy::OrdinaryOnly || t.primary_roles || t.primary_role_count ||
+        (t.source_profile!=startup::Profile::Unspecified &&
+         t.source_profile!=startup::Profile::OrdinaryExteriorFixedMain &&
+         t.source_profile!=startup::Profile::OrdinaryExteriorMovingMain) ||
+        (t.source_topology!=startup::TopologyPolicy::ManifoldTwoSided &&
+         t.source_topology!=startup::TopologyPolicy::NativeOrdinaryShell))
+      return {Status::UnsupportedProfile};
+  }
+  std::size_t expected=0;
+  const auto fields=MainFields(t,true,expected);if(fields.status!=Status::Ok)return fields;
+  for(std::size_t i=0;i<t.primary_count;++i) {
+    const auto& m=t.mains[i];const auto& opposite=t.mains[t.primary_count+i];
+    const auto role = resolved ? t.primary_roles[i] : startup::ShellSideRole::Ordinary;
+    if (!startup::role_policy::Valid(role)) return {Status::UnsupportedTopology,i};
+    const auto offset = role == startup::ShellSideRole::Ordinary ? std::int64_t{0} : std::int64_t(t.main_count);
+    if (std::int64_t(m.segment_type)!=std::int64_t(t.primary_count+i+1)+offset ||
+        std::int64_t(opposite.segment_type)!=-(std::int64_t(i+1)+offset) || m.source_id!=opposite.source_id)
+      return {Status::UnsupportedTopology,i};
+    const bool tri=m.nodes[2]==m.nodes[3];
+    constexpr unsigned quad_reverse[]{1,0,3,2},triangle_reverse[]{1,0,2,2};
+    for(unsigned k=0;k<4;++k)
+      if(opposite.nodes[k]!=m.nodes[tri?triangle_reverse[k]:quad_reverse[k]])return {Status::UnsupportedTopology,i};
+    // Opposite sides may have different normal-reference IDs at the SAME node.
+    // Do not weld them together; each reference's node identity is checked below.
+  }
+  return ReferenceIncidence(t,expected);
+}
+
+TL_MATH_HOST_DEVICE inline Report DynamicFields(const Input& in,double& length) {
   const auto& t=in.topology;
-  if ((in.profile!=Profile::OrdinaryShellLocal && in.profile!=Profile::ResolvedShellSidesLocal) ||
-      in.free_roster!=normal_activation::FreeRosterPolicy::FreshComplete)
-    return {Status::UnsupportedProfile};
-  if(!t.nodes||!t.primary_count||t.primary_count>INT_MAX/8||t.main_count!=2*t.primary_count||
-     !t.references||t.references>4*t.main_count||t.nodes>UINT32_MAX||
-     in.coefficient_count!=t.main_count||in.active_count!=t.main_count||in.tag_count!=t.nodes||
-     in.prior_count!=4*t.main_count||in.free_count>t.main_count)return {Status::InvalidInput};
-  if(t.nodes>cap.nodes||t.primary_count>cap.primaries||t.references>cap.references||
-     t.normal_to_main.entry_count>cap.incidences)return {Status::ResourceLimit};
-  const auto policy = in.profile==Profile::ResolvedShellSidesLocal ? RolePolicy::ResolvedShellSides : RolePolicy::OrdinaryOnly;
-  const auto topology=ValidateTopology(t,policy);if(topology.status!=Status::Ok)return topology;
   if(!ld::VectorSpan(in.positions,t.nodes)||!ld::Span(in.main_coefficients,in.coefficient_count)||
      !ld::Span(in.main_active,in.active_count)||!ld::Span(in.node_tag,in.tag_count)||
      !ld::Span(in.prior_normals,in.prior_count)||!ld::Span(in.free_main_ids,in.free_count))return {Status::InvalidInput};
@@ -112,4 +111,20 @@ TL_MATH_HOST_DEVICE inline Report Validate(const Input& in,Limits cap,double& le
   }
   return free==in.free_count?Report{Status::Ok}:Report{Status::InvalidInput};
 }
+TL_MATH_HOST_DEVICE inline Report Validate(const Input& in,Limits cap,double& length) {
+  const auto& t=in.topology;
+  if ((in.profile!=Profile::OrdinaryShellLocal && in.profile!=Profile::ResolvedShellSidesLocal) ||
+      in.free_roster!=normal_activation::FreeRosterPolicy::FreshComplete)
+    return {Status::UnsupportedProfile};
+  if(!t.nodes||!t.primary_count||t.primary_count>INT_MAX/8||t.main_count!=2*t.primary_count||
+     !t.references||t.references>4*t.main_count||t.nodes>UINT32_MAX||
+     in.coefficient_count!=t.main_count||in.active_count!=t.main_count||in.tag_count!=t.nodes||
+     in.prior_count!=4*t.main_count||in.free_count>t.main_count)return {Status::InvalidInput};
+  if(t.nodes>cap.nodes||t.primary_count>cap.primaries||t.references>cap.references||
+     t.normal_to_main.entry_count>cap.incidences)return {Status::ResourceLimit};
+  const auto policy = in.profile==Profile::ResolvedShellSidesLocal ? RolePolicy::ResolvedShellSides : RolePolicy::OrdinaryOnly;
+  const auto topology=ValidateTopology(t,policy);if(topology.status!=Status::Ok)return topology;
+  return DynamicFields(in,length);
+}
+
 } // namespace tlfea::contact::radioss_type25::current_normals::detail

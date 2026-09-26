@@ -10,9 +10,12 @@ bool Less(Edge a,Edge b) noexcept {
   return a.slot<b.slot;
 }
 }
-std::size_t BuildEdges(Data data,std::size_t g,Edge* edges) noexcept {
+std::size_t BuildEdges(Data data,std::size_t g,Edge* edges,const PostGapmTopology* post,
+    EdgePopulation population) noexcept {
   std::size_t count=0;
   for(std::size_t m=0;m<g;++m) {
+    if(post && ((population==EdgePopulation::External && post->final_support[m].second_solid_source_id) ||
+        (population==EdgePopulation::SolidSupport && post->final_support[m].first.kind!=PhysicalSupportKind::EightSlotSolid)))continue;
     const auto& main=data.mains[m];
     for(unsigned k=0;k<4;++k) {
       if(k==2 && main.nodes[2]==main.nodes[3]) continue;
