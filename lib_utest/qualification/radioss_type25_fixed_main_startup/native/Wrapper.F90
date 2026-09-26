@@ -1,9 +1,9 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
-! Serial, bounded ordinary-shell reference. All numerical stages are original
+! Serial, bounded ordinary/resolved-coated shell reference. All numerical stages are original
 ! Fortran; only source-shaped arrays, local controls and readback live here.
 subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles,global_ids, &
     neighbors,neighbor_edges,refs,nrefs,start_bound,start_normals,start_bisectors, &
-    offsets,incidence,ready_bound,ready_normals,ready_bisectors,floors,warnings) bind(C)
+    offsets,incidence,ready_bound,ready_normals,ready_bisectors,floors,warnings,source_roles) bind(C)
   use iso_c_binding
   use startup_native_observation
   use startup_native_names
@@ -11,7 +11,7 @@ subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles
   use startup_native_normal_storage, only: observed_rep30,observed_rem30, &
       observed_ready_rep30,observed_ready_rem30
   implicit none
-  integer(c_int),intent(in)::counts(2),node_ids(counts(1)),primary(4,counts(2))
+  integer(c_int),intent(in)::counts(2),node_ids(counts(1)),primary(4,counts(2)),source_roles(counts(2))
   real(c_double),intent(in)::x(3,counts(1)),stiffness(2*counts(2))
   integer(c_int),intent(out)::irect(4,2*counts(2)),roles(2*counts(2)),global_ids(2*counts(2))
   integer(c_int),intent(out)::neighbors(4,2*counts(2)),neighbor_edges(4,2*counts(2))
@@ -38,9 +38,9 @@ subroutine rd_fixed_main_startup(counts,x,node_ids,primary,stiffness,irect,roles
   call clear_observations()
   numnod=counts(1);numels=0;nspmd=1;ninter25=1;nthread=1
   p=counts(2);g=2*p
-  irect=0;irect(:,1:p)=primary;roles=0;roles(1:p)=3
-  ! Native ordinary-shell source roles3/7 select the identical SH2SURF branch.
-  ! The arithmetic producer does not infer material/source membership from it.
+  irect=0;irect(:,1:p)=primary;roles=0;roles(1:p)=source_roles
+  ! Actual declared source roles3/7 or+/-4/8 select original SH2SURF branches.
+  ! Membership/orientation classification is upstream, not synthesized here.
   global_ids=0;neighbors=0;neighbor_edges=0;refs=0;nrefs=0
   start_bound=0;start_normals=0;start_bisectors=0
   ready_bound=0;ready_normals=0;ready_bisectors=0;offsets=0;incidence=0

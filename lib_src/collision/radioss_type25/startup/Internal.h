@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Types.h"
+#include "RolePolicy.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::startup::detail {
 struct Edge { std::uint32_t low=0,high=0,main=0,slot=0; };
@@ -8,7 +9,7 @@ struct FaceKey { std::uint32_t nodes[4]{},count=0,ordinal=0; };
 struct Identity { std::uint64_t id=0; std::uint32_t ordinal=0; };
 struct OutputLayout {
   tl::util::ArenaRegion mains,expanded_to_primary,primary_to_partner;
-  tl::util::ArenaRegion normals,references,normal_offsets,normal_mains;
+  tl::util::ArenaRegion normals,references,normal_offsets,normal_mains,primary_roles;
 };
 struct Layout {
   OutputLayout output;
@@ -24,6 +25,7 @@ struct Data {
   NormalReference* references=nullptr;
   std::uint32_t* normal_offsets=nullptr;
   std::uint32_t* normal_mains=nullptr;
+  ShellSideRole* primary_roles = nullptr;
 };
 bool Disjoint(const void*,std::size_t,const void*,std::size_t) noexcept;
 Report MakeLayout(std::size_t nodes,std::size_t primary,Limits,Layout&,

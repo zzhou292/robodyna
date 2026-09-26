@@ -21,8 +21,15 @@ bool Finite(n::StoredNormal v){return std::isfinite(v.x)&&std::isfinite(v.y)&&st
 NativeResult Oracle(const c::Input& in) {
   static_assert(sizeof(int)==4&&sizeof(float)==4&&sizeof(double)==8&&std::numeric_limits<float>::is_iec559);
   const auto& t=in.topology;const auto N=t.nodes,P=t.primary_count,G=t.main_count,R=t.references;
-  Need(in.profile==c::Profile::OrdinaryShellLocal&&in.free_roster==n::normal_activation::FreeRosterPolicy::FreshComplete);
+  const bool resolved=in.profile==c::Profile::ResolvedShellSidesLocal;
+  Need((resolved||in.profile==c::Profile::OrdinaryShellLocal)&&in.free_roster==n::normal_activation::FreeRosterPolicy::FreshComplete);
   Need(N&&N<=256&&P&&P<=160&&G==2*P&&R&&R<=4*G&&in.free_count<=G);
+  if(resolved) {
+    Need(t.source_profile==n::startup::Profile::ResolvedShellSides&&t.source_topology==n::startup::TopologyPolicy::NativeResolvedShellSides);
+    Need(t.primary_role_count==P&&Span(t.primary_roles,P));
+    for(std::size_t i=0;i<P;++i)Need(t.primary_roles[i]==n::startup::ShellSideRole::Ordinary||
+        t.primary_roles[i]==n::startup::ShellSideRole::CoatingForward||t.primary_roles[i]==n::startup::ShellSideRole::CoatingReversed);
+  } else Need(!t.primary_roles&&!t.primary_role_count);
   Need(in.coefficient_count==G&&in.active_count==G&&in.tag_count==N&&in.prior_count==4*G);
   Need(Span(t.mains,G)&&Span(in.main_coefficients,G)&&Span(in.main_active,G)&&Span(in.node_tag,N)&&
       Span(in.prior_normals,4*G)&&Span(in.free_main_ids,in.free_count));

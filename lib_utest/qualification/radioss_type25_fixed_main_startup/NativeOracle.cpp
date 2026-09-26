@@ -5,7 +5,7 @@
 #include <stdexcept>
 namespace type25_startup_test {
 extern "C" void rd_fixed_main_startup(const int*,const double*,const int*,const int*,const double*,
-    int*,int*,int*,int*,int*,int*,int*,int*,float*,float*,int*,int*,int*,float*,float*,float*,int*);
+    int*,int*,int*,int*,int*,int*,int*,int*,float*,float*,int*,int*,int*,float*,float*,float*,int*,const int*);
 namespace {
 void Need(bool value,const char* text){if(!value)throw std::invalid_argument(text);}
 }
@@ -14,6 +14,11 @@ NativeResult Oracle(const s::Input& in,const double* coefficient,std::size_t coe
       in.node_source_ids&&in.primary&&in.positions.valid()&&in.positions.node_count==in.node_count,
       "Native startup fixture exceeds its declared source bounds");
   const auto g=2*in.primary_count,cap=4*g;
+  const bool resolved=in.profile==s::Profile::ResolvedShellSides && in.topology==s::TopologyPolicy::NativeResolvedShellSides;
+  Need(resolved || ((in.profile==s::Profile::OrdinaryExteriorFixedMain || in.profile==s::Profile::OrdinaryExteriorMovingMain) &&
+      (in.topology==s::TopologyPolicy::ManifoldTwoSided || in.topology==s::TopologyPolicy::NativeOrdinaryShell)),
+      "Unselected native startup profile");
+  std::vector<int> source_roles(in.primary_count);
   Need(coefficient&&coefficient_count==g,"Native ready fixture needs actual expanded coefficients");
   for(std::size_t i=0;i<g;++i)Need(std::isfinite(coefficient[i])&&coefficient[i]>0,"Unsupported native ready activity");
   const int counts[]{int(in.node_count),int(in.primary_count)};
@@ -32,7 +37,14 @@ NativeResult Oracle(const s::Input& in,const double* coefficient,std::size_t coe
   }
   for(std::size_t i=0;i<in.primary_count;++i) {
     Need(in.primary[i].layout==n::ShellLayout::Quad4||in.primary[i].layout==n::ShellLayout::Triangle3,
-        "Native reference admits ordinary Q4/T3 only");
+        "Native reference admits shell Q4/T3 only");
+    const auto role=in.primary[i].side_role;
+    Need(role==s::ShellSideRole::Ordinary || (resolved &&
+        (role==s::ShellSideRole::CoatingForward || role==s::ShellSideRole::CoatingReversed)),
+        "Unselected native primary role");
+    const int ordinary=in.primary[i].layout==n::ShellLayout::Triangle3?7:3;
+    source_roles[i]=role==s::ShellSideRole::Ordinary?ordinary:
+        role==s::ShellSideRole::CoatingForward?ordinary+1:-(ordinary+1);
     for(unsigned k=0;k<4;++k) {
       Need(in.primary[i].nodes[k]<in.node_count,"Native primary node is outside the table");
       primary[4*i+k]=int(in.primary[i].nodes[k]+1);
@@ -45,17 +57,23 @@ NativeResult Oracle(const s::Input& in,const double* coefficient,std::size_t coe
   rd_fixed_main_startup(counts,x.data(),ids.data(),primary.data(),coefficient,connectivity.data(),roles.data(),
       globals.data(),neighbors.data(),edges.data(),refs.data(),&reference_count,start_bound.data(),
       start_normals.data(),start_bisectors.data(),offsets.data(),incidence.data(),ready_bound.data(),
-      ready_normals.data(),ready_bisectors.data(),out.floors.data(),warnings);
+      ready_normals.data(),ready_bisectors.data(),out.floors.data(),warnings,source_roles.data());
   out.warning_count=warnings[0];out.warning_node_ids={warnings[1],warnings[2]};out.selector_calls=warnings[3];
   Need(reference_count>0&&std::size_t(reference_count)<=cap,"Native reference count is invalid");
   out.mains.resize(g);out.expanded_to_primary.resize(g);out.primary_to_partner.resize(in.primary_count);
+  if(resolved)for(std::size_t i=0;i<in.primary_count;++i)out.primary_roles.push_back(in.primary[i].side_role);
   out.starter_normals.resize(4*g);out.ready_normals.resize(4*g);
   for(std::size_t m=0;m<g;++m) {
-    const auto parent=m<in.primary_count?m:std::size_t(-roles[m]-1);
+    // Every admitted input role appends exactly one side in original primary
+    // order. This is wrapper identity mapping, not production numerical code.
+    const auto parent=m<in.primary_count?m:m-in.primary_count;
     Need(parent<in.primary_count,"Native opposite role lost physical primary identity");
     auto& main=out.mains[m];main.source_id=in.primary[parent].source_id;
     main.global_id=globals[m];main.segment_type=roles[m];out.expanded_to_primary[m]=std::uint32_t(parent);
-    if(m<in.primary_count)out.primary_to_partner[m]=std::uint32_t(roles[m]);
+    if(m<in.primary_count) {
+      int partner=roles[m];if(partner>int(g))partner-=int(g); // Original I25NORM ISH decode.
+      out.primary_to_partner[m]=std::uint32_t(partner);
+    }
     for(unsigned k=0;k<4;++k) {
       main.nodes[k]=std::uint32_t(connectivity[4*m+k]-1);main.neighbors[k]=neighbors[4*m+k];
       main.neighbor_edges[k]=edges[4*m+k];main.normal_reference[k]=refs[4*m+k];

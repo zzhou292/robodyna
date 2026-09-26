@@ -41,6 +41,12 @@ struct FixtureT {
       {t.normal_offsets,t.starter.reference_count+1,t.normal_mains,t.normal_incidence_count}};
     if(native_topology)in.topology={native_start.mains.data(),mesh.ids.size(),mesh.primary.size(),native_start.mains.size(),native_start.starter_references.size(),
       {native_start.offsets.data(),native_start.offsets.size(),native_start.incidence.data(),native_start.incidence.size()}};
+    if(mesh.profile==s::Profile::ResolvedShellSides) {
+      in.profile=c::Profile::ResolvedShellSidesLocal;
+      in.topology.source_profile=mesh.profile;in.topology.source_topology=mesh.topology;
+      in.topology.primary_roles=native_topology?native_start.primary_roles.data():t.primary_roles;
+      in.topology.primary_role_count=native_topology?native_start.primary_roles.size():t.primary_role_count;
+    }
     in.positions={positions.data(),std::uint32_t(mesh.ids.size()),3,1};in.coordinates=mesh.units;in.units=mesh.scale;
     in.main_coefficients=coefficients.data();in.coefficient_count=coefficients.size();in.main_active=main_active.data();in.active_count=main_active.size();
     in.node_tag=node_tag.data();in.tag_count=node_tag.size();in.free_main_ids=free_ids.empty()?nullptr:free_ids.data();in.free_count=free_ids.size();

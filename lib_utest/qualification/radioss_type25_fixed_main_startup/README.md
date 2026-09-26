@@ -72,3 +72,17 @@ stage kernels and activation fixture are reused. These are source-authored gates
 not a claim that they have executed. A source-sized count-only Preflight test
 records actual compiled forecasts without allocating or admitting a full Yaris.
 General fixed-ready has zero/unavailable ready forecasts and remains rejected.
+
+
+Resolved coating qualification
+-----------------------------
+CoatedStartupTest uses explicit supplied ordinary/forward/reversed Q4/T3 roles
+and compares complete original SH2SURF25, I25NEIGH and I25NORM output. The wrapper
+has one trailing C-int source-role array (23 C arguments); only marshalling and
+scope metadata changed, never donor numerical bodies. Cases cover mixed roles,
+source-order reversal, valence3/4, disconnected references, warp/rotation/SI,
+signed zero and role provenance retained after identical normalized geometry.
+Counted IRR11 warnings remain source-bound and do not delete rows. The new role
+output/staging bytes are checked through compiled sizeof/Preflight. Default
+ordinary scope, fixed-ready rejection, cap/alias failures and retry remain gated.
+No case claims to derive actual coating signs from shell/solid membership.

@@ -12,6 +12,7 @@ void Copy(detail::Data from,detail::Data to,const detail::OutputLayout& p) noexc
   std::copy_n(from.references,p.references.count,to.references);
   std::copy_n(from.normal_offsets,p.normal_offsets.count,to.normal_offsets);
   std::copy_n(from.normal_mains,p.normal_mains.count,to.normal_mains);
+  if(p.primary_roles.count)std::copy_n(from.primary_roles,p.primary_roles.count,to.primary_roles);
 }
 }
 Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output,
@@ -63,6 +64,7 @@ Report BuildStarter(const Input& input,Limits limits,tl::util::HostArena& output
   next.normal_offsets=committed.normal_offsets;next.normal_mains=committed.normal_mains;
   next.normal_incidence_count=incidence;next.starter={committed.normals,committed.references,references};
   next.source_generation=input.source_generation;next.profile=input.profile;next.topology=input.topology;
+  next.primary_roles=committed.primary_roles;next.primary_role_count=layout.output.primary_roles.count;
   *published=next;
   Report result{Status::Ok};result.neighbor_warnings=warnings;return result;
 }

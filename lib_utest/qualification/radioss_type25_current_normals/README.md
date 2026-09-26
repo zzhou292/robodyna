@@ -34,3 +34,15 @@ observation; production cannot publish it.
 Source-only until owning host/Fortran/CUDA receipts pass. The physical moving-main
 transaction still needs cache ownership, the authentic phase barrier, common
 publication and separately matched scene/source gates.
+
+
+The resolved-shell extension adds CoatedTopologyTest and the separate
+`type25_coated_topology_normals_cuda` target. Both current-normal paths start
+from genuine role-aware startup output; the native path independently runs
+original startup and carries its own native cache through every update. Full
+FLAG1/final normal, reference and TAGE channels compare exact bits, including
+coating tags greater than G and the 143-primary Engine cohort boundary. Roles,
+origin, count, aliases and malformed partner rejection are qualification inputs,
+not claims of authenticated caller-made source tables. Existing ordinary suites
+remain in the same owning project. New extension qualification is pending until
+its frozen receipt passes; prior ordinary qualification remains preserved.

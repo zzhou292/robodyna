@@ -11,6 +11,7 @@ struct NativeResult {
   std::vector<std::uint32_t> expanded_to_primary,primary_to_partner,offsets,incidence;
   std::vector<n::StoredNormal> starter_normals,ready_normals;
   std::vector<s::NormalReference> starter_references,ready_references;
+  std::vector<s::ShellSideRole> primary_roles; // Explicit input provenance for resolved scope only.
   std::array<float,4> floors{};
   int warning_count=0,selector_calls=0;
   std::array<int,2> warning_node_ids{};
