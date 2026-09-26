@@ -2,6 +2,7 @@
 #include "GeneralFixture.h"
 #include "FullLedgerRig.h"
 #include "MixedRuntimeFixture.h"
+#include "lib_src/collision/radioss_type25/runtime/InitialSeed.h"
 #include <gtest/gtest.h>
 #include <cstring>
 #include <array>
@@ -209,5 +210,45 @@ TEST(NativeGeneralInitialize, GenuineMixedSupportsAndCinRosterBindCompletePhysic
   EXPECT_EQ(rig.owner.accepted().epoch,0u);EXPECT_EQ(rig.contact.source_info().expanded_mains,5u);
   EXPECT_EQ(rig.contact.initialization_diagnostics().identity.primaries,3u);
   }
+}
+TEST(NativeGeneralInitialize, GenuineOrderedMsrControlsMaintenanceBudgetAndRejectsIncompletePrivateRoster) {
+  Source source;
+  // Explicit source-order coupon: no planner may silently sort this complete
+  // roster. The producer owns the declared order through the General handoff.
+  std::rotate(source.main_nodes.begin(),source.main_nodes.begin()+1,source.main_nodes.end());
+  ASSERT_NO_THROW(source.Prepare());
+  auto limits=moving_cache_test::Rig::Limits();
+  const auto roles=source.runtime.selection.secondary_count+source.main_nodes.size();
+  ASSERT_LT(roles,source.runtime.selection.secondary_count+4*source.runtime.primary_main_count);
+  limits.maintenance.max_role_entries=roles;
+  n::GeneralTransactionForecast forecast;
+  ASSERT_EQ(n::Transaction::GeneralPreflight(source.rig.config,source.runtime,source.prepared,
+      source.rig.source.physical.physical,forecast,limits).status,n::TransactionStatus::Ok);
+  auto legacy=source.runtime;legacy.selection.removed_main_by_secondary=source.prepared.removals().by_secondary;
+  n::TransactionForecast legacy_forecast;
+  EXPECT_EQ(n::Transaction::Preflight(source.rig.config,legacy,source.rig.source.physical.physical,legacy_forecast,limits).status,n::TransactionStatus::ResourceLimit);
+  namespace rd=n::runtime_detail;
+  rd::Plan plan(limits);n::MovingMainSource bound;n::GeneralTransactionForecast exact;
+  ASSERT_EQ(rd::PrepareGeneralPlan(source.rig.config,source.runtime,source.prepared,source.rig.source.physical.physical,
+      limits,n::runtime_qualification::Access::FixedHostBytes(),plan,bound,exact).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(plan.upload.main_nodes,source.main_nodes);EXPECT_EQ(plan.upload.maintenance.mains,source.main_nodes.size());
+  EXPECT_EQ(plan.upload.maintenance.main_nodes,plan.upload.main_nodes.data());
+  for(unsigned mode:{0u,1u,2u}) {
+    SCOPED_TRACE(mode);
+    auto invalid=source.main_nodes;
+    if(mode==0)invalid.back()=invalid.front();
+    if(mode==1)invalid.pop_back();
+    if(mode==2)invalid.back()=std::uint32_t(source.runtime.selection.node_count);
+    rd::Plan rejected(limits);
+    EXPECT_EQ(rd::PreparePlan(source.rig.config,bound,source.rig.source.physical.physical,limits,
+        n::runtime_qualification::Access::FixedHostBytes(),rejected,{invalid.data(),invalid.size()}).status,n::TransactionStatus::SourceMismatch);
+  }
+  auto short_limit=limits;--short_limit.maintenance.max_role_entries;auto untouched=forecast;
+  EXPECT_EQ(n::Transaction::GeneralPreflight(source.rig.config,source.runtime,source.prepared,
+      source.rig.source.physical.physical,untouched,short_limit).status,n::TransactionStatus::ResourceLimit);
+  EXPECT_EQ(untouched.peak_device_bytes,forecast.peak_device_bytes);
+  ASSERT_NO_THROW(source.InitializeOwner());
+  ASSERT_EQ(source.InitializeContact(limits).status,n::TransactionStatus::Ok);
+  EXPECT_EQ(source.rig.contact.allocations().maintenance_device_bytes,forecast.transaction.maintenance_device_bytes);
 }
 }

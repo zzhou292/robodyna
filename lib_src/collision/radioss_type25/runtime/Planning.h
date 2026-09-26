@@ -4,6 +4,10 @@
 #include "Layout.h"
 #include "lib_src/collision/RadiossType25AssemblyDevice.h"
 namespace tlfea::contact::radioss_type25::runtime_detail {
+// General-only borrowed producer roster. An empty descriptor preserves legacy
+// repeated primary-corner packing. The actual owning Plan validates and copies
+// this complete unique physical-node roster before maintenance forecasting.
+struct InitialMainRoster {const std::uint32_t* nodes=nullptr;std::size_t count=0;};
 // Owning source staging and exact allocation plan shared by the public forecast
 // and actual initializer. It grants no source/publication/clock authority.
 struct Plan {
@@ -18,9 +22,9 @@ struct Plan {
   tl::util::ArenaRegion rows,secondary;
 };
 TransactionReport PreparePlan(const TransactionConfig&,const FixedMainSource&,
-    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&) noexcept;
+    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&,InitialMainRoster={}) noexcept;
 TransactionReport PreparePlan(const TransactionConfig&,const MovingMainSource&,
-    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&) noexcept;
+    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&,InitialMainRoster={}) noexcept;
 TransactionReport PreparePlan(const TransactionConfig&,const MixedMovingMainSource&,
-    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&) noexcept;
+    const tl::fea::ShellPhysicalBinding&,TransactionLimits,std::size_t fixed_host_bytes,Plan&,InitialMainRoster={}) noexcept;
 }

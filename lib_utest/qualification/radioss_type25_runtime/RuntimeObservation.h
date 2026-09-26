@@ -28,6 +28,7 @@ struct InitializationObservation {
 // physical publication or production dependency exists here.
 class Access {
  public:
+  static std::size_t FixedHostBytes() noexcept {return sizeof(Transaction)+sizeof(Transaction::Impl);}
   static bool ReadInitialization(const Transaction& value,InitializationObservation* output) {
     if(!value.impl_||!output)return false;const auto& p=*value.impl_;
     const auto accepted=p.state.Accepted(*p.owner);

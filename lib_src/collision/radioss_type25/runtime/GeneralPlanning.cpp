@@ -15,7 +15,7 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
   auto report=InitialSeedAccess::Bind(config,source,prepared,physical,starter,ready,selection);
   if(report.status!=TransactionStatus::Ok)return report;
   Source next=source;next.selection=selection;
-  report=PreparePlan(config,next,physical,limits,fixed_bytes,plan);
+  report=PreparePlan(config,next,physical,limits,fixed_bytes,plan,InitialSeedAccess::MainRoster(prepared));
   if(report.status!=TransactionStatus::Ok)return report;
   report=InitialSeedAccess::Forecast(prepared,plan.forecast,limits,forecast);
   if(report.status==TransactionStatus::Ok)bound=next;

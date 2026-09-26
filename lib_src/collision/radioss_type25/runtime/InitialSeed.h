@@ -7,6 +7,7 @@ namespace tlfea::contact::radioss_type25::runtime_detail {
 // Sole production reader of the opaque seed. It never imports a caller row
 // array and cannot create physical/publication authority.
 struct InitialSeedAccess {
+  static InitialMainRoster MainRoster(const initial_source::PreparedSource&) noexcept;
   static TransactionReport Bind(const TransactionConfig&,const ContactSourceInput&,
       const initial_source::PreparedSource&,const tl::fea::ShellPhysicalBinding&,
       const startup::Snapshot*,const startup::FixedMainView*,lifecycle::SourceView&) noexcept;

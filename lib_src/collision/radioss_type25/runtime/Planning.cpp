@@ -2,16 +2,48 @@
 #include "Planning.h"
 #include "Storage.h"
 #include <new>
+#include <stdexcept>
 namespace tlfea::contact::radioss_type25::runtime_detail {
 namespace fe=tl::fea;
 namespace {
 TransactionReport Error(TransactionStatus s,const char* message){return {s,message};}
 bool Add(std::size_t value,std::size_t& sum){if(value>SIZE_MAX-sum)return false;sum+=value;return true;}
+TransactionReport BindMainRoster(const ContactSourceInput& source,InitialMainRoster roster,
+    TransactionLimits limits,SourceStaging& upload) noexcept try {
+  if(!roster.nodes&&!roster.count)return {TransactionStatus::Ok,"OK"};
+  const auto nodes=source.selection.node_count;
+  if(!roster.count||roster.count>nodes||!lifecycle::detail::Span(roster.nodes,roster.count))
+    return Error(TransactionStatus::SourceMismatch,"General MSR descriptor is not a bounded physical roster");
+  auto bytes=upload.bytes;
+  if(!Add(nodes*sizeof(std::uint8_t),bytes)||bytes>limits.max_host_bytes)
+    return Error(TransactionStatus::ResourceLimit,"General MSR validation exceeds source host cap");
+  std::vector<std::uint8_t> membership(nodes,0);
+  if(membership.capacity()>nodes)return Error(TransactionStatus::ResourceLimit,"General MSR validation capacity exceeds forecast");
+  for(std::size_t i=0;i<roster.count;++i) {
+    const auto node=roster.nodes[i];
+    if(node>=nodes||membership[node])return Error(TransactionStatus::SourceMismatch,"General MSR repeats or leaves the physical domain");
+    membership[node]=1;
+  }
+  for(std::size_t m=0;m<source.primary_main_count;++m)for(auto node:source.selection.mains[m].nodes) {
+    if(!membership[node])return Error(TransactionStatus::SourceMismatch,"General MSR omits a genuine primary node");
+    membership[node]=2;
+  }
+  for(std::size_t i=0;i<roster.count;++i)if(membership[roster.nodes[i]]!=2)
+    return Error(TransactionStatus::SourceMismatch,"General MSR includes a node outside the complete primary surface");
+  // Capacity remains bounded by the existing4P source staging reservation;
+  // only the size/order passed to native maintenance becomes the genuine MSR.
+  upload.main_nodes.assign(roster.nodes,roster.nodes+roster.count);
+  upload.maintenance.main_nodes=upload.main_nodes.data();upload.maintenance.mains=roster.count;
+  upload.bytes=bytes;return {TransactionStatus::Ok,"OK"};
+} catch(const std::bad_alloc&) {return Error(TransactionStatus::ResourceLimit,"General MSR allocation failed");}
+  catch(const std::length_error&) {return Error(TransactionStatus::ResourceLimit,"General MSR extent overflow");}
 template<class Source>
 TransactionReport Build(const TransactionConfig& config,const Source& source,
-    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan) noexcept {
+    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan,InitialMainRoster roster) noexcept {
   const auto prepared=PrepareSource(config,source,physical,limits,plan.upload);
   if(prepared.status!=TransactionStatus::Ok)return prepared;
+  const auto bound=BindMainRoster(source,roster,limits,plan.upload);
+  if(bound.status!=TransactionStatus::Ok)return bound;
   const auto& upload=plan.upload;
   candidates::Forecast inventory;search::Forecast maintenance;assembly::IncidenceForecast incidence;
   const auto candidates_status=candidates::Inventory::Preflight(upload.inventory,limits.inventory,inventory);
@@ -63,16 +95,16 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
 }
 }
 TransactionReport PreparePlan(const TransactionConfig& config,const FixedMainSource& source,
-    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan) noexcept {
-  return Build(config,source,physical,limits,fixed_host_bytes,plan);
+    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan,InitialMainRoster roster) noexcept {
+  return Build(config,source,physical,limits,fixed_host_bytes,plan,roster);
 }
 TransactionReport PreparePlan(const TransactionConfig& config,const MovingMainSource& source,
-    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan) noexcept {
-  return Build(config,source,physical,limits,fixed_host_bytes,plan);
+    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan,InitialMainRoster roster) noexcept {
+  return Build(config,source,physical,limits,fixed_host_bytes,plan,roster);
 }
 TransactionReport PreparePlan(const TransactionConfig& config,const MixedMovingMainSource& source,
-    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan) noexcept {
-  return Build(config,source,physical,limits,fixed_host_bytes,plan);
+    const fe::ShellPhysicalBinding& physical,TransactionLimits limits,std::size_t fixed_host_bytes,Plan& plan,InitialMainRoster roster) noexcept {
+  return Build(config,source,physical,limits,fixed_host_bytes,plan,roster);
 }
 } // namespace tlfea::contact::radioss_type25::runtime_detail
 namespace tlfea::contact::radioss_type25 {

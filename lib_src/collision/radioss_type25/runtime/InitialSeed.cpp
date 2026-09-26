@@ -60,6 +60,10 @@ bool Topology(const startup::Snapshot& a,const is::detail::Prepared& p) {
   return true;
 }
 }
+InitialMainRoster InitialSeedAccess::MainRoster(const is::PreparedSource& prepared) noexcept {
+  if(!prepared.impl_)return {};
+  const auto& nodes=prepared.impl_->source.main_nodes;return {nodes.data(),nodes.size()};
+}
 TransactionReport InitialSeedAccess::Bind(const TransactionConfig& config,const ContactSourceInput& source,
     const is::PreparedSource& prepared,const tl::fea::ShellPhysicalBinding& physical,
     const startup::Snapshot* starter,const startup::FixedMainView* ready,lifecycle::SourceView& output) noexcept {
