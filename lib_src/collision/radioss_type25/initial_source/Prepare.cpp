@@ -18,7 +18,7 @@ bool RetainedFits(const detail::Prepared& p,std::size_t bound,std::size_t owner_
     return actual.Append<Value>(vector.capacity(),region);
   };
 #define V(field) if(!charge(p.field))return false
-  V(positions);V(nodes);V(mains);V(secondary);V(references);V(main_gap);V(solids);
+  V(positions);V(nodes);V(mains);V(secondary);V(references);V(main_gap);V(primary_extent);V(solids);
   V(solid_offsets);V(solid_incidence);V(support_solid);V(internal_main);
   V(removal_offsets);V(removal_nodes);V(final_offsets);V(final_mains);V(final_main_offsets);V(final_nodes);
   V(normal_offsets);V(normal_mains);V(topology);V(expanded_to_primary);V(primary_to_partner);
@@ -60,7 +60,7 @@ Forecast Plan(const Input& in,Limits limits) noexcept {
   tl::util::BoundedArenaLayout source(limits.max_host_bytes);tl::util::ArenaRegion r;
 #define H(type,count) if(!source.Append<type>(count,r)){f.status=Status::ResourceLimit;return f;}
   H(Vector,n);H(detail::Node,n);H(detail::Main,g);H(detail::Secondary,s);H(detail::Reference,in.contact.normal_count);
-  H(double,g);H(std::uint32_t,in.main_node_count);H(EightSlotSolid,in.solid_count);H(std::uint32_t,n+1);H(std::uint32_t,8*in.solid_count);
+  H(double,g+p);H(std::uint32_t,in.main_node_count);H(EightSlotSolid,in.solid_count);H(std::uint32_t,n+1);H(std::uint32_t,8*in.solid_count);
   H(std::uint32_t,2*g);H(std::uint64_t,g+1);H(std::uint32_t,2*removals);H(std::uint32_t,s+1);
   H(candidates::detail::MainEntry,g);H(std::uint32_t,g);H(std::uint32_t,s);H(std::uint64_t,n);H(int,n);
   H(std::uint32_t,g+1);H(std::uint32_t,removals);H(std::uint32_t,in.contact.normal_count+1);
@@ -120,7 +120,8 @@ FinalRemovalView PreparedSource::removals() const noexcept {
   return {p.final_main_offsets.data(),p.final_nodes.empty()?nullptr:p.final_nodes.data(),
       {p.final_offsets.data(),p.final_offsets.size(),p.final_mains.empty()?nullptr:p.final_mains.data(),p.final_mains.size()},
       p.mains.size(),p.final_mains.size(),p.added_removals,p.native_nodes,
-      p.diagnostics.mean_length,p.diagnostics.engine_margin,p.diagnostics.initial_margin,p.population,p.native_nodes_exact};
+      p.diagnostics.mean_length,p.diagnostics.engine_margin,p.diagnostics.initial_margin,p.population,p.native_nodes_exact,
+      p.primary_extent.data(),p.primary_extent.size()};
 }
 DeviceSeed::DeviceSeed() noexcept=default;
 DeviceSeed::~DeviceSeed()=default;
@@ -140,7 +141,7 @@ Report PrepareSource(const Input& in,Limits limits,PreparedSource& output) noexc
     auto status=detail::MakeLayout(in,limits,plan.cub_bytes,next->layout);if(status!=Status::Ok)return {status};
     next->forecast=plan;next->limits=limits;
     next->identity={in.stamp,in.units,in.contact.node_count,in.starter.primary_count,in.contact.main_count,
-        in.contact.secondary_count,in.contact.normal_count,in.phase,next->source.population,next->source.native_nodes_exact};
+        in.contact.secondary_count,in.contact.normal_count,in.phase,next->source.population,next->source.native_nodes_exact,in.engine_handoff};
     report.diagnostics=next->source.diagnostics; // GPU candidate counts remain unavailable until CountPairs.
     output.impl_=std::move(next);return report;
   } catch(const std::bad_alloc&) {return {Status::ResourceLimit};}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "radioss_type25/runtime/Types.h"
+#include "RadiossType25InitialState.h"
 #include "../elements/ShellBatchPublication.h"
 #include "../elements/publication/NativeContactPublicationState.h"
 #include <memory>
@@ -10,6 +11,18 @@ struct AcceptedContactBuffer {
   NativeGeometryHistory* rows=nullptr;
   int* initial_contact_flags=nullptr;
   std::size_t row_capacity=0;
+};
+struct GeneralTransactionForecast {
+  TransactionForecast transaction;
+  initial_source::Forecast initializer;
+  // Runtime remains allocated while one producer and private seed coexist.
+  // Host peak also includes immutable PreparedSource retained backing.
+  std::size_t peak_device_bytes=0,peak_host_bytes=0;
+};
+struct TransactionInitializationDiagnostics {
+  bool available=false;
+  initial_source::SeedIdentity identity;
+  initial_source::Diagnostics values;
 };
 // Concrete explicitly selected fixed/moving-main GPU contact participant. FENodalState remains the sole
 // clock and state owner. This stable-address object is noncopyable/nonmovable.
@@ -32,6 +45,20 @@ class Transaction {
   static TransactionReport Preflight(const TransactionConfig&,const MixedMovingMainSource&,
       const tl::fea::ShellPhysicalBinding&,TransactionForecast&,TransactionLimits={}) noexcept;
 
+  // Genuine Starter source preparation, including final geometric/TYPE2 CSR.
+  // PreparedSource identity includes explicit native unit/domain/source/map
+  // coherence and a source-proved fresh Engine search at time0. No arbitrary
+  // caller history or ready-normal substitution enters this overload.
+  static TransactionReport GeneralPreflight(const TransactionConfig&,const FixedMainSource&,
+      const startup::FixedMainView&,const initial_source::PreparedSource&,
+      const tl::fea::ShellPhysicalBinding&,GeneralTransactionForecast&,TransactionLimits={}) noexcept;
+  static TransactionReport GeneralPreflight(const TransactionConfig&,const MovingMainSource&,
+      const initial_source::PreparedSource&,const tl::fea::ShellPhysicalBinding&,
+      GeneralTransactionForecast&,TransactionLimits={}) noexcept;
+  static TransactionReport GeneralPreflight(const TransactionConfig&,const MixedMovingMainSource&,
+      const initial_source::PreparedSource&,const tl::fea::ShellPhysicalBinding&,
+      GeneralTransactionForecast&,TransactionLimits={}) noexcept;
+
   Transaction(const Transaction&)=delete;Transaction& operator=(const Transaction&)=delete;
   Transaction(Transaction&&)=delete;Transaction& operator=(Transaction&&)=delete;
   TransactionReport Initialize(const TransactionConfig&,const FixedMainSource&,
@@ -44,6 +71,19 @@ class Transaction {
       const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
   TransactionReport Initialize(const TransactionConfig&,const MixedMovingMainSource&,
       tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
+  TransactionReport GeneralInitialize(const TransactionConfig&,const FixedMainSource&,
+      const startup::FixedMainView&,const initial_source::PreparedSource&,
+      tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
+  TransactionReport GeneralInitialize(const TransactionConfig&,const MovingMainSource&,
+      const initial_source::PreparedSource&,tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
+      const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
+  TransactionReport GeneralInitialize(const TransactionConfig&,const MixedMovingMainSource&,
+      const initial_source::PreparedSource&,tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
       const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits={}) noexcept;
   tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
@@ -66,11 +106,15 @@ class Transaction {
   TransactionSourceInfo source_info() const noexcept;
   TransactionForecast allocations() const noexcept;
   TransactionDiagnostics last_diagnostics() const noexcept;
+  // Historical successful source preparation only; not an accepted physical
+  // receipt. Legacy cold Initialize reports unavailable. No GPU row readback.
+  TransactionInitializationDiagnostics initialization_diagnostics() const noexcept;
  private:
   template<class Source> TransactionReport InitializeSource(const TransactionConfig&,const Source&,
       tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,
-      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits) noexcept;
+      const tl::fea::ShellPhysicalPublicationIdentity&,TransactionLimits,
+      const initial_source::PreparedSource* =nullptr,const startup::FixedMainView* =nullptr) noexcept;
   friend class runtime_qualification::Access;
   struct Impl;std::unique_ptr<Impl> impl_;
 };

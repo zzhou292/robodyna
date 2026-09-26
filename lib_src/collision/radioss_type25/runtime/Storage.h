@@ -24,6 +24,7 @@ struct Transaction::Impl {
   candidates::InventoryView inventory_view[2];
   TransactionConfig config;ContactSourceInput source;TransactionLimits limits;
   TransactionForecast forecast;TransactionDiagnostics diagnostics;
+  TransactionInitializationDiagnostics initialization;
   runtime_detail::Layout layout;runtime_detail::Device device;runtime_detail::Control control;
   units_detail::Factors units{};void* arena=nullptr;cudaStream_t stream=nullptr;
   tl::util::HostArena readback;tl::util::ArenaRegion readback_rows,readback_secondary;

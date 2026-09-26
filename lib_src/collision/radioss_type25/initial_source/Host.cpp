@@ -64,6 +64,7 @@ Report PrepareHost(const Input& in,Limits limits,Prepared& output) noexcept {
   p.native_nodes=search.native_model_nodes;p.population=search.native_population;p.native_nodes_exact=search.native_model_nodes_exact;
   p.diagnostics.mean_length=search.mean_length;
   p.diagnostics.engine_margin=search.margin;p.diagnostics.initial_margin=in.controls.base_multiplier*search.mean_length;
+  p.primary_extent.assign(search.primary_extent,search.primary_extent+search.primary_count);
   p.removal_offsets.resize(g+1);
   for(std::size_t i=0;i<=g;++i)p.removal_offsets[i]=search.main_offsets[i];
   if(search.removal_count)p.removal_nodes.assign(search.removed_nodes,search.removed_nodes+search.removal_count);
@@ -148,7 +149,7 @@ Report PrepareHost(const Input& in,Limits limits,Prepared& output) noexcept {
 void BindPrepared(Prepared& p,const Input& in) noexcept {
   // Scalars only from the caller descriptor. Arrays below bind owned copies;
   // tables used solely by the already-completed source admission are absent.
-  Input d;d.phase=in.phase;d.stamp=in.stamp;d.units=in.units;d.controls=in.controls;
+  Input d;d.phase=in.phase;d.stamp=in.stamp;d.units=in.units;d.controls=in.controls;d.engine_handoff=in.engine_handoff;
   d.global_search_gap=in.global_search_gap;d.native_interface_id=in.native_interface_id;
   d.solid_scope=in.solid_scope;d.contributors=in.contributors;d.tied_phase=in.tied_phase;
   d.native_population=in.native_population;

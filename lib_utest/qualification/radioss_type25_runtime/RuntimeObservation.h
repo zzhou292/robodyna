@@ -18,10 +18,32 @@ struct NormalObservation {
   std::vector<startup::NormalReference> references;
   std::vector<std::uint32_t> active,tags;
 };
+struct InitializationObservation {
+  tl::fea::NativeContactPublicationSnapshot accepted;
+  std::vector<NativeGeometryHistory> rows[2];
+  std::vector<lifecycle::Secondary> secondary[2];
+  std::vector<lifecycle::Main> mains;
+};
 // Read-only owning qualification seam. No setter, callback, receipt factory,
 // physical publication or production dependency exists here.
 class Access {
  public:
+  static bool ReadInitialization(const Transaction& value,InitializationObservation* output) {
+    if(!value.impl_||!output)return false;const auto& p=*value.impl_;
+    const auto accepted=p.state.Accepted(*p.owner);
+    if(!p.usable||!accepted.available||p.phase!=Transaction::Impl::Phase::Idle||p.owner->accepted().epoch)return false;
+    InitializationObservation next;next.accepted=accepted;const auto rows=p.source.selection.secondary_count;
+    next.mains.resize(p.source.selection.main_count);auto error=cudaGetLastError();
+    const auto copy=[&](void* to,const void* from,std::size_t bytes){if(error==cudaSuccess&&bytes)error=cudaMemcpyAsync(to,from,bytes,cudaMemcpyDeviceToHost,p.stream);};
+    for(unsigned slab=0;slab<2;++slab) {
+      next.rows[slab].resize(rows);next.secondary[slab].resize(rows);
+      copy(next.rows[slab].data(),p.device.history[slab],rows*sizeof(NativeGeometryHistory));
+      copy(next.secondary[slab].data(),p.device.secondary[slab],rows*sizeof(lifecycle::Secondary));
+    }
+    copy(next.mains.data(),p.device.source.mains,next.mains.size()*sizeof(lifecycle::Main));
+    const auto drained=cudaStreamSynchronize(p.stream);if(error!=cudaSuccess||drained!=cudaSuccess)return false;
+    *output=std::move(next);return true;
+  }
   static bool ReadAcceptedNormals(const Transaction& value,NormalObservation* output) {
     if(!value.impl_||!output)return false;const auto& p=*value.impl_;
     const auto accepted=p.state.Accepted(*p.owner);

@@ -56,7 +56,7 @@ struct Prepared {
   std::vector<Main> mains;
   std::vector<Secondary> secondary;
   std::vector<Reference> references;
-  std::vector<double> main_gap;
+  std::vector<double> main_gap,primary_extent;
   std::vector<EightSlotSolid> solids;
   std::vector<std::uint32_t> solid_offsets,solid_incidence,support_solid,internal_main;
   std::vector<std::uint64_t> removal_offsets;

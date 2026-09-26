@@ -13,7 +13,11 @@ enum class Phase { Unspecified,StarterNormalsAndPreBucGaps };
 enum class SolidScope { Unspecified,CompleteEightSlotModel,ExplicitNoSolids };
 struct SourceStamp {
   std::uint64_t source=0,topology=0,physical_domain=0;
+  // Runtime reference-topology version is independent of the Starter/selection
+  // generation above. Standalone numerical production may leave it unavailable0.
+  std::uint64_t runtime_topology=0;
 };
+enum class EngineHandoff { Unspecified,SourceProvedFreshSerialSearchAtZero };
 struct Controls {
   int level=-1,gap_mode=-1,initial_penetration=-1,damping_flag=-1,sharp=-1;
   int arithmetic_precision=-1,partitions=0,starter_workers=0,edge_mode=-1,thermal=-1;
@@ -44,6 +48,7 @@ struct Input {
   Phase phase=Phase::Unspecified;
   SourceStamp stamp;
   UnitScale units; // Native working coordinates/coefficients; explicit SI conversion identity.
+  EngineHandoff engine_handoff=EngineHandoff::Unspecified;
   Controls controls;
   InterfaceCensusPhase interface_phase=InterfaceCensusPhase::Unspecified;
   const InterfaceIdentity* interfaces=nullptr;std::size_t interface_count=0;
@@ -103,6 +108,7 @@ struct SeedIdentity {
   Phase input_phase=Phase::Unspecified;
   search_startup::NativePopulation native_population;
   bool native_model_nodes_exact=true;
+  EngineHandoff engine_handoff=EngineHandoff::Unspecified;
 };
 // Both directions are genuinely derived by the geometric and finalized TYPE2
 // producers. Entries retain native source order; no row history is exposed.
@@ -114,5 +120,7 @@ struct FinalRemovalView {
   double mean_length=0,engine_margin=0,initial_margin=0;
   search_startup::NativePopulation native_population;
   bool native_model_nodes_exact=true;
+  const double* primary_extent=nullptr;
+  std::size_t primary_count=0;
 };
 } // namespace tlfea::contact::radioss_type25::initial_source

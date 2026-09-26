@@ -1191,7 +1191,7 @@ cc_library(
     deps = [":radioss_type25_surface_source", "//lib_utils:source_identity_index", ":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
             ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
             "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena",
-            ":radioss_type25_current_normals", "//lib_src/math:scalar_bits"],
+            ":radioss_type25_current_normals", ":radioss_type25_initial_state", "//lib_src/math:scalar_bits"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
 cuda_library(
@@ -1202,7 +1202,8 @@ cuda_library(
 )
 cc_library(
     name = "radioss_type25_transaction",
-    srcs = ["radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp"],
+    srcs = ["radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/GeneralPlanning.cpp", "radioss_type25/runtime/InitialSeed.cpp",
+            "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp"],
     deps = [":radioss_type25_runtime_kernels", "//lib_src/solvers:nodal_trial_identity"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

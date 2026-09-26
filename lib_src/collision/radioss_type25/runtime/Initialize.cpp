@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "Planning.h"
+#include "InitialSeed.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <new>
+#include <type_traits>
 namespace tlfea::contact::radioss_type25 {
 namespace fe=tl::fea;namespace rd=runtime_detail;
 namespace {
@@ -11,10 +13,10 @@ TransactionReport Error(TransactionStatus s,const char* message){return {s,messa
 Transaction::Transaction()=default;Transaction::~Transaction()=default;
 Transaction::Impl::~Impl(){if(stream)cudaStreamSynchronize(stream);if(arena)cudaFree(arena);}
 template<class Source>
-TransactionReport Transaction::InitializeSource(const TransactionConfig& config,const Source& source,
+TransactionReport Transaction::InitializeSource(const TransactionConfig& config,const Source& input_source,
     fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
     const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
-    TransactionLimits limits) noexcept try {
+    TransactionLimits limits,const initial_source::PreparedSource* prepared,const startup::FixedMainView* ready) noexcept try {
   if(impl_)return Error(TransactionStatus::AlreadyInitialized,"Native contact transaction is immutable");
   const auto stamp=owner.accepted();
   if(!stamp.owner_id||stamp.epoch||stamp.time!=0||!stamp.has_rotations||
@@ -26,7 +28,17 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   if(authenticated.status!=fe::ShellPublicationStatus::Success)
     return Error(TransactionStatus::PublicationFailure,authenticated.message);
   rd::Plan plan(limits);
-  auto status=rd::PreparePlan(config,source,physical,limits,sizeof(Transaction)+sizeof(Impl),plan);
+  Source source=input_source;TransactionReport status;
+  if(prepared) {
+    GeneralTransactionForecast forecast;
+    if constexpr(std::is_same_v<Source,FixedMainSource>) {
+      if(!ready)return Error(TransactionStatus::SourceMismatch,"General fixed source requires genuine ready phase");
+      status=rd::PrepareGeneralPlan(config,input_source,*ready,*prepared,physical,limits,sizeof(Transaction)+sizeof(Impl),plan,source,forecast);
+    } else {
+      if(ready)return Error(TransactionStatus::SourceMismatch,"Moving source cannot import fixed-ready cache");
+      status=rd::PrepareGeneralPlan(config,input_source,*prepared,physical,limits,sizeof(Transaction)+sizeof(Impl),plan,source,forecast);
+    }
+  } else status=rd::PreparePlan(config,source,physical,limits,sizeof(Transaction)+sizeof(Impl),plan);
   if(status.status!=TransactionStatus::Ok)return status;
   cudaStream_t stream=nullptr;
   const auto borrowed=owner.BorrowOwnerStream(&stream);
@@ -81,6 +93,10 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   }
   if(next->incidence.Initialize(incidence_limits,stream)!=assembly::IncidenceStatus::Ok)
     return Error(TransactionStatus::DeviceFailure,"Native incidence initialization failed");
+  if(prepared) {
+    const auto seeded=rd::InitialSeedAccess::Upload(*prepared,next->device,stream,next->initialization);
+    if(seeded.status!=TransactionStatus::Ok)return seeded;
+  }
   next->source.selection=next->device.source;next->source.primary_parent_ids=nullptr;next->source.primary_curvature=nullptr;
   if(!next->state.Attach(owner,source.source_id,next->issuer))return Error(TransactionStatus::PublicationFailure,"Native participant attachment rejected");
   impl_=std::move(next);return {TransactionStatus::Ok,"OK"};
@@ -103,6 +119,25 @@ TransactionReport Transaction::Initialize(const TransactionConfig& config,const 
     TransactionLimits limits) noexcept {
   return InitializeSource(config,source,owner,publication,physical,participants,identity,limits);
 }
+TransactionReport Transaction::GeneralInitialize(const TransactionConfig& config,const FixedMainSource& source,
+    const startup::FixedMainView& ready,const initial_source::PreparedSource& prepared,
+    fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
+    const fe::ShellPhysicalParticipants& participants,const fe::ShellPhysicalPublicationIdentity& identity,
+    TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits,&prepared,&ready);
+}
+TransactionReport Transaction::GeneralInitialize(const TransactionConfig& config,const MovingMainSource& source,
+    const initial_source::PreparedSource& prepared,fe::FENodalState& owner,fe::ShellBatchPublication& publication,
+    const fe::ShellPhysicalBinding& physical,const fe::ShellPhysicalParticipants& participants,
+    const fe::ShellPhysicalPublicationIdentity& identity,TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits,&prepared,nullptr);
+}
+TransactionReport Transaction::GeneralInitialize(const TransactionConfig& config,const MixedMovingMainSource& source,
+    const initial_source::PreparedSource& prepared,fe::FENodalState& owner,fe::ShellBatchPublication& publication,
+    const fe::ShellPhysicalBinding& physical,const fe::ShellPhysicalParticipants& participants,
+    const fe::ShellPhysicalPublicationIdentity& identity,TransactionLimits limits) noexcept {
+  return InitializeSource(config,source,owner,publication,physical,participants,identity,limits,&prepared,nullptr);
+}
 fe::ShellPhysicalScratchRosterEntry Transaction::roster_entry() noexcept {
   return impl_?fe::ShellPhysicalScratchRosterEntry{&impl_->issuer,impl_->source.source_id}:fe::ShellPhysicalScratchRosterEntry{};
 }
@@ -117,4 +152,7 @@ TransactionSourceInfo Transaction::source_info() const noexcept {
 }
 TransactionForecast Transaction::allocations() const noexcept{return impl_?impl_->forecast:TransactionForecast{};}
 TransactionDiagnostics Transaction::last_diagnostics() const noexcept{return impl_?impl_->diagnostics:TransactionDiagnostics{};}
+TransactionInitializationDiagnostics Transaction::initialization_diagnostics() const noexcept {
+  return impl_?impl_->initialization:TransactionInitializationDiagnostics{};
+}
 } // namespace tlfea::contact::radioss_type25
