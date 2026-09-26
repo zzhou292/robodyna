@@ -1,6 +1,7 @@
 #pragma once
 #include "Types.h"
 #include "WallArtifacts.h"
+#include "EnvironmentArtifacts.h"
 #include "output/full_shell/FullShellVisualizationPlan.h"
 namespace crash::output::physical_run {
 struct Configuration {
@@ -9,6 +10,7 @@ struct Configuration {
     records::PlanRequest request;
     std::string point_layout_sha256;
     bool wall=false;
+    bool environment=false;
 };
 Document ConfigurationDocument(const Configuration&);
 Configuration ReadConfiguration(const Value&);
@@ -21,6 +23,7 @@ struct Manifest {
     std::vector<records::RecordFile> inventory;
     std::size_t forecast_bytes=0;
     std::optional<WallReceipt> wall;
+    std::optional<EnvironmentReceipt> environment;
 };
 Document ManifestDocument(const Manifest&);
 Manifest ReadManifest(const Value&);

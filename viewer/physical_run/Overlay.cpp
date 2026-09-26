@@ -19,7 +19,7 @@ class Overlay final:public chrono::vsg3d::ChGuiComponentVSG {
             } else ImGui::TextUnformatted(replay.normal()->index().horizon_complete?
                 "Requested duration complete":"Diagnostic prefix | trajectory incomplete");
             ImGui::TextUnformatted("Original shell assembly | deformation scale 1x");
-            ImGui::TextUnformatted(replay.wall()?"Gray wireframe: mesh wall":"No additional wall mesh");
+            ImGui::TextUnformatted(replay.environment()?"Declared fixed environment mesh":replay.wall()?"Gray wireframe: mesh wall":"No additional wall mesh");
             if(scene.geometry()->color_mode()==visual::ReplayColorMode::PartId) {
                 ImGui::TextUnformatted("Colors: original parts, consistent across frames");
             } else if(scene.geometry()->color_mode()==visual::ReplayColorMode::PlasticStrain) {

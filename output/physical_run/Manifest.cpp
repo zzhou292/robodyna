@@ -3,7 +3,7 @@
 #include "output/BoundedArrayJson.h"
 #include <set>
 namespace crash::output::physical_run {
-Document ManifestDocument(const Manifest& m) {
+static Document LegacyManifestDocument(const Manifest& m) {
     Document d;d.SetObject();String(d,"schema",Schema);
     String(d,"publication","closed_accepted_prefix_or_horizon");
     if(m.wall)array_json::Child(d,"wall_case",WallDocument(*m.wall));
@@ -15,7 +15,7 @@ Document ManifestDocument(const Manifest& m) {
     for(const auto& f:m.inventory) {Value value;value.CopyFrom(FileDocument(f),d.GetAllocator());files.PushBack(value,d.GetAllocator());}
     d.AddMember("files",files,d.GetAllocator());return d;
 }
-Manifest ReadManifest(const Value& v) {
+static Manifest ReadLegacyManifest(const Value& v) {
     using namespace array_json;
     const bool wall=v.IsObject() && v.HasMember("wall_case");
     if(wall)Keys(v,{"schema","publication","identity","configuration","index","source_bundle","parent_activity","whole_run_forecast_bytes","files","wall_case"});
@@ -40,5 +40,25 @@ Manifest ReadManifest(const Value& v) {
     }
     Require(m.configuration.file=="configuration.json" && m.index.file=="frame-index.json" &&
         m.activity_declaration.file=="parent-activity.json","Physical run static names differ");return m;
+}
+Document ManifestDocument(const Manifest& m) {
+    auto doc=LegacyManifestDocument(m);
+    if(m.environment) {
+        Require(!m.wall,"Declared and legacy wall receipts cannot occupy the same static role");
+        doc["schema"].SetString(EnvironmentRunSchema,doc.GetAllocator());
+        array_json::Child(doc,"environment_wall",EnvironmentDocument(*m.environment));
+    }
+    return doc;
+}
+Manifest ReadManifest(const Value& value) {
+    if(!value.IsObject() || !value.HasMember("environment_wall"))return ReadLegacyManifest(value);
+    using namespace array_json;
+    Require(value.HasMember("schema") && !value.HasMember("wall_case") && Text(value["schema"])==EnvironmentRunSchema,
+        "Unknown declared environment manifest");
+    const auto environment=ReadEnvironmentDocument(value["environment_wall"]);
+    Document legacy;legacy.CopyFrom(value,legacy.GetAllocator());legacy.RemoveMember("environment_wall");
+    legacy["schema"].SetString(Schema,legacy.GetAllocator());
+    auto out=ReadLegacyManifest(legacy);out.environment=environment;
+    ManifestDocument(out);return out;
 }
 } // namespace crash::output::physical_run

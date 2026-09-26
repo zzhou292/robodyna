@@ -46,6 +46,10 @@ void CheckReferencedInventory(const std::filesystem::path& root,const records::C
     };
     for(const auto& file:ReferencedSampleFiles(root,context,manifest.source,manifest.activity_declaration,
         index.frames,manifest.wall))add(file);
+    if(manifest.environment) {
+        EnvironmentDocument(*manifest.environment);
+        for(const auto& file:manifest.environment->files)add(file);
+    }
     add(manifest.configuration);add(manifest.index);
     for(const auto& segment:index.segments) {
         add({segment.integers.file,segment.integers.sha256,segment.integers.bytes});

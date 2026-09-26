@@ -32,6 +32,21 @@ Forecast PlanBuffers(const records::Context& context,std::size_t physical,
     out.peak_bytes=budget.bytes();
     return out;
 }
+Forecast PlanBuffersWithEnvironment(const records::Context& context,std::size_t physical_nodes,
+    FamilyCounts physical,FamilyCounts rendered,std::size_t mapping,Limits limits) {
+    Require(rendered.qeph<524288 && physical.qeph==rendered.qeph+1 && physical.t3==rendered.t3 &&
+        physical.qbat==rendered.qbat && physical_nodes>=context.nodes()+4,
+        "Combined capture requires exactly one QEPH/four-node environment suffix");
+    auto result=PlanBuffers(context,physical_nodes,rendered.qeph,rendered.t3,rendered.qbat,mapping,limits);
+    const auto layered=std::max(physical.qeph,physical.t3);
+    const auto flags=std::max(layered,physical.qbat)-std::max(result.layered_rows,result.qbat_rows);
+    const auto extra=(layered-result.layered_rows)*sizeof(tl::fea::ShellBatchLayeredSection)+flags+
+        (flags?alignof(std::uint64_t)-1:0); // Added flags can shift the following packed activity alignment.
+    Require(result.peak_bytes<=limits.host_bytes && extra<=limits.host_bytes-result.peak_bytes,
+        "Complete environment family readback exceeds capture cap");
+    result.layered_rows=layered;result.retained_bytes+=extra;result.peak_bytes+=extra;
+    return result;
+}
 FrameBuffers::FrameBuffers(const records::Context& context):flags(context.parents().size()) {
     for(auto& frame:frames) {
         frame.position_xyz.resize(3*context.nodes());

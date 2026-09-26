@@ -22,12 +22,25 @@ output::Document CaptureMetadata(const Options& options,const Input& input,const
             for(float c:{entry.color.R,entry.color.G,entry.color.B}) row.PushBack(Value().SetDouble(c),d.GetAllocator());
             rows.PushBack(row,d.GetAllocator());
         }
+        if(replay.environment()) {
+            const auto pid=replay.environment()->part_id;
+            const auto color=visual::ReplayPartColor(pid,scene.geometry()->part_palette_seed());
+            Value row(rapidjson::kArrayType);row.PushBack(Value().SetUint64(pid),d.GetAllocator());
+            for(float c:{color.R,color.G,color.B})row.PushBack(Value().SetDouble(c),d.GetAllocator());
+            rows.PushBack(row,d.GetAllocator());
+        }
         d.AddMember("part_id_rgb_legend",rows,d.GetAllocator());
     }
     Number(d,"plastic_strain_color_maximum",scene.plastic_strain_maximum());
     String(d,"plastic_scale_policy","fixed maximum over all archived native point values; all-zero field uses display maximum one");
     String(d,"activity_policy","only actually active original source parents contribute display triangles");
-    String(d,"wall_display",replay.wall()?"authenticated selected mesh, gray wireframe":"none");
+    String(d,"wall_display",replay.environment()?(scene.geometry()->color_mode()==visual::ReplayColorMode::PartId?
+        "actual declared fixed physical mesh; source PID palette":"actual declared fixed physical mesh; neutral wireframe"):
+        replay.wall()?"authenticated selected mesh, gray wireframe":"none");
+    if(replay.environment()) {
+        array_json::Child(d,"environment_receipt",output::physical_run::EnvironmentDocument(*replay.environment()));
+        String(d,"camera_framing_policy","vehicle-only accepted motion bounds; full scene clipping");
+    }
     if(replay.wall()) array_json::Child(d,"wall_receipt",output::physical_run::WallDocument(*replay.wall()));
     const auto& camera=*scene.camera();
     FiniteArray(d,"camera_position",camera.position.data(),3);FiniteArray(d,"camera_target",camera.target.data(),3);
