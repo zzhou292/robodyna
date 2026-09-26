@@ -96,6 +96,43 @@ NodalReport FENodalState::BorrowCinAssembly(const NodalTrialToken& token, NodalC
   return {NodalStatus::Ok, "Current CIN contributor view borrowed"};
 }
 
+NodalReport FENodalState::BorrowAcceptedRawMass(const NodalTrialToken& token,
+    NodalAcceptedRawMassView* output) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const auto& state = *impl_;
+  if (!state.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!state.cin) return {NodalStatus::InvalidInput, "Owner has no admitted raw coefficient storage"};
+  const auto assembly = state.ActiveAssemblyView();
+  const auto admitted = AuthenticateAssemblyView(token, assembly);
+  if (admitted.status != NodalStatus::Ok) return admitted;
+  if (!output || reinterpret_cast<std::uintptr_t>(output) % alignof(NodalAcceptedRawMassView) ||
+      !trial_identity::Disjoint(output, sizeof(*output), &token, sizeof(token)) ||
+      !AssemblyRangeDisjoint(token, assembly, output, sizeof(*output)))
+    return {NodalStatus::InvalidInput, "Accepted mass output overlaps owner storage or token"};
+  const auto& cin = *state.cin;
+  const NodalAcceptedRawMassView next{state.accepted + cin.state_offset, cin.layout.nodes,
+    state.stamp.owner_id, state.stamp.epoch, state.attempt, cin.qualification_id, state.stream};
+  *output = next;
+  return {NodalStatus::Ok, "Accepted raw mass view borrowed"};
+}
+
+NodalReport FENodalState::AuthenticateAcceptedRawMass(const NodalTrialToken& token,
+    const NodalAcceptedRawMassView& view) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const auto& state = *impl_;
+  if (!state.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!state.cin) return {NodalStatus::InvalidInput, "Owner has no admitted raw coefficient storage"};
+  const auto admitted = AuthenticateAssemblyView(token, state.ActiveAssemblyView());
+  if (admitted.status != NodalStatus::Ok) return admitted;
+  const auto& cin = *state.cin;
+  if (view.mass_kg != state.accepted + cin.state_offset || view.node_count != cin.layout.nodes ||
+      view.owner_id != state.stamp.owner_id || view.base_epoch != state.stamp.epoch ||
+      view.attempt != state.attempt || view.qualification_id != cin.qualification_id ||
+      view.stream != state.stream)
+    return {NodalStatus::StaleTrial, "Raw mass view differs from the exact accepted owner source"};
+  return {NodalStatus::Ok, "Accepted raw mass view is current"};
+}
+
 NodalReport FENodalState::Impl::StageCinSnapshot(const double* source) {
   const auto& storage = *cin;
   const auto n = storage.layout.nodes;

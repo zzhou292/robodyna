@@ -16,6 +16,7 @@ struct NodalCinStartup;
 struct NodalCinWitnessSource;
 struct NodalCinAdmission;
 struct NodalCinAssemblyView;
+struct NodalAcceptedRawMassView;
 struct NodalCinSnapshotBuffer;
 struct NodalCinPhysicalMainBuffer;
 struct NodalCinPhysicalMainStamp;
@@ -277,6 +278,13 @@ class FENodalState {
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalRigidAssemblyBinding&, const NodalCinStartup* = nullptr);
   NodalReport BorrowCinAssembly(const NodalTrialToken&, NodalCinAssemblyView*);
+  // Read-only SI mass coefficients from this owner's accepted CIN slab, including
+  // the explicitly empty CIN profile. Valid only during this token's open
+  // assembly; no allocation, device work, inversion or mass reconstruction.
+  // Use the returned stream; the view expires when assembly closes, on discard,
+  // commit, next BeginTrial or destruction. Rejections preserve caller output.
+  NodalReport BorrowAcceptedRawMass(const NodalTrialToken&, NodalAcceptedRawMassView*) const noexcept;
+  NodalReport AuthenticateAcceptedRawMass(const NodalTrialToken&, const NodalAcceptedRawMassView&) const noexcept;
   NodalReport ValidateCinWitnessSource(const NodalCinWitnessSource&) const noexcept;
   NodalReport CopyAcceptedCin(NodalCinSnapshotBuffer, NodalStamp*);
   NodalReport CopyPreparedCin(const NodalTrialToken&, NodalCinSnapshotBuffer, NodalPreparedView*);
