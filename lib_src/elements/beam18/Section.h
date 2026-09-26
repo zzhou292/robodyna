@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Native HM_READ_PROP18 / DEFBEAM_SECT, ISECT=2, INTR=2.
 #pragma once
-#include "Units.h"
+#include "PropertyArea.h"
 
 namespace tl::fea::beam18::detail {
 TL_BEAM18_HD inline Status PrepareSection(double radius, Section& output) noexcept {
   if (!Positive(radius)) return Status::InvalidInput;
   Section next{};
   const double pi = ::atan2(0.0,-1.0);
-  const double area = pi*radius*radius;
+  const double area = CircularArea(radius,pi);
   const double point_area = area/4;
   const double r = radius*::sqrt(2.0)*.5;
   const double dphi = 2*pi/4;
