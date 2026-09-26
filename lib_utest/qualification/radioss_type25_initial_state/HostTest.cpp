@@ -74,6 +74,25 @@ TEST(InitialStatePair, SignedZeroGapsAndExactPlaneKeepWholeNativeOffsetBits) {
     Compare(fixture,1,false);
   }
 }
+TEST(InitialStatePair, NativeUnreadCoefficientsAndUnboundBisectorsDoNotBecomeAdmissionOperands) {
+  Fixture fixture;auto input=fixture.Pair(0);init::PairResult baseline,actual;
+  for(unsigned k=0;k<4;++k) {
+    input.geometry.boundary_ids[k]=0;
+    for(unsigned j=0;j<2;++j)input.geometry.vertex_bisector[k][j]={};
+  }
+  ASSERT_EQ(init::EvaluatePair(input,&baseline),init::Status::Ok);
+  const double poison=std::numeric_limits<double>::quiet_NaN();
+  input.geometry.main_coefficient=poison;input.geometry.secondary_coefficient=poison;
+  for(unsigned k=0;k<4;++k)for(unsigned j=0;j<2;++j)
+    input.geometry.vertex_bisector[k][j]={float(poison),float(poison),float(poison)};
+  ASSERT_EQ(init::EvaluatePair(input,&actual),init::Status::Ok);
+  EXPECT_EQ(actual.considered,baseline.considered);EXPECT_EQ(actual.sector,baseline.sector);
+  EXPECT_EQ(Bits(actual.distance_squared),Bits(baseline.distance_squared));
+  EXPECT_EQ(Bits(actual.penetration_offset),Bits(baseline.penetration_offset));
+  input.geometry.boundary_ids[0]=1;actual.local_main=777;
+  EXPECT_EQ(init::EvaluatePair(input,&actual),init::Status::InvalidInput);
+  EXPECT_EQ(actual.local_main,777);
+}
 TEST(InitialStatePair, InvalidProfileAndLateGeometryPreserveOutputThenRetry) {
   Fixture fixture;const auto input=fixture.Pair(0);init::PairResult output;output.local_main=777;
   auto wrong=input;wrong.profile.initial_penetration=0;
