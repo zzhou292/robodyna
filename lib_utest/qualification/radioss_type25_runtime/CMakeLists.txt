@@ -93,7 +93,7 @@ set_tests_properties(type25_runtime_mass_host PROPERTIES RUN_SERIAL TRUE PROCESS
 
 add_executable(type25_runtime_accepted_mass_cuda AcceptedMassOwnerTest.cu)
 target_link_libraries(type25_runtime_accepted_mass_cuda PRIVATE tl_radioss_type25_transaction
-  type25_friction_oracle GTest::gtest_main CUDA::cudart)
+  tl_radioss_type25_fixed_main_startup type25_friction_oracle GTest::gtest_main CUDA::cudart)
 set_target_properties(type25_runtime_accepted_mass_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 add_test(NAME type25_runtime_accepted_mass_cuda COMMAND type25_runtime_accepted_mass_cuda)
 set_tests_properties(type25_runtime_accepted_mass_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
