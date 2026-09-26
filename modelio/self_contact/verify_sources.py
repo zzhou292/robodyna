@@ -10,7 +10,7 @@ import py_compile
 here = Path(__file__).resolve().parent
 root = here.parents[1]
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "707c5a3f4d9c92c4aea2753df67776d4ab9913005b4ff83dead311e437db989a"
+assert hashlib.sha256(raw).hexdigest() == "4fd104582c5cd0cd7524261f5d9f687a6e3d126d39c26053be7da1ab204961cc"
 manifest = json.loads(raw)
 for row in manifest["files"]:
     path = Path(row["path"])
@@ -26,14 +26,24 @@ assert "source_block_sha256" in sources
 assert "member.find(" not in sources
 
 cards = (here / "Cards.cpp").read_text()
+assert "*CONTACT_AUTOMATIC_SINGLE_SURFACE" in cards
+assert "part_sets::Read(draft.candidates, limits.blocks, limits.parts)" in cards
+assert "part_sets::Find(" in cards and "part_sets::Expand(" in cards
+assert "draft.data.selected_part_ids, set_sources, limits.parts" in cards
+sets = (here / "PartSets.cpp").read_text()
 for token in (
-    "*CONTACT_AUTOMATIC_SINGLE_SURFACE",
     "*SET_PART_ADD",
     "*SET_PART_LIST",
     "part-set expansion contains a cycle",
     "selected part is duplicated",
+    "list_limits.group_members = member_cap",
+    "sets.size() < set_cap",
+    "ordered.size() < member_cap",
+    "tied_shell::detail::ListIds",
 ):
-    assert token in cards
+    assert token in sets
+assert "using SourceSet = part_sets::Set" in (here / "Internal.h").read_text()
+assert '"${CMAKE_CURRENT_LIST_DIR}/PartSets.cpp"' in (here / "OriginalSelection.cmake").read_text()
 assert "static_friction" in cards and "dynamic_friction" in cards
 assert "decay_coefficient" in cards and "ignore_initial_penetration" in cards
 
