@@ -8,6 +8,15 @@ namespace crash::cases::native_scene::qualification {
 // returns copied observations; no setters, callbacks or receipt manufacture.
 class NativeSceneAccess {
  public:
+    static tl::fea::NodalRigidGroupSnapshot Rigid(NativeSceneDynamics& d) {
+        auto& owner=d.storage_->owner;
+        if(owner.accepted().rigid_groups.group_count!=1)throw std::runtime_error("Rigid fixture needs one actual group");
+        tl::fea::NodalRigidGroupSnapshot result;tl::fea::NodalStamp stamp;
+        const auto report=owner.CopyAcceptedRigidGroups({&result,1},&stamp);
+        if(report.status!=tl::fea::NodalStatus::Ok||!tl::fea::trial_identity::SameStamp(stamp,owner.accepted()))
+            throw std::runtime_error("Rigid accepted snapshot is unavailable or stale");
+        return result;
+    }
     static void BeginMaterials(NativeSceneDynamics& d){d.storage_->BeginMaterials();}
     static void AssembleContact(NativeSceneDynamics& d){d.storage_->AssembleContact();}
     static void FinishPrepare(NativeSceneDynamics& d){d.storage_->FinishPrepare();}

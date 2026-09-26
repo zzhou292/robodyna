@@ -44,3 +44,24 @@ if(TYPE25_MOVING_NATIVE_REFERENCE_DIR)
   set_tests_properties(native_scene_moving_dynamics_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 600
     ENVIRONMENT "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
 endif()
+
+
+set(TYPE25_RIGID_NATIVE_REFERENCE_DIR "" CACHE PATH "Pinned expected v3 contact/rigid phases, qualification only")
+if(TYPE25_RIGID_NATIVE_REFERENCE_DIR)
+  target_sources(native_scene_dynamics_host_check PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tests/RigidGaugeTest.cpp")
+  set(rigid_contact "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/native-reference.bin")
+  set(rigid_groups "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/rigid-reference.bin")
+  set(rigid_metadata "${TYPE25_RIGID_NATIVE_REFERENCE_DIR}/reference-metadata.json")
+  if(NOT EXISTS "${rigid_contact}" OR NOT EXISTS "${rigid_groups}" OR NOT EXISTS "${rigid_metadata}" OR NOT ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT)
+    message(FATAL_ERROR "Rigid trajectory gate requires v3 source and all independently converted expected artifacts")
+  endif()
+  add_executable(native_scene_rigid_dynamics_cuda_check "${CMAKE_CURRENT_LIST_DIR}/tests/RigidTrajectoryTest.cpp")
+  target_link_libraries(native_scene_rigid_dynamics_cuda_check PRIVATE robo_dyna_native_scene_run GTest::gtest_main CUDA::cudart)
+  target_compile_definitions(native_scene_rigid_dynamics_cuda_check PRIVATE
+    TYPE25_RIGID_NATIVE_REFERENCE_FILE="${rigid_contact}" TYPE25_RIGID_NATIVE_GROUP_FILE="${rigid_groups}"
+    TYPE25_RIGID_NATIVE_REFERENCE_METADATA="${rigid_metadata}")
+  target_compile_options(native_scene_rigid_dynamics_cuda_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME native_scene_rigid_dynamics_cuda COMMAND native_scene_rigid_dynamics_cuda_check)
+  set_tests_properties(native_scene_rigid_dynamics_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 600
+    ENVIRONMENT "ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT=${ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT}")
+endif()

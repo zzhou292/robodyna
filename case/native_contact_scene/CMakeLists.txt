@@ -118,3 +118,22 @@ if(ROBO_DYNA_NATIVE_SCENE_ARCHIVE_SOURCE AND ROBO_DYNA_NATIVE_MOVING_SCENE_EXPOR
   set_property(TEST native_scene_archive_source APPEND PROPERTY ENVIRONMENT
     "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
 endif()
+
+
+set(ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT "" CACHE FILEPATH "Explicit source-authenticated v3 rigid patch export")
+if(ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT)
+  if(NOT EXISTS "${ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT}")
+    message(FATAL_ERROR "Rigid scene export is absent")
+  endif()
+  target_compile_definitions(native_scene_archive_source_test PRIVATE ROBO_DYNA_NATIVE_RIGID_ARCHIVE_SOURCE=1)
+  set_property(TEST native_scene_archive_source APPEND PROPERTY ENVIRONMENT
+    "ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT=${ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT}")
+  add_executable(native_scene_rigid_source_test
+    "${robo_scene_case_root}/modelio/native_contact_scene/RigidSourceTest.cpp" RigidPhysicalSourceTest.cpp)
+  target_link_libraries(native_scene_rigid_source_test PRIVATE robo_dyna_native_scene_contact_source
+    robo_dyna_native_scene_archive_source GTest::gtest_main)
+  target_compile_options(native_scene_rigid_source_test PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME native_scene_rigid_source COMMAND native_scene_rigid_source_test)
+  set_tests_properties(native_scene_rigid_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT=${ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT}")
+endif()

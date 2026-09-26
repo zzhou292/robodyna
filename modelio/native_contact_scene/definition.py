@@ -50,6 +50,26 @@ class Material:
 
 
 @dataclass(frozen=True)
+class RigidPatch:
+    kind: str
+    primary_initialization: str
+    inertia_mode: int
+    center_of_gravity: int
+    tied_secondary_removal: int
+    primary_velocity: str
+
+
+def rigid_patch(value):
+    fields = {'kind': 'rigid_patch', 'primary_initialization': 'converted_part',
+              'inertia_mode': 2, 'center_of_gravity': 1,
+              'tied_secondary_removal': 1, 'primary_velocity': 'patch_translation'}
+    keys(value, fields, 'coupling')
+    require(value == fields and all(type(value[k]) is type(v) for k, v in fields.items()),
+            'Only explicit converted-part rigid patch controls are admitted')
+    return RigidPatch(**value)
+
+
+@dataclass(frozen=True)
 class Scene:
     wall: Grid
     patch: Grid
@@ -62,19 +82,22 @@ class Scene:
     time_step_cap_s: float | None = None
     contact_surface: str = "fixed_wall"
     definition_version: int = 1
+    coupling: RigidPatch | None = None
 
 
 def load(path):
     raw, _ = read_object(path, max_bytes=128 << 10)
     require(isinstance(raw, dict), 'Scene must be an object')
     version = {'robo_dyna.native_contact_scene.v1': 1,
-               'robo_dyna.native_contact_scene.v2': 2}.get(raw.get('schema'))
+               'robo_dyna.native_contact_scene.v2': 2,
+               'robo_dyna.native_contact_scene.v3': 3}.get(raw.get('schema'))
     require(version is not None, 'Unknown scene schema')
     fields = ('schema', 'units', 'wall', 'patch', 'material', 'thickness_mm', 'run')
-    keys(raw, fields + (('contact_surface',) if version == 2 else ()), 'scene')
+    keys(raw, fields + (('contact_surface',) if version >= 2 else ()) +
+         (('coupling',) if version == 3 else ()), 'scene')
     contact_surface = 'fixed_wall'
-    if version == 2:
-        require(raw['contact_surface'] == 'all_shells', 'Version2 requires explicit all_shells contact')
+    if version >= 2:
+        require(raw['contact_surface'] == 'all_shells', 'Moving surface versions require explicit all_shells contact')
         contact_surface = raw['contact_surface']
     require(raw['units'] == {'length': 'mm', 'mass': 'tonne', 'time': 's'}, 'Only explicit native mm/tonne/s is admitted')
     grids = []
@@ -119,4 +142,6 @@ def load(path):
     require(wall.dz_dx == 0, 'This first fixed-main definition uses a planar wall')
     require(min(patch.z_mm+patch.dz_dx*x for x in patch.x_mm) > wall.z_mm+thickness,
             'Scene starts separated; initial overlap requires a separately named case')
-    return Scene(wall, patch, velocity, constitutive, thickness, end, scale, cadence, step_cap, contact_surface, version)
+    coupling = rigid_patch(raw['coupling']) if version == 3 else None
+    return Scene(wall, patch, velocity, constitutive, thickness, end, scale, cadence,
+                 step_cap, contact_surface, version, coupling)

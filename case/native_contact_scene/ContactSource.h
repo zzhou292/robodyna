@@ -14,6 +14,7 @@ struct ContactForecast {
     // Incremental contact-source buffers, excluding the shared PhysicalSource
     // handle's existing storage and excluding any runtime/device owner.
     std::size_t owned_bytes=0,startup_scratch_bytes=0,peak_bytes=0;
+    std::size_t native_model_nodes=0; // Source geometry plus generated rigid primaries, not owner node count.
 };
 // The explicit declared fixed-wall/moving-patch compiler profile. This is not a
 // general native deck parser. Produces all numerical contact startup fields via

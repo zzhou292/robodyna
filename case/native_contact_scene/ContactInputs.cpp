@@ -6,9 +6,15 @@ namespace crash::cases::native_scene::contact_detail {
 using output::Require;
 void FillDeclaredInputs(const PhysicalSource& physical,Rows r,MainMotion motion) {
     const auto& d=physical.declared().data();const auto count=d.nodes.size();
-    Require(physical.rigid().explicitly_empty()&&physical.cin().explicitly_empty()&&
+    const auto& rigid=physical.rigid();
+    const bool rigid_scope=d.rigid_patch?
+        (rigid.prepared()&&!rigid.explicitly_empty()&&rigid.parts()&&rigid.groups().size()==1&&
+         rigid.members().size()==d.rigid_patch->member_source_ids.size()&&
+         rigid.groups()[0].source_kind==tl::fea::RigidBindingSourceKind::Part&&
+         rigid.groups()[0].source_id==d.rigid_patch->source_part_id):rigid.explicitly_empty();
+    Require(rigid_scope&&physical.cin().explicitly_empty()&&
         physical.translation_fixed_bits().size()==count&&physical.rotation_fixed().size()==count,
-        "Contact source requires the complete explicit empty constraint scopes");
+        "Contact source differs from its declared rigid/empty-CIN physical scope");
     for(std::size_t i=0;i<count;++i) {
         const auto& node=d.nodes[i];Require(node.id<=INT_MAX,"Native positive source NID exceeds signed reference domain");r.ids[i]=node.id;
         r.positions[3*i]=node.xyz_mm.x;r.positions[3*i+1]=node.xyz_mm.y;r.positions[3*i+2]=node.xyz_mm.z;

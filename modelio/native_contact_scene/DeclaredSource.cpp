@@ -1,4 +1,5 @@
 #include "DeclaredSource.h"
+#include "CoupledDeclaration.h"
 #include "output/BoundedArrayJson.h"
 #include <map>
 #include <set>
@@ -94,9 +95,12 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     using namespace output;using namespace output::array_json;
     Require(limits.file_bytes&&limits.file_bytes<=4u<<20&&limits.nodes&&limits.nodes<=4096&&limits.parents&&limits.parents<=4096,"Declared scene limits exceed fixed source bounds");
     const auto bytes=ReadBounded(path,limits.file_bytes);Require(Sha256(bytes)==expected,"Declared scene export hash differs");
-    const auto doc=Parse(bytes,limits.file_bytes);Keys(doc,{"schema","scope","source_sha256","scene","mesh","files"});
+    const auto doc=Parse(bytes,limits.file_bytes);
     const auto schema=Text(Field(doc,"schema"));
-    const bool moving=schema=="robo_dyna.native_contact_scene_export.v2";
+    const bool coupled=schema=="robo_dyna.native_contact_scene_export.v3";
+    if(coupled)Keys(doc,{"schema","scope","source_sha256","scene","mesh","reference_rigid_body","files"});
+    else Keys(doc,{"schema","scope","source_sha256","scene","mesh","files"});
+    const bool moving=coupled||schema=="robo_dyna.native_contact_scene_export.v2";
     Require(moving||schema=="robo_dyna.native_contact_scene_export.v1","Unsupported declared scene export");
     (void)Text(Field(doc,"scope")); // Descriptive text is never numerical authority.
     auto out=std::make_shared<DeclaredData>();out->export_sha256=expected;out->definition_sha256=Text(Field(doc,"source_sha256"));
@@ -112,9 +116,10 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     }
     Require(Sha256(out->definition_bytes)==out->definition_sha256,"Original scene member differs from source identity");
     const auto original=Parse(out->definition_bytes,limits.file_bytes);
-    if(moving)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface"});
+    if(coupled)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface","coupling"});
+    else if(moving)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface"});
     else Keys(original,{"schema","units","wall","patch","material","thickness_mm","run"});
-    Require(Text(Field(original,"schema"))==(moving?"robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1"),
+    Require(Text(Field(original,"schema"))==(coupled?"robo_dyna.native_contact_scene.v3":moving?"robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1"),
         "Original declaration and export schema differ");
     out->definition_schema=Text(Field(original,"schema")); // Exact authenticated member version.
     if(moving)Require(Text(Field(original,"contact_surface"))=="all_shells","Unknown moving source surface");
@@ -122,11 +127,13 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     Require(Text(Field(units,"length"))=="mm"&&Text(Field(units,"mass"))=="tonne"&&Text(Field(units,"time"))=="s","Scene requires explicit native mm/tonne/s");
     const auto& scene=Field(doc,"scene");
     if(moving) {
-        Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface"});
+        if(coupled)Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface","coupling"});
+        else Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface"});
         Require(Text(Field(scene,"contact_surface"))==Text(Field(original,"contact_surface")),"Exported contact surface differs from source");
         out->contact_surface=DeclaredContactSurface::AllShells;
     } else Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s"});
     Materials(*out,scene,original);Controls(*out,scene,original);Mesh(*out,Field(doc,"mesh"),limits);
+    if(coupled)detail::BindRigidPatch(*out,doc,original);
     return DeclaredSource(std::move(out));
 }
 } // namespace crash::modelio::native_scene

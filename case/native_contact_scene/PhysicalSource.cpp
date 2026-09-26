@@ -2,6 +2,8 @@
 #include "modelio/source_assembly/MaterialDeclarationFields.h"
 #include "output/ArtifactIO.h"
 #include "lib_utils/BoundedArena.h"
+#include "lib_src/constraints/NodalRigidPartTopology.h"
+#include "lib_src/constraints/NodalRigidPartAssemblyModel.h"
 namespace crash::cases::native_scene {
 namespace fe=tl::fea;
 namespace source=modelio::native_scene;
@@ -16,6 +18,8 @@ struct PhysicalSource::Data {
     fe::NodalNodeDomain domain;
     fe::ShellNodeMap mapping;
     fe::NodalCoefficientLedger ledger;
+    fe::rigid::NodalRigidPartTopology part_topology;
+    fe::rigid::NodalRigidPartAssemblyModel parts;
     fe::NodalRigidAssemblyBinding rigid;
     fe::ShellExecutionBinding execution;
     fe::ShellPhysicalBinding physical;
@@ -52,7 +56,7 @@ PhysicalSource PhysicalSource::Prepare(const source::DeclaredSource& declared,st
         q.reference.projection_working_length_m=units.length_to_m;
         q.reference.thickness=d.thickness_mm*units.length_to_m;q.reference.placement=fe::ShellReferencePlacement::Centered;
         for(unsigned k=0;k<4;++k){q.nodes[k]=p.nodes[k];q.reference.node_ids[k]=std::uint32_t(d.nodes[p.nodes[k]].id);q.reference.position[k]=position(p.nodes[k]);}
-        parents.push_back({fe::ShellBindingFamily::Qeph,quads.size(),p.id,p.part,1,1});quads.push_back(q);
+        parents.push_back({fe::ShellBindingFamily::Qeph,quads.size(),p.id,p.part,d.rigid_patch?2u:1u,d.rigid_patch?2u:1u});quads.push_back(q);
     }
     for(const auto& p:d.wall) {
         fe::ShellT3BindingInput t;t.source_parent_id=p.id;
@@ -71,10 +75,29 @@ PhysicalSource PhysicalSource::Prepare(const source::DeclaredSource& declared,st
     material.linear={m.yield_n_mm2*stress,out->hardening.derived_etan_pa};material.rate=rate;
     material.law=fe::ShellSectionLaw::LayeredLaw44Nip3;
     const fe::ShellPlasticitySectionInput section{1,d.thickness_mm*units.length_to_m,3,fe::ShellSectionFormulation::LayeredNip3};
-    const fe::ShellBatchPlasticityBindingInput catalog{nullptr,&material,&section,parents.data(),0,1,1,parents.size()};
+    std::vector<fe::ShellPlasticityMaterialInput> materials{material};
+    std::vector<fe::ShellPlasticitySectionInput> sections{section};
+    if(d.rigid_patch) {
+        // Internal execution key2 represents authentic covered-shell OFF=-1.
+        // The raw source material remains the single LAW44 declaration above.
+        // Reference E/rho/nu/thickness still produce physical M/J and contact K.
+        fe::ShellPlasticityMaterialInput skin;
+        skin.material_id=2;skin.young_pa=young;skin.poisson_ratio=m.poisson;skin.density_kg_m3=density;
+        skin.law=fe::ShellSectionLaw::RigidSkin;
+        materials.push_back(skin);
+        sections.push_back({2,d.thickness_mm*units.length_to_m,0,fe::ShellSectionFormulation::Nonconstitutive});
+    }
+    const fe::ShellBatchPlasticityBindingInput catalog{nullptr,materials.data(),sections.data(),parents.data(),0,materials.size(),sections.size(),parents.size()};
     Require(out->catalog.InitializeExecutionCatalog(out->shells,catalog).status==fe::ShellPlasticityBindingStatus::Success,
         "Declared native LAW44 execution catalog rejected");
     for(const auto& parent:parents) {
+        if(d.rigid_patch&&parent.family==fe::ShellBindingFamily::Qeph) {
+            fe::ShellSectionLaw law;unsigned points=99;
+            Require(out->catalog.Law(parent.family,parent.family_index,&law)&&law==fe::ShellSectionLaw::RigidSkin&&
+                out->catalog.MaterialPointCount(parent.family,parent.family_index,&points)&&points==0,
+                "Covered rigid patch has a constitutive execution point");
+            continue;
+        }
         fe::sections::PointParameters prepared;
         Require(out->catalog.Parameters(parent.family,parent.family_index,&prepared)&&
             output::Bits(prepared.plastic_hardening_pa)==output::Bits(out->hardening.prepared_h_pa),
@@ -90,7 +113,18 @@ PhysicalSource PhysicalSource::Prepare(const source::DeclaredSource& declared,st
     Require(bool(out->mapping.Initialize(out->shells,out->domain)),"Declared scene shell mapping rejected");
     Require(bool(out->ledger.Initialize({&out->mapping,nullptr,nullptr}))&&!out->ledger.scope().uncovered_nodes,
         "Declared scene lacks complete physical M/J");
-    Require(bool(out->rigid.InitializeEmpty(out->ledger)),"Declared empty rigid scope rejected");
+    if(d.rigid_patch) {
+        const auto& declared_part=*d.rigid_patch;
+        const fe::rigid::PartTopologyPartInput part{declared_part.source_part_id,
+            declared_part.member_source_ids.data(),declared_part.member_source_ids.size()};
+        fe::rigid::PartTopologyInput topology;
+        topology.source_instance_id=instance;topology.parts=&part;topology.part_count=1;
+        topology.expected_members=part.nodes;topology.expected_member_count=part.node_count;
+        Require(bool(out->part_topology.Initialize(topology)),"Declared rigid patch topology rejected");
+        Require(bool(out->parts.Initialize(out->part_topology,out->ledger,{units.mass_to_kg,units.length_to_m})),
+            "Source-derived rigid PART aggregate rejected");
+        Require(bool(out->rigid.Initialize(out->parts)),"Declared rigid patch binding rejected");
+    } else Require(bool(out->rigid.InitializeEmpty(out->ledger)),"Declared empty rigid scope rejected");
     Require(out->execution.Initialize(out->catalog,out->ledger,out->rigid).status==fe::ShellPlasticityBindingStatus::Success,
         "Declared constitutive execution roles rejected");
     Require(bool(out->physical.InitializeExecution({&out->shells,&out->catalog,&out->failure,nullptr},out->ledger,out->execution)),
@@ -114,6 +148,7 @@ std::size_t PhysicalSource::retained_host_upper_bound() const {
     const auto& d=data_->declared.data();tl::util::BoundedArenaLayout b(SIZE_MAX);tl::util::ArenaRegion unused;
     Require(b.Append<std::byte>(sizeof(Data)+sizeof(source::DeclaredData)+8192,unused)&&
         b.Append<std::byte>(data_->physical.owned_payload_bytes(),unused)&&
+        b.Append<std::byte>(data_->part_topology.owned_payload_bytes(),unused)&&
         b.Append<std::byte>(data_->cin.forecast().model_payload_bytes,unused)&&
         b.Append<source::SourceNode>(d.nodes.capacity(),unused)&&
         b.Append<source::SourceParent>(d.wall.capacity()+d.patch.capacity(),unused)&&
@@ -121,6 +156,8 @@ std::size_t PhysicalSource::retained_host_upper_bound() const {
         b.Append<std::uint8_t>(data_->fixed.capacity()+data_->rotation.capacity(),unused)&&
         b.Append<char>(d.export_sha256.capacity()+d.definition_sha256.capacity()+d.definition_bytes.capacity()+d.definition_schema.capacity()+4,unused),
         "Physical source retained byte bound overflow");
+    if(d.rigid_patch)Require(b.Append<std::uint64_t>(d.rigid_patch->member_source_ids.capacity()+
+        d.rigid_patch->centroid_source_order.capacity(),unused),"Rigid declaration byte bound overflow");
     return b.bytes();
 }
 } // namespace crash::cases::native_scene

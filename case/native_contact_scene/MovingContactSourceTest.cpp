@@ -22,6 +22,7 @@ TEST(NativeMovingContactSource, CompleteAllShellSourceKeepsGenuineStarterCacheAn
     ASSERT_EQ(source.primary_main_count,d.wall.size()+d.patch.size());ASSERT_EQ(source.primary_main_count,12u);
     ASSERT_EQ(s.main_count,24u);ASSERT_EQ(s.secondary_count,18u);ASSERT_EQ(s.normal_count,36u);
     EXPECT_EQ(t.source_generation,83u);EXPECT_EQ(s.generation,83u);
+    EXPECT_EQ(c.forecast().native_model_nodes,18u);
     EXPECT_EQ(source.activation.free_roster,native::normal_activation::FreeRosterPolicy::FreshComplete);
     for(std::size_t i=0;i<source.primary_main_count;++i) {
         const auto& parent=i<d.wall.size()?d.wall[i]:d.patch[i-d.wall.size()];

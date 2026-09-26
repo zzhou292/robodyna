@@ -57,6 +57,18 @@ TEST(NativeSceneArchiveSource, ActualMovingMemberVersionIsPreservedAndCannotBeDo
     CheckSourceFormat(physical,"robo_dyna.native_contact_scene.v2");
 }
 #endif
+#ifdef ROBO_DYNA_NATIVE_RIGID_ARCHIVE_SOURCE
+TEST(NativeSceneArchiveSource, RigidMemberVersionAndCoveredPointApplicabilityRemainTruthful) {
+    const auto* file=std::getenv("ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT");ASSERT_NE(file,nullptr);
+    const auto physical=PhysicalSource::Prepare(modelio::native_scene::DeclaredSource::Read(file,Sha256(ReadBounded(file,4u<<20))),771);
+    CheckSourceFormat(physical,"robo_dyna.native_contact_scene.v3");
+    ft::Directory directory;const auto archive=ArchiveSource::Write(physical,directory.path);
+    for(const auto& parent:archive.mapping().parents()) {
+        EXPECT_EQ(parent.native_points,parent.source_part==2?0u:3u);
+        EXPECT_EQ(parent.plastic,parent.source_part==2?records::PlasticField::NotApplicable:records::PlasticField::NativeEquivalentPlasticStrain);
+    }
+}
+#endif
 TEST(NativeSceneArchiveSource, DeclaredShellOnlySourceAndEmptyFamiliesRoundTripExactly) {
     ft::Directory original,repacked;const auto physical=Physical();
     const auto archive=ArchiveSource::Write(physical,original.path);const auto& mapping=archive.mapping();

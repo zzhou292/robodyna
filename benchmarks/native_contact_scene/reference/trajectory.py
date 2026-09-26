@@ -82,9 +82,12 @@ class Domain:
     main_count: int
     intervals: int
     dt_s: float
+    auxiliary_ids: tuple = () # Qualification-only nonphysical native primaries.
 
     def validate(self):
-        require(set(ids(self.node_ids)) == set(ids(self.native_ids)), 'Native/declaration node domains differ')
+        physical=set(ids(self.node_ids));auxiliary=set(ids(self.auxiliary_ids)) if self.auxiliary_ids else set()
+        require(not physical&auxiliary and physical|auxiliary==set(ids(self.native_ids)),
+                'Native/declaration/auxiliary node domains differ')
         require(set(ids(self.secondary_ids)) <= set(self.node_ids), 'Unknown secondary source ID')
         integer(self.main_count, 1, 4096)
         integer(self.intervals, 1, 4096)
@@ -150,7 +153,7 @@ def serialize(sequence, domain, mass_by_id=None):
     The public converter below fixes the existing reader's18/18/1001 scope.
     Smaller domains are useful for direct byte-contract tests, not a new format.
     """
-    domain.validate();n=len(domain.node_ids);nr=len(domain.secondary_ids)
+    domain.validate();n=len(domain.native_ids);nr=len(domain.secondary_ids)
     writer=Writer(domain);current=None;pending=None;packets=[];epoch=0;time=0.;initial=False
     counts={};active=set();episodes=[0]*nr;was_active=[False]*nr;starts=[[] for _ in range(nr)]
     coefficient=False
