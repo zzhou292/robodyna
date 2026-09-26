@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "FullLedgerRig.h"
 namespace type25_source_test {
+namespace {
+__global__ void DeclaredPatchLoad(double* force_z,std::uint32_t a,std::uint32_t b,std::uint32_t c) {
+  const std::uint32_t nodes[]{a,b,c};
+  if(threadIdx.x<3)force_z[nodes[threadIdx.x]]-=1.;
+}
+} // namespace
 void FullLedgerRig::PrepareSolidModel() {
   fe::solids::Input18 a;fe::solids::Input24 b;fe::solids::Input6z c;
   nodal_empty_test::Fixture::Require(fe::solid18::InitializeReference(fixture.source.a,a.reference)==fe::solid18::Status::Success,"Solid18 reference");
@@ -111,6 +117,12 @@ void FullLedgerRig::Begin(FullLedgerAttempt& a) {
   Check(welds.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(beams.AssembleMappedAccepted(owner,a.token,a.assembly));
   Check(solids.AssembleAccepted(owner,a.token,a.assembly));
+  // Genuine declared load drives the independent patch into contact. Initial
+  // overlap accommodation is still native INACTI5; no history is fabricated.
+  const auto& selected=fixture.secondary;
+  DeclaredPatchLoad<<<1,32,0,a.assembly.stream>>>(a.assembly.forces.force_z,
+      selected[0].node,selected[1].node,selected[2].node);
+  Check(cudaGetLastError());
 }
 void FullLedgerRig::Prepare(FullLedgerAttempt& a) {
   fe::NodalCinAssemblyView cin_view;Check(owner.BorrowCinAssembly(a.token,&cin_view));

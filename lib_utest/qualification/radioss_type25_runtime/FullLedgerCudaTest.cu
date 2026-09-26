@@ -41,6 +41,14 @@ TEST(NativeType25FullLedgerCuda, MissingActualParticipantsCannotInitializeTheNat
 TEST(NativeType25FullLedgerCuda, ActiveCommonRejectionPreservesAcceptedStateAndReassemblesExactly) {
   FullLedgerRig rig;
     ASSERT_NO_THROW(rig.Initialize());
+  for(unsigned step=0;step<2;++step) {
+    FullLedgerAttempt warm;
+    ASSERT_NO_THROW(rig.Begin(warm));
+    ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,warm.token,warm.assembly)));
+    ASSERT_NO_THROW(rig.Prepare(warm));
+    ASSERT_NO_THROW(rig.Seal(warm));
+    ASSERT_NO_THROW(Check(rig.Commit(warm)));
+  }
   const auto original=rig.owner.accepted();const auto old_contact=rig.contact.accepted();
   FullLedgerAttempt rejected;
     ASSERT_NO_THROW(rig.Begin(rejected));
@@ -65,6 +73,7 @@ TEST(NativeType25FullLedgerCuda, ActiveCommonRejectionPreservesAcceptedStateAndR
   ASSERT_NO_THROW(rig.Prepare(retry));
     ASSERT_NO_THROW(rig.Seal(retry));
     ASSERT_NO_THROW(Check(rig.Commit(retry)));
-  EXPECT_EQ(rig.owner.accepted().epoch,1u);EXPECT_EQ(rig.contact.accepted().generation,1u);
+  EXPECT_EQ(rig.owner.accepted().epoch,original.epoch+1);
+  EXPECT_EQ(rig.contact.accepted().generation,old_contact.generation+1);
 }
 } // namespace type25_source_test
