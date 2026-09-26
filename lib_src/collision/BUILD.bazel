@@ -1109,9 +1109,9 @@ cc_library(
         "CoefficientTypes.h", "CoefficientUnits.h", "NodalContributionTypes.h",
         "coefficients/Common.h", "coefficients/MainShell.h", "coefficients/MainSolid.h",
         "coefficients/Nodal.h", "coefficients/Pair.h", "coefficients/UnitFactors.h",
-        "coefficients/SolidNodal.h", "coefficients/SpringNodal.h",
+        "coefficients/SolidNodal.h", "coefficients/SpringNodal.h", "coefficients/CoatedMain.h",
     ]],
-    deps = [":radioss_type25_normal"],
+    deps = [":radioss_type25_normal", "//lib_src/math:scalar_bits"],
 )
 
 # Native TYPE25 diagnostic search maintenance; no mechanical/candidate authority.

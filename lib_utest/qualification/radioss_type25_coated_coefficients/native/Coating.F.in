@@ -1,0 +1,58 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Native Q4/T3 ordinary material with one exterior EightSlot solid support.
+      SUBROUTINE RD_COATED_COEFFICIENT(V,F,R) BIND(C)
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN) :: V(9)
+      INTEGER(C_INT),INTENT(IN) :: F(4)
+      REAL(C_DOUBLE),INTENT(OUT) :: R(3)
+@CONSTANTS@
+      INTEGER I,J,MT,MG,NELS,NELC,NELTG,NUMELC,IGTYP,IINTTHICK,ICONTR
+      INTEGER NRTT,MSEGTYP(2),INTTH,INTFRIC,IELEM(2),IELEM_M(2,2)
+      INTEGER IPARTFRICM(2),IPARTSM(2),IP
+      REAL(C_DOUBLE) SLSFAC,THK(2),GEO(1,1),PM(107,1),STC,STF(2)
+      REAL(C_DOUBLE) FILLSOL(1),AREA,VOL,BULK,GAP_N(1,2),GAP_M(2)
+      I=1
+      MT=1
+      MG=1
+      NELS=1
+      NELC=1
+      NELTG=1
+      NUMELC=1
+      NRTT=2
+      MSEGTYP=0
+      MSEGTYP(1)=4
+      IGTYP=F(1)
+      IINTTHICK=F(2)
+      ICONTR=F(4)
+      INTTH=0
+      INTFRIC=0
+      IELEM=0
+      IELEM_M=0
+      IPARTFRICM=0
+      IPARTSM=0
+      IP=1
+      SLSFAC=V(1)
+      THK=V(2)
+      GEO(1,1)=V(3)
+      PM=ZERO
+      PM(20,1)=V(4)
+      FILLSOL=V(5)
+      AREA=V(6)
+      VOL=V(7)
+      PM(32,1)=V(8)
+      PM(107,1)=V(9)
+      STF=ZERO
+      GAP_N=ZERO
+      GAP_M=ZERO
+@SOLID@
+@LENGTH@
+      IF(F(3)==3)THEN
+@TRIANGLE@
+      ELSE
+@QUAD@
+      ENDIF
+      R(1)=STF(1)
+      R(2)=STF(2)
+      R(3)=GAP_N(1,1)
+      END SUBROUTINE
