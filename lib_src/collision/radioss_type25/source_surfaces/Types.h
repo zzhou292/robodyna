@@ -6,7 +6,10 @@
 namespace tlfea::contact::radioss_type25::source_surfaces {
 enum class Status { Ok, InvalidInput, UnsupportedProfile, ResourceLimit, UnsupportedArithmetic };
 enum class ReaderPhase { Unspecified, BeforeGroupingAndInitia };
-enum class SolidTopology { Hex8, DeclaredPenta6 };
+// Hex8 retains its strict eight-distinct contract. NativeRaw8 is an explicit
+// reader brick packet, preserving every original repeated slot; it is not a
+// PENTA relabel or a physical-volume/constitutive admission.
+enum class SolidTopology { Hex8, DeclaredPenta6, NativeRaw8 };
 enum class ParentKind { Solid, ShellQuad, ShellTriangle };
 enum class ClauseKind { Parts, Solids };
 enum class SurfaceMode { Exterior=1, ExteriorShellEdges=2, All=3 };
