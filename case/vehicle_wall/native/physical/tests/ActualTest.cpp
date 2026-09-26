@@ -64,6 +64,11 @@ void SourceCounts() {
 }
 void WriteForecast(output::Document& doc,const EnvelopePhysicalForecast& f) {
     output::Integer(doc,"wall_source_bytes",f.wall_source);output::Integer(doc,"embedding_bytes",f.embedding);
+    output::Integer(doc,"embedding_prior_peak_bytes",f.embedding_prior_peak);
+    output::Integer(doc,"point_mass_current_bytes",f.point_mass_current);
+    output::Integer(doc,"point_mass_chain_peak_bytes",f.point_mass_chain_peak);
+    output::Integer(doc,"type25_current_bytes",f.type25_current);
+    output::Integer(doc,"type25_chain_peak_bytes",f.type25_chain_peak);
     output::Integer(doc,"shell_binding_bytes",f.shell_binding);output::Integer(doc,"contributor_sources_bytes",f.contributor_sources);
     output::Integer(doc,"native_components_bytes",f.native_components);output::Integer(doc,"component_packing_bytes",f.component_packing);
     output::Integer(doc,"fixed_bytes",f.fixed_bytes);output::Integer(doc,"source_peak_bytes",f.peak_bytes);
@@ -73,6 +78,11 @@ void WriteForecast(output::Document& doc,const EnvelopePhysicalForecast& f) {
 TEST(EnvelopePhysicalActual, CompleteForecastRejectsOneByteShortBeforePublication) {
     ASSERT_NO_FATAL_FAILURE(SourceCounts());
     const auto f=EnvelopePhysicalSource::Preflight(Wall(),References());
+    EXPECT_GT(f.embedding_prior_peak,modelio::point_mass::Limits{}.host_bytes);
+    EXPECT_LE(f.point_mass_current,modelio::point_mass::Limits{}.host_bytes);
+    EXPECT_LE(f.type25_current,modelio::type25::Limits{}.host_bytes);
+    EXPECT_EQ(f.point_mass_chain_peak,std::max(f.point_mass_current,f.embedding_prior_peak));
+    EXPECT_EQ(f.type25_chain_peak,std::max(f.type25_current,f.embedding_prior_peak));
     // The additive path does not weaken either original-domain constructor.
     EXPECT_THROW(modelio::point_mass::VehiclePointMassSource::Prepare(
         Wall().vehicle_origin().source(),Wall().domain()),std::exception);

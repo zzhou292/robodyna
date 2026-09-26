@@ -21,8 +21,17 @@ EnvelopePhysicalForecast EnvelopePhysicalSource::Preflight(const WallSource& wal
     const auto& origin = wall.vehicle_origin();
     EnvelopePhysicalForecast f;
     f.wall_source = wall.forecast().peak_bytes;
-    f.embedding = modelio::physical_scope::DomainEmbedding::Preflight(origin.source(), origin.domain(),
-        wall.domain(), d::Suffix(wall), limits.embedding).peak_bytes;
+    const auto embedding = modelio::physical_scope::DomainEmbedding::Preflight(origin.source(), origin.domain(),
+        wall.domain(), d::Suffix(wall), limits.embedding);
+    f.embedding = f.embedding_prior_peak = embedding.peak_bytes;
+    // Validate both local producer phases before allocating the combined shell
+    // binding or building either contributor. These are forecasts only.
+    const auto masses = modelio::point_mass::VehiclePointMassSource::PreflightEmbedded(
+        origin.source(),wall.domain(),embedding);
+    const auto welds = modelio::type25::VehicleType25Source::PreflightEmbedded(
+        origin.source(),wall.domain(),embedding,d::model::detail::WeldDeclaration());
+    f.point_mass_current=masses.current_phase; f.point_mass_chain_peak=masses.total_bytes;
+    f.type25_current=welds.current_phase; f.type25_chain_peak=welds.total_bytes;
     const auto shells = vehicle_startup::ForecastShellBinding(refs, limits.shells);
     // Reuse the complete existing forecast, charging one extra input and full
     // capacity slack. The native owned/scratch reservations already cover their
@@ -34,8 +43,9 @@ EnvelopePhysicalForecast EnvelopePhysicalSource::Preflight(const WallSource& wal
         shell_bytes.Append<d::fe::ShellQephBindingInput>(2, region),
         "Combined shell source reservation exceeds cap");
     f.shell_binding = shell_bytes.bytes();
-    // Both original contributor adapters retain the checked embedding. Charge
-    // their entire current source caps before either is constructed.
+    // Both contributor adapters retain the checked embedding. Their complete
+    // CURRENT source caps are charged here; its earlier construction peak is
+    // separately covered by f.embedding. No retired decode is reallocated.
     f.contributor_sources = modelio::point_mass::Limits{}.host_bytes + modelio::type25::Limits{}.host_bytes;
     const auto native = d::model::detail::NativeFootprint(origin, limits.components);
     f.native_components = native.native_reservation;

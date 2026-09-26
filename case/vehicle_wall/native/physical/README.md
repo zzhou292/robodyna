@@ -25,3 +25,5 @@ the complete authenticated V5, hashes all original named coefficient fields,
 occurrences and family mapping before releasing the baseline model, then compares
 the combined producer. Whole-model invocations are explicit and guarded; neither
 source metadata nor test observations are solver inputs.
+
+Embedded contributor caps cover the complete current construction phase, including retained certificate/original-domain backing. Their already-admitted embedding construction peak remains explicit in previous_phase/total_bytes and the outer forecast; its retired canonical decode is not allocated again. Global preflight validates both embedded producer budgets before constructing either. Legacy non-embedded cap semantics stay unchanged.

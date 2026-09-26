@@ -13,6 +13,8 @@ struct EnvelopePhysicalForecast {
     std::size_t wall_source = 0, embedding = 0, shell_binding = 0;
     std::size_t contributor_sources = 0, native_components = 0, component_packing = 0;
     std::size_t fixed_bytes = 0, peak_bytes = 0;
+    std::size_t embedding_prior_peak = 0, point_mass_current = 0, point_mass_chain_peak = 0;
+    std::size_t type25_current = 0, type25_chain_peak = 0;
 };
 struct EnvironmentParent {
     std::uint64_t element_id = 0, part_id = 0, material_id = 0, section_id = 0;

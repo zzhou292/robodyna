@@ -48,14 +48,26 @@ Forecast VehiclePointMassSource::Preflight(const physical_scope::PhysicalScope& 
 }
 Forecast VehiclePointMassSource::PreflightEmbedded(const physical_scope::DomainEmbedding& embedding,
     Limits limits) {
-    auto f = Preflight(embedding.source(), embedding.domain(), limits);
-    const auto extra = embedding.incremental_backing_bytes();
+    return PreflightEmbedded(embedding.source(),embedding.domain(),embedding.forecast(),limits);
+}
+Forecast VehiclePointMassSource::PreflightEmbedded(const physical_scope::PhysicalScope& source,
+    const tl::fea::NodalNodeDomain& domain,const physical_scope::DomainEmbeddingForecast& embedding,
+    Limits limits) {
+    auto f = Preflight(source, domain, limits);
+    output::Require(embedding.object>=sizeof(physical_scope::DomainEmbedding)&&embedding.original_domain&&
+        embedding.source==source.forecast().total_bytes&&embedding.complete_domain==domain.owned_payload_bytes(),
+        "Embedded point-mass forecast differs from its actual input shape");
+    output::Require(embedding.object<=SIZE_MAX-embedding.original_domain,"Embedded source forecast overflow");
+    const auto extra = embedding.object+embedding.original_domain;
     output::Require(f.current_phase <= limits.host_bytes && extra <= limits.host_bytes - f.current_phase,
         "Embedded point-mass source and original-domain authority exceed cap");
     f.current_phase += extra;
-    f.previous_phase = std::max(f.previous_phase, embedding.forecast().peak_bytes);
+    // The prepared embedding owns its separately admitted earlier construction
+    // peak. Its retired decode scratch is not charged to this current local cap.
+    // Retained original-domain/certificate backing IS charged above. The outer
+    // composition admits the reported whole-chain maximum before either stage.
+    f.previous_phase = std::max(f.previous_phase, embedding.peak_bytes);
     f.total_bytes = std::max(f.previous_phase, f.current_phase);
-    output::Require(f.total_bytes <= limits.host_bytes, "Complete embedded point-mass construction exceeds cap");
     return f;
 }
 } // namespace crash::modelio::point_mass

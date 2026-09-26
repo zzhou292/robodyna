@@ -33,7 +33,13 @@ class VehicleType25Source {
     // Explicit additive-domain path; only authentic original spotwelds are
     // mapped. The suffix receives no invented connector or coefficient source.
     static Forecast PreflightEmbedded(const physical_scope::DomainEmbedding&, Declaration, Limits = {});
+    // Forecast-only shape path; no certificate/readiness is manufactured.
+    static Forecast PreflightEmbedded(const physical_scope::PhysicalScope&,const tl::fea::NodalNodeDomain&,
+        const physical_scope::DomainEmbeddingForecast&,Declaration,Limits = {});
+
     static VehicleType25Source PrepareEmbedded(const physical_scope::DomainEmbedding&, Declaration, Limits = {});
+    // Embedded limits bound the complete CURRENT contributor phase. The already
+    // admitted earlier embedding peak remains reported in previous_phase/total.
     const physical_scope::DomainEmbedding* embedding() const noexcept;
     const physical_scope::PhysicalScope& source() const noexcept;
     const tl::fea::NodalNodeDomain& domain() const noexcept;

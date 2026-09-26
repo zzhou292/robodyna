@@ -29,7 +29,14 @@ class VehiclePointMassSource {
     // Explicit additive-domain path. The immutable certificate proves every
     // original node/card association; this producer adds no suffix mass itself.
     static Forecast PreflightEmbedded(const physical_scope::DomainEmbedding&, Limits = {});
+    // Forecast-only shape path used by the outer composition before preparing
+    // the certificate. PrepareEmbedded still requires immutable source authority.
+    static Forecast PreflightEmbedded(const physical_scope::PhysicalScope&,const tl::fea::NodalNodeDomain&,
+        const physical_scope::DomainEmbeddingForecast&,Limits = {});
+
     static VehiclePointMassSource PrepareEmbedded(const physical_scope::DomainEmbedding&, Limits = {});
+    // Embedded limits bound the complete CURRENT contributor phase. The already
+    // admitted earlier embedding peak remains reported in previous_phase/total.
     const physical_scope::DomainEmbedding* embedding() const noexcept;
     const physical_scope::PhysicalScope& source() const noexcept;
     const tl::fea::ElementMassContributions& contributions() const noexcept;
