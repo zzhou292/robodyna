@@ -30,7 +30,7 @@ void FullLedgerRig::PrepareOwner() {
     fixture.nodes[i].constraint=fixed[i];
   }
   const auto report=tl::constraints::tied_shell::PrepareEmptyCinAttachments(fixture.domain,&cin);
-  nodal_empty_test::Fixture::Require(bool(report),report.message);
+  nodal_empty_test::Fixture::Require(bool(report),"Explicit empty CIN attachment source");
   fe::NodalStateConfig config;config.node_count=count;config.fixed_dt=Dt;
   config.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
   const fe::NodalCinStartup raw{&cin,m.data(),j.data(),nullptr,nullptr,0,Qualification};
