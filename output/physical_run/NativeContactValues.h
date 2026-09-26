@@ -12,10 +12,13 @@ struct NativeContactValues {
     double force_base_time=0,force_base_velocity_time=0;
 };
 inline constexpr std::size_t NativeContactIntegerCount=10,NativeContactRealCount=2;
-void CheckNativeContactValues(const NativeContactValues&);
+// Ordinary records retain exact 2P admission. The explicit group profile also
+// covers true P+S source cardinality; it does not claim a different contact law.
+enum class NativeContactLayout { OrdinaryTwoSided, ExpandedSurface };
+void CheckNativeContactValues(const NativeContactValues&,NativeContactLayout=NativeContactLayout::OrdinaryTwoSided);
 bool SameNativeSource(const NativeContactValues&,const NativeContactValues&) noexcept;
 std::vector<std::string> NativeContactIntegerFields();
 std::vector<std::string> NativeContactRealFields();
-void EncodeNativeContact(const NativeContactValues&,std::uint64_t*,double*);
-NativeContactValues DecodeNativeContact(const std::uint64_t*,const double*);
+void EncodeNativeContact(const NativeContactValues&,std::uint64_t*,double*,NativeContactLayout=NativeContactLayout::OrdinaryTwoSided);
+NativeContactValues DecodeNativeContact(const std::uint64_t*,const double*,NativeContactLayout=NativeContactLayout::OrdinaryTwoSided);
 }

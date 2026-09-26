@@ -3,6 +3,7 @@
 #include "output/full_shell/IntervalChunkPlan.h"
 #include "SelfContactValues.h"
 #include "NativeContactValues.h"
+#include "NativeGroupValues.h"
 #include <optional>
 namespace crash::output::physical_run {
 namespace records=full_shell;
@@ -12,12 +13,14 @@ inline constexpr const char* ProfileSchema="robo_dyna.physical_observation_profi
 inline constexpr const char* SelfContactProfileSchema="robo_dyna.physical_observation_profile.v2";
 inline constexpr std::size_t MetadataCap=1024u<<10;
 inline constexpr const char* NativeContactProfileSchema="robo_dyna.physical_observation_profile.v3";
+inline constexpr const char* NativeGroupProfileSchema="robo_dyna.physical_observation_profile.v4";
 struct Profile {
     bool type45=false;
     bool structural_limit=false;
     bool beam18=false;
     bool self_contact=false;
     bool native_contact=false; // Explicit QEPH/T3/native TYPE25 observation fields; motion is a source/runtime property.
+    bool native_group=false; // Complete physical vehicle with one or two native interfaces.
 };
 bool SameProfile(Profile,Profile) noexcept;
 Document ProfileDocument(Profile);
@@ -28,11 +31,13 @@ struct Values {
     std::optional<double> structural_limit_s;
     std::optional<SelfContactValues> self_contact;
     std::optional<NativeContactValues> native_contact;
+    std::optional<NativeGroupValues> native_group;
 };
 struct Sequence {
     records::FrameStamp last;
     std::uint64_t self_source_id=0,self_selected_parents=0;
     std::optional<NativeContactValues> native_contact;
+    std::optional<NativeGroupValues> native_group;
 };
 void CheckValues(const records::Context&,Profile,const Values&);
 Sequence Advance(const records::Context&,Profile,std::uint64_t planned,const Sequence&,const Values&);
