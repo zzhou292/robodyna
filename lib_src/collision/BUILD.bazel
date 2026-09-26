@@ -1295,3 +1295,11 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_surface_source", ":radioss_type25_fixed_main_startup"],
 )
+
+# Native Starter initial-history arithmetic; no source/owner admission or oracle link.
+cc_library(
+    name = "radioss_type25_initial_state_values",
+    hdrs = ["RadiossType25InitialStateValues.h"] + glob(["radioss_type25/initial_state/*.h"]),
+    deps = [":radioss_type25_selection", ":radioss_type25_lifecycle", ":radioss_type25_candidate_values"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
