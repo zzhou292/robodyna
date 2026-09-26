@@ -38,11 +38,13 @@ struct Fixture {
     init::PairInput out;out.expanded_main_count=int(topology.mains.size());out.profile.sharp=sharp;
     auto& in=out.geometry;in.key={mesh.ids[source.node],7,row,main.global_id};
     in.local_main=int(m+1);in.occurrence=occurrence;in.segment_type=main.segment_type;
-    in.secondary=mesh.Input().positions.at(source.node);in.secondary_gap=source.gap;
+    const auto secondary_position=mesh.Input().positions.at(source.node);
+    in.secondary={secondary_position.x,secondary_position.y,secondary_position.z};in.secondary_gap=source.gap;
     in.main_gap_max=n::native_constant::ep20*n::native_constant::ep10;
     in.secondary_coefficient=source.stiffness;in.main_coefficient=mesh.coefficients[m];
     for(unsigned k=0;k<4;++k) {
-      in.main_node_ids[k]=mesh.ids[main.nodes[k]];in.main_vertices[k]=mesh.Input().positions.at(main.nodes[k]);
+      in.main_node_ids[k]=mesh.ids[main.nodes[k]];const auto position=mesh.Input().positions.at(main.nodes[k]);
+      in.main_vertices[k]={position.x,position.y,position.z};
       in.normal_slot[k]=topology.starter_normals[4*m+k];in.neighbors[k]=main.neighbors[k];in.main_gap[k]=gaps[m][k];
       const auto& ref=topology.starter_references.at(main.normal_reference[k]-1);
       in.boundary_ids[k]=ref.boundary?std::uint64_t(main.normal_reference[k]):0;

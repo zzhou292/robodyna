@@ -31,7 +31,8 @@ TL_MATH_HOST_DEVICE inline Status GatherPair(const RowInput& in,std::size_t row,
   PairInput next;next.profile=in.profile;next.expanded_main_count=int(src.main_count);
   auto& p=next.geometry;p.key={src.nodes[secondary.node].source_id,src.generation,row,main.global_id};
   p.local_main=int(pair.main_occurrence+1);p.occurrence=occurrence;p.segment_type=main.segment_type;
-  p.secondary=in.native_positions.at(secondary.node);p.secondary_gap=secondary.gap;
+  const auto secondary_position=in.native_positions.at(secondary.node);
+  p.secondary={secondary_position.x,secondary_position.y,secondary_position.z};p.secondary_gap=secondary.gap;
   // Original Starter COR3's literal IGAP!=3 assignment. This is not maximum
   // physical corner gap or a caller-adjusted clearance.
   p.main_gap_max=native_constant::ep20*native_constant::ep10;
@@ -39,7 +40,8 @@ TL_MATH_HOST_DEVICE inline Status GatherPair(const RowInput& in,std::size_t row,
   for(unsigned k=0;k<4;++k) {
     if(main.nodes[k]>=src.node_count||main.normal_reference[k]<=0||
         std::size_t(main.normal_reference[k])>src.normal_count)return Status::InvalidInput;
-    p.main_node_ids[k]=src.nodes[main.nodes[k]].source_id;p.main_vertices[k]=in.native_positions.at(main.nodes[k]);
+    p.main_node_ids[k]=src.nodes[main.nodes[k]].source_id;const auto position=in.native_positions.at(main.nodes[k]);
+    p.main_vertices[k]={position.x,position.y,position.z};
     p.normal_slot[k]=main.normal_slot[k];p.neighbors[k]=main.neighbors[k];p.main_gap[k]=main.gap[k];
     const auto& ref=src.normals[main.normal_reference[k]-1];
     if(ref.boundary<0)return Status::InvalidInput;
