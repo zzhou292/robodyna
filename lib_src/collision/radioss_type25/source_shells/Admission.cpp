@@ -2,9 +2,10 @@
 #include "Layout.h"
 #include "Values.h"
 #include "../search/Ranges.h"
+#include "../source_nodal/HostRanges.h"
 #include <climits>
 namespace tlfea::contact::radioss_type25::source_shells::detail {
-Report Prepare(const Input& input, Limits limits, Layout& output) noexcept {
+Report Prepare(const Input& input, NativeNodalSeedView seed, Limits limits, Layout& output) noexcept {
   const Limits hard;
   if (!limits.nodes || limits.nodes>hard.nodes || !limits.shells || limits.shells>hard.shells ||
       limits.primaries>hard.primaries || limits.secondaries>hard.secondaries ||
@@ -21,6 +22,13 @@ Report Prepare(const Input& input, Limits limits, Layout& output) noexcept {
       !search::detail::Span(input.shells,input.shell_count) ||
       !search::detail::Span(input.primary_shells,input.primary_count) ||
       !search::detail::Span(input.secondary,input.secondary_count)) return {Status::InvalidInput};
+  const bool seeded = profile.population == Population::PhysicalShellsWithNodalSeed;
+  if (seeded) {
+    if (seed.node_count != input.node_count || !search::detail::Span(seed.nodes, seed.node_count))
+      return {Status::InvalidInput};
+  } else if (seed.nodes || seed.node_count) {
+    return {Status::InvalidInput};
+  }
   Layout next;
   tl::util::BoundedArenaLayout arena(limits.scratch_bytes);
   if (!arena.Append<NodeFields>(input.node_count,next.nodes) ||
@@ -71,10 +79,21 @@ Report Prepare(const Input& input, Limits limits, Layout& output) noexcept {
       Report bad{Status::InvalidInput};bad.secondary=i;return bad;
     }
   }
+  if (seeded) {
+    for (std::size_t i = 0; i < seed.node_count; ++i) {
+      const auto& node = seed.nodes[i];
+      if (!c::Nonnegative(node.volume) || !c::Nonnegative(node.bulk_volume) ||
+          !c::Nonnegative(node.existing_stiffness)) {
+        Report bad{Status::InvalidInput};
+        bad.node = i;
+        return bad;
+      }
+    }
+  }
   output=next;return {Status::Ok};
 }
 
-bool SeparateStorage(const Input& input, const Layout& layout, void* scratch,
+bool SeparateStorage(const Input& input, NativeNodalSeedView seed, const Layout& layout, void* scratch,
     std::size_t bytes, Output out) noexcept {
   if (bytes<layout.forecast.scratch_bytes || !scratch ||
       reinterpret_cast<std::uintptr_t>(scratch)%alignof(std::max_align_t) ||
@@ -84,23 +103,17 @@ bool SeparateStorage(const Input& input, const Layout& layout, void* scratch,
       !search::detail::Span(out.nodes,out.node_count) ||
       !search::detail::Span(out.primary_stiffness,out.primary_count) ||
       !search::detail::Span(out.secondary,out.secondary_count)) return false;
-  struct Range { const void* data; std::size_t bytes; };
+  using source_nodal::detail::Range;
   const Range read[]{ {&input,sizeof(input)}, {input.shells,input.shell_count*sizeof(PhysicalShell)},
       {input.primary_shells,input.primary_count*sizeof(std::uint32_t)},
-      {input.secondary,input.secondary_count*sizeof(Secondary)} };
+      {input.secondary,input.secondary_count*sizeof(Secondary)},
+      {seed.nodes,seed.node_count*sizeof(NativeNodalSeed)} };
   const Range write[]{ {scratch,bytes}, {out.nodes,out.node_count*sizeof(NodeFields)},
       {out.primary_stiffness,out.primary_count*sizeof(double)},
       {out.secondary,out.secondary_count*sizeof(SecondaryFields)} };
-  auto separate=[](Range a,Range b) {
-    if (!a.bytes || !b.bytes) return true;
-    const auto first=reinterpret_cast<std::uintptr_t>(a.data);
-    const auto second=reinterpret_cast<std::uintptr_t>(b.data);
-    return a.data && b.data && a.bytes<=UINTPTR_MAX-first && b.bytes<=UINTPTR_MAX-second &&
-        (first+a.bytes<=second || second+b.bytes<=first);
-  };
   for (unsigned i=0;i<4;++i) {
-    for (const auto& source:read) if (!separate(write[i],source)) return false;
-    for (unsigned j=0;j<i;++j) if (!separate(write[i],write[j])) return false;
+    for (const auto& source:read) if (!source_nodal::detail::Disjoint(write[i],source)) return false;
+    for (unsigned j=0;j<i;++j) if (!source_nodal::detail::Disjoint(write[i],write[j])) return false;
   }
   return true;
 }

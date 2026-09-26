@@ -1201,11 +1201,19 @@ cc_library(
 )
 
 cc_library(
+    name = "radioss_type25_nodal_seed",
+    srcs = ["radioss_type25/source_nodal/Build.cpp"],
+    hdrs = ["RadiossType25NodalSeed.h"] + glob(["radioss_type25/source_nodal/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_coefficients", ":radioss_type25_search_values", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
     name = "radioss_type25_shell_source",
     srcs = glob(["radioss_type25/source_shells/*.cpp"]),
     hdrs = ["RadiossType25ShellSource.h"] + glob(["radioss_type25/source_shells/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":radioss_type25_coefficients", ":radioss_type25_search_values",
+    deps = [":radioss_type25_nodal_seed", ":radioss_type25_coefficients", ":radioss_type25_search_values",
             "//lib_utils:bounded_arena"],
 )
 

@@ -20,6 +20,7 @@ filegroup(
         "//lib_utest/qualification/radioss_type25_local_geometry:__pkg__",
         "//lib_utest/qualification/radioss_type25_coefficients:__pkg__",
         "//lib_utest/qualification/radioss_type25_nodal_contributions:__pkg__",
+        "//lib_utest/qualification/radioss_type25_nodal_seed:__pkg__",
         "//lib_utest/qualification/radioss_type25_selection:__pkg__",
         "//lib_utest/qualification/radioss_type25_lifecycle:__pkg__",
     ],

@@ -17,3 +17,9 @@ cc_test(
         ["//lib_utest/qualification/radioss_type25_normal:native_source_files"],
     deps = ["@googletest//:gtest_main"],
 )
+
+filegroup(
+    name = "native_source_files",
+    srcs = ["native/prepare.py", "native/source-manifest.json"] + glob(["native/*.F.in", "native/original/*"]),
+    visibility = ["//lib_utest/qualification/radioss_type25_nodal_seed:__pkg__"],
+)
