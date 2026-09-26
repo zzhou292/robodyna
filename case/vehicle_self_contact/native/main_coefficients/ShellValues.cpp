@@ -58,7 +58,7 @@ Packed PackShells(const c::CorrectedNodalSource& corrected, const coated::Inputs
     document.Parse(canonical.canonical_bytes.data(), canonical.canonical_bytes.size());
     Require(!document.HasParseError() && document.IsObject(), "Shell part source inventory is unavailable");
     std::map<std::uint64_t, bool> plain_parts;
-    for (const auto& part : a::reader::Array(document, "parts", 4096))
+    for (const auto& part : a::reader::Array(document, "parts", 4096).GetArray())
         plain_parts.emplace(a::reader::Unsigned(part, "source_part_id"), OrdinaryPartControls(part));
     Packed out; out.parts.reserve(std::min(limits.parts, corrected.part_controls().size()));
     out.shells.reserve(rows.size()); out.keys.reserve(rows.size());

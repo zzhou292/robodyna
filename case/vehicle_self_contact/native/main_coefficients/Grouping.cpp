@@ -53,7 +53,7 @@ bool GroupingContext(const modelio::self_contact::OriginalSelection& selected, c
     tied::detail::Requests requested;
     for (const auto& file : files.GetObject()) {
         const std::string filename(file.name.GetString(), file.name.GetStringLength());
-        for (const auto& block : r::Array(file.value, "blocks", 8192)) {
+        for (const auto& block : r::Array(file.value, "blocks", 8192).GetArray()) {
             if (r::Text(block, "keyword") != "*CONTROL_TIMESTEP") continue;
             if (filename != selection.combine_filename) return false;
             tied::detail::Request request;
