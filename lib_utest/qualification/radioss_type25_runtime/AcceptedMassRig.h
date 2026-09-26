@@ -61,6 +61,16 @@ struct CinRig: moving_cache_test::Rig {
     Check(publication.ConfigurePhysicalScratchParticipation(owner,f.physical,Participants(),Identity(),{{},contact.roster_entry()}));
   }
   void Prepare(Attempt& a) {
+    // Reuse the existing physical-publication activity bridge. Element assembly
+    // supplies STI/forces; witness bytes come from actual accepted parent OFF.
+    Check(publication.ValidateAcceptedActivitySources(owner,{&quad,&triangle},source.physical.shells.inventory()));
+    std::uint8_t activity=0;fe::qeph::BatchDiagnostics diagnostics;
+    Check(quad.CopyAcceptedParentActivity(owner.accepted(),&activity,1,&diagnostics));
+    const std::uint8_t native=activity?1:2;fe::NodalCinAssemblyView cin_view;
+    Check(owner.BorrowCinAssembly(a.token,&cin_view));
+    auto error=cudaMemcpyAsync(cin_view.witness_activity,&native,1,cudaMemcpyHostToDevice,a.assembly.stream);
+    const auto drained=cudaStreamSynchronize(a.assembly.stream);
+    if(error!=cudaSuccess||drained!=cudaSuccess)throw std::runtime_error("Actual CIN witness upload failed");
     const auto require=[](fe::NodalReport r,const char* stage) {
       if(r.status!=fe::NodalStatus::Ok)throw std::runtime_error(std::string(stage)+": "+r.message+
           " status="+std::to_string(unsigned(r.status))+" node="+std::to_string(r.node)+" dt="+std::to_string(r.stable_dt));
@@ -122,7 +132,8 @@ struct RigidRig: moving_cache_test::Rig {
   }
   n::TransactionReport Initialize() {
     auto& f=source.physical;const auto cin_source=f.Cin();
-    Check(owner.Initialize(f.Config(),f.Kinematics(),f.inverse_mass.data(),f.Dofs(),rigid,&cin_source));
+    auto owner_config=f.Config();owner_config.rigid_limits=fe::NodalRigidOwnerLimits::VehicleAssembly();
+    Check(owner.Initialize(owner_config,f.Kinematics(),f.inverse_mass.data(),f.Dofs(),rigid,&cin_source));
     fe::qeph::QephBatchConfig q;q.owner=owner.accepted();q.configuration_id=901;q.qualification_id=f.Qualification;
     q.element_count=f.shells.qeph_count();q.usage=fe::qeph::BatchUsage::CoupledForces;q.startup=f.startup;
     Check(quad.InitializeMapped(q,physical,owner,f.Witnesses()));

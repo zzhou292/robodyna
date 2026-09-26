@@ -99,6 +99,15 @@ TEST(NativeType25AcceptedMassCuda, StaticPolicyStillRejectsRealCinAndMissingWitn
     // even before contact can write its force/STI scratch or the owner advances.
     EXPECT_EQ(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly).status,n::TransactionStatus::PublicationFailure);
     rig.Discard();SameBits(rig.Raw(),before);EXPECT_EQ(rig.contact.accepted().generation,0u);
+    // Complete physical assembly alone cannot fabricate current activity. Skip
+    // the explicit accepted-parent activity adapter and require owner rejection.
+    Attempt no_activity;rig.Begin(no_activity);
+    Check(rig.contact.AssembleAccepted(rig.owner,no_activity.token,no_activity.assembly));
+    Check(rig.owner.SealAssembly(no_activity.token));
+    EXPECT_EQ(fe::AdvanceStaggeredCin(rig.owner,no_activity.token,{no_activity.assembly.owner_id,
+        no_activity.assembly.accepted.base_epoch,no_activity.assembly.attempt,rig.source.physical.Qualification,
+        rig.source.physical.fixed_dt,.2,true}).status,fe::NodalStatus::MissingStepAdmission);
+    rig.Discard();SameBits(rig.Raw(),before);EXPECT_EQ(rig.contact.accepted().generation,0u);
     Attempt retry;rig.Begin(retry);Check(rig.contact.AssembleAccepted(rig.owner,retry.token,retry.assembly));
     rig.Prepare(retry);Check(rig.Commit(retry));EXPECT_EQ(rig.owner.accepted().epoch,1u);
   }
