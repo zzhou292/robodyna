@@ -1,0 +1,48 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only complete IN24COQ_SOL3/SEG_INS/CHECKVOLUME and original reader/surface-sort blocks",
+  "files": [
+    {
+      "path": "original/hm_read_solid.F",
+      "original_path": "starter/source/elements/reader/hm_read_solid.F",
+      "bytes": 38906,
+      "sha256": "46d83bf4c41eed947945e7e577ecbaa0808eca6fc6dfe5c5c3a58e64d8bc0c90",
+      "git_blob": "9970260765cc47e4921f87e9cd0f3a0afa8ba2f3"
+    },
+    {
+      "path": "original/i24surfi.F",
+      "original_path": "starter/source/interfaces/inter3d1/i24surfi.F",
+      "bytes": 74037,
+      "sha256": "aa55e679ceb96b8d83ed7611bc6486c011ff9ef1a5bd86e1d5764b3363cd55f3",
+      "git_blob": "910e8b87fb058708efc9290e5ac1b6eee7d827c0"
+    },
+    {
+      "path": "original/i25surfi.F",
+      "original_path": "starter/source/interfaces/inter3d1/i25surfi.F",
+      "bytes": 27552,
+      "sha256": "f47b140133ddd3eea5e01e0b42309ee7ee27360cf7ae9fc40b9db7cfe781a7db",
+      "git_blob": "fc03db70db0a48fdf25f7cf3bac5ac3572d76bb2"
+    },
+    {
+      "path": "original/checksvolume.F",
+      "original_path": "starter/source/elements/solid/solide/checksvolume.F",
+      "bytes": 9561,
+      "sha256": "fa7abeb360c050bbe137ce201d71004149548a95ab539770a444b4b364cdd148",
+      "git_blob": "29a38da32ca8da0a1594acca9c782b1624f87373"
+    },
+    {
+      "path": "original/my_orders.c",
+      "original_path": "common_source/tools/sort/my_orders.c",
+      "bytes": 3652,
+      "sha256": "75d1173b7558f5c832620f299d331e7f1cc631037c4b1f5e000769b516fd68e0",
+      "git_blob": "37dca9fd6fb96ed1dbb0aab8033462bb5d71cfb3"
+    },
+    {
+      "path": "original/constant_mod.F",
+      "original_path": "common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    }
+  ]
+}
