@@ -4,6 +4,8 @@
 #include "lib_src/assembly/ShellPhysicalBinding.h"
 #include "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h"
 #include "lib_src/elements/ShellBatchStartup.h"
+#include "TiedSource.h"
+namespace crash::cases::vehicle_startup {class TiedCinWitnessRoster;}
 namespace crash::cases::native_scene {
 struct SourceLimits {std::size_t nodes=2048,parents=1024;};
 // Immutable source handles only: no current nodal buffers, material trial,
@@ -16,6 +18,8 @@ class PhysicalSource {
     const tl::fea::ShellPhysicalBinding& physical() const noexcept;
     const tl::fea::NodalRigidAssemblyBinding& rigid() const noexcept;
     const tl::constraints::tied_shell::TiedCinAttachmentModel& cin() const noexcept;
+    const TiedSource* tied_source() const noexcept;
+    const vehicle_startup::TiedCinWitnessRoster* cin_witnesses() const noexcept;
     const tl::fea::ShellBatchStartup& startup() const noexcept;
     const std::vector<std::uint8_t>& translation_fixed_bits() const noexcept;
     const std::vector<std::uint8_t>& rotation_fixed() const noexcept;

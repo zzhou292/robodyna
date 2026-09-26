@@ -2,6 +2,7 @@
 #include "TiedCinAttachments.h"
 #include "VehicleShellBinding.h"
 #include "lib_src/constraints/tied_shell/runtime/CinStageTypes.h"
+#include "lib_src/assembly/ShellPhysicalBinding.h"
 
 namespace crash::cases::vehicle_startup {
 namespace cin_stage = tl::constraints::tied_shell::cin;
@@ -41,11 +42,20 @@ class TiedCinWitnessRoster {
                                            TiedCinWitnessLimits = {});
     static TiedCinWitnessRoster Prepare(const TiedCinAttachments&,const VehicleShellBinding&,
                                         TiedCinWitnessLimits = {});
+    // Reuses the same incidence/mapping for a genuine prepared physical source.
+    // No vehicle canonical wrapper or activity values are fabricated.
+    static TiedCinWitnessForecast ForecastPhysical(const native_search::TiedCinAttachmentModel&,
+        const tl::fea::ShellPhysicalBinding&,TiedCinWitnessLimits = {});
+    static TiedCinWitnessRoster PreparePhysical(const native_search::TiedCinAttachmentModel&,
+        const tl::fea::ShellPhysicalBinding&,TiedCinWitnessLimits = {});
     TiedCinWitnessRoster(const TiedCinWitnessRoster&) noexcept = default;
     TiedCinWitnessRoster(TiedCinWitnessRoster&& other) noexcept : data_(other.data_) {}
     TiedCinWitnessRoster& operator=(const TiedCinWitnessRoster&) = delete;
-    const TiedCinAttachments& attachments() const noexcept;
-    const VehicleShellBinding& binding() const noexcept;
+    // Legacy source accessors reject the physical-source profile explicitly.
+    const TiedCinAttachments& attachments() const;
+    const VehicleShellBinding& binding() const;
+    const native_search::TiedCinAttachmentModel& model() const noexcept;
+    const tl::fea::ShellBatchBinding& shells() const noexcept;
     const TiedCinWitnessData& data() const noexcept;
     const TiedCinWitnessForecast& forecast() const noexcept;
     // Existing owner profile: complete mapped shell witnesses, 1..4 per row.

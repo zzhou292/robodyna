@@ -1,5 +1,6 @@
 #include "DeclaredSource.h"
 #include "CoupledDeclaration.h"
+#include "TiedDeclaration.h"
 #include "output/BoundedArrayJson.h"
 #include <map>
 #include <set>
@@ -50,7 +51,7 @@ void Controls(DeclaredData& out,const Value& scene,const Value& original) {
         out.velocity_mm_s.z<0&&std::abs(out.velocity_mm_s.x)<=100000&&std::abs(out.velocity_mm_s.y)<=100000&&std::abs(out.velocity_mm_s.z)<=100000,
         "Unsupported declared scene motion/time/thickness");
 }
-void Mesh(DeclaredData& out,const Value& mesh,ReadLimits limits) {
+void Mesh(DeclaredData& out,const Value& mesh,ReadLimits limits,bool tied=false) {
     Keys(mesh,{"nodes","wall","patch","wall_nodes","patch_nodes"});
     const auto& nodes=Field(mesh,"nodes");Require(nodes.IsArray()&&nodes.Size()>=7&&nodes.Size()<=limits.nodes,"Scene node extent exceeds cap");
     std::map<std::uint64_t,std::uint32_t> index;
@@ -73,7 +74,7 @@ void Mesh(DeclaredData& out,const Value& mesh,ReadLimits limits) {
         const auto& values=Field(mesh,name);Require(values.IsArray()&&values.Size()>0&&values.Size()<=limits.parents-element_ids.size(),"Scene parent extent exceeds cap");
         for(const auto& value:values.GetArray()) {
             Keys(value,{"id","part","nodes"});SourceParent parent;parent.id=Id(Field(value,"id"));parent.part=Id(Field(value,"part"));parent.corners=corners;
-            Require(parent.part==role&&element_ids.insert(parent.id).second,"Scene parent identity/part differs");
+            Require((parent.part==role||(tied&&role==2&&parent.part==3))&&element_ids.insert(parent.id).second,"Scene parent identity/part differs");
             const auto& connectivity=Field(value,"nodes");Require(connectivity.IsArray()&&connectivity.Size()==corners,"Scene parent topology differs");
             for(unsigned k=0;k<corners;++k) {
                 const auto found=index.find(Id(connectivity[k]));Require(found!=index.end()&&membership[found->second]==role,"Scene face uses a foreign node");
@@ -98,9 +99,11 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     const auto doc=Parse(bytes,limits.file_bytes);
     const auto schema=Text(Field(doc,"schema"));
     const bool coupled=schema=="robo_dyna.native_contact_scene_export.v3";
+    const bool tied=schema=="robo_dyna.native_contact_scene_export.v4";
     if(coupled)Keys(doc,{"schema","scope","source_sha256","scene","mesh","reference_rigid_body","files"});
+    else if(tied)Keys(doc,{"schema","scope","source_sha256","scene","mesh","reference_tied_interface","files"});
     else Keys(doc,{"schema","scope","source_sha256","scene","mesh","files"});
-    const bool moving=coupled||schema=="robo_dyna.native_contact_scene_export.v2";
+    const bool moving=coupled||tied||schema=="robo_dyna.native_contact_scene_export.v2";
     Require(moving||schema=="robo_dyna.native_contact_scene_export.v1","Unsupported declared scene export");
     (void)Text(Field(doc,"scope")); // Descriptive text is never numerical authority.
     auto out=std::make_shared<DeclaredData>();out->export_sha256=expected;out->definition_sha256=Text(Field(doc,"source_sha256"));
@@ -116,10 +119,10 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     }
     Require(Sha256(out->definition_bytes)==out->definition_sha256,"Original scene member differs from source identity");
     const auto original=Parse(out->definition_bytes,limits.file_bytes);
-    if(coupled)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface","coupling"});
+    if(coupled||tied)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface","coupling"});
     else if(moving)Keys(original,{"schema","units","wall","patch","material","thickness_mm","run","contact_surface"});
     else Keys(original,{"schema","units","wall","patch","material","thickness_mm","run"});
-    Require(Text(Field(original,"schema"))==(coupled?"robo_dyna.native_contact_scene.v3":moving?"robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1"),
+    Require(Text(Field(original,"schema"))==(tied?"robo_dyna.native_contact_scene.v4":coupled?"robo_dyna.native_contact_scene.v3":moving?"robo_dyna.native_contact_scene.v2":"robo_dyna.native_contact_scene.v1"),
         "Original declaration and export schema differ");
     out->definition_schema=Text(Field(original,"schema")); // Exact authenticated member version.
     if(moving)Require(Text(Field(original,"contact_surface"))=="all_shells","Unknown moving source surface");
@@ -127,13 +130,14 @@ DeclaredSource DeclaredSource::Read(const std::filesystem::path& path,const std:
     Require(Text(Field(units,"length"))=="mm"&&Text(Field(units,"mass"))=="tonne"&&Text(Field(units,"time"))=="s","Scene requires explicit native mm/tonne/s");
     const auto& scene=Field(doc,"scene");
     if(moving) {
-        if(coupled)Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface","coupling"});
+        if(coupled||tied)Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface","coupling"});
         else Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s","contact_surface"});
         Require(Text(Field(scene,"contact_surface"))==Text(Field(original,"contact_surface")),"Exported contact surface differs from source");
         out->contact_surface=DeclaredContactSurface::AllShells;
     } else Keys(scene,{"wall","patch","velocity_mm_s","material","thickness_mm","end_time_s","nodal_scale","animation_interval_s","time_step_cap_s"});
-    Materials(*out,scene,original);Controls(*out,scene,original);Mesh(*out,Field(doc,"mesh"),limits);
+    Materials(*out,scene,original);Controls(*out,scene,original);Mesh(*out,Field(doc,"mesh"),limits,tied);
     if(coupled)detail::BindRigidPatch(*out,doc,original);
+    if(tied)detail::BindTiedPatch(*out,doc,original);
     return DeclaredSource(std::move(out));
 }
 } // namespace crash::modelio::native_scene

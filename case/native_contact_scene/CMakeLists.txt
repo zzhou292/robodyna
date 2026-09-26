@@ -137,3 +137,22 @@ if(ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT)
   set_tests_properties(native_scene_rigid_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
     ENVIRONMENT "ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT=${ROBO_DYNA_NATIVE_RIGID_SCENE_EXPORT}")
 endif()
+
+set(ROBO_DYNA_NATIVE_CIN_SCENE_EXPORT "" CACHE FILEPATH "Explicit source-qualified17-node v4 declaration")
+if(ROBO_DYNA_NATIVE_CIN_SCENE_EXPORT)
+  if(NOT EXISTS "${ROBO_DYNA_NATIVE_CIN_SCENE_EXPORT}")
+    message(FATAL_ERROR "CIN declaration export is absent")
+  endif()
+  add_executable(native_scene_tied_source_test
+    "${robo_scene_case_root}/modelio/native_contact_scene/TiedSourceTest.cpp" TiedPreparationTest.cpp)
+  target_link_libraries(native_scene_tied_source_test PRIVATE robo_dyna_native_scene_contact_source GTest::gtest_main)
+  add_test(NAME native_scene_tied_source COMMAND native_scene_tied_source_test)
+  set_tests_properties(native_scene_tied_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_NATIVE_CIN_SCENE_EXPORT=${ROBO_DYNA_NATIVE_CIN_SCENE_EXPORT}")
+  # Compile the reused actual activity capture/upload implementation in the
+  # owning CUDA-linked configuration; this host source gate launches no GPU.
+  if(ROBO_DYNA_NATIVE_CAPTURE_RUNTIME)
+    include("${CMAKE_CURRENT_LIST_DIR}/../vehicle_startup/TiedCinWitnessActivity.cmake")
+    target_link_libraries(native_scene_tied_source_test PRIVATE robo_dyna_tied_cin_witness_activity)
+  endif()
+endif()

@@ -24,11 +24,21 @@ struct DeclaredRigidPatch {
     tl::math::Vec3 reference_primary_mm;
     std::vector<std::uint64_t> member_source_ids,centroid_source_order;
 };
+struct DeclaredTiedPatch {
+    std::uint32_t interface_id=0,master_surface_id=0,secondary_group_id=0;
+    std::uint64_t master_parent_id=0,master_part_id=0,dependent_parent_id=0,dependent_part_id=0;
+    std::array<std::uint32_t,4> master_nodes{},secondary_nodes{}; // Actual physical domain rows.
+    // Raw card controls retained beside their source-resolved reader values.
+    int ignore=0,spotflag=0,level=0,search=0,deletion=0,stiffness_mode=0,tied_removal=0;
+    double search_distance_mm=0,stiffness_scale=0,viscosity=0;
+    int resolved_level=0,resolved_search=0,resolved_hierarchy=0;
+};
 struct DeclaredData {
     DeclaredContactSurface contact_surface=DeclaredContactSurface::FixedWall;
     std::string export_sha256,definition_sha256,definition_bytes,definition_schema;
     NativeMaterial material;
     std::optional<DeclaredRigidPatch> rigid_patch;
+    std::optional<DeclaredTiedPatch> tied_patch;
     std::vector<SourceNode> nodes;
     std::vector<SourceParent> wall,patch;
     std::vector<std::uint32_t> wall_nodes,patch_nodes;

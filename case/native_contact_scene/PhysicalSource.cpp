@@ -4,6 +4,7 @@
 #include "lib_utils/BoundedArena.h"
 #include "lib_src/constraints/NodalRigidPartTopology.h"
 #include "lib_src/constraints/NodalRigidPartAssemblyModel.h"
+#include "case/vehicle_startup/TiedCinWitnessRoster.h"
 namespace crash::cases::native_scene {
 namespace fe=tl::fea;
 namespace source=modelio::native_scene;
@@ -24,6 +25,8 @@ struct PhysicalSource::Data {
     fe::ShellExecutionBinding execution;
     fe::ShellPhysicalBinding physical;
     tl::constraints::tied_shell::TiedCinAttachmentModel cin;
+    std::optional<TiedSource> tied;
+    std::optional<vehicle_startup::TiedCinWitnessRoster> witnesses;
     fe::ShellBatchStartup startup;
     std::vector<std::uint8_t> fixed,rotation;
 };
@@ -129,7 +132,14 @@ PhysicalSource PhysicalSource::Prepare(const source::DeclaredSource& declared,st
         "Declared constitutive execution roles rejected");
     Require(bool(out->physical.InitializeExecution({&out->shells,&out->catalog,&out->failure,nullptr},out->ledger,out->execution)),
         "Declared scene physical binding rejected");
-    Require(bool(tl::constraints::tied_shell::PrepareEmptyCinAttachments(out->domain,&out->cin)),"Declared empty CIN scope rejected");
+    if(d.tied_patch) {
+        out->tied=TiedSource::Prepare(declared,out->domain);
+        out->cin=out->tied->model();
+        out->witnesses.emplace(vehicle_startup::TiedCinWitnessRoster::PreparePhysical(out->cin,out->physical,{8u<<20,4}));
+        Require(out->witnesses->runtime_mappable()&&out->witnesses->data().counts.declared_parent_witnesses==4&&
+            out->witnesses->data().counts.additional_containing_parents==0,
+            "Named source does not have four genuine declared-master witnesses");
+    } else Require(bool(tl::constraints::tied_shell::PrepareEmptyCinAttachments(out->domain,&out->cin)),"Declared empty CIN scope rejected");
     out->fixed.assign(nodes.size(),0);out->rotation.assign(nodes.size(),0);
     for(auto node:d.wall_nodes){out->fixed[node]=7;out->rotation[node]=1;}
     out->startup={fe::ShellBatchStartupKind::ReferenceConstrainedUniformTranslation,
@@ -141,6 +151,8 @@ const source::LinearHardeningBridge& PhysicalSource::hardening() const noexcept{
 const fe::ShellPhysicalBinding& PhysicalSource::physical() const noexcept{return data_->physical;}
 const fe::NodalRigidAssemblyBinding& PhysicalSource::rigid() const noexcept{return data_->rigid;}
 const tl::constraints::tied_shell::TiedCinAttachmentModel& PhysicalSource::cin() const noexcept{return data_->cin;}
+const TiedSource* PhysicalSource::tied_source() const noexcept{return data_->tied?&*data_->tied:nullptr;}
+const vehicle_startup::TiedCinWitnessRoster* PhysicalSource::cin_witnesses() const noexcept{return data_->witnesses?&*data_->witnesses:nullptr;}
 const fe::ShellBatchStartup& PhysicalSource::startup() const noexcept{return data_->startup;}
 const std::vector<std::uint8_t>& PhysicalSource::translation_fixed_bits() const noexcept{return data_->fixed;}
 const std::vector<std::uint8_t>& PhysicalSource::rotation_fixed() const noexcept{return data_->rotation;}
@@ -158,6 +170,10 @@ std::size_t PhysicalSource::retained_host_upper_bound() const {
         "Physical source retained byte bound overflow");
     if(d.rigid_patch)Require(b.Append<std::uint64_t>(d.rigid_patch->member_source_ids.capacity()+
         d.rigid_patch->centroid_source_order.capacity(),unused),"Rigid declaration byte bound overflow");
+    if(data_->tied)Require(b.Append<std::byte>(data_->tied->retained_host_upper_bound(),unused),
+        "Complete tied source retained byte bound overflow");
+    if(data_->witnesses)Require(b.Append<std::byte>(data_->witnesses->forecast().total_host_bytes,unused),
+        "Complete tied witness retained byte bound overflow");
     return b.bytes();
 }
 } // namespace crash::cases::native_scene
