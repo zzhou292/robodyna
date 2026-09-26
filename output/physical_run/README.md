@@ -241,3 +241,11 @@ identify the same accepted-base history/phase columns; motion, contact source
 selection and numerical qualification belong to the actual runtime and source
 records. Neither identifier is a restart or general-physics certificate. Source
 member format provenance separately retains its actual v1/v2 declaration schema.
+
+The additive native-group profile records each actual interface publication in
+declared order, including its source identity, topology cardinality, accepted
+generation and force-base phase. It supports the complete physical vehicle
+with mixed P+S self-contact and the separate finite wall. The existing tiny
+QEPH/T3 native profile retains exact 2P validation and its unchanged schema.
+The group record describes publication provenance; it is not a restart/history
+dump or a claim that complete contact work/energy ledgers are available.

@@ -47,6 +47,7 @@ Sequence ReadIntervals(const std::filesystem::path& root,const records::Context&
             if(p.structural_limit)value.structural_limit_s=b[4];
             if(p.self_contact)value.self_contact=DecodeSelfContact(a+4,b+4+std::size_t(p.structural_limit));
             if(p.native_contact)value.native_contact=DecodeNativeContact(a+4,b+4+std::size_t(p.structural_limit));
+            if(p.native_group)value.native_group=DecodeNativeGroup(a+4,b+4+std::size_t(p.structural_limit));
             sequence=Advance(c,p,planned,sequence,value);
             if(visit)visit(value);
         }

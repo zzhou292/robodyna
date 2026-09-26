@@ -3,7 +3,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../physical_frames/FrameArchive.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/WallComposition.cmake")
 add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ViewerInput.cpp" "${CMAKE_CURRENT_LIST_DIR}/Profile.cpp" "${CMAKE_CURRENT_LIST_DIR}/Sequence.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/SelfContactValues.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeContactValues.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/NativeGroupValues.cpp" "${CMAKE_CURRENT_LIST_DIR}/SelfContactValues.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeContactValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Fields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IntervalWriter.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/IntervalReader.cpp" "${CMAKE_CURRENT_LIST_DIR}/Configuration.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/IndexFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IndexChecks.cpp"
@@ -21,7 +21,7 @@ option(ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY "Build accepted dynamics interval fac
 if(ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY)
   include("${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_dynamics/output/VehicleAcceptedFrames.cmake")
   add_library(robo_dyna_physical_run_live STATIC "${CMAKE_CURRENT_LIST_DIR}/AcceptedDynamics.cpp" "${CMAKE_CURRENT_LIST_DIR}/AcceptedWall.cpp" "${CMAKE_CURRENT_LIST_DIR}/AcceptedWallValues.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/AcceptedSelfContact.cpp")
+    "${CMAKE_CURRENT_LIST_DIR}/AcceptedSelfContact.cpp" "${CMAKE_CURRENT_LIST_DIR}/AcceptedNativeGroup.cpp")
   target_link_libraries(robo_dyna_physical_run_live PUBLIC robo_dyna_physical_run_records robo_dyna_vehicle_accepted_frames)
   target_compile_features(robo_dyna_physical_run_live PUBLIC cxx_std_17)
   target_compile_options(robo_dyna_physical_run_live PRIVATE -fno-fast-math -ffp-contract=off)

@@ -4,7 +4,8 @@ namespace crash::output::physical_run {
 void CheckValues(const records::Context& c,Profile p,const Values& v) {
     records::CheckStamp(c,v.stamp);
     Require(v.owner==c.identity().owner && v.stamp.epoch &&
-        v.structural_limit_s.has_value()==p.structural_limit && v.self_contact.has_value()==p.self_contact && v.native_contact.has_value()==p.native_contact &&
+        v.structural_limit_s.has_value()==p.structural_limit && v.self_contact.has_value()==p.self_contact && v.native_contact.has_value()==p.native_contact && v.native_group.has_value()==p.native_group &&
+        !(p.native_group&&(p.self_contact||p.native_contact)) &&
         !(p.native_contact&&(p.self_contact||p.type45||p.beam18)),
         "Physical accepted row source/profile differs");
     if(v.structural_limit_s)
@@ -23,12 +24,34 @@ void CheckValues(const records::Context& c,Profile p,const Values& v) {
             Bits(n.force_base_time)==Bits(v.stamp.base_time)&&(!v.stamp.base_epoch?Bits(n.force_base_velocity_time)==Bits(0.):true),
             "Native contact force source or phase differs from accepted endpoint");
     }
+    if(v.native_group) {
+        CheckNativeGroupValues(*v.native_group);
+        for(std::size_t i=0;i<v.native_group->count;++i) {
+            const auto& n=v.native_group->entries[i].publication;
+            // Render nodes are a subset of the complete physical vehicle/wall
+            // domain; live capture authenticates that complete domain exactly.
+            Require(n.nodes>=c.nodes() && n.publication_generation==v.stamp.epoch && n.force_base_epoch==v.stamp.base_epoch &&
+                Bits(n.force_base_time)==Bits(v.stamp.base_time) && (!v.stamp.base_epoch?Bits(n.force_base_velocity_time)==Bits(0.):true),
+                "Native group publication or force phase differs from accepted endpoint");
+        }
+    }
+
 }
 Sequence Advance(const records::Context& c,Profile p,std::uint64_t planned,const Sequence& s,const Values& v) {
     CheckValues(c,p,v);
     Require(s.last.epoch<planned && v.stamp.base_epoch==s.last.epoch && v.stamp.epoch==s.last.epoch+1 &&
         v.stamp.attempt>s.last.attempt && Bits(v.stamp.base_time)==Bits(s.last.time),
         "Physical interval is not the next accepted owner endpoint");
+    if(v.native_group) {
+        if(s.last.epoch) {
+            Require(s.native_group.has_value(),"Missing previous accepted native group");
+            CheckNativeGroupContinuation(*s.native_group,*v.native_group);
+        }
+        for(std::size_t i=0;i<v.native_group->count;++i)
+            Require(Bits(v.native_group->entries[i].publication.force_base_velocity_time)==Bits(s.last.velocity_time),
+                "Native group force velocity phase differs from previous accepted endpoint");
+        return {v.stamp,0,0,std::nullopt,v.native_group};
+    }
     if(v.native_contact) {
         const auto& n=*v.native_contact;
         Require(Bits(n.force_base_velocity_time)==Bits(s.last.velocity_time)&&
@@ -54,6 +77,7 @@ std::vector<std::string> IntegerFields(Profile p) {
     std::vector<std::string> fields{"owner_id","base_epoch","attempt","accepted_epoch"};
     if(p.self_contact) {const auto extra=SelfContactIntegerFields();fields.insert(fields.end(),extra.begin(),extra.end());}
     if(p.native_contact){const auto extra=NativeContactIntegerFields();fields.insert(fields.end(),extra.begin(),extra.end());}
+    if(p.native_group){const auto extra=NativeGroupIntegerFields();fields.insert(fields.end(),extra.begin(),extra.end());}
     return fields;
 }
 std::vector<std::string> RealFields(Profile p) {
@@ -61,9 +85,14 @@ std::vector<std::string> RealFields(Profile p) {
     if(p.structural_limit) fields.push_back("post_cin_structural_limit_s");
     if(p.self_contact) {const auto extra=SelfContactRealFields();fields.insert(fields.end(),extra.begin(),extra.end());}
     if(p.native_contact){const auto extra=NativeContactRealFields();fields.insert(fields.end(),extra.begin(),extra.end());}
+    if(p.native_group){const auto extra=NativeGroupRealFields();fields.insert(fields.end(),extra.begin(),extra.end());}
     return fields;
 }
 std::size_t ExtraIntervalBytes(Profile p) noexcept {
+    if(p.native_group) {
+        const auto bytes=8*(4+NativeGroupIntegerCount+4+std::size_t(p.structural_limit)+NativeGroupRealCount);
+        return bytes>interval::RowBytes?bytes-interval::RowBytes:0;
+    }
     if(p.native_contact) {
         const auto bytes=8*(4+NativeContactIntegerCount+4+std::size_t(p.structural_limit)+NativeContactRealCount);
         return bytes>interval::RowBytes?bytes-interval::RowBytes:0;
