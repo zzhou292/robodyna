@@ -1,4 +1,5 @@
 #include "Report.h"
+#include "PreviewResources.h"
 #include "../Run.h"
 #include "../tests/ActualSources.h"
 #include "output/physical_run/ViewerInput.h"
@@ -24,8 +25,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
     const auto begin = Clock::now();
     bool complete = !execute;
     try {
-        Config config;
-        config.dynamics.startup.limits.device_bytes = std::size_t{5} << 30;
+        auto config = PreviewResources();
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
         RunConfig run_config;
@@ -52,6 +52,20 @@ void RunAcceptedQualification(bool execute, bool preview) {
         const auto source = VehicleContactStartup::Prepare(input.owner, input.self, input.wall, input.controls, config);
         output::Number(doc, "host_case_preparation_s", Seconds(preparation_start));
         Plan(doc, source.forecast(), true);
+        output::Value capacities(rapidjson::kArrayType);
+        for (unsigned i = 0; i < config.initialization.size(); ++i) {
+            output::Document one;
+            one.SetObject();
+            output::String(one, "role", i == 0 ? "self" : "mesh_wall");
+            output::Integer(one, "initializer_max_pairs", config.initialization[i].max_pairs);
+            output::Integer(one, "initializer_max_tasks", config.initialization[i].max_tasks);
+            output::Integer(one, "runtime_max_pairs", config.transaction[i].inventory.max_pairs);
+            output::Integer(one, "runtime_max_tasks", config.transaction[i].inventory.max_tasks);
+            output::Integer(one, "runtime_optimized_entries", config.transaction[i].optimized_candidates);
+            output::Integer(one, "runtime_sliding_entries", config.transaction[i].sliding_entries);
+            capacities.PushBack(output::Value(one, doc.GetAllocator()), doc.GetAllocator());
+        }
+        doc.AddMember("execution_capacities", capacities, doc.GetAllocator());
         const auto output_start = Clock::now();
         const auto run = PreparedRun::Prepare(source, run_config);
         output::Number(doc, "output_preparation_s", Seconds(output_start));
