@@ -17,6 +17,8 @@ struct MotionSummary {
 // Independent uniform translation observation from original coordinates.
 // All physical slots, including dependent and absent-rotation nodes, are read.
 // This computes errors; it neither prescribes motion nor changes coordinates.
+MotionSummary ObserveUniformMotion(const tl::fea::NodalNodeDomain&,
+                                  const Fields&,double speed,double time);
 MotionSummary ObserveUniformMotion(const tl::fea::NodalCoefficientLedger&,
                                   const Fields&,double speed,double time);
 } // namespace crash::cases::vehicle_dynamics

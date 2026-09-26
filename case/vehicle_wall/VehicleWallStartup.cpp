@@ -30,7 +30,7 @@ RuntimeForecast VehicleWallStartup::Preflight(const VehicleWallSetup& setup,
     tl::fea::ShellMappedFootprint contact;
     const auto checked=c::NodalWallMappedContact::Forecast(config,*setup.geometry().weights(),source,contact,limits.contact);
     output::Require(checked.status==c::NodalWallDeviceStatus::Ok,checked.message);
-    output::Require(dynamics.allocations().device_bytes==dynamics.forecast().startup.device_bytes,
+    output::Require(dynamics.allocations().device_bytes==(dynamics.forecast().startup.device_bytes+dynamics.forecast().motion.device_bytes),
         "Actual owner allocation differs from the retained dynamics forecast");
     const auto participation=detail::ForecastWallParticipation(
         config.wall_binding_id,limits.participation);

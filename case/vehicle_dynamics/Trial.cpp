@@ -141,16 +141,21 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     }
 }
 void VehiclePhysicalDynamics::Storage::Capture() {
-    tl::fea::NodalPreparedView copied;
+    tl::fea::NodalUniformMotionObservation observed;
+    // Preserve complete snapshot validation and its prepared phase; only the
+    // readback payload changes. Full archive fields use the sampled capture.
     Timed<StepStage::CaptureFields>(timer,[&] {
-        return state().owner.CopyPrepared(token,candidate_fields().buffer(),&copied);
-    },"Prepared physical fields");
-    output::Require(tl::fea::trial_identity::SamePrepared(prepared,copied),"Prepared physical capture identity differs");
+        return motion.ObservePrepared(state().owner,token,
+            {vehicle_runtime::InitialSpeedMps,0,0},&observed);
+    },"Prepared physical motion observation");
+    output::Require(tl::fea::trial_identity::SamePrepared(prepared,observed.prepared),
+        "Prepared physical observation identity differs");
     auto& out=candidate();
-    out.proposed_time=copied.proposed_time;
+    out.proposed_time=observed.prepared.proposed_time;
     timer.Measure<StepStage::ObserveMotion>([&] {
-        out.uniform_motion=ObserveUniformMotion(startup.execution().model().coefficients(),candidate_fields(),
-            vehicle_runtime::InitialSpeedMps,copied.proposed_time);
+        const auto& value=observed.motion;
+        out.uniform_motion={value.nodes,value.maximum_position_error,value.maximum_velocity_error,
+            value.maximum_orientation_error,value.maximum_spin};
         return true;
     });
 }

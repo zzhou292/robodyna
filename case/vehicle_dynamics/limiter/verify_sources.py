@@ -7,7 +7,7 @@ import json
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = '3ffb5228305c7e35d008835ddb3df8c00deffb887cad6841ab86010cfaa4fd8e'
+EXPECTED = 'deebda9e0712c575dc0b632ae68bed268140177c605f6fec8015ade70c180fd9'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -22,8 +22,14 @@ addition = '''        if(config.structural.capture_limiter)
                 &candidate().structural_limiter),"Copy actual structural limiter");
 '''
 assert trial.count(addition) == 1
-prior = next(row['prior'] for row in manifest['files'] if row['path'] == trial_path)
-assert hashlib.sha256(trial.replace(addition, '', 1).encode()).hexdigest() == prior['sha256']
+# The independently qualified observation is now a separate tail. Preserve
+# the original limiter/force/evaluate proof over the byte-identical prefix;
+# the complete current Trial remains hash-pinned above.
+prefix = trial.split('void VehiclePhysicalDynamics::Storage::Capture() {', 1)[0]
+restored = prefix.replace(addition, '', 1).encode()
+review = manifest['reviewed_motion_observation']
+assert len(restored) == review['unchanged_physics_prefix_bytes']
+assert hashlib.sha256(restored).hexdigest() == review['unchanged_physics_prefix_sha256']
 # The compile correction changes only access to the actual counted-view APIs.
 # Retain and authenticate the original report/source bodies as prior evidence.
 counted_access = {

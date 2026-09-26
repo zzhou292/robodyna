@@ -99,3 +99,27 @@ and records `stage_ns_*`/`stage_calls_*` properties. It expects three prepared
 attempts and two common commits while retaining all prior numerical/source
 checks. Root owns this actual gate. Author validation reuses the standalone
 timer host tests and complete physical production/test syntax checks.
+
+## Complete device motion observation
+
+The step retains the same complete-owner validation and four motion maxima,
+but uses the optional TL NodalUniformMotionObserver. Its original positions come
+from the fresh physical owner already authenticated against the source domain.
+The entire active slab (unrequested reactions, rigid and CIN tails included) is
+finite-checked before unit-quaternion and motion-difference checks. Prepared
+identity and scalar output publish only after the completed readback succeeds.
+It grants no physical acceptance authority and allocates nothing per step.
+
+Private double-buffered full fields were used only for the CPU motion scan;
+they are no longer allocated or transferred every interval. MotionSummary's CPU
+implementation remains the independent oracle. Existing sampled accepted-frame
+capture/archive and common publication are unchanged. Composite wall/self-contact
+forecasts include the observer's retained device allocation and host scratch.
+The old timing labels CaptureFields/ObserveMotion remain for report compatibility;
+CaptureFields now measures complete device observation including its scalar copy.
+
+Owning tests include the real old CPU function at 1/129/131073/524288 nodes,
+explicit complete original-source owner-coordinate equality, discard/retry,
+source budgets and sampled capture regressions. ObservationBenchmark reports
+alternating ABBA host elapsed completion plus actual linker-observed D2H counts
+and CUDA allocations; it is component timing, not a solver performance claim.

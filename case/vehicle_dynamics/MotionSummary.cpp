@@ -7,9 +7,9 @@ namespace crash::cases::vehicle_dynamics {
 tl::fea::NodalSnapshotBuffer Fields::buffer() noexcept {
     return {position.data(),velocity.data(),position.size()/3,orientation.data(),spin.data()};
 }
-MotionSummary ObserveUniformMotion(const tl::fea::NodalCoefficientLedger& source,
+MotionSummary ObserveUniformMotion(const tl::fea::NodalNodeDomain& source,
     const Fields& fields,double speed,double time) {
-    const auto n=source.nodes().size();
+    const auto n=source.node_count();
     output::Require(n && fields.position.size()==3*n && fields.velocity.size()==3*n &&
         fields.orientation.size()==4*n && fields.spin.size()==3*n &&
         std::isfinite(speed) && std::isfinite(time) && time>=0,"Uniform-motion observation has invalid extent or time");
@@ -21,7 +21,7 @@ MotionSummary ObserveUniformMotion(const tl::fea::NodalCoefficientLedger& source
         value=std::max(value,difference);
     };
     for(std::size_t i=0;i<n;++i) {
-        const auto x=source.domain()->nodes()[i].position;
+        const auto x=source.nodes()[i].position;
         const double expected[]{x.x+speed*time,x.y,x.z};
         for(unsigned axis=0;axis<3;++axis) {
             maximum(fields.position[3*i+axis],expected[axis],result.maximum_position_error);
@@ -32,5 +32,10 @@ MotionSummary ObserveUniformMotion(const tl::fea::NodalCoefficientLedger& source
             maximum(fields.orientation[4*i+axis],axis==0?1:0,result.maximum_orientation_error);
     }
     return result;
+}
+MotionSummary ObserveUniformMotion(const tl::fea::NodalCoefficientLedger& source,
+    const Fields& fields,double speed,double time) {
+    output::Require(source.prepared() && source.domain(),"Motion source is not prepared");
+    return ObserveUniformMotion(*source.domain(),fields,speed,time);
 }
 } // namespace crash::cases::vehicle_dynamics

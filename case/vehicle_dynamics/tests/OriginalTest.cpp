@@ -1,4 +1,7 @@
 #include "../VehiclePhysicalDynamics.h"
+#include "../ExecutionAccess.h"
+#include "case/vehicle_runtime/CaptureAccess.h"
+#include <cstring>
 #include "case/vehicle_startup/physical_attachments/tests/Support.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <iomanip>
@@ -28,7 +31,7 @@ TEST(VehiclePhysicalDynamicsOriginal, ForecastCompleteHostWorkspaceBeforeAnyAllo
     const auto f=VehiclePhysicalDynamics::Preflight(Shells(),Source());
     RecordProperty("workspace_bytes",std::to_string(f.workspace_bytes));
     RecordProperty("peak_host_upper_bound",std::to_string(f.peak_host_upper_bound));
-    RecordProperty("explicit_device_bytes",std::to_string(f.startup.device_bytes));
+    RecordProperty("explicit_device_bytes",std::to_string(f.startup.device_bytes+f.motion.device_bytes));
     Config exact;exact.workspace_bytes=f.workspace_bytes;
     EXPECT_EQ(VehiclePhysicalDynamics::Preflight(Shells(),Source(),exact).workspace_bytes,f.workspace_bytes);
     --exact.workspace_bytes;
@@ -85,5 +88,26 @@ TEST(VehiclePhysicalDynamicsOriginal, CompletePostCinStructuralStepAdmission) {
         FAIL()<<"Complete model requires smaller configured dt; measured post-CIN limit="
             <<std::setprecision(17)<<error.limit()<<" at physical node="<<error.node();
     }
+}
+TEST(VehiclePhysicalDynamicsOriginal, InitialObserverReferenceUsesExactCompleteSourceDomainCoordinates) {
+    auto startup=vehicle_runtime::VehiclePhysicalStartup::Prepare(Shells(),Source());
+    const auto& domain=*Shells().model().coefficients().domain();
+    std::vector<double> positions(3*domain.node_count()),velocity(3*domain.node_count());
+    const auto stamp=vehicle_runtime::detail::CaptureAccess::Nodes(startup,
+        positions.data(),velocity.data(),domain.node_count());
+    ASSERT_EQ(stamp.epoch,0u);
+    ASSERT_EQ(stamp.node_count,domain.node_count());
+    for(std::size_t i=0;i<domain.node_count();++i) {
+        const auto source=domain.nodes()[i].position;
+        const double expected[]{source.x,source.y,source.z};
+        ASSERT_EQ(std::memcmp(positions.data()+3*i,expected,sizeof(expected)),0)<<i;
+    }
+    tl::fea::NodalUniformMotionObserver observer;
+    // Existing private implementation bridge; this test reads/initializes the
+    // observer only and adds no public setter, callback or receipt authority.
+    auto& owner=ExecutionAccess::Get(startup).owner;
+    ASSERT_EQ(observer.Initialize(owner).status,tl::fea::NodalStatus::Ok);
+    EXPECT_TRUE(tl::fea::trial_identity::SameStamp(owner.accepted(),stamp));
+    RecordProperty("source_nodes_checked",std::to_string(domain.node_count()));
 }
 } // namespace crash::cases::vehicle_dynamics::test

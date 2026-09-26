@@ -15,10 +15,15 @@ Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
     result.startup=vehicle_runtime::VehiclePhysicalStartup::Preflight(e,a,config.startup,joints);
     const auto activity=vehicle_startup::TiedCinWitnessActivity::Forecast(a.witnesses());
     const auto n=e.model().coefficients().nodes().size();
+    result.motion=tl::fea::NodalUniformMotionObserver::Preflight(n,config.motion_limits);
+    detail::Require(result.motion.report,"Physical motion observation capacity");
+    output::Require(result.motion.device_bytes<=config.startup.limits.device_bytes &&
+        result.startup.device_bytes<=config.startup.limits.device_bytes-result.motion.device_bytes,
+        "Complete physical step and observation exceed device cap");
     tl::util::BoundedArenaLayout workspace(config.workspace_bytes);
     tl::util::ArenaRegion region;
     output::Require(workspace.Append<unsigned char>(sizeof(Storage),region) &&
-        workspace.Append<double>(26*n,region) &&
+        workspace.Append<unsigned char>(result.motion.host_bytes,region) &&
         workspace.Append<unsigned char>(activity.workspace_bytes,region),
         "Complete physical-step workspace exceeds its host cap");
     result.workspace_bytes=workspace.bytes();
@@ -37,10 +42,13 @@ VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::
 VehiclePhysicalDynamics::Storage::Storage(vehicle_runtime::VehiclePhysicalStartup&& value,Config c,Forecast f)
     :startup(std::move(value)),config(c),forecast(f),timer(c.timing),
      activity(vehicle_startup::TiedCinWitnessActivity::Create(startup.attachments().witnesses())),
-     fields{Fields(startup.accepted().node_count),Fields(startup.accepted().node_count)},stamp(startup.accepted()) {
-    tl::fea::NodalStamp read;
-    detail::Require(state().owner.CopyAccepted(fields[0].buffer(),&read),"Initial physical fields");
-    output::Require(tl::fea::trial_identity::SameStamp(stamp,read),"Initial physical snapshot stamp differs");
+     stamp(startup.accepted()) {
+    // Startup already authenticates original owner coordinates against the
+    // complete physical domain. The observer captures that same initial X once.
+    detail::Require(motion.Initialize(state().owner,config.motion_limits),"Initial physical motion reference");
+    output::Require(motion.allocations().device_bytes==forecast.motion.device_bytes &&
+        motion.forecast().host_bytes==forecast.motion.host_bytes,
+        "Physical motion observation allocation differs from preflight");
 }
 VehiclePhysicalDynamics::VehiclePhysicalDynamics(std::unique_ptr<Storage> s):storage_(std::move(s)) {}
 VehiclePhysicalDynamics::~VehiclePhysicalDynamics()=default;
@@ -51,6 +59,9 @@ StepTimingSnapshot VehiclePhysicalDynamics::timing() const noexcept { return sto
 tl::fea::NodalStamp VehiclePhysicalDynamics::accepted() const noexcept { return storage_->stamp; }
 tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
     auto result=storage_->startup.allocations();
+    const auto observation=storage_->motion.allocations();
+    result.device_bytes+=observation.device_bytes;
+    result.device_allocations+=observation.device_allocations;
     if(storage_->wall) {
         const auto wall=storage_->wall->allocations();
         result.device_bytes+=wall.device_bytes;

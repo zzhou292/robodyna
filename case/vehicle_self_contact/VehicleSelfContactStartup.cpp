@@ -155,7 +155,7 @@ RuntimeForecast VehicleSelfContactStartup::Preflight(
     Check(transaction.report);
     output::Require(
         dynamics.allocations().device_bytes ==
-            dynamics.forecast().startup.device_bytes,
+            (dynamics.forecast().startup.device_bytes+dynamics.forecast().motion.device_bytes),
         "Actual owner allocation differs from retained dynamics forecast");
     auto result = detail::ComposeForecast(
         dynamics.forecast(), setup.forecast(), transaction.forecast,

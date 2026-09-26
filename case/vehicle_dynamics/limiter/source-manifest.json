@@ -26,23 +26,25 @@
     },
     {
       "path": "case/vehicle_dynamics/Trial.cpp",
-      "bytes": 6376,
-      "sha256": "9dce7a3337e5020960db9a636112667ac5c83d69256eaa23d3e0778a08a96401",
+      "bytes": 7157,
+      "sha256": "2968d255cd392ad0da02bb8241389880c23d37dab64ff6c0c41c47d110b293db",
       "prior": {
         "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
         "bytes": 6172,
         "sha256": "5de933a8dfc8e2e532283cb95f56d46dbe3aab567e9d4ce90d07318a3468eefe"
-      }
+      },
+      "motion_change_reason": "Optional bounded GPU observer replaces private full-field host motion scan; preserved limiter/force/material/publication stages"
     },
     {
       "path": "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
-      "bytes": 3889,
-      "sha256": "97f7f56d2ddaa5f7f1631f2342bdb051cde90b84daf823fb0c71fdc2c5882c3b",
+      "bytes": 5112,
+      "sha256": "89bce585ce4cb2f7d285a7ce0fa07b6aabb4540d579dfe50ff4bc5facc669d10",
       "prior": {
         "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
         "bytes": 3629,
         "sha256": "b8e3d3c60a37f089323bf4a8a532980f74e6f65555b8b1ac0053962033bab6b8"
-      }
+      },
+      "motion_change_reason": "Optional bounded GPU observer replaces private full-field host motion scan; preserved limiter/force/material/publication stages"
     },
     {
       "path": "case/vehicle_dynamics/limiter/HANDOFF.md",
@@ -89,23 +91,37 @@
     },
     {
       "path": "case/vehicle_run/tests/Original.cmake",
-      "bytes": 3262,
-      "sha256": "3a00fae325f959f13d053d304c54b7f806bd9c8215d4b3f873258ad6bc27a5e4",
+      "bytes": 11171,
+      "sha256": "49c2877d340c28037c571ab50f263b8551b50ea8ce87b392e5a6310cae2424f3",
       "prior": {
         "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
         "bytes": 2735,
         "sha256": "4a3d7e819c20c688c62ae7328919f5fc3a3689b265ac0847c4a8cc4a42056a1e"
+      },
+      "reviewed_inherited_update": {
+        "commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+        "reason": "Reviewed inherited explicit wall/self fixture settings and added owning qualification targets. All original limiter test registration, source checks and defaults remain."
       }
     },
     {
       "path": "case/vehicle_run/tests/OriginalFixture.h",
-      "bytes": 1403,
-      "sha256": "ef054392d65856d4b54b1ace9df29e362422c343aea7634e70149a5e1d628442",
+      "bytes": 1646,
+      "sha256": "66700ea29b7dc0b14d9496e438d765ebaf39693a0af7ccd72e63ea68e929e213",
       "prior": {
         "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
         "bytes": 1264,
         "sha256": "3b2178f81d8b7549e8c1a9ae2b4f0dfc16879c6e349fd81e5d59e90ed6ee5ed4"
+      },
+      "reviewed_inherited_update": {
+        "commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+        "reason": "Reviewed inherited explicit wall/self fixture settings and added owning qualification targets. All original limiter test registration, source checks and defaults remain."
       }
     }
-  ]
+  ],
+  "reviewed_motion_observation": {
+    "baseline_commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+    "unchanged_physics_prefix_bytes": 5914,
+    "unchanged_physics_prefix_sha256": "8402517cefa5a92f0b6e55d47e4a14f949901f39b66e98a1d8f3ea91fd4e4a3d",
+    "scope": "Only Capture replaced by authenticated complete-slab GPU observation; Prepare/Evaluate including limiter unchanged. Original whole-file priors remain historical evidence."
+  }
 }

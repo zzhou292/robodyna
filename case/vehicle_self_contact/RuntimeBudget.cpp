@@ -184,7 +184,7 @@ RuntimeForecast ComposeForecast(
         "Complete self-contact runtime peak exceeds host cap");
     result.peak_host_upper_bound = host.bytes();
     for (const auto bytes : {
-             dynamics.startup.device_bytes, transaction.device_bytes})
+             dynamics.startup.device_bytes, dynamics.motion.device_bytes, transaction.device_bytes})
         output::Require(
             device.Append<std::byte>(bytes, unused),
             "Complete self-contact runtime exceeds device cap");
