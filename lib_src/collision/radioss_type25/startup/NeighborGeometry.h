@@ -3,18 +3,17 @@
 // Original double operation order in native length units; no REAL4 normal reuse.
 #pragma once
 #include "Internal.h"
+#include "../normal_math/DoubleFace.h"
 #include <cmath>
 namespace tlfea::contact::radioss_type25::startup::detail::neighbor_geometry {
 inline constexpr double Em20=1./1.e20;
 inline bool Finite(Vector a) noexcept {return std::isfinite(a.x)&&std::isfinite(a.y)&&std::isfinite(a.z);}
 inline bool Normal(const Main& main,const Vector* x,Vector& out) noexcept {
-  const auto a=x[main.nodes[0]],b=x[main.nodes[1]],c=x[main.nodes[2]],d=x[main.nodes[3]];
-  const Vector u{c.x-a.x,c.y-a.y,c.z-a.z},v{d.x-b.x,d.y-b.y,d.z-b.z};
-  const Vector n{u.y*v.z-u.z*v.y,u.z*v.x-u.x*v.z,u.x*v.y-u.y*v.x};
-  const double raw=std::sqrt(n.x*n.x+n.y*n.y+n.z*n.z);
-  if(!Finite(u)||!Finite(v)||!Finite(n)||!std::isfinite(raw))return false;
-  const double area=raw>Em20?raw:Em20;
-  out={n.x/area,n.y/area,n.z/area};return Finite(out);
+  const Vector points[]{x[main.nodes[0]],x[main.nodes[1]],x[main.nodes[2]],x[main.nodes[3]]};
+  normal_math::DoubleFaceResult result;
+  if (!normal_math::DoubleFace(points,result)) return false;
+  out=result.normal;
+  return true;
 }
 inline bool Normalize(Vector& v) noexcept {
   const double norm=std::sqrt(v.x*v.x+v.y*v.y+v.z*v.z);
