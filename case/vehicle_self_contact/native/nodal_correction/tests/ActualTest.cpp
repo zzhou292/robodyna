@@ -67,7 +67,8 @@ TEST(CorrectedNodalSourceActual, WholeSourceFactorCertificateCoversEveryControll
     EXPECT_EQ(source.provenance().interfaces.type25_sources, 1u);
     EXPECT_EQ(source.provenance().interfaces.type2_sources, 1u);
     EXPECT_EQ(source.provenance().interfaces.interior_sources, 1u);
-    EXPECT_EQ(source.provenance().interfaces.rigid_wall_sources, 3u);
+    // Complete authenticated closure: four combine.key planar blocks and two wall.key finite blocks.
+    EXPECT_EQ(source.provenance().interfaces.rigid_wall_sources, 6u);
     std::vector<unsigned char> affected(certificate.node_count, 0);
     const auto& domain = Before().physical().source_domain().domain();
     for (const auto& solid : Before().physical().source_domain().source().solid_source().data().rows) {
