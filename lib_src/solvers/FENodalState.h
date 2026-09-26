@@ -386,6 +386,7 @@ class FENodalState {
   // also be disjoint from the token. No mutable group view is exported.
   NodalReport CopyPreparedRigidGroups(const NodalTrialToken&,NodalRigidGroupSnapshotBuffer,NodalPreparedView*);
  private:
+  friend class NodalUniformMotionObserver;
   friend NodalReport AdvanceStaggeredCin(FENodalState&, const NodalTrialToken&, const NodalCinAdmission&);
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
