@@ -1,0 +1,83 @@
+#pragma once
+#include "ContactNodalSeed.h"
+#include "lib_src/collision/RadiossType25NodalCorrection.h"
+#include <optional>
+
+namespace crash::cases::vehicle_self_contact::native::nodal_correction {
+namespace n = tlfea::contact::radioss_type25;
+namespace seed = nodal_seed;
+enum class Status {
+    Ready, InvalidInput, UnsupportedSource, ResourceLimit, NonfiniteResult,
+    NeedsNativePropertyMapping, NeedsNativeStorageOrder
+};
+enum class OrderPolicy { CertifiedEqualNodeFactors };
+enum class InterfaceDisposition { Unresolved, CompleteNoApplicableType24 };
+struct Report {
+    Status status = Status::InvalidInput;
+    std::string reason, source_file;
+    std::size_t source_line = 0;
+    std::uint64_t first_element = 0, conflicting_element = 0, source_node = 0;
+};
+struct PartControl {
+    std::uint64_t part_id = 0, section_id = 0, material_id = 0;
+    // Zero means an unrequested multi-MID clone identity is unavailable; its
+    // disabled control is still proved by the closed ordinary source profile.
+    std::uint64_t native_property_id = 0;
+    bool directly_requested = false, effective_control = false;
+};
+struct InterfaceCensus {
+    InterfaceDisposition disposition = InterfaceDisposition::Unresolved;
+    std::size_t type25_sources = 0, type2_sources = 0;
+    std::size_t interior_sources = 0, rigid_wall_sources = 0;
+    std::size_t checked_source_blocks = 0;
+};
+struct Provenance {
+    OrderPolicy order = OrderPolicy::CertifiedEqualNodeFactors;
+    std::string source_digest, pre_correction_digest, property_digest, material_digest, certificate_digest;
+    n::source_nodal::correction::OrderCertificate certificate;
+    InterfaceCensus interfaces;
+};
+struct Limits {
+    std::size_t host_bytes = std::size_t{8} << 30;
+    std::size_t nodes = 524288, solids = 16384, parts = 4096, source_blocks = 8192;
+    std::size_t metadata_bytes = 1u << 20;
+};
+struct Forecast {
+    std::size_t pre_correction_reservation = 0, import_context_reservation = 0;
+    std::size_t source_workspace = 0, correction_inputs = 0;
+    std::size_t certificate_scratch = 0, correction_scratch = 0, output_bytes = 0;
+    std::size_t peak_bytes = 0;
+};
+struct Preparation;
+
+// Global startup nodal contact K after the native distortion-control correction.
+// This source product is separate from interface secondary scaling, main K,
+// gaps, contact/removal readiness, physical ownership and runtime admission.
+// Construction authenticates the whole source/import context internally; no
+// caller-provided control flags, material slots or certificate authorize output.
+class CorrectedNodalSource {
+  public:
+    CorrectedNodalSource(const CorrectedNodalSource&) noexcept = default;
+    CorrectedNodalSource(CorrectedNodalSource&& other) noexcept : data_(other.data_) {}
+    CorrectedNodalSource& operator=(const CorrectedNodalSource&) = delete;
+    static Forecast Preflight(const seed::PreCorrectionNodalSource&,
+        const modelio::native_spring_ids::ImportMembers&, Limits = {});
+    static Preparation Prepare(const seed::PreCorrectionNodalSource&,
+        const modelio::native_spring_ids::ImportMembers&, Limits = {});
+    const seed::PreCorrectionNodalSource& pre_correction() const noexcept;
+    const Forecast& forecast() const noexcept;
+    const Provenance& provenance() const noexcept;
+    const std::vector<PartControl>& part_controls() const noexcept;
+    tl::util::ConstView<double> coefficients() const noexcept;
+  private:
+    struct Data;
+    explicit CorrectedNodalSource(std::shared_ptr<const Data> data) : data_(std::move(data)) {}
+    std::shared_ptr<const Data> data_;
+};
+struct Preparation {
+    Report report;
+    // Disengaged for every rejected/unsupported case, including conflicting
+    // shared factors. Diagnostic source IDs do not grant coefficient authority.
+    std::optional<CorrectedNodalSource> source;
+};
+} // namespace crash::cases::vehicle_self_contact::native::nodal_correction

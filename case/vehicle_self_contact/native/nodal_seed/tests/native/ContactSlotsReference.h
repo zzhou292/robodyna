@@ -5,3 +5,7 @@
 // reader -> generic reader -> GammaInf1 updater -> UPDMAT refresh. It is not a
 // general material reader, original-case source binder, or production target.
 extern "C" void law42_contact_slots_native(const double* parameters,double* slots);
+
+// Given authentic post-update PM32 and retained reader PM100, observe the
+// original UPDMAT LAW90 PM107 refresh. Qualification only.
+extern "C" void law90_contact_high_native(const double* slots, double* high);

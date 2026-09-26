@@ -71,4 +71,21 @@
 #include "updated_high.inc"
       SLOTS=[PM(20,1),PM(32,1),PM(100,1),PM(107,1)]
       END SUBROUTINE
+! Independent post-UPDMAT observation for the admitted LAW90 branch. Its
+! supplied PM32/PM100 are obtained from the existing full LAW90 preparation
+! oracle in the owning test; this routine does not recompute those slots.
+      SUBROUTINE LAW90_CONTACT_HIGH_NATIVE(SLOTS,HIGH)
+     . BIND(C,NAME='law90_contact_high_native')
+      REAL(C_DOUBLE),INTENT(IN)::SLOTS(2)
+      REAL(C_DOUBLE),INTENT(OUT)::HIGH
+      REAL(C_DOUBLE) PM(200,1)
+      INTEGER IMAT,ILAW
+      PM=ZERO
+      PM(32,1)=SLOTS(1)
+      PM(100,1)=SLOTS(2)
+      IMAT=1
+      ILAW=90
+#include "updated_high.inc"
+      HIGH=PM(107,1)
+      END SUBROUTINE
       END MODULE
