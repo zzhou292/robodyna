@@ -5,8 +5,15 @@
 #include "../normal_activation/Types.h"
 namespace tlfea::contact::radioss_type25::current_normals {
 enum class Status { Ok,InvalidInput,UnsupportedProfile,UnsupportedTopology,NonfiniteResult,ResourceLimit,UnsupportedArithmetic };
-enum class Profile { Unspecified,OrdinaryShellLocal,ResolvedShellSidesLocal };
+enum class Profile { Unspecified,OrdinaryShellLocal,ResolvedShellSidesLocal,MixedSurfaceLocal };
 enum class RolePolicy { OrdinaryOnly, ResolvedShellSides };
+// Compact math-consumed mixed map. P/G are already in Topology. Only this
+// partner array is uploaded for normal arithmetic; all rich source ownership
+// and raw-origin validation stays in the host mixed-source overload.
+struct MixedNormalMaps {
+  const std::uint32_t* primary_to_partner=nullptr; // One-based native partner; solid0.
+  std::size_t primary_count=0;
+};
 // Immutable two-sided shell topology. Admission verifies unique primary/partner
 // writers, reversed connectivity, node-bound reference identities and the exact
 // ordered distinct main/reference CSR. It does not authenticate a source deck.
@@ -23,10 +30,9 @@ struct Topology {
   startup::TopologyPolicy source_topology = startup::TopologyPolicy::ManifoldTwoSided;
   const startup::ShellSideRole* primary_roles = nullptr;
   std::size_t primary_role_count = 0;
-  // Reserved for the forthcoming explicit mixed profile. Existing profiles
-  // remain unchanged; a supplied pointer alone does not broaden admission.
-  // It supplies true optional partner/origin/support maps with the same mains.
-  const startup::Snapshot* mixed_snapshot = nullptr;
+  // DRAFT mixed numerical handoff. No host Snapshot pointer may be carried
+  // into the shared CUDA arithmetic. Legacy profiles require this empty.
+  MixedNormalMaps mixed_maps;
 };
 struct Input {
   Profile profile=Profile::Unspecified;
@@ -56,4 +62,14 @@ struct Report {Status status=Status::InvalidInput;std::size_t main=SIZE_MAX,refe
 // the owning module). CUDA kernels share its private per-item arithmetic.
 Report Preflight(const Input&,Limits,Forecast&) noexcept;
 Report Evaluate(const Input&,Limits,void* scratch,std::size_t scratch_bytes,Output) noexcept;
+// DRAFT source-only overloads: implementations/qualification follow. These are
+// HOST admission entrypoints. They verify the full owned snapshot, post-GAPM
+// support, raw origins and true maps before shared numerical stages run. The
+// old entrypoints remain closed for MixedSurfaceLocal. Runtime validates once
+// in its host source binding, then uploads only MixedNormalMaps for its private
+// CUDA stage helpers; no partial/fabricated Snapshot or rich metadata upload.
+Report ValidateMixedSource(const Topology&,const startup::Snapshot&) noexcept;
+Report Preflight(const Input&,const startup::Snapshot&,Limits,Forecast&) noexcept;
+Report Evaluate(const Input&,const startup::Snapshot&,Limits,void* scratch,
+    std::size_t scratch_bytes,Output) noexcept;
 } // namespace tlfea::contact::radioss_type25::current_normals
