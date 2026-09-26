@@ -97,6 +97,14 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
         census.nodes = next->geometry.nodes.size();
         census.physical_shells = next->geometry.shells.size();
         census.physical_solids = next->geometry.solids.size();
+        for (const auto& solid : packed.solids) {
+            if (solid.topology == values::SolidTopology::DeclaredPenta6) ++census.declared_penta;
+            else {
+                ++census.reader_bricks;
+                if (solid.topology == values::SolidTopology::NativeRaw8) ++census.native_raw8_bricks;
+            }
+        }
+
         census.original_selected_solids = selection.data().counts.solids;
         census.extraction = observed.counts;
         if (census.original_selected_solids < census.extraction.selected_solids ||

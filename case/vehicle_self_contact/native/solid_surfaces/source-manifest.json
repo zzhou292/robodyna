@@ -16,13 +16,13 @@
     },
     {
       "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
-      "bytes": 8399,
-      "sha256": "3b7716e4e653b1539c32ae61fdd5b5b4084a54a6f9cd28735983cf30c47fad30"
+      "bytes": 8733,
+      "sha256": "b4d9ae45e0d77657cc533db57df92fed69a6da703ed0a9e72bc916991f976f2a"
     },
     {
       "path": "case/vehicle_self_contact/native/InitialSurfaceSource.h",
-      "bytes": 4546,
-      "sha256": "5046dc5d5988bce7116a2d9a7b71b874e1c9ca828b6d7368b92b007ff492b649"
+      "bytes": 4625,
+      "sha256": "543d0ebc3dbe375019ef0b9cfaea905351d87523779b29bc93d8b3ba72fd0a1a"
     },
     {
       "path": "case/vehicle_self_contact/native/coated/Inputs.cpp",
@@ -76,8 +76,8 @@
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
-      "bytes": 6926,
-      "sha256": "cd62c3a434c43097dbaa30e95cb9602dfea6cc85e07cd1a8ed08d97d66696785"
+      "bytes": 7124,
+      "sha256": "e84efe0a84cb98a115111af184278ad21ddb6a09e14e98a72ab09737c52fe090"
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Internal.h",
@@ -86,13 +86,13 @@
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
-      "bytes": 6099,
-      "sha256": "deea32750878335f310da977aaf4c92cacf344dd407152ba3f8d33b5bfcd335b"
+      "bytes": 6646,
+      "sha256": "d8b2c7be451789305af3b44e0f3298823fd3aa43869b28bc6c87c730c6720f22"
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/README.md",
-      "bytes": 2808,
-      "sha256": "fa3a63b0c567df1178752ee3e090a59fb240897be729657c46e97276453d6e4b"
+      "bytes": 3271,
+      "sha256": "aa393b4156ab32b68ff1ef7a5dffb344d0afadf7534e138fa1c5ec31ed48d7a7"
     },
     {
       "path": "case/vehicle_self_contact/native/solid_surfaces/SOURCE_PROOF.md",
@@ -124,5 +124,6 @@
       "bytes": 821,
       "sha256": "bf8710b3ac351d784cf3681bfa9cc63d7609c11644106cb70f7c8d07e998f75d"
     }
-  ]
+  ],
+  "raw8_value_candidate": "b4d4678dad292251d6b624bf8768547f31c95f14"
 }

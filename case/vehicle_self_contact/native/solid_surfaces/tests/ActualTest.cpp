@@ -68,6 +68,9 @@ TEST(InitialSurfaceActual, CompletePhysicalContextPublishesOnlyCertifiedTypedFac
     EXPECT_EQ(c.nodes, 376930u);
     EXPECT_EQ(c.physical_shells, 349645u);
     EXPECT_EQ(c.physical_solids, 4980u);
+    EXPECT_EQ(c.reader_bricks, 4630u);
+    EXPECT_EQ(c.native_raw8_bricks, 113u);
+    EXPECT_EQ(c.declared_penta, 350u);
     EXPECT_EQ(c.original_selected_solids, 2952u);
     EXPECT_EQ(c.extraction.selected_solids, 2496u);
     EXPECT_EQ(c.omitted_selected_solids, 456u);

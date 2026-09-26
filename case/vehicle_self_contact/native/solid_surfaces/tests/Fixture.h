@@ -14,8 +14,8 @@ inline coated::Inputs Geometry(const leaf::Case& c) {
         row.part_id = solid.part_id;
         row.canonical_row = std::uint32_t(solid.element_id);
         row.source_line = std::uint32_t(solid.element_id + 2000);
-        row.kind = solid.topology == values::SolidTopology::Hex8 ?
-            coated::ReaderKind::Hex8 : coated::ReaderKind::DeclaredPenta6;
+        row.kind = solid.topology == values::SolidTopology::DeclaredPenta6 ?
+            coated::ReaderKind::DeclaredPenta6 : coated::ReaderKind::Hex8;
         std::copy(std::begin(solid.nodes), std::end(solid.nodes), row.nodes.begin());
         out.solids.push_back(row);
     }

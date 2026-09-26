@@ -87,6 +87,9 @@ output::Document ResultDocument(const Preparation& result, std::size_t cap) {
         output::Integer(d, "physical_nodes", c.nodes);
         output::Integer(d, "physical_shells", c.physical_shells);
         output::Integer(d, "physical_solids", c.physical_solids);
+        output::Integer(d, "reader_bricks", c.reader_bricks);
+        output::Integer(d, "native_raw8_bricks", c.native_raw8_bricks);
+        output::Integer(d, "declared_penta", c.declared_penta);
         output::Integer(d, "original_selected_solids", c.original_selected_solids);
         output::Integer(d, "retained_selected_solids", c.extraction.selected_solids);
         output::Integer(d, "omitted_selected_solids", c.omitted_selected_solids);

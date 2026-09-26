@@ -41,3 +41,10 @@ reservation and enforced TL output/scratch ceilings. Real TL preflights run only
 after genuine packing and must fit those reservations. Arrays, lookup sorting,
 private staging, retained copies and digest workspace are included. No resource
 cap, source row or failure law is dropped to produce a Ready result.
+
+The source reader's BRICK family can retain collapsed eight-slot packets as
+well as eight-distinct H8. Packing chooses the explicit NativeRaw8 value profile
+only when genuine ReaderSlots output repeats an index. It keeps every index and
+the original brick family; declared PENTA remains its separate representation.
+No source PID or material lookup selects this shape profile. Both physical
+families continue contributing to the complete lookup and face roster.

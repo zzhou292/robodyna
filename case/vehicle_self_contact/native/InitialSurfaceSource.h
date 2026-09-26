@@ -29,6 +29,7 @@ struct Certificate {
 struct Census {
     std::size_t nodes = 0, physical_shells = 0, physical_solids = 0;
     std::size_t original_selected_solids = 0, omitted_selected_solids = 0;
+    std::size_t reader_bricks = 0, native_raw8_bricks = 0, declared_penta = 0;
     values::Counts extraction;
     std::size_t faces = 0, quad_faces = 0, triangle_faces = 0;
 };

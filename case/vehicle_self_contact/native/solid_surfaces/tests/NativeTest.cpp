@@ -13,6 +13,10 @@ TEST(InitialSurfaceNative, CertifiedExternalRosterMatchesCompleteDonorForBothTra
     auto adjacent = leaf::Adjacent();
     adjacent.quads = {{201,10,{4,5,6,7}}, {202,30,{7,6,5,4}}};
     cases.push_back(adjacent);
+    auto raw = leaf::SingleHex();
+    raw.solids = {{601,10,values::SolidTopology::NativeRaw8,{0,1,2,3,4,4,5,5}}};
+    raw.triangles = {{701,10,{0,1,4,4}}};
+    cases.push_back(raw);
     for (auto c : cases) {
         for (int order = 0; order != 2; ++order) {
             const auto geometry = Geometry(c);

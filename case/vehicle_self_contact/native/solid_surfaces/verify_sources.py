@@ -11,7 +11,7 @@ args = parser.parse_args()
 here = Path(__file__).resolve().parent
 root = here.parents[3]
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "c3ebfc3cb22752664d8c545036b314e636cf66fe38c0a1b5f38050ed97e11a39"
+assert hashlib.sha256(raw).hexdigest() == "3e9b09f8426d827653eaed2d180812656bc0dd93edb4ce30fa767f526613e8de"
 manifest = json.loads(raw)
 for row in manifest["app_files"]:
     path = Path(row["path"])

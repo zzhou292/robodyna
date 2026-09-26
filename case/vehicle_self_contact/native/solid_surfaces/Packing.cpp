@@ -56,10 +56,19 @@ Packing Pack(const coated::Inputs& input, const std::vector<std::uint64_t>& sele
         values::Solid solid;
         solid.element_id = row.source_id;
         solid.part_id = row.part_id;
-        solid.topology = row.kind == coated::ReaderKind::Hex8 ? values::SolidTopology::Hex8 :
-            values::SolidTopology::DeclaredPenta6;
         output::Require(row.kind == coated::ReaderKind::Hex8 || row.kind == coated::ReaderKind::DeclaredPenta6,
             "Unsupported retained solid reader family");
+        solid.topology = row.kind == coated::ReaderKind::DeclaredPenta6 ?
+            values::SolidTopology::DeclaredPenta6 : values::SolidTopology::Hex8;
+        if (row.kind == coated::ReaderKind::Hex8) {
+            // Native reader BRICK keeps all eight slots, including collapsed
+            // edges. Select by the authenticated packet shape, never by PID,
+            // material, or a repaired PENTA connectivity.
+            bool repeated = false;
+            for (unsigned k = 0; k < 8; ++k)
+                for (unsigned j = 0; j < k; ++j) repeated = repeated || row.nodes[k] == row.nodes[j];
+            if (repeated) solid.topology = values::SolidTopology::NativeRaw8;
+        }
         std::copy(row.nodes.begin(), row.nodes.end(), solid.nodes);
         out.solids.push_back(solid);
         if (Selected(out.selected_parts, row.part_id)) out.selected_solids.push_back(std::uint32_t(i));

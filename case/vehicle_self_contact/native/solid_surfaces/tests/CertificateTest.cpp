@@ -115,4 +115,23 @@ TEST(InitialSurfaceCertificate, PackingRejectsForeignMembershipPhaseAndFaceIdent
     EXPECT_THROW(detail::Pack(geometry, {10,10}), std::exception);
     EXPECT_NO_THROW(detail::Pack(geometry, c.parts));
 }
+TEST(InitialSurfaceCertificate, ReaderShapeSelectsExplicitRawBrickWithoutChangingSourceSlots) {
+    auto c = leaf::Case{};
+    c.solids = {leaf::Hex(101), leaf::Penta(102,10,8),
+        {103,10,values::SolidTopology::NativeRaw8,{16,17,18,19,20,20,21,21}}};
+    const auto geometry = Geometry(c);
+    const auto packed = detail::Pack(geometry, c.parts);
+    ASSERT_EQ(packed.solids.size(), 3u);
+    EXPECT_EQ(packed.solids[0].topology, values::SolidTopology::Hex8);
+    EXPECT_EQ(packed.solids[1].topology, values::SolidTopology::DeclaredPenta6);
+    EXPECT_EQ(packed.solids[2].topology, values::SolidTopology::NativeRaw8);
+    EXPECT_EQ(geometry.solids[2].kind, coated::ReaderKind::Hex8);
+    for (std::size_t i = 0; i < packed.solids.size(); ++i)
+        for (unsigned k = 0; k < 8; ++k)
+            EXPECT_EQ(packed.solids[i].nodes[k], geometry.solids[i].nodes[k]);
+    const Extracted extraction(packed.Input(false));
+    EXPECT_EQ(extraction.snapshot.face_count, 16u);
+    EXPECT_EQ(extraction.snapshot.counts.degenerate_faces, 2u);
+}
+
 }
