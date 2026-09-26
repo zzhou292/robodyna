@@ -54,3 +54,32 @@ or converts a failed producer guard into success. The existing C++ exact archive
 checker remains responsible for full schema, identity and physical-frame validation. Notifications name the actual
 run directory/profile; the renderer labels physical time in microseconds and
 milliseconds without changing stored samples or geometry scale.
+
+The separate `robo_dyna.native_vehicle_contact_run.v1` summary now dispatches to
+`native_vehicle_run.py`. It binds the complete physical native-group/environment
+profile, exact configured horizon, final sample and typed declared interface
+order through the same read-only record hashes. It only normalizes an in-memory
+operator view; no small-coupon or legacy summary is written. For the owning
+full-case target, set both launch `output` and postprocess `run` to the genuine
+`.../accepted` child, which contains `viewer-input.json`, `summary.json` and
+`archive/`. The outer qualification `case.json` is a separate report.
+
+The existing C++ viewer already accepts this `accepted/` directory or its exact
+`viewer-input.json`, with `--receipt-sha256` binding the immutable receipt. It
+opens the same generic physical-run reader and validates every native-group
+record and frame before capture. No new renderer or archive rewrite is needed.
+A guarded GoogleTest exit 1 remains a failed delivery qualification even when a
+truthful diagnostic prefix closed; automatic postprocessing continues to reject
+that exit. A separately authorized diagnostic replay can use the direct C++
+receipt route without changing that failure report. Normal completed exit 0 and
+typed prefix exit 2 retain the existing automated policy.
+
+For 61 recorded frames the existing 2GiB PNG reservation admits the capture
+(`61 * 32MiB + 4MiB`). Use an existing full-car view and a separate fixed-camera
+front close-up at scale 1; camera arguments select views without altering any
+recorded coordinates. Run the existing exact archive checker before capture and
+fully decode the final encoded MP4 as the normal postprocess job already does.
+
+Additional host test: `python3 -B -m unittest
+viewer.postprocess.test_native_vehicle_run -v`. These tests validate closure and
+hash behavior only; complete C++ record/geometry checks remain mandatory.
