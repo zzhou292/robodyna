@@ -39,7 +39,7 @@ Controls ResolveSelectionControls(const modelio::self_contact::Data&, std::size_
 Controls ResolveControls(const Context&, const Selection&, Limits);
 Packing Pack(const coated::Inputs&, const std::vector<std::uint64_t>&);
 Report CertifyMembership(const Packing&, const values::Snapshot&, Certificate&);
-Report CertifyOrder(const std::vector<Face>&, Certificate&);
+Report CertifyConsumerOrder(const std::vector<Face>&, Certificate&, std::vector<OriginGroup>* = nullptr);
 Face ExternalFace(const values::Face&, const Packing&, const coated::Inputs&);
 Forecast Budget(const Context&, const Selection&, Limits);
 std::string InputDigest(const coated::Inputs&, const Packing&, const Provenance&, std::size_t);

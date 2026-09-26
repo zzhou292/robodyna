@@ -1,0 +1,36 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "ILEV1 IMBIN0 equal nodes/raw-role; all typed origins and prefilter tag union retained",
+  "files": [
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/inter3d1/i25surfi.F",
+      "bytes": 27552,
+      "sha256": "f47b140133ddd3eea5e01e0b42309ee7ee27360cf7ae9fc40b9db7cfe781a7db",
+      "git_blob": "fc03db70db0a48fdf25f7cf3bac5ac3572d76bb2"
+    },
+    {
+      "path": "crash-work/deps/openradioss-surface-order-1/starter/source/interfaces/inter3d1/i24surfi.F",
+      "bytes": 74037,
+      "sha256": "aa55e679ceb96b8d83ed7611bc6486c011ff9ef1a5bd86e1d5764b3363cd55f3",
+      "git_blob": "910e8b87fb058708efc9290e5ac1b6eee7d827c0"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/inter3d1/i25sti3.F",
+      "bytes": 47033,
+      "sha256": "98ce3a1610b733dec229ad367da1f3cd81ef87f4a752d3e1a4b4e1006d0923ce",
+      "git_blob": "6c94936fef735f9495b1b0f6a6b2a403c161648c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/inter3d1/inint3.F",
+      "bytes": 128442,
+      "sha256": "7571d74e794ee3f24cf1f2b8e701dd94cdb6cd11f0e72110e4787cfa112fd255",
+      "git_blob": "4bb403e30980ca7268b3d592f2e865b534f41e2c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/model/sets/fill_gr.F",
+      "bytes": 12570,
+      "sha256": "7d0dba2ce08afa50f4fb69dbff77062906b7b4201ccf07ccd2f0d54b697ddf08",
+      "git_blob": "ba6e4384f402efcef05f1a6120018f6011adbf01"
+    }
+  ]
+}

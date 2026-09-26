@@ -79,7 +79,20 @@ TEST(InitialSurfaceActual, CompletePhysicalContextPublishesOnlyCertifiedTypedFac
     EXPECT_EQ(c.faces, c.quad_faces + c.triangle_faces);
     EXPECT_EQ(c.extraction.shell_faces, 337092u);
     EXPECT_TRUE(copied.certificate().membership_complete);
-    EXPECT_TRUE(copied.certificate().sort_order_complete);
+    EXPECT_TRUE(copied.certificate().consumed_order_complete);
+    EXPECT_EQ(copied.origin_groups().size(), copied.certificate().equal_node_key_groups);
+    EXPECT_GT(copied.certificate().differing_origin_groups, 0u);
+    for (const auto group : copied.origin_groups()) {
+        ASSERT_GT(group.face_count, 1u);
+        ASSERT_LE(group.first_face, copied.faces().size());
+        ASSERT_LE(group.face_count, copied.faces().size()-group.first_face);
+        const auto& first = copied.faces()[group.first_face];
+        for (std::size_t i = 1; i < group.face_count; ++i) {
+            const auto& other = copied.faces()[group.first_face+i];
+            EXPECT_EQ(first.nodes, other.nodes);
+            EXPECT_EQ(first.raw_role, other.raw_role);
+        }
+    }
     EXPECT_FALSE(copied.provenance().native_reader_ordinals_available);
     EXPECT_EQ(copied.provenance().stage, Stage::InitialClauseBeforeI25Classification);
     EXPECT_EQ(copied.provenance().output_digest.size(), 64u);

@@ -11,7 +11,7 @@ args = parser.parse_args()
 here = Path(__file__).resolve().parent
 root = here.parents[3]
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "3e9b09f8426d827653eaed2d180812656bc0dd93edb4ce30fa767f526613e8de"
+assert hashlib.sha256(raw).hexdigest() == "60a6972a02f392bd715491df37fde178d696b5428c87e7005437c17a6e930752"
 manifest = json.loads(raw)
 for row in manifest["app_files"]:
     path = Path(row["path"])
@@ -37,6 +37,16 @@ assert len(proof["converter_admesh_absence"]) == 40
 for row in proof["converter_admesh_absence"]:
     data = (args.workspace / row["path"]).read_text()
     assert "/ADMESH" not in data and '"/TRIA"' not in data
+origin = json.loads((here / "origin-order-sources.json").read_text())
+assert origin["revision"] == proof["revision"]
+for row in origin["files"]:
+    data = (args.workspace / row["path"]).read_bytes()
+    assert len(data) == row["bytes"] and hashlib.sha256(data).hexdigest() == row["sha256"]
+    assert hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest() == row["git_blob"]
+surfi = (args.workspace / origin["files"][0]["path"]).read_text()
+assert surfi.count("ELEM = IGRSURF") == 2
+assert surfi.count("FLAG_ELEM_INTER25(NIN25,ELEM) = 1") == 2
+assert "IRECTMP(6,L) = BITSET" in surfi
 context = (here / "Context.cpp").read_text()
 for token in ("part_sets::Read", "root.members.size() != 1", "list.members != selected.selected_part_ids",
               "OrdinaryHeader", "CompleteNoApplicableType24", "source_digest"):
@@ -46,7 +56,7 @@ for token in ("a.arity < b.arity", "at->selected != first->selected", "NeedsNati
               "SameIdentity", "faces[first].raw_role != faces[i].raw_role"):
     assert token in certificate
 owner = (here.parent / "InitialSurfaceSource.cpp").read_text()
-for token in ("packed.Input(true)", "packed.Input(false)", "CertifyMembership", "CertifyOrder",
+for token in ("packed.Input(true)", "packed.Input(false)", "CertifyMembership", "CertifyConsumerOrder",
               "coated::detail::PrepareInputs"):
     assert token in owner
 assert "coefficients()" not in owner

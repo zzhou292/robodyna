@@ -53,6 +53,7 @@ output::Document ForecastDocument(const Forecast& f) {
     output::Integer(d, "extraction_output_ceiling", f.extraction_output);
     output::Integer(d, "extraction_scratch_ceiling", f.extraction_scratch);
     output::Integer(d, "retained_faces", f.retained_faces);
+    output::Integer(d, "origin_group_bytes", f.origin_group_bytes);
     output::Integer(d, "digest_workspace", f.digest_workspace);
     output::Integer(d, "maximum_faces", f.maximum_faces);
     output::Integer(d, "peak_reservation_bytes", f.peak_bytes);
@@ -106,6 +107,8 @@ output::Document ResultDocument(const Preparation& result, std::size_t cap) {
         output::Integer(d, "queried_solid_faces", certificate.queried_solid_faces);
         output::Integer(d, "matching_physical_shells", certificate.matching_physical_shells);
         output::Integer(d, "equal_node_key_groups", certificate.equal_node_key_groups);
+        output::Integer(d, "differing_origin_groups", certificate.differing_origin_groups);
+        output::Integer(d, "retained_origin_groups", value.origin_groups().size());
         output::String(d, "source_digest", value.provenance().source_digest);
         output::String(d, "selection_digest", value.provenance().selection_digest);
         output::String(d, "input_digest", value.provenance().input_digest);
@@ -114,7 +117,9 @@ output::Document ResultDocument(const Preparation& result, std::size_t cap) {
         output::String(d, "published_identity", "external_kind_parent_eid_pid_rawface_and_source_location");
         output::String(d, "native_reader_or_storage_ordinals", "unavailable_not_published");
         output::String(d, "membership_order", "complete_matching_family_membership_invariant");
-        output::String(d, "CREATE_order", "no_consumed_element_ordinal_tie");
+        output::String(d, "CREATE_order", "consumed_node_role_words_invariant_all_origins_retained");
+        output::String(d, "raw_origin_order", "unavailable_within_typed_equivalence_groups");
+        output::String(d, "output_digest_scope", "complete_representative_origin_roster_not_native_ELEM_order");
         output::Integer(d, "peak_reservation_bytes", value.forecast().peak_bytes);
     }
     Bound(d, cap);

@@ -50,13 +50,16 @@ Forecast Budget(const Context& context, const Selection& selection, Limits limit
     f.maximum_faces = 6*solids + shells;
     Add(f.retained_faces, 2*f.maximum_faces, sizeof(Face));
     Add(f.retained_faces, 2*solids, sizeof(std::uint8_t));
+    // At most faces/2 groups. Reserve private staging and retained capacity,
+    // conservatively as two full-face extents; no origin is dropped.
+    Add(f.origin_group_bytes, 2*f.maximum_faces, sizeof(OriginGroup));
     Add(f.digest_workspace, 4u << 20);
     Add(f.digest_workspace, 16*limits.metadata_bytes);
     f.peak_bytes = common;
     // PrepareInputs' returned arrays remain live through the entire new stage;
     // the upstream bound also includes its decode/transient construction peak.
     for (auto bytes : {f.packed_inputs, f.certificate_workspace, f.extraction_output,
-            f.extraction_scratch, f.retained_faces, f.digest_workspace, std::size_t{16384}})
+            f.extraction_scratch, f.retained_faces, f.origin_group_bytes, f.digest_workspace, std::size_t{16384}})
         Add(f.peak_bytes, bytes);
     if (f.peak_bytes > limits.host_bytes) Reject(Status::ResourceLimit, "Complete initial surface source exceeds host cap");
     return f;

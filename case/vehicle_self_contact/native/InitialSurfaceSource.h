@@ -21,10 +21,16 @@ struct Face {
     std::array<std::uint32_t, 4> nodes{}; // Existing physical-domain indices.
     int raw_role = 0; //1/3/7 before IN24/I25SURFI/SH2; not final MSEGTYP.
 };
+// Equal ordered node-word groups retain every typed origin. Their internal
+// source-ELEM order is unavailable; no origin is selected as a physical owner.
+struct OriginGroup {
+    std::size_t first_face = 0, face_count = 0;
+};
 struct Certificate {
     std::size_t queried_solid_faces = 0, matching_physical_shells = 0;
     std::size_t equal_node_key_groups = 0;
-    bool membership_complete = false, sort_order_complete = false;
+    bool membership_complete = false, consumed_order_complete = false;
+    std::size_t differing_origin_groups = 0;
 };
 struct Census {
     std::size_t nodes = 0, physical_shells = 0, physical_solids = 0;
@@ -60,7 +66,7 @@ struct Limits {
 struct Forecast {
     std::size_t upstream_geometry_reservation = 0, context_reservation = 0;
     std::size_t packed_inputs = 0, certificate_workspace = 0, extraction_output = 0;
-    std::size_t extraction_scratch = 0, retained_faces = 0, digest_workspace = 0;
+    std::size_t extraction_scratch = 0, retained_faces = 0, origin_group_bytes = 0, digest_workspace = 0;
     std::size_t peak_bytes = 0;
     std::size_t maximum_faces = 0;
 };
@@ -78,7 +84,11 @@ class InitialSurfaceSource {
     const Context& context() const noexcept;
     const Selection& selection() const noexcept;
     const coated::Inputs& geometry() const noexcept;
+    // Representative origin order within groups is NOT a native ELEM order.
+    // Consume all origins and emitted-solid tags; I25SURFI field order alone
+    // is certified by this handle.
     const std::vector<Face>& faces() const noexcept;
+    const std::vector<OriginGroup>& origin_groups() const noexcept;
     const std::vector<std::uint8_t>& emitted_solid_flags() const noexcept;
     const Certificate& certificate() const noexcept;
     const Census& census() const noexcept;

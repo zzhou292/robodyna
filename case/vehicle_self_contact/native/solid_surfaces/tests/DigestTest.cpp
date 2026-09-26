@@ -33,7 +33,7 @@ TEST(InitialSurfaceDigest, OutputBindsExternalOwnershipFlagsAndCertificateWithou
     const auto c = leaf::SingleHex();
     Certificate certificate;
     const auto original = Faces(c, certificate);
-    ASSERT_EQ(detail::CertifyOrder(original, certificate).status, Status::Ready);
+    ASSERT_EQ(detail::CertifyConsumerOrder(original, certificate).status, Status::Ready);
     Provenance provenance;
     provenance.input_digest = std::string(64, 'a');
     const std::vector<std::uint8_t> flags{1};
@@ -50,7 +50,7 @@ TEST(InitialSurfaceDigest, OutputBindsExternalOwnershipFlagsAndCertificateWithou
         if (field == 5) ++faces[0].nodes[0];
         if (field == 6) ++faces[0].raw_role;
         if (field == 7) changed_flags[0] = 0;
-        if (field == 8) proof.sort_order_complete = false;
+        if (field == 8) proof.consumed_order_complete = false;
         EXPECT_NE(detail::OutputDigest(faces, changed_flags, proof, provenance, 1u<<20), digest) << field;
     }
 }

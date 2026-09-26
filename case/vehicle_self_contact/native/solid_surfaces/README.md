@@ -29,12 +29,22 @@ successful value admission guarantees distinct corners, equal sorted node sets
 within that family are precisely native ISHEL==3/4. Ambiguity returns
 NeedsNativeReaderOrder without a published source handle.
 
-The actual PART run then preserves all emitted faces. Four-node CREATE sort ties
-must have identical authoritative external identity/role/location. An unknown
-consumed ELEM tie also returns NeedsNativeReaderOrder. Public faces contain
-kind, original EID/PID, raw solid face1..6, original source location and physical
-node indices; no representative reader row or buffer ordinal escapes. The
-initial output is not I25SURFI deduplication or shell-partner expansion.
+The actual PART run preserves every emitted face and typed origin. Four-node
+CREATE key groups must have identical raw roles in this first certificate.
+Their nodes/roles are the same sequence regardless of the native ELEM tie order.
+Every origin remains in a typed OriginGroup extent; none is chosen as a physical
+owner. Complete emitted-solid flags retain the union for all source parents,
+including parents whose identical geometry is later coalesced by I25SURFI.
+Raw origin order remains explicitly unavailable. Different-role ties still
+return NeedsNativeReaderOrder. See ORIGIN_ORDER_PROOF.md for the consumed fields.
+
+Public faces contain kind, original EID/PID, raw solid face1..6, original source
+location and physical node indices. Within equivalence groups the traversal is
+representative only. Downstream users must preserve every origin and tag; this
+is an ILEV1/IMBIN0 I25SURFI consumed-field certificate, not permission to select
+the first origin for mechanics, failure or erosion. I25GAPM resolves its support
+through INSOL3D/INCOQ3 independently. The initial output is not that ownership
+resolution, I25SURFI filtering itself or shell-partner expansion.
 
 Forecast reuses public upstream input/decode partitions, the context's complete
 reservation and enforced TL output/scratch ceilings. Real TL preflights run only

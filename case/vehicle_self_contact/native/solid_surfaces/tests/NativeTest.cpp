@@ -23,7 +23,7 @@ TEST(InitialSurfaceNative, CertifiedExternalRosterMatchesCompleteDonorForBothTra
             const auto packed = detail::Pack(geometry, c.parts);
             Certificate proof;
             const auto actual = Faces(c, proof);
-            ASSERT_EQ(detail::CertifyOrder(actual, proof).status, Status::Ready);
+            ASSERT_EQ(detail::CertifyConsumerOrder(actual, proof).status, Status::Ready);
             const auto native = leaf::Oracle(packed.Input(false));
             ASSERT_EQ(actual.size(), native.faces.size());
             for (std::size_t i = 0; i < actual.size(); ++i)
@@ -52,4 +52,45 @@ TEST(InitialSurfaceNative, ConflictingMembershipHasAnActualOrderDependentNativeR
     }
     EXPECT_NE(counts[0], counts[1]);
 }
+TEST(InitialSurfaceNative, ReorderedEqualRoleOriginsKeepConsumedFieldsAndBothNativeSolidTags) {
+    auto c = leaf::SingleHex();
+    c.solids.push_back({102,10,values::SolidTopology::NativeRaw8,{6,7,3,2,8,8,9,9}});
+    std::vector<Face> previous;
+    for (int order = 0; order != 2; ++order) {
+        const auto geometry = Geometry(c);
+        const auto packed = detail::Pack(geometry, c.parts);
+        const auto native = leaf::Oracle(packed.Input(false));
+        Certificate proof;
+        auto faces = Faces(c, proof);
+        std::vector<OriginGroup> groups;
+        ASSERT_EQ(detail::CertifyConsumerOrder(faces, proof, &groups).status, Status::Ready);
+        ASSERT_GT(proof.differing_origin_groups, 0u);
+        ASSERT_EQ(native.surface_solid_flags, (std::vector<std::uint8_t>{1,1}));
+        ASSERT_EQ(faces.size(), native.faces.size());
+        for (std::size_t i = 0; i < faces.size(); ++i)
+            Same(faces[i], detail::ExternalFace(native.faces[i], packed, geometry));
+        bool saw_first = false, saw_second = false;
+        for (const auto group : groups) {
+            for (std::size_t i = 0; i < group.face_count; ++i) {
+                const auto& face = faces[group.first_face+i];
+                saw_first = saw_first || face.source.element_id == 101;
+                saw_second = saw_second || face.source.element_id == 102;
+            }
+        }
+        EXPECT_TRUE(saw_first && saw_second);
+        if (order) {
+            ASSERT_EQ(previous.size(), faces.size());
+            for (std::size_t i = 0; i < faces.size(); ++i) {
+                EXPECT_EQ(previous[i].nodes, faces[i].nodes);
+                EXPECT_EQ(previous[i].raw_role, faces[i].raw_role);
+            }
+        }
+        auto forged = native.faces.front();
+        forged.source.element_id += 1000;
+        EXPECT_THROW(detail::ExternalFace(forged, packed, geometry), std::exception);
+        previous = faces;
+        std::reverse(c.solids.begin(), c.solids.end());
+    }
+}
+
 }

@@ -42,8 +42,8 @@ std::string OutputDigest(const std::vector<Face>& faces, const std::vector<std::
         [&](auto i) { return std::int32_t(faces[i].raw_role); });
     digest.Add<std::uint32_t>("emitted_solid_observation", flags.size(), 1, [&](auto i) { return flags[i]; });
     const std::uint64_t proof[]{certificate.queried_solid_faces, certificate.matching_physical_shells,
-        certificate.equal_node_key_groups, certificate.membership_complete, certificate.sort_order_complete};
-    digest.Add<std::uint64_t>("order_certificate", 1, 5, [&](auto i) { return proof[i]; });
+        certificate.equal_node_key_groups, certificate.membership_complete, certificate.consumed_order_complete, certificate.differing_origin_groups};
+    digest.Add<std::uint64_t>("order_certificate", 1, 6, [&](auto i) { return proof[i]; });
     return digest.Finish().sha256;
 }
 }

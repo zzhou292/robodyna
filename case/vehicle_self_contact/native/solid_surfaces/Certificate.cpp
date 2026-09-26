@@ -64,7 +64,9 @@ Report CertifyMembership(const Packing& input, const values::Snapshot& probe, Ce
     out = next;
     return {Status::Ready, "Complete physical matching-shell membership is invariant"};
 }
-Report CertifyOrder(const std::vector<Face>& faces, Certificate& out) {
+Report CertifyConsumerOrder(const std::vector<Face>& faces, Certificate& out, std::vector<OriginGroup>* published) {
+    std::vector<OriginGroup> groups;
+    if (published) groups.reserve(faces.size()/2);
     Certificate next = out;
     for (std::size_t first = 0; first < faces.size();) {
         std::size_t last = first + 1;
@@ -73,21 +75,29 @@ Report CertifyOrder(const std::vector<Face>& faces, Certificate& out) {
             "CREATE surface result is not sorted by original four-node words");
         if (last - first > 1) {
             ++next.equal_node_key_groups;
+            bool different_origin = false;
             for (std::size_t i = first + 1; i < last; ++i) {
-                if (!SameIdentity(faces[first].source, faces[i].source) || faces[first].raw_role != faces[i].raw_role) {
+                // I25SURFI reads ELEM only for the pre-filter set-to-one union.
+                // Equal nodes/role therefore have identical consumed fields,
+                // while every source origin remains present and tagged.
+                if (faces[first].raw_role != faces[i].raw_role) {
                     Report failure;
                     failure.status = Status::NeedsNativeReaderOrder;
-                    failure.reason = "Equal CREATE node keys consume an unavailable native ELEM ownership order";
+                    failure.reason = "Equal CREATE node keys have distinct unqualified role ordering";
                     failure.first_candidate_element = faces[first].source.element_id;
                     failure.conflicting_candidate_element = faces[i].source.element_id;
                     return failure;
                 }
+                different_origin = different_origin || !SameIdentity(faces[first].source, faces[i].source);
             }
+            if (different_origin) ++next.differing_origin_groups;
+            if (published) groups.push_back({first, last-first});
         }
         first = last;
     }
-    next.sort_order_complete = true;
+    next.consumed_order_complete = true;
     out = next;
-    return {Status::Ready, "No consumed native reader ELEM ordering tie"};
+    if (published) published->swap(groups);
+    return {Status::Ready, "Consumed node/role order invariant; all raw origins retained"};
 }
 }

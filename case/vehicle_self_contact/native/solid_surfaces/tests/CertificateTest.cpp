@@ -47,29 +47,29 @@ TEST(InitialSurfaceCertificate, NativeMatchingFamiliesStaySeparate) {
     EXPECT_EQ(proof.queried_solid_faces, 5u);
     EXPECT_EQ(proof.matching_physical_shells, 1u);
 }
-TEST(InitialSurfaceCertificate, EqualNodeKeysRequireTheSameExternalOwnerAndLocation) {
+TEST(InitialSurfaceCertificate, EqualConsumedWordsRetainEveryOriginWithoutSelectingAnOwner) {
     auto c = leaf::Case{};
     c.quads = {{201, 10, {0,1,2,3}}, {202, 10, {0,1,2,3}}};
     Certificate proof;
     auto faces = Faces(c, proof);
     ASSERT_EQ(faces.size(), 2u);
-    const auto before = proof;
-    EXPECT_EQ(detail::CertifyOrder(faces, proof).status, Status::NeedsNativeReaderOrder);
-    Same(proof, before);
-    // Identity-only certificate coupons: no geometry admission is inferred.
-    faces[1] = faces[0];
-    ASSERT_EQ(detail::CertifyOrder(faces, proof).status, Status::Ready);
+    std::vector<OriginGroup> groups;
+    ASSERT_EQ(detail::CertifyConsumerOrder(faces, proof, &groups).status, Status::Ready);
     EXPECT_EQ(proof.equal_node_key_groups, 1u);
-    for (unsigned changed = 0; changed != 4; ++changed) {
-        auto foreign = faces;
-        if (changed == 0) ++foreign[1].source.source_line;
-        if (changed == 1) ++foreign[1].source.canonical_row;
-        if (changed == 2) ++foreign[1].source.part_id;
-        if (changed == 3) ++foreign[1].raw_role;
-        auto staged = before;
-        EXPECT_EQ(detail::CertifyOrder(foreign, staged).status, Status::NeedsNativeReaderOrder);
-        Same(staged, before);
-    }
+    EXPECT_EQ(proof.differing_origin_groups, 1u);
+    ASSERT_EQ(groups.size(), 1u);
+    EXPECT_EQ(groups[0].first_face, 0u);
+    EXPECT_EQ(groups[0].face_count, 2u);
+    EXPECT_NE(faces[0].source.element_id, faces[1].source.element_id);
+    EXPECT_NE(faces[0].source.source_line, faces[1].source.source_line);
+    const auto before = proof;
+    const auto prior_groups = groups;
+    faces[1].raw_role = 1;
+    EXPECT_EQ(detail::CertifyConsumerOrder(faces, proof, &groups).status, Status::NeedsNativeReaderOrder);
+    Same(proof, before);
+    ASSERT_EQ(groups.size(), prior_groups.size());
+    EXPECT_EQ(groups[0].first_face, prior_groups[0].first_face);
+    EXPECT_EQ(groups[0].face_count, prior_groups[0].face_count);
 }
 TEST(InitialSurfaceCertificate, RepresentativePermutationsPreserveTypedExternalFaces) {
     auto c = leaf::Adjacent();
@@ -78,11 +78,11 @@ TEST(InitialSurfaceCertificate, RepresentativePermutationsPreserveTypedExternalF
     c.triangles = {{301, 30, {20,21,22,22}}};
     Certificate a, b;
     const auto original = Faces(c, a);
-    ASSERT_EQ(detail::CertifyOrder(original, a).status, Status::Ready);
+    ASSERT_EQ(detail::CertifyConsumerOrder(original, a).status, Status::Ready);
     std::reverse(c.solids.begin(), c.solids.end());
     std::reverse(c.quads.begin(), c.quads.end());
     const auto permuted = Faces(c, b);
-    ASSERT_EQ(detail::CertifyOrder(permuted, b).status, Status::Ready);
+    ASSERT_EQ(detail::CertifyConsumerOrder(permuted, b).status, Status::Ready);
     ASSERT_EQ(original.size(), permuted.size());
     for (std::size_t i = 0; i < original.size(); ++i) Same(original[i], permuted[i]);
     Same(a, b);

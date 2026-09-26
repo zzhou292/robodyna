@@ -71,7 +71,8 @@ inline void Same(const Certificate& a, const Certificate& b) {
     EXPECT_EQ(a.matching_physical_shells, b.matching_physical_shells);
     EXPECT_EQ(a.equal_node_key_groups, b.equal_node_key_groups);
     EXPECT_EQ(a.membership_complete, b.membership_complete);
-    EXPECT_EQ(a.sort_order_complete, b.sort_order_complete);
+    EXPECT_EQ(a.consumed_order_complete, b.consumed_order_complete);
+    EXPECT_EQ(a.differing_origin_groups, b.differing_origin_groups);
 }
 inline void Same(const Face& a, const Face& b) {
     EXPECT_EQ(a.source.kind, b.source.kind);

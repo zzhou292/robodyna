@@ -8,6 +8,7 @@ struct InitialSurfaceSource::Data {
     Selection selection;
     coated::Inputs geometry;
     std::vector<Face> faces;
+    std::vector<OriginGroup> origin_groups;
     std::vector<std::uint8_t> solid_flags;
     Certificate certificate;
     Census census;
@@ -91,8 +92,10 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
             next->solid_flags.assign(observed.surface_solid_flags, observed.surface_solid_flags + observed.solid_count);
         if (next->faces.capacity() > 2*observed.face_count || next->solid_flags.capacity() > 2*observed.solid_count)
             d::Reject(Status::ResourceLimit, "Retained initial surface capacities exceed reservation");
-        const auto ordering = d::CertifyOrder(next->faces, next->certificate);
+        const auto ordering = d::CertifyConsumerOrder(next->faces, next->certificate, &next->origin_groups);
         if (ordering.status != Status::Ready) { result.report = ordering; return result; }
+        if (next->origin_groups.capacity() > forecast.origin_group_bytes / sizeof(OriginGroup))
+            d::Reject(Status::ResourceLimit, "Retained origin group capacity exceeds reservation");
         auto& census = next->census;
         census.nodes = next->geometry.nodes.size();
         census.physical_shells = next->geometry.shells.size();
@@ -118,7 +121,7 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
         }
         next->provenance.output_digest = d::OutputDigest(next->faces, next->solid_flags,
             next->certificate, next->provenance, limits.metadata_bytes);
-        result.report = {Status::Ready, "Complete source initial surface buffer has certified order independence"};
+        result.report = {Status::Ready, "Initial consumed fields are invariant; every source origin and solid tag remains retained"};
         result.source.emplace(InitialSurfaceSource(std::move(next)));
     } catch (const d::Failure& failure) {
         result.source.reset();
@@ -136,6 +139,7 @@ const Context& InitialSurfaceSource::context() const noexcept { return data_->co
 const Selection& InitialSurfaceSource::selection() const noexcept { return data_->selection; }
 const coated::Inputs& InitialSurfaceSource::geometry() const noexcept { return data_->geometry; }
 const std::vector<Face>& InitialSurfaceSource::faces() const noexcept { return data_->faces; }
+const std::vector<OriginGroup>& InitialSurfaceSource::origin_groups() const noexcept { return data_->origin_groups; }
 const std::vector<std::uint8_t>& InitialSurfaceSource::emitted_solid_flags() const noexcept { return data_->solid_flags; }
 const Certificate& InitialSurfaceSource::certificate() const noexcept { return data_->certificate; }
 const Census& InitialSurfaceSource::census() const noexcept { return data_->census; }
