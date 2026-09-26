@@ -45,3 +45,11 @@ and zero coefficients, inactive cache, aliases, exact host cap and failed retry.
 Permutation coupons prescribe a valid upstream operand; they do not claim to
 reimplement the separate source support/geometry authority. GPU tests compare
 full native intermediate and final float fields across launch widths/order.
+
+The additive NodePrefixExtension overload admits a genuine complete nodal domain
+while retaining the original sides descriptor unchanged. It requires identical
+original node IDs and coordinate bits, compatible working context, and original
+face indices confined to that prefix. The shared bounded Expand pass checks all
+complete IDs for duplicates and all coordinates for finiteness. App-level
+DomainEmbedding remains the authority for a real environment suffix. No source
+face/secondary roster is widened and no second topology build is performed.

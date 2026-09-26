@@ -42,6 +42,17 @@ struct PostGapmTopology {
   SolidErosion final_solid_erosion=SolidErosion::Unspecified;
   std::uint64_t source_generation=0;
 };
+// Original source node view for an explicit disjoint domain extension. The
+// complete Input must preserve these exact node IDs and coordinate bits as its
+// prefix. Existing sides retain their original node_count. App/domain binding
+// separately authenticates the actual added nodes; this is a numerical view.
+struct NodePrefixExtension {
+  const std::uint64_t* node_source_ids=nullptr;
+  VectorView positions;
+  std::size_t node_count=0;
+  Coordinates coordinates=Coordinates::Native;
+  UnitScale units;
+};
 // The DTO is numerical source input, not authority. App source construction and
 // runtime physical binding separately authenticate every support against the
 // actual complete physical ledger and preserve all raw-origin identities.
