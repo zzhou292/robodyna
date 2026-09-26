@@ -12,4 +12,8 @@ Forecast Preflight(const Input&, Limits={}) noexcept;
 // descriptor. Scratch is caller-private and may change on failure.
 Report Build(const Input&, Limits, tl::util::HostArena& output,
     tl::util::HostArena& scratch, Snapshot*) noexcept;
+// Explicit rich mixed snapshot, true G=P+shell_count. Legacy entrypoints
+// retain their ordinary2P admission.
+Forecast PreflightComposed(const Input&,Limits={}) noexcept;
+Report BuildComposed(const Input&,Limits,tl::util::HostArena&,tl::util::HostArena&,Snapshot*) noexcept;
 } // namespace tlfea::contact::radioss_type25::tied_removal

@@ -24,9 +24,9 @@ struct Work {
   std::uint64_t* ids;
   std::uint64_t* auxiliary_ids;
 };
-Report Plan(const Input&,Limits,Layout&) noexcept;
+Report Plan(const Input&,Limits,Layout&,bool mixed=false) noexcept;
 Report Admit(const Input&,Limits,const Layout&,const tl::util::HostArena&,
-    const tl::util::HostArena&,const Snapshot*) noexcept;
+    const tl::util::HostArena&,const Snapshot*,bool mixed=false) noexcept;
 Report Prepare(const Input&,Work) noexcept;
 Report Evaluate(const Input&,Limits,const Layout&,Work,Data) noexcept;
 Data Construct(tl::util::HostArena&,const DataLayout&) noexcept;

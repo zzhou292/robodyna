@@ -17,20 +17,26 @@ bool Same(const search_startup::Contributors& a,const search_startup::Contributo
 }
 }
 Report Admit(const Input& in,Limits limits,const Layout&,const tl::util::HostArena& out,
-    const tl::util::HostArena& scratch,const Snapshot* result) noexcept {
+    const tl::util::HostArena& scratch,const Snapshot* result,bool mixed) noexcept {
   namespace r=search::detail;namespace ss=search_startup;
   std::size_t native_nodes=0;
-  const auto context=ss::detail::ResolveContext(in.source,limits.search,ss::detail::Context::BeforeTied,native_nodes);
+  const auto context=ss::detail::ResolveContext(in.source,limits.search,mixed?ss::detail::Context::ComposedBeforeTied:ss::detail::Context::BeforeTied,native_nodes);
   if(context.status!=Status::Ok)return {context.status};
-  const auto source=ss::detail::Admit(in.source,{},limits.search,out,scratch,result,sizeof(*result));
+  const auto source=(mixed&&in.source.mesh.profile==startup::Profile::MixedSurface)?ss::detail::AdmitMixed(in.source,{},limits.search,out,scratch,result,sizeof(*result)):
+      ss::detail::Admit(in.source,{},limits.search,out,scratch,result,sizeof(*result),mixed);
   if(source.status!=Status::Ok)return {source.status,SIZE_MAX,SIZE_MAX,source.main};
   if(in.finalization!=Finalization::CompactedAfterKinChk||in.tied_removal!=1)
     return {Status::UnsupportedProfile};
   const auto& g=in.geometric.geometry;
+  const auto population=ss::detail::ResolvedPopulation(in.source,native_nodes);
+  const bool exact=population.policy==ss::NativePopulationPolicy::ExactDeclaredAuxiliaryIds;
   const auto p=in.source.mesh.primary_count,m=in.source.main_count,s=in.source.secondary_count;
-  if(!Same(in.geometric.contributors,in.source.contributors)||in.interface_count!=in.source.contributors.tied_interfaces||
+  if(in.geometric.covered_type25_siblings!=in.source.covered_type25_siblings||
+      !Same(in.geometric.contributors,in.source.contributors)||in.interface_count!=in.source.contributors.tied_interfaces||
       g.primary_count!=p||g.main_count!=m||g.secondary_count!=s||g.source_generation!=in.source.mesh.source_generation||
-      g.native_model_nodes!=native_nodes||in.history_count!=s||g.removal_count>limits.search.max_removals||
+      g.native_model_nodes_exact!=exact||g.native_model_nodes!=(exact?native_nodes:0)||
+      g.native_population.policy!=population.policy||g.native_population.lower!=population.lower||g.native_population.upper!=population.upper||
+      in.history_count!=s||g.removal_count>limits.search.max_removals||
       in.native_removal_extent<g.removal_count||in.native_removal_extent>std::size_t(INT_MAX)||
       !r::Span(g.primary_extent,p)||!r::Span(g.main_offsets,m+1)||!r::Span(g.secondary_offsets,s+1)||
       !r::Span(g.removed_nodes,g.removal_count)||!r::Span(g.removed_mains,g.removal_count)||

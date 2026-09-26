@@ -2,14 +2,15 @@
 #include "Internal.h"
 #include <algorithm>
 namespace tlfea::contact::radioss_type25::tied_removal {
-Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
-    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+namespace {
+Report BuildImpl(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* published,bool mixed) noexcept {
   if(!search::detail::Span(published,1))return {Status::InvalidInput};
-  detail::Layout layout;auto report=detail::Plan(in,limits,layout);
+  detail::Layout layout;auto report=detail::Plan(in,limits,layout,mixed);
   if(report.status!=Status::Ok)return report;
   if(output.bytes()<layout.forecast.output_bytes||scratch.bytes()<layout.forecast.scratch_bytes)
     return {Status::ResourceLimit};
-  report=detail::Admit(in,limits,layout,output,scratch,published);
+  report=detail::Admit(in,limits,layout,output,scratch,published,mixed);
   if(report.status!=Status::Ok)return report;
   auto staged=detail::Construct(scratch,layout.staged);auto work=detail::ConstructWork(scratch,layout);
   report=detail::Prepare(in,work);
@@ -37,5 +38,14 @@ Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
   next.added_removals=report.added_removals;next.reset_rows=report.reset_rows;
   next.native_removal_extent=in.native_removal_extent+report.added_removals;
   *published=next;return report;
+}
+}
+Report Build(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+  return BuildImpl(in,limits,output,scratch,published,false);
+}
+Report BuildComposed(const Input& in,Limits limits,tl::util::HostArena& output,
+    tl::util::HostArena& scratch,Snapshot* published) noexcept {
+  return BuildImpl(in,limits,output,scratch,published,true);
 }
 } // namespace tlfea::contact::radioss_type25::tied_removal

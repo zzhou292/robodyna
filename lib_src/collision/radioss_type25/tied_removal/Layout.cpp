@@ -11,13 +11,18 @@ bool Append(tl::util::BoundedArenaLayout& a,std::size_t p,std::size_t g,std::siz
       a.Append<std::uint32_t>(cap,out.mains)&&a.Append<int>(s,out.contact)&&a.Append<History>(s,out.history);
 }
 }
-Report Plan(const Input& in,Limits limits,Layout& out) noexcept {
+Report Plan(const Input& in,Limits limits,Layout& out,bool mixed) noexcept {
   namespace r=search::detail;
   const Limits hard;
   const auto n=in.source.mesh.node_count,p=in.source.mesh.primary_count,s=in.source.secondary_count;
+  const bool rich=mixed&&in.source.mesh.profile==startup::Profile::MixedSurface;
+  const auto g=mixed?in.source.main_count:2*p;
+  if(rich&&(in.source.mesh.topology!=startup::TopologyPolicy::NativeMixedSurface||
+      in.source.mesh.shell_primary_count>p||g!=p+in.source.mesh.shell_primary_count))return {Status::UnsupportedProfile};
+  if(mixed&&!rich&&g!=2*p)return {Status::InvalidInput};
   if(!n||!p||!s||!in.interface_count)return {Status::InvalidInput};
-  if(n>limits.search.max_nodes||n>hard.search.max_nodes||p>hard.search.max_mains/2||
-      p>limits.search.max_mains/2||s>limits.search.max_secondaries||s>hard.search.max_secondaries||
+  if(n>limits.search.max_nodes||n>hard.search.max_nodes||(!mixed&&p>hard.search.max_mains/2)||g>hard.search.max_mains||
+      g>limits.search.max_mains||s>limits.search.max_secondaries||s>hard.search.max_secondaries||
       in.interface_count>limits.max_interfaces||in.interface_count>hard.max_interfaces||
       limits.max_tied_mains>hard.max_tied_mains||limits.max_tied_rows>hard.max_tied_rows||
       limits.max_relations>hard.max_relations||limits.max_relation_visits>hard.max_relation_visits||
@@ -34,7 +39,6 @@ Report Plan(const Input& in,Limits limits,Layout& out) noexcept {
     if(!r::Span(f.mains,f.main_count)||!r::Span(f.rows,f.row_count))return {Status::InvalidInput,i};
   }
   if(rows>limits.max_relations/5)return {Status::ResourceLimit};
-  const auto g=2*p;
   if(g>SIZE_MAX/s)return {Status::ResourceLimit};
   const auto capacity=std::min(g*s,limits.search.max_removals),relations=5*rows;
   Layout next;tl::util::BoundedArenaLayout output(SIZE_MAX),scratch(SIZE_MAX);
@@ -67,4 +71,10 @@ Forecast Preflight(const Input& in,Limits limits) noexcept {
   if(layout.forecast.output_bytes)return layout.forecast;
   Forecast out;out.status=result.status;return out;
 }
+Forecast PreflightComposed(const Input& in,Limits limits) noexcept {
+  detail::Layout layout;const auto result=detail::Plan(in,limits,layout,true);
+  if(layout.forecast.output_bytes)return layout.forecast;
+  Forecast out;out.status=result.status;return out;
+}
+
 }

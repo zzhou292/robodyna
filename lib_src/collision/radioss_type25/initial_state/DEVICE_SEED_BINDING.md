@@ -1,9 +1,10 @@
 # Typed GPU initial state and runtime binding
 
-Reviewed architecture, source implementation in progress. Root approved the
-internal invocation boundary on2026-09-26. The new private pair/winner headers
-are only its value layer and remain unqualified. No public Transaction fields
-have changed.
+Reviewed architecture, source implementation in progress. The pair/winner value
+layer is qualified at14b3f67f (34 host and3 CUDA groups,2 Bazel tests). That
+evidence does not qualify full-source initialization. The full GPU producer and
+opaque host preparation are authored in `initial_source/`; runtime General*
+binding remains a separate implementation/qualification boundary.
 
 `InitialSourceView` will carry independent N/NS/P/G/R counts, explicit initial
 phase/INACTI5/IGAP1/IVIS2/ISHARP/IRESP/NSPMD controls, source ID/generation,

@@ -38,8 +38,16 @@ Status CheckSource(const Source& s,Limits l) noexcept {
 }
 Status MakeLayout(const Source& s,Limits l,std::size_t scratch,std::size_t owner,Layout& out) noexcept {
   const auto status=CheckSource(s,l);if(status!=Status::Ok)return status;
+  return MakeStorageLayout({s.physical_nodes,s.secondaries,s.mains,s.removals},l,scratch,owner,out);
+}
+Status MakeStorageLayout(StorageShape s,Limits l,std::size_t scratch,std::size_t owner,Layout& out) noexcept {
+  const Limits hard;
+  if(!s.nodes||s.nodes>l.max_nodes||s.nodes>hard.max_nodes||s.secondaries>l.max_secondaries||
+      s.secondaries>hard.max_secondaries||s.mains>l.max_mains||s.mains>hard.max_mains||
+      s.removals>l.max_removals||s.removals>hard.max_removals||!l.max_tasks||l.max_tasks>8388608||
+      !l.max_pairs||l.max_pairs>hard.max_pairs||!l.max_device_bytes||!l.max_host_bytes)return Status::ResourceLimit;
   Layout n;tl::util::BoundedArenaLayout a(l.max_device_bytes);
-  if(!a.Append<std::uint64_t>(s.physical_nodes,n.ids)||!a.Append<int>(s.physical_nodes,n.codes)||
+  if(!a.Append<std::uint64_t>(s.nodes,n.ids)||!a.Append<int>(s.nodes,n.codes)||
      !a.Append<std::uint32_t>(s.secondaries,n.secondary)||!a.Append<MainEntry>(s.mains,n.mains)||
      !a.Append<std::uint32_t>(s.mains,n.ranks)||!a.Append<std::uint64_t>(s.mains+1,n.removal_offsets)||
      !a.Append<std::uint32_t>(s.removals,n.removals)||!a.Append<double>(s.secondaries,n.keys)||
@@ -53,7 +61,7 @@ Status MakeLayout(const Source& s,Limits l,std::size_t scratch,std::size_t owner
      !a.Append<std::byte>(scratch,n.cub))return Status::ResourceLimit;
   n.forecast.device_bytes=a.bytes();n.forecast.cub_bytes=scratch;
   tl::util::BoundedArenaLayout host(l.max_host_bytes);tl::util::ArenaRegion ignored;
-  if(!host.Append<std::byte>(owner,ignored)||!host.Append<std::uint64_t>(s.physical_nodes,ignored)||
+  if(!host.Append<std::byte>(owner,ignored)||!host.Append<std::uint64_t>(s.nodes,ignored)||
      !host.Append<MainEntry>(s.mains,ignored)||!host.Append<std::uint32_t>(s.mains,ignored)||
      !host.Append<std::uint32_t>(s.removals,ignored))return Status::ResourceLimit;
   n.forecast.startup_host_bytes=host.bytes();out=n;return Status::Ok;

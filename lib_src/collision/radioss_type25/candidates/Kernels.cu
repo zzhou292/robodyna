@@ -3,6 +3,7 @@
 // explicit-stream machinery. Role keys and exact filter are native TYPE25.
 #include "Launch.h"
 #include "Packing.h"
+#include "Sweep.cuh"
 #include <cub/cub.cuh>
 #include <math_constants.h>
 #include <algorithm>
@@ -16,7 +17,7 @@ __device__ Vector Read(Device d,VectorView view,std::uint32_t i,bool velocity=fa
 }
 __device__ double Gap(Device d,double x){return d.si?x/d.length:x;}
 __device__ void Fail(Device d,std::size_t row,Status status) {
-  atomicMin(&d.control->failure,(static_cast<unsigned long long>(row)<<8)|unsigned(status));
+  sweep::Failure(d,row,status);
 }
 __device__ bool InDomain(Vector x,const Bounds& b) {
   return x.x>=b.minimum.x&&x.x<=b.maximum.x&&x.y>=b.minimum.y&&x.y<=b.maximum.y&&
@@ -81,17 +82,6 @@ __global__ void MainRanges(Device d,Current in) {
   }
 }
 __global__ void TaskTotal(Device d) {if(!threadIdx.x&&!blockIdx.x)d.control->tasks=d.task_offsets[d.main_count];}
-__global__ void BuildTasks(Device d,std::size_t count) {
-  for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<d.main_count;i+=blockDim.x*gridDim.x) {
-    const auto range=d.ranges[i];
-    for(std::uint32_t first=range.first;first<range.last;first+=TaskWidth) {
-      const auto index=d.task_offsets[i]+(first-range.first)/TaskWidth;
-      if(index>=count){Fail(d,d.secondary_count+i,Status::ResourceLimit);break;}
-      d.tasks[index]={std::uint32_t(i),first,(range.last<first+TaskWidth?range.last:first+TaskWidth)};
-    }
-  }
-  if(!blockIdx.x&&!threadIdx.x)d.pair_counts[count]=0;
-}
 __device__ bool Removed(Device d,std::uint32_t main,std::uint32_t node) {
   auto lo=d.removal_offsets[main],hi=d.removal_offsets[main+1];
   while(lo<hi){const auto mid=lo+(hi-lo)/2;if(d.removals[mid]<node)lo=mid+1;else hi=mid;}
@@ -119,46 +109,17 @@ __device__ bool Candidate(Device d,const Current& in,const Task& task,unsigned l
   if(status!=Status::Ok){Fail(d,secondary,status);return false;}
   key=(static_cast<std::uint64_t>(secondary)<<32)|m.rank;return result.included;
 }
-__global__ void Count(Device d,Current in,std::size_t tasks) {
-  using Reduce=cub::BlockReduce<unsigned,TaskWidth>;__shared__ typename Reduce::TempStorage scratch;
-  for(std::size_t task=blockIdx.x;task<tasks;task+=gridDim.x) {
-    std::uint64_t key=0;const unsigned included=Candidate(d,in,d.tasks[task],threadIdx.x,key)?1:0;
-    const auto count=Reduce(scratch).Sum(included);
-    if(!threadIdx.x)d.pair_counts[task]=count;
-    __syncthreads();
-  }
-}
 __global__ void PairTotal(Device d,std::size_t tasks) {if(!threadIdx.x&&!blockIdx.x)d.control->pairs=d.pair_offsets[tasks];}
-__global__ void Fill(Device d,Current in,std::size_t tasks) {
-  using Scan=cub::BlockScan<unsigned,TaskWidth>;__shared__ typename Scan::TempStorage scratch;
-  for(std::size_t task=blockIdx.x;task<tasks;task+=gridDim.x) {
-    std::uint64_t key=0;const unsigned included=Candidate(d,in,d.tasks[task],threadIdx.x,key)?1:0;
-    unsigned local=0,total=0;Scan(scratch).ExclusiveSum(included,local,total);
-    if(total!=d.pair_counts[task])Fail(d,d.tasks[task].main,Status::InvalidInput);
-    if(included) {
-      const auto offset=d.pair_offsets[task]+local;
-      if(offset<d.pair_capacity&&offset<d.control->pairs)d.pair_keys[offset]=key;
-      else Fail(d,d.tasks[task].main,Status::ResourceLimit);
-    }
-    __syncthreads();
+struct EnginePolicy {
+  __device__ static bool Candidate(Device d,const Current& in,const Task& task,unsigned lane,std::uint64_t& key) {
+    return detail::Candidate(d,in,task,lane,key);
   }
-}
-__global__ void Decode(Device d,std::size_t count) {
-  if(d.control->failure!=~0ull)return;
-  for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<count;i+=blockDim.x*gridDim.x) {
-    const auto key=d.sorted_pair_keys[i];d.pairs[i]={std::uint32_t(key>>32),d.ranks[std::uint32_t(key)]};
-  }
-}
-__global__ void Incidence(Device d,std::size_t count) {
-  if(d.control->failure!=~0ull)return;
-  for(std::size_t i=blockIdx.x*blockDim.x+threadIdx.x;i<=d.secondary_count;i+=blockDim.x*gridDim.x) {
-    const auto key=static_cast<std::uint64_t>(i)<<32;std::size_t lo=0,hi=count;
-    while(lo<hi){const auto mid=lo+(hi-lo)/2;if(d.sorted_pair_keys[mid]<key)lo=mid+1;else hi=mid;}
-    d.secondary_offsets[i]=lo;
-  }
-}
+};
 }
 cudaError_t QueryScratch(const Source& s,Limits limits,std::size_t& bytes) noexcept {
+  return QueryStorageScratch({s.physical_nodes,s.secondaries,s.mains,s.removals},limits,bytes);
+}
+cudaError_t QueryStorageScratch(StorageShape s,Limits limits,std::size_t& bytes) noexcept {
   std::size_t maximum=0,next=0;
   auto error=cub::DeviceRadixSort::SortPairs(nullptr,next,static_cast<double*>(nullptr),static_cast<double*>(nullptr),
       static_cast<std::uint32_t*>(nullptr),static_cast<std::uint32_t*>(nullptr),int(s.secondaries));
@@ -190,9 +151,9 @@ cudaError_t BuildRanges(Device d,const Current& in,cudaStream_t stream) noexcept
 }
 cudaError_t CountPairs(Device d,const Current& in,std::size_t tasks,cudaStream_t stream) noexcept {
   // tasks may be zero; initialize the scan sentinel without launching zero grids.
-  BuildTasks<<<std::max(1u,Blocks(d.main_count)),256,0,stream>>>(d,tasks);
+  sweep::BuildTasks<<<std::max(1u,Blocks(d.main_count)),256,0,stream>>>(d,tasks);
   auto error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;
-  if(tasks){Count<<<std::min<std::size_t>(tasks,256),TaskWidth,0,stream>>>(d,in,tasks);
+  if(tasks){sweep::Count<EnginePolicy><<<std::min<std::size_t>(tasks,256),TaskWidth,0,stream>>>(d,in,tasks);
     error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;}
   auto bytes=d.cub_bytes;
   error=cub::DeviceScan::ExclusiveSum(d.cub,bytes,d.pair_counts,d.pair_offsets,int(tasks+1),stream);
@@ -201,15 +162,15 @@ cudaError_t CountPairs(Device d,const Current& in,std::size_t tasks,cudaStream_t
 }
 cudaError_t FillPairs(Device d,const Current& in,std::size_t tasks,std::size_t pairs,cudaStream_t stream) noexcept {
   auto error=cudaSuccess;
-  if(tasks){Fill<<<std::min<std::size_t>(tasks,256),TaskWidth,0,stream>>>(d,in,tasks);
+  if(tasks){sweep::Fill<EnginePolicy><<<std::min<std::size_t>(tasks,256),TaskWidth,0,stream>>>(d,in,tasks);
     error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;}
   if(pairs) {
     auto bytes=d.cub_bytes;
     error=cub::DeviceRadixSort::SortKeys(d.cub,bytes,d.pair_keys,d.sorted_pair_keys,int(pairs),0,64,stream);
     if(error!=cudaSuccess)return error;
-    Decode<<<Blocks(pairs),256,0,stream>>>(d,pairs);
+    sweep::Decode<<<Blocks(pairs),256,0,stream>>>(d,pairs);
     error=cudaPeekAtLastError();if(error!=cudaSuccess)return error;
   }
-  Incidence<<<Blocks(d.secondary_count+1),256,0,stream>>>(d,pairs);return cudaPeekAtLastError();
+  sweep::Incidence<<<Blocks(d.secondary_count+1),256,0,stream>>>(d,pairs);return cudaPeekAtLastError();
 }
 } // namespace tlfea::contact::radioss_type25::candidates::detail

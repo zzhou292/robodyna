@@ -12,15 +12,16 @@ bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) noexcep
 }
 }
 Report Admit(const Input& in,const Layout&,Limits,const tl::util::HostArena& output,
-    const tl::util::HostArena& scratch,const void* result,std::size_t result_bytes) noexcept {
+    const tl::util::HostArena& scratch,const void* result,std::size_t result_bytes,bool composed) noexcept {
   namespace r=search::detail;
   const auto& p=in.profile;const auto& c=in.contributors;const auto& mesh=in.mesh;const auto& top=in.topology;
-  if (p.level!=1 || p.gap_mode!=1 || p.neighbor_removal!=2 || p.initial_penetration!=5 ||
+  if ((!composed&&in.global_gap_phase!=GlobalGapPhase::OrdinaryResolvedFields)||p.level!=1 || p.gap_mode!=1 || p.neighbor_removal!=2 || p.initial_penetration!=5 ||
       p.edge_mode!=0 || p.thermal_mode!=0 || (p.curvature!=0 && p.curvature!=1) || p.partitions!=1 ||
       p.gap_load_cards!=LoadCards::Absent ||
       (p.initialization!=Initialization::SerialNative && p.initialization!=Initialization::InvariantNoExpansion) ||
       c.census!=Census::CompleteDeclaredModel || c.physical_nodes!=mesh.node_count ||
-      c.physical_shells<mesh.primary_count || c.other_interfaces || c.unsupported_elements ||
+      c.physical_shells<mesh.primary_count ||
+      (composed?c.other_interfaces!=in.covered_type25_siblings:(c.other_interfaces!=0||in.covered_type25_siblings!=0)) || c.unsupported_elements ||
       (mesh.profile!=startup::Profile::OrdinaryExteriorFixedMain &&
        mesh.profile!=startup::Profile::OrdinaryExteriorMovingMain) ||
       (mesh.topology!=startup::TopologyPolicy::ManifoldTwoSided &&

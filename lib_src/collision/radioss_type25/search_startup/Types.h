@@ -29,7 +29,22 @@ struct Secondary {
   std::uint32_t node = UINT32_MAX;
   double stiffness = 0, gap = 0; // Resolved native working units.
 };
+enum class GlobalGapPhase { OrdinaryResolvedFields, ExplicitPreNodalUpdate };
+enum class NativePopulationPolicy { ExactDeclaredAuxiliaryIds, CompleteModelMultiplierTier };
+struct NativePopulation {
+  NativePopulationPolicy policy=NativePopulationPolicy::ExactDeclaredAuxiliaryIds;
+  // Input exact-ID path uses0/0; its output contains the exact count twice.
+  // The composed interval path supplies complete source-derived bounds, never
+  // an invented exact NUMNOD. Every consumed topology/row node is physical.
+  std::size_t lower=0,upper=0;
+};
 struct Input {
+  // Mixed composition only: exact sibling TYPE25 coverage. Other-interface
+  // census remains unchanged and must equal this source-backed count.
+  std::size_t covered_type25_siblings=0;
+  GlobalGapPhase global_gap_phase=GlobalGapPhase::OrdinaryResolvedFields;
+  double source_global_gap=0;
+  NativePopulation native_population;
   startup::Input mesh;
   startup::Snapshot topology; // Immutable actual BuildStarter output for mesh.
   Contributors contributors;
@@ -68,6 +83,8 @@ struct Snapshot {
   std::size_t main_count = 0, secondary_count = 0, removal_count = 0;
   std::uint64_t source_generation = 0;
   std::size_t native_model_nodes = 0; // Physical geometry plus authenticated auxiliary IDs.
+  NativePopulation native_population;
+  bool native_model_nodes_exact=true; // False => native_model_nodes is unavailable0.
 };
 // Not a final interface-removal result. A genuine complete TYPE2 augmentation
 // must consume these geometric arrays before a source factory admits them.
@@ -75,6 +92,7 @@ struct Snapshot {
 struct GeometricSnapshot {
   Snapshot geometry;
   Contributors contributors;
+  std::size_t covered_type25_siblings=0;
 };
 struct Report {
   Status status = Status::InvalidInput;

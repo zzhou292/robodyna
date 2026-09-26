@@ -13,16 +13,17 @@ bool Output(tl::util::BoundedArenaLayout& a, std::size_t p, std::size_t g,
 }
 }
 Report MakeLayout(std::size_t nodes, std::size_t p, std::size_t s, Limits limits,
-    Layout& out,std::size_t auxiliary_nodes) noexcept {
+    Layout& out,std::size_t auxiliary_nodes,std::size_t expanded_mains) noexcept {
   if (!nodes || !p || !s) return {Status::InvalidInput};
   const Limits hard;
-  if (nodes>limits.max_nodes || nodes>hard.max_nodes || p>hard.max_mains/2 ||
-      2*p>limits.max_mains || s>limits.max_secondaries || s>hard.max_secondaries ||
+  const auto g=expanded_mains?expanded_mains:2*p;
+  if (expanded_mains&&(g<p||g-p>p))return {Status::InvalidInput};
+  if (nodes>limits.max_nodes || nodes>hard.max_nodes || (!expanded_mains&&p>hard.max_mains/2) ||
+      g>hard.max_mains || g>limits.max_mains || s>limits.max_secondaries || s>hard.max_secondaries ||
       !limits.max_neighbor_visits || limits.max_neighbor_visits>hard.max_neighbor_visits ||
       !limits.max_margin_iterations || limits.max_margin_iterations>hard.max_margin_iterations ||
       limits.max_removals>hard.max_removals || !limits.max_output_bytes || !limits.max_scratch_bytes)
     return {Status::ResourceLimit};
-  const auto g=2*p;
   if (g>SIZE_MAX/s || 4*g>std::size_t(INT_MAX)) return {Status::ResourceLimit};
   const auto capacity=std::min(limits.max_removals,g*s);
   Layout next;
@@ -73,6 +74,9 @@ Forecast Preflight(std::size_t nodes, std::size_t primaries, std::size_t seconda
 }
 Forecast Preflight(const Input& in,Limits limits) noexcept {
   detail::Layout layout;
+  if(in.native_population.policy!=NativePopulationPolicy::ExactDeclaredAuxiliaryIds||in.native_population.lower||in.native_population.upper) {
+    Forecast f;f.status=Status::UnsupportedProfile;return f;
+  }
   if(in.contributors.native_auxiliary_nodes!=in.auxiliary_rigid_primary_count) {
     Forecast f;f.status=Status::InvalidInput;return f;
   }

@@ -25,4 +25,9 @@ Report BuildRigidOnly(const Input&, Limits, tl::util::HostArena& output,
 // Complete declared contributor counts are retained, never zeroed to fit Build.
 Report BuildGeometricBeforeTied(const Input&, Limits, tl::util::HostArena& output,
     tl::util::HostArena& scratch, GeometricSnapshot*) noexcept;
+// Explicit complete interface composition, also for an ordinary fixed wall.
+// Covered sibling TYPE25 counts are checked without rewriting other census.
+Forecast PreflightComposed(const Input&,Limits={}) noexcept;
+Report BuildComposedNoTied(const Input&,Limits,tl::util::HostArena&,tl::util::HostArena&,Snapshot*) noexcept;
+Report BuildComposedGeometricBeforeTied(const Input&,Limits,tl::util::HostArena&,tl::util::HostArena&,GeometricSnapshot*) noexcept;
 } // namespace tlfea::contact::radioss_type25::search_startup

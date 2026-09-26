@@ -16,6 +16,10 @@ struct Layout {
   tl::util::ArenaRegion pair_counts,pair_offsets,pair_keys,sorted_pair_keys,pairs,secondary_offsets,control,cub;
   Forecast forecast;
 };
+// Policy-neutral allocation shape for the shared sweep. This is private storage,
+// never an Engine source/count/profile admission bypass.
+struct StorageShape {std::size_t nodes=0,secondaries=0,mains=0,removals=0;};
+Status MakeStorageLayout(StorageShape,Limits,std::size_t,std::size_t,Layout&) noexcept;
 Status CheckSource(const Source&,Limits) noexcept;
 Status MakeLayout(const Source&,Limits,std::size_t,std::size_t,Layout&) noexcept;
 } // namespace tlfea::contact::radioss_type25::candidates::detail

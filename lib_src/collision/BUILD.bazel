@@ -1146,7 +1146,7 @@ cc_library(
 cc_library(
     name = "radioss_type25_candidate_values",
     srcs = ["radioss_type25/candidates/Layout.cpp"],
-    hdrs = ["RadiossType25Candidates.h"] + glob(["radioss_type25/candidates/*.h"]),
+    hdrs = ["RadiossType25Candidates.h"] + glob(["radioss_type25/candidates/*.h", "radioss_type25/candidates/*.cuh"]),
     deps = [":radioss_type25_search_values", "//lib_src/math:scalar_bits"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
@@ -1247,7 +1247,7 @@ cc_library(
     srcs = glob(["radioss_type25/search_startup/*.cpp"]),
     hdrs = ["RadiossType25SearchStartup.h"] + glob(["radioss_type25/search_startup/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
+    deps = [":radioss_type25_current_normals", ":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
 )
 
 cc_library(
@@ -1301,5 +1301,27 @@ cc_library(
     name = "radioss_type25_initial_state_values",
     hdrs = ["RadiossType25InitialStateValues.h"] + glob(["radioss_type25/initial_state/*.h"]),
     deps = [":radioss_type25_selection", ":radioss_type25_lifecycle", ":radioss_type25_candidate_values"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_initial_source_host",
+    srcs = ["radioss_type25/initial_source/Admission.cpp", "radioss_type25/initial_source/Host.cpp",
+            "radioss_type25/initial_source/Layout.cpp"],
+    hdrs = ["RadiossType25InitialState.h"] + glob(["radioss_type25/initial_source/*.h"]),
+    deps = [":radioss_type25_initial_state_values", ":radioss_type25_tied_removal", ":radioss_type25_candidates", ":radioss_type25_current_normals"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_initial_source_kernels",
+    srcs = ["radioss_type25/initial_source/Operands.cu", "radioss_type25/initial_source/Inventory.cu",
+            "radioss_type25/initial_source/Rows.cu"],
+    deps = [":radioss_type25_initial_source_host"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_initial_state",
+    srcs = ["radioss_type25/initial_source/Prepare.cpp"],
+    deps = [":radioss_type25_initial_source_kernels"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

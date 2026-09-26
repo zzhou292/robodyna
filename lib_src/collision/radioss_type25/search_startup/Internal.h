@@ -3,8 +3,9 @@
 #include "Values.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::search_startup::detail {
-enum class Context { LegacyNoKinematics, RigidOnly, BeforeTied };
+enum class Context { LegacyNoKinematics, RigidOnly, BeforeTied, ComposedNoTied, ComposedBeforeTied };
 Report ResolveContext(const Input&, Limits, Context, std::size_t& native_nodes) noexcept;
+NativePopulation ResolvedPopulation(const Input&,std::size_t multiplier_operand) noexcept;
 struct OutputLayout {
   tl::util::ArenaRegion extent, main_offsets, secondary_offsets;
   tl::util::ArenaRegion removed_nodes, removed_mains, contact;
@@ -35,11 +36,13 @@ struct Work {
   std::uint64_t* auxiliary_ids;
 };
 Report MakeLayout(std::size_t nodes, std::size_t primaries, std::size_t secondary,
-    Limits, Layout&, std::size_t auxiliary_nodes=0) noexcept;
+    Limits, Layout&, std::size_t auxiliary_nodes=0, std::size_t expanded_mains=0) noexcept;
 Data Construct(tl::util::HostArena&, const OutputLayout&) noexcept;
 Work ConstructWork(tl::util::HostArena&, const Layout&) noexcept;
 Report Admit(const Input&, const Layout&, Limits, const tl::util::HostArena&,
-    const tl::util::HostArena&, const void* descriptor, std::size_t descriptor_bytes) noexcept;
+    const tl::util::HostArena&, const void* descriptor, std::size_t descriptor_bytes,bool composed=false) noexcept;
+Report AdmitMixed(const Input&, const Layout&, Limits, const tl::util::HostArena&,
+    const tl::util::HostArena&, const void*,std::size_t) noexcept;
 Report CheckAuxiliaryIds(const Input&, Work) noexcept;
 Report Prepare(const Input&, Work, double& maximum_secondary_gap, double& total_gap) noexcept;
 Report Removals(const Input&, Limits, Work, Data, std::size_t capacity,
