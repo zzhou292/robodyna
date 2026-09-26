@@ -56,7 +56,7 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
     return Error(TransactionStatus::ResourceLimit,"Native activity forecast overflows");
   if(!Add(readback_layout.bytes(),forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||
      !Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(incidence.host_bytes,forecast.host_bytes)||
-     !Add(forecast.host_bytes,forecast.startup_host_bytes)||!Add(upload.bytes+sizeof(Plan),forecast.startup_host_bytes)||
+     !Add(forecast.host_bytes,forecast.startup_host_bytes)||!Add(upload.bytes,forecast.startup_host_bytes)||!Add(sizeof(Plan),forecast.startup_host_bytes)||
      forecast.startup_host_bytes>limits.max_host_bytes)
     return Error(TransactionStatus::ResourceLimit,"Complete native host forecast exceeds cap");
   return {TransactionStatus::Ok,"OK"};
