@@ -1,0 +1,63 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Qualification-only bounded tables, complete INCOQ3 and original CNEL blocks.
+      SUBROUTINE RD_MAIN_SUPPORT(COUNTS,QNODES,TNODES,QH,QE,TH,TE,
+     .                          FACE,OUT,INCIDENCE) BIND(C)
+      USE ISO_C_BINDING
+      USE MAIN_SUPPORT_CONSTANTS
+      IMPLICIT NONE
+#include "com01_c.inc"
+#include "com04_c.inc"
+#include "param_c.inc"
+      INTEGER(C_INT),INTENT(IN)::COUNTS(3),QNODES(4,*),TNODES(3,*),
+     . FACE(4)
+      REAL(C_DOUBLE),INTENT(IN)::QH(*),QE(*),TH(*),TE(*)
+      INTEGER(C_INT),INTENT(OUT)::OUT(2),INCIDENCE(2,256)
+      INTEGER IXC(7,64),IXTG(6,64),IGEO(NPROPGI,128),IWORKSH(3,128)
+      INTEGER KNOD2ELC(257),KNOD2ELTG(257),NOD2ELC(256),NOD2ELTG(256)
+      INTEGER IRECT(4,1),IXTG1(4,1),NUMELTG6,I,K,N,NEL,NELTG
+      REAL(C_DOUBLE) GEO(NPROPG,128),PM(NPROPM,128),THK(128),
+     . PM_STACK(20,1)
+      NUMNOD=COUNTS(1)
+      NUMELC=COUNTS(2)
+      NUMELTG=COUNTS(3)
+      NUMELTG6=0
+      IINTTHICK=0
+      IXC=0
+      IXTG=0
+      IGEO=0
+      IWORKSH=0
+      GEO=0
+      PM=0
+      THK=0
+      PM_STACK=0
+      KNOD2ELC=0
+      KNOD2ELTG=0
+      NOD2ELC=0
+      NOD2ELTG=0
+      DO I=1,NUMELC
+        IXC(1,I)=I
+        IXC(2:5,I)=QNODES(:,I)
+        IXC(6,I)=I
+        IGEO(11,I)=1
+        GEO(1,I)=QH(I)
+        PM(20,I)=QE(I)
+      ENDDO
+      DO I=1,NUMELTG
+        IXTG(1,I)=NUMELC+I
+        IXTG(2:4,I)=TNODES(:,I)
+        IXTG(5,I)=NUMELC+I
+        IGEO(11,NUMELC+I)=1
+        GEO(1,NUMELC+I)=TH(I)
+        PM(20,NUMELC+I)=TE(I)
+      ENDDO
+      IRECT(:,1)=FACE
+@CNEL_COUNTS@
+@CNEL_FILL@
+      CALL RD_SOURCE_INCOQ3(IRECT,IXC,IXTG,1,NEL,NELTG,1,GEO,PM,
+     . KNOD2ELC,KNOD2ELTG,NOD2ELC,NOD2ELTG,THK,25,IGEO,PM_STACK,
+     . IWORKSH)
+      OUT(1)=NEL
+      OUT(2)=NELTG
+      INCIDENCE(1,:)=NOD2ELC
+      INCIDENCE(2,:)=NOD2ELTG
+      END
