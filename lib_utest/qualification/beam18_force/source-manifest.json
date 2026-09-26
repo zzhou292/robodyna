@@ -4,8 +4,8 @@
   "shared_changes": "Only additive Bazel force/test ownership and narrow test-value visibility; reference and shared LAW44 numerical files remain unchanged. Existing raw curve/reader and reference native owners are reused.",
   "files": {
     "lib_src/elements/beam18/BUILD.bazel": {
-      "bytes": 1050,
-      "sha256": "38518caebddb50eb81d120afc4d7451545813d9ec00cb29d1df9c25dddc43090"
+      "bytes": 1068,
+      "sha256": "08b66c7d78f30f9b84dd28d1797d25e06e62c78b50e00b25abcb8d8138226e45"
     },
     "lib_src/elements/beam18/FORCE.md": {
       "bytes": 3050,
@@ -60,8 +60,8 @@
       "sha256": "1d4238237e5f30004f399c93d66e8a11c99a02c8122952eeb06b961b0cbd533b"
     },
     "lib_src/elements/beam18/Section.h": {
-      "bytes": 1544,
-      "sha256": "b6083ebac9292d1f69597230e85c2f0f38549186b3c48932305faab9afa3f0df"
+      "bytes": 1558,
+      "sha256": "e4709eec3f22db60eb85c516fba9eeeb2619c9a6ce8ecddbe5287d35a6c09956"
     },
     "lib_src/elements/beam18/Types.h": {
       "bytes": 2903,
@@ -294,6 +294,10 @@
     "lib_utest/qualification/beam18_force/NativeConditioning.h": {
       "bytes": 1767,
       "sha256": "30aebb9db11933412622d811ccd61e8484bf330f0e88e845cc8a319a8773fb6e"
+    },
+    "lib_src/elements/beam18/PropertyArea.h": {
+      "bytes": 991,
+      "sha256": "53f5835ca0f4e5db86a2fcd1457aa773ffbebee5669c0a50125e3b806f1e89e8"
     }
   },
   "beam18_model_ledger_followup": {

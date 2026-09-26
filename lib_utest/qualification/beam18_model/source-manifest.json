@@ -56,8 +56,8 @@
       "sha256": "eebfa798a78eca92988fa996dc5e1931c67960b0bb637006309323769181ba25"
     },
     "lib_src/elements/beam18/BUILD.bazel": {
-      "bytes": 1050,
-      "sha256": "38518caebddb50eb81d120afc4d7451545813d9ec00cb29d1df9c25dddc43090"
+      "bytes": 1068,
+      "sha256": "08b66c7d78f30f9b84dd28d1797d25e06e62c78b50e00b25abcb8d8138226e45"
     },
     "lib_src/elements/beam18/MODEL.md": {
       "bytes": 3575,
@@ -138,6 +138,14 @@
     "lib_utest/qualification/extended_solid_coefficients/verify_sources.py": {
       "bytes": 1926,
       "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d"
+    },
+    "lib_src/elements/beam18/Section.h": {
+      "bytes": 1558,
+      "sha256": "e4709eec3f22db60eb85c516fba9eeeb2619c9a6ce8ecddbe5287d35a6c09956"
+    },
+    "lib_src/elements/beam18/PropertyArea.h": {
+      "bytes": 991,
+      "sha256": "53f5835ca0f4e5db86a2fcd1457aa773ffbebee5669c0a50125e3b806f1e89e8"
     }
   },
   "resident_fixture_visibility_followup": {
