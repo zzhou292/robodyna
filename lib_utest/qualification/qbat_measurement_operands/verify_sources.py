@@ -9,7 +9,7 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-MANIFEST_SHA256 = '67f5ad3e1acde706ddbee60e2ed121fa1599a1e22871e4239a88a01ff8ec0857'
+MANIFEST_SHA256 = '41a728744e457feada94139cb47898c4ae3d2f2209c692a1dbd357a836d114c9'
 
 
 def body(text, signature):
