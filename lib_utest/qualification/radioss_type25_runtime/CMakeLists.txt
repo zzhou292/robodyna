@@ -134,3 +134,7 @@ target_link_libraries(type25_runtime_general_cuda PRIVATE tl_radioss_type25_tran
 set_target_properties(type25_runtime_general_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 add_test(NAME type25_runtime_general_cuda COMMAND type25_runtime_general_cuda)
 set_tests_properties(type25_runtime_general_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 180)
+add_executable(type25_general_consumer "${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_general_initialize/Consumer.cpp")
+target_link_libraries(type25_general_consumer PRIVATE tl_radioss_type25_transaction)
+add_test(NAME type25_general_consumer COMMAND type25_general_consumer)
+set_tests_properties(type25_general_consumer PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
