@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "radioss_type25/startup/Types.h"
+#include "radioss_type25/startup/PostGapmTypes.h"
 #include "radioss_type25/startup/CoatingOrientation.h"
 #include "lib_utils/BoundedArena.h"
 namespace tlfea::contact::radioss_type25::startup {
@@ -19,6 +20,14 @@ Report BuildStarter(const Input&,Limits,tl::util::HostArena& output,
 Forecast PreflightMixedSides(const Input&,Limits={}) noexcept;
 Report BuildMixedSides(const Input&,Limits,tl::util::HostArena& output,
     tl::util::HostArena& scratch,MixedSidesSnapshot*) noexcept;
+// DRAFT source contract: implementation/qualification follows in this isolated
+// branch. Clone genuine sides, apply only primary permutations, then construct
+// neighbors/reference CSR/Starter normals from authentic post-GAPM support.
+// The original BuildStarter overload continues to reject mixed input.
+Forecast PreflightMixedStarter(const Input&,const MixedSidesSnapshot&,
+    const PostGapmTopology&,Limits={}) noexcept;
+Report BuildStarter(const Input&,const MixedSidesSnapshot&,const PostGapmTopology&,
+    Limits,tl::util::HostArena& output,tl::util::HostArena& scratch,Snapshot*) noexcept;
 // Separate native fixed-main-ready stage. Snapshot must be an immutable result
 // of BuildStarter for this same input/generation. Structural checks reject bad
 // spans, ranges and reciprocal/reference endpoints; they are not authentication

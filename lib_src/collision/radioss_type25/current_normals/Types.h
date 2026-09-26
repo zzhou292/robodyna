@@ -23,6 +23,10 @@ struct Topology {
   startup::TopologyPolicy source_topology = startup::TopologyPolicy::ManifoldTwoSided;
   const startup::ShellSideRole* primary_roles = nullptr;
   std::size_t primary_role_count = 0;
+  // Reserved for the forthcoming explicit mixed profile. Existing profiles
+  // remain unchanged; a supplied pointer alone does not broaden admission.
+  // It supplies true optional partner/origin/support maps with the same mains.
+  const startup::Snapshot* mixed_snapshot = nullptr;
 };
 struct Input {
   Profile profile=Profile::Unspecified;

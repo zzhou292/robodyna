@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 namespace tlfea::contact::radioss_type25::startup {
+struct PostGapmTopology;
 enum class Status { Ok, InvalidInput, UnsupportedProfile, UnsupportedTopology,
   NonfiniteResult, UnsupportedArithmetic, ResourceLimit };
 enum class Profile { Unspecified, OrdinaryExteriorFixedMain, OrdinaryExteriorMovingMain, ResolvedShellSides, MixedSurface };
@@ -94,6 +95,9 @@ struct Snapshot {
   const PrimaryFaceIdentity* raw_origins=nullptr;
   const std::uint32_t* raw_origin_to_primary=nullptr;
   std::size_t raw_origin_count=0;
+  // Owned post-GAPM support/permutation provenance only for the new explicit
+  // mixed Starter overload; legacy snapshots keep nullptr.
+  const PostGapmTopology* post_gapm=nullptr;
 };
 // SH2-only output. Neighbor/reference/float-normal channels in Main remain
 // API-zero/unavailable, not native observations. Full Starter construction
