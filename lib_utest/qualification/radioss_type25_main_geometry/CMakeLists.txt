@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType25MainGeometry LANGUAGES CXX Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR NOT CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+  message(FATAL_ERROR "This native geometry oracle qualifies GNU C++ and Fortran")
+endif()
+option(TYPE25_MAIN_GEOMETRY_CUDA "Build actual device/native geometry comparison" OFF)
+if(TYPE25_MAIN_GEOMETRY_CUDA)
+  enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
+endif()
+# The shared double normal factoring must retain full startup/current recurrence.
+set(TYPE25_CURRENT_NORMALS_CUDA ${TYPE25_MAIN_GEOMETRY_CUDA})
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_current_normals" normal-regression)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25MainGeometry.cmake")
+set(native "${CMAKE_CURRENT_BINARY_DIR}/native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
+  --output "${native}" RESULT_VARIABLE prepared ERROR_VARIABLE diagnostic)
+if(NOT prepared EQUAL 0)
+  message(FATAL_ERROR "Pinned native main geometry preparation failed: ${diagnostic}")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  native/prepare.py native/Reference.F.in native/source-manifest.json
+  native/original/insol3.F native/original/norma1.F native/original/volint.F
+  ../radioss_type25_normal/native/original/constant_mod.F)
+add_library(type25_main_geometry_oracle STATIC NativeOracle.cpp "${native}/Reference.F")
+target_link_libraries(type25_main_geometry_oracle PUBLIC tl_radioss_type25_main_geometry)
+target_compile_options(type25_main_geometry_oracle PRIVATE
+  "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
+add_executable(type25_main_geometry_host HostTest.cpp)
+target_link_libraries(type25_main_geometry_host PRIVATE type25_main_geometry_oracle GTest::gtest_main)
+add_test(NAME type25_main_geometry_host COMMAND type25_main_geometry_host)
+add_executable(type25_main_geometry_consumer Consumer.cpp)
+# No GTest, native reference, CUDA or private precision flags on the consumer.
+target_link_libraries(type25_main_geometry_consumer PRIVATE tl_radioss_type25_main_geometry)
+add_test(NAME type25_main_geometry_consumer COMMAND type25_main_geometry_consumer)
+add_test(NAME type25_main_geometry_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${native}" --check)
+set_tests_properties(type25_main_geometry_host type25_main_geometry_consumer type25_main_geometry_source
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+if(TYPE25_MAIN_GEOMETRY_CUDA)
+  add_executable(type25_main_geometry_cuda CudaTest.cu)
+  target_link_libraries(type25_main_geometry_cuda PRIVATE type25_main_geometry_oracle GTest::gtest_main CUDA::cudart)
+  set_target_properties(type25_main_geometry_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_test(NAME type25_main_geometry_cuda COMMAND type25_main_geometry_cuda)
+  set_tests_properties(type25_main_geometry_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+endif()

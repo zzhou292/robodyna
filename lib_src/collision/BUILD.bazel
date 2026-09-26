@@ -1114,6 +1114,13 @@ cc_library(
     deps = [":radioss_type25_normal", "//lib_src/math:scalar_bits"],
 )
 
+cc_library(
+    name = "radioss_type25_main_geometry",
+    hdrs = ["RadiossType25MainGeometry.h"] + glob(["radioss_type25/main_geometry/*.h"]),
+    deps = [":radioss_type25_coefficients", ":radioss_type25_normal_math",
+            "//lib_src/elements/solid_common:brick_frame", "//lib_src/math:scalar_bits"],
+)
+
 # Native TYPE25 diagnostic search maintenance; no mechanical/candidate authority.
 cc_library(
     name = "radioss_type25_search_values",
@@ -1246,7 +1253,7 @@ cc_library(
 cc_library(
     name = "radioss_type25_normal_math",
     hdrs = glob(["radioss_type25/normal_math/*.h"]),
-    deps = [":radioss_type25_local_geometry"],
+    deps = [":radioss_type25_local_geometry", "//lib_src/math:fixed3_operations", "//lib_src/math:host_device"],
 )
 cc_library(
     name = "radioss_type25_current_normals",
