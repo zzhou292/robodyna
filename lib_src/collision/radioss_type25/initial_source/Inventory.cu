@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Internal.h"
+#include "VoxelKey.h"
 #include "../candidates/Sweep.cuh"
 #include <cub/cub.cuh>
 #include <math_constants.h>
@@ -21,6 +22,40 @@ __device__ std::uint32_t Lower(const double* keys,std::uint32_t n,double value,b
   while(lo<hi){const auto middle=lo+(hi-lo)/2;if(strict?keys[middle]<=value:keys[middle]<value)lo=middle+1;else hi=middle;}
   return lo;
 }
+__device__ double VoxelKey(Device a,int x,int y,int z) {
+  return NativeVoxelKey(a.control->grid,x,y,z);
+}
+template<bool Write>
+__device__ void AddRun(Device a,std::size_t main,std::uint32_t first,std::uint32_t last,
+    unsigned long long& tasks,unsigned long long& encounters,std::size_t capacity) {
+  if(first==last)return;
+  encounters+=last-first;
+  if constexpr(Write) {
+    for(auto begin=first;begin<last;begin+=c::TaskWidth) {
+      const auto index=a.sweep.task_offsets[main]+tasks++;
+      if(index>=capacity||index>=a.sweep.task_offsets[main+1]) {
+        Fail(a,main,Status::ResourceLimit);return;
+      }
+      a.sweep.tasks[index]={std::uint32_t(main),begin,min(last,begin+c::TaskWidth)};
+    }
+  } else tasks+=(static_cast<unsigned long long>(last-first)+c::TaskWidth-1)/c::TaskWidth;
+}
+template<bool Write>
+__device__ void VoxelRuns(Device a,std::size_t main,unsigned long long& tasks,
+    unsigned long long& encounters,std::size_t capacity=0) {
+  const auto* cell=a.main_cells+6*main;
+  std::uint32_t begin=0,end=0;
+  for(int z=cell[2];z<=cell[5];++z)for(int y=cell[1];y<=cell[4];++y) {
+    const auto first=Lower(a.sweep.sorted_keys,std::uint32_t(a.secondary_count),VoxelKey(a,cell[0],y,z),false);
+    const auto last=Lower(a.sweep.sorted_keys,std::uint32_t(a.secondary_count),VoxelKey(a,cell[3],y,z),true);
+    if(first==last)continue;
+    // Merging only adjacent sorted ordinals adds no node from outside the
+    // native cell box and avoids creating a tiny task for every occupied row.
+    if(begin!=end&&first==end)end=last;
+    else {AddRun<Write>(a,main,begin,end,tasks,encounters,capacity);begin=first;end=last;}
+  }
+  AddRun<Write>(a,main,begin,end,tasks,encounters,capacity);
+}
 __global__ void SecondaryCells(Device a) {
   if(a.control->failure!=~0ull)return;
   for(std::size_t row=blockIdx.x*blockDim.x+threadIdx.x;row<a.secondary_count;row+=gridDim.x*blockDim.x) {
@@ -30,7 +65,8 @@ __global__ void SecondaryCells(Device a) {
     for(unsigned k=0;k<3;++k)outside=outside||xyz[k]<a.control->minimum[k]||xyz[k]>a.control->maximum[k];
     if(outside)continue;
     for(unsigned k=0;k<3;++k)a.node_cells[3*row+k]=Cell(a,k,xyz[k]);
-    a.sweep.keys[row]=double(a.node_cells[3*row]);atomicAdd(&a.sweep.control->active,1ull);
+    a.sweep.keys[row]=VoxelKey(a,a.node_cells[3*row],a.node_cells[3*row+1],a.node_cells[3*row+2]);
+    atomicAdd(&a.sweep.control->active,1ull);
   }
 }
 __global__ void MainRanges(Device a) {
@@ -47,14 +83,20 @@ __global__ void MainRanges(Device a) {
     const double low[]{box.minimum.x-radius,box.minimum.y-radius,box.minimum.z-radius};
     const double high[]{box.maximum.x+radius,box.maximum.y+radius,box.maximum.z+radius};
     for(unsigned k=0;k<3;++k){a.main_cells[6*m+k]=Cell(a,k,low[k]);a.main_cells[6*m+3+k]=Cell(a,k,high[k]);}
-    const auto first=Lower(a.sweep.sorted_keys,std::uint32_t(a.secondary_count),double(a.main_cells[6*m]),false);
-    const auto last=Lower(a.sweep.sorted_keys,std::uint32_t(a.secondary_count),double(a.main_cells[6*m+3]),true);
-    a.sweep.ranges[m]={first,last};const auto encounters=last-first;
-    a.sweep.task_counts[m]=(static_cast<unsigned long long>(encounters)+c::TaskWidth-1)/c::TaskWidth;
-    atomicAdd(&a.sweep.control->encounters,static_cast<unsigned long long>(encounters));
+    unsigned long long tasks=0,encounters=0;VoxelRuns<false>(a,m,tasks,encounters);
+    a.sweep.task_counts[m]=tasks;atomicAdd(&a.sweep.control->encounters,encounters);
   }
 }
 __global__ void TaskTotal(Device a){if(!blockIdx.x&&!threadIdx.x)a.sweep.control->tasks=a.sweep.task_offsets[a.mains_count];}
+__global__ void BuildVoxelTasks(Device a,std::size_t count) {
+  if(a.control->failure!=~0ull)return;
+  for(std::size_t m=blockIdx.x*blockDim.x+threadIdx.x;m<a.mains_count;m+=gridDim.x*blockDim.x) {
+    if(a.internal_main[m])continue;
+    unsigned long long tasks=0,encounters=0;VoxelRuns<true>(a,m,tasks,encounters,count);
+    if(tasks!=a.sweep.task_counts[m])Fail(a,m,Status::InvalidInput);
+  }
+  if(!blockIdx.x&&!threadIdx.x)a.sweep.pair_counts[count]=0;
+}
 __device__ bool Removed(candidates::detail::Device a,std::size_t main,std::uint32_t node) {
   auto lo=a.removal_offsets[main],hi=a.removal_offsets[main+1];
   while(lo<hi){const auto mid=lo+(hi-lo)/2;if(a.removals[mid]<node)lo=mid+1;else hi=mid;}
@@ -117,7 +159,7 @@ cudaError_t BuildRanges(Device a,cudaStream_t stream) noexcept {
   if(e!=cudaSuccess)return e;TaskTotal<<<1,1,0,stream>>>(a);return cudaPeekAtLastError();
 }
 cudaError_t CountPairs(Device a,std::size_t tasks,cudaStream_t stream) noexcept {
-  c::sweep::BuildTasks<<<Blocks(a.mains_count),256,0,stream>>>(a.sweep,tasks);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
+  BuildVoxelTasks<<<Blocks(a.mains_count),256,0,stream>>>(a,tasks);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
   if(tasks){c::sweep::Count<StarterPolicy><<<std::min<std::size_t>(tasks,256),c::TaskWidth,0,stream>>>(a.sweep,a,tasks);e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;}
   auto bytes=a.sweep.cub_bytes;e=cub::DeviceScan::ExclusiveSum(a.sweep.cub,bytes,a.sweep.pair_counts,a.sweep.pair_offsets,int(tasks+1),stream);
   if(e!=cudaSuccess)return e;PairTotal<<<1,1,0,stream>>>(a,tasks);return cudaPeekAtLastError();

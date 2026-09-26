@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Fixture.h"
 #include "lib_src/collision/radioss_type25/search_startup/Internal.h"
+#include "lib_src/collision/radioss_type25/initial_source/VoxelKey.h"
 #include <gtest/gtest.h>
 #include <cstring>
 namespace initial_source_test {
@@ -91,5 +92,22 @@ TEST(InitialSourceHost, UnknownSourcePhaseUnitsAndCensusRejectBeforeCudaOrOutput
   in=f.Input();in.contributors.other_interfaces=1;EXPECT_EQ(src::PrepareSource(in,f.Limits(),output).status,src::Status::InvalidInput);
   in=f.Input();in.controls.starter_workers=2;EXPECT_EQ(src::PrepareSource(in,f.Limits(),output).status,src::Status::UnsupportedProfile);
   EXPECT_FALSE(output.prepared());
+}
+TEST(InitialSourceHost, PaddedVoxelKeysAreInjectiveAndInclusiveRowsDoNotAlias) {
+  for(const auto grid:std::vector<std::array<int,3>>{{1,1,1},{3,2,4},{100,1,1},{393,156,126}}) {
+    SCOPED_TRACE(grid[0]);
+    const auto key=[&](int x,int y,int z){return src::detail::NativeVoxelKey(grid.data(),x,y,z);};
+    const auto extent=std::uint64_t(grid[0]+2)*(grid[1]+2)*(grid[2]+2);
+    EXPECT_EQ(key(1,1,1),0.);EXPECT_EQ(key(grid[0]+2,grid[1]+2,grid[2]+2),double(extent-1));
+    // The boundary of every padded x row is contiguous but never overlapping
+    // its successor, including y carry into the next z slice.
+    double previous=-1.;
+    for(int z=1;z<=grid[2]+2;++z)for(int y=1;y<=grid[1]+2;++y) {
+      EXPECT_EQ(key(1,y,z),previous+1.);
+      EXPECT_EQ(key(grid[0]+2,y,z)-key(1,y,z),double(grid[0]+1));
+      previous=key(grid[0]+2,y,z);
+    }
+    EXPECT_EQ(previous,double(extent-1));
+  }
 }
 }

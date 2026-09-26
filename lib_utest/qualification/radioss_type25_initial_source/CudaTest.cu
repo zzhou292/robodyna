@@ -2,6 +2,7 @@
 #include "Access.h"
 #include "Fixture.h"
 #include "MixedFixture.h"
+#include "CapturePairs.h"
 #include "../radioss_type25_initial_state/Assertions.h"
 #include "../radioss_type25_friction/CudaFixture.h"
 #include <cstring>
@@ -45,6 +46,25 @@ Expected Oracle(const Fixture& f,int sharp=1) {
   NativePreparedMain(f.mains.size(),keys);
   for(std::size_t row=0;row<keys.size();++row)std::copy_n(keys[row].data(),4,out.rows[row].irtlm);
   return out;
+}
+st::Case VoxelPatchMesh(double separation) {
+  st::Case mesh;
+  const auto node=[&](double x,double y,double z) {
+    mesh.ids.push_back(mesh.ids.size()+1);mesh.positions.insert(mesh.positions.end(),{x,y,z});
+  };
+  // Independent real Q4 patches occupy distinct y/z bands while sharing the
+  // same x interval. Dense variant overlaps their search boxes. Each carries
+  // near-face secondary points on both sides; no expected pair is prescribed.
+  for(unsigned z=0;z<4;++z)for(unsigned y=0;y<4;++y) {
+    const auto first=std::uint32_t(mesh.ids.size());const double a=separation*y,b=separation*z;
+    node(0,a,b);node(1,a,b);node(1,a+1,b);node(0,a+1,b);
+    mesh.Add(n::ShellLayout::Quad4,first,first+1,first+2,first+3);
+    for(unsigned j=0;j<3;++j)node(.2+.08*j,a+.4,b+(j%2?.025:-.025));
+  }
+  // These genuine unused source nodes extend the global box and exercise
+  // secondary cells at the inclusive upper padded y/z boundary.
+  node(.4,3*separation+5,3*separation+5);node(.4,-5,-5);
+  return mesh;
 }
 std::array<double,5> Penetration(const n::NativeContactRow& row) {
   return {row.history.normal.staged_penetration,row.history.normal.previous_penetration,
@@ -246,9 +266,44 @@ TEST_F(InitialSourceCuda, WholeNativeGridMatchesFallbackAndNintBoundaryNeighborh
     src::DeviceSeed seed;const auto report=src::Prepare(source,stream,seed);ASSERT_EQ(report.status,src::Status::Ok);
     std::uint64_t cells=1;for(auto axis:report.diagnostics.grid)cells*=std::uint64_t(axis+2);
     EXPECT_EQ(cells,expected.inventory.initialized_voxel_slots);native_cells.push_back(expected.inventory.initialized_voxel_slots);
+    EXPECT_EQ(CapturePairs(source,f.Limits(),stream),expected.inventory.pairs);
     EXPECT_EQ(report.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
     if(separation==1.e14){EXPECT_EQ(report.diagnostics.grid[0],100);EXPECT_EQ(cells,918u);}
   }
   for(std::size_t i=1;i<native_cells.size();i+=2)EXPECT_NE(native_cells[i],native_cells[i+1]);
+}
+TEST_F(InitialSourceCuda, CompleteVoxelRangesMatchEveryNativePairAcrossSeparatedAndOverlappingBoxes) {
+  for(double spacing:{4.,.125}) {
+    SCOPED_TRACE(spacing);
+    Fixture f(VoxelPatchMesh(spacing));const auto expected=Oracle(f);auto limits=f.Limits();
+    // Full history wrapper remains bounded to this complete 114-node packet.
+    ASSERT_GT(expected.inventory.pairs.size(),0u);
+    src::PreparedSource source;ASSERT_EQ(src::PrepareSource(f.Input(),limits,source).status,src::Status::Ok);
+    EXPECT_EQ(CapturePairs(source,limits,stream),expected.inventory.pairs);
+    src::DeviceSeed seed;const auto result=src::Prepare(source,stream,seed);
+    ASSERT_EQ(result.status,src::Status::Ok);EXPECT_TRUE(result.counts_complete);
+    EXPECT_EQ(result.diagnostics.pairs,expected.inventory.pairs.size());Same(Access::Read(seed,stream),expected);
+    // Every secondary has the same x sweep interval. The separated geometry
+    // must discard y/z-ineligible encounters before allocating tasks.
+    if(spacing==4.)EXPECT_LT(result.diagnostics.encounters,f.mains.size()*f.secondary.size()/2);
+  }
+}
+TEST_F(InitialSourceCuda, CompleteVoxelTaskCountAdmitsExactCapAndRejectsOneShortBeforePublication) {
+  Fixture f(VoxelPatchMesh(4.));const auto expected=Oracle(f);auto limits=f.Limits();
+  src::PreparedSource baseline;ASSERT_EQ(src::PrepareSource(f.Input(),limits,baseline).status,src::Status::Ok);
+  src::DeviceSeed initial;const auto report=src::Prepare(baseline,stream,initial);
+  ASSERT_EQ(report.status,src::Status::Ok);ASSERT_GT(report.diagnostics.tasks,1u);
+  limits.max_tasks=report.diagnostics.tasks;src::PreparedSource exact;
+  ASSERT_EQ(src::PrepareSource(f.Input(),limits,exact).status,src::Status::Ok);
+  src::DeviceSeed accepted;const auto complete=src::Prepare(exact,stream,accepted);
+  ASSERT_EQ(complete.status,src::Status::Ok);EXPECT_EQ(complete.diagnostics.tasks,report.diagnostics.tasks);
+  EXPECT_EQ(CapturePairs(exact,limits,stream),expected.inventory.pairs);Same(Access::Read(accepted,stream),expected);
+  --limits.max_tasks;src::PreparedSource short_source;
+  ASSERT_EQ(src::PrepareSource(f.Input(),limits,short_source).status,src::Status::Ok);
+  src::DeviceSeed missing;const auto failed=src::Prepare(short_source,stream,missing);
+  EXPECT_EQ(failed.status,src::Status::ResourceLimit);EXPECT_FALSE(failed.counts_complete);
+  EXPECT_EQ(failed.diagnostics.tasks,report.diagnostics.tasks);EXPECT_EQ(failed.diagnostics.encounters,report.diagnostics.encounters);
+  EXPECT_EQ(failed.diagnostics.pairs,0u);EXPECT_FALSE(missing.prepared());
+  ASSERT_EQ(src::Prepare(exact,stream,missing).status,src::Status::Ok);Same(Access::Read(missing,stream),expected);
 }
 }
