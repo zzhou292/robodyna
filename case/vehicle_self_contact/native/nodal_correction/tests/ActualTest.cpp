@@ -118,4 +118,52 @@ TEST(CorrectedNodalSourceActual, ForeignMemberRejectsWithoutChangingTheImmutable
     EXPECT_EQ(Before().provenance().contributor_digest, digest);
     EXPECT_EQ(output::Bits(Before().fields()[0].stiffness_before_control), output::Bits(first));
 }
+TEST(CorrectedNodalSourceActual, MaterialQueriesRetainSourceIdentityUnitsAndExplicitUnavailability) {
+    const auto prepared = CorrectedNodalSource::Prepare(Before(), Members().Input());
+    ASSERT_EQ(prepared.report.status, Status::Ready) << prepared.report.reason;
+    ASSERT_TRUE(prepared.source);
+    const auto source = *prepared.source;
+    const auto before = source.provenance().certificate_digest;
+    const auto& parts = Before().physical().source_domain().source().solid_source().data().parts;
+    ASSERT_FALSE(parts.empty());
+    for (const auto& part : parts) {
+        const auto query = source.material_slots(part.id);
+        ASSERT_EQ(query.status, MaterialSlotStatus::Ready) << part.id;
+        ASSERT_TRUE(query.values);
+        const auto& slots = *query.values;
+        EXPECT_EQ(slots.part_id, part.id);
+        EXPECT_EQ(slots.section_id, part.section_id);
+        EXPECT_EQ(slots.material_id, part.material_id);
+        EXPECT_EQ(output::Bits(slots.units.length_m), output::Bits(Before().provenance().units.length_m));
+        EXPECT_EQ(output::Bits(slots.units.mass_kg), output::Bits(Before().provenance().units.mass_kg));
+        EXPECT_EQ(output::Bits(slots.units.time_s), output::Bits(Before().provenance().units.time_s));
+        EXPECT_TRUE(std::isfinite(slots.pm32) && slots.pm32 >= 0);
+        EXPECT_TRUE(std::isfinite(slots.pm100) && slots.pm100 >= 0);
+        EXPECT_TRUE(std::isfinite(slots.pm107) && slots.pm107 >= 0);
+        const auto copied = source.material_slots(part.id);
+        ASSERT_TRUE(copied.values);
+        EXPECT_EQ(output::Bits(copied.values->pm32), output::Bits(slots.pm32));
+        EXPECT_EQ(output::Bits(copied.values->pm100), output::Bits(slots.pm100));
+        EXPECT_EQ(output::Bits(copied.values->pm107), output::Bits(slots.pm107));
+    }
+    std::size_t unavailable = 0;
+    for (const auto& part : source.part_controls()) {
+        const auto retained = std::find_if(parts.begin(), parts.end(),
+            [&](const auto& value) { return value.id == part.part_id; });
+        if (retained != parts.end()) continue;
+        const auto query = source.material_slots(part.part_id);
+        EXPECT_EQ(query.status, MaterialSlotStatus::NotRetainedSolidPart);
+        EXPECT_FALSE(query.values);
+        ++unavailable;
+    }
+    EXPECT_GT(unavailable, 0u);
+    for (const auto id : {std::uint64_t{0}, UINT64_MAX}) {
+        const auto query = source.material_slots(id);
+        EXPECT_EQ(query.status, MaterialSlotStatus::UnknownPart);
+        EXPECT_FALSE(query.values);
+    }
+    EXPECT_EQ(source.provenance().certificate_digest, before);
+    RecordProperty("queried_retained_parts", std::to_string(parts.size()));
+    RecordProperty("unavailable_nonretained_parts", std::to_string(unavailable));
+}
 } // namespace crash::cases::vehicle_self_contact::native::nodal_correction::test

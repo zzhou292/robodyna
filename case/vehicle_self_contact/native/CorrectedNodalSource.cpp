@@ -1,4 +1,6 @@
 #include "nodal_correction/Internal.h"
+#include "nodal_correction/MaterialSlots.h"
+#include <algorithm>
 #include "lib_utils/BoundedArena.h"
 
 namespace crash::cases::vehicle_self_contact::native::nodal_correction {
@@ -114,5 +116,35 @@ const Provenance& CorrectedNodalSource::provenance() const noexcept { return dat
 const std::vector<PartControl>& CorrectedNodalSource::part_controls() const noexcept { return data_->parts; }
 tl::util::ConstView<double> CorrectedNodalSource::coefficients() const noexcept {
     return {data_->coefficients.data(), data_->coefficients.size()};
+}
+MaterialSlotQuery CorrectedNodalSource::material_slots(std::uint64_t source_part_id) const noexcept {
+    MaterialSlotQuery result;
+    const auto source = std::lower_bound(data_->parts.begin(), data_->parts.end(), source_part_id,
+        [](const auto& part, auto id) { return part.part_id < id; });
+    if (source == data_->parts.end() || source->part_id != source_part_id) return result;
+    const auto& parts = data_->input.physical().source_domain().source().solid_source().data().parts;
+    const auto found = std::find_if(parts.begin(), parts.end(),
+        [source_part_id](const auto& part) { return part.id == source_part_id; });
+    if (found == parts.end()) {
+        result.status = MaterialSlotStatus::NotRetainedSolidPart;
+        return result;
+    }
+    if (source->section_id != found->section_id || source->material_id != found->material_id) {
+        result.status = MaterialSlotStatus::InvalidMaterial;
+        return result;
+    }
+    try {
+        const auto units = data_->input.provenance().units;
+        const auto slots = d::Slots(*found, units);
+        result.values = RetainedMaterialSlots{found->id, found->section_id, found->material_id,
+            units, slots.bulk, slots.retained_bulk, slots.controlled_bulk};
+        result.status = MaterialSlotStatus::Ready;
+    } catch (const d::Failure& failure) {
+        result.status = failure.report.status == Status::UnsupportedSource
+            ? MaterialSlotStatus::UnsupportedMaterial : MaterialSlotStatus::InvalidMaterial;
+    } catch (...) {
+        result.status = MaterialSlotStatus::InvalidMaterial;
+    }
+    return result;
 }
 } // namespace crash::cases::vehicle_self_contact::native::nodal_correction

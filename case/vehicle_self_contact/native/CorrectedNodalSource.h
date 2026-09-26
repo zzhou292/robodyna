@@ -48,6 +48,16 @@ struct Forecast {
     std::size_t certificate_scratch = 0, correction_scratch = 0, output_bytes = 0;
     std::size_t peak_bytes = 0;
 };
+enum class MaterialSlotStatus { Ready, UnknownPart, NotRetainedSolidPart, UnsupportedMaterial, InvalidMaterial };
+struct RetainedMaterialSlots {
+    std::uint64_t part_id = 0, section_id = 0, material_id = 0;
+    n::UnitScale units;
+    double pm32 = 0, pm100 = 0, pm107 = 0;
+};
+struct MaterialSlotQuery {
+    MaterialSlotStatus status = MaterialSlotStatus::UnknownPart;
+    std::optional<RetainedMaterialSlots> values;
+};
 struct Preparation;
 
 // Global startup nodal contact K after the native distortion-control correction.
@@ -69,6 +79,11 @@ class CorrectedNodalSource {
     const Provenance& provenance() const noexcept;
     const std::vector<PartControl>& part_controls() const noexcept;
     tl::util::ConstView<double> coefficients() const noexcept;
+    // Native pressure-valued slots AFTER HM_READ_MAT/UPDMAT, in the retained
+    // declared units. Reads the same qualified material helper as correction;
+    // never substitutes global corrected K for main K. Only retained solid
+    // parts are available. Effective property control remains part_controls().
+    MaterialSlotQuery material_slots(std::uint64_t source_part_id) const noexcept;
   private:
     struct Data;
     explicit CorrectedNodalSource(std::shared_ptr<const Data> data) : data_(std::move(data)) {}
