@@ -25,14 +25,37 @@ const std::string& Combine() {
     return bytes;
 }
 const auto& Selection() { return coated::test::Selection(); }
-std::size_t WorkingBytes(const Forecast& forecast) {
-    // Explicit output-only arrays/encoding coexist with the immutable handle.
+struct QualificationBudget {
+    static constexpr std::size_t OutputLimit = std::size_t{256} << 20;
+    std::size_t source = 0, output = 0, total = 0;
+};
+QualificationBudget WorkingBytes(const Forecast& forecast) {
+    // Export-only arrays and encodings are a separate qualification allowance;
+    // the unchanged production source still admits at most 8 GiB. Both remain
+    // inside the existing 10 GiB process guard; this does not change that guard.
     const auto p = Selection().data().counts.retained_shells;
-    const auto extra = 4*p*(13*sizeof(std::uint64_t)+2*sizeof(double))+(1u<<20);
-    output::Require(forecast.peak_bytes <= Limits{}.host_bytes && extra <= Limits{}.host_bytes-forecast.peak_bytes,
-        "Whole-source qualification output exceeds its envelope");
-    return forecast.peak_bytes+extra;
+    constexpr auto per_primary = 4*(13*sizeof(std::uint64_t)+2*sizeof(double));
+    constexpr std::size_t fixed = 1u << 20;
+    output::Require(p <= (QualificationBudget::OutputLimit-fixed)/per_primary,
+        "Qualification export exceeds its separate 256 MiB allowance");
+    const auto extra = p*per_primary+fixed;
+    output::Require(forecast.peak_bytes <= Limits{}.host_bytes &&
+        extra <= QualificationBudget::OutputLimit && forecast.peak_bytes <= SIZE_MAX-extra,
+        "Whole-source qualification source/output reservation is invalid");
+    const auto total = forecast.peak_bytes+extra;
+    output::Require(total <= Limits{}.host_bytes+QualificationBudget::OutputLimit,
+        "Combined source/export qualification exceeds 8 GiB plus 256 MiB");
+    return {forecast.peak_bytes, extra, total};
 }
+void RecordBudget(output::Document& document, const QualificationBudget& budget) {
+    output::Integer(document, "source_peak_bytes", budget.source);
+    output::Integer(document, "qualification_output_bytes", budget.output);
+    output::Integer(document, "qualification_peak_bytes", budget.total);
+    output::Integer(document, "source_limit_bytes", Limits{}.host_bytes);
+    output::Integer(document, "qualification_output_limit_bytes", QualificationBudget::OutputLimit);
+    output::Integer(document, "qualification_limit_bytes", Limits{}.host_bytes+QualificationBudget::OutputLimit);
+}
+
 std::filesystem::path Destination() {
     const auto* text = std::getenv("ROBO_SELECTED_MAIN_OUTPUT");
     output::Require(text && *text, "Missing create-only selected main source output");
@@ -41,6 +64,7 @@ std::filesystem::path Destination() {
     return path;
 }
 void Write(const SelectedShellMainSource& source) {
+    const auto budget = WorkingBytes(source.forecast());
     const auto path=Destination();
     const auto values=source.coefficients();
     const auto k=output::arrays::Write<double>(path,"expanded-main-K.bin",
@@ -77,7 +101,8 @@ void Write(const SelectedShellMainSource& source) {
     output::Integer(doc,"physical_duplicate_groups",cert.physical_duplicate_groups);
     output::Integer(doc,"physical_duplicate_rows",cert.physical_duplicate_rows);
     output::Integer(doc,"topology_warnings",source.topology_report().neighbor_warnings.count);
-    output::Integer(doc,"peak_reservation_bytes",WorkingBytes(source.forecast()));
+    RecordBudget(doc, budget);
+    output::Integer(doc,"peak_reservation_bytes",budget.total);
     output::Boolean(doc,"orientation_identity",cert.orientation_identity); output::Boolean(doc,"owners_complete",cert.owners_complete);
     output::Boolean(doc,"grouping_controls_certified",cert.grouping_controls_certified);
     output::Boolean(doc,"runtime_admitted",false);
@@ -97,8 +122,7 @@ TEST(SelectedShellMainActual, ForecastAndExactCapRejectBeforePublishing) {
     EXPECT_EQ(rejected.report.status,Status::ResourceLimit);
     EXPECT_FALSE(rejected.source);
     output::Document doc;doc.SetObject();
-    output::Integer(doc,"source_peak_bytes",forecast.peak_bytes);
-    output::Integer(doc,"qualification_peak_bytes",WorkingBytes(forecast));
+    RecordBudget(doc, WorkingBytes(forecast));
     output::Integer(doc,"topology_output_bytes",forecast.coating.topology.output_bytes);
     output::Integer(doc,"topology_scratch_bytes",forecast.coating.topology.scratch_bytes);
     output::WriteJson(Destination()/"forecast.json",doc);
