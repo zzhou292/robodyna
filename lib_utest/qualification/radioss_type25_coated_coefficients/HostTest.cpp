@@ -2,7 +2,7 @@
 #include "Cases.h"
 namespace coated_coefficient_test {
 TEST(CoatedMainCoefficients, NativeBothLayoutsOverridesDominanceAndSignedZero) {
-  const auto cases=Cases();ASSERT_EQ(cases.size(),47u);
+  const auto cases=Cases();ASSERT_EQ(cases.size(),53u);
   for(std::size_t i=0;i<cases.size();++i) {
     SCOPED_TRACE(i);n::NativeCoatedMainCoefficientResult actual;
     ASSERT_EQ(n::EvaluateNativeCoatedMainCoefficient(cases[i],&actual),n::CoefficientStatus::Ok);
@@ -46,4 +46,23 @@ TEST(CoatedMainCoefficients, LateOverflowAndStackProfilesCannotPartiallyPublishT
   EXPECT_EQ(n::EvaluateNativeCoatedMainCoefficient(p,&out),n::CoefficientStatus::UnsupportedProfile);Same(out,before,true);
   p=Base();ASSERT_EQ(n::EvaluateNativeCoatedMainCoefficient(p,&out),n::CoefficientStatus::Ok);Same(out,Oracle(p),true);
 }
+TEST(CoatedMainCoefficients, SignedReaderVolumeUsesShellMaxWithoutChangingOrdinarySolidAdmission) {
+  auto p=Base();p.solid.volume=-8.;
+  n::NativeCoatedMainCoefficientResult result;
+  ASSERT_EQ(n::EvaluateNativeCoatedMainCoefficient(p,&result),n::CoefficientStatus::Ok);
+  Same(result,Oracle(p),true);
+  EXPECT_EQ(result.primary_stiffness,52500.);
+  EXPECT_EQ(result.partner_stiffness,52500.);
+  EXPECT_EQ(result.solid_characteristic_length,-2.);
+  n::NativeSolidMainCoefficientResult plain{11,13};
+  EXPECT_EQ(n::EvaluateNativeSolidMainCoefficient(p.solid,&plain),n::CoefficientStatus::InvalidInput);
+  EXPECT_EQ(plain.stiffness,11.);EXPECT_EQ(plain.characteristic_length,13.);
+  const auto before=result;
+  for(double volume:{0.,-0.,std::numeric_limits<double>::quiet_NaN()}) {
+    p.solid.volume=volume;
+    EXPECT_EQ(n::EvaluateNativeCoatedMainCoefficient(p,&result),n::CoefficientStatus::InvalidInput);
+    Same(result,before,true);
+  }
+}
+
 }

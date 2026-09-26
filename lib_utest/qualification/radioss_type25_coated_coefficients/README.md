@@ -16,3 +16,10 @@ All operands are native working quantities. INSOL3D area, VOLINT volume, shell
 membership/orientation and source units remain binding obligations; stiffness is
 not a physical nodal mass, structural STI or contact gap. The returned solid
 length is the intermediate GAP_N before later nodal gap distribution.
+
+The coated support accepts finite signed nonzero reader-phase VOLINT: declared
+PENTA6 can still have negative volume before INITIA. The native shell MAX then
+retains shell STC when solid STF is negative. Do not use absolute volume or
+reorient geometry. Ordinary exterior-solid admission remains positive-volume;
+zero/nonfinite support volume rejects without publication. The actual741-row
+Yaris diagnostic found36 negative PENTA values and zero primary reversals.

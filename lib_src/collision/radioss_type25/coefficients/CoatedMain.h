@@ -9,7 +9,7 @@ namespace tlfea::contact::radioss_type25 {
 // orientation, INSOL3D/VOLINT geometry, material ownership or main identities.
 struct NativeCoatedMainCoefficientInput {
   NativeShellMainCoefficientInput shell; // face must be Coating.
-  NativeSolidMainCoefficientInput solid; // exterior EightSlot support only.
+  NativeSolidMainCoefficientInput solid; // exterior EightSlot, signed nonzero reader-phase volume.
 };
 struct NativeCoatedMainCoefficientResult {
   double primary_stiffness = 0;
@@ -28,7 +28,8 @@ TL_MATH_HOST_DEVICE inline CoefficientStatus EvaluateNativeCoatedMainCoefficient
   auto status = coefficient_detail::ShellContribution(in.shell, MainFaceKind::Coating, &shell);
   if (status != CoefficientStatus::Ok) return status;
   NativeSolidMainCoefficientResult solid;
-  status = EvaluateNativeSolidMainCoefficient(in.solid, &solid);
+  status = coefficient_detail::SolidMainContribution(in.solid, &solid,
+      coefficient_detail::VolumeDomain::SignedNonzero);
   if (status != CoefficientStatus::Ok) return status;
   // GNU native MAX selects the last equal operand. This preserves STC's zero
   // sign; do not change the pre-existing ordinary-face compatibility helper.

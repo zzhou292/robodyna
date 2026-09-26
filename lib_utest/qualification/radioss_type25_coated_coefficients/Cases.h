@@ -27,6 +27,10 @@ inline std::vector<n::NativeCoatedMainCoefficientInput> Cases() {
   for(double scale:{0.,-0.}) {auto p=Base();p.shell.scale=p.solid.scale=scale;out.push_back(p);}
   for(int property:{17,51}) {auto p=Base();p.shell.property_type=property;
     p.shell.element_thickness=0;out.push_back(p);}
+  for(auto layout:{n::ShellLayout::Triangle3,n::ShellLayout::Quad4})
+    for(double volume:{-8.,-0.125,-115.12871884667838}) {
+      auto p=Base();p.shell.layout=layout;p.solid.volume=volume;out.push_back(p);
+    }
   return out;
 }
 inline void Same(const n::NativeCoatedMainCoefficientResult& a,
