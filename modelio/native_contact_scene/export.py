@@ -9,6 +9,7 @@ from viewer.file_integrity import sha256_file
 from .definition import load
 from .mesh import build
 from .native import starter, engine
+from .coupling import reference_rigid_body
 
 
 def export(source, destination):
@@ -23,11 +24,15 @@ def export(source, destination):
     # Evaluate/validate every representation before creating the destination.
     exported_scene = asdict(scene)
     exported_scene.pop('definition_version')
+    if scene.definition_version < 3:
+        exported_scene.pop('coupling')
     if scene.definition_version == 1:
         exported_scene.pop('contact_surface')  # Exact historical v1 representation.
     record = {'schema':f'robo_dyna.native_contact_scene_export.v{scene.definition_version}',
               'scope':'declared source only; runtime controls and physical trajectory unqualified',
               'source_sha256':hashlib.sha256(source_bytes).hexdigest(), 'scene':exported_scene, 'mesh':asdict(mesh)}
+    if scene.definition_version == 3:
+        record['reference_rigid_body'] = reference_rigid_body(scene, mesh)
     if source.read_bytes() != source_bytes:
         raise ValueError('Scene declaration changed during export')
     destination = Path(destination)

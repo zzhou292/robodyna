@@ -55,3 +55,10 @@ official [TYPE25](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/inter
 [shell](https://2025.help.altair.com/2025.1/hwsolvers/rad/topics/solvers/rad/prop_type1_shell_starter_r.htm)
 and [surface](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/surf_seg_starter_r.htm)
 formats. Actual pinned source/Engine observations determine admitted behavior.
+
+The isolated version3 declaration `rigid_patch_capped.json` adds an explicit
+converted-part rigid group while retaining the version2 physical mesh and run
+controls. Its reference-only primary is separate from all physical/contact nodes.
+See `modelio/native_contact_scene/COUPLED_SCENE_DESIGN.md` for source provenance,
+required initialization observations and pending runtime admission. Version3 is
+not yet accepted by the shipping C++ source factory; no native run is implied.
