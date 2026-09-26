@@ -5,26 +5,14 @@
 #include "../radioss_type25_current_normals/NativeOracle.h"
 #include "lib_src/collision/radioss_type25/normal_activation/Values.h"
 #include <cstring>
-#include "lib_src/math/ScalarBits.h"
+#include "../radioss_type25_current_normals/Assertions.h"
 namespace type25_source_test {
 namespace q=n::runtime_qualification;
 namespace c=n::current_normals;
 namespace {
 void NormalFields(const q::NormalObservation& a,const q::NormalObservation& b) {
-  ASSERT_EQ(a.face.size(),b.face.size());
-  ASSERT_EQ(a.references.size(),b.references.size());
-  for(std::size_t i=0;i<a.face.size();++i) {
-    EXPECT_TRUE(tl::math::SameScalarBits(a.face[i].x,b.face[i].x));
-  EXPECT_TRUE(tl::math::SameScalarBits(a.face[i].y,b.face[i].y));
-  EXPECT_TRUE(tl::math::SameScalarBits(a.face[i].z,b.face[i].z));
-  }
-  for(std::size_t i=0;i<a.references.size();++i) {
-    EXPECT_EQ(a.references[i].boundary,b.references[i].boundary);
-    for(unsigned k=0;k<2;++k){const auto x=a.references[i].bisector[k],y=b.references[i].bisector[k];
-      EXPECT_TRUE(tl::math::SameScalarBits(x.x,y.x));
-  EXPECT_TRUE(tl::math::SameScalarBits(x.y,y.y));
-  EXPECT_TRUE(tl::math::SameScalarBits(x.z,y.z));}
-  }
+  type25_current_normals_test::SameNormals(a.face,b.face);
+  type25_current_normals_test::SameReferences(a.references,b.references);
 }
 void MatchNative(FullLedgerRig& rig,const MixedRuntimeSource& source,
     const q::NormalObservation& prior,const q::NormalObservation& actual) {
@@ -66,17 +54,19 @@ TEST(NativeMixedRuntimeCuda, RealFullFamilyOwnerUpdatesFiveMainsAndPublishesActi
   std::uint64_t active=0;
   for(unsigned step=0;step<4;++step) {
     FullLedgerAttempt a;
-  ASSERT_NO_THROW(rig.Begin(a));
-  ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly)));
+    ASSERT_NO_THROW(rig.Begin(a));
+    ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly)));
     q::NormalObservation current;
-  ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&current));
-    ASSERT_NO_THROW(MatchNative(rig,source,prior,current));active+=rig.contact.last_diagnostics().active_forces;
+    ASSERT_TRUE(q::Access::ReadAttemptNormals(rig.contact,rig.owner,a.token,a.assembly,&current));
+    ASSERT_NO_THROW(MatchNative(rig,source,prior,current));
+    active+=rig.contact.last_diagnostics().active_forces;
     ASSERT_NO_THROW(rig.Prepare(a));
-  ASSERT_NO_THROW(rig.Seal(a));
-  ASSERT_NO_THROW(Check(rig.Commit(a)));
-    ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));NormalFields(prior,current);
+    ASSERT_NO_THROW(rig.Seal(a));
+    ASSERT_NO_THROW(Check(rig.Commit(a)));
+    ASSERT_TRUE(q::Access::ReadAcceptedNormals(rig.contact,&prior));
+    NormalFields(prior,current);
     EXPECT_EQ(rig.owner.accepted().epoch,step+1);
-  EXPECT_EQ(rig.contact.accepted().generation,step+1);
+    EXPECT_EQ(rig.contact.accepted().generation,step+1);
   }
   EXPECT_GT(active,0u);
 }
