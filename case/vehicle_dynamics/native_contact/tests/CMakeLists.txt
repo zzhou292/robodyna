@@ -48,3 +48,15 @@ add_test(NAME native_contribution_observed_sources COMMAND "${Python3_EXECUTABLE
 target_compile_options(native_contribution_host PRIVATE -fno-fast-math -ffp-contract=off)
 target_compile_options(native_contribution_cuda PRIVATE
   "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+
+add_executable(native_group_adapter_host GroupHostTest.cpp)
+target_link_libraries(native_group_adapter_host PRIVATE robo_dyna_native_contact_contribution GTest::gtest_main)
+add_test(NAME native_group_adapter_host COMMAND native_group_adapter_host)
+add_executable(native_group_adapter_cuda GroupCudaTest.cu)
+target_include_directories(native_group_adapter_cuda PRIVATE "${observed}")
+target_link_libraries(native_group_adapter_cuda PRIVATE robo_dyna_native_contact_contribution
+  robo_dyna_native_scene_material GTest::gtest_main CUDA::cudart)
+set_target_properties(native_group_adapter_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+target_compile_options(native_group_adapter_cuda PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+add_test(NAME native_group_adapter_cuda COMMAND native_group_adapter_cuda)

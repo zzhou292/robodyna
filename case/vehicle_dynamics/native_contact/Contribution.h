@@ -18,6 +18,8 @@ class Contribution {
     Contribution& operator=(Contribution&&) = delete;
 
     tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
+    tl::fea::NativeContactRosterEntry native_roster_entry() noexcept;
+    const tl::fea::ShellPhysicalScratchParticipationReceipt* native_receipt() const noexcept;
     void Assemble(tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,
                   const tl::fea::NodalAssemblyView&, Observation&);
     void SealCandidate(tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,

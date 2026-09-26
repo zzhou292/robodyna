@@ -22,6 +22,12 @@ std::unique_ptr<Contribution> Contribution::Adopt(std::unique_ptr<native::Transa
 fe::ShellPhysicalScratchRosterEntry Contribution::roster_entry() noexcept {
     return transaction_->roster_entry();
 }
+fe::NativeContactRosterEntry Contribution::native_roster_entry() noexcept {
+    return transaction_->native_roster_entry();
+}
+const fe::ShellPhysicalScratchParticipationReceipt* Contribution::native_receipt() const noexcept {
+    return phase_==Phase::Sealed?&receipt_:nullptr;
+}
 void Contribution::Require(Operation operation, const native::TransactionReport& report) {
     if (report.status == native::TransactionStatus::Ok) return;
     // Copy borrowed diagnostics before cleanup. The guard also revokes scratch
