@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../CoefficientTypes.h"
+#include "../source_nodal/Types.h"
 #include <cstddef>
 #include <cstdint>
 namespace tlfea::contact::radioss_type25::source_shells {
 enum class Status { Ok, InvalidInput, UnsupportedProfile, ResourceLimit, NonfiniteResult };
-enum class Population { Unspecified, OrdinaryShellsOnly };
+enum class Population { Unspecified, OrdinaryShellsOnly, PhysicalShellsWithNodalSeed };
 // Native working units. The caller resolves PM20 and structural THK from the
 // physical material/property owner; contact thickness overrides are distinct.
 struct PhysicalShell {

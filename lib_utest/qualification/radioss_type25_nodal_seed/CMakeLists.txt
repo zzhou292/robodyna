@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLRadiossType25NodalSeed LANGUAGES CXX C Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25NodalSeed.cmake")
+include("${TL_ROOT}/lib_src/collision/RadiossType25ShellSource.cmake")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_nodal_contributions" contributions)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_shell_source" shell-regression)
+set(BEAM18_NATIVE ON)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../beam18_reference" beam-regression)
+set(native "${CMAKE_CURRENT_BINARY_DIR}/native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
+  --output "${native}" RESULT_VARIABLE prepared ERROR_VARIABLE diagnostic)
+if(NOT prepared EQUAL 0)
+  message(FATAL_ERROR "Pinned ordered native seed reference failed: ${diagnostic}")
+endif()
+file(GLOB donor_files CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/native/original/*")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${donor_files}
+  native/prepare.py native/source-manifest.json native/Gather.F.in native/Joint.F.in native/Initialize.F.in
+  ../radioss_type25_coefficients/native/prepare.py ../radioss_type25_nodal_contributions/native/prepare.py)
+add_library(type25_seed_oracle STATIC NativeOracle.cpp "${native}/Gather.F" "${native}/Joint.F"
+  "${native}/Initialize.F" "${native}/my_orders.c")
+target_link_libraries(type25_seed_oracle PUBLIC type25_contribution_oracle type25_coefficient_oracle beam18_oracle)
+target_compile_features(type25_seed_oracle PUBLIC cxx_std_17)
+target_compile_options(type25_seed_oracle PRIVATE
+  "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>"
+  "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+add_executable(type25_seed_host HostTest.cpp NativeTest.cpp Cases.cpp)
+target_link_libraries(type25_seed_host PRIVATE tl_radioss_type25_shell_source type25_seed_oracle GTest::gtest_main)
+target_compile_features(type25_seed_host PRIVATE cxx_std_17)
+target_compile_options(type25_seed_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME type25_seed_host COMMAND type25_seed_host)
+add_executable(type25_seed_consumer Consumer.cpp)
+target_link_libraries(type25_seed_consumer PRIVATE tl_radioss_type25_nodal_seed tl_radioss_type25_shell_source)
+add_test(NAME type25_seed_consumer COMMAND type25_seed_consumer)
+add_test(NAME type25_seed_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
+  --output "${native}" --check)
+set_tests_properties(type25_seed_host type25_seed_consumer type25_seed_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

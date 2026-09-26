@@ -15,7 +15,8 @@ inline double HalfGap(const PhysicalShell& row, int input_thickness_mode) {
   return .5 * row.property_thickness; // Profile excludes stack/property variants.
 }
 inline bool Supported(const Profile& p) {
-  return p.population == Population::OrdinaryShellsOnly && p.property_type == 1 &&
+  return (p.population == Population::OrdinaryShellsOnly ||
+          p.population == Population::PhysicalShellsWithNodalSeed) && p.property_type == 1 &&
       (p.input_thickness_mode == 0 || p.input_thickness_mode == 1) && p.level == 1 &&
       p.gap_mode == 1 && p.free_edge_gap == 0 && p.contact_thickness_update == 0;
 }

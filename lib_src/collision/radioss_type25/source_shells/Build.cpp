@@ -9,17 +9,24 @@
 #include <new>
 namespace tlfea::contact::radioss_type25::source_shells {
 Report Preflight(const Input& input, Limits limits, Forecast& output) noexcept {
+  return Preflight(input, {}, limits, output);
+}
+Report Preflight(const Input& input, NativeNodalSeedView seed, Limits limits, Forecast& output) noexcept {
   detail::Layout layout;
-  const auto report=detail::Prepare(input,limits,layout);
+  const auto report=detail::Prepare(input,seed,limits,layout);
   if (report.status==Status::Ok) output=layout.forecast;
   return report;
 }
 
 Report Build(const Input& input, Limits limits, void* scratch, std::size_t bytes, Output output) noexcept {
+  return Build(input, {}, limits, scratch, bytes, output);
+}
+Report Build(const Input& input, NativeNodalSeedView seed, Limits limits, void* scratch,
+    std::size_t bytes, Output output) noexcept {
   detail::Layout layout;
-  const auto admitted=detail::Prepare(input,limits,layout);
+  const auto admitted=detail::Prepare(input,seed,limits,layout);
   if (admitted.status!=Status::Ok) return admitted;
-  if (!detail::SeparateStorage(input,layout,scratch,bytes,output)) return {Status::InvalidInput};
+  if (!detail::SeparateStorage(input,seed,layout,scratch,bytes,output)) return {Status::InvalidInput};
   using tl::util::ArenaPointer;
   auto* nodes=::new (static_cast<void*>(ArenaPointer<NodeFields>(scratch,layout.nodes))) NodeFields[input.node_count]{};
   auto* selected=::new (static_cast<void*>(ArenaPointer<unsigned char>(scratch,layout.selected_shells))) unsigned char[input.shell_count]{};
@@ -64,6 +71,11 @@ Report Build(const Input& input, Limits limits, void* scratch, std::size_t bytes
   for (std::size_t i=0;i<input.node_count;++i) {
     auto& node=nodes[i];
     NativeAccumulatedNodalCoefficients accumulated;
+    if (seed.nodes) {
+      accumulated.volume = seed.nodes[i].volume;
+      accumulated.bulk_volume = seed.nodes[i].bulk_volume;
+      accumulated.existing_stiffness = seed.nodes[i].existing_stiffness;
+    }
     accumulated.young_thickness_sum=node.young_thickness_sum;
     accumulated.shell_incidence_count=node.shell_incidence_count;
     NativeNodalCoefficientResult result;
