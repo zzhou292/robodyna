@@ -77,17 +77,8 @@ void Plan(output::Document& doc, const Forecast& f, bool complete) {
     }
     doc.AddMember("interfaces", table, doc.GetAllocator());
 }
-void InitialValues(output::Document& doc, const InitialCensus& row) {
-    output::String(doc, "role", row.role == Role::Self ? "self" : "mesh_wall");
-    output::Integer(doc, "native_id", row.identity.source.source);
-    output::Integer(doc, "source_generation", row.identity.source.topology);
-    output::Integer(doc, "runtime_topology", row.identity.source.runtime_topology);
-    output::Integer(doc, "nodes", row.identity.nodes);
-    output::Integer(doc, "primaries", row.identity.primaries);
-    output::Integer(doc, "mains", row.identity.mains);
-    output::Integer(doc, "secondaries", row.identity.secondaries);
-    output::Boolean(doc, "counts_complete", row.result.counts_complete);
-    const auto& d = row.result.diagnostics;
+namespace {
+void Diagnostics(output::Document& doc, const n::initial_source::Diagnostics& d) {
     output::Integer(doc, "encounters", d.encounters);
     output::Integer(doc, "tasks", d.tasks);
     output::Integer(doc, "pairs", d.pairs);
@@ -107,6 +98,19 @@ void InitialValues(output::Document& doc, const InitialCensus& row) {
     for (unsigned axis = 0; axis < 3; ++axis)
         output::Integer(doc, (std::string("grid_") + char('x' + axis)).c_str(), d.grid[axis]);
 }
+}
+void InitialValues(output::Document& doc, const InitialCensus& row) {
+    output::String(doc, "role", row.role == Role::Self ? "self" : "mesh_wall");
+    output::Integer(doc, "native_id", row.identity.source.source);
+    output::Integer(doc, "source_generation", row.identity.source.topology);
+    output::Integer(doc, "runtime_topology", row.identity.source.runtime_topology);
+    output::Integer(doc, "nodes", row.identity.nodes);
+    output::Integer(doc, "primaries", row.identity.primaries);
+    output::Integer(doc, "mains", row.identity.mains);
+    output::Integer(doc, "secondaries", row.identity.secondaries);
+    output::Boolean(doc, "counts_complete", row.result.counts_complete);
+    Diagnostics(doc, row.result.diagnostics);
+}
 void Failure(output::Document& doc, const std::exception& error) {
     output::Boolean(doc, "completed", false);
     output::String(doc, "error", error.what());
@@ -115,6 +119,8 @@ void Failure(output::Document& doc, const std::exception& error) {
         output::Integer(doc, "initial_row", specific->initial.row);
         output::Integer(doc, "initial_main", specific->initial.main);
         output::Integer(doc, "initial_node", specific->initial.node);
+        output::Boolean(doc, "initial_counts_complete", specific->initial.counts_complete);
+        Diagnostics(doc, specific->initial.diagnostics);
         output::Integer(doc, "runtime_status", static_cast<unsigned>(specific->transaction.status));
         output::Integer(doc, "runtime_row", specific->transaction.row);
         output::Integer(doc, "runtime_occurrence", specific->transaction.occurrence);
