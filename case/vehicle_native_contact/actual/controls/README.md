@@ -15,6 +15,9 @@ Only the explicit native preview forecast/run reads these optional variables:
   to request a stop. The adapter follows the existing vehicle CLI `exists`
   semantics and never creates, consumes or removes this file. A preexisting
   file requests an immediate stop after initial accepted capture.
+- `ROBO_NATIVE_VEHICLE_STAGE_TIMING`: exactly `0` or `1`; absent/0 disables.
+  Enables the existing host monotonic-clock StageTimer only. It adds no CUDA
+  calls, synchronization or allocation and changes no physical solver setting.
 
 Malformed explicit settings fail before source construction or owner creation.
 The effective options are written to the qualification `case.json`. Ordinary
@@ -52,3 +55,12 @@ ctest --test-dir /absolute/fresh/build --output-on-failure
 Build and invoke the real actual wrapper in a separate guarded integration gate
 before replacing the qualified vehicle executable. Preserve the currently
 running unmodified executable and source checkouts throughout qualification.
+
+With stage timing enabled, the native summary publishes `mechanics_stage_timing`
+using the same serializer as the ordinary vehicle summary. Both total and
+last-attempt tables retain all named stages, calls, failures, valid samples,
+wall nanoseconds and maximum nanoseconds, plus clock-error/saturation flags.
+The inclusive prepare-step row must not be summed together with its sub-stages.
+These are host-call timings and may include GPU waits; they are not kernel times.
+Use ordinary uninstrumented runs for performance comparisons. Default preview
+behavior remains disabled, and ordinary owner qualification ignores this flag.

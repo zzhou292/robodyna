@@ -1,0 +1,5 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../../output/ArtifactIO.cmake")
+add_library(robo_dyna_vehicle_stage_timing_document STATIC "${CMAKE_CURRENT_LIST_DIR}/StageTimingDocument.cpp")
+target_link_libraries(robo_dyna_vehicle_stage_timing_document PUBLIC robo_dyna_artifact_io)
+target_compile_features(robo_dyna_vehicle_stage_timing_document PUBLIC cxx_std_17)

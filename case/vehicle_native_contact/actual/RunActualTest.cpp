@@ -30,8 +30,10 @@ void RunAcceptedQualification(bool execute, bool preview) {
         if (preview) {
             output::Number(doc, "cooperative_maximum_elapsed_s", preview_controls.maximum_elapsed_s);
             output::String(doc, "cooperative_stop_file", preview_controls.stop_file.string());
+            output::Boolean(doc, "stage_timing_requested", preview_controls.stage_timing);
         }
         auto config = PreviewResources();
+        if (preview) config.dynamics.timing.enabled = preview_controls.stage_timing;
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
         RunConfig run_config;

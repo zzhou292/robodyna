@@ -1,7 +1,6 @@
 #include "State.h"
 #include "case/vehicle_run/SampledShellPlasticity.h"
 #include "case/vehicle_run/MechanicsDocument.h"
-#include "case/vehicle_run/StageTimingDocument.h"
 #include "output/physical_run/Metadata.h"
 #include "output/BoundedArrayJson.h"
 #include <cmath>
@@ -37,8 +36,6 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
     Number(doc, "archive_s", result.loop.progress.timing.archive_s);
     Number(doc, "capture_s", result.loop.progress.timing.capture_s);
     Boolean(doc, "stage_profiling_enabled", source.config().dynamics.timing.enabled);
-    array_json::Child(doc, "mechanics_stage_timing",
-        vehicle_run::detail::StageTimingDocument(result.loop.progress.mechanics_timing));
     Integer(doc, "complete_peak_host_bytes", forecast.complete_peak_host_bytes);
     Integer(doc, "steady_device_bytes", source.forecast().steady_device_bytes);
     Integer(doc, "peak_device_bytes", source.forecast().peak_device_bytes);

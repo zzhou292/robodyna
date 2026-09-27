@@ -1,5 +1,4 @@
 #include "RunState.h"
-#include "StageTimingDocument.h"
 #include "MechanicsDocument.h"
 #include "SampledShellPlasticity.h"
 #include "SelfContactDocument.h"
@@ -31,6 +30,35 @@ const char* FilterInitializationName(tlfea::contact::SelfContactFacetFilterIniti
         case Mode::UnsupportedHostArithmetic:return "unsupported_host_arithmetic";
     }
     return "unknown";
+}
+output::Document Timings(const vehicle_dynamics::StepTimingSnapshot& timing) {
+    using namespace output;
+    Document document;
+    document.SetObject();
+    Boolean(document,"enabled",timing.enabled);
+    Boolean(document,"counter_saturated",timing.counter_saturated);
+    Integer(document,"clock_failures",timing.clock_failures);
+    Integer(document,"backward_samples",timing.backward_samples);
+    for(bool last:{false,true}) {
+        Value rows(rapidjson::kArrayType);
+        const auto& counters=last?timing.last_step:timing.total;
+        for(std::size_t i=0;i<counters.size();++i) {
+            const auto& counter=counters[i];
+            Document row;
+            row.SetObject();
+            String(row,"stage",vehicle_dynamics::StepStageNames[i]);
+            Integer(row,"calls",counter.calls);
+            Integer(row,"failures",counter.failures);
+            Integer(row,"valid_samples",counter.valid_samples);
+            Integer(row,"wall_ns",counter.wall_ns);
+            Integer(row,"maximum_ns",counter.maximum_ns);
+            Value value;
+            value.CopyFrom(row,document.GetAllocator());
+            rows.PushBack(value,document.GetAllocator());
+        }
+        document.AddMember(rapidjson::StringRef(last?"last_attempt":"total"),rows,document.GetAllocator());
+    }
+    return document;
 }
 }
 records::RecordFile WriteSummary(const std::filesystem::path& root,const Config& config,const Horizon& horizon,
@@ -142,7 +170,7 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         array_json::Child(document,"last_self_contact_attempt_diagnostics",
             contact_diagnostics::Document(result.last_contact_attempt));
     }
-    auto timing=StageTimingDocument(result.mechanics_timing);
+    auto timing=Timings(result.mechanics_timing);
     Value value;
     value.CopyFrom(timing,document.GetAllocator());
     document.AddMember("mechanics_stage_timing",value,document.GetAllocator());

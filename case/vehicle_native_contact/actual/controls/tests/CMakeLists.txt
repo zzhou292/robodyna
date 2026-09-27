@@ -3,8 +3,33 @@ project(RoboDynaNativePreviewControls LANGUAGES CXX)
 enable_testing()
 find_package(GTest REQUIRED)
 include("${CMAKE_CURRENT_LIST_DIR}/../Controls.cmake")
-add_executable(native_preview_controls_check PreviewControlsTest.cpp
+add_executable(native_preview_controls_check PreviewControlsTest.cpp StageTimingFlagTest.cpp
     "${CMAKE_CURRENT_LIST_DIR}/../../../../vehicle_run/tests/LoopTest.cpp")
 target_link_libraries(native_preview_controls_check PRIVATE robo_dyna_native_preview_controls GTest::gtest_main)
 add_test(NAME native_preview_controls COMMAND native_preview_controls_check)
 set_tests_properties(native_preview_controls PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+
+option(ROBO_NATIVE_PREVIEW_TIMING_REPORTS "Qualify exact shared stage documents and closure compatibility" OFF)
+if(ROBO_NATIVE_PREVIEW_TIMING_REPORTS)
+  find_package(Chrono REQUIRED CONFIG)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  get_filename_component(APP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../.." ABSOLUTE)
+  include("${APP_ROOT}/case/vehicle_run/StageTimingDocument.cmake")
+  set(oracle "${CMAKE_CURRENT_BINARY_DIR}/timing-oracle")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_timing_sources.py"
+    --output "${oracle}" COMMAND_ERROR_IS_FATAL ANY)
+  add_executable(native_preview_stage_document_check StageTimingDocumentTest.cpp)
+  target_include_directories(native_preview_stage_document_check PRIVATE "${oracle}")
+  target_link_libraries(native_preview_stage_document_check PRIVATE robo_dyna_vehicle_stage_timing_document GTest::gtest_main)
+  add_test(NAME native_preview_stage_document COMMAND native_preview_stage_document_check)
+  add_test(NAME native_preview_stage_sources COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/verify_timing_sources.py")
+  set(ROBO_DYNA_POSTPROCESS_ROOT "" CACHE PATH "Qualified native vehicle postprocess source")
+  if(NOT EXISTS "${ROBO_DYNA_POSTPROCESS_ROOT}/viewer/postprocess/native_vehicle_run.py")
+    message(FATAL_ERROR "Timing compatibility requires the qualified native vehicle postprocess source")
+  endif()
+  add_test(NAME native_preview_stage_compatibility COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/TestTimingSummaryCompatibility.py" --postprocess-root "${ROBO_DYNA_POSTPROCESS_ROOT}")
+  set_tests_properties(native_preview_stage_document native_preview_stage_sources native_preview_stage_compatibility
+    PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()

@@ -12,7 +12,8 @@ std::string BoundedValue(const char* value, const char* name) {
     return text;
 }
 }
-PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* stop_file) {
+PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* stop_file,
+                                    const char* stage_timing) {
     PreviewControls result;
     if (maximum_elapsed_s) {
         const auto text = BoundedValue(maximum_elapsed_s, "Preview elapsed limit");
@@ -22,11 +23,18 @@ PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* 
             throw std::invalid_argument("Preview elapsed limit must be finite and nonnegative");
     }
     if (stop_file) result.stop_file = BoundedValue(stop_file, "Preview stop file");
+    if (stage_timing) {
+        const auto value = BoundedValue(stage_timing, "Preview stage timing");
+        if (value != "0" && value != "1")
+            throw std::invalid_argument("Preview stage timing must be exactly 0 or 1");
+        result.stage_timing = value == "1";
+    }
     return result;
 }
 PreviewControls ReadPreviewControls() {
     return ParsePreviewControls(std::getenv("ROBO_NATIVE_VEHICLE_MAXIMUM_ELAPSED_S"),
-                                std::getenv("ROBO_NATIVE_VEHICLE_STOP_FILE"));
+                                std::getenv("ROBO_NATIVE_VEHICLE_STOP_FILE"),
+                                std::getenv("ROBO_NATIVE_VEHICLE_STAGE_TIMING"));
 }
 vehicle_run::Control MakePreviewControl(const PreviewControls& options) {
     // Same option semantics as the existing vehicle-run CLI. The RunLoop checks

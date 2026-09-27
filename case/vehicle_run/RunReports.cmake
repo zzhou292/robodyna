@@ -1,5 +1,6 @@
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/Values.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/StageTimingDocument.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_run/PhysicalRun.cmake")
 add_library(robo_dyna_vehicle_run_reports STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ContactSummary.cpp" "${CMAKE_CURRENT_LIST_DIR}/Summary.cpp"
@@ -10,7 +11,8 @@ target_sources(robo_dyna_vehicle_run_reports PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactErrorDocument.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactErrorGeometry.cpp")
 target_include_directories(robo_dyna_vehicle_run_reports PUBLIC "${ROBO_DYNA_TL_ROOT}" "${ROBO_DYNA_TL_ROOT}/lib_src" "${CUDAToolkit_INCLUDE_DIRS}")
-target_link_libraries(robo_dyna_vehicle_run_reports PUBLIC robo_dyna_vehicle_run_values robo_dyna_physical_run_records)
+target_link_libraries(robo_dyna_vehicle_run_reports PUBLIC robo_dyna_vehicle_run_values robo_dyna_physical_run_records
+  robo_dyna_vehicle_stage_timing_document)
 target_sources(robo_dyna_vehicle_run_reports PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/contact_diagnostics/Observe.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/contact_diagnostics/Document.cpp"
