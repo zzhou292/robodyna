@@ -4,6 +4,7 @@ from pathlib import Path
 import argparse
 import hashlib
 import json
+import runpy
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
 BASELINE_SHA256="62537b9f1b021360b3b4830f7cd6628ec6ae3d91a8b034fb1f967f0ff2e6e2d9"
@@ -38,7 +39,9 @@ def verify(output=None):
     header=once(originals['OriginalSources.h'],'#include "OriginalYaris.h"','#include "OriginalSourceIO.h"')
     header=once(header,'std::string ReadOriginal(const std::filesystem::path&,std::size_t,const char* sha256);\n','')
     assert (source/'OriginalSources.h').read_text()==header
-    assert (source/'OriginalYaris.cpp').read_text()=='#include "OriginalYaris.h"\n'+originals['OriginalYaris.cpp']
+    tied=runpy.run_path(str(ROOT/'case/vehicle_startup/physical_attachments/tests/original_tied_post/verify_sources.py'))
+    current=tied['restore_original_yaris']((source/'OriginalYaris.cpp').read_text())
+    assert current=='#include "OriginalYaris.h"\n'+originals['OriginalYaris.cpp']
     cmake=once(originals['VehicleRun.cmake'],'add_library(robo_dyna_vehicle_run_original_source STATIC\n',
         'include("${CMAKE_CURRENT_LIST_DIR}/source/OriginalSourceIO.cmake")\n'
         'add_library(robo_dyna_vehicle_run_original_source STATIC\n')
