@@ -56,7 +56,8 @@ BatchReport MakeForecast(const BatchConfig& config,const ShellPhysicalBinding& p
       !host.Append<unsigned char>(physical.owned_payload_bytes(),ignored) ||
       !host.Append<unsigned char>(next.device.bytes,ignored) ||
       !host.Append<BatchResult>(config.element_count,ignored) ||
-      !host.Append<std::uint8_t>(mapped_shell::ActivityBytes(config.element_count),ignored) ||
+      !host.Append<std::uint8_t>(util::BoundedStartupArray<std::uint8_t,0>::ExtraBytes(
+          mapped_shell::ActivityBytes(config.element_count)),ignored) ||
       !host.Append<unsigned char>(next.proof.bytes,ignored) ||
       !host.Append<unsigned char>(64,ignored)) {
     return {BatchStatus::ResourceLimit,"Mapped QBAT complete retained/startup payload exceeds its host cap"};

@@ -8,7 +8,7 @@
 #include "../../solvers/NodalCinRuntime.h"
 #include <optional>
 #include <utility>
-#include <vector>
+#include "lib_utils/BoundedStartupArray.h"
 
 namespace tl::fea::qbat::batch_detail {
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
@@ -36,7 +36,7 @@ struct Batch::Impl {
   batch_detail::Slab* trial=nullptr;
   batch_detail::Control control;
   std::unique_ptr<BatchResult[]> staging;
-  std::vector<std::uint8_t> activity_staging;
+  util::BoundedStartupArray<std::uint8_t,0> activity_staging;
   BatchDiagnostics accepted_diagnostics,candidate_diagnostics;
   NodalPreparedView candidate_view;
   NodalAssemblyView initial_sources;

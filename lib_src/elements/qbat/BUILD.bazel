@@ -28,7 +28,7 @@ cc_library(
             "mapped/AssemblyLayout.h", "mapped/AssemblyValues.h", "mapped/Measurement.h",
             "mapped/MeasurementTypes.h", "mapped/MeasurementValues.h", "QbatBatchMeasure.h", "activity/Values.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/elements/mapped_shell:activity_layout", "//lib_src/elements/mapped_shell:values", "//lib_src/elements/mapped_shell:observer_values",
+    deps = ["//lib_utils:bounded_startup_array", "//lib_src/elements/mapped_shell:activity_layout", "//lib_src/elements/mapped_shell:values", "//lib_src/elements/mapped_shell:observer_values",
             "//lib_src/elements:shell_mapped_startup", "//lib_src/elements:shell_batch_fields", "//lib_src/assembly:nodal_mass_binding", "//lib_src/elements:shell_mapped_footprint", "//lib_src/elements:shell_nodal_stiffness", "//lib_src/constraints/tied_shell:tied_cin_attachment",
             "//lib_src/elements:shell_physical_owner_values", ":force", "//lib_src/elements:shell_formulation_scope", "//lib_src/elements:shell_batch_startup",
             "//lib_src/elements:shell_batch_joined_model", "//lib_src/elements:shell_resident_storage",

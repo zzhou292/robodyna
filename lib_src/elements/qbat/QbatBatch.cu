@@ -75,7 +75,8 @@ BatchReport Batch::InitializeFormulations(const BatchConfig& config,const ShellF
   util::ArenaRegion ignored;
   if(!budget.Append<unsigned char>(sizeof(Impl),ignored)||!budget.Append<unsigned char>(layout.bytes,ignored)||
       !budget.Append<BatchResult>(config.element_count,ignored)||
-      !budget.Append<std::uint8_t>(mapped_shell::ActivityBytes(config.element_count),ignored)||
+      !budget.Append<std::uint8_t>(util::BoundedStartupArray<std::uint8_t,0>::ExtraBytes(
+          mapped_shell::ActivityBytes(config.element_count)),ignored)||
       !budget.Append<unsigned char>(64,ignored)||
       !budget.Append<unsigned char>(binding_bytes,ignored)||!budget.Append<unsigned char>(failure_bytes,ignored)||
       (scope.mass&&!budget.Append<unsigned char>(scope.mass->host_bytes(),ignored))) {
@@ -97,7 +98,7 @@ BatchReport Batch::InitializeFormulations(const BatchConfig& config,const ShellF
   if(scope.mass) next->combined.emplace(*scope.mass);
   next->accepted_diagnostics=diagnostics;
   next->staging=std::make_unique<BatchResult[]>(config.element_count);
-  next->activity_staging.resize(mapped_shell::ActivityBytes(config.element_count));
+  next->activity_staging.Resize(mapped_shell::ActivityBytes(config.element_count));
   next->host_payload_bytes=budget.bytes();
   report=next->Upload(arena,*host,*scope.catalog);
   if(report.status!=BatchStatus::Success) return report;
