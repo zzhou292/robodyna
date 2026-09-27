@@ -1,0 +1,29 @@
+{
+  "commit": "2733b4ccb916db96fc4d7d51cdfa21566d6e227d",
+  "files": [
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.h",
+      "fixture": "frozen/qbat/Measurement.h.txt",
+      "bytes": 2923,
+      "sha256": "4c997f59b21ea029d8a1e9d0f01b4074780ab1476ec26371459b8f244a0747f5"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Measure.h",
+      "fixture": "frozen/solids/Measure.h.txt",
+      "bytes": 4940,
+      "sha256": "6f2044a50ea5aeb5b2322b55feab61e87b4535334f4bfcd0a3c17526045ba888"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementValues.h",
+      "fixture": "frozen/solids/MeasurementValues.h.txt",
+      "bytes": 3755,
+      "sha256": "d3729d9fd1c51980534b341867bc4774628f3dee435a26328c2e0d4e3418447e"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Candidate.cu",
+      "fixture": "frozen/solids/Candidate.cu.txt",
+      "bytes": 6304,
+      "sha256": "a05387f92ddff49ea3b56e63746402b0a86cad1111ebddcdd44d66da9d83f63c"
+    }
+  ]
+}

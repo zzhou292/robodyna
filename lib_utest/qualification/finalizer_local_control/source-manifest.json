@@ -1,0 +1,164 @@
+{
+  "unchanged": [
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.h",
+      "bytes": 2378,
+      "sha256": "468df226a305371fa3869fb3f69222d9dfe9e8916f6a36faf7c625054b30da88"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.cpp",
+      "bytes": 2306,
+      "sha256": "5a88e91480a9328adb59ad068315077ed18160558c17bb491b78b77e14f5707f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchTypes.h",
+      "bytes": 2820,
+      "sha256": "3ebd403051d4660b273b56237b7be891d65e7111f401c45cdaf64157e859881d"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchIdentity.cpp",
+      "bytes": 2630,
+      "sha256": "c0d0bb17645367c3d98060dc1cff1bff9065e524449e82c645d506af6dd2ec74"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatch.cu",
+      "bytes": 6285,
+      "sha256": "497a23ab77a547286d1880e5d4d312a77847fc1e6024ba92708e8a7f1b6f87dd"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchOperations.cu",
+      "bytes": 6165,
+      "sha256": "cc0694fcf62164568669091afb13a3575fe2f9663078d876bc3ec800b942f30f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.cu",
+      "bytes": 2240,
+      "sha256": "917ee0b0eecf83016ab119985d256abd4ae38b31a93d226d0df04a2404733fc3"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementValues.h",
+      "bytes": 4261,
+      "sha256": "0be8b8b4d0a0e5a67a1012f280a4b06062fc9d025effe46eb58c00cae21d748e"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "bytes": 2765,
+      "sha256": "fa2451d4d2a2cad34077cc97c92f2a44853ff277ca3e1fc3212bb8fd74ac712a"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.cpp",
+      "bytes": 6894,
+      "sha256": "1f7befcee6b44fd49593960b4b51309d533a80f03d97bc809c661002450208b5"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Batch.cu",
+      "bytes": 4438,
+      "sha256": "0cc5005f2a5b1bc3023405029dd46d93b6dee65520eca80a46fd3cfd5cde4698"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/EvaluateOperation.cu",
+      "bytes": 2930,
+      "sha256": "cdc37f63e8b89dc6bbe69b174a89a3b4b99a5d799d52b7bf188ce2b691d6b829"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "bytes": 2676,
+      "sha256": "beba0aaa9adf5039ea9f24451efc2fd7f8bf29b4516a096983f04264b644972f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.h",
+      "bytes": 1287,
+      "sha256": "bbbf19bc1a9d9656b8667bc949a79ef44d0b914206baa0ba308ebef78ee1a788"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementWork.h",
+      "bytes": 1212,
+      "sha256": "6ae7f6d8268c0cc109511ecdbcc19f0861910b1822dfab80bbc64ee37ea930e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementTypes.h",
+      "bytes": 698,
+      "sha256": "ef4af0d53f3f91735b881200f73ed1a9c158a9d065ff63c921e44a3f9c0409e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Storage.h",
+      "bytes": 2469,
+      "sha256": "04504ce6b0e27b588218b352272ad8e989c9009faf4d3c0b556a1e82cf005e64"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Identity.cpp",
+      "bytes": 2302,
+      "sha256": "124b6142ab0aac34710ab5dbc76a28342a60531290a24f39e0cae74881bb0a4f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Forecast.cpp",
+      "bytes": 1140,
+      "sha256": "215fc6b5b6c18470b6a8452a33859193cf1a1349c07ab0f3a67fc5246d3cb37d"
+    },
+    {
+      "path": "lib_utils/BoundedArena.h",
+      "bytes": 3257,
+      "sha256": "9db4481ad7e0c4fc77414dd8fec8677f7d968b293f025e2569acaeea59d18f0a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/Fixture.h",
+      "bytes": 4671,
+      "sha256": "005b5593ed63b9f08f88cbe0862f937e651e3d461d0819b59d820cf063b26000"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/DeviceFixture.cuh",
+      "bytes": 3753,
+      "sha256": "96a0161b31e75a0da020fa2592b15dad03be2f2c9900ed27b2fede11d778075d"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/TestSupport.h",
+      "bytes": 2478,
+      "sha256": "5894d2ec32c14a22151f847d614668d4b676bff87d3981416a447915b50ff95b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/TestSupport.h",
+      "bytes": 5401,
+      "sha256": "1ff624ebb57ea3ab42457780f5343cde597b520d5d60c0f08abbca6fd64df307"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/CudaRig.h",
+      "bytes": 7050,
+      "sha256": "dfb273f0eb491b4f8b05d1a2d065e8588380875cfdd688948ada98ca27030a02"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/generate_oracle.py",
+      "bytes": 2385,
+      "sha256": "63ee038c7c56f76563b2dfae07d73bda6b7ce49e4415b9a35f7bd2b6e1bb8740"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Batch.h",
+      "bytes": 4967,
+      "sha256": "3328dc0e1c5808861278b8d591c9cc108cfefe38d4c2271ccbe6a31a17d6e303"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/DeviceFamilies.h",
+      "bytes": 1361,
+      "sha256": "32eb0b767fd469487a75bf6aa9572722f658e9be9407168db3c98d938ffeb63f"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementTypes.h",
+      "bytes": 870,
+      "sha256": "659d98ac1bae71f88e79105876e5e8d3d4aa5a2ca9b0e45c4010f592ac93e8d1"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
+      "bytes": 2217,
+      "sha256": "abd0315ef78872c9140fca53a9efea9516ade062b3e113ef2b3da1804fd138aa"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchArenaLayout.h",
+      "bytes": 3119,
+      "sha256": "5f22c9cd1a8aadbd0dbd040d43a9d305ef4f3e3fdbe277c2eaf3c2506dedbd93"
+    }
+  ]
+}
