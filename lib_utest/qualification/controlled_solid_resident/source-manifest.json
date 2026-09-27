@@ -1000,8 +1000,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 7360,
-      "sha256": "6272df3c09f2659bbcb4be3eab7cd64dcff740368741fa530e9dad0f768fd12a"
+      "bytes": 7507,
+      "sha256": "03cb11bd482d3b4e1a41f5a120b537dec92be1a6251cf7266574a65d560e8fd3"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
@@ -1060,8 +1060,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Batch.h",
-      "bytes": 5310,
-      "sha256": "9bc7c2e16405c25e57ada3c55e37a89d65691977dd9123db5e64203719e593c2"
+      "bytes": 5629,
+      "sha256": "d0d7bc399d75b680c863b41c15f68b83cabc1994de5622bfb75f5aef2b3eb272"
     },
     {
       "path": "lib_src/elements/solids/resident/CMakeLists.txt",
@@ -2125,8 +2125,13 @@
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CMakeLists.txt",
-      "bytes": 2247,
-      "sha256": "be2d5500c3c49e1aca3247601417622fb6386a9dfcb0c56c473738e218efc1c3"
+      "bytes": 2264,
+      "sha256": "cb7b82825bef1d32ca53cce8423b0040b648d0e55d55f2517f43496c1a281c3c"
+    },
+    {
+      "path": "lib_utest/qualification/controlled_solid_resident/CapacityTest.cpp",
+      "bytes": 2691,
+      "sha256": "a0e3ac3d1c216e27b58981690e98b061bed9d92f1f6f8ad598dbdfb86350d61a"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/HostTest.cpp",
@@ -2135,8 +2140,8 @@
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/OwnerTest.cu",
-      "bytes": 4995,
-      "sha256": "9f961bfbddd8ea8066abd4b10428c4bda72d788f9276ae4e541c79d97faa3b93"
+      "bytes": 5037,
+      "sha256": "e8e3d9c37308a58b7c7e04391c785e7eaf866f681cdd4f53b951bf1c00704da8"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/PacketTest.cu",
@@ -2518,5 +2523,21 @@
       "bytes": 39741,
       "sha256": "20f61cc6ecc7ff4202d3324c3c197117b6607abe01e3efb9f8c052e85b123b40"
     }
-  ]
+  ],
+  "controlled_capacity_extension": {
+    "base": "d9f8a654205f07dd32b7c356a301a08025d6c652",
+    "implementation": "3f77eec5",
+    "baseline": {
+      "lib_src/elements/solids/resident/Batch.h": {
+        "bytes": 5310,
+        "sha256": "9bc7c2e16405c25e57ada3c55e37a89d65691977dd9123db5e64203719e593c2"
+      },
+      "lib_src/elements/solids/resident/Arena.cpp": {
+        "bytes": 7360,
+        "sha256": "6272df3c09f2659bbcb4be3eab7cd64dcff740368741fa530e9dad0f768fd12a"
+      }
+    },
+    "scope": "Named192MiB caller opt-in, V3-only larger admission ceiling; legacy128MiB and host256MiB unchanged. No layout arithmetic, allocation order or mechanics changed.",
+    "independent_source_review": "hourglass_review at3f77eec5; count-only maximum-curve layout independently reproduced"
+  }
 }
