@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OwnerFixture.h"
+#include "../connector_mapped_assembly/OwnerRanges.h"
 
 namespace physical_publication_test {
 namespace {
@@ -101,4 +102,24 @@ TEST(Type13MappedCuda, LateEndpointMaskRejectsThenEpochZeroRetryUsesSameCache) {
       {prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,Qualification,true})));
   EXPECT_EQ(rig.owner.accepted().epoch,1u);
 }
+TEST(Type13MappedCuda, AuthenticatedOwnerRejectsCrossAliasedAndShiftedAssemblyRangesBeforeRetry) {
+  Rig rig;ASSERT_TRUE(rig.Initialize());
+  Snapshot before;ASSERT_TRUE(rig.Read(before));
+  for(unsigned fault=0;fault<4;++fault) {
+    fe::NodalTrialToken token;fe::NodalAssemblyView view;fe::NodalCinAssemblyView cin;
+    ASSERT_TRUE(Good(rig.owner.BeginTrial(&token,&view)));
+    ASSERT_TRUE(Good(rig.owner.BorrowCinAssembly(token,&cin)));
+    connector_owner_test::Distinct(view,cin);
+    const auto forged=connector_owner_test::Forge(view,cin,fault);
+    ASSERT_EQ(rig.owner.AuthenticateAssemblyView(token,forged).status,fe::NodalStatus::StaleTrial);
+    EXPECT_EQ(rig.beams.AssembleMappedAccepted(rig.owner,token,forged).status,fe::type13::BatchStatus::StaleTrial);
+    Snapshot after;ASSERT_TRUE(rig.Read(after));Exact(before,after);
+    // The rejected token is expired. Retry uses a fresh actual owner view.
+    ASSERT_TRUE(Good(rig.owner.BeginTrial(&token,&view)));
+    ASSERT_TRUE(Good(rig.beams.AssembleMappedAccepted(rig.owner,token,view)));
+    rig.owner.Discard();rig.beams.DiscardTrial();
+    ASSERT_TRUE(rig.Read(after));Exact(before,after);
+  }
+}
+
 } // namespace physical_publication_test

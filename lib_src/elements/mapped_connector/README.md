@@ -37,3 +37,30 @@ host/CUDA suites and the existing owner gates; root owns builds and GPU jobs.
 
 File ownership: assembly helpers and mapped arena/startup/forecast wiring only.
 Candidate/Finalize numerical diagnostics remain a separate work lane.
+
+## Actual owner storage and rejected scratch contract
+
+This schedule is private to authenticated mapped entrypoints, not a replacement
+for the low-level scatter API on arbitrary borrowed memory. Both mapped
+AssembleMappedAccepted methods call shell_physical_owner::BorrowAssembly before
+any assembly kernel. That calls FENodalState::AuthenticateAssemblyView, whose
+SameAssembly comparison checks every force/couple pointer, count, source pointer,
+stream and attempt against the owner's exact live capability.
+
+FENodalState::Impl::ActiveAssemblyView constructs six distinct n-double spans in
+its own cudaMalloc scratch allocation. BorrowCinAssembly supplies STIFN and
+STIFR as two distinct n-double spans in the separately allocated CIN arena.
+Shifted force buffers and force/STI cross-aliases therefore fail existing owner
+authentication before dispatch. The actual TYPE13 and TYPE25 mapped-owner tests
+assert all eight physical ranges are disjoint and exercise those forgeries,
+accepted-state preservation and a successful fresh-token retry.
+
+FENodalState.h declares forces and bounds to be trial SCRATCH, never accepted
+force diagnostics, and requires discard on recoverable failure. NodalForceAssembly.h
+requires coordinator discard after any contribution failure. The mapped TYPE25
+contract similarly requires all rejected contributions to be discarded. This
+optimization keeps the same first failure but preserves every incoming scratch
+value on rejection; it does not promise the old partially scattered private RHS.
+Accepted forces, histories and publication remain unchanged, and existing owner
+rollback tests remain mandatory. The frozen serial comparison covers complete
+success outputs and failure diagnostics, not rejected scratch equality.

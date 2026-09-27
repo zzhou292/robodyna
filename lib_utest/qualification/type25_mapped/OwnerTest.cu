@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "OwnerFixture.h"
+#include "../connector_mapped_assembly/OwnerRanges.h"
 #include <limits>
 namespace type25_mapped_test {
 TEST(Type25MappedCuda, PhysicalCapsSourceRolesRosterAndStrictLegacyRoute) {
@@ -156,4 +157,25 @@ TEST(Type25MappedCuda, LastParentGeometryFailurePreservesAllAcceptedFieldsAndAll
   ASSERT_EQ(rig.batch.EvaluateCandidate(rig.owner,token,prepared,&output).status,spring::BatchStatus::Success);
   ASSERT_EQ(spring::BatchQualificationPeer::Commit(rig.batch,rig.owner,token,prepared,output).status,spring::BatchStatus::Success);
 }
+TEST(Type25MappedCuda, AuthenticatedOwnerRejectsCrossAliasedAndShiftedAssemblyRangesBeforeRetry) {
+  Rig rig;ASSERT_TRUE(rig.Initialize());
+  const auto before=rig.Accepted();const auto state_before=rig.Snapshot();
+  for(unsigned fault=0;fault<4;++fault) {
+    fe::NodalTrialToken token;fe::NodalAssemblyView view;fe::NodalCinAssemblyView cin;
+    ASSERT_EQ(rig.owner.BeginTrial(&token,&view).status,fe::NodalStatus::Ok);
+    ASSERT_EQ(rig.owner.BorrowCinAssembly(token,&cin).status,fe::NodalStatus::Ok);
+    connector_owner_test::Distinct(view,cin);
+    const auto forged=connector_owner_test::Forge(view,cin,fault);
+    ASSERT_EQ(rig.owner.AuthenticateAssemblyView(token,forged).status,fe::NodalStatus::StaleTrial);
+    EXPECT_EQ(rig.batch.AssembleMappedAccepted(rig.owner,token,forged).status,spring::BatchStatus::StaleTrial);
+    const auto after=rig.Accepted();for(std::size_t e=0;e<before.size();++e)Exact(before[e],after[e]);
+    auto state_after=rig.Snapshot();ASSERT_EQ(state_before.size(),state_after.size());
+    for(std::size_t i=0;i<state_before.size();++i)EXPECT_EQ(Bits(state_before[i]),Bits(state_after[i]));
+    ASSERT_TRUE(rig.Begin(token,view));rig.CheckAssembly(token,view);
+    rig.owner.Discard();rig.batch.DiscardTrial();
+    state_after=rig.Snapshot();ASSERT_EQ(state_before.size(),state_after.size());
+    for(std::size_t i=0;i<state_before.size();++i)EXPECT_EQ(Bits(state_before[i]),Bits(state_after[i]));
+  }
+}
+
 }
