@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "MeasurementValues.h"
-#include "measurement/Finalize.cuh"
 #include <cfloat>
 
 namespace tl::fea::solids::batch_detail {
@@ -61,14 +60,17 @@ template<class Traits> __global__ void Evaluate(Storage* storage, unsigned accep
 }
 __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity, bool initial, bool operands_prepared = false) {
-  if (operands_prepared) {
-    __shared__ measurement::Tile tile;
-    measurement::Finalize(*storage,view,identity,initial,tile);
-    return;
-  }
-  if (threadIdx.x) return;
   auto& state = *storage;
-  auto next=measurement::Begin(state,identity,initial);
+  Control next{};
+  if (initial) {
+    identity.source_instance_id = state.source_instance_id;
+    identity.owner_id = state.config.owner.owner_id;
+    identity.configuration_id = state.config.configuration_id;
+    identity.qualification_id = state.config.qualification_id;
+    identity.phase = BatchPhase::Accepted;
+  }
+  identity.minimum_native_dt_s = DBL_MAX;
+  next.diagnostics = identity;
   const auto* prepared = initial ? nullptr : &view;
   if (MeasureFinalFamily<Traits18>(state, next, accepted, trial, 0, prepared, operands_prepared) &&
       MeasureFinalFamily<Traits24>(state, next, accepted, trial, 1, prepared, operands_prepared) &&
@@ -93,7 +95,7 @@ void LaunchInitialize(Storage* storage, cudaStream_t stream) {
   if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, 0, 0, {}, 0, 0, true, stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Finalize<<<1, measurement::Threads, 0, stream>>>(storage, 0, 0, {}, {}, true, true);
+  Finalize<<<1, 1, 0, stream>>>(storage, 0, 0, {}, {}, true, true);
 }
 void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity) {
@@ -109,6 +111,6 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, accepted, trial, view, identity.time, identity.epoch, false, view.stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Finalize<<<1, measurement::Threads, 0, view.stream>>>(storage, accepted, trial, view, identity, false, true);
+  Finalize<<<1, 1, 0, view.stream>>>(storage, accepted, trial, view, identity, false, true);
 }
 } // namespace tl::fea::solids::batch_detail

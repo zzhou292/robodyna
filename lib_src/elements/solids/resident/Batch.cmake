@@ -5,6 +5,11 @@ if(NOT TARGET tl_explicit_nodal_state)
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/../../ShellPhysicalOwner.cmake")
 add_library(tl_solid_batch STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/measurement/Begin.h"
+  "${CMAKE_CURRENT_LIST_DIR}/measurement/Tile.h"
+  "${CMAKE_CURRENT_LIST_DIR}/measurement/Read.h"
+  "${CMAKE_CURRENT_LIST_DIR}/measurement/Family.cuh"
+  "${CMAKE_CURRENT_LIST_DIR}/measurement/Finalize.cuh"
   "${CMAKE_CURRENT_LIST_DIR}/Batch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Candidate.cu"
   "${CMAKE_CURRENT_LIST_DIR}/ResultValidation.cu"

@@ -4,7 +4,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 cc_library(
     name = "values",
     srcs = ["Arena.cpp", "Plan.cpp", "Upload.cpp", "MaterialUpload.cpp", "Forecast.cpp", "Identity.cpp"],
-    hdrs = glob(["*.h", "*.cuh"]),
+    hdrs = glob(["*.h", "*.cuh", "measurement/*.h", "measurement/*.cuh"]),
     deps = [
         "//lib_src/elements/solids:model", "//lib_src/elements/solids:force_stiffness",
         "//lib_src/elements/solid18:force",

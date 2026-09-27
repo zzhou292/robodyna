@@ -37,10 +37,20 @@ TL_BRICK_HD inline void PrepareMeasurementOperands(Storage& state, unsigned acce
 }
 
 template<class Traits>
-TL_BRICK_HD inline bool AccumulateMeasurementOperand(Control& control,unsigned family_index,
-    std::size_t p,const MeasurementOperands<Traits::nodes>& value,
-    const NodalPreparedView* view) noexcept {
-  auto& diagnostics=control.diagnostics;
+TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, Control& control,
+    unsigned family_index, const NodalPreparedView* view) noexcept {
+  auto& family = FamilyStorage<Traits>(state);
+  auto& diagnostics = control.diagnostics;
+  diagnostics.parent_count[family_index] = family.count;
+  for (std::size_t p = 0; p < family.count; ++p) {
+    if (family.status[p] != 0 || family.result_valid[p] != 1) {
+      control.status = family.status[p] ? BatchStatus::ElementFailure : BatchStatus::NonfiniteResult;
+      control.family = Traits::family;
+      control.parent = p;
+      control.element_status = family.status[p];
+      return false;
+    }
+    const auto& value = family.measurement[p];
     diagnostics.native_internal_work_increment_j[family_index] += value.work;
     diagnostics.physical_hourglass_work_increment_j[family_index] += value.hourglass_work;
     diagnostics.plastic_work_increment_j += value.plastic_work;
@@ -61,25 +71,6 @@ TL_BRICK_HD inline bool AccumulateMeasurementOperand(Control& control,unsigned f
       control.parent = p;
       return false;
     }
-  return true;
-}
-
-template<class Traits>
-TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, Control& control,
-    unsigned family_index, const NodalPreparedView* view) noexcept {
-  auto& family = FamilyStorage<Traits>(state);
-  auto& diagnostics = control.diagnostics;
-  diagnostics.parent_count[family_index] = family.count;
-  for (std::size_t p = 0; p < family.count; ++p) {
-    if (family.status[p] != 0 || family.result_valid[p] != 1) {
-      control.status = family.status[p] ? BatchStatus::ElementFailure : BatchStatus::NonfiniteResult;
-      control.family = Traits::family;
-      control.parent = p;
-      control.element_status = family.status[p];
-      return false;
-    }
-    const auto& value = family.measurement[p];
-    if (!AccumulateMeasurementOperand<Traits>(control,family_index,p,value,view)) return false;
   }
   return true;
 }

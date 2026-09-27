@@ -4,6 +4,6 @@
 namespace tl::fea::solids::batch_detail {
 void LaunchControlFinalizeTest(Storage* state,unsigned accepted,unsigned trial,
     NodalPreparedView view,BatchDiagnostics identity,bool initial,bool operands) {
-  Finalize<<<1,1,0,view.stream>>>(state,accepted,trial,view,identity,initial,operands);
+  Finalize<<<1,measurement::Threads,0,view.stream>>>(state,accepted,trial,view,identity,initial,operands);
 }
 }
