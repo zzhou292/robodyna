@@ -6,6 +6,7 @@
 #include "../solid6z/Solid6zForceTypes.h"
 #include "../solid18/law44/ForceTypes.h"
 #include "../../materials/law90/Types.h"
+#include "control/Selection.h"
 
 namespace tl::fea::solids {
 using Family = SolidCoefficientFamily;
@@ -31,6 +32,7 @@ struct ModelInput {
   util::ConstView<Input18Law44> solid18_law44{nullptr,0};
   util::ConstView<Input18Law90> solid18_law90{nullptr,0};
   ModelProfile profile = ModelProfile::OriginalThreeFamilies;
+  control::Input controls{}; // Optional semantic source selection; legacy stores no rows.
 };
 struct Material36 { std::uint64_t source_material_id = 0; solid18::Material value; };
 struct Material42 { std::uint64_t source_material_id = 0; solid24::Material value; };
@@ -97,6 +99,7 @@ class Model {
   ModelReport Initialize(const NodalNodeDomain&, ModelInput, ModelLimits = {}) noexcept;
   bool prepared() const noexcept { return bool(impl_); }
   ModelProfile profile() const noexcept;
+  const control::Selection* control_selection() const noexcept;
   std::uint64_t source_instance_id() const noexcept;
   const NodalNodeDomain* domain() const noexcept;
   const SolidNodeContributions* contributions() const noexcept;

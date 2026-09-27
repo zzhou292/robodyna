@@ -18,6 +18,8 @@ bool DeclaredRigidScope(NodalRigidGroupInfo group, std::size_t nodes) noexcept {
 BatchReport Plan(const BatchConfig& config, const Model& model,
     ArenaLayout& output) noexcept {
   const auto& owner = config.owner;
+  if(model.control_selection()&&model.control_selection()->controlled_count())
+    return {BatchStatus::InvalidInput, "Source-declared structural solid controls require a qualified controlled resident"};
   const bool original = config.profile == BatchProfile::PhysicalCinV1 &&
       model.profile() == ModelProfile::OriginalThreeFamilies;
   const bool extended = config.profile == BatchProfile::PhysicalCinExtendedLaw44Law90V2 &&

@@ -8,6 +8,7 @@
 namespace tl::fea::solids::model_detail {
 using Index = util::SourceIdentityIndex<0>;
 struct Layout {
+  control::Budget control_budget;
   util::ArenaRegion parent18,parent24,parent6z,material36,material42,curves;
   util::ArenaRegion parent44,parent90,material44,material90;
   util::ArenaRegion reference18,reference24,reference6z,reference44,reference90,material_indices;

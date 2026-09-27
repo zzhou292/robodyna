@@ -6,6 +6,7 @@ struct Model::Impl {
   explicit Impl(const SolidNodeContributions& c,ModelProfile p):coefficients(c),profile(p) {}
   SolidNodeContributions coefficients;
   ModelProfile profile;
+  control::Selection controls;
   model_detail::Storage storage;
   model_detail::Layout layout;
 };

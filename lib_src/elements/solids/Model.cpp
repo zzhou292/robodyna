@@ -86,6 +86,18 @@ ModelReport Model::Initialize(const NodalNodeDomain& domain,ModelInput input,Mod
   if(!report)return report;
   report=CopyParents(input,scratch,coefficients,storage);
   if(!report)return report;
+  control::Limits control_limits;
+  control_limits.max_parents=limits.max_parents;control_limits.max_packets=limits.max_parents;
+  control_limits.max_host_bytes=layout.control_budget.startup_bytes;
+  const auto selected=next->controls.Initialize(coefficients,input.controls,control_limits);
+  if(!selected) {
+    auto status=ModelStatus::SourceMismatch;
+    if(selected.status==control::Status::ResourceLimit)status=ModelStatus::ResourceLimit;
+    if(selected.status==control::Status::DuplicateIdentity)status=ModelStatus::DuplicateIdentity;
+    if(selected.status==control::Status::InvalidInput||selected.status==control::Status::UnsupportedProfile)status=ModelStatus::InvalidInput;
+    return Error(status,selected.message,input,selected.parent);
+  }
+
   impl_=std::move(next);
   return {};
 } catch(const std::bad_alloc&) {

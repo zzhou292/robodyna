@@ -5,7 +5,7 @@ cc_library(
             "model/Parents.cpp", "model/Identity.cpp", "model/Readback.cpp",
             "model/ExtendedMaterials.cpp", "model/ExtendedIdentity.cpp"],
     hdrs = ["Model.h", "model/Internal.h", "model/Impl.h", "model/Families.h"],
-    deps = ["//lib_src/assembly:solid_node_contributions",
+    deps = ["//lib_src/assembly:solid_node_contributions", "//lib_src/elements/solids/control:selection",
             "//lib_src/elements/solid18:force", "//lib_src/elements/solid24:force",
             "//lib_src/elements/solid6z:force", "//lib_src/materials:solid_law36_point",
             "//lib_src/materials/law42:caller", "//lib_src/elements/solid18/law44:force",

@@ -26,6 +26,13 @@ ModelReport Preflight(const NodalNodeDomain& domain,ModelInput input,ModelLimits
   const auto count=Count(input); // Five previously bounded counts cannot overflow.
   if(count>limits.max_parents)return resource("Combined solid parent count exceeds cap");
   if(!count)return Error(ModelStatus::InvalidInput,"Solid model requires a parent",input);
+  control::Limits control_limits;
+  control_limits.max_parents=limits.max_parents;control_limits.max_packets=limits.max_parents;
+  control_limits.max_host_bytes=limits.max_host_bytes;
+  const auto control_report=control::Selection::Forecast(input.controls,count,control_limits,layout.control_budget);
+  if(!control_report)return Error(control_report.status==control::Status::ResourceLimit?
+      ModelStatus::ResourceLimit:ModelStatus::InvalidInput,control_report.message,input);
+
   util::BoundedArenaLayout scratch(limits.max_host_bytes),minimum(limits.max_host_bytes);
   util::ArenaRegion unused;
   if(!scratch.Append<solid18::Reference>(input.solid18.size(),layout.reference18) ||
@@ -38,6 +45,7 @@ ModelReport Preflight(const NodalNodeDomain& domain,ModelInput input,ModelLimits
       !minimum.Append<unsigned char>(scratch.bytes(),unused) ||
       !minimum.Append<unsigned char>(Index::Bytes(count)-sizeof(Index),unused) ||
       !minimum.Append<unsigned char>(domain.owned_payload_bytes(),unused) ||
+      !minimum.Append<unsigned char>(layout.control_budget.startup_bytes-sizeof(control::Selection),unused) ||
       !minimum.Append<Parent18>(input.solid18.size(),unused) ||
       !minimum.Append<Parent24>(input.solid24.size(),unused) ||
       !minimum.Append<Parent6z>(input.solid6z.size(),unused) ||
@@ -72,10 +80,11 @@ ModelReport CompleteLayout(ModelInput input,ModelLimits limits,Layout& layout) {
       !arena.Append<double>(2*layout.curve_points,layout.curves) ||
       !startup.Append<unsigned char>(layout.fixed_bytes,unused) ||
       !startup.Append<unsigned char>(arena.bytes(),unused) ||
-      !startup.Append<unsigned char>(layout.scratch_bytes,unused))
+      !startup.Append<unsigned char>(layout.scratch_bytes,unused) ||
+      !startup.Append<unsigned char>(layout.control_budget.startup_bytes-sizeof(control::Selection),unused))
     return Error(ModelStatus::ResourceLimit,"Complete solid material and staging bytes exceed cap",input);
   layout.arena_bytes=arena.bytes();
-  layout.owned_bytes=layout.fixed_bytes+arena.bytes();
+  layout.owned_bytes=layout.fixed_bytes+arena.bytes()+layout.control_budget.owned_bytes-sizeof(control::Selection);
   layout.startup_bytes=startup.bytes(); // Coefficient/domain payload is added after its bounded construction.
   return {};
 }

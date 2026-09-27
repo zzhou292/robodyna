@@ -7,6 +7,9 @@
 #include "../../solid18/total_strain/ForceChecks.h"
 
 namespace tl::fea::solids {
+const control::Selection* Model::control_selection() const noexcept {
+  return impl_?&impl_->controls:nullptr;
+}
 ModelProfile Model::profile() const noexcept {
   return impl_ ? impl_->profile : ModelProfile::OriginalThreeFamilies;
 }
@@ -62,7 +65,7 @@ bool Model::SharesStorage(const Model& other) const noexcept {
 bool Model::Matches(const Model& other) const noexcept {
   if(!impl_ || !other.impl_)return false;
   if(SharesStorage(other))return true;
-  if(profile()!=other.profile() || !contributions()->Matches(*other.contributions()) ||
+  if(profile()!=other.profile() || !impl_->controls.Matches(other.impl_->controls) || !contributions()->Matches(*other.contributions()) ||
       solid18().size()!=other.solid18().size() || solid24().size()!=other.solid24().size() ||
       solid6z().size()!=other.solid6z().size() || materials36().size()!=other.materials36().size() ||
       materials42().size()!=other.materials42().size() || materials44().size()!=other.materials44().size() ||
