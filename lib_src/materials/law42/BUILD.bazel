@@ -10,3 +10,9 @@ cc_library(
     hdrs = ["Caller.h", "CallerTypes.h", "TotalStrain.h"],
     deps = [":point"],
 )
+
+cc_library(
+    name = "mechanical_slots",
+    hdrs = ["MechanicalSlots.h"],
+    deps = [":point"],
+)
