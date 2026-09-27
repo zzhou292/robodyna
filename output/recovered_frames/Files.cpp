@@ -13,6 +13,14 @@ std::vector<records::RecordFile> ReferencedFiles(const std::filesystem::path& ro
         const records::Context& context,const Description& description) {
     auto result=run::ReferencedSampleFiles(root,context,description.source_bundle,
         description.activity_declaration,description.frames,description.wall);
+    if(description.environment) {
+        run::EnvironmentDocument(*description.environment);
+        for(const auto& file:description.environment->files) {
+            Require(std::none_of(result.begin(),result.end(),[&](const auto& known){return known.file==file.file;}),
+                "Recovered environment aliases another typed file owner");
+            result.push_back(file);
+        }
+    }
     for(const auto& file:result)Require(file.file!=description.configuration.file,
         "Recovery configuration aliases a payload");
     result.push_back(description.configuration);

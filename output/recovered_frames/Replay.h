@@ -3,6 +3,7 @@
 
 namespace crash::output::recovered_frames {
 inline constexpr const char* Schema = "robo_dyna.recovered_sampled_review.v1";
+inline constexpr const char* EnvironmentSchema = "robo_dyna.recovered_sampled_review.v2";
 inline constexpr const char* DescriptorFilename = "recovered-samples.json";
 using Limits = physical_run::ReplayLimits;
 
@@ -30,6 +31,7 @@ class Replay {
     const std::vector<physical_run::FrameFiles>& frames() const noexcept;
     physical_run::Sample ReadSample(std::size_t) const;
     const physical_run::WallReceipt* wall() const noexcept;
+    const physical_run::EnvironmentReceipt* environment() const noexcept;
     const physical_run::WallComposition* wall_composition() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;
     const std::string& stop_reason() const noexcept;

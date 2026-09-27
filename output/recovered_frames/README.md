@@ -50,3 +50,21 @@ syntax units pass under one CPU/512 MiB. Host linking reused existing bounded
 record libraries with current changed/shared objects; root owning CMake and full
 100-sample recovery remain the decisive integration gate. No GPU, native solver
 or full source run was executed by the author.
+
+## Declared environment recovery (v2)
+
+An original configuration containing the declared fixed environment uses the
+separate `robo_dyna.recovered_sampled_review.v2` descriptor. It embeds the existing
+three-file EnvironmentReceipt and reuses ReadEnvironmentArtifacts for exact source,
+physical-node suffix, mesh coordinates/topology and reference/contact-plane checks.
+The original configuration and its native-group observation profile are copied
+unchanged as declarations only. There is no recovered group publication, contact
+counter, interval ledger, requested-horizon completion or physical restart.
+
+The exact referenced inventory includes the three root-level environment files;
+legacy seven-file walls and declared environments are mutually exclusive. Normal
+v1 recovery and its strict field set remain unchanged. Recovery charges the normal
+environment workspace/retained budgets and validates every saved typed frame and
+activity pair before publishing the distinct descriptor in a new copied directory.
+The existing recovered viewer mode keeps its explicit interruption/unknown-history
+labels while displaying the original finite wall and original part colors.

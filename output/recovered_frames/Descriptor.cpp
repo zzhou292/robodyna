@@ -5,7 +5,7 @@
 #include <set>
 
 namespace crash::output::recovered_frames {
-Document Encode(const Description& value) {
+static Document LegacyEncode(const Description& value) {
     Require(!value.reason.empty() && value.reason.size()<=4096,"Recovery stop reason is missing or too long");
     arrays::CheckHash(value.mapping_sha256);
     Require(!value.frames.empty() && value.frames.size()<=1001 && value.files.size()<=kArtifactInventoryCap,
@@ -43,7 +43,7 @@ Document Encode(const Description& value) {
     Require(d.Accept(writer) && bytes.GetSize()<=run::MetadataCap,"Recovery descriptor exceeds metadata cap");
     return d;
 }
-Description Decode(const Value& d) {
+static Description LegacyDecode(const Value& d) {
     using namespace array_json;
     const bool wall=d.IsObject() && d.HasMember("wall_case");
     if(wall)Keys(d,{"schema","purpose","interval_ledger","horizon_complete","stop_reason","canonical_manifest",
@@ -75,5 +75,31 @@ Description Decode(const Value& d) {
     Require(value.configuration.file=="configuration.json" && value.source_bundle.file=="source.bundle.json" &&
         value.activity_declaration.file=="parent-activity.json","Recovery static names differ");
     return value;
+}
+Document Encode(const Description& value) {
+    Require(!(value.wall && value.environment),"Recovered static wall profiles are mutually exclusive");
+    auto document=LegacyEncode(value);
+    if(value.environment) {
+        document["schema"].SetString(EnvironmentSchema,document.GetAllocator());
+        array_json::Child(document,"environment_wall",run::EnvironmentDocument(*value.environment));
+        rapidjson::StringBuffer bytes;rapidjson::Writer<rapidjson::StringBuffer> writer(bytes);
+        Require(document.Accept(writer) && bytes.GetSize()<=run::MetadataCap,
+            "Environment recovery descriptor exceeds metadata cap");
+    }
+    return document;
+}
+Description Decode(const Value& value) {
+    if(!value.IsObject() || !value.HasMember("environment_wall"))return LegacyDecode(value);
+    using namespace array_json;
+    Require(value.HasMember("schema") && !value.HasMember("wall_case") &&
+        Text(value["schema"])==EnvironmentSchema,"Unknown recovered environment schema or mixed wall profiles");
+    const auto environment=run::ReadEnvironmentDocument(value["environment_wall"]);
+    // Schema dispatch reuses the strict v1 field/claim checks in memory only.
+    // No original configuration, run manifest or summary is rewritten.
+    Document legacy;legacy.CopyFrom(value,legacy.GetAllocator());legacy.RemoveMember("environment_wall");
+    legacy["schema"].SetString(Schema,legacy.GetAllocator());
+    auto result=LegacyDecode(legacy);result.environment=environment;
+    Encode(result);
+    return result;
 }
 } // namespace crash::output::recovered_frames

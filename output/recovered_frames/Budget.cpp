@@ -18,8 +18,8 @@ std::size_t Budget(const records::Context& context,const run::Configuration& con
         budget.Append<std::byte>(context.retained_payload_bytes(),region) &&
         budget.Append<std::byte>(32*run::MetadataCap,region) &&
         budget.Append<std::byte>(std::max<std::size_t>({sample.bytes(),kArtifactFileCap,
-            config.wall?run::WallWorkspaceBytes:0}),region) &&
-        budget.Append<std::byte>(config.wall?run::WallMeshRetainedBytes:0,region),
+            config.wall?run::WallWorkspaceBytes:config.environment?run::EnvironmentWorkspaceBytes:0}),region) &&
+        budget.Append<std::byte>(config.wall?run::WallMeshRetainedBytes:config.environment?run::EnvironmentRetainedBytes:0,region),
         "Recovery retained/source/sample/copy budget exceeds cap");
     return budget.bytes();
 }

@@ -32,3 +32,9 @@ if(ROBO_DYNA_RECOVERED_REPLAY_INPUT)
   set_tests_properties(recovered_scene_archive PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "ROBO_DYNA_RECOVERED_REPLAY_INPUT=${ROBO_DYNA_RECOVERED_REPLAY_INPUT}")
 endif()
+
+# Explicit recovered declared-environment acceptance; never substitute an old
+# no-environment archive or infer a normal run completion from saved samples.
+add_executable(robo_dyna_recovered_environment_scene_check tests/RecoveredEnvironmentSceneTest.cpp)
+target_link_libraries(robo_dyna_recovered_environment_scene_check PRIVATE robo_dyna_physical_viewer_values GTest::gtest_main)
+target_compile_options(robo_dyna_recovered_environment_scene_check PRIVATE -fno-fast-math -ffp-contract=off)
