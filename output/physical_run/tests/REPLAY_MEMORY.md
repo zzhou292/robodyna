@@ -1,0 +1,11 @@
+# Normal replay memory: sequential validation phases
+
+The unchanged10ms producer closed its native-group archive at50001 intervals and121 samples. Its optional post-run Replay::Open failed the old512MiB budget before ValidateRecords. Raw GTest/guard failure remains failure; the existing archive must be independently fully validated, not relabelled or rerun.
+
+ReplayRecords.cpp calls ReadIntervals to completion, with a callback that checks sampled stamps and retains only the next-frame index. IntervalReader.cpp keeps decoded integer/real arrays inside each chunk loop and returns only Sequence. After those arrays are destroyed, ValidateRecords reads frame/activity pairs one at a time; after it returns, Replay.cpp loads optional wall/environment. Retained source/context/metadata and environment mesh charges remain additive. Only mutually exclusive staging takes the maximum.
+
+ReplayBudget reuses IntervalReadStagingBytes, the same bounded calculation used by ReadIntervals. No source/manifest/index/hash/stamp/activity/field validation is removed or reordered. The default/hard512MiB reader cap,384MiB source reservation and128MiB record-reader cap remain unchanged. There is no simulation or physical restart in this path.
+
+For the actual10ms segment,50001*(27+9)*8*3=43,200,864 interval-workspace bytes. Actual359785 nodes/956346 saved native points give3*8*(3*359785+956346)=48,856,824 frame-workspace bytes. The old sum92,057,688 is replaced by max48,856,824; optional8MiB environment workspace is smaller. This removes43,200,864 bytes of non-overlapping charge. Actual immutable Context retained capacity still comes from Context::retained_payload_bytes, not a guessed sizeof or Yaris special case. Full exact replay reports the final peak.
+
+Four host tests reuse the existing small Context fixture: exact phase/fixed charges across absent/wall/environment profiles; exact cap/one-short and malformed envelope; growing native-group horizons and bounded chunk saturation; unchanged public default/hard admission. Full existing record tests should also run, then independently open the untouched real normal archive through the viewer's ordinary Replay path and validate all121 states and50001 intervals. No recovered-sample substitution.

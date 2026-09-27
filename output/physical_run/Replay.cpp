@@ -1,6 +1,6 @@
 #include "Replay.h"
 #include "output/BoundedArrayJson.h"
-#include "lib_utils/BoundedArena.h"
+#include "ReplayBudget.h"
 namespace crash::output::physical_run {
 struct Replay::Data {
     Data(std::filesystem::path r,records::source::PreparedSourceMapping m,records::Context c,
@@ -33,15 +33,7 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     auto context=mapping.MakeFrameContext(config.identity,config.request.fixed_dt,limits.records);
     const auto plan=records::activity::PlanWithActivity(context,config.request,"parent-activity.json");
     Require(plan.archive.forecast_bytes==manifest.forecast_bytes,"Physical whole-run forecast differs");
-    tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
-    const auto interval_bytes=std::min<std::uint64_t>(plan.archive.rows_per_chunk,config.request.intervals)*8*
-        (IntegerFields(config.profile).size()+RealFields(config.profile).size());
-    const auto record_workspace=3*interval_bytes+3*sizeof(double)*(3*context.nodes()+context.points());
-    Require(budget.Append<std::byte>(limits.source.host_bytes,region) &&
-        budget.Append<std::byte>(context.retained_payload_bytes(),region) &&
-        budget.Append<std::byte>(32*MetadataCap,region) &&
-        budget.Append<std::byte>(std::max(record_workspace,config.wall?WallWorkspaceBytes:config.environment?EnvironmentWorkspaceBytes:0),region) &&
-        budget.Append<std::byte>(config.wall?WallMeshRetainedBytes:config.environment?EnvironmentRetainedBytes:0,region),"Physical replay retained/peak buffers exceed host cap");
+    const auto memory=replay_detail::Budget(context,config,limits.source.host_bytes,limits.host_bytes);
     auto index=ReadIndex(context,config,array_json::Parse(ReadFile(root,manifest.index,MetadataCap),MetadataCap));
     records::activity::ReadDeclaration(root,context,manifest.activity_declaration);
     ValidateRecords(root,context,config,index,128u<<20);
@@ -50,7 +42,7 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context,&composition):nullptr;
     if(manifest.environment)wall=ReadEnvironmentArtifacts(root,*manifest.environment,mapping.source().data(),context);
     if(manifest.wall)CheckWallBeamObservation(config.profile.beam18,composition);
-    auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes());
+    auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),memory.peak_host_bytes);
     data->wall=manifest.wall;data->environment=manifest.environment;data->wall_mesh=std::move(wall);
     data->wall_composition=composition;
     return Replay(std::move(data));
