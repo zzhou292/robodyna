@@ -23,7 +23,7 @@ TEST_F(ControlledResidentCuda, CollapsedH24GatherSerialAndForcedFallbackPreserve
     SCOPED_TRACE(mode);ASSERT_TRUE(seed());
     if(!mode)SerialAssembly<<<1,1,0,a.stream>>>(device,a,cin);
     else {
-      const std::size_t zero=0;ASSERT_EQ(cudaMemcpy(&device->assembly.arena_bytes,&zero,sizeof(zero),cudaMemcpyHostToDevice),cudaSuccess);
+      const std::size_t impossible_extent=SIZE_MAX;ASSERT_EQ(cudaMemcpy(&device->assembly.arena_bytes,&impossible_extent,sizeof(impossible_extent),cudaMemcpyHostToDevice),cudaSuccess);
       ASSERT_EQ(d::LaunchAssembly(device,0,a,cin),cudaSuccess);
     }
     ASSERT_EQ(cudaStreamSynchronize(a.stream),cudaSuccess);
