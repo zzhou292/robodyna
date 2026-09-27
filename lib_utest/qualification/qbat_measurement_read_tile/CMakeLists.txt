@@ -25,11 +25,12 @@ add_test(NAME qbat_read_tile_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_
 option(QBAT_READ_TILE_CUDA "Complete Control, production caller and literal frozen finalizer comparisons" OFF)
 if(QBAT_READ_TILE_CUDA)
   enable_language(CUDA)
-  add_subdirectory("${TL_ROOT}/lib_src/solvers" nodal-owner)
-  include("${TL_ROOT}/lib_src/elements/qbat/QbatBatch.cmake")
-  add_executable(qbat_read_tile_cuda CudaTest.cu)
+  # Compile the actual mapped producer/maximum/finalizer translation unit.
+  # Full participant/owner linkage remains the separate owning gate.
+  add_executable(qbat_read_tile_cuda CudaTest.cu
+    "${TL_ROOT}/lib_src/elements/qbat/mapped/Measurement.cu")
   target_include_directories(qbat_read_tile_cuda PRIVATE "${oracle}")
-  target_link_libraries(qbat_read_tile_cuda PRIVATE tl_qbat_batch GTest::gtest_main CUDA::cudart)
+  target_link_libraries(qbat_read_tile_cuda PRIVATE qbat_read_tile_values GTest::gtest_main CUDA::cudart)
   set_target_properties(qbat_read_tile_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(qbat_read_tile_cuda PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;--ptxas-options=-v;-Xcompiler=-fno-fast-math,-ffp-contract=off>)
