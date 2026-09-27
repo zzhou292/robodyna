@@ -17,6 +17,10 @@ std::size_t IntervalReadStagingBytes(Profile profile,std::uint64_t planned,std::
     return StagingBytes(profile,interval::PlanChunks(
         planned,file_cap,kArtifactMaximumTotalCap,ExtraIntervalBytes(profile)));
 }
+void CheckIntervalReadWorkspace(std::size_t staging_bytes,std::size_t host_cap) {
+    Require(host_cap && host_cap<=256u<<20 && staging_bytes<=host_cap,
+        "Physical interval read staging exceeds host cap");
+}
 Sequence ReadIntervals(const std::filesystem::path& root,const records::Context& c,Profile p,
     std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>& segments,
     std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>& visit) {
@@ -25,8 +29,10 @@ Sequence ReadIntervals(const std::filesystem::path& root,const records::Context&
         "Incomplete physical interval segment coverage");
     const auto cols=RealFields(p).size();
     const auto ints=IntegerFields(p).size();
-    Require(host_cap && host_cap<=256u<<20 && StagingBytes(p,plan)<=host_cap,
-        "Physical interval read staging exceeds host cap");
+    // Keep cap rejection before staging arithmetic, after the original segment
+    // coverage check. Planning and staging are each computed only once here.
+    Require(host_cap && host_cap<=256u<<20,"Physical interval read staging exceeds host cap");
+    CheckIntervalReadWorkspace(StagingBytes(p,plan),host_cap);
     const arrays::Limits limits{file_cap,UINT32_MAX,64};
     Sequence sequence;
     for(std::size_t k=0;k<segments.size();++k) {

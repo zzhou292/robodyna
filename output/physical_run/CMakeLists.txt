@@ -17,7 +17,7 @@ if(NOT EXISTS "${ROBO_DYNA_TL_ROOT}/lib_utils/BoundedArena.h")
   message(FATAL_ERROR "Physical run needs the explicit qualified TL root")
 endif()
 include(PhysicalRun.cmake)
-add_executable(robo_dyna_physical_run_check tests/ValuesTest.cpp tests/ReplayBudgetTest.cpp tests/RecordsTest.cpp tests/FailureTest.cpp tests/WallTest.cpp tests/ViewerInputTest.cpp
+add_executable(robo_dyna_physical_run_check tests/ValuesTest.cpp tests/ReplayBudgetTest.cpp tests/ReplayPreflightTest.cpp tests/RecordsTest.cpp tests/FailureTest.cpp tests/WallTest.cpp tests/ViewerInputTest.cpp
   tests/SelfContactRecordsTest.cpp tests/NativeContactRecordsTest.cpp tests/NativeGroupRecordsTest.cpp tests/EnvironmentRecordsTest.cpp tests/EnvironmentMeshTest.cpp)
 target_link_libraries(robo_dyna_physical_run_check PRIVATE robo_dyna_physical_run_records GTest::gtest_main)
 target_compile_options(robo_dyna_physical_run_check PRIVATE -fno-fast-math -ffp-contract=off)
@@ -31,3 +31,11 @@ set_tests_properties(physical_wall_composition PROPERTIES RUN_SERIAL TRUE PROCES
 if(ROBO_DYNA_PHYSICAL_RUN_ORIGINAL)
   include(Original.cmake)
 endif()
+
+add_test(NAME physical_replay_preflight COMMAND robo_dyna_physical_run_check
+  --gtest_filter=PhysicalReplayPreflight.*:PhysicalReplayBudget.*)
+set_tests_properties(physical_replay_preflight PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_test(NAME physical_replay_preflight_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/replay_preflight/verify_sources.py")
+set_tests_properties(physical_replay_preflight_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

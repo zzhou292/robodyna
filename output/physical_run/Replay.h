@@ -17,6 +17,10 @@ struct Sample {
 // before this immutable result is returned; seek revalidates payload hashes.
 class Replay {
   public:
+    // Allocation admission only: no files, source authority or accepted state.
+    // The context/configuration must be the writer's actual prepared values.
+    // Does not replace Open's source, record, inventory or content validation.
+    static std::size_t Preflight(const records::Context&,const Configuration&,ReplayLimits={});
     static Replay Open(const std::filesystem::path&,const records::RecordFile& expected_manifest,
         const records::source::SourceInputs&,const std::string& expected_mapping_sha256,ReplayLimits={});
     const records::source::PreparedSourceMapping& mapping() const noexcept;

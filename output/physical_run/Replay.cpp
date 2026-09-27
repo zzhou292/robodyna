@@ -19,9 +19,7 @@ struct Replay::Data {
 };
 Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,
     const records::source::SourceInputs& source,const std::string& digest,ReplayLimits limits) {
-    Require(limits.host_bytes && limits.host_bytes<=512u<<20 &&
-        limits.source.host_bytes<=limits.host_bytes && (128u<<20)<=limits.host_bytes-limits.source.host_bytes,
-        "Physical replay source and record workspace exceed host cap");
+    replay_detail::CheckLimits(limits);
     const auto manifest=ReadManifest(array_json::Parse(ReadFile(root,file,MetadataCap),MetadataCap));
     Require(manifest.identity.source_mapping_sha256==digest,"Physical run mapping differs from caller authority");
     auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));

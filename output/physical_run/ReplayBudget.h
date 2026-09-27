@@ -1,6 +1,8 @@
 #pragma once
 #include "Replay.h"
 namespace crash::output::physical_run::replay_detail {
+// Same early envelope used by Open before any I/O and by allocation preflight.
+void CheckLimits(ReplayLimits);
 struct Memory {
     std::size_t interval_workspace=0,frame_workspace=0,environment_workspace=0;
     std::size_t sequential_workspace=0,peak_host_bytes=0;

@@ -24,6 +24,9 @@ class IntervalWriter {
 // declared chunk/planned horizon and observation column shape, even for a short
 // accepted prefix. It excludes retained source/frame replay storage.
 std::size_t IntervalReadStagingBytes(Profile,std::uint64_t planned,std::size_t file_cap);
+// Shares the reader's exact workspace admission; callers may reuse a staging
+// byte count already computed by IntervalReadStagingBytes.
+void CheckIntervalReadWorkspace(std::size_t staging_bytes,std::size_t host_cap);
 Sequence ReadIntervals(const std::filesystem::path&,const records::Context&,Profile,
     std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>&,
     std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>&);

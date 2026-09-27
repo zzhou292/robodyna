@@ -3,6 +3,11 @@
 #include "lib_utils/BoundedArena.h"
 #include <algorithm>
 namespace crash::output::physical_run::replay_detail {
+void CheckLimits(ReplayLimits limits) {
+    Require(limits.host_bytes && limits.host_bytes<=512u<<20 &&
+        limits.source.host_bytes<=limits.host_bytes && (128u<<20)<=limits.host_bytes-limits.source.host_bytes,
+        "Physical replay source and record workspace exceed host cap");
+}
 Memory Budget(const records::Context& context,const Configuration& config,
               std::size_t source_bytes,std::size_t host_cap) {
     Require(host_cap && host_cap<=512u<<20 && source_bytes<=host_cap &&

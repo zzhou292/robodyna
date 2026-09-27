@@ -1,4 +1,5 @@
 #include "State.h"
+#include "output/physical_run/Replay.h"
 #include "output/full_shell/FixedStepHorizon.h"
 #include <algorithm>
 namespace crash::cases::vehicle_native_contact {
@@ -55,9 +56,14 @@ PreparedRun PreparedRun::Prepare(const VehicleContactStartup& source, RunConfig 
     f.mapping_bytes = next->mapping.payload_bytes();
     f.preparation_peak_host_bytes = preparation;
     f.capture = output::physical_frames::PhysicalAcceptedFrames::Preflight(next->mapping, context, next->config.capture);
+    const auto request = output::physical_run::MakeEnvironmentRequest(context, horizon.intervals,
+        horizon.requested_duration_s, next->config.samples, next->config.archive_bytes);
     f.archive = output::physical_run::RunArchive::PreflightWithEnvironment(next->mapping, context,
-        output::physical_run::MakeEnvironmentRequest(context, horizon.intervals, horizon.requested_duration_s,
-            next->config.samples, next->config.archive_bytes), next->profile, next->config.archive);
+        request, next->profile, next->config.archive);
+    // Admit the same normal reader before Execute can create a physical owner.
+    // Its existing outer 512MiB reservation and all reader checks stay unchanged.
+    (void)output::physical_run::Replay::Preflight(context,
+        {context.identity(), next->profile, request.archive, context.point_layout_sha256(), false, true});
     const auto owner_phase = Add(base.peak_host_bytes, Add(f.mapping_bytes, controller));
     // Capture's published bound already contains the same mapping payload.
     // Archive and capture peaks are conservatively allowed to coexist.
