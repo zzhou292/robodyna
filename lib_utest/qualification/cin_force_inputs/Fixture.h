@@ -33,8 +33,20 @@ inline cin::StageReport StagedForce(Packet& p, bool reverse = false) {
   if (first != cin_advance::NoFailure) {
     return {cin::StageStatus::InvalidInput, UINT32_MAX, std::uint32_t(first)};
   }
-  result = cin::detail::CheckForceAfterNodes(input.model, force);
-  if (!result) return result;
+  if (!constraints::tied_shell::detail::math::Finite(*force.numerical_mass)) return {cin::StageStatus::InvalidInput};
+  for (unsigned phase = 0; phase < 2; ++phase) {
+    const auto count = phase ? input.model.row_count : input.model.witness_count;
+    first = cin_advance::NoFailure;
+    for (std::uint32_t i = 0; i < count; ++i) {
+      const auto index = reverse ? count-1-i : i;
+      const auto report = phase ? cin::detail::CheckForceRow(input.model, force, index)
+          : cin::detail::CheckForceWitness(input.model, force, index);
+      if (!report) first = std::min(first, static_cast<cin_advance::FailureKey>(index));
+    }
+    if (first != cin_advance::NoFailure) return phase
+        ? cin::detail::CheckForceRow(input.model, force, std::uint32_t(first))
+        : cin::StageReport{cin::StageStatus::SourceMismatch};
+  }
   for (std::uint32_t index = 0; index < Nodes; ++index) {
     const auto node = reverse ? Nodes-1-index : index;
     force.entry_inertia[node] = force.inertia[node];

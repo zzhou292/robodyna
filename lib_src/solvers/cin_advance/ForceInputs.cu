@@ -16,9 +16,27 @@ __global__ void CheckNodes(Input input) {
     }
   }
 }
-__global__ void CompleteInputs(Input input) {
-  Complete(input);
+__global__ void CompleteNodeInputs(Input input) { CompleteNodes(input); }
+__global__ void CheckWitnesses(Input input) {
+  if (input.control->status != NodalStatus::Ok) return;
+  const auto force = ForceView(input);
+  for (std::uint32_t witness = blockIdx.x*blockDim.x+threadIdx.x;
+       witness < input.model.witness_count; witness += gridDim.x*blockDim.x) {
+    if (!cin::detail::CheckForceWitness(input.model, force, witness))
+      atomicMin(input.input_failure, static_cast<FailureKey>(witness));
+  }
 }
+__global__ void CompleteWitnessInputs(Input input) { CompleteWitnesses(input); }
+__global__ void CheckRows(Input input) {
+  if (input.control->status != NodalStatus::Ok) return;
+  const auto force = ForceView(input);
+  for (std::uint32_t row = blockIdx.x*blockDim.x+threadIdx.x;
+       row < input.model.row_count; row += gridDim.x*blockDim.x) {
+    if (!cin::detail::CheckForceRow(input.model, force, row))
+      atomicMin(input.input_failure, static_cast<FailureKey>(row));
+  }
+}
+__global__ void CompleteInputs(Input input) { CompleteRows(input); }
 __global__ void CopyEntryInertia(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
   const auto force = ForceView(input);
@@ -38,6 +56,24 @@ cudaError_t Launch(const Input& input, cudaStream_t stream) {
   CheckNodes<<<blocks, threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
+  CompleteNodeInputs<<<1, 1, 0, stream>>>(input);
+  error = cudaGetLastError();
+  if (error != cudaSuccess) return error;
+  if (input.model.witness_count) {
+    const auto witness_blocks = 1+(input.model.witness_count-1)/threads;
+    CheckWitnesses<<<witness_blocks, threads, 0, stream>>>(input);
+    error = cudaGetLastError();
+    if (error != cudaSuccess) return error;
+  }
+  CompleteWitnessInputs<<<1, 1, 0, stream>>>(input);
+  error = cudaGetLastError();
+  if (error != cudaSuccess) return error;
+  if (input.model.row_count) {
+    const auto row_blocks = 1+(input.model.row_count-1)/threads;
+    CheckRows<<<row_blocks, threads, 0, stream>>>(input);
+    error = cudaGetLastError();
+    if (error != cudaSuccess) return error;
+  }
   CompleteInputs<<<1, 1, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;

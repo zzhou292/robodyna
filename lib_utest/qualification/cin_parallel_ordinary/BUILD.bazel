@@ -3,7 +3,8 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 cc_library(
     name = "fixture",
-    visibility = ["//lib_utest/qualification/cin_parallel_drift:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_drift:__pkg__",
                   "//lib_utest/qualification/cin_parallel_recovery:__pkg__",
                   "//lib_utest/qualification/cin_force_transfers:__pkg__",
                   "//lib_utest/qualification/cin_parallel_groups:__pkg__",
@@ -43,7 +44,8 @@ cuda_test(
 filegroup(
     name = "device_packet_sources",
     srcs = ["DevicePacket.cu", "Serial.cu"],
-    visibility = ["//lib_utest/qualification/cin_parallel_drift:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_drift:__pkg__",
                   "//lib_utest/qualification/cin_parallel_recovery:__pkg__",
                   "//lib_utest/qualification/cin_force_transfers:__pkg__",
                   "//lib_utest/qualification/cin_parallel_groups:__pkg__",
@@ -55,14 +57,16 @@ filegroup(
 filegroup(
     name = "serial_host_source",
     srcs = ["SerialHost.cpp"],
-    visibility = ["//lib_utest/qualification/cin_force_transfers:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__",
+                  "//lib_utest/qualification/cin_force_transfers:__pkg__",
                   "//lib_utest/qualification/cin_parallel_groups:__pkg__"],
 )
 
 filegroup(
     name = "owner_test_sources",
     srcs = ["OwnerTest.cu"],
-    visibility = ["//lib_utest/qualification/cin_force_transfers:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__",
+                  "//lib_utest/qualification/cin_force_transfers:__pkg__",
                   "//lib_utest/qualification/cin_parallel_groups:__pkg__",
                   "//lib_utest/qualification/cin_parallel_capture:__pkg__"],
 )

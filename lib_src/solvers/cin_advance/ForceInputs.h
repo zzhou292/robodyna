@@ -73,6 +73,39 @@ TL_CIN_INPUT_HD inline bool Complete(const Input& input) noexcept {
   return true;
 }
 
+// Resolve one complete phase before beginning independent checks for the next.
+// The existing key is reused only after its prior value has been consumed.
+TL_CIN_INPUT_HD inline bool CompleteNodes(const Input& input) noexcept {
+  if (input.control->status != NodalStatus::Ok) return false;
+  if (*input.input_failure != NoFailure) {
+    RejectStage(input, {cin::StageStatus::InvalidInput, UINT32_MAX,
+        static_cast<std::uint32_t>(*input.input_failure)});
+    return false;
+  }
+  if (!constraints::tied_shell::detail::math::Finite(*ForceView(input).numerical_mass)) {
+    RejectStage(input, {cin::StageStatus::InvalidInput});
+    return false;
+  }
+  return true;
+}
+TL_CIN_INPUT_HD inline bool CompleteWitnesses(const Input& input) noexcept {
+  if (input.control->status != NodalStatus::Ok) return false;
+  if (*input.input_failure != NoFailure) {
+    RejectStage(input, {cin::StageStatus::SourceMismatch});
+    return false;
+  }
+  return true;
+}
+TL_CIN_INPUT_HD inline bool CompleteRows(const Input& input) noexcept {
+  if (input.control->status != NodalStatus::Ok) return false;
+  if (*input.input_failure != NoFailure) {
+    RejectStage(input, cin::detail::CheckForceRow(input.model, ForceView(input),
+        static_cast<std::uint32_t>(*input.input_failure)));
+    return false;
+  }
+  return true;
+}
+
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance::force_inputs
 #undef TL_CIN_INPUT_HD

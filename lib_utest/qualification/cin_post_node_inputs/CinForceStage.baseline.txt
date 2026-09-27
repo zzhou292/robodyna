@@ -34,47 +34,34 @@ TL_TIED_PATCH_HD inline StageReport CheckForceNode(StageView model, ForceTrial t
   }
   return {};
 }
-// Independent leaves retain the exact serial read and local failure order.
-TL_TIED_PATCH_HD inline StageReport CheckForceWitness(StageView model, ForceTrial trial,
-    std::uint32_t w) noexcept {
-  if (model.first_witness && (model.first_witness[w] > w ||
-      trial.witness_activity[w] != trial.witness_activity[model.first_witness[w]])) {
-    return {StageStatus::SourceMismatch};
-  }
-  return {};
-}
-TL_TIED_PATCH_HD inline StageReport CheckForceRow(StageView model, ForceTrial trial,
-    std::uint32_t r) noexcept {
-  const auto row = model.rows[r];
-  if (row.secondary >= model.node_count || !row.witnesses.count ||
-      row.witnesses.offset > model.witness_count ||
-      row.witnesses.count > model.witness_count-row.witnesses.offset ||
-      !Nonnegative(trial.saved_secondary_mass[r]) || !Nonnegative(trial.saved_secondary_inertia[r])) {
-    return {StageStatus::InvalidInput, r};
-  }
-  bool active = false;
-  for (std::uint32_t w = 0; w < row.witnesses.count; ++w) {
-    const auto flag = trial.witness_activity[row.witnesses.offset+w];
-    if (flag != 1 && flag != 2) return {StageStatus::PendingReleaseEligibility, r, row.secondary};
-    active = active || flag == 1;
-  }
-  if (!active) return {StageStatus::PendingReleaseEligibility, r, row.secondary};
-  for (const auto node : row.masters) {
-    if (node >= model.node_count || node == row.secondary || model.dependent_nodes[node]) {
-      return {StageStatus::ConflictingRole, r, node};
-    }
-  }
-  return {};
-}
 TL_TIED_PATCH_HD inline StageReport CheckForceAfterNodes(StageView model, ForceTrial trial) noexcept {
   if (!tied_shell::detail::math::Finite(*trial.numerical_mass)) return {StageStatus::InvalidInput};
   for (std::uint32_t w = 0; w < model.witness_count; ++w) {
-    const auto report = CheckForceWitness(model, trial, w);
-    if (!report) return report;
+    if (model.first_witness && (model.first_witness[w] > w ||
+        trial.witness_activity[w] != trial.witness_activity[model.first_witness[w]])) {
+      return {StageStatus::SourceMismatch};
+    }
   }
   for (std::uint32_t r = 0; r < model.row_count; ++r) {
-    const auto report = CheckForceRow(model, trial, r);
-    if (!report) return report;
+    const auto row = model.rows[r];
+    if (row.secondary >= model.node_count || !row.witnesses.count ||
+        row.witnesses.offset > model.witness_count ||
+        row.witnesses.count > model.witness_count-row.witnesses.offset ||
+        !Nonnegative(trial.saved_secondary_mass[r]) || !Nonnegative(trial.saved_secondary_inertia[r])) {
+      return {StageStatus::InvalidInput, r};
+    }
+    bool active = false;
+    for (std::uint32_t w = 0; w < row.witnesses.count; ++w) {
+      const auto flag = trial.witness_activity[row.witnesses.offset+w];
+      if (flag != 1 && flag != 2) return {StageStatus::PendingReleaseEligibility, r, row.secondary};
+      active = active || flag == 1;
+    }
+    if (!active) return {StageStatus::PendingReleaseEligibility, r, row.secondary};
+    for (const auto node : row.masters) {
+      if (node >= model.node_count || node == row.secondary || model.dependent_nodes[node]) {
+        return {StageStatus::ConflictingRole, r, node};
+      }
+    }
   }
   return {};
 }
