@@ -50,7 +50,8 @@ TEST(QephMixedActivityHost,ParentPriorityAndRawRolesPreserveAvailability) {
   EXPECT_LT(m::MixedActivityKey(2,E::Unsupported),m::MixedActivityKey(3,E::Elastic));
   EXPECT_LT(m::MixedActivityKey(524287,E::Unsupported),UINT32_MAX);
   for (unsigned raw = 0; raw < 256; ++raw) {
-    const bool valid = raw == unsigned(fe::ShellSectionLaw::LayeredLaw44Nip3) ||
+    const bool valid = raw == unsigned(fe::ShellSectionLaw::GlobalLaw1Npt0) ||
+        raw == unsigned(fe::ShellSectionLaw::LayeredLaw44Nip3) ||
         raw == unsigned(fe::ShellSectionLaw::LayeredLaw1Nip3) || raw == unsigned(fe::ShellSectionLaw::RigidSkin);
     EXPECT_EQ(m::ValidMixedActivityRole(static_cast<std::uint8_t>(raw)),valid);
   }
@@ -63,6 +64,8 @@ TEST(QephMixedActivityHost,ParentPriorityAndRawRolesPreserveAvailability) {
   EXPECT_EQ(m::CheckMixedActivity(fe::ShellSectionLaw::LayeredLaw1Nip3,plastic,elastic),E::None);
   elastic.point[1].stress[3] = std::numeric_limits<double>::quiet_NaN();
   EXPECT_EQ(m::CheckMixedActivity(fe::ShellSectionLaw::RigidSkin,plastic,elastic),E::None);
+  // Baseline global LAW1 has no layered material-point state to consume.
+  EXPECT_EQ(m::CheckMixedActivity(fe::ShellSectionLaw::GlobalLaw1Npt0,plastic,elastic),E::None);
 }
 
 TEST(QephMixedActivityHost,FreshRoleBytesMatchTypedAgreementAndKeepErrorOrder) {
