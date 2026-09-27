@@ -22,14 +22,14 @@ def generated():
   raw=(QUAL/name).read_bytes();assert hashlib.sha256(raw).hexdigest()==expected,name
   original=raw.decode();text=original
   if name.endswith('NativeCaller.F90'):
-   text=insert(text,'  use IC1_NATIVE_OBSERVATIONS\n','  use H24_ADAPTER_OBSERVATIONS\n')
+   text=insert(text,'  use IC1_NATIVE_OBSERVATIONS\n','  use H24_ADAPTER_OBSERVATIONS_MOD\n')
    text=insert(text,'  stages=0;status=1;center_contacts=0;corner_contacts=0\n','  call H24_RESET()\n')
    text=insert(text,'  stages=1\n','  call H24_GEOMETRY(geometry)\n')
    text=insert(text,'  hg_sti=sti(1);stages=7\n','  call H24_FORCE(force,0,2)\n')
    text=insert(text,'  stages=31\n','  call H24_FORCE(force,48,4)\n')
    text=insert(text,'  values=result;status=0\n','  call H24_PUBLISH()\n')
   else:
-   text=insert(text,'      USE HEPH_NATIVE_PACKETS\n','      USE H24_ADAPTER_OBSERVATIONS\n')
+   text=insert(text,'      USE HEPH_NATIVE_PACKETS\n','      USE H24_ADAPTER_OBSERVATIONS_MOD\n')
    text=insert(text,'     . SVIS)\n','      CALL H24_FORCE(F,24,3)\n')
   result[Path(name).name]=text
  return result

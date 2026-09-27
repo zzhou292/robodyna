@@ -1,5 +1,5 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
-module H24_ADAPTER_OBSERVATIONS
+module H24_ADAPTER_OBSERVATIONS_MOD
   use iso_c_binding,only:c_double,c_int
   use HEPH_NATIVE_PACKETS
   implicit none
@@ -55,7 +55,7 @@ contains
   end subroutine
 end module
 subroutine H24_ADAPTER_MODES(index,r,f)
-  use H24_ADAPTER_OBSERVATIONS
+  use H24_ADAPTER_OBSERVATIONS_MOD
   implicit none
   integer,intent(in)::index
   real(c_double),intent(in)::r(12),f(12)
@@ -63,7 +63,7 @@ subroutine H24_ADAPTER_MODES(index,r,f)
   snapshot(178:189)=r;snapshot(190:201)=f;calls(5)=calls(5)+1
 end subroutine
 subroutine h24_adapter_observations(values,counts,valid) bind(C,name='h24_adapter_observations')
-  use H24_ADAPTER_OBSERVATIONS
+  use H24_ADAPTER_OBSERVATIONS_MOD
   implicit none
   real(c_double),intent(out)::values(201)
   integer(c_int),intent(out)::counts(5),valid
