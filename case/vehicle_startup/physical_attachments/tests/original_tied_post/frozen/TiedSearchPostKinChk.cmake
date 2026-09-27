@@ -1,8 +1,7 @@
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchClassification.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchPostKinChkValues.cmake")
-add_library(robo_dyna_tied_search_post_kinchk STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedSearchPostKinChk.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/physical_attachments/OriginalTiedPost.cpp")
+add_library(robo_dyna_tied_search_post_kinchk STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedSearchPostKinChk.cpp")
 target_link_libraries(robo_dyna_tied_search_post_kinchk PUBLIC
   robo_dyna_tied_search_classification robo_dyna_tied_post_kinchk_values)
 target_compile_features(robo_dyna_tied_search_post_kinchk PUBLIC cxx_std_17)

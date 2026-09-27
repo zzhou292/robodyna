@@ -1,5 +1,5 @@
 #pragma once
-#include "OriginalSourceIO.h"
+#include "OriginalYaris.h"
 #include "PhysicalSelection.h"
 #include <optional>
 #include "modelio/physical_scope/PhysicalScope.h"
@@ -18,4 +18,5 @@ struct OriginalSources {
     modelio::solid_source::VehicleSolidSource solids;
     std::optional<modelio::beam18::Source> structural_beams;
 };
+std::string ReadOriginal(const std::filesystem::path&,std::size_t,const char* sha256);
 }

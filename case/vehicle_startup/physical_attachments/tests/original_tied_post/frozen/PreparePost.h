@@ -1,10 +1,11 @@
 #pragma once
 #include "../VehiclePhysicalAttachments.h"
-#include "../OriginalTiedPost.h"
 namespace crash::cases::vehicle_startup::physical_attachments::test {
 inline TiedSearchPostKinChk PreparePost(const modelio::physical_scope::PhysicalScope& source,
                                       const std::string& member) {
-        const auto finalized = FinalizeOriginalTiedSearch(source.tied_source(), member);
+        const auto geometry = tied::TiedShellSearchGeometry::Prepare(
+            tied::TiedShellPacking::Prepare(source.tied_source()), member);
+        const auto finalized = TiedSearchFinalized::Prepare(TiedSearchAssessment::Prepare(geometry));
         const auto read = [](const char* name, std::size_t cap) {
             const auto* path = std::getenv(name);
             output::Require(path && *path, "Explicit auxiliary/wall source fixture required");
@@ -15,6 +16,6 @@ inline TiedSearchPostKinChk PreparePost(const modelio::physical_scope::PhysicalS
         const auto context = tied::TiedClassificationContext::Prepare(auxiliary,
             source.point_mass_source().rigid_source(), read("ROBO_TIED_WALL_MEMBER",10604),
             tied::OriginalWallAssemblyPolicy::ReplaceWholeOriginalWallWithMeshWall);
-        return PrepareOriginalTiedPost(finalized, context);
+        return TiedSearchPostKinChk::Prepare(TiedSearchClassification::Prepare(finalized, context));
 }
 } // namespace crash::cases::vehicle_startup::physical_attachments::test

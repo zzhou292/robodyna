@@ -1,8 +1,6 @@
-#include "OriginalYaris.h"
 #include "OriginalSources.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h"
-#include "case/vehicle_startup/physical_attachments/OriginalTiedPost.h"
 #include "case/vehicle_self_contact/VehicleSelfContactSetup.h"
 #include <sstream>
 namespace crash::cases::vehicle_run {
@@ -10,15 +8,18 @@ namespace {
 vehicle_startup::TiedSearchPostKinChk Classify(const detail::OriginalSources& source,
     const OriginalPaths& paths,const std::string& auxiliary_member) {
     namespace tied=modelio::tied_shell;
-    const auto finalized=vehicle_startup::physical_attachments::FinalizeOriginalTiedSearch(
-        source.tied,source.member);
+    const auto geometry=tied::TiedShellSearchGeometry::Prepare(
+        tied::TiedShellPacking::Prepare(source.tied),source.member);
+    const auto finalized=vehicle_startup::TiedSearchFinalized::Prepare(
+        vehicle_startup::TiedSearchAssessment::Prepare(geometry));
     const auto auxiliary=tied::TiedAuxiliaryConstraints::Prepare(source.tied,auxiliary_member,
         tied::OriginalWallPolicy::ReplaceWithMeshWall);
     const auto context=tied::TiedClassificationContext::Prepare(auxiliary,source.rigid,
         detail::ReadOriginal(paths.original_wall_member,10604,
             "ef02a4701b37d27cec81b1f9a02ab555f55ac61f68b070e8b0c18dc23b1d5155"),
         tied::OriginalWallAssemblyPolicy::ReplaceWholeOriginalWallWithMeshWall);
-    return vehicle_startup::physical_attachments::PrepareOriginalTiedPost(finalized,context);
+    return vehicle_startup::TiedSearchPostKinChk::Prepare(
+        vehicle_startup::TiedSearchClassification::Prepare(finalized,context));
 }
 }
 OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Settings settings,
