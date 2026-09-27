@@ -7,9 +7,9 @@ TEST(ControlledResidentHost, CompleteRosterProfileAndExactBudgets) {
   OwnerFixture fixture(false,true,{.001,1000,1});auto c=fixture.Configuration();s::BatchForecast f;
   ASSERT_TRUE(s::Batch::Forecast(c,fixture.model,f));
   d::ArenaLayout layout;ASSERT_TRUE(d::Plan(c,fixture.model,layout));
-  EXPECT_EQ(layout.controlled.reference24.count,1u);EXPECT_EQ(layout.controlled.reference90.count,1u);
-  EXPECT_EQ(layout.controlled.packets.count,5u);EXPECT_EQ(layout.controlled.members.count,5u);
-  EXPECT_EQ(layout.controlled.workspace.count,1u);
+  EXPECT_EQ(layout.controlled.reference24.count,8u);EXPECT_EQ(layout.controlled.reference90.count,8u);
+  EXPECT_EQ(layout.controlled.packets.count,19u);EXPECT_EQ(layout.controlled.members.count,19u);
+  EXPECT_EQ(layout.controlled.workspace.count,d::controlled::Blocks);
   c.limits.max_device_bytes=f.device_bytes-1;EXPECT_FALSE(s::Batch::Forecast(c,fixture.model,f));
   c=fixture.Configuration();ASSERT_TRUE(s::Batch::Forecast(c,fixture.model,f));
   c.limits.max_device_bytes=f.device_bytes;c.limits.max_host_bytes=f.startup_host_bytes;

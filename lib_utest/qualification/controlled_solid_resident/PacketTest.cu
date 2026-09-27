@@ -3,7 +3,7 @@
 namespace controlled_resident_test {
 TEST_F(ControlledResidentCuda, AuthenticatedMixedPacketOrAndFailingLaneBarrier) {
   OwnerFixture fixture(false,true,{.001,1000,1},true,true);s::Batch batch;
-  ASSERT_EQ(fixture.model.solid24().size(),2u);
+  ASSERT_EQ(fixture.model.solid24().size(),9u);
   ASSERT_EQ(fixture.model.control_selection()->packets()[0].source.member_count,2u);
   ASSERT_TRUE(Good(batch.InitializeJoined(fixture.Configuration(),fixture.model)));
   const auto& header=Peer::HeaderForPacketProbe(batch);auto* device=Peer::DeviceForPacketProbe(batch);

@@ -13,8 +13,8 @@ TEST_F(ControlledResidentCuda, SameOwnerTypedNativeHistoryAssemblyAndRepeatedSlo
       ASSERT_TRUE(rig.Prepare(token,assembly,prepared));ASSERT_TRUE(rig.ReferenceStep(prepared));
       s::BatchDiagnostics proposed;ASSERT_TRUE(Good(rig.batch.EvaluateCandidate(rig.owner,token,prepared,&proposed)));
       Results next(rig.fixture.model);ASSERT_TRUE(Good(rig.batch.CopyPreparedResultsWithControls(proposed,next.Buffers())));rig.Compare(next);ASSERT_FALSE(HasFailure());
-      EXPECT_EQ(proposed.distortion_work_increment_j[1],next.h24[0].cache.response.distortion_work_j);
-      EXPECT_EQ(proposed.distortion_work_increment_j[4],next.foam[0].cache.response.distortion_work_j);
+      double hwork=0,fwork=0;for(const auto& x:next.h24)hwork+=x.cache.response.distortion_work_j;for(const auto& x:next.foam)fwork+=x.cache.response.distortion_work_j;
+      EXPECT_EQ(proposed.distortion_work_increment_j[1],hwork);EXPECT_EQ(proposed.distortion_work_increment_j[4],fwork);
       Results old(rig.fixture.model);s::BatchDiagnostics unchanged;ASSERT_TRUE(rig.Read(old,unchanged));EXPECT_EQ(unchanged.epoch,step);
       EXPECT_EQ(std::memcmp(&old.h24[0].history.native()->values,&accepted.h24[0].history.native()->values,sizeof(old.h24[0].history.native()->values)),0);
       ASSERT_TRUE(Good(Peer::Commit(rig.batch,rig.owner,token,prepared,proposed)));

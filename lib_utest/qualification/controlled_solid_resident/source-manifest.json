@@ -1256,7 +1256,7 @@
     {
       "path": "lib_src/elements/solids/resident/controlled/Storage.h",
       "bytes": 3257,
-      "sha256": "7301031083ff128dd85d9848a09eea53ea28ffba5e5c327ae4a133d382351cf6"
+      "sha256": "10733beaf6659b51931f440483a9e4b5dff513c2d7fa0a518a551a52b9bac55b"
     },
     {
       "path": "lib_src/elements/solids/resident/controlled/Upload.cpp",
@@ -2125,28 +2125,28 @@
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CMakeLists.txt",
-      "bytes": 2264,
-      "sha256": "cb7b82825bef1d32ca53cce8423b0040b648d0e55d55f2517f43496c1a281c3c"
+      "bytes": 2280,
+      "sha256": "6e37434c742a5d936466593057d9fca95ab13d6b9b235f28a400af5de3237ab3"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CapacityTest.cpp",
-      "bytes": 2691,
-      "sha256": "a0e3ac3d1c216e27b58981690e98b061bed9d92f1f6f8ad598dbdfb86350d61a"
+      "bytes": 2867,
+      "sha256": "4f94d70efcfeeba3a4a9908e9622486fb11c7fea7a3811127dade984815972f5"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/HostTest.cpp",
-      "bytes": 4350,
-      "sha256": "567e70cfecc2fb8d82f1be208c79612f296f92a4a35b5223a4d317a3a7827a03"
+      "bytes": 4371,
+      "sha256": "39f528fafa72e804a574a9391048833af1734b6e42a9ee09cff4ab338a2e94ba"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/OwnerTest.cu",
-      "bytes": 5037,
-      "sha256": "e8e3d9c37308a58b7c7e04391c785e7eaf866f681cdd4f53b951bf1c00704da8"
+      "bytes": 5120,
+      "sha256": "57a631d1ec11db27c85d01b6157cea49cba4d7d444264e284626bc913f2daa0d"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/PacketTest.cu",
       "bytes": 4654,
-      "sha256": "e0a54b937a5c3137d7379d7c84f0fad662942977980b6d226833b41f131b675b"
+      "sha256": "9b5054d6fa5fe41186a6154b416849724d186dfa8c950cedc3f8b73c40d3868f"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/Rig.cu",
@@ -2157,6 +2157,16 @@
       "path": "lib_utest/qualification/controlled_solid_resident/Rig.h",
       "bytes": 2257,
       "sha256": "f597623182ecc67bfb9fb60d42a2755252f971fb9003744ee7c6ed14df9878fa"
+    },
+    {
+      "path": "lib_utest/qualification/controlled_solid_resident/Snapshot.h",
+      "bytes": 4854,
+      "sha256": "081b99e829d02e84fc116fe4cfa9460d35b824662a969fa0d44620deb6761c62"
+    },
+    {
+      "path": "lib_utest/qualification/controlled_solid_resident/SnapshotTest.cu",
+      "bytes": 1940,
+      "sha256": "48fe135be1a4045535ec3bd5aec93d5b1d0c9a4baf6b29a74320a5053088973e"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/verify_sources.py",
@@ -2220,8 +2230,8 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.cpp",
-      "bytes": 6120,
-      "sha256": "35591d60372651907876e43a993720e5e650fec5f00ca4a699a5bb9beba49247"
+      "bytes": 6945,
+      "sha256": "691b4ed143a8458d3c0262981bf595943162d95f05d0d9943aad477092959da3"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.h",
@@ -2539,5 +2549,10 @@
     },
     "scope": "Named192MiB caller opt-in, V3-only larger admission ceiling; legacy128MiB and host256MiB unchanged. No layout arithmetic, allocation order or mechanics changed.",
     "independent_source_review": "hourglass_review at3f77eec5; count-only maximum-curve layout independently reproduced"
+  },
+  "controlled_packet_worker_gate": {
+    "kind": "eight_cta_candidate",
+    "base": "5a78feb9",
+    "scope": "Identical19-packet force-producing model: eight H24 packets then eight LAW90 packets, followed by three legacy packets. Numerical snapshot includes all controlled numeric histories/forces/STI/work and complete BatchDiagnostics; no pointer/padding comparisons."
   }
 }

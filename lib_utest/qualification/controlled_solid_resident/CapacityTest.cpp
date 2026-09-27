@@ -21,13 +21,13 @@ TEST(ControlledResidentCapacity, CompleteControlledCountShapeRejects128AndFits19
   // admitted curve pool is used, so actual curve counts cannot exceed this arena.
   d::Counts n{908,2341,0,1,12,s::BatchLimits{}.max_curve_points,386,1345,3,1};
   n.controlled.h24=2341;n.controlled.foam=1345;n.controlled.packets=47;
-  n.controlled.members=4980;n.controlled.workers=512;
-  for(unsigned i=0;i<4;++i)n.controlled.worker_begin[i]=128*i;
+  n.controlled.members=4980;n.controlled.workers=d::controlled::Blocks*128;
+  for(unsigned i=0;i<d::controlled::Blocks;++i)n.controlled.worker_begin[i]=128*i;
   d::ArenaLayout layout;layout.bytes=77;
   EXPECT_FALSE(d::MakeLayout(n,c,layout));EXPECT_EQ(layout.bytes,77u);
   c.limits=s::SourceControlledBatchLimits();ASSERT_TRUE(d::MakeLayout(n,c,layout));
-  EXPECT_EQ(layout.bytes,152470008u);EXPECT_EQ(layout.staging_bytes,19880688u);
-  EXPECT_EQ(layout.controlled.workspace.bytes,17993728u);
+  EXPECT_EQ(layout.bytes,152470008u+(d::controlled::Blocks-4)*(128*sizeof(d::controlled::Workspace)+sizeof(std::size_t)));EXPECT_EQ(layout.staging_bytes,19880688u);
+  EXPECT_EQ(layout.controlled.workspace.bytes,d::controlled::Blocks*128*sizeof(d::controlled::Workspace));
   RecordProperty("complete_count_shape_max_curve_device_bytes",layout.bytes);
   RecordProperty("complete_count_shape_host_staging_bytes",layout.staging_bytes);
   RecordProperty("complete_count_shape_live_proof_bytes",layout.proof.bytes);

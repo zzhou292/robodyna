@@ -45,36 +45,43 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     h.source_node_id[7]=h.source_node_id[6];h.position_m[7]=h.position_m[6];}
     EXPECT_EQ(fe::solid24::InitializeReference(h,legacy.input24.reference),fe::solid24::Status::Success);
   }
-  s::Input24 pair[2]{legacy.input24,legacy.input24};
-  if(packet_pair){
-    auto h=f.source.b;h.source_element_id=19102;
-    h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
-    EXPECT_EQ(fe::solid24::InitializeReference(h,pair[1].reference),fe::solid24::Status::Success);
-    input.solid24={pair,2};
+  std::vector<s::Input24> h24{legacy.input24};
+  std::vector<s::Input18Law90> foams{foam};
+  if(controls) {
+    // Eight independent H24 packets followed by eight LAW90 packets force all
+    // eight workers to reuse storage across types; four-worker replay uses the
+    // identical authenticated packet roster and element count.
+    if(packet_pair){auto p=legacy.input24;auto h=f.source.b;h.source_element_id=19102;
+      h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
+      EXPECT_EQ(fe::solid24::InitializeReference(h,p.reference),fe::solid24::Status::Success);h24.push_back(p);}
+    for(unsigned i=1;i<8;++i){
+      auto p=legacy.input24;auto h=f.source.b;h.source_element_id=19110+i;
+      h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
+      EXPECT_EQ(fe::solid24::InitializeReference(h,p.reference),fe::solid24::Status::Success);h24.push_back(p);
+      auto other=foam;auto ref=foam.reference.input();ref.source_element_id=19200+i;
+      EXPECT_EQ(fe::solid18::total_strain::InitializeReference90(ref,other.reference),fe::solid18::Status::Success);foams.push_back(other);
+    }
+    input.solid24={h24.data(),h24.size()};input.solid18_law90={foams.data(),foams.size()};
   }
   std::vector<s::control::SourceParent> rows;
   std::vector<s::control::NativePacket> packets;
   std::vector<std::uint64_t> packet_members;
-  s::control::NativePartition partition{0,0,5,0,5};
+  s::control::NativePartition partition{0,0,19,0,19+unsigned(packet_pair)};
   if(controls) {
+    auto row=[&](const auto& ref,unsigned ctl){const auto& a=ref.input();
+      rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,ctl});
+      packet_members.push_back(a.source_element_id);};
     auto add=[&](const auto& ref,s::Family family,unsigned ctl) {
       const auto& a=ref.input();const auto p=packet_members.size();
-      rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,ctl});
-      packets.push_back({p+1,p,p,1,family,a.source_material_id,a.source_section_id,ctl});
-      packet_members.push_back(a.source_element_id);
+      packets.push_back({packets.size()+1,p,p,1,family,a.source_material_id,a.source_section_id,ctl});row(ref,ctl);
     };
-    // Different packet/family order, all IC0 rows, and block zero switches
-    // H24 -> LAW90 working union at packet indices zero and four.
-    add(legacy.input24.reference,s::Family::Solid24,1);
-    if(packet_pair){
-      const auto& a=pair[1].reference.input();
-      rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,1});
-      ++packets.back().member_count;packet_members.push_back(a.source_element_id);++partition.member_count;
-    }
+    add(h24[0].reference,s::Family::Solid24,1);
+    if(packet_pair){row(h24[1].reference,1);++packets.back().member_count;}
+    for(unsigned i=1+unsigned(packet_pair);i<h24.size();++i)add(h24[i].reference,s::Family::Solid24,1);
+    for(const auto& p:foams)add(p.reference,s::Family::Solid18Law90,1);
     add(legacy.input18.reference,s::Family::Solid18,0);
     add(rear.reference,s::Family::Solid18Law44,0);
     add(legacy.input6z.reference,s::Family::Solid6z,0);
-    add(foam.reference,s::Family::Solid18Law90,1);
     auto& c=input.controls;c.profile=s::control::Profile::SourceDeclared;c.source_instance_id=input.source_instance_id;
     c.units=units;c.native_nvsiz=128;c.compiled_mvsiz=129;
     c.parents={rows.data(),rows.size()};c.packets={packets.data(),packets.size()};

@@ -4,7 +4,7 @@
 #include "lib_utils/BoundedArena.h"
 #include "lib_src/elements/solids/control/Selection.h"
 namespace tl::fea::solids::batch_detail::controlled {
-inline constexpr unsigned Threads=128,Blocks=4;
+inline constexpr unsigned Threads=128,Blocks=8;
 struct Work24 {h24::Scratch scratch;h24::Result result;};
 struct Work90 {foam::Scratch scratch;foam::Result result;};
 struct Workspace {
