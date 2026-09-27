@@ -6,6 +6,9 @@ find_package(GTest REQUIRED)
 enable_testing()
 set(TL_DISTORTION_FORCE_CUDA OFF CACHE BOOL "Shared distortion CPU oracle" FORCE)
 add_subdirectory(../solid_distortion_force shared_distortion)
+# The frozen H24 oracle predates nested embedding and has a root-relative include.
+# Supply its actual prepared include directory without changing the frozen oracle.
+target_include_directories(solid24_ic1_native PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/shared_distortion/legacy_heph/native/prepared")
 set(TL_LAW90_SOLID18_FORCE_NATIVE ON CACHE BOOL "Independent LAW90 force" FORCE)
 set(TL_LAW90_SOLID18_FORCE_CUDA OFF CACHE BOOL "No unrelated GPU target" FORCE)
 add_subdirectory(../law90_solid18_force ordinary_force)
