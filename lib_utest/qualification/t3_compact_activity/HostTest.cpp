@@ -6,7 +6,8 @@
 namespace t3_compact_test {
 TEST(T3CompactActivityValues,CompleteFrozenLoopsMatchAllRolesEpochsAndRecordFaults) {
   for(unsigned epoch:{0u,1u,2u})for(unsigned mutation=0;mutation<24;++mutation) {
-    SCOPED_TRACE(epoch);SCOPED_TRACE(mutation);Fixture f(129,epoch);Mutate(f,mutation);
+    SCOPED_TRACE(epoch);
+    SCOPED_TRACE(mutation);Fixture f(129,epoch);Mutate(f,mutation);
     std::vector<std::uint8_t> old_flags,new_flags;
     const auto original=Serial(f,&old_flags);
     for(bool reverse:{false,true}) {

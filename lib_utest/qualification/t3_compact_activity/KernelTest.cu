@@ -3,7 +3,8 @@
 namespace t3_compact_test {
 TEST(T3CompactActivityCuda,CompleteFrozenPredicatesMatchAllRolesAndAdversarialRecords) {
   for(unsigned epoch:{0u,1u,2u})for(unsigned mutation=0;mutation<24;++mutation) {
-    SCOPED_TRACE(epoch);SCOPED_TRACE(mutation);Fixture f(129,epoch);Mutate(f,mutation);
+    SCOPED_TRACE(epoch);
+    SCOPED_TRACE(mutation);Fixture f(129,epoch);Mutate(f,mutation);
     std::vector<std::uint8_t> old_flags,new_flags;const auto expected=Serial(f,&old_flags);
     DeviceFixture device(f);const auto actual=Candidate(f,[&](Phase phase,auto& flags){return device.Read(phase,flags);},&new_flags);
     Same(actual,expected);if(actual.status==t::BatchStatus::Success)EXPECT_EQ(new_flags,old_flags);

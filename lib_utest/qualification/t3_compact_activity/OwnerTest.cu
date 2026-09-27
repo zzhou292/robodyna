@@ -23,7 +23,8 @@ TEST(T3CompactActivityOwner,ActualAcceptedAndPreparedQueriesMatchFullHistoriesAc
 }
 TEST(T3CompactActivityOwner,EveryCopyDrainAndPendingOrLaunchErrorPoisonsWithoutPublishing) {
   for(unsigned family=0;family<3;++family)for(unsigned point=1;point<=(family==2?8u:5u);++point) {
-    SCOPED_TRACE(family);SCOPED_TRACE(point);Stop();old::Rig rig;ASSERT_TRUE(rig.Initialize());
+    SCOPED_TRACE(family);
+    SCOPED_TRACE(point);Stop();old::Rig rig;ASSERT_TRUE(rig.Initialize());
     std::uint8_t flag=19;t::BatchDiagnostics diagnostics;const auto before=old::Bytes(diagnostics);Watch();
     if(family==0)probe.fail_copy=point;if(family==1)probe.fail_sync=point;if(family==2)probe.fail_error=point;
     EXPECT_EQ(rig.t3.CopyAcceptedParentActivity(rig.owner.accepted(),&flag,1,&diagnostics).status,t::BatchStatus::DeviceFailure);
