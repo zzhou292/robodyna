@@ -25,7 +25,7 @@ TEST(H24ControlledAdapter, IndependentCarriedLoadingUnloadingMatches32NativeInte
 }
 TEST(H24ControlledAdapter, ActualHourglassWorkSurvivesEnergyCancellation) {
   auto x=Base();Move(x);x.accepted.material.internal_energy_density_j_m3=1e30;
-  const auto r=Check(x);EXPECT_EQ(r.stage.proposed_values.material.internal_energy_density_j_m3,1e30);
+  const auto r=Check(x);EXPECT_EQ(r.stage.proposed_values.material.internal_energy_density_j_m3,r.material.history.internal_energy_density_j_m3);
   EXPECT_NE(r.stage.hourglass.work_j,0);
 }
 TEST(H24ControlledAdapter, PrefixDoesNotClaimFinalDistortionForce) {

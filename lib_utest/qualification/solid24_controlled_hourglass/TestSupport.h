@@ -96,7 +96,7 @@ inline native::History NativeHistory(const Case& x) {
   for(unsigned k=0;k<3;++k)for(unsigned j=0;j<4;++j)h.values[9+4*k+j]=x.accepted.controlled_hourglass.force_n[k][j];
   return h;
 }
-inline void Compare(const Case& x,const Trial& a,const NativeTrial& n) {
+inline void Compare(const Case& x,const Trial& a,const NativeTrial& n,bool check_work=true) {
   native::Ready(n.full);ASSERT_FALSE(::testing::Test::HasFailure());ASSERT_EQ(n.valid,1);
   for(int v:n.calls)ASSERT_EQ(v,1);
   const auto g=GeometryValues(a.geometry);std::array<double,187> legacy{};
@@ -117,7 +117,7 @@ inline void Compare(const Case& x,const Trial& a,const NativeTrial& n) {
     double scale=1e-20;for(unsigned i=edges[j];i<edges[j+1];++i)scale=std::max(scale,std::abs(nh[i]));
     for(unsigned i=edges[j];i<edges[j+1];++i){SCOPED_TRACE(i);ASSERT_TRUE(std::isfinite(h[i]));EXPECT_NEAR(h[i],nh[i],3e-10*scale);}
   }
-  EXPECT_TRUE(controlled_test::SignedWorkMatches(h,nh,x.interval.dt_s));
+  if(check_work)EXPECT_TRUE(controlled_test::SignedWorkMatches(h,nh,x.interval.dt_s));
   for(unsigned stage=0;stage<2;++stage) {
     const auto* f=stage?a.stage.world_native_force_before_distortion_n:a.stage.local_force_after_material_n;
     double scale=1e-20;for(unsigned i=0;i<24;++i)scale=std::max(scale,std::abs(n.snapshot[129+24*stage+i]));

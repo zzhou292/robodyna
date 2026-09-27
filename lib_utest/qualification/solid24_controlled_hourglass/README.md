@@ -12,9 +12,21 @@ is not interchangeable with legacy Pa history. No public owner/profile is enable
 The result explicitly names force/STI before distortion and includes native-slot
 world values for the later eight-node distortion leaf.
 
-This first gate is SI/metre only. It does not admit the vehicle's Millimetre
-reference profile or claim full native working-unit floor parity. That requires
-a separate full native-mm caller gate before widening admission.
+The direct BeforeDistortion value stage admits metre numerical operands only.
+The explicit UnitResponse boundary also implements the actual mm/Mg/s profile:
+it prepares private native-numeric reference/material values, runs the same
+geometry/material/HG source expressions with native literal floors, and converts
+all output dimensions back to SI. It reuses the existing contact UnitScale and
+UnitFactors also used by distortion; no new dimensional convention is inferred.
+The original physical reference/unit stamp is retained. Unsupported unit triples
+and stamp mismatches reject atomically. Public owner/profile enable remains gated.
+
+Working-unit tests execute the complete native H24 oracle in independent raw
+mm/Mg/s input values, then convert each labelled output channel. A tiny cell
+above/below the native1e-20mm3 reference/material floor distinguishes this from
+incorrect SI evaluation followed by relabelling. Carried work additionally uses
+a native-numeric modal witness: exact replay happens before unit conversion,
+so conversion rounding cannot masquerade as a work-order defect.
 
 End-to-end geometry/material and force stage comparisons reuse the existing
 HEPH native contract (3e-10 group scale and its1e-20 floor), because the geometry

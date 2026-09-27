@@ -5,3 +5,10 @@ cc_library(
     deps = ["//lib_src/elements/solid24:force", "//lib_src/elements/solid_common/controlled_hourglass:controlled_hourglass"],
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "working_units",
+    hdrs = ["UnitTypes.h", "UnitConversions.h", "UnitResponse.h"],
+    deps = [":before_distortion", "//lib_src/collision:radioss_type25_coefficients"],
+    visibility = ["//visibility:public"],
+)

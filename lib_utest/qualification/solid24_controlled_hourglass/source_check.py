@@ -14,4 +14,9 @@ assert native['NativeCaller.F90'].count('call IC1_DISTORTION(')==1
 assert native['NativeCaller.F90'].count('call IC1_ASSEMBLE(')==1
 assert native['shour_ctl.F90'].count('call H24_ADAPTER_MODES(')==1
 assert native['NativeMaterialForces.F'].index('CALL H24_FORCE(F,24,3)')<native['NativeMaterialForces.F'].index('CALL HEPH_NATIVE_SRROTA3(')
+units=(ROOT/'lib_src/elements/solid24/controlled_hourglass/UnitResponse.h').read_text()
+assert units.index('native_interval.position_m[n]=')<units.index('force_detail::CurrentKinematics')<units.index('force_detail::EvaluateMaterial')<units.index('status=EvaluateBeforeDistortion')<units.index('units_detail::StageToSi')<units.index('output=next;',units.index('units_detail::StageToSi'))
+assert 'input.profile.working_length=WorkingLengthUnit::Metre' in units
+assert 'reference.input().profile.working_length!=expected' in units
+assert 'native_modal_work.work=next.stage.hourglass.work_j' in units
 print(json.dumps({'status':'source_passed','shared_extraction_pins':True,'complete_native_sequence':True,'only_output_observations':True,'profile_enabled':False}))
