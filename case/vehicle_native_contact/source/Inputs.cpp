@@ -82,9 +82,11 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
         Add(effective.source->owned_payload_bytes(),modelio::solid_control_packets::Limits{}.startup_bytes));
     Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,resolution.startup_budget_bytes(),limits,"input_graph");
     const auto packets=modelio::solid_control_packets::NativePacketSource::Prepare(solids,*effective.source,artifact);
-    // Keep the conservative packet startup reservation in later coexistence
-    // budgets: it also covers retained direct/import authority, without guessing
-    // private allocations or claiming a cross-graph canonical discount.
+    // Packet parsing/index scratch has retired on return. Keep every retained
+    // import/direct/effective authority charged, plus the packet's public owned
+    // reservation. Earlier input_peak still records the full startup phase.
+    forecast.packet_authority_reservation=Add(Add(imported.data().forecast.total_bytes,direct.owned_payload_bytes()),
+        Add(effective.source->owned_payload_bytes(),packets.forecast().retained_bytes));
     return std::make_shared<const Inputs>(Inputs{std::move(members),canonical,resolution,domain,packets});
 }
 } // namespace crash::cases::vehicle_native_contact::source::detail
