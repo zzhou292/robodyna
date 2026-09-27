@@ -1,0 +1,405 @@
+{
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "baseline_tl": "e6560dcc83c0de2e2ad70f7bf8446913a0b88f2c",
+  "scope": "Full controlled HEPH source closure and reused independent geometry/material oracle; no force port or run yet",
+  "owned_native_sources": [
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solidez/szhour_ctl.F",
+      "bytes": 7428,
+      "sha256": "02f50673d11f6b85dd63ef1b040cdbd0db8d00fef70c00dee10ff95d5b95bb61",
+      "git_blob_sha1": "48206fff0dc5d5621036839d529506f937d8577a",
+      "source": "engine/source/elements/solid/solidez/szhour_ctl.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solidez/shour_ctl.F90",
+      "bytes": 18924,
+      "sha256": "7bf3c38fba26b0477d239774b7b064f850bc4a1078eb2f672c10ceddbb552ad9",
+      "git_blob_sha1": "1aa719a422dc67b9dea29088709207d50358df18",
+      "source": "engine/source/elements/solid/solidez/shour_ctl.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/sdistror_ini.F90",
+      "bytes": 8954,
+      "sha256": "1807f3ef6763873ced1daa8bac3743e217d143f49092ea57e2d0a50a12613381",
+      "git_blob_sha1": "a0deadb7758a01dc4c76f53cf397183278188745",
+      "source": "engine/source/elements/solid/solide/sdistror_ini.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/scre_sig3.F",
+      "bytes": 3421,
+      "sha256": "eb3a2d1f6cdfcc0db1fe800ce4dcc44c92c4526b5a4975dc7c65c41b3d4c20c4",
+      "git_blob_sha1": "7bf9a998acf300632438755fae4656e4a72307e1",
+      "source": "engine/source/elements/solid/solide/scre_sig3.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/s8for_distor.F",
+      "bytes": 20591,
+      "sha256": "84cf6644554002f19e8aace4a56a27ceb90a692515390a2c382a538d1f722c3b",
+      "git_blob_sha1": "35a919ee7d523068fc4eb014b6fd1c5a71be069a",
+      "source": "engine/source/elements/solid/solide/s8for_distor.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/sfor_visn8.F",
+      "bytes": 8724,
+      "sha256": "0744759b37b1bab166e8893eb4427bf3a60c3c38fe592554c0c8a44d898c6a22",
+      "git_blob_sha1": "a75caefd780d405d885b1349012ea97cdbf865df",
+      "source": "engine/source/elements/solid/solide/sfor_visn8.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/sfor_n2s4.F",
+      "bytes": 16111,
+      "sha256": "3d44ffd1e1604c6cee23049bd6a8c9e397cfb5bcd0ca9c80ce1dddc9c75630ea",
+      "git_blob_sha1": "d59617a372c619643434a516e0a1476e843bffe7",
+      "source": "engine/source/elements/solid/solide/sfor_n2s4.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/sfor_4n2s4.F90",
+      "bytes": 29828,
+      "sha256": "f8502ce5510d56b4042c1cba67a709185ad849d80bc17837e0b468ace0677e39",
+      "git_blob_sha1": "5d75944dd2f02af38d610b310847a961805fb965",
+      "source": "engine/source/elements/solid/solide/sfor_4n2s4.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/sfor_ns2s4.F90",
+      "bytes": 17033,
+      "sha256": "510716608036f229b35560694f47fbae8ab65121eec428b18afaf7ffb8c23adc",
+      "git_blob_sha1": "7085fb4d8929eb578973c60b5054fd27c92e0635",
+      "source": "engine/source/elements/solid/solide/sfor_ns2s4.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/ssort_n4.F",
+      "bytes": 5360,
+      "sha256": "885f47d3f2ae878a1f005e040da7c0292153f01e1b57dddcceed02847aad6aba",
+      "git_blob_sha1": "b4f14d62ae8ed9144b9314afebf0848380847328",
+      "source": "engine/source/elements/solid/solide/ssort_n4.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide4/sfor_n2s3.F",
+      "bytes": 9764,
+      "sha256": "c32fbaadfeda99f81015433427537285718b769379e4d368481af37bbc82f6a0",
+      "git_blob_sha1": "ceef633cc0a2d6cf66d0c237cdde62c6fd100cb2",
+      "source": "engine/source/elements/solid/solide4/sfor_n2s3.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/share/spe_inc/mvsiz_mod.F90",
+      "bytes": 6939,
+      "sha256": "a2313f2a34fe6dc6bc5bf3b0f44fcdf9202c6a99b5d99d1dedef67a69729fbcb",
+      "git_blob_sha1": "40064a34c1cdfee237f2d2f82aa87144014b7efa",
+      "source": "engine/share/spe_inc/mvsiz_mod.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/engine/source/elements/solid/solide/scumu3.F",
+      "source": "engine/source/elements/solid/solide/scumu3.F",
+      "bytes": 23756,
+      "sha256": "10128c69d2793bb73ef17b114ccd1642efcc251d305d7cd143325e2a66974d8b",
+      "git_blob_sha1": "4e4605b3101a4d1219fda1b9e0caba514a0ed9b9",
+      "compile": true
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/starter/source/materials/updmat.F",
+      "source": "starter/source/materials/updmat.F",
+      "bytes": 19705,
+      "sha256": "bb0b3c57e70877dc50f980b9eaf948871d1df2ee0dfe8c709c09318d380ebc4b",
+      "git_blob_sha1": "167ba409cf051d12fc5d3b71e00e34ae0f9ba31d",
+      "compile": false
+    },
+    {
+      "path": "lib_utest/qualification/solid24_icontrol/native/original/starter/source/materials/mat/mat042/law42_upd.F",
+      "source": "starter/source/materials/mat/mat042/law42_upd.F",
+      "bytes": 11091,
+      "sha256": "93a6e2b5f9198a4b08f515367aa7b2505f69a49803d406408df580ca43a2a7df",
+      "git_blob_sha1": "84d185aa6a08c8259bab9a510bb9419b25d0e908",
+      "compile": false
+    }
+  ],
+  "reused_sources": [
+    {
+      "path": "lib_utest/qualification/solid24_force/native/NativeContext.F90",
+      "bytes": 3011,
+      "sha256": "2b00bf32f8c8103f2c893bc235416af52aa14e8850a381ae62a6e8a30a615950",
+      "git_blob_sha1": "2fe6cb9c813fc047588341737a6d205971a0499a"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/NativeGeometry.F",
+      "bytes": 8255,
+      "sha256": "fbbba16d0907f0df41cf7a79fd13a6fa9a758a8181b076cad75a75950d6e5a9e",
+      "git_blob_sha1": "cc646c91ea37d592bf589eb2102654dbb3fa31ea"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/NativeReduce.F",
+      "bytes": 4714,
+      "sha256": "89815409bf3ccbf1fed8371e7dc959a228c3e5a0973fa37479b4ea13ecd2c523",
+      "git_blob_sha1": "938e79afa44d78a1fd6e61f9e425e353cf93e454"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/NativeCaller.F90",
+      "bytes": 3141,
+      "sha256": "4acd068e37d4d2966ec425b7f26b3762220916942ae2f4a83ff0e5852cdf77c5",
+      "git_blob_sha1": "843ebe5d3639810a8b9af8f244bb61737c931e71"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/NativeGlobals.F",
+      "bytes": 987,
+      "sha256": "18deed18296d10230f6360e604bfee172534ba677988de7975665ff11d042c36",
+      "git_blob_sha1": "453c379605a25b0681e0432abd90c8a2237448a0"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/prepare_sources.py",
+      "bytes": 4728,
+      "sha256": "be5649538f49be96c6ec303d6d50f5256bbe95e12a94275ca53932b089658a3e",
+      "git_blob_sha1": "132d0957618c16f3d67815956403d7a686428834"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/CMakeLists.txt",
+      "bytes": 1945,
+      "sha256": "0efad7a988c277e9125a42958eebae9e38d95f0443581234e7bff8fdac388daa",
+      "git_blob_sha1": "d4c0a9fc50f457e594d0c77444b63789d12a22cc"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/source-manifest.json",
+      "bytes": 17829,
+      "sha256": "3c8fe2ac65378c7aed4007c89469a4997834544724c5a4ff55250f6538110e65",
+      "git_blob_sha1": "008208813e93a7c506c4f3cc1fc61a4ba9f18d5e"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "source": "common_source/modules/constant_mod.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf",
+      "source": "common_source/modules/precision_mod.F90"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/com01_c.inc",
+      "bytes": 3697,
+      "sha256": "fe4d4bab0f0138427f7a16dc6ad46bfecac2543423787ee11d63b0a0456090df",
+      "git_blob_sha1": "0c4563aad5479d85ddd5da8f00e92a6702dfb3dd",
+      "source": "engine/share/includes/com01_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/com04_c.inc",
+      "bytes": 4073,
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525",
+      "git_blob_sha1": "626b9a3a62a756194032e5b872a413b5b22236f9",
+      "source": "engine/share/includes/com04_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/com06_c.inc",
+      "bytes": 2208,
+      "sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5",
+      "git_blob_sha1": "ec26889940ee3cc606bfb3ccb6fe9e2240d7cc4b",
+      "source": "engine/share/includes/com06_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496",
+      "git_blob_sha1": "527615007426bf007418321b9404b5fcf8639448",
+      "source": "engine/share/includes/com08_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112",
+      "git_blob_sha1": "bb1edcd216a156efe566d75d2227d88c0fbe77c3",
+      "source": "engine/share/includes/impl1_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/inter22.inc",
+      "bytes": 3343,
+      "sha256": "60a06956241356de829f3f58cf684d1d4492623b3c5b5c142b6ce067616ddac5",
+      "git_blob_sha1": "cc1eaebd846ace0c5d975b57bc1eb521eecc0359",
+      "source": "engine/share/includes/inter22.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045",
+      "git_blob_sha1": "74dff9d9ecb44c2a0a0314b770356640d84dc2a6",
+      "source": "engine/share/includes/param_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b",
+      "git_blob_sha1": "edfdadbce0be47ede50bd6bbe398e14883c0542e",
+      "source": "engine/share/includes/scr05_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/scr07_c.inc",
+      "bytes": 1974,
+      "sha256": "f1e44adb3fc9d2332af0e5e18be5f3976b7e588580c49f04af7b6c0816310e37",
+      "git_blob_sha1": "7bd8a12f7e2441425ce7a604150e8e38d278405f",
+      "source": "engine/share/includes/scr07_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/scr14_c.inc",
+      "bytes": 3329,
+      "sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d",
+      "git_blob_sha1": "38f4bfbda090ec767a0511639207fa3d58ad5b77",
+      "source": "engine/share/includes/scr14_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/scr17_c.inc",
+      "bytes": 2111,
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5",
+      "source": "engine/share/includes/scr17_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/scr18_c.inc",
+      "bytes": 1790,
+      "sha256": "1cfc4b1f7898053279b77d03f25e62c47f8d62e4810777b6c6021cfcadbb255f",
+      "git_blob_sha1": "c8a9288f87c174debd9b5b47cbc31d8cf2674c0f",
+      "source": "engine/share/includes/scr18_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/includes/units_c.inc",
+      "bytes": 2779,
+      "sha256": "c27320ffa81fd5bf362a0aa30903e2a302d68bb79aac94fc83fa46cc268dba89",
+      "git_blob_sha1": "49bd9730899b5e8fcd77adeabacb263c422f3ffe",
+      "source": "engine/share/includes/units_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b",
+      "source": "engine/share/r8/my_real.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/comlock.inc",
+      "bytes": 1968,
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6",
+      "source": "engine/share/spe_inc/comlock.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d",
+      "source": "engine/share/spe_inc/hardware.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/implicit_f.inc",
+      "bytes": 1478,
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17",
+      "source": "engine/share/spe_inc/implicit_f.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/lockoff.inc",
+      "bytes": 2239,
+      "sha256": "6bbf602b6b6c6a8eacecf1c6fb97ac8ff4c05a967f56b5b1aebf65ffe24af639",
+      "git_blob_sha1": "3a43222c4af0d7a2590718a5e74684d724029d9b",
+      "source": "engine/share/spe_inc/lockoff.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/lockon.inc",
+      "bytes": 2236,
+      "sha256": "9f3ca126afe6c73e6083bbcac4c5f9c9259ffd3edfb771ebc006c68ff15457bb",
+      "git_blob_sha1": "cddbcec07a0860890060eb997e0a7dffd489d4cb",
+      "source": "engine/share/spe_inc/lockon.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b",
+      "source": "engine/share/spe_inc/mvsiz_p.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/novectorize_gfortran.inc",
+      "bytes": 1428,
+      "sha256": "855d3b4b17e48e5de62c9374a99f013916b7ed05aea3435c173f46e3c1f4b81b",
+      "git_blob_sha1": "609eb9a0014f307df94d9c646a0627fb8934f9f5",
+      "source": "engine/share/spe_inc/novectorize_gfortran.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/tlock_c.inc",
+      "bytes": 2151,
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867",
+      "source": "engine/share/spe_inc/tlock_c.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/engine/share/spe_inc/vectorize.inc",
+      "bytes": 1881,
+      "sha256": "67d75c7f52c1dc87facb732ef3ffd29502b9ea1972be228ed135e892f18f7153",
+      "git_blob_sha1": "9c884843281aeb95cd647d43dc0dc67ef0a3bdb5",
+      "source": "engine/share/spe_inc/vectorize.inc"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/original/engine/source/elements/solid/solidez/szforc3.F",
+      "bytes": 59621,
+      "sha256": "4d26c324a1dd0ccdb618042ccc4bfbde0ef1c482592cf8d1e33cfd4ae3c66bf4",
+      "git_blob_sha1": "5c57f7d4e6a43078a37774930f108c5698bce766",
+      "source": "engine/source/elements/solid/solidez/szforc3.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid24_force/native/original/starter/source/properties/solid/hm_read_prop14.F",
+      "bytes": 32543,
+      "sha256": "e7585e4258824330d74566378de997c06feed33aa4000bec08d532850e94036f",
+      "git_blob_sha1": "356180a5024bd81e5f3d430af47c90393c5e7228",
+      "source": "starter/source/properties/solid/hm_read_prop14.F"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/starter/source/materials/mat/mat042/hm_read_mat42.F",
+      "source": "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      "bytes": 14856,
+      "sha256": "e25f3df9ff55666f59f6c3225430a857bef835ad946c866aa6fbd35281363682",
+      "git_blob_sha1": "da6adc30e3e6e69666b0754f37d2d718225cef77",
+      "compile": false
+    },
+    {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/starter/source/materials/mat/hm_read_mat.F90",
+      "source": "starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b",
+      "git_blob_sha1": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a",
+      "compile": false
+    }
+  ],
+  "link_only_source": "engine/source/elements/solid/solide4/sfor_n2s3.F",
+  "link_only_reason": "The complete SFOR_4N2S4 module also contains unused SFOR_3N2S3; retain its real external callee instead of inventing a numerical stub.",
+  "statement_slices": {
+    "slot_gs.inc": [
+      "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      186,
+      189
+    ],
+    "slot_bulk.inc": [
+      "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      198,
+      198
+    ],
+    "slot_parmat.inc": [
+      "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      252,
+      254
+    ],
+    "slot_generic.inc": [
+      "starter/source/materials/mat/hm_read_mat.F90",
+      1464,
+      1476
+    ],
+    "slot_pm107.inc": [
+      "starter/source/materials/updmat.F",
+      422,
+      422
+    ]
+  }
+}
