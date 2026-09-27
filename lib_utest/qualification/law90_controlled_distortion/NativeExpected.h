@@ -4,19 +4,26 @@
 extern "C" void law90_control_parameters_native(const double*,const double*,const double*,double*,int*);
 extern "C" void distortion_force_native(int,const double*,const int*,const double*,const double*,const double*,const double*,double*,int*);
 extern "C" void law90_reference_native(const double*,const double*,double*,int*,int*,int*);
+extern "C" void law90_modulus_begin();
+extern "C" void law90_modulus_read(double*);
 namespace law90_control_test {
 // Independent native material/geometry recurrence; no C++ force or parameter output enters this oracle.
 struct NativeState {
   law90_force_test::NativeForce force;
   double distortion_energy=0;
+  std::array<double,40> modulus{};
   explicit NativeState(double density):force(density){}
 };
 inline c::Result Native(const double* material,law::CurveView curve,const s::ReferenceInput& source,
     const s::PrescribedInterval& interval,d::UnitScale units,bool initial,NativeState& state) {
   const auto f=Factors(units);const auto input=WorkingReference(source,units);
   const auto step=WorkingInterval(interval,units);
+  law90_modulus_begin();
   law90_force_test::AdvanceNative(material,curve,input,step,initial,state.force);
   EXPECT_EQ(state.force.status,0);
+  double ordered[40];law90_modulus_read(ordered);
+  const unsigned visit[]{0,4,2,6,1,5,3,7};
+  for(unsigned i=0;i<8;++i)std::copy_n(ordered+5*i,5,state.modulus.data()+5*visit[i]);
   double initial_x[24],geometry[755]{};int permutation[8]{},tags[4]{},status=-1;
   for(unsigned n=0;n<8;++n)for(unsigned k=0;k<3;++k)initial_x[3*n+k]=b::Component(input.position_m[n],k);
   law90_reference_native(initial_x,&input.density_kg_m3,geometry,permutation,tags,&status);EXPECT_EQ(status,0);
