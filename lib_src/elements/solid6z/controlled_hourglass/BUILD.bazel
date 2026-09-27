@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "controlled_hourglass",
+    hdrs = ["Types.h", "Projection.h", "Response.h"],
+    deps = ["//lib_src/elements/solid6z:force", "//lib_src/elements/solid_common/controlled_hourglass:controlled_hourglass"],
+    visibility = ["//visibility:public"],
+)
