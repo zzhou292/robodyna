@@ -32,6 +32,7 @@ SourceSelection::SourceSelection(Config& config,source::Limits limits):limits_(l
     output::Require(used==dt.size()&&std::isfinite(value)&&value>0,
         "Native V6 requires an explicit finite positive physical timestep");
     config.dynamics.startup.reserved_step_s=value;
+    config.dynamics.startup.limits.solids=tl::fea::solids::SourceControlledBatchLimits();
 }
 detail::SourceInputs SourceSelection::Prepare() {
     if(!artifact_)return ActualSources();

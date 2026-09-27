@@ -61,7 +61,11 @@ void RunAcceptedQualification(bool execute, bool preview) {
         output::Require(extras<=GuardBytes-ExportBytes,"Selected source extras exceed qualification guard");
         const auto execution_host_cap=GuardBytes-ExportBytes-extras;
         output::Integer(doc,"source_extra_retained_bytes",extras);
-        if(selection.native_v6())output::Integer(doc,"production_source_construction_peak_bytes",selection.construction_peak_bytes());
+        if(selection.native_v6()){
+            output::Integer(doc,"production_source_construction_peak_bytes",selection.construction_peak_bytes());
+            output::Integer(doc,"solid_participant_device_cap_bytes",config.dynamics.startup.limits.solids.max_device_bytes);
+            output::Integer(doc,"solid_participant_host_cap_bytes",config.dynamics.startup.limits.solids.max_host_bytes);
+        }
         output::String(doc,"selected_source_profile",selection.native_v6()?"native_v6_raw8_heph_explicit_cin28":"vehicle_supports_v5");
         output::Number(doc,"fixed_dt_s",config.dynamics.startup.reserved_step_s);
         output::Number(doc, "source_construction_s", Seconds(begin));
