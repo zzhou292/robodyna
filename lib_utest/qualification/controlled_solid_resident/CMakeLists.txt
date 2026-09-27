@@ -11,7 +11,7 @@ add_executable(controlled_solid_resident_host HostTest.cpp ../extended_solid_res
 target_link_libraries(controlled_solid_resident_host PRIVATE tl_solid_batch_values tl_tied_cin_attachment tl_nodal_rigid_assembly_binding GTest::gtest_main)
 target_compile_options(controlled_solid_resident_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME controlled_solid_resident_host COMMAND controlled_solid_resident_host)
-add_executable(controlled_solid_resident_cuda OwnerTest.cu PacketTest.cu Rig.cu ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
+add_executable(controlled_solid_resident_cuda OwnerTest.cu PacketTest.cu AssemblyTest.cu Rig.cu ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
 target_link_libraries(controlled_solid_resident_cuda PRIVATE tl_solid_batch tl_tied_cin_attachment tl_nodal_rigid_assembly_binding GTest::gtest_main)
 set_target_properties(controlled_solid_resident_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 target_compile_options(controlled_solid_resident_cuda PRIVATE

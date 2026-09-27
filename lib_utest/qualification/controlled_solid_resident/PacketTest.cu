@@ -4,12 +4,12 @@ namespace controlled_resident_test {
 TEST_F(ControlledResidentCuda, AuthenticatedMixedPacketOrAndFailingLaneBarrier) {
   OwnerFixture fixture(false,true,{.001,1000,1},true,true);s::Batch batch;
   ASSERT_EQ(fixture.model.solid24().size(),2u);
-  ASSERT_EQ(fixture.model.control_selection()->packets()[1].source.member_count,2u);
+  ASSERT_EQ(fixture.model.control_selection()->packets()[0].source.member_count,2u);
   ASSERT_TRUE(Good(batch.InitializeJoined(fixture.Configuration(),fixture.model)));
   const auto& header=Peer::HeaderForPacketProbe(batch);auto* device=Peer::DeviceForPacketProbe(batch);
   const auto& model=fixture.model;const auto n=model.domain()->node_count();
   std::vector<double> x(3*n),v(3*n);
-  for(std::size_t j=0;j<n;++j)for(unsigned k=0;k<3;++k)x[3*j+k]=.5*fe::solid_common::Component(model.domain()->nodes()[j].position,k);
+  for(std::size_t j=0;j<n;++j)for(unsigned k=0;k<3;++k)x[3*j+k]=((k==0)?.05:.5)*fe::solid_common::Component(model.domain()->nodes()[j].position,k);
   const auto& distinct=model.solid24()[1];
   v[3*distinct.domain_nodes[0]]=1;v[3*distinct.domain_nodes[1]]=-1;
   v[3*distinct.domain_nodes[5]]=10;v[3*distinct.domain_nodes[7]]=10;

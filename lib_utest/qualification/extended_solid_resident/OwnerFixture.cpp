@@ -63,8 +63,8 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
       packets.push_back({p+1,p,p,1,family,a.source_material_id,a.source_section_id,ctl});
       packet_members.push_back(a.source_element_id);
     };
-    // Deliberately different packet and family orders, including all IC0 rows.
-    add(foam.reference,s::Family::Solid18Law90,1);
+    // Different packet/family order, all IC0 rows, and block zero switches
+    // H24 -> LAW90 working union at packet indices zero and four.
     add(legacy.input24.reference,s::Family::Solid24,1);
     if(packet_pair){
       const auto& a=pair[1].reference.input();
@@ -74,6 +74,7 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     add(legacy.input18.reference,s::Family::Solid18,0);
     add(rear.reference,s::Family::Solid18Law44,0);
     add(legacy.input6z.reference,s::Family::Solid6z,0);
+    add(foam.reference,s::Family::Solid18Law90,1);
     auto& c=input.controls;c.profile=s::control::Profile::SourceDeclared;c.source_instance_id=input.source_instance_id;
     c.units=units;c.native_nvsiz=128;c.compiled_mvsiz=129;
     c.parents={rows.data(),rows.size()};c.packets={packets.data(),packets.size()};
