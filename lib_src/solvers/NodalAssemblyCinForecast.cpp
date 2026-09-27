@@ -4,6 +4,7 @@
 #include "NodalRigidGroupStorage.h"
 #include "NodalForceStageCaptureLayout.h"
 #include "NodalStateLayout.h"
+#include "NodalCinGatherLayout.h"
 #include "nodal_seal/RowLayout.h"
 #include <cmath>
 
@@ -51,6 +52,8 @@ NodalAssemblyCinForecast FENodalState::ForecastAssemblyCin(const NodalStateConfi
     result.report = {NodalStatus::ResourceLimit,"Combined owner device layout exceeds its cap"};
     return result;
   }
+  SelectCinGatherLayout(attachment, layout, cin.limits, config.max_device_bytes,
+      rigid.host_bytes, sizeof(Impl));
   std::size_t complete = 0;
   if (!CinOwnerHostFits(attachment.host_bytes,rigid.host_bytes,layout.accepted.count,
       layout.fixed.count,sizeof(Impl),cin.limits.max_host_bytes,&complete)) {
@@ -61,7 +64,8 @@ NodalAssemblyCinForecast FENodalState::ForecastAssemblyCin(const NodalStateConfi
   const auto source = cin.model->forecast();
   const auto source_bytes = source.model_payload_bytes + source.domain_payload_bytes +
                             source.post_kinchk_payload_bytes;
-  const auto scratch = util::SourceIdentityIndex<16>::Bytes(cin.witness_count);
+  const auto scratch = util::SourceIdentityIndex<16>::Bytes(cin.witness_count) +
+      attachment.gather.temporary_bytes;
   if (source_bytes > complete || scratch > complete - source_bytes) {
     result.report = {NodalStatus::ResourceLimit,"Combined owner footprint partition overflows"};
     return result;

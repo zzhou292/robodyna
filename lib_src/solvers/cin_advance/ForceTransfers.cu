@@ -5,6 +5,8 @@ namespace tl::fea::cin_advance::force_transfers {
 namespace {
 __global__ void Prepare(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
+  if (!blockIdx.x && !threadIdx.x && force_gather::Eligible(input.model, input.force_gather))
+    *input.force_gather.summary = {};
   const auto force = force_inputs::ForceView(input);
   for (std::uint32_t row = blockIdx.x*blockDim.x+threadIdx.x;
        row < input.model.row_count; row += gridDim.x*blockDim.x) {

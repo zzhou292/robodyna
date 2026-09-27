@@ -2,7 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_library(
     name = "fixture", testonly = True,
-    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_master_gather:__pkg__",
+                  "//lib_utest/qualification/cin_post_node_inputs:__pkg__",
                   "//lib_utest/qualification/cin_parallel_recovery:__pkg__",
                   "//lib_utest/qualification/cin_force_transfers:__pkg__",
                   "//lib_utest/qualification/cin_parallel_groups:__pkg__",
@@ -28,5 +29,6 @@ cuda_test(
 filegroup(
     name = "serial_cuda_source",
     srcs = ["Serial.cu"],
-    visibility = ["//lib_utest/qualification/cin_post_node_inputs:__pkg__"],
+    visibility = ["//lib_utest/qualification/cin_master_gather:__pkg__",
+                  "//lib_utest/qualification/cin_post_node_inputs:__pkg__"],
 )

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinStorage.h"
 #include <algorithm>
+#include <utility>
 
 namespace tl::fea::nodal_detail {
 cudaError_t CinStorage::Upload(cudaStream_t stream) {
@@ -32,6 +33,23 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
   // its own key before any worker or completion stage can read it.
   device = {device_rows, device_dependent, std::uint32_t(layout.nodes),
             std::uint32_t(layout.attachments), std::uint32_t(layout.witnesses), device_first, source.explicitly_empty()};
+  if (layout.gather.device_bytes) {
+    const auto& gathered = layout.gather;
+    force_gather.source_rows = device_rows;
+    force_gather.nodes = util::ArenaPointer<std::uint32_t>(arena, gathered.nodes);
+    force_gather.offsets = util::ArenaPointer<std::uint32_t>(arena, gathered.offsets);
+    force_gather.incidence = util::ArenaPointer<std::uint32_t>(arena, gathered.incidence);
+    force_gather.values = util::ArenaPointer<cin_advance::force_gather::Master>(arena, gathered.values);
+    force_gather.summary = util::ArenaPointer<cin_advance::force_gather::Summary>(arena, gathered.summary);
+    for (const auto pair : {std::pair{gathered.nodes, gathered.host_nodes},
+                           std::pair{gathered.offsets, gathered.host_offsets},
+                           std::pair{gathered.incidence, gathered.host_incidence}}) {
+      error = cudaMemcpyAsync(util::ArenaPointer<std::uint32_t>(arena, pair.first),
+          util::ArenaPointer<std::uint32_t>(gather_host.data(), pair.second),
+          pair.first.bytes, cudaMemcpyHostToDevice, stream);
+      if (error != cudaSuccess) return error;
+    }
+  }
   if (layout.rows.bytes) error = cudaMemcpyAsync(device_rows, rows.data(), layout.rows.bytes, cudaMemcpyHostToDevice, stream);
   if (error != cudaSuccess) return error;
   error = cudaMemcpyAsync(device_dependent, dependent.data(), layout.dependent.bytes, cudaMemcpyHostToDevice, stream);

@@ -5,6 +5,7 @@
 #include "NodalForceStageCaptureLayout.h"
 #include "NodalStateLayout.h"
 #include "NodalCinStorage.h"
+#include "NodalCinGatherLayout.h"
 #include "nodal_seal/Validation.cuh"
 #include "nodal_reset/Reset.cuh"
 #include <atomic>
@@ -153,6 +154,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     // Simultaneous retained source/optional arrays, complete existing owner
     // staging/constraints, and optional rigid arrays. No stale startup RSS is
     // treated as retained source memory.
+    nodal_detail::SelectCinGatherLayout(cin_layout, layout, cin->limits, c.max_device_bytes,
+        rigid_layout.host_bytes, sizeof(Impl));
     if (!nodal_detail::CinOwnerHostFits(cin_layout.host_bytes, rigid_layout.host_bytes,
         layout.accepted.count, layout.fixed.count, sizeof(Impl), cin->limits.max_host_bytes)) {
       return {NodalStatus::ResourceLimit, "Complete CIN owner host payload exceeds limits"};

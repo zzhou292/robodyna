@@ -1,0 +1,69 @@
+{
+  "schema": "cin_gather_reuse_source.v1",
+  "donor": "3bb0cb1a2527f2ed67c3437a5300bc333d0e2410",
+  "historical_integration": "28d1f845",
+  "integration_base": "1dfd6754a1703b764589f60856cace534516dda7",
+  "files": [
+    {
+      "path": "lib_src/solvers/NodalCinGatherLayout.h",
+      "bytes": 2173,
+      "sha256": "32d814ff8f677511c820de9a9601e9a97e9065fb52c414bfd4a2305d6ace320b"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGather.cu",
+      "bytes": 2231,
+      "sha256": "f28c1aca083c4617130969f62ec8366a4cd97d19428160fcaeec71ee1af54af2"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGather.h",
+      "bytes": 1032,
+      "sha256": "f8253a7f0690a2194c31aaefd7f303f2b174dc32cebe9929817482b5f683945e"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherIncidence.h",
+      "bytes": 2248,
+      "sha256": "ebc2dcdebbb3b29d61b5f4560c6dd82d4f2ce1b5e51d4338631e40a46e038e21"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherLayout.h",
+      "bytes": 1749,
+      "sha256": "a65b85f6e6a35d79a065446ea4e04d9053f656e438432e9a574be6ab507e13cf"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherTypes.h",
+      "bytes": 1702,
+      "sha256": "8b2d7dcc30b9092563f1be0c6aa350538a6d9785b8b252cf97252a99a25136f5"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherValues.h",
+      "bytes": 4625,
+      "sha256": "e7962c9d4c75dc92c3b187c1edb5b3df5c2bf13f89edb6ef6f8132050101e907"
+    },
+    {
+      "path": "lib_utils/OrderedNodeIncidence.h",
+      "bytes": 1632,
+      "sha256": "67f2fd41f29ac4d74fcfcf88530bc8dba1e4518081b19f7cf84afb2616bc3063"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10568,
+      "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/Incidence.h",
+      "bytes": 1912,
+      "sha256": "4bfc856ff5f5eff80bc5e4fddd0908aae5cd5a7912c34319ff8273a24fc531c9"
+    }
+  ],
+  "scope": "Unchanged donor math, topology, bounded layout and frozen reference files; exact current-owner hook reversal proven separately."
+}

@@ -1,0 +1,432 @@
+{
+  "schema": "cin-master-gather-source-v1",
+  "baseline_commit": "edab8e17e6d6e641f77f093fdb258d98152db492",
+  "scope": "Optional owner-private exact-order CIN master gather, complete serial fallback, bounded startup/storage selection, focused host/CUDA-source fixtures, and checked prior-proof composition.",
+  "frozen_references": [
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/ExplicitNodalCinStep.cu",
+      "source": "lib_src/solvers/ExplicitNodalCinStep.cu",
+      "bytes": 10568,
+      "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/CinForceTransfer.h",
+      "source": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/Incidence.h",
+      "source": "lib_src/elements/mapped_shell/Incidence.h",
+      "bytes": 1912,
+      "sha256": "4bfc856ff5f5eff80bc5e4fddd0908aae5cd5a7912c34319ff8273a24fc531c9"
+    }
+  ],
+  "abi": {
+    "baseline_receipt": {
+      "CinLayout": 400,
+      "CinStorage": 664
+    },
+    "current_host_gate": {
+      "CinLayout": 648,
+      "CinStorage": 992,
+      "force_gather_View": 64,
+      "force_gather_Master": 48,
+      "force_gather_Summary": 24
+    }
+  },
+  "source_entrypoints": [
+    "lib_utest/qualification/qeph_mapped_gather/verify_sources.py",
+    "lib_utest/qualification/t3_mapped_gather/verify_sources.py",
+    "lib_utest/qualification/qbat_mapped_gather/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+    "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+    "lib_utest/qualification/cin_force_transfers/verify_sources.py",
+    "lib_utest/qualification/cin_limiter/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_recovery/verify_sources.py",
+    "lib_utest/qualification/cin_parallel_drift/verify_sources.py",
+    "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
+    "lib_utest/qualification/nodal_reset_rows/verify_sources.py",
+    "lib_utest/qualification/cin_cooperative_group_screen/verify_sources.py"
+  ],
+  "files": [
+    {
+      "path": "lib_src/elements/mapped_shell/BUILD.bazel",
+      "bytes": 1112,
+      "sha256": "205288d0a7987f89d5d4939b7e983c86dd93583a6b9af416db583eeed1e9a1bb"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/Incidence.h",
+      "bytes": 1470,
+      "sha256": "dfa88dd4c6ecff7d8d8fd2cb701c3aff0fa1a62673c332bbbbe9eb22c6ced31f"
+    },
+    {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 8839,
+      "sha256": "b21c886b9af2b2d649ccf624bce08b041a71aa0455d69760049d824b926ca70f"
+    },
+    {
+      "path": "lib_src/solvers/CMakeLists.txt",
+      "bytes": 1866,
+      "sha256": "7e282e53dd8ca27bcb89d19793bf80ba5d85809abe8bb1dac73bc9ee34d9df0f"
+    },
+    {
+      "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
+      "bytes": 10976,
+      "sha256": "e688dcb2929e190b8621ebe97a1437d0e9fad9e37ef135711ad09d66097a9a05"
+    },
+    {
+      "path": "lib_src/solvers/FENodalState.cu",
+      "bytes": 26812,
+      "sha256": "d211892c84e911e13149cd9a014dc5ff8e2b3b0a2df7e387e7eac9a5a70ad033"
+    },
+    {
+      "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
+      "bytes": 4173,
+      "sha256": "85eeb9d263bbecc96b65915669336dccddcd144ffde6d86d580f00d970f6afca"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinGatherLayout.h",
+      "bytes": 2173,
+      "sha256": "32d814ff8f677511c820de9a9601e9a97e9065fb52c414bfd4a2305d6ace320b"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinLayout.h",
+      "bytes": 4870,
+      "sha256": "d682680302b09c10343bfb8fe2cb4834c3570f23a58ec03295d7c95774b25723"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStartup.cpp",
+      "bytes": 13433,
+      "sha256": "0f0cb875b2d0b6491f1c8b21f823a4a7324c03796656a461dbde550cd0857f48"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.cu",
+      "bytes": 4325,
+      "sha256": "5cfad57f87533678f802a72ead974f892f8b1f0552746d0a71e9175cc423d440"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.h",
+      "bytes": 2049,
+      "sha256": "921601d3a4b7b2b77d54dfc9cb5ae10d9e901721fac27fc7aaa05a19d84e6f21"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGather.cu",
+      "bytes": 2231,
+      "sha256": "f28c1aca083c4617130969f62ec8366a4cd97d19428160fcaeec71ee1af54af2"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGather.h",
+      "bytes": 1032,
+      "sha256": "f8253a7f0690a2194c31aaefd7f303f2b174dc32cebe9929817482b5f683945e"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherIncidence.h",
+      "bytes": 2248,
+      "sha256": "ebc2dcdebbb3b29d61b5f4560c6dd82d4f2ce1b5e51d4338631e40a46e038e21"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherLayout.h",
+      "bytes": 1749,
+      "sha256": "a65b85f6e6a35d79a065446ea4e04d9053f656e438432e9a574be6ab507e13cf"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherTypes.h",
+      "bytes": 1702,
+      "sha256": "8b2d7dcc30b9092563f1be0c6aa350538a6d9785b8b252cf97252a99a25136f5"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceGatherValues.h",
+      "bytes": 4625,
+      "sha256": "e7962c9d4c75dc92c3b187c1edb5b3df5c2bf13f89edb6ef6f8132050101e907"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceTransfers.cu",
+      "bytes": 1043,
+      "sha256": "61c33a276d8acc64f0f12c91225a080d579afd3ae254bd3169791752994d6da8"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Input.h",
+      "bytes": 2564,
+      "sha256": "0219900650ceba5e2aeb461cc0145cd247538469d530a1f38edf89fa65dffe96"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/source-manifest.json",
+      "bytes": 42909,
+      "sha256": "31e7ff721bcc02261e1b207e627691a0f76a08371be5d992ec7098b2cb46413c"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/verify_sources.py",
+      "bytes": 1540,
+      "sha256": "fa7ad4f0f90cffbac3906a5485e3d313e5316080817823bc9c7449c247ee1221"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
+      "bytes": 1372,
+      "sha256": "2cdf9048b56e8b326655b5e8c74d8814def44bcd07e9e332182fcb6b5740531d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+      "bytes": 25386,
+      "sha256": "10a8ecb05625fafd7fcc8174c7df56176edd79bce1fbb8dee707f4e660ed3c2c"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+      "bytes": 6359,
+      "sha256": "3bb35f72b8a3a0233c1044b17862c9c716f12540cd34379ac2c635adbba03e5f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/BUILD.bazel",
+      "bytes": 1532,
+      "sha256": "7caa36f4e90b2c3e11fb2830f5fe7b219478be386371b292262e9e5f2ecaf414"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/source-manifest.json",
+      "bytes": 108725,
+      "sha256": "4f0993cf1f3f098aac50c54e4bcec3e074a65cf83175a0223700aa527ee85205"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4475,
+      "sha256": "37077af551eea99dead6708703b1cc241abbb3f6012aa73bfca2248c9811beb6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/verify_sources.py",
+      "bytes": 3782,
+      "sha256": "e2c55cf30f96c108729a2362bee0bd53415ea39743d835aa191d080a4cdf1613"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/source-manifest.json",
+      "bytes": 87564,
+      "sha256": "2cd471feb280d0ea78d92fa977a9788fa7e72ed66d6811f02692b81ed070902e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/verify_sources.py",
+      "bytes": 1800,
+      "sha256": "dc0b827f4ad358852aa988b8d47f8e24e78dfc7aa14482e50c582950cba741f1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/BUILD.bazel",
+      "bytes": 1478,
+      "sha256": "6bf9a856d80994aa1615af737a1022e1000e86d3d47c68877e21ca996d682a17"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/CMakeLists.txt",
+      "bytes": 2996,
+      "sha256": "6cd55346b92115e7b2c9eed6a0b1a6460b8f16fbe817d47c8d2213926745b519"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/CallerTest.cu",
+      "bytes": 5311,
+      "sha256": "132071e21683c3d1e03fd829d6a788cac68a2ac25700a1833df9948f066fb173"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/CapacityTest.cpp",
+      "bytes": 4848,
+      "sha256": "affd03e8d4cd445b7f677c4b685df0b30e32616f396fde0f6316db59507af69f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/DeviceFixture.cuh",
+      "bytes": 3743,
+      "sha256": "09083289cbd4c30ab9a2fb2cd309567d664375976b20850c2e5611899f3cb353"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/Fixture.h",
+      "bytes": 3183,
+      "sha256": "eaa5d62d1b90f7f2fd3dc1351fab5cc0f60779e8c819466faba7738287a69688"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/Frozen.h",
+      "bytes": 211,
+      "sha256": "dcfb73815fc7e43159fcbfec31a8cb208372d4211dbaa66ac9f94caefaad0070"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/HostTest.cpp",
+      "bytes": 8537,
+      "sha256": "5a57fd2e2239cbe893506e85805ca802d7a21e906ff39af721ec5523211404c3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/OwnerTest.cu",
+      "bytes": 4054,
+      "sha256": "5c60ecfd1d7f21852062808360573329d2d5be0177d4f434291e3f6812de951b"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/README.md",
+      "bytes": 2664,
+      "sha256": "b974878f0c7dfd13ccad14a3af9fa6df44b61c1ea42951d55d2180d4e682ce24"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/abi_check.py",
+      "bytes": 2096,
+      "sha256": "00cea4160b03185580417c3e42e993a0e4effc814e8150ec7ebc9667a8fd6e80"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/gather_proof.py",
+      "bytes": 17521,
+      "sha256": "0f6d64f08abdf1200cc0667c1f36d0be70ecbb0950a8087f9400cccd0f1614ea"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/prepare_reference.py",
+      "bytes": 983,
+      "sha256": "13774be72d7f8315df4cbe0a38e018a61b6b3b40170a3e1d486d67c65fa485dc"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10568,
+      "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/reference/Incidence.h",
+      "bytes": 1912,
+      "sha256": "4bfc856ff5f5eff80bc5e4fddd0908aae5cd5a7912c34319ff8273a24fc531c9"
+    },
+    {
+      "path": "lib_utest/qualification/cin_master_gather/syntax_check.py",
+      "bytes": 3785,
+      "sha256": "6435e30048e1632d903bb8019a4b6e2820f4dcc348755dccd475fe6e7a2a7d6d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+      "bytes": 104442,
+      "sha256": "bb6bfe882feaa403b0831f61d280c4dcfddd19dff650887d4d0f15c18687352a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+      "bytes": 3992,
+      "sha256": "32edff902aa5be7233b187c341fbf1edb8cd87d63633560b5a575bf0e00d286f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
+      "bytes": 3664,
+      "sha256": "f4b57f8f6df96c61a9f0753f42af834066dc99583de5e7ccc289e1e77c57c9f1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/source-manifest.json",
+      "bytes": 48882,
+      "sha256": "da305d2b75abf34653dee1194f1d4d8b6a7f8716a9f4a85a6410e9c374ab97e1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/verify_sources.py",
+      "bytes": 6947,
+      "sha256": "332689fd15eb8b055ad46700469015d8d32af49762522ac2561741afd1d5e857"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+      "bytes": 5400,
+      "sha256": "9eec8afe3604b4267ab1bc0e55d60d445c8e0bd9868ec9acc636c230d4389fd3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+      "bytes": 125999,
+      "sha256": "37b32e208aa9daff88d25e588f0e528ad6c51f3ade0587b75bebdd788b0d5956"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+      "bytes": 3905,
+      "sha256": "6aeec465cbf983d1303c5282a59b0c65276c4e4c5f2c98fc2ba9a1d61193f551"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
+      "bytes": 3166,
+      "sha256": "52f588bf6c883b4131c0f1d3de12b2669d8889dc26dff3d146da14e33f513cf5"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+      "bytes": 28280,
+      "sha256": "58e2abbb8bd3534aced8a9366946da7f124c9ea4425f9d1b038babd520d72b39"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+      "bytes": 4833,
+      "sha256": "13044388461fd2c69a342c91e34a2ec9ab188adf0de070d95726fbe5fc35a98a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/recovery_proof.py",
+      "bytes": 4956,
+      "sha256": "d88a20798ce60b9acb0f4b7013a3e1f34ecdca2c90a601cc01d8d89e8acd474a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/source-manifest.json",
+      "bytes": 79668,
+      "sha256": "1113accbe22bdbc59bf6bbdc7b1fc3dafa2416b1b2fd084b019f65b020a39890"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/verify_sources.py",
+      "bytes": 5243,
+      "sha256": "65d77ceb9beeb67809c3d6ab6818058e322f064050dd77373d5b2140768ec54d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+      "bytes": 100626,
+      "sha256": "d0f51ccbbb212ae231a1b21bc3add653aea500f8df43bfcb4e538ecdcaf66cb6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+      "bytes": 6798,
+      "sha256": "90a802031597e93cdc9f9ef1a91fd0ccb6ca8a87b9ece36b29075c3a3c641205"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/reset_proof.py",
+      "bytes": 4703,
+      "sha256": "d67a7b05759bc5f138f5d4e3da01d3acaef0f0f2995374961dd324178d3b69c9"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/source-manifest.json",
+      "bytes": 40942,
+      "sha256": "d95c97188f0a00286796815fd252f802e1ac842ba7aec6dbb3be1cd1772bb891"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/verify_sources.py",
+      "bytes": 1754,
+      "sha256": "e1c97746f990dc3b1af8693bd72ff258cc109a5114a3fcbb8a77a18b3d807f5d"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
+      "bytes": 70854,
+      "sha256": "c1976436056ba2a9e7d0a65cf5ca1dbe3ed93eec6220cd5794ec550cc87b0139"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
+      "bytes": 4017,
+      "sha256": "9d9dfe080cf6e62928eaf8da7a1831b97bada7d82bf103b3ea7e465cdaeffc4a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/source-manifest.json",
+      "bytes": 16022,
+      "sha256": "b00f0deae8f28381e0ed10fc818c53718caffc505944a378f0fdb99d38221b35"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/verify_sources.py",
+      "bytes": 1166,
+      "sha256": "a62d0a55a4dec002483226fbaf49cf465a4a7bf0522a4e15fa610780ad9a9d82"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/source-manifest.json",
+      "bytes": 10474,
+      "sha256": "4eb37746e730c0c7f2dc6084c13f9f5d8758c153f58fbc3fa92e45415763948d"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/verify_sources.py",
+      "bytes": 6642,
+      "sha256": "5028aed4d66956c6baadcd2535ebe355ffbe4b6e7142dc5df37e12cb136c44fe"
+    },
+    {
+      "path": "lib_utils/BUILD.bazel",
+      "bytes": 2441,
+      "sha256": "91d57f2d2f7f644dd00eb1a9e02ab20c2376161265a72ca609f06347d24e8184"
+    },
+    {
+      "path": "lib_utils/OrderedNodeIncidence.h",
+      "bytes": 1632,
+      "sha256": "67f2fd41f29ac4d74fcfcf88530bc8dba1e4518081b19f7cf84afb2616bc3063"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinStorage.h"
+#include "cin_advance/ForceGatherIncidence.h"
 #include "../constraints/NodalRigidGroupModel.h"
 #include "../constraints/NodalRigidAssemblyBinding.h"
 #include <algorithm>
@@ -212,6 +213,27 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
       }
     }
     for (auto& role : next->dependent) role &= 1;
+  }
+  if (layout.gather.device_bytes) {
+    const auto& gathered = layout.gather;
+    util::HostArena temporary;
+    if (!next->gather_host.Initialize(gathered.host_bytes) || !temporary.Initialize(gathered.temporary_bytes))
+      return {NodalStatus::ResourceLimit, "CIN master incidence startup allocation failed"};
+    auto* nodes = next->gather_host.Construct<std::uint32_t>(gathered.host_nodes);
+    auto* offsets = next->gather_host.Construct<std::uint32_t>(gathered.host_offsets);
+    auto* incidence = next->gather_host.Construct<std::uint32_t>(gathered.host_incidence);
+    auto* dense = temporary.Construct<std::uint32_t>(gathered.dense_offsets);
+    const cin::StageView source_view{next->rows.data(), next->dependent.data(),
+        std::uint32_t(layout.nodes), std::uint32_t(layout.attachments),
+        std::uint32_t(layout.witnesses), next->first_witness.data()};
+    std::uint32_t masters = 0;
+    if (!cin_advance::force_gather::BuildIncidence(source_view, dense, nodes, offsets,
+        incidence, gathered.capacity, masters))
+      return {NodalStatus::InvalidInput, "CIN immutable master incidence is inconsistent"};
+    next->force_gather.node_count = source_view.node_count;
+    next->force_gather.row_count = source_view.row_count;
+    next->force_gather.master_count = masters;
+    next->force_gather.capacity = std::uint32_t(gathered.capacity);
   }
   output = std::move(next);
   return {NodalStatus::Ok, "CIN startup source, witness and coefficient association prepared"};

@@ -6,6 +6,7 @@
 #include "cin_advance/GroupReport.h"
 #include "cin_advance/RecoveryTypes.h"
 #include "cin_advance/DriftTypes.h"
+#include "cin_advance/ForceGatherLayout.h"
 #include "../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "lib_utils/BoundedArena.h"
 #include "lib_utils/SourceIdentityIndex.h"
@@ -28,6 +29,7 @@ struct CinLayout {
   util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure, input_failure, screen, group_reports;
   util::ArenaRegion prepared_transfers, prepared_recovery, recovery_failure;
   util::ArenaRegion prepared_drift;
+  cin_advance::force_gather::Layout gather;
   // Tail within each of the existing accepted/trial double slabs:
   // M[n], J[n], derived inverse M[n], derived inverse J[n], SMAS[r], SINER[r], DMAST.
   std::size_t nodes = 0, attachments = 0, witnesses = 0;

@@ -30,6 +30,8 @@ struct CinStorage {
   cin_advance::recovery::Row* prepared_recovery = nullptr;
   cin_advance::recovery::FailureRow* recovery_failure = nullptr;
   cin_advance::drift::Row* prepared_drift = nullptr;
+  util::HostArena gather_host;
+  cin_advance::force_gather::View force_gather;
   cudaError_t Upload(cudaStream_t);
   cudaError_t ResetTrial(cudaStream_t);
   void InitializeState(double* state, const NodalCinStartup&, const double* inverse_mass, const NodalDofConfig&) const noexcept;

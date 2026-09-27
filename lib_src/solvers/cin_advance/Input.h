@@ -5,6 +5,7 @@
 #include "GroupReport.h"
 #include "RecoveryTypes.h"
 #include "DriftTypes.h"
+#include "ForceGatherTypes.h"
 #include "../../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "../FENodalStateStorage.h"
 #include "../NodalCinRuntime.h"
@@ -49,6 +50,7 @@ struct Input {
   // Independent dependent-drift values; the recovery key is reused only after
   // successful recovery completion. Null retains the private serial drift.
   drift::Row* prepared_drift = nullptr;
+  force_gather::View force_gather;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance
