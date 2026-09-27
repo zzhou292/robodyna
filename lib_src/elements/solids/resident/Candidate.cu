@@ -82,7 +82,7 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
   state.control = next;
 }
 } // namespace
-void LaunchInitialize(Storage* storage, cudaStream_t stream) {
+void LaunchInitialize(Storage* storage, cudaStream_t stream,std::size_t native_packet_count) {
   Initialize<Traits18><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Initialize<Traits24><<<1, candidate_threads, 0, stream>>>(storage);
@@ -93,14 +93,14 @@ void LaunchInitialize(Storage* storage, cudaStream_t stream) {
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Initialize<Traits18Law90><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  LaunchControlledInitialize(storage,stream);
+  if(native_packet_count)LaunchControlledInitialize(storage,stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, 0, 0, {}, 0, 0, true, stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, measurement::Threads, 0, stream>>>(storage, 0, 0, {}, {}, true, true);
 }
 void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
-    NodalPreparedView view, BatchDiagnostics identity) {
+    NodalPreparedView view, BatchDiagnostics identity,std::size_t native_packet_count) {
   Evaluate<Traits18><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Evaluate<Traits24><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
@@ -111,7 +111,7 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Evaluate<Traits18Law90><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  LaunchControlledCandidate(storage,accepted,trial,view);
+  if(native_packet_count)LaunchControlledCandidate(storage,accepted,trial,view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, accepted, trial, view, identity.time, identity.epoch, false, view.stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;

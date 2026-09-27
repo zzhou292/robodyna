@@ -47,7 +47,7 @@ BatchReport Batch::EvaluateCandidate(FENodalState& owner, const NodalTrialToken&
   identity.phase = BatchPhase::Prepared;
   identity.has_completed_interval = true;
   identity.accepted_force_assembled = true;
-  batch_detail::LaunchCandidate(state.device, state.accepted_slab, state.TrialSlab(), view, identity);
+  batch_detail::LaunchCandidate(state.device, state.accepted_slab, state.TrialSlab(), view, identity,state.device_header.controlled.packet_count);
   report = state.ReadControl();
   if (!report) return report;
   state.candidate_diagnostics = state.control.diagnostics;

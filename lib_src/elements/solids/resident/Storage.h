@@ -6,11 +6,11 @@
 namespace tl::fea::solids::batch_detail {
 bool SameDiagnostics(const BatchDiagnostics&, const BatchDiagnostics&) noexcept;
 bool SameConfig(const BatchConfig&, const BatchConfig&) noexcept;
-void LaunchInitialize(Storage*, cudaStream_t);
+void LaunchInitialize(Storage*, cudaStream_t, std::size_t native_packet_count = 0);
 void LaunchControlledInitialize(Storage*,cudaStream_t);
 void LaunchControlledCandidate(Storage*,unsigned,unsigned,NodalPreparedView);
 void LaunchCandidate(Storage*, unsigned accepted, unsigned trial,
-    NodalPreparedView, BatchDiagnostics);
+    NodalPreparedView, BatchDiagnostics, std::size_t native_packet_count = 0);
 void LaunchResultValidation(Storage*, unsigned trial, double time,
     std::uint64_t epoch, cudaStream_t);
 void LaunchMeasurementValidation(Storage*, unsigned accepted, unsigned trial,

@@ -69,7 +69,7 @@ BatchReport Batch::InitializeJoined(const BatchConfig& config, const Model& mode
   report = next->Runtime(cudaMemcpy(next->device, upload.data(), layout.bytes, cudaMemcpyHostToDevice),
       "Solid model upload failed");
   if (!report) return report;
-  batch_detail::LaunchInitialize(next->device, next->stream);
+  batch_detail::LaunchInitialize(next->device, next->stream,next->device_header.controlled.packet_count);
   report = next->ReadControl();
   if (!report) return report;
   next->accepted_diagnostics = next->control.diagnostics;
