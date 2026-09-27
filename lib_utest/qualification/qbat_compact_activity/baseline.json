@@ -1,0 +1,40 @@
+{
+  "commit": "95664290ccf60c486174944f7399c8a9afe3b760",
+  "files": [
+    {
+      "path": "lib_src/elements/qbat/QbatBatchReadback.cu",
+      "fixture": "frozen/QbatBatchReadback.cu",
+      "bytes": 7289,
+      "sha256": "6a1212e1ba93d0a09f152b94a61d87678b89c7881cb61558214cd967ae1e72b0"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchResultChecks.h",
+      "fixture": "frozen/QbatBatchResultChecks.h",
+      "bytes": 5294,
+      "sha256": "d6d332ba3ef01a1339107bf73311508553162d01688d4b0139e4a0ec4d603af0"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatForceChecks.h",
+      "fixture": "frozen/QbatForceChecks.h",
+      "bytes": 4054,
+      "sha256": "99199eace46a4d2f7a9242c02866eef99b5bf72c9de6e9f0937e113a467de344"
+    }
+  ],
+  "unchanged_source_inputs": [
+    {
+      "path": "lib_src/elements/qbat/QbatBatchElements.cpp",
+      "bytes": 2718,
+      "sha256": "97f9041de9ac58ec2469426c21fa2e047bb580124efbe11d4fd0a1713cb4f0a6"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchStartup.cpp",
+      "bytes": 3945,
+      "sha256": "0ef6703474e44759d5275720bc3ee6a118317a86bacda67ec6a69758391d12cb"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchPlasticityBinding.cpp",
+      "bytes": 4596,
+      "sha256": "aae9a430e705360836f1367e60930b4112debf3076f941efc43fee63524b1f0d"
+    }
+  ]
+}

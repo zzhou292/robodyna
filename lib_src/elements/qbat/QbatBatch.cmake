@@ -5,6 +5,8 @@ add_library(tl_qbat_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchOperations.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchReadback.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/activity/Kernels.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/activity/Readback.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchKernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchPublication.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Initialize.cu"

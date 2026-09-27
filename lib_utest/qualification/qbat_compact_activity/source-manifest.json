@@ -1,0 +1,156 @@
+{
+  "schema": "qbat-compact-activity-source-v1",
+  "baseline": "95664290ccf60c486174944f7399c8a9afe3b760",
+  "files": [
+    {
+      "path": "lib_src/elements/mapped_shell/ActivityLayout.h",
+      "bytes": 1684,
+      "sha256": "f38b32c4e02316cd91def7ef5ac622887296708bebc39790ad9c7608153268fa"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/BUILD.bazel",
+      "bytes": 1583,
+      "sha256": "d4265209dd10058158e6dedb428246a6aad2c877ad12053a31860b79d7dd169e"
+    },
+    {
+      "path": "lib_src/elements/qbat/BUILD.bazel",
+      "bytes": 4043,
+      "sha256": "968c3000fcd9d73c78b8335ce30587597bebb32b006e90f78d9b2cb22858d695"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatch.cmake",
+      "bytes": 1235,
+      "sha256": "18d5b44cd3a120b2fd01cf0dcd14fe573bea0afd07ad96d560e34265f66b27ed"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatch.cu",
+      "bytes": 6285,
+      "sha256": "497a23ab77a547286d1880e5d4d312a77847fc1e6024ba92708e8a7f1b6f87dd"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.cpp",
+      "bytes": 2306,
+      "sha256": "5a88e91480a9328adb59ad068315077ed18160558c17bb491b78b77e14f5707f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.h",
+      "bytes": 2378,
+      "sha256": "468df226a305371fa3869fb3f69222d9dfe9e8916f6a36faf7c625054b30da88"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchReadback.cu",
+      "bytes": 7339,
+      "sha256": "5e74d8e8d1a2871396392423d6378920cf81642b388da4924facde6ed5a23c1e"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchStorage.h",
+      "bytes": 3381,
+      "sha256": "6412485707aa8649eb7c25dc07529327d080a0c2e4478088e6cb393ab6fe5fd2"
+    },
+    {
+      "path": "lib_src/elements/qbat/activity/Kernels.cu",
+      "bytes": 1185,
+      "sha256": "aaefa872cf3953d1e11c9fafecd056a9d8525b1a97183220bdd785f64eae50c2"
+    },
+    {
+      "path": "lib_src/elements/qbat/activity/Readback.cu",
+      "bytes": 2347,
+      "sha256": "25924f1a7afdfa140da965503f5348d941bce4f0635562cf9d13800b21af96d0"
+    },
+    {
+      "path": "lib_src/elements/qbat/activity/Values.h",
+      "bytes": 1521,
+      "sha256": "91d607d215905e2f1bf79313efdec02dafd16bec91031a47b2304900451af179"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Initialize.cu",
+      "bytes": 2940,
+      "sha256": "d54932163c6ac85b22e982f76bfecfd55bb80065d41c0df449cb5e7d23cc06cc"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Startup.cpp",
+      "bytes": 6415,
+      "sha256": "2abfecfb3c31604e2d3b6835e8e4b99124373aa65018007adce89f45af5c6f6d"
+    },
+    {
+      "path": "lib_src/elements/qeph/BUILD.bazel",
+      "bytes": 6022,
+      "sha256": "9ff4479ecb8e4763a8920b4be3e98e6b4d5277c9203556516fd9a26131634d98"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ActivityLayout.h",
+      "bytes": 284,
+      "sha256": "d7a25fe2a0e0c1db938dd8a8bef7ea539db2ec9f4ff9cf2086b9ac7a83477894"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/BUILD.bazel",
+      "bytes": 393,
+      "sha256": "e2ab9a3d36687a2c041c36ccdb3fcf4f70afe446a31b0544f6816f163c3e0c88"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/CMakeLists.txt",
+      "bytes": 3414,
+      "sha256": "e52245a0230e50254d5fbd7b4717fc5f431a28fae8ece03d0392330bb134855f"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/CudaTest.cu",
+      "bytes": 6041,
+      "sha256": "6585cda63ebd53e1bf353c1f65172c1a038c36b6297f6f0a066a18665522cac9"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/HostTest.cpp",
+      "bytes": 4156,
+      "sha256": "375b90df5d09e457a6b359b298ce99d8f7f3abf41c34b4ea292356b12cad5b1a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/OwnerProbe.cu",
+      "bytes": 2797,
+      "sha256": "5505ab7b839414a68d96c5f68edca1c62b7847709c7711b43687026cbec68fdb"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/OwnerProbe.h",
+      "bytes": 398,
+      "sha256": "ef58d1e41b535bae6618fae9d1fa85e8fe06686e2fef18df80997913bd894dc8"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/OwnerTest.cu",
+      "bytes": 6131,
+      "sha256": "46d4bdfc3aa20e579cd554b33a28b40bcce6fd21b68ab919c403b691df5b5356"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/README.md",
+      "bytes": 2877,
+      "sha256": "6730d6eab40fc9f050c244132f2a96447650cb86c0e998eeb86f62f43215b1cd"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/ValidationCases.h",
+      "bytes": 1593,
+      "sha256": "4feebe43210e501d2649295a62963077a63ff8f745b6e21ce2923b809ff6ebbf"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/baseline.json",
+      "bytes": 1324,
+      "sha256": "c76f42e8439c4440f3ef7354469f695090a6bba21e3e9b094f59a5987c83b989"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/frozen/QbatBatchReadback.cu",
+      "bytes": 7289,
+      "sha256": "6a1212e1ba93d0a09f152b94a61d87678b89c7881cb61558214cd967ae1e72b0"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/frozen/QbatBatchResultChecks.h",
+      "bytes": 5294,
+      "sha256": "d6d332ba3ef01a1339107bf73311508553162d01688d4b0139e4a0ec4d603af0"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_compact_activity/frozen/QbatForceChecks.h",
+      "bytes": 4054,
+      "sha256": "99199eace46a4d2f7a9242c02866eef99b5bf72c9de6e9f0937e113a467de344"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_resident/ReadFault.cu",
+      "bytes": 2092,
+      "sha256": "4f29a0eb395b9f02b841856e156077510c8c35ee8a21ddc2de8bf527d9f7363e"
+    }
+  ]
+}

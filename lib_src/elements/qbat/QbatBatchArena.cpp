@@ -17,7 +17,8 @@ bool Layout::Initialize(std::size_t parents,std::size_t nodes,std::size_t points
       !layout.Append<double>(points,next.curve_x)||!layout.Append<double>(points,next.curve_y)) {
     return false;
   }
-  next.bytes=layout.bytes();
+  if(!next.activity.Initialize(layout.bytes(),parents,cap)) return false;
+  next.bytes=next.activity.bytes;
   *this=next;
   return true;
 }
@@ -41,7 +42,8 @@ Storage* Layout::Construct(util::HostArena& arena) const noexcept {
     storage->model.curve_y=arena.Construct<double>(curve_y);
     if(!storage->model.curve_x||!storage->model.curve_y) return nullptr;
   }
-  if(!assembly.Construct(arena,storage->assembly)) return nullptr;
+  if(!assembly.Construct(arena,storage->assembly) ||
+      !activity.Construct(arena,storage->activity)) return nullptr;
   return storage;
 }
 
@@ -50,6 +52,7 @@ Storage Layout::Rebase(const Storage& host,void* device) const noexcept {
   output.model.curve_x=curve_x.count?util::ArenaPointer<double>(device,curve_x):nullptr;
   output.model.curve_y=curve_y.count?util::ArenaPointer<double>(device,curve_y):nullptr;
   output.assembly=assembly.Rebase(device);
+  output.activity=activity.Rebase(device);
   return output;
 }
 } // namespace tl::fea::qbat::batch_detail
