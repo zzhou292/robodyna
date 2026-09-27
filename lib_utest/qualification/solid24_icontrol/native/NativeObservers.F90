@@ -3,6 +3,8 @@ module IC1_NATIVE_OBSERVATIONS
   implicit none
   real(kind=8)::hourglass_work=0
   integer::hourglass_calls=0,center_contacts=0,corner_contacts=0
+  real(kind=8)::distortion_sigma(6)=0,distortion_parameters(5)=0
+  integer::distortion_flag=0
 end module
 subroutine IC1_NATIVE_HOUR_WORK(index,work)
   use IC1_NATIVE_OBSERVATIONS
@@ -31,4 +33,13 @@ subroutine ic1_native_geometry_counts(center,corner) bind(C,name='ic1_native_geo
   implicit none
   integer(c_int),intent(out)::center,corner
   center=center_contacts;corner=corner_contacts
+end subroutine
+
+subroutine ic1_native_distortion_observation(sig,parameters,flag) bind(C,name='ic1_native_distortion_observation')
+  use iso_c_binding,only:c_double,c_int
+  use IC1_NATIVE_OBSERVATIONS
+  implicit none
+  real(c_double),intent(out)::sig(6),parameters(5)
+  integer(c_int),intent(out)::flag
+  sig=distortion_sigma;parameters=distortion_parameters;flag=distortion_flag
 end subroutine

@@ -13,7 +13,7 @@ foreach(leaf IN LISTS leaves)
   list(APPEND sources "${prepared}/${leaf}")
 endforeach()
 add_library(solid24_ic1_native STATIC NativeSlots.F90 NativeObservers.F90 NativeCaller.F90
-  NativeHourglass.F NativeMaterialForces.F NativeDistortion.F NativeAssembly.F
+  NativeHourglass.F NativeMaterialForces.F NativeDistortion.F NativeAssembly.F NativeParameterProbe.F90
   "${prepared}/ControlledInterfaces.F" ${sources})
 add_dependencies(solid24_ic1_native ic1_verify_native heph_force_native)
 set_target_properties(solid24_ic1_native PROPERTIES Fortran_MODULE_DIRECTORY "${modules}")

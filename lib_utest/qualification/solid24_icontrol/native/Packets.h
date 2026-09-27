@@ -15,7 +15,7 @@ struct MaterialInput {
   std::array<double,6> mechanical_slots;
 };
 struct State {
-  std::array<double,9> material; // stress6,rho,EINT density(index7),bulk pressure.
+  std::array<double,9> material; // full Cauchy stress6,rho,EINT density(index7),QVIS(index8).
   std::array<double,12> controlled_hourglass_force; // C:component*4+mode.
   // Native FHOUR(NEL,3,4) atNEL1 usescomponent+3*mode; explicit loops transpose.
   double distortion_energy; // Separate cumulative GBUF%EINT_DISTOR, not EINT density.

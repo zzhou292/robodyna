@@ -6,6 +6,8 @@
 #include <limits>
 extern "C" void ic1_native_slots(const double*,double*);
 extern "C" void ic1_native_geometry_counts(int*,int*);
+extern "C" void ic1_native_distortion_observation(double*,double*,int*);
+extern "C" void ic1_native_parameter_probe(const double*,const double*,const double*,double*,int*);
 extern "C" void ic1_force_native(const double*,const double*,const double*,const double*,const double*,
   const double*,const double*,const double*,double*,std::int64_t*,int*);
 namespace solid24_icontrol_test {
@@ -20,7 +22,9 @@ struct History {
 struct Trial {
   std::array<double,93> values{};
   std::int64_t stages=0;
-  int status=-1,center_contacts=0,corner_contacts=0;
+  int status=-1,center_contacts=0,corner_contacts=0,distortion_flag=0;
+  std::array<double,6> distortion_sigma{};
+  std::array<double,5> distortion_parameters{};
 };
 inline Trial Step(const History& history,const s::PrescribedInterval& interval,const s::Material& material) {
   std::array<double,24> x{},v{};
@@ -35,6 +39,7 @@ inline Trial Step(const History& history,const s::PrescribedInterval& interval,c
   ic1_force_native(p,history.reference.initial.data(),x.data(),v.data(),jac.data(),&volume,
     history.values.data(),time,result.values.data(),&result.stages,&result.status);
   ic1_native_geometry_counts(&result.center_contacts,&result.corner_contacts);
+  ic1_native_distortion_observation(result.distortion_sigma.data(),result.distortion_parameters.data(),&result.distortion_flag);
   if(result.status==0) {
     const auto raw=result.values;
     for(unsigned n=0;n<8;++n) {
@@ -48,6 +53,7 @@ inline Trial Step(const History& history,const s::PrescribedInterval& interval,c
 inline void Ready(const Trial& trial) {
   ASSERT_EQ(trial.status,0);ASSERT_EQ(trial.stages,native::RequiredStages);
   for(const auto value:trial.values)ASSERT_TRUE(std::isfinite(value));
+  EXPECT_GT(trial.values[6],0.);EXPECT_GT(trial.distortion_parameters[4],0.);
   for(unsigned n=0;n<8;++n)EXPECT_DOUBLE_EQ(trial.values[82+n],.25*trial.values[81]);
 }
 inline double ForceNorm(const Trial& trial) {

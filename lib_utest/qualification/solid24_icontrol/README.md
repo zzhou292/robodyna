@@ -41,10 +41,13 @@ byte/blob tampering. Native test successes are required before any mechanics
 claim. The CMake target is `solid24_icontrol_native_test` with
 `TL_SOLID24_ICONTROL_NATIVE=ON` and the existing GNU Fortran wrapper.
 
-Seven authored numerical cases cover material slots, all-stage initial/translation,
+Ten authored numerical cases cover material slots, all-stage initial/translation,
 nonzero controlled history and energy carry, all12historyslots, distortion/work/
 forcebalance/nodalassembly, late numerical failure/repair and rejected input
-with unchanged output. They test
+with unchanged output. Hydrostatic/unequal diagonal stress, distinctQVIS, the
+native stress criterion and nonzero-mean damping criteria are checked explicitly.
+Passive source hooks separately count actual positive center/corner forces;
+a damping-only result cannot satisfy the geometric-contact assertion. They test
 this independent oracle, not a C++ implementation. After the native gate and
 source review, implement separate shared C++ controlled leaves with native/CUDA
 comparisons; S6 and LAW90 retain their distinct dispatch/STI obligations in the

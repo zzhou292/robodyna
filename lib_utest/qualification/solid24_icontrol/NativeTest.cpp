@@ -65,6 +65,46 @@ TEST(Solid24IcontrolNative, FoldedPositiveVolumeCellExercisesDistortionEnergyAnd
   }
   EXPECT_TRUE(exercised);EXPECT_TRUE(geometric);
 }
+TEST(Solid24IcontrolNative, HydrostaticAndUnequalDiagonalStressReachDistortionWithoutQvis) {
+  const auto reference=heph_test::Reference();const auto material=heph_test::Material(reference.input().density_kg_m3);
+  History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);
+  for(bool hydro:{true,false}) {
+    auto interval=heph_test::Interval(reference,ignored);const double scale[]{hydro?.9:.8,hydro?.9:.95,hydro?.9:1.05};
+    for(unsigned n=0;n<8;++n) {
+      const auto x=reference.input().position_m[n];interval.position_m[n]={scale[0]*x.x,scale[1]*x.y,scale[2]*x.z};
+      interval.velocity_m_s[n]={-.25*x.x,-.25*x.y,-.25*x.z};
+    }
+    const auto trial=Step(history,interval,material);Ready(trial);ASSERT_FALSE(HasFailure());
+    EXPECT_GT(trial.values[54],0.);EXPECT_EQ(trial.values[8],trial.values[54]);
+    for(unsigned i=0;i<6;++i)EXPECT_EQ(trial.distortion_sigma[i],trial.values[46+i]);
+    if(hydro) {
+      EXPECT_LT(trial.distortion_sigma[0],0.);
+      EXPECT_NEAR(trial.distortion_sigma[0],trial.distortion_sigma[1],1e-10*std::abs(trial.distortion_sigma[0]));
+      EXPECT_NEAR(trial.distortion_sigma[0],trial.distortion_sigma[2],1e-10*std::abs(trial.distortion_sigma[0]));
+    } else {EXPECT_NE(trial.distortion_sigma[0],trial.distortion_sigma[1]);EXPECT_NE(trial.distortion_sigma[1],trial.distortion_sigma[2]);}
+  }
+}
+TEST(Solid24IcontrolNative, SourceStressCriterionIncludesHydrostaticMagnitude) {
+  const auto m=heph_test::Material();const double p[]{m.mu_pa,m.poisson_ratio,m.density_kg_m3,m.tension_cutoff_pa};
+  const double kin[]{1980.,500.,.02*.03*.04};double zero[6]{},hydro[]{-1e5,-1e5,-1e5,0,0,0},large[]{-1e12,0,0,0,0,0};
+  double a[4],b[4],c[4];int ia=-1,ib=-1,ic=-1;
+  ic1_native_parameter_probe(p,zero,kin,a,&ia);ic1_native_parameter_probe(p,hydro,kin,b,&ib);ic1_native_parameter_probe(p,large,kin,c,&ic);
+  EXPECT_EQ(ia,0);EXPECT_EQ(ib,0);EXPECT_EQ(ic,1);EXPECT_GT(b[1],a[1]);EXPECT_GT(c[1],b[1]);
+  EXPECT_EQ(a[0],b[0]);EXPECT_EQ(b[0],c[0]);EXPECT_EQ(a[2],b[2]);EXPECT_EQ(a[3],b[3]);
+}
+TEST(Solid24IcontrolNative, DampingVelocityCriterionDistinguishesZeroAndNonzeroMeanModes) {
+  const auto reference=heph_test::Reference();const auto material=heph_test::Material(reference.input().density_kg_m3);
+  History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);
+  const double signs[]{1,-1,1,-1,-1,1,-1,1};double energy[2]{};
+  for(unsigned variant=0;variant<2;++variant) {
+    auto interval=heph_test::Interval(reference,ignored);
+    for(unsigned n=0;n<8;++n)interval.velocity_m_s[history.reference.reference.permutation[n]].z=signs[n]+(variant?.01:0.);
+    const auto trial=Step(history,interval,material);Ready(trial);ASSERT_FALSE(HasFailure());
+    EXPECT_EQ(trial.distortion_flag,0);EXPECT_EQ(trial.center_contacts+trial.corner_contacts,0);
+    energy[variant]=trial.values[21];
+  }
+  EXPECT_EQ(energy[0],0.);EXPECT_GT(energy[1],0.);
+}
 TEST(Solid24IcontrolNative, LateNonfiniteStageRejectsOutputAndRepairs) {
   const auto reference=heph_test::Reference();const auto material=heph_test::Material(reference.input().density_kg_m3);
   History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);

@@ -36,6 +36,7 @@ subroutine ic1_force_native(parameters,xref,x,v,jac_ref,volume0,base,time,values
   real(c_double)::hg_sti,dist_sti
   integer::k,n,h,cursor
   stages=0;status=1;center_contacts=0;corner_contacts=0
+  distortion_sigma=zero;distortion_parameters=zero;distortion_flag=0
   if(.not.all(ieee_is_finite(parameters)).or..not.all(ieee_is_finite(xref)).or. &
      .not.all(ieee_is_finite(x)).or..not.all(ieee_is_finite(v)).or. &
      .not.all(ieee_is_finite(jac_ref)).or..not.all(ieee_is_finite(base)).or. &
