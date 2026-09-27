@@ -20,7 +20,8 @@ struct Packed {
 
 Counts CheckModel(const PhysicalModel&, const JointModel&, Limits);
 Forecast Budget(const PhysicalModel&, const JointModel&, const ids::ImportMembers&, Limits);
-InteriorDisposition ReadInterior(const PhysicalModel&, const ids::ImportMembers&, Limits);
+struct InteriorPrepared { modelio::solid_control::DirectSource declarations; InteriorDisposition disposition; };
+InteriorPrepared ReadInterior(const PhysicalModel&, const ids::ImportMembers&, Limits);
 void PackSolids(const PhysicalModel&, n::UnitScale, Packed&);
 void PackDirect(const PhysicalModel&, const JointModel&, const ids::Resolution&, n::UnitScale, Packed&);
 void PackShells(const PhysicalModel&, n::UnitScale, Packed&);

@@ -13,6 +13,7 @@ struct PreCorrectionNodalSource::Data {
     Forecast forecast;
     Provenance provenance;
     InteriorDisposition interior;
+    std::optional<modelio::solid_control::DirectSource> declarations;
     std::vector<Contributor> contributors;
     std::vector<n::NativeNodalSeed> seed;
     std::vector<PreCorrectionFields> fields;
@@ -42,7 +43,9 @@ PreCorrectionNodalSource PreCorrectionNodalSource::Prepare(const PhysicalModel& 
         next->spring.physical_order.size() == counts.type13 + counts.type25 + counts.type45,
         "Contact seed resolved SPRING coverage differs from physical contributors");
     counts.namespace_only_springs = next->spring.counts.discrete_namespace_only;
-    next->interior = d::ReadInterior(physical, members, limits);
+    auto interior = d::ReadInterior(physical, members, limits);
+    next->declarations.emplace(std::move(interior.declarations));
+    next->interior = std::move(interior.disposition);
     const auto& source_units = canonical.data().inputs.units;
     next->provenance.units = {source_units.length_to_m, source_units.mass_to_kg, source_units.time_to_s};
     next->provenance.canonical_sha256 = canonical.data().inputs.canonical_manifest.sha256;
@@ -132,6 +135,7 @@ const Forecast& PreCorrectionNodalSource::forecast() const noexcept { return dat
 const Counts& PreCorrectionNodalSource::counts() const noexcept { return data_->forecast.counts; }
 const Provenance& PreCorrectionNodalSource::provenance() const noexcept { return data_->provenance; }
 const InteriorDisposition& PreCorrectionNodalSource::interior() const noexcept { return data_->interior; }
+const modelio::solid_control::DirectSource& PreCorrectionNodalSource::solid_control_declarations() const noexcept { return *data_->declarations; }
 const std::vector<Contributor>& PreCorrectionNodalSource::contributors() const noexcept { return data_->contributors; }
 n::NativeNodalSeedView PreCorrectionNodalSource::seed() const noexcept { return {data_->seed.data(), data_->seed.size()}; }
 tl::util::ConstView<PreCorrectionFields> PreCorrectionNodalSource::fields() const noexcept {

@@ -115,6 +115,8 @@ Forecast Budget(const PhysicalModel& model, const JointModel& joints,
     add(result.context_scratch, 2, output::full_shell::source::FindArray(canonical.data(), "solids_records").bytes.size());
     add(result.context_scratch, limits.metadata_bytes, 8);
     add(result.fixed_bytes, 65536, 1);
+    // Shared direct declarations/evidence stay alive after the old parser phase.
+    add(result.fixed_bytes, modelio::solid_control::DirectLimits{}.retained_bytes, 1);
     return result;
 }
 } // namespace crash::cases::vehicle_self_contact::native::nodal_seed::detail

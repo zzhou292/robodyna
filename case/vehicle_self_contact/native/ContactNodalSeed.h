@@ -1,4 +1,5 @@
 #pragma once
+#include "modelio/solid_control/DirectSource.h"
 #include "case/vehicle_startup/joints/VehicleJointModel.h"
 #include "lib_src/collision/radioss_type25/source_nodal/Types.h"
 #include "lib_src/collision/radioss_type25/CoefficientTypes.h"
@@ -97,6 +98,7 @@ class PreCorrectionNodalSource {
     const Counts& counts() const noexcept;
     const Provenance& provenance() const noexcept;
     const InteriorDisposition& interior() const noexcept;
+    const modelio::solid_control::DirectSource& solid_control_declarations() const noexcept;
     const std::vector<Contributor>& contributors() const noexcept;
     n::NativeNodalSeedView seed() const noexcept;
     tl::util::ConstView<PreCorrectionFields> fields() const noexcept;

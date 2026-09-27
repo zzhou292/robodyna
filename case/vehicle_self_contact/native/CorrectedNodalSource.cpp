@@ -13,6 +13,7 @@ struct CorrectedNodalSource::Data {
     Forecast forecast;
     Provenance provenance;
     std::vector<PartControl> parts;
+    std::optional<modelio::solid_control::EffectiveSource> controls;
     std::vector<double> coefficients;
 };
 Forecast CorrectedNodalSource::Preflight(const seed::PreCorrectionNodalSource& input,
@@ -28,6 +29,7 @@ Preparation CorrectedNodalSource::Prepare(const seed::PreCorrectionNodalSource& 
         const auto imported = d::ids::ImportContext::Prepare(canonical, members);
         auto context = d::ReadContext(input, members, imported, limits);
         auto next = std::make_shared<Data>(input, imported, forecast);
+        next->controls = context.source;
         next->provenance.source_digest = context.source_digest;
         next->provenance.pre_correction_digest = input.provenance().contributor_digest;
         next->provenance.property_digest = context.property_digest;
@@ -114,6 +116,7 @@ const seed::PreCorrectionNodalSource& CorrectedNodalSource::pre_correction() con
 const Forecast& CorrectedNodalSource::forecast() const noexcept { return data_->forecast; }
 const Provenance& CorrectedNodalSource::provenance() const noexcept { return data_->provenance; }
 const std::vector<PartControl>& CorrectedNodalSource::part_controls() const noexcept { return data_->parts; }
+const modelio::solid_control::EffectiveSource& CorrectedNodalSource::solid_control_source() const noexcept { return *data_->controls; }
 tl::util::ConstView<double> CorrectedNodalSource::coefficients() const noexcept {
     return {data_->coefficients.data(), data_->coefficients.size()};
 }

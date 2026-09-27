@@ -34,6 +34,9 @@ Forecast Budget(const seed::PreCorrectionNodalSource& input, const ids::ImportMe
     add(result.source_workspace, limits.parts, 2*sizeof(Part)+2*sizeof(Section)+2*sizeof(PartControl)+512);
     add(result.source_workspace, limits.metadata_bytes, 4);
     add(result.source_workspace, 65536, 1);
+    // New immutable effective rows/origins coexist with extraction maps and the
+    // legacy public part-control copy. Imported/direct backing is shared.
+    add(result.source_workspace, 2, modelio::solid_control::Limits{}.retained_bytes);
     add(result.correction_inputs, counts.solids, sizeof(c::Solid)+sizeof(std::uint64_t)+sizeof(unsigned char));
     add(result.correction_inputs, counts.nodes, sizeof(double));
     add(result.output_bytes, counts.nodes, sizeof(double));

@@ -1,5 +1,6 @@
 #pragma once
 #include "../CorrectedNodalSource.h"
+#include "modelio/solid_control/Internal.h"
 #include "modelio/native_spring_ids/ImportContext.h"
 #include "modelio/tied_shell/Internal.h"
 #include "modelio/self_contact/PartSets.h"
@@ -26,16 +27,24 @@ struct Failure : std::runtime_error {
     report.source_line = line;
     throw Failure(std::move(report));
 }
-struct Part {
-    std::uint64_t id = 0, section = 0, material = 0;
-    std::string member;
-    std::size_t line = 0;
-};
-struct Section {
-    std::uint64_t id = 0;
-    std::string keyword;
-};
+namespace controls = modelio::solid_control;
+using Part = controls::detail::Part;
+using Section = controls::detail::Section;
+inline Status ControlStatus(controls::Status value) {
+    switch (value) {
+    case controls::Status::Ready: return Status::Ready;
+    case controls::Status::InvalidInput: return Status::InvalidInput;
+    case controls::Status::UnsupportedSource: return Status::UnsupportedSource;
+    case controls::Status::ResourceLimit: return Status::ResourceLimit;
+    case controls::Status::NeedsNativePropertyMapping: return Status::NeedsNativePropertyMapping;
+    }
+    return Status::InvalidInput;
+}
+[[noreturn]] inline void RejectControl(const controls::Report& report) {
+    Reject(ControlStatus(report.status), report.reason.c_str(), report.source_file, report.source_line);
+}
 struct Context {
+    std::optional<controls::EffectiveSource> source;
     std::vector<PartControl> parts;
     InterfaceCensus interfaces;
     std::string source_digest, property_digest;

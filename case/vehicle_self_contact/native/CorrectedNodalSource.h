@@ -1,4 +1,5 @@
 #pragma once
+#include "modelio/solid_control/EffectiveSource.h"
 #include "ContactNodalSeed.h"
 #include "lib_src/collision/RadiossType25NodalCorrection.h"
 #include <optional>
@@ -11,26 +12,15 @@ enum class Status {
     NeedsNativePropertyMapping, NeedsNativeStorageOrder
 };
 enum class OrderPolicy { CertifiedEqualNodeFactors };
-enum class InterfaceDisposition { Unresolved, CompleteNoApplicableType24 };
 struct Report {
     Status status = Status::InvalidInput;
     std::string reason, source_file;
     std::size_t source_line = 0;
     std::uint64_t first_element = 0, conflicting_element = 0, source_node = 0;
 };
-struct PartControl {
-    std::uint64_t part_id = 0, section_id = 0, material_id = 0;
-    // Zero means an unrequested multi-MID clone identity is unavailable; its
-    // disabled control is still proved by the closed ordinary source profile.
-    std::uint64_t native_property_id = 0;
-    bool directly_requested = false, effective_control = false;
-};
-struct InterfaceCensus {
-    InterfaceDisposition disposition = InterfaceDisposition::Unresolved;
-    std::size_t type25_sources = 0, type2_sources = 0;
-    std::size_t interior_sources = 0, rigid_wall_sources = 0;
-    std::size_t checked_source_blocks = 0;
-};
+using PartControl = modelio::solid_control::PartControl;
+using InterfaceDisposition = modelio::solid_control::InterfaceDisposition;
+using InterfaceCensus = modelio::solid_control::InterfaceCensus;
 struct Provenance {
     OrderPolicy order = OrderPolicy::CertifiedEqualNodeFactors;
     std::string source_digest, pre_correction_digest, property_digest, material_digest, certificate_digest;
@@ -78,6 +68,7 @@ class CorrectedNodalSource {
     const Forecast& forecast() const noexcept;
     const Provenance& provenance() const noexcept;
     const std::vector<PartControl>& part_controls() const noexcept;
+    const modelio::solid_control::EffectiveSource& solid_control_source() const noexcept;
     tl::util::ConstView<double> coefficients() const noexcept;
     // Native pressure-valued slots AFTER HM_READ_MAT/UPDMAT, in the retained
     // declared units. Reads the same qualified material helper as correction;

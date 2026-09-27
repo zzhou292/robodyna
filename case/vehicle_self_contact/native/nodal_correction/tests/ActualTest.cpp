@@ -166,4 +166,43 @@ TEST(CorrectedNodalSourceActual, MaterialQueriesRetainSourceIdentityUnitsAndExpl
     RecordProperty("queried_retained_parts", std::to_string(parts.size()));
     RecordProperty("unavailable_nonretained_parts", std::to_string(unavailable));
 }
+TEST(CorrectedNodalSourceActual, SharedControlAuthorityRetainsBackingAndChecksExactResultCaps) {
+    const auto& direct=Before().solid_control_declarations();
+    const auto& canonical=direct.canonical();
+    const auto imported=modelio::native_spring_ids::ImportContext::Prepare(canonical,Members().Input());
+    namespace control=modelio::solid_control;
+    auto selected=control::EffectiveSource::Prepare(direct,imported,Members().Input());
+    ASSERT_EQ(selected.report.status,control::Status::Ready)<<selected.report.reason;
+    ASSERT_TRUE(selected.source);
+    ASSERT_EQ(selected.source->data().parts.size(),922u);
+    ASSERT_EQ(selected.source->data().origins.size(),922u);
+    for(std::size_t i=0;i<922;++i) {
+        EXPECT_EQ(selected.source->data().parts[i].part_id,selected.source->data().origins[i].part_id);
+        EXPECT_FALSE(selected.source->data().origins[i].member.empty());
+        EXPECT_EQ(selected.source->data().origins[i].block_sha256.size(),64u);
+    }
+    control::Limits limits;limits.retained_bytes=selected.source->owned_payload_bytes();
+    EXPECT_EQ(control::EffectiveSource::Prepare(direct,imported,Members().Input(),limits).report.status,control::Status::Ready);
+    --limits.retained_bytes;
+    auto failed=control::EffectiveSource::Prepare(direct,imported,Members().Input(),limits);
+    EXPECT_EQ(failed.report.status,control::Status::ResourceLimit);EXPECT_FALSE(failed.source);
+    control::DirectLimits direct_limits;direct_limits.retained_bytes=direct.owned_payload_bytes();
+    EXPECT_NO_THROW(control::DirectSource::Prepare(canonical,Members().Input(),direct_limits));
+    --direct_limits.retained_bytes;
+    EXPECT_THROW(control::DirectSource::Prepare(canonical,Members().Input(),direct_limits),std::exception);
+    const auto clone=output::full_shell::source::CanonicalSource::Read(canonical.data().inputs,canonical.data().limits);
+    ASSERT_NE(&clone.data(),&canonical.data());
+    const auto clone_import=modelio::native_spring_ids::ImportContext::Prepare(clone,Members().Input());
+    const auto cloned=control::EffectiveSource::Prepare(direct,clone_import,Members().Input());
+    ASSERT_EQ(cloned.report.status,control::Status::Ready)<<cloned.report.reason;
+    ASSERT_TRUE(cloned.source);
+    EXPECT_FALSE(cloned.source->data().shared_canonical_backing);
+    EXPECT_EQ(cloned.source->data().additional_backing_reservation_bytes,canonical.data().limits.host_bytes);
+    EXPECT_EQ(cloned.source->data().source_digest,selected.source->data().source_digest);
+    EXPECT_EQ(cloned.source->data().parts.size(),selected.source->data().parts.size());
+    const auto retained=*selected.source;
+    selected.source.reset();
+    EXPECT_EQ(retained.data().parts.size(),922u);
+    EXPECT_FALSE(retained.direct().data().evidence.empty());
+}
 } // namespace crash::cases::vehicle_self_contact::native::nodal_correction::test
