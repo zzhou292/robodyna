@@ -7,7 +7,7 @@ SZHOUR_CTL/SHOUR_CTL, unchanged SFINT3 and world rotation, SDISTOR_INI/S8FOR_DIS
 and actual SCUMU3 nodal assembly. No numerical leaf is replaced by a stub.
 
 The first explicit profile is active LAW42 alpha2/no-Prony, JCVT1/ICP1/IINT2/
-ISMSTR10, DN=.1, nu in[0,.48999], all-active, no thermal/ALE/rotation/deletion. Higher-nu SDLEN8 is
+ISMSTR10, DN=.1, nu in[0,double(.48999f)], all-active, no thermal/ALE/rotation/deletion. Higher-nu SDLEN8 is
 rejected before numerical output, not silently replaced by ordinary SDLEN3.
 ANIM_N=0/IAD_GPS=0 are explicitly set in the reused context. No STRHG18/strain
 output history coverage is claimed. Geometry remains the existing positive-
@@ -41,7 +41,7 @@ byte/blob tampering. Native test successes are required before any mechanics
 claim. The CMake target is `solid24_icontrol_native_test` with
 `TL_SOLID24_ICONTROL_NATIVE=ON` and the existing GNU Fortran wrapper.
 
-Ten authored numerical cases cover material slots, all-stage initial/translation,
+Eleven authored numerical cases cover material slots, all-stage initial/translation,
 nonzero controlled history and energy carry, all12historyslots, distortion/work/
 forcebalance/nodalassembly, late numerical failure/repair and rejected input
 with unchanged output. Hydrostatic/unequal diagonal stress, distinctQVIS, the

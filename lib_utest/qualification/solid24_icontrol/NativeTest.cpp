@@ -115,6 +115,19 @@ TEST(Solid24IcontrolNative, LateNonfiniteStageRejectsOutputAndRepairs) {
   for(unsigned i=9;i<21;++i)history.values[i]=0;
   const auto repaired=Step(history,interval,material);Ready(repaired);ASSERT_FALSE(HasFailure());
 }
+TEST(Solid24IcontrolNative, NativeDefaultRealPoissonThresholdAdmitsBoundaryOnly) {
+  const auto reference=heph_test::Reference();History history(reference.input());
+  s::Material material;
+  ASSERT_EQ(tl::material::law42::Prepare(24e6,native::MaximumPoissonRatio,reference.input().density_kg_m3,1e26,material),tl::material::law42::Status::Ok);
+  s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);
+  const auto interval=heph_test::Interval(reference,ignored);const auto at=Step(history,interval,material);
+  Ready(at);ASSERT_FALSE(HasFailure());
+  const auto above=std::nextafter(native::MaximumPoissonRatio,std::numeric_limits<double>::infinity());
+  ASSERT_LT(above,0.48999); // Binary64 decimal would silently admit a wider profile.
+  ASSERT_EQ(tl::material::law42::Prepare(24e6,above,reference.input().density_kg_m3,1e26,material),tl::material::law42::Status::Ok);
+  const auto rejected=Step(history,interval,material);EXPECT_NE(rejected.status,0);EXPECT_EQ(rejected.stages,0);
+  for(auto value:rejected.values)EXPECT_EQ(value,-9876.25);
+}
 TEST(Solid24IcontrolNative, UnsupportedOrNonfiniteInputsDoNotPublishNumericalOutput) {
   const auto reference=heph_test::Reference();auto material=heph_test::Material(reference.input().density_kg_m3);
   History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);

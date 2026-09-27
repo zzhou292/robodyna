@@ -8,6 +8,7 @@ namespace solid24_icontrol_test::native {
 // SI/native conversion belongs at the adapter boundary, never halfway through
 // a native routine with its source dimensional floors and tolerances.
 enum class WorkingUnits : std::uint32_t { SI=1 };
+inline constexpr double MaximumPoissonRatio=static_cast<double>(0.48999f);
 struct MaterialInput {
   std::array<double,4> law42; // mu,nu,rho,tension_cutoff for the existing native caller.
   // Phase-labelled native PM20,21,22,32,100,107. Produce through authenticated
