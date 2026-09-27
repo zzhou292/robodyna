@@ -136,19 +136,14 @@ __global__ void PackForces(Device d,std::size_t candidates,std::size_t kept) {
 __global__ void Diagnostics(Device d,std::size_t candidates,units_detail::Factors units) {
   if(threadIdx.x||blockIdx.x)return;
   // Diagnostic only; no atomics/reassociated native work sums or host packets.
-  auto active=d.control->active;
-  double elastic_energy=d.control->elastic_energy,damping_work=d.control->damping_work;
-  double friction_work=d.control->friction_work;
   for(std::size_t i=0;i<candidates;++i)if(d.positive_flags[i]) {
     const auto& result=d.responses[d.sorted_slots[i]];
-    if(result.contact_active)++active;
-    elastic_energy+=result.normal.elastic_energy;
-    damping_work+=result.normal.damping_work;
-    friction_work+=result.friction_work;
+    if(result.contact_active)++d.control->active;
+    d.control->elastic_energy+=result.normal.elastic_energy;
+    d.control->damping_work+=result.normal.damping_work;
+    d.control->friction_work+=result.friction_work;
   }
-  elastic_energy*=units.energy;damping_work*=units.energy;friction_work*=units.energy;
-  d.control->active=active;d.control->elastic_energy=elastic_energy;
-  d.control->damping_work=damping_work;d.control->friction_work=friction_work;
+  d.control->elastic_energy*=units.energy;d.control->damping_work*=units.energy;d.control->friction_work*=units.energy;
   if(!tl::math::Finite(d.control->elastic_energy)||!tl::math::Finite(d.control->damping_work)||
      !tl::math::Finite(d.control->friction_work))Fail(d,0,TransactionStatus::NumericalFailure);
 }
