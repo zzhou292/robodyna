@@ -51,5 +51,12 @@ actual source-set parsing without self-contact, direct-before-sharing failure
 semantics, borrowed member destruction, unsupported/nested declarations, sharing
 and capacity-aware accounting. The full consumer test additionally covers exact
 and one-byte-short retained caps, independent canonical clones and retained
-source lifetime. Compile/actual qualification is pending until separate receipts
-say otherwise. This module is not permission to enable IC1 forces/history/STI.
+source lifetime. Qualification passed at executable source5c128776851cf031757e7e6cb74fa9a09ffcc54e:
+12focused GTests plus the consumer and5actual source tests. The actual test
+checks4980solid/3686controlled/6656affected/922part counts. All3015440corrected-K
+bytes and every old source/pre-correction/property/material/certificate digest
+match the preserved qualified artifact. The sole sourceJSONdifference is the
+explicit20MiB forecast increase; hard caps are unchanged. Exact/one-byte-short
+retained budgets and independent canonical clone/lifetime checks passed.
+Workspace receipt: `crash-work/reports/solid-control-source-qualified-1.json`.
+No vehicle binary was promoted and no IC1 force/history/STI profile was enabled.
