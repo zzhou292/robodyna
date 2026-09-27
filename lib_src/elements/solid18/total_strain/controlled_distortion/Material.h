@@ -33,6 +33,10 @@ TL_LAW90_HD inline distortion::Status PrepareMaterial(const law::PreparedMateria
   auto numeric=source;
   if(units.length_m!=1) {
     const auto& r=source.reader();law::PreparationInput input;
+    // PreparedMaterial retains resolved TCUT, not whether EP20 came from a blank
+    // native field. Unit conversion of that literal is ambiguous without source
+    // provenance. The selected radiator has an explicit 15 MPa cutoff.
+    if(r.tension_cutoff_pa==1e20)return distortion::Status::UnsupportedProfile;
     const double density=factors.base.mass/factors.volume;
     input.density_kg_m3=r.density_kg_m3/density;
     input.reference_density_kg_m3=r.reference_density_kg_m3/density;

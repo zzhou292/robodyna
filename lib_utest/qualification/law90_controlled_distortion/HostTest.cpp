@@ -74,3 +74,13 @@ TEST(Law90ControlledDistortion, InvalidSourceUnitsAndLateForceAreFailureAtomic) 
   const auto different_units=Reference(input,material,{.001,1000,1});
   EXPECT_EQ(c::PrepareCandidate(different_units,accepted.proposed_history,Path(input,1),scratch),d::Status::InvalidInput);
 }
+
+TEST(Law90ControlledDistortion, AmbiguousNativeCutoffSentinelIsNotSilentlyRescaled) {
+  auto input=law90_test::OriginalBlankHuInput();input.tension_cutoff_pa=0;
+  law::PreparedMaterial material;
+  ASSERT_EQ(law::PrepareSI(input,law90_test::OriginalBlankHuCurve(),material),law::Status::Ok);
+  c::Material result;ASSERT_EQ(c::PrepareMaterial(material,{1,1,1},result),d::Status::Success);
+  const auto saved=law90_test::Bytes(result);
+  EXPECT_EQ(c::PrepareMaterial(material,{.001,1000,1},result),d::Status::UnsupportedProfile);
+  EXPECT_EQ(law90_test::Bytes(result),saved);
+}
