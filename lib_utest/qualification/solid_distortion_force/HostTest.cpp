@@ -54,13 +54,26 @@ TEST(DistortionForce, DegenerateNativeFaceAndSecondaryNodeBranches) {
   }
   EXPECT_EQ(exercised,8u);
 }
+TEST(DistortionForce, DegenerateLeafFollowsNativeWithoutInventingFamilyJacobianAdmission) {
+  // The real family rejects an invalid material/Jacobian before reaching here.
+  // This raw-leaf test proves S8FOR_DISTOR has no added center-volume screen.
+  for(auto units:{d::UnitScale{1,1,1},d::UnitScale{.001,1000,1}}) {
+    auto c=Folded();c.units=units;auto values=Prepare(c);
+    for(auto& point:values.input.position)point={};
+    d::ForceResult result;
+    ASSERT_EQ(d::EvaluateForce(values,Batch(values),result),d::Status::Success);
+    Compare(result,NativePrepared(values));
+    EXPECT_EQ(result.center_contacts,0);EXPECT_EQ(result.corner_contacts,0);
+    EXPECT_EQ(result.damping_applied,1);
+  }
+}
 TEST(DistortionForce, InvalidGeometryInputsBatchDecisionAndOverflowPublishNothing) {
   const auto good=Prepare(Folded());d::ForceResult sentinel;
   ASSERT_EQ(d::EvaluateForce(good,Batch(good),sentinel),d::Status::Success);
   auto reject=[&](d::PreparedForceValues value,bool batch){auto out=sentinel;
     EXPECT_NE(d::EvaluateForce(value,batch,out),d::Status::Success);Same(out,sentinel);};
   auto bad=good;bad.input.position[0].x=std::numeric_limits<double>::quiet_NaN();reject(bad,true);
-  bad=good;for(auto& x:bad.input.position)x={};reject(bad,true);
+  bad=good;bad.parameters.length=0;reject(bad,true);
   bad=good;bad.input.dt=-1;reject(bad,true);
   bad=good;bad.parameters.damping=std::numeric_limits<double>::max();bad.input.velocity[0].x=4;reject(bad,true);
   auto trigger=Base();for(unsigned n=0;n<8;++n)trigger.input.velocity_m_s[n]={0,0,(n%2?1.:-1.)+.01};
