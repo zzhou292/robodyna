@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeExpected.h"
+#include "Diagnostics.h"
 #include <cuda_runtime.h>
 using namespace law90_control_test;
 namespace {
@@ -9,6 +10,7 @@ struct DeviceCase {
   c::Result accepted;
   s::PrescribedInterval intervals[32];
   c::Result output[33];
+  PointOperands operands[33];
   d::Status status=d::Status::InvalidInput;
 };
 __global__ void RunControlledCases(DeviceCase* values,unsigned count) {
@@ -16,12 +18,12 @@ __global__ void RunControlledCases(DeviceCase* values,unsigned count) {
   auto& c=values[row];c.status=c::PrepareInitial(c.reference,{0,0,0},c.scratch);
   if(c.status!=d::Status::Success)return;
   c.status=c::Complete(c.scratch,c.scratch.activity.triggers_native_batch!=0,c.accepted);
-  if(c.status!=d::Status::Success)return;c.output[0]=c.accepted;
+  if(c.status!=d::Status::Success)return;c.output[0]=c.accepted;Capture(c.scratch,c.operands[0]);
   for(unsigned step=0;step<32;++step) {
     c.status=c::PrepareCandidate(c.reference,c.accepted.proposed_history,c.intervals[step],c.scratch);
     if(c.status!=d::Status::Success)return;
     c.status=c::Complete(c.scratch,c.scratch.activity.triggers_native_batch!=0,c.output[step+1]);
-    if(c.status!=d::Status::Success)return;c.accepted=c.output[step+1];
+    if(c.status!=d::Status::Success)return;c.accepted=c.output[step+1];Capture(c.scratch,c.operands[step+1]);
   }
 }
 }
@@ -32,7 +34,7 @@ TEST(Law90ControlledDistortionCuda, NativeCarriedHistoryBothUnitsAndOrientations
   ASSERT_EQ(cudaMalloc(&y,curve.count*sizeof(double)),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(x,curve.compression_strain,curve.count*sizeof(double),cudaMemcpyHostToDevice),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(y,curve.stress_pa,curve.count*sizeof(double),cudaMemcpyHostToDevice),cudaSuccess);
-  std::vector<DeviceCase> cases(4);std::vector<c::Result> expected(4*33);unsigned row=0;
+  std::vector<DeviceCase> cases(4);std::vector<c::Result> expected(4*33);std::vector<std::array<double,357>> native_packets(4*33);unsigned row=0;
   for(const auto units:{d::UnitScale{1,1,1},d::UnitScale{.001,1000,1}})for(bool reflected:{false,true}) {
     auto input=law90_force_test::Distorted();const auto material=law90_force_test::Material(true);
     input.density_kg_m3=material.reader().density_kg_m3;if(reflected)for(auto& v:input.position_m)v.x=-v.x;
@@ -41,12 +43,12 @@ TEST(Law90ControlledDistortionCuda, NativeCarriedHistoryBothUnitsAndOrientations
     const auto native_material=law90_point_test::NativePrepared(WorkingInput(law90_test::OriginalBlankHuInput(),units),curve);
     NativeState native(native_material[1]);s::PrescribedInterval initial;
     for(unsigned n=0;n<8;++n)initial.position_endpoint_m[n]=input.position_m[n];
-    expected[row*33]=Native(native_material.data(),curve,input,initial,units,true,native);
+    expected[row*33]=Native(native_material.data(),curve,input,initial,units,true,native);native_packets[row*33]=native.force.values;
     double base=0;
     for(unsigned step=1;step<=32;++step) {
       auto interval=Path(input,step);interval.base_time_s=base;base+=interval.dt_s;
       cases[row].intervals[step-1]=interval;
-      expected[row*33+step]=Native(native_material.data(),curve,input,interval,units,false,native);
+      expected[row*33+step]=Native(native_material.data(),curve,input,interval,units,false,native);native_packets[row*33+step]=native.force.values;
     }
     ++row;
   }
@@ -54,6 +56,7 @@ TEST(Law90ControlledDistortionCuda, NativeCarriedHistoryBothUnitsAndOrientations
   ASSERT_EQ(cudaMemcpy(device,cases.data(),cases.size()*sizeof(DeviceCase),cudaMemcpyHostToDevice),cudaSuccess);
   RunControlledCases<<<1,32>>>(device,4);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(cases.data(),device,cases.size()*sizeof(DeviceCase),cudaMemcpyDeviceToHost),cudaSuccess);
+  WriteDiagnostics(cases,native_packets);
   for(unsigned i=0;i<4;++i) {
     ASSERT_EQ(cases[i].status,d::Status::Success)<<i;
     for(unsigned step=0;step<=32;++step){SCOPED_TRACE(i*33+step);Compare(cases[i].output[step],expected[i*33+step]);}
