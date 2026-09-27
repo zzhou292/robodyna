@@ -11,7 +11,7 @@ struct DeviceCase {
   c::Result output[33];
   d::Status status=d::Status::InvalidInput;
 };
-__global__ void Run(DeviceCase* values,unsigned count) {
+__global__ void RunControlledCases(DeviceCase* values,unsigned count) {
   const unsigned row=blockIdx.x*blockDim.x+threadIdx.x;if(row>=count)return;
   auto& c=values[row];c.status=c::PrepareInitial(c.reference,{0,0,0},c.scratch);
   if(c.status!=d::Status::Success)return;
@@ -52,7 +52,7 @@ TEST(Law90ControlledDistortionCuda, NativeCarriedHistoryBothUnitsAndOrientations
   }
   DeviceCase* device=nullptr;ASSERT_EQ(cudaMalloc(&device,cases.size()*sizeof(DeviceCase)),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(device,cases.data(),cases.size()*sizeof(DeviceCase),cudaMemcpyHostToDevice),cudaSuccess);
-  Run<<<1,32>>>(device,4);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
+  RunControlledCases<<<1,32>>>(device,4);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(cases.data(),device,cases.size()*sizeof(DeviceCase),cudaMemcpyDeviceToHost),cudaSuccess);
   for(unsigned i=0;i<4;++i) {
     ASSERT_EQ(cases[i].status,d::Status::Success)<<i;
