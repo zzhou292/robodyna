@@ -50,7 +50,7 @@ TEST(Solid24IcontrolNative, FoldedPositiveVolumeCellExercisesDistortionEnergyAnd
   History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);
   auto interval=heph_test::Interval(reference,ignored);const auto a=history.reference.reference.permutation[0],b=history.reference.reference.permutation[6];
   bool exercised=false;
-  for(double fraction:{.7,.8,.9}) {
+  for(double fraction:{1.0005,1.005,1.01}) {
     interval=heph_test::Interval(reference,ignored);const auto first=reference.input().position_m[a],opposite=reference.input().position_m[b];
     interval.position_m[a]={first.x+fraction*(opposite.x-first.x),first.y+fraction*(opposite.y-first.y),first.z+fraction*(opposite.z-first.z)};
     interval.velocity_m_s[a]={(opposite.x-first.x)*.1,(opposite.y-first.y)*.1,(opposite.z-first.z)*.1};

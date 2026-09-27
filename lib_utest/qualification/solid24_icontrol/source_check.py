@@ -22,3 +22,5 @@ print(json.dumps({"status":"source_passed","complete_native_control_order_preser
 
 globals=(ROOT/"lib_utest/qualification/solid24_force/native/NativeGlobals.F").read_text()
 assert "      ANIM_N=0" in globals and "      IAD_GPS=0" in globals
+
+assert "pm(32,i) = bulk" in prepared["slot_generic.inc"]

@@ -6,7 +6,7 @@ rewritten. Existing qualified HEPH constant/precision/common context is reused.
 from pathlib import Path
 import argparse,hashlib,json,re
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[3]
-MANIFEST="783b90a861ecf8a92553fbb71e6b3194e49f15e3993b03a1a324c53729d00f4d"
+MANIFEST="d116c65b17b99543f342c076217c49f1fbe76ba102d88c55ae7ee02eaceefe28"
 
 def verify_bytes(raw,row):
     assert len(raw)==row["bytes"] and hashlib.sha256(raw).hexdigest()==row["sha256"],row["path"]
