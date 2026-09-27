@@ -15,18 +15,18 @@
     },
     {
       "path": "lib_src/elements/type13/resident/Arena.cpp",
-      "bytes": 1991,
-      "sha256": "3c5a977bf83a3acf74eb53475c23a03249f4c5256080e3c887baf56519e41131"
+      "bytes": 2235,
+      "sha256": "54439fdc5cf4cb126340182960f5005afff0f40d0ceda47777b1c2ac8413535c"
     },
     {
       "path": "lib_src/elements/type13/resident/Arena.h",
-      "bytes": 1508,
-      "sha256": "e7f3ebeb29f92edfe845097a4c19c3963d0c90f1d629e6fd06b4ce0e4edafdca"
+      "bytes": 1656,
+      "sha256": "559d7c27bf3dd2f26409c40f82338d08485e1863d12881c020ed3f8d8bb7e19c"
     },
     {
       "path": "lib_src/elements/type13/resident/BUILD.bazel",
-      "bytes": 1757,
-      "sha256": "45aef7cc33cf61b0680c211db34a1fc130eb4ac80f0e00a52940e17d2a4fd1cf"
+      "bytes": 1886,
+      "sha256": "f33345eb5f2b74fcd9fae1363b9a1b4c4b7c2a89f449dc9e6aa6cb791a272895"
     },
     {
       "path": "lib_src/elements/type13/resident/Batch.cmake",
@@ -50,8 +50,8 @@
     },
     {
       "path": "lib_src/elements/type13/resident/Startup.cpp",
-      "bytes": 6178,
-      "sha256": "0065607dedc7a340147971849a70497973f1ea0bf4ba2f5d9b533d0dc47e3b4f"
+      "bytes": 6477,
+      "sha256": "63039c26a7e7a604a015616a06f3e8466db86d9c0fa28fc41a925a622bb05b45"
     },
     {
       "path": "lib_src/elements/type13/resident/Storage.h",
@@ -60,8 +60,8 @@
     },
     {
       "path": "lib_src/elements/type25/BUILD.bazel",
-      "bytes": 2380,
-      "sha256": "0f776509c337a7a18fd1901100d5a51e9d43983678cb8af5747b7643698a4ebe"
+      "bytes": 2516,
+      "sha256": "3a2112d87e99ed381d00e7bfac3dd69679c95ae7fe1a3545c0e3154876e84e9d"
     },
     {
       "path": "lib_src/elements/type25/Type25Batch.cmake",
@@ -70,13 +70,13 @@
     },
     {
       "path": "lib_src/elements/type25/Type25BatchArena.cpp",
-      "bytes": 1657,
-      "sha256": "c78087f3cbc3fb57d94594072a82b6d1bdd2aebad85dd8ab533cacb29aa2dd0b"
+      "bytes": 1817,
+      "sha256": "77a5a1357cea979271f26fc69cc27457e6f2e5305475a94741b6b5038fad7262"
     },
     {
       "path": "lib_src/elements/type25/Type25BatchArena.h",
-      "bytes": 1712,
-      "sha256": "7ead95017c7b8b2669fa954145f6a09d01e7a68da2629a2898c027c6fee472dc"
+      "bytes": 1842,
+      "sha256": "49a20b24ced81d2923cc38001f749eb2850735e4c8cacc6ebdc8822348379862"
     },
     {
       "path": "lib_src/elements/type25/Type25BatchKernels.cu",
@@ -95,8 +95,8 @@
     },
     {
       "path": "lib_src/elements/type25/Type25BatchStartup.cpp",
-      "bytes": 5229,
-      "sha256": "7c9ac7147505989889326c4da0e5186371f498595d27d64fe5d7561e65b3dd2e"
+      "bytes": 5288,
+      "sha256": "6dc236770fe50138e0fcb992be5c32f80dcccb12af18184e889e9230cde7e128"
     },
     {
       "path": "lib_src/elements/type25/Type25BatchStorage.h",
@@ -183,5 +183,21 @@
       "bytes": 3818,
       "sha256": "c0cf34b5c5ffc8303a650ceb25c9d95b5638de5f169ffe0bc8c6ab98c8c92667"
     }
-  ]
+  ],
+  "integration_provenance": {
+    "base": "95664290ccf60c486174944f7399c8a9afe3b760",
+    "qualified_donor": "95790324247784623c7209d034ac438c5754a8af",
+    "reviewed_merge": "4d71b2d1838133c98a8558bd70be7005dde61234",
+    "scope": "Only reviewed additive arena/build/startup composition is rebound. Original90a donor bodies and all numerical/failure reversal checks remain unchanged.",
+    "rebound_files": [
+      "lib_src/elements/type13/resident/Arena.cpp",
+      "lib_src/elements/type13/resident/Arena.h",
+      "lib_src/elements/type13/resident/BUILD.bazel",
+      "lib_src/elements/type13/resident/Startup.cpp",
+      "lib_src/elements/type25/BUILD.bazel",
+      "lib_src/elements/type25/Type25BatchArena.cpp",
+      "lib_src/elements/type25/Type25BatchArena.h",
+      "lib_src/elements/type25/Type25BatchStartup.cpp"
+    ]
+  }
 }
