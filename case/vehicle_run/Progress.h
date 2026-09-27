@@ -32,6 +32,10 @@ struct Control {
     double progress_period_s=5;
     std::function<bool()> stop_requested;
     std::function<void(const Progress&)> progress;
+    // Optional exact accepted boundary: after successful Append/scheduled sample,
+    // before stop/progress checks and the next Prepare. Includes epoch zero;
+    // excludes the terminal horizon, which has no following interval.
+    std::function<void(const Progress&)> accepted_boundary;
 };
 enum class StopKind { Completed, Requested, IntervalLimit, TimeLimit, StartupFailure, PhysicsRejected, ArchiveFailure, CaptureFailure, ObserverFailure };
 struct LoopResult {

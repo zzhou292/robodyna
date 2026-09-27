@@ -63,6 +63,7 @@ LoopResult RunLoop(Operations& operations,const Horizon& plan,const std::vector<
     while(operations.Accepted().epoch<plan.intervals) {
         refresh();
         try {
+            if(control.accepted_boundary)control.accepted_boundary(progress);
             if(control.maximum_accepted_intervals && progress.accepted.epoch>=control.maximum_accepted_intervals) {
                 result.kind=StopKind::IntervalLimit;
                 result.reason="Declared diagnostic accepted-interval limit reached";
