@@ -53,8 +53,12 @@ TL_QBAT_HD inline MeasurementParent PrepareMeasurementParent(
   return out;
 }
 
-TL_QBAT_HD inline void AccumulateMeasurementParent(const batch_detail::Model& model,
-    const MeasurementParent& now,std::size_t parent,BatchDiagnostics& d) noexcept {
+TL_QBAT_HD inline bool MeasureStagedParents(const batch_detail::Model& model,
+    const MeasurementParent* values, BatchDiagnostics& d) noexcept {
+  d.element_count=model.config.element_count;
+  for (std::size_t parent=0; parent<model.config.element_count; ++parent) {
+    const auto& now=values[parent];
+    if (now.valid!=1) return false;
     if (now.active) ++d.active_count;
     if (now.newly_removed) ++d.newly_removed_count;
     if (!parent || now.area_ratio<d.minimum_area_ratio) d.minimum_area_ratio=now.area_ratio;
@@ -75,15 +79,6 @@ TL_QBAT_HD inline void AccumulateMeasurementParent(const batch_detail::Model& mo
         d.internal_drift_work-=now.drift_operand[slot];
       }
     }
-}
-
-TL_QBAT_HD inline bool MeasureStagedParents(const batch_detail::Model& model,
-    const MeasurementParent* values, BatchDiagnostics& d) noexcept {
-  d.element_count=model.config.element_count;
-  for (std::size_t parent=0; parent<model.config.element_count; ++parent) {
-    const auto& now=values[parent];
-    if (now.valid!=1) return false;
-    AccumulateMeasurementParent(model,now,parent,d);
   }
   return true;
 }

@@ -37,8 +37,8 @@ TL_QBAT_HD inline bool MeasureStaged(const batch_detail::Storage& state,
   return MeasureStagedParents(state.model,state.assembly.measurement,output) &&
       FinishMeasurement(state,view,output,blocks);
 }
-TL_QBAT_HD inline batch_detail::Control BeginMeasurement(
-    const batch_detail::Storage& state,BatchDiagnostics identity) noexcept {
+TL_QBAT_HD inline void FinalizeMeasurement(batch_detail::Storage& state,
+    const NodalPreparedView& view,BatchDiagnostics identity,unsigned blocks) noexcept {
   batch_detail::Control next{};
   next.diagnostics=identity;
   // Complete element-failure priority precedes every measurement failure,
@@ -50,11 +50,6 @@ TL_QBAT_HD inline batch_detail::Control BeginMeasurement(
     next.element_status=state.candidate_status[parent];
     break;
   }
-  return next;
-}
-TL_QBAT_HD inline void FinalizeMeasurement(batch_detail::Storage& state,
-    const NodalPreparedView& view,BatchDiagnostics identity,unsigned blocks) noexcept {
-  auto next=BeginMeasurement(state,identity);
   if (next.status==BatchStatus::Success) {
     if (!MeasureStaged(state,view,next.diagnostics,blocks)) {
       next.status=BatchStatus::NonfiniteResult;

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Measurement.h"
-#include "measurement/Finalize.cuh"
 #include "../QbatBatchStorage.h"
 namespace tl::fea::qbat::batch_detail {
 namespace {
@@ -32,8 +31,7 @@ __global__ void MaximumDisplacement(Storage* state,NodalPreparedView view) {
 }
 __global__ void FinalizeMapped(Storage* state,const Slab* accepted,const Slab* trial,
     NodalPreparedView view,BatchDiagnostics identity,unsigned blocks) {
-  __shared__ mapped::measurement::Tile tile;
-  mapped::measurement::Finalize(*state,view,identity,blocks,tile);
+  mapped::FinalizeMeasurement(*state,view,identity,blocks);
 }
 }
 void LaunchMappedMeasurements(Storage* storage,const Slab* accepted,const Slab* trial,
@@ -41,6 +39,6 @@ void LaunchMappedMeasurements(Storage* storage,const Slab* accepted,const Slab* 
   const auto blocks=mapped::MaximumBlocks(nodes);
   PrepareParents<<<256,128,0,view.stream>>>(storage,accepted,trial,view,identity);
   MaximumDisplacement<<<blocks,mapped_shell::ObserverThreads,0,view.stream>>>(storage,view);
-  FinalizeMapped<<<1,mapped::measurement::Threads,0,view.stream>>>(storage,accepted,trial,view,identity,blocks);
+  FinalizeMapped<<<1,1,0,view.stream>>>(storage,accepted,trial,view,identity,blocks);
 }
 } // namespace tl::fea::qbat::batch_detail

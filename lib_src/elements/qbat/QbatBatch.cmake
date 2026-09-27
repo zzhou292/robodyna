@@ -2,6 +2,9 @@ include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/QbatBatchValues.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellPhysicalOwner.cmake")
 add_library(tl_qbat_batch STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/measurement/Finalize.cuh"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/measurement/Read.h"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/measurement/Tile.h"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchOperations.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QbatBatchReadback.cu"
