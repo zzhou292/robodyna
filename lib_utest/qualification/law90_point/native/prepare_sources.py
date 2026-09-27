@@ -13,7 +13,7 @@ NAMES = {'constant_mod', 'precision_mod', 'file_descriptor_mod', 'sigeps90',
          'my_and_', 'my_or', 'my_or_', 'vinter', 'vinter2', 'vinter2dp', 'finter2'}
 
 
-def prepare(output, check):
+def prepare(output, check, observe_modulus=False):
     result = {}
     names = set(NAMES)
     for entry in json.loads((ROOT / 'source-manifest.json').read_text())['sources']:
@@ -40,6 +40,13 @@ def prepare(output, check):
             if name.endswith('.c'):
                 return 'law90_point_ref_' + match.group()
             return 'LAW90_POINT_REF_' + match.group().upper()
+        if observe_modulus and name == 'sigeps90.F':
+            anchor = '            E_OLD = UVAR(II,8)'
+            # Failure-enabled and FAIL0 branches have identical modulus tails.
+            if value.count(anchor) != 2:
+                raise RuntimeError('LAW90 modulus observation anchor changed')
+            value = value.replace(anchor, anchor + '\n' +
+                '            CALL LAW90_MODULUS_OBSERVE(EPST(I),YLD(I),E_OLD,E0,E_MAX)')
         raw = tokens.sub(rename, value).encode('latin1')
         path = output / name
         if check:
@@ -54,5 +61,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--observe-modulus', action='store_true')
     args = parser.parse_args()
-    prepare(args.output, args.check)
+    prepare(args.output, args.check, args.observe_modulus)
