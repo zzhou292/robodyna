@@ -1,8 +1,12 @@
 #include "ActualSupport.h"
+#include <iomanip>
 #include "lib_utest/qualification/solid24_reference/NativeOracle.h"
 
 namespace crash::modelio::solid_source::test {
 namespace {
+std::string Decimal(double value) {
+    std::ostringstream text;text << std::setprecision(17) << value;return text.str();
+}
 const VehicleSolidSource& Converted() {
     static const auto source = VehicleSolidSource::Prepare(vehicle::test::Canonical(), MemberBytes(),
         Policy::NativeConvertedSupportsV6, Limits::ExtendedSolids());
@@ -40,9 +44,9 @@ TEST(VehicleCollapsedSolidSource, CompleteSelectionAndEveryRawSlotStaySourceBoun
     EXPECT_EQ(changed, 350u);
     EXPECT_GT(new_mass, old_mass);
     RecordProperty("changed_formulation_cells", changed);
-    RecordProperty("collapsed_heph_mass_kg", new_mass);
-    RecordProperty("prior_s6_mass_kg", old_mass);
-    RecordProperty("solid_formulation_mass_difference_kg", new_mass-old_mass);
+    RecordProperty("collapsed_heph_mass_kg", Decimal(new_mass));
+    RecordProperty("prior_s6_mass_kg", Decimal(old_mass));
+    RecordProperty("solid_formulation_mass_difference_kg", Decimal(new_mass-old_mass));
     RecordProperty("owned_payload_bytes", after.owned_payload_bytes);
 }
 TEST(VehicleCollapsedSolidSource, All2341HephReferencesMatchCompleteNativeGeometryAndMass) {
