@@ -9,7 +9,7 @@ using Self=vehicle_self_contact::native::mixed_starter::MixedStarterSource;
 using Wall=vehicle_wall::native::wall_interface::FiniteWallContactSource;
 using Controls=vehicle_self_contact::native::initial_controls::InitializerControlsSource;
 struct Limits {
-    std::size_t host_bytes=std::size_t{20}*1000*1000*1000;
+    std::size_t host_bytes=std::size_t{18}<<30;
     std::size_t member_bytes=64u<<20;
 };
 struct Forecast {
