@@ -11,8 +11,8 @@ TL_BRICK_HD inline Status EvaluateForce(const Parameters& parameters,const Force
   const Status status=ClassifyDamping(parameters,input,activity);
   if(status!=Status::Success)return status;
   if(activity.triggers_native_batch&&!native_batch_damping_enabled)return Status::InvalidInput;
-  const double volume=SignedCenterVolume(input.position);
-  if(!tl::math::Finite(volume)||volume<=0)return Status::InvalidInput;
+  // The family material/geometry caller owns Jacobian and volume admission.
+  // S8FOR_DISTOR itself retains its native degenerate-face behavior.
   detail::Work work;work.stiffness=parameters.control_stiffness;
   work.energy=input.distortion_energy;
   const Vec3 mean=detail::Mean8(input.velocity),center=detail::Mean8(input.position);
