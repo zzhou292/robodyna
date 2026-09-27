@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "stage",
+    hdrs = ["Material.h", "Reference.h", "Types.h", "Prepare.h", "Stage.h"],
+    deps = ["//lib_src/materials/law90:mechanical_slots",
+            "//lib_src/elements/solid18/total_strain:law90_force",
+            "//lib_src/elements/solid_common/distortion:working_units"],
+    visibility = ["//visibility:public"],
+)

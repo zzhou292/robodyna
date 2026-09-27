@@ -15,3 +15,9 @@ cc_library(
     hdrs = ["CallerTypes.h", "CallerChecks.h", "Caller.h", "MaterialIdentity.h"],
     deps = [":point", "//lib_src/materials:solid_caller_values"],
 )
+
+cc_library(
+    name = "mechanical_slots",
+    hdrs = ["MechanicalSlots.h"],
+    deps = [":preparation"],
+)

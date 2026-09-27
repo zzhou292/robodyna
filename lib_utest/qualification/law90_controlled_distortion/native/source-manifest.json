@@ -1,0 +1,20 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": {
+    "reader": {
+      "path": "lib_utest/qualification/solid_law42_caller/native/original/starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b"
+    },
+    "update": {
+      "path": "lib_utest/qualification/law90_controlled_distortion/native/original/starter/source/materials/updmat.F",
+      "bytes": 19705,
+      "sha256": "bb0b3c57e70877dc50f980b9eaf948871d1df2ee0dfe8c709c09318d380ebc4b"
+    },
+    "caller": {
+      "path": "lib_utest/qualification/solid18_force/native/original/engine/source/elements/solid/solide8e/s8eforc3.F",
+      "bytes": 93331,
+      "sha256": "ce07f95c8710a539be0784c0de0816bf2d795c370e06a9fb6a799bd406cbe373"
+    }
+  }
+}
