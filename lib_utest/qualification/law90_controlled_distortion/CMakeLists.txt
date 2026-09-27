@@ -16,7 +16,7 @@ add_subdirectory(../law90_solid18_force ordinary_force)
 set(prepared "${CMAKE_CURRENT_BINARY_DIR}/prepared")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/native/prepare_sources.py"
   --output "${prepared}" COMMAND_ERROR_IS_FATAL ANY)
-add_library(law90_control_parameter_native STATIC native/ParameterProbe.F90)
+add_library(law90_control_parameter_native STATIC native/ParameterProbe.F90 native/ViscosityProbe.F90)
 target_include_directories(law90_control_parameter_native PRIVATE "${prepared}"
   "$<TARGET_PROPERTY:heph_force_native,Fortran_MODULE_DIRECTORY>"
   "$<TARGET_PROPERTY:solid24_ic1_native,Fortran_MODULE_DIRECTORY>")

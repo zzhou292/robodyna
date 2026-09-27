@@ -54,9 +54,9 @@ inline void Compare(const c::Result& actual,const c::Result& expected) {
   for(unsigned n=0;n<8;++n)for(unsigned k=0;k<3;++k)
     EXPECT_NEAR(b::Component(actual.rhs_force_n[n],k),b::Component(expected.rhs_force_n[n],k),2e-10*scale)<<n<<':'<<k;
   const double a[]{actual.nodal_raw_stiffness_n_m,actual.last_point_raw_stiffness_after_distortion_n_m,
-    actual.distortion_energy_j,actual.distortion_work_increment_j};
+    actual.distortion_energy_j,actual.distortion_work_increment_j,actual.minimum_unscaled_dt_s,actual.material_work_increment_j};
   const double e[]{expected.nodal_raw_stiffness_n_m,expected.last_point_raw_stiffness_after_distortion_n_m,
-    expected.distortion_energy_j,expected.distortion_work_increment_j};
-  for(unsigned k=0;k<4;++k)EXPECT_NEAR(a[k],e[k],2e-10*::fabs(e[k]))<<k;
+    expected.distortion_energy_j,expected.distortion_work_increment_j,expected.minimum_unscaled_dt_s,expected.material_work_increment_j};
+  for(unsigned k=0;k<6;++k)EXPECT_NEAR(a[k],e[k],2e-10*::fabs(e[k]))<<k;
 }
 } // namespace law90_control_test

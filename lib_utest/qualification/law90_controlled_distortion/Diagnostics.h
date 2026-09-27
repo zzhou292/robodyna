@@ -49,20 +49,20 @@ void WriteDiagnostics(const std::vector<Case>& cases,const std::vector<std::arra
   for(unsigned k=0;k<6;++k)out<<",gpu_rate"<<k;
   for(unsigned k=0;k<5;++k)out<<",gpu_modulus"<<k;
   for(unsigned k=0;k<5;++k)out<<",native_modulus"<<k;out<<'\n';
-  for(unsigned row=0;row<cases.size();++row)for(unsigned step=0;step<=32;++step)for(unsigned ip=0;ip<8;++ip) {
+  for(unsigned row=0;row<cases.size();++row)for(unsigned step=0;step<=Case::steps;++step)for(unsigned ip=0;ip<8;++ip) {
     const auto& history=cases[row].output[step].proposed_history.native_history();
     const auto& material=history.material().updated();double values[20];
     law90_force_test::PackHistory(history.data().point[ip],values);
     out<<row<<','<<step<<','<<ip<<','<<material.young_pa<<','<<material.maximum_modulus_pa;
     for(double value:values)out<<','<<value;
-    const auto* expected=native[row*33+step].data()+40*ip;
+    const auto* expected=native[row*(Case::steps+1)+step].data()+40*ip;
     for(unsigned k=0;k<20;++k)out<<','<<expected[k];
     const auto& op=cases[row].operands[step];
     out<<','<<op.stiffness[ip]<<','<<expected[36]<<','<<op.sound[ip]<<','<<expected[26]
        <<','<<op.volume[ip]<<','<<expected[37]<<','<<op.length[ip]<<','<<expected[39];
     for(double rate:op.rate[ip])out<<','<<rate;
     for(double value:op.modulus[ip])out<<','<<value;
-    for(unsigned k=0;k<5;++k)out<<','<<native_modulus[row*33+step][5*ip+k];out<<'\n';
+    for(unsigned k=0;k<5;++k)out<<','<<native_modulus[row*(Case::steps+1)+step][5*ip+k];out<<'\n';
   }
   out.close();if(!out)throw std::runtime_error("Diagnostic write failed");
 }

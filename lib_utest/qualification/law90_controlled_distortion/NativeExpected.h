@@ -44,6 +44,7 @@ inline c::Result Native(const double* material,law::CurveView curve,const s::Ref
   for(unsigned n=0;n<8;++n)for(unsigned k=0;k<3;++k)
     b::SetComponent(out.rhs_force_n[permutation[n]],k,result[3*n+k]*f.base.force);
   out.nodal_raw_stiffness_n_m=values[331]*f.base.stiffness;
+  out.minimum_unscaled_dt_s=values[330]*f.base.time;out.material_work_increment_j=values[332]*f.base.energy;
   out.last_point_raw_stiffness_after_distortion_n_m=result[24]*f.base.stiffness;
   out.distortion_energy_j=result[25]*f.base.energy;
   out.distortion_work_increment_j=zero_work[25]*f.base.energy;
