@@ -24,11 +24,27 @@ TL_BRICK_HD inline ForceStatus PrepareWorkingReference(const Reference& referenc
   if(reference_status==Status::UnsupportedProfile)return ForceStatus::UnsupportedProfile;
   if(reference_status==Status::InvalidInput)return ForceStatus::InvalidInput;
   if(reference_status!=Status::Success)return ForceStatus::InvalidGeometry;
+  for(unsigned n=0;n<8;++n)if(reference.source_slot(n)!=next.numerical_reference_.source_slot(n))return ForceStatus::UnsupportedProfile;
   if(tl::material::law42::Prepare(material.mu_pa/f.pressure,material.poisson_ratio,
       material.density_kg_m3/(f.base.mass/f.volume),material.tension_cutoff_pa/f.pressure,
       next.numerical_material_)!=tl::material::law42::Status::Ok)return ForceStatus::MaterialFailure;
   next.prepared_=true;output=next;return ForceStatus::Success;
 }
+namespace working_detail {
+// Shared numerical prefix; all quantities here are in reference.units().
+TL_BRICK_HD inline ForceStatus EvaluateNumeric(const WorkingReference& reference,
+    const tl::material::law42::CallerHistory& old_material,const hg::State& old_hourglass,
+    const PrescribedInterval& native_interval,bool initialization,WorkingResult& next)noexcept {
+  auto status=force_detail::CurrentKinematics(reference.native_reference(),native_interval,next.geometry);
+  if(status!=ForceStatus::Success)return status;
+  status=force_detail::EvaluateMaterial(reference.native_reference(),reference.native_material(),
+      next.geometry,native_interval.dt_s,old_material,initialization,next.material);
+  if(status!=ForceStatus::Success)return status;
+  status=EvaluateBeforeDistortion(reference.native_reference(),reference.native_material(),next.geometry,
+      next.material,native_interval.dt_s,old_hourglass,next.stage);
+  return status;
+}
+} // namespace working_detail
 TL_BRICK_HD inline ForceStatus EvaluateWorking(const WorkingReference& reference,const HistoryValues& accepted,
     const PrescribedInterval& interval,bool initialization,WorkingResult& output)noexcept {
   if(!reference.prepared_)return ForceStatus::InvalidInput;
@@ -45,13 +61,7 @@ TL_BRICK_HD inline ForceStatus EvaluateWorking(const WorkingReference& reference
   const auto old_material=units_detail::ToNative(accepted.material,f);auto old_hourglass=accepted.controlled_hourglass;
   for(auto& row:old_hourglass.force_n)for(double& v:row)v/=f.base.force;
   WorkingResult next;
-  auto status=force_detail::CurrentKinematics(reference.numerical_reference_,native_interval,next.geometry);
-  if(status!=ForceStatus::Success)return status;
-  status=force_detail::EvaluateMaterial(reference.numerical_reference_,reference.numerical_material_,
-      next.geometry,native_interval.dt_s,old_material,initialization,next.material);
-  if(status!=ForceStatus::Success)return status;
-  status=EvaluateBeforeDistortion(reference.numerical_reference_,reference.numerical_material_,next.geometry,
-      next.material,native_interval.dt_s,old_hourglass,next.stage);
+  const auto status=working_detail::EvaluateNumeric(reference,old_material,old_hourglass,native_interval,initialization,next);
   if(status!=ForceStatus::Success)return status;
   next.native_modal_work.units=reference.units_;next.native_modal_work.work=next.stage.hourglass.work_j;
   for(unsigned k=0;k<3;++k)for(unsigned h=0;h<4;++h){

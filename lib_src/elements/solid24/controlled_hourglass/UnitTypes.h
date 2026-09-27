@@ -22,6 +22,9 @@ class WorkingReference {
   TL_BRICK_HD const Reference& reference()const noexcept{return physical_reference_;}
   TL_BRICK_HD const Material& material()const noexcept{return physical_material_;}
   TL_BRICK_HD UnitScale units()const noexcept{return units_;}
+  // Internal numerical views are explicitly in units(), not SI.
+  TL_BRICK_HD const Reference& native_reference()const noexcept{return numerical_reference_;}
+  TL_BRICK_HD const Material& native_material()const noexcept{return numerical_material_;}
  private:
   Reference physical_reference_,numerical_reference_;
   Material physical_material_,numerical_material_;

@@ -15,7 +15,10 @@ assert native['NativeCaller.F90'].count('call IC1_ASSEMBLE(')==1
 assert native['shour_ctl.F90'].count('call H24_ADAPTER_MODES(')==1
 assert native['NativeMaterialForces.F'].index('CALL H24_FORCE(F,24,3)')<native['NativeMaterialForces.F'].index('CALL HEPH_NATIVE_SRROTA3(')
 units=(ROOT/'lib_src/elements/solid24/controlled_hourglass/UnitResponse.h').read_text()
-assert units.index('native_interval.position_m[n]=')<units.index('force_detail::CurrentKinematics')<units.index('force_detail::EvaluateMaterial')<units.index('status=EvaluateBeforeDistortion')<units.index('units_detail::StageToSi')<units.index('output=next;',units.index('units_detail::StageToSi'))
+helper=units[units.index('namespace working_detail'):units.index('TL_BRICK_HD inline ForceStatus EvaluateWorking(')]
+assert helper.index('force_detail::CurrentKinematics')<helper.index('force_detail::EvaluateMaterial')<helper.index('status=EvaluateBeforeDistortion')
+body=units[units.index('TL_BRICK_HD inline ForceStatus EvaluateWorking('):]
+assert body.index('native_interval.position_m[n]=')<body.index('working_detail::EvaluateNumeric')<body.index('units_detail::StageToSi')<body.index('output=next;',body.index('units_detail::StageToSi'))
 assert 'input.profile.working_length=WorkingLengthUnit::Metre' in units
 assert 'reference.input().profile.working_length!=expected' in units
 assert 'native_modal_work.work=next.stage.hourglass.work_j' in units

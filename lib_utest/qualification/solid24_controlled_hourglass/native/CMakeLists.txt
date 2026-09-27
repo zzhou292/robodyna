@@ -18,9 +18,10 @@ add_library(h24_adapter_native STATIC Observers.F90 "${ic1}/NativeSlots.F90"
   "${ic1}/NativeAssembly.F" "${ic1}/NativeParameterProbe.F90" ${sources})
 add_dependencies(h24_adapter_native h24_adapter_verify_native heph_force_native)
 set_target_properties(h24_adapter_native PROPERTIES Fortran_MODULE_DIRECTORY "${modules}")
+get_target_property(heph_modules heph_force_native Fortran_MODULE_DIRECTORY)
 target_include_directories(h24_adapter_native PRIVATE "${prepared}" "${modules}"
   "$<TARGET_PROPERTY:heph_force_native,Fortran_MODULE_DIRECTORY>"
-  "${CMAKE_BINARY_DIR}/legacy_heph/native/prepared")
+  "${heph_modules}/../prepared")
 target_compile_definitions(h24_adapter_native PRIVATE MYREAL8 CPP_mach=CPP_p4linux964 COMP_GFORTRAN)
 target_compile_options(h24_adapter_native PRIVATE -cpp -ffixed-line-length-none -ffree-line-length-none
   -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
