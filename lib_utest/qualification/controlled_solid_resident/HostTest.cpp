@@ -33,9 +33,10 @@ TEST(ControlledResidentHost, CollapsedReferenceRetainsEightMassOccurrences) {
   d::ArenaLayout l;EXPECT_TRUE(d::Plan(fixture.Configuration(),fixture.model,l));
 }
 TEST(ControlledResidentHost, UnsupportedUnitsAndS6ControlFailAdmission) {
-  OwnerFixture fixture(false,true,{.001,.001,.001});s::BatchForecast f;
-  EXPECT_FALSE(s::Batch::Forecast(fixture.Configuration(),fixture.model,f));
-  control_schedule_test::Fixture source;s::Model model;
+  s::BatchForecast f;control_schedule_test::Fixture source;s::Model invalid;
+  auto unsupported=source.ControlledInput();unsupported.controls.units={.001,.001,.001};
+  EXPECT_FALSE(invalid.Initialize(source.Domain(),unsupported));
+  s::Model model;
   ASSERT_TRUE(model.Initialize(source.Domain(),source.ControlledInput()));
   auto c=Config(model.domain()->node_count());c.profile=s::BatchProfile::PhysicalCinSourceControlsV3;
   const auto status=s::Batch::Forecast(c,model,f);

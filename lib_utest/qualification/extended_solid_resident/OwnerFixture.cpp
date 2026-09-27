@@ -62,7 +62,7 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     add(legacy.input18.reference,s::Family::Solid18,0);
     add(rear.reference,s::Family::Solid18Law44,0);
     add(legacy.input6z.reference,s::Family::Solid6z,0);
-    auto& c=input.controls;c.profile=s::control::Profile::SourceDeclared;c.source_instance_id=991;
+    auto& c=input.controls;c.profile=s::control::Profile::SourceDeclared;c.source_instance_id=input.source_instance_id;
     c.units=units;c.native_nvsiz=128;c.compiled_mvsiz=129;
     c.parents={rows.data(),rows.size()};c.packets={packets.data(),packets.size()};
     c.partitions={&partition,1};c.ordered_element_ids={packet_members.data(),packet_members.size()};

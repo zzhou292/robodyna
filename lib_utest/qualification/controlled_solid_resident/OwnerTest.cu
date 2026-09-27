@@ -3,7 +3,8 @@
 namespace controlled_resident_test {
 TEST_F(ControlledResidentCuda, SameOwnerTypedNativeHistoryAssemblyAndRepeatedSlots) {
   for(const auto units:{s::control::UnitScale{1,1,1},s::control::UnitScale{.001,1000,1}})for(bool collapsed:{false,true}){
-    SCOPED_TRACE(units.length_m);SCOPED_TRACE(collapsed);Rig rig(units,collapsed);ASSERT_TRUE(rig.Initialize());
+    SCOPED_TRACE(units.length_m);
+    SCOPED_TRACE(collapsed);Rig rig(units,collapsed);ASSERT_TRUE(rig.Initialize());
     Results accepted(rig.fixture.model);s::BatchDiagnostics initial;ASSERT_TRUE(rig.Read(accepted,initial));rig.Compare(accepted);ASSERT_FALSE(HasFailure());
     const auto allocations=rig.batch.allocations();
     for(unsigned step=0;step<4;++step){
