@@ -47,7 +47,7 @@ cc_library(
     srcs = ["QephBatchModel.cpp", "QephBatchIdentity.cpp", "mapped/Startup.cpp"],
     hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h", "QephBatchLayeredSection.h", "QephBatchFailureSection.h" , "mapped/Startup.h", "mapped/AssemblyValues.h", "mapped/AssemblyTypes.h", "mapped/AssemblyLayout.h", "mapped/Incidence.h", "mapped/CandidateDiagnostics.h", "mapped/ObserverTypes.h", "mapped/ObserverSums.h", "mapped/ObserverValues.h", "mapped/ActivityValues.h", "mapped/ActivityLayout.h", "mapped/FailureActivityValues.h", "mapped/MixedActivityValues.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/elements/mapped_shell:observer_values", "//lib_src/elements/mapped_shell:values", "//lib_src/elements:shell_mapped_footprint", ":mapped_values", "//lib_src/elements:shell_mapped_startup",
+    deps = ["//lib_src/elements/mapped_shell:activity_layout", "//lib_src/elements/mapped_shell:observer_values", "//lib_src/elements/mapped_shell:values", "//lib_src/elements:shell_mapped_footprint", ":mapped_values", "//lib_src/elements:shell_mapped_startup",
         ":force", ":layered_j2", ":layered_law1", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",

@@ -109,7 +109,6 @@ struct T3Batch::Impl {
   batch_detail::Slab* trial=nullptr;
   batch_detail::Control control;
   util::BoundedStartupArray<ForceTrial,0> staging;
-  util::BoundedStartupArray<std::uint8_t,0> activity_staging, activity_roles, activity_failure;
   BatchDiagnostics accepted_diagnostics,candidate_diagnostics;
   NodalPreparedView candidate_view;
   // Saved only on first numerical rest/mass binding. Pointer identity is
@@ -125,10 +124,7 @@ struct T3Batch::Impl {
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
   BatchReport ValidateOnePointReadback(unsigned slab,double time,std::uint64_t epoch);
-  BatchReport ReadParentActivity(unsigned slab,double time,std::uint64_t epoch,
-      const std::uint8_t** compact_activity=nullptr);
-  bool CompactActivityEligible(unsigned slab) const noexcept;
-  BatchReport ReadCompactActivity(unsigned slab,double time,std::uint64_t epoch);
+  BatchReport ReadParentActivity(unsigned slab,double time,std::uint64_t epoch);
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
   BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
   BatchReport InitializeFailure(const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);

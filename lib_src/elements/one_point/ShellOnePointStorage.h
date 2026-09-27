@@ -13,6 +13,9 @@ class OnePointHostStorage {
       OnePointLayout&, std::size_t& host_bytes) noexcept;
   SetupReport Initialize(const ShellBatchPlasticityBinding&, const ShellBatchBinding&,
       std::size_t count, const OnePointLayout&);
+  bool HasReadShape(unsigned slab, std::size_t count) const noexcept {
+    return device_ && slab <= 1 && count == count_;
+  }
   SetupReport Read(unsigned slab, std::size_t count, cudaStream_t,
       const ShellBatchPlasticityBinding&, double time) noexcept;
   OnePointDeviceStorage* device() const noexcept { return device_; }

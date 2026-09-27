@@ -24,3 +24,10 @@ cc_library(
     hdrs = ["ObserverTree.cuh"],
     deps = [":observer_values"],
 )
+
+cc_library(
+    name = "activity_layout",
+    hdrs = ["ActivityLayout.h"],
+    deps = ["//lib_utils:bounded_arena"],
+    visibility = ["//visibility:public"],
+)

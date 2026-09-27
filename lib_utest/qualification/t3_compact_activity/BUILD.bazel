@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h", "Flow.h", "SerialValues.h"],
+    deps = ["//lib_src/elements/t3:batch_values", "//lib_utest/qualification/qeph_mapped_activity:failure_value_fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["KernelTest.cu", "Fixture.h", "Flow.h", "SerialValues.h", "DeviceFixture.cuh"],
+    deps = ["//lib_src/elements/t3:batch", "//lib_src/elements/t3:batch_values", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
+# Actual common-owner transport/failure probes use the owning CMake fixture,
+# as do the pre-existing complete T3 activity and physical publication gates.

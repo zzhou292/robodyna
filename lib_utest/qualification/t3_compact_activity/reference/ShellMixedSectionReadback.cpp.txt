@@ -4,7 +4,7 @@
 namespace tl::fea::shell_batch_plasticity_detail {
 SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t stream,
     const ShellBatchPlasticityBinding& catalog,const ShellBatchOnePointSectionState* one_point) noexcept {
-  if(!HasReadShape(slab,count,catalog))
+  if(!device_||slab>1||count!=count_||!catalog.heterogeneous_sections())
     return {SetupStatus::InvalidInput,"Mixed section readback shape is invalid"};
   auto error=cudaMemcpyAsync(plastic_.data(),header_.plastic.section[slab],count*sizeof(ShellBatchSectionState),
     cudaMemcpyDeviceToHost,stream);
@@ -46,7 +46,7 @@ SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t 
 namespace tl::fea::shell_batch_plasticity_detail {
 SetupReport MixedHostStorage::CheckActivitySources(unsigned slab,std::size_t count,
     const ShellBatchPlasticityBinding& catalog) const noexcept {
-  if(!HasReadShape(slab,count,catalog))
+  if(!device_||slab>1||count!=count_||!catalog.heterogeneous_sections())
     return {SetupStatus::InvalidInput,"Mixed section readback shape is invalid"};
   // Law/source storage is immutable after initialization. Keep actual source
   // availability checks; numerical section validation is a separate GPU phase.

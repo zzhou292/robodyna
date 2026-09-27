@@ -34,9 +34,12 @@ BatchReport MakeForecast(const T3BatchConfig& config,const ShellPhysicalBinding&
       !host.Append<unsigned char>(physical.owned_payload_bytes(),ignored) ||
       !host.Append<unsigned char>(next.device.bytes,ignored) ||
       !host.Append<ForceTrial>(config.element_count,ignored) ||
+      !host.Append<std::uint8_t>(mapped_shell::ActivityBytes(config.element_count),ignored) ||
+      !host.Append<std::uint8_t>(mapped_shell::ActivityBytes(config.element_count),ignored) ||
+      !host.Append<std::uint8_t>(mapped_shell::ActivityBytes(config.element_count),ignored) ||
       !host.Append<unsigned char>(sidecar_bytes,ignored) ||
       !host.Append<unsigned char>(next.proof.bytes,ignored) ||
-      !host.Append<unsigned char>(64,ignored)) {
+      !host.Append<unsigned char>(4*64,ignored)) {
     return {BatchStatus::ResourceLimit,"Mapped T3 complete startup/retained host payload exceeds its cap"};
   }
   next.host_bytes=host.bytes();

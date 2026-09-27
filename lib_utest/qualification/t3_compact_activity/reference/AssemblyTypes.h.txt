@@ -4,7 +4,6 @@
 #include "ObserverTypes.h"
 #include "../T3Batch.h"
 #include "../../mapped_shell/NodeGather.h"
-#include "../../mapped_shell/ActivityLayout.h"
 
 namespace tl::fea::t3::mapped {
 struct AssemblyParent {
@@ -20,7 +19,6 @@ struct AssemblyMemory {
   AssemblyNode* node = nullptr;
   unsigned long long* failure = nullptr;
   ObserverSummary* observer = nullptr;
-  mapped_shell::ActivityMemory activity;
 };
 inline constexpr unsigned long long NoAssemblyFailure = mapped_shell::NoAssemblyFailure;
 } // namespace tl::fea::t3::mapped

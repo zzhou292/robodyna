@@ -41,15 +41,7 @@ BatchReport T3Batch::Impl::ValidateOnePointReadback(unsigned slab, double time, 
       [&] { return ReadResults(&storage->slab[slab]); });
 }
 
-BatchReport T3Batch::Impl::ReadParentActivity(unsigned slab, double time, std::uint64_t epoch,
-    const std::uint8_t** compact_activity) {
-  if (compact_activity) *compact_activity = nullptr;
-  if (compact_activity && CompactActivityEligible(slab)) {
-    const auto report = ReadCompactActivity(slab, time, epoch);
-    if (report.status == BatchStatus::Success)
-      *compact_activity = activity_failure.data() + sizeof(std::uint32_t);
-    return report;
-  }
+BatchReport T3Batch::Impl::ReadParentActivity(unsigned slab, double time, std::uint64_t epoch) {
   return shell_batch_plasticity_detail::ReadFailure(*this, slab, time, [&](unsigned selected) {
     const auto report = ValidateMappedSections(selected);
     if (report.status != BatchStatus::Success || !plasticity->one_point_sections()) return report;

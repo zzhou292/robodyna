@@ -63,7 +63,7 @@ SetupReport OnePointHostStorage::Initialize(const ShellBatchPlasticityBinding& c
 }
 SetupReport OnePointHostStorage::Read(unsigned slab, std::size_t count, cudaStream_t stream,
     const ShellBatchPlasticityBinding& catalog, double time) noexcept {
-  if (!HasReadShape(slab, count)) {
+  if (!device_ || slab > 1 || count != count_) {
     return {SetupStatus::InvalidInput, "One-point readback shape is invalid"};
   }
   auto error = cudaMemcpyAsync(staging_.data(), header_.section[slab],
