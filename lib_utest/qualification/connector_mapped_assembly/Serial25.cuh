@@ -42,7 +42,7 @@ __global__ void AssembleMapped(Storage* storage,const Slab* accepted,NodalAssemb
     const auto& element=state.model.elements[parent];
     const auto& result=accepted->element[parent];
     for (auto node:element.nodes) {
-      if (MappedNode(state.model,view,node,initial)) continue;
+      if (::tl::fea::type25::batch_detail::serial_reference::MappedNode(state.model,view,node,initial)) continue;
       state.control.status=BatchStatus::InvalidInput;
       state.control.node=static_cast<std::uint32_t>(node);
       state.control.element=static_cast<std::uint32_t>(parent);

@@ -1,11 +1,12 @@
-"""Frozen serial assembly identity; only includes and namespace are adapted."""
+"""Frozen serial assembly identity; only includes, namespace and helper lookup are adapted."""
 import hashlib,json,os,pathlib
 root=pathlib.Path(__file__).resolve().parent
 for name,record in json.loads((root/'serial-source.json').read_text()).items():
  data=(root/name).read_bytes()
  if hashlib.sha256(data).hexdigest()!=record['adapted_sha256']:
   raise SystemExit('Frozen original assembly differs: '+name)
- text=data.decode().replace('::batch_detail::serial_reference','::batch_detail')
+ text=data.decode().replace('::tl::fea::type25::batch_detail::serial_reference::MappedNode(', 'MappedNode(')
+ text=text.replace('::batch_detail::serial_reference','::batch_detail')
  lines=[]
  for line in text.splitlines():
   if line.startswith('#include "'):
