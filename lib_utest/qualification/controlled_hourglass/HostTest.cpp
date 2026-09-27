@@ -38,7 +38,7 @@ TEST(ControlledHourglass, MultistepLoadingUnloadingCarriesNativeStateAndSignedWo
     }
     actual.input.material_sound_speed_m_s=300+13*step;native.input.material_sound_speed_m_s=actual.input.material_sound_speed_m_s;
     c::Result result;ASSERT_EQ(c::EvaluateLaw42(actual.input,actual.state,result),c::Status::Success);
-    const auto expected=Native(native);Compare(result,expected);negative=negative||result.work_j<0;
+    const auto expected=Native(native);Compare(result,expected,actual.input.dt_s);negative=negative||result.work_j<0;
     Accept(actual,result);AcceptNative(native,expected);
   }
   EXPECT_TRUE(negative);

@@ -17,7 +17,10 @@ output-only modal/work observations. Source bytes/flags come from the qualified
 full H24 fixture. No production C++ expression feeds native arithmetic.
 The63-double comparison packet is history12, force24, energy/STI/work3,
 modal velocity12, modal force12. Tests use native-scale128-epsilon error bounds
-and no absolute floor, preserving small-value sensitivity.
+and no absolute floor, preserving small-value sensitivity. The signed-work
+channel uses dt times the sum of absolute native modal products as its
+roundoff scale: using only the canceled signed sum is ill-conditioned.
+The128-epsilon multiplier remains unchanged for every channel.
 
 The fixture includes raw operand/projection basis cases; these check the leaf
 binding and are not claims that arbitrary projections describe a physical cell.

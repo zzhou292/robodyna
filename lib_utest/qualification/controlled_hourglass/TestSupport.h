@@ -50,15 +50,18 @@ inline std::array<double,63> Native(const Case& x) {
   std::array<double,63> result{};
   controlled_hourglass_native(p,v,projection,history,f,result.data());return result;
 }
-inline void Compare(const c::Result& actual,const std::array<double,63>& expected) {
+inline void Compare(const c::Result& actual,const std::array<double,63>& expected,double dt_s) {
   const auto values=Values(actual);const unsigned boundaries[]{0,12,36,37,38,39,51,63};
   for(unsigned g=0;g<7;++g){double scale=0;for(unsigned i=boundaries[g];i<boundaries[g+1];++i)scale=std::max(scale,std::abs(expected[i]));
+    // Signed work can cancel; bound roundoff by its native absolute product sum.
+    if(g==4){double power_scale=0;for(unsigned k:{2u,0u,1u})for(unsigned h=0;h<4;++h)
+      power_scale+=std::abs(expected[51+4*k+h]*expected[39+4*k+h]);scale=std::max(scale,dt_s*power_scale);}
     for(unsigned i=boundaries[g];i<boundaries[g+1];++i){SCOPED_TRACE(i);ASSERT_TRUE(std::isfinite(values[i]));ASSERT_TRUE(std::isfinite(expected[i]));
       EXPECT_LE(std::abs(values[i]-expected[i]),128*std::numeric_limits<double>::epsilon()*scale);}}
 }
 inline c::Result Check(const Case& x) {
   c::Result result;EXPECT_EQ(c::EvaluateLaw42(x.input,x.state,result),c::Status::Success);
-  Compare(result,Native(x));return result;
+  Compare(result,Native(x),x.input.dt_s);return result;
 }
 inline void Accept(Case& x,const c::Result& y) {
   x.state=y.proposed_state;x.input.internal_energy_density_j_m3=y.internal_energy_density_j_m3;
