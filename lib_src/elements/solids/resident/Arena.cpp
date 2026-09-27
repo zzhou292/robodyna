@@ -3,8 +3,9 @@
 
 namespace tl::fea::solids::batch_detail {
 namespace {
-bool LimitsValid(const BatchLimits& value) noexcept {
-  const BatchLimits hard;
+bool LimitsValid(const BatchLimits& value, BatchProfile profile) noexcept {
+  const BatchLimits hard = profile == BatchProfile::PhysicalCinSourceControlsV3
+      ? SourceControlledBatchLimits() : BatchLimits{};
   return value.max_parents && value.max_parents <= hard.max_parents &&
       value.max_materials && value.max_materials <= hard.max_materials &&
       value.max_curve_points && value.max_curve_points <= hard.max_curve_points &&
@@ -35,7 +36,7 @@ template<class Traits> DeviceFamily<Traits> Rebase(void* base,
 } // namespace
 bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) noexcept {
   const auto& limits = config.limits;
-  if (!LimitsValid(limits) || count.solid18 > limits.max_parents ||
+  if (!LimitsValid(limits, config.profile) || count.solid18 > limits.max_parents ||
       count.solid24 > limits.max_parents - count.solid18 ||
       count.solid6z > limits.max_parents - count.solid18 - count.solid24 ||
       count.solid18_law44 > limits.max_parents - count.solid18 - count.solid24 - count.solid6z ||

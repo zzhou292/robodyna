@@ -24,6 +24,13 @@ struct BatchLimits {
   std::size_t max_device_bytes = 128u << 20;
   std::size_t max_host_bytes = 256u << 20;
 };
+// Explicit caller opt-in for native-unit controlled references and worker storage.
+// Legacy profiles retain the default hard ceiling; this does not allocate the cap.
+inline constexpr BatchLimits SourceControlledBatchLimits() noexcept {
+  BatchLimits limits;
+  limits.max_device_bytes = 192u << 20;
+  return limits;
+}
 struct BatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id = 0, qualification_id = 0;

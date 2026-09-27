@@ -50,7 +50,7 @@ TEST_F(ControlledResidentCuda, LegacyReadbackLateFailureAndWholeOutputRollback) 
   }
 }
 TEST_F(ControlledResidentCuda, ExactDeviceCapRejectsWithoutAllocationAndRetries) {
-  OwnerFixture fixture(false,true,{.001,1000,1});auto c=fixture.Configuration();s::BatchForecast f;s::Batch batch;
+  OwnerFixture fixture(false,true,{.001,1000,1});auto c=fixture.Configuration();c.limits=s::SourceControlledBatchLimits();s::BatchForecast f;s::Batch batch;
   ASSERT_TRUE(s::Batch::Forecast(c,fixture.model,f));c.limits.max_device_bytes=f.device_bytes-1;
   EXPECT_EQ(batch.InitializeJoined(c,fixture.model).status,s::BatchStatus::ResourceLimit);EXPECT_EQ(batch.allocations().device_bytes,0u);
   c.limits.max_device_bytes=f.device_bytes;c.limits.max_host_bytes=f.startup_host_bytes;
