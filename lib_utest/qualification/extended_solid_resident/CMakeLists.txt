@@ -62,6 +62,9 @@ add_test(NAME extended_solid_resident_legacy COMMAND extended_solid_resident_leg
 set_tests_properties(extended_solid_resident_legacy PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-add_test(NAME extended_solid_resident_identity COMMAND "${Python3_EXECUTABLE}" -B
-  "${CMAKE_CURRENT_SOURCE_DIR}/verify_sources.py")
-set_tests_properties(extended_solid_resident_identity PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+option(TL_EXTENDED_SOLID_RESIDENT_IDENTITY_CHECK "Check the frozen extended-profile source manifest" ON)
+if(TL_EXTENDED_SOLID_RESIDENT_IDENTITY_CHECK)
+  add_test(NAME extended_solid_resident_identity COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/verify_sources.py")
+  set_tests_properties(extended_solid_resident_identity PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+endif()

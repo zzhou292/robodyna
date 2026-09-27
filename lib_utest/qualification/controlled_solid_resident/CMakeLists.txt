@@ -6,6 +6,8 @@ find_package(GTest REQUIRED)
 add_subdirectory("${TL_ROOT}/lib_src/solvers" owner)
 set(TL_SOLID_BATCH_CUDA ON)
 set(TL_EXTENDED_SOLID_RESIDENT_CUDA OFF)
+# This profile owns a new complete source pin; the older frozen manifest remains intact.
+set(TL_EXTENDED_SOLID_RESIDENT_IDENTITY_CHECK OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../extended_solid_resident" legacy)
 add_executable(controlled_solid_resident_host HostTest.cpp ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
 target_link_libraries(controlled_solid_resident_host PRIVATE tl_solid_batch_values tl_tied_cin_attachment tl_nodal_rigid_assembly_binding GTest::gtest_main)
@@ -19,3 +21,6 @@ target_compile_options(controlled_solid_resident_cuda PRIVATE
  $<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>)
 add_test(NAME controlled_solid_resident_cuda COMMAND controlled_solid_resident_cuda)
 set_tests_properties(controlled_solid_resident_host controlled_solid_resident_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300)
+
+add_test(NAME controlled_solid_resident_identity COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/verify_sources.py")
+set_tests_properties(controlled_solid_resident_identity PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
