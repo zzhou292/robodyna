@@ -18,10 +18,13 @@ inline bool Supported(Policy policy) noexcept {
            policy == Policy::OriginalAdhesive18ExtendedRubberHephS6zV2 ||
            policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3 ||
            policy == Policy::OriginalExtendedSolidsV4 ||
-           policy == Policy::OriginalVehicleSupportsV5;
+           policy == Policy::OriginalVehicleSupportsV5 ||
+           policy == Policy::NativeConvertedSupportsV6;
 }
 inline Census ExpectedCensus(Policy policy) {
     output::Require(Supported(policy), "Unsupported solid source resolution policy");
+    if (policy == Policy::NativeConvertedSupportsV6)
+        return {17, 4980, 908, 2341, 0, 386, 1345};
     if (policy == Policy::OriginalVehicleSupportsV5)
         return {17, 4980, 908, 1991, 350, 386, 1345};
     if (policy == Policy::OriginalExtendedSolidsV4)
@@ -41,15 +44,18 @@ inline bool SelectedRubber(std::uint64_t id, Policy policy) noexcept {
 inline bool SelectedRear(std::uint64_t id, Policy policy) noexcept {
     return (policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3 ||
             policy == Policy::OriginalExtendedSolidsV4 ||
-            policy == Policy::OriginalVehicleSupportsV5) &&
+            policy == Policy::OriginalVehicleSupportsV5 ||
+            policy == Policy::NativeConvertedSupportsV6) &&
            (id == 2000016 || id == 2000392);
 }
 inline bool SelectedRadiator(std::uint64_t id, Policy policy) noexcept {
     return (policy == Policy::OriginalExtendedSolidsV4 ||
-            policy == Policy::OriginalVehicleSupportsV5) && id == RadiatorPart;
+            policy == Policy::OriginalVehicleSupportsV5 ||
+            policy == Policy::NativeConvertedSupportsV6) && id == RadiatorPart;
 }
 inline bool SelectedAirbag(std::uint64_t id, Policy policy) noexcept {
-    return policy == Policy::OriginalVehicleSupportsV5 && id == AirbagPart;
+    return (policy == Policy::OriginalVehicleSupportsV5 ||
+            policy == Policy::NativeConvertedSupportsV6) && id == AirbagPart;
 }
 inline bool Selected(std::uint64_t id, Policy policy) noexcept {
     return Supported(policy) && (id == AdhesivePart || SelectedRubber(id, policy) ||

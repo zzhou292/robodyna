@@ -67,6 +67,36 @@ struct Geometry {
     }
 };
 }
+TEST(VehicleSolidGeometry, NativeConvertedProfilePreservesAllEightCollapsedHephSlots) {
+    Geometry fixture(true, 2000477, Policy::NativeConvertedSupportsV6);
+    ASSERT_NO_THROW(fixture.Prepare());
+    ASSERT_EQ(fixture.data.solid24.size(), 1u);
+    EXPECT_TRUE(fixture.data.solid6z.empty());
+    const auto& row = fixture.data.rows[0];
+    const auto& reference = fixture.data.solid24[0];
+    EXPECT_EQ(row.family, Family::Solid24);
+    EXPECT_EQ(reference.unique_node_count(), 6u);
+    EXPECT_EQ(reference.input().profile.connectivity,
+              tl::fea::solid24::ConnectivityProfile::CollapsedTopEdges);
+    double mass = 0;
+    for (unsigned n = 0; n < 8; ++n) {
+        EXPECT_EQ(reference.input().source_node_id[n], row.raw_node_ids[n]);
+        EXPECT_GT(reference.mass().source_slot_mass_kg[n], 0);
+        mass += reference.mass().source_slot_mass_kg[n];
+    }
+    EXPECT_DOUBLE_EQ(mass, reference.mass().element_mass_kg);
+    const auto census = detail::ExpectedCensus(Policy::NativeConvertedSupportsV6);
+    EXPECT_EQ(census.parents, 4980u);EXPECT_EQ(census.solid24, 2341u);EXPECT_EQ(census.solid6z, 0u);
+    EXPECT_TRUE(detail::SelectedAirbag(detail::AirbagPart, Policy::NativeConvertedSupportsV6));
+}
+TEST(VehicleSolidGeometry, NativeConvertedDistinctHephKeepsDistinctProfile) {
+    Geometry fixture(false, 2000477, Policy::NativeConvertedSupportsV6);
+    ASSERT_NO_THROW(fixture.Prepare());
+    ASSERT_EQ(fixture.data.solid24.size(), 1u);
+    EXPECT_EQ(fixture.data.solid24[0].unique_node_count(), 8u);
+    EXPECT_EQ(fixture.data.solid24[0].input().profile.connectivity,
+              tl::fea::solid24::ConnectivityProfile::EightDistinct);
+}
 TEST(VehicleSolidGeometry, OriginalSlotsTypedWedgeMapAndNativeMassRemainExplicit) {
     Geometry fixture(true);
     ASSERT_NO_THROW(fixture.Prepare());

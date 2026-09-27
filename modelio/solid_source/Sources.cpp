@@ -81,7 +81,7 @@ void ReadDeclarations(const source::CanonicalData& source, const std::string& me
     std::map<std::size_t, std::size_t> source_rows;
     for (std::size_t i = 0; i < data.sources.size(); ++i)
         source_rows.emplace(data.sources[i].block.first_line, i);
-    if (data.policy == Policy::OriginalVehicleSupportsV5) ReadAirbagHourglass(files, data, limits);
+    if (SelectedAirbag(AirbagPart, data.policy)) ReadAirbagHourglass(files, data, limits);
     for (auto& part : data.parts) {
         for (auto& row : part.sources) row = source_rows.at(row);
         if (part.curve_source != SIZE_MAX) part.curve_source = source_rows.at(part.curve_source);

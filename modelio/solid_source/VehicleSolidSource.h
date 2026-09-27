@@ -19,7 +19,10 @@ enum class Policy {
     OriginalAdhesive18ExtendedRubberHephS6zV2,
     OriginalAdhesive18ExtendedRubberRearLaw44V3,
     OriginalExtendedSolidsV4, // V3 plus original radiator foam, actual blank-HU LAW90.
-    OriginalVehicleSupportsV5 // V4 plus 80 airbag supports, explicit Isolid18 demo selection.
+    OriginalVehicleSupportsV5, // V4 plus80 airbag supports, explicit Isolid18 selection.
+    // Same selected original cells; LAW42 keeps raw8 native HEPH connectivity,
+    // including repeated top-edge slots. Controls/owner admission are separate.
+    NativeConvertedSupportsV6
 };
 enum class Family { Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90 };
 enum class MaterialLaw { Law36, Law42, Law44, Law90 };
@@ -38,7 +41,8 @@ struct Part {
     std::array<std::size_t, 3> sources{}; // Original PART, SECTION, MATERIAL.
     std::size_t hourglass_source = SIZE_MAX, curve_source = SIZE_MAX;
     // Original ELFORM2 adhesive; blank rubber ELFORM and IHQ2/QM.1 remain raw.
-    // Rubber converter Isolid1 is explicitly replaced by the named demo policy.
+    // This field records the source-only converter request. Actual native property
+    // normalization resolves HEPH24; V6 follows the observed raw8 dispatch.
     unsigned converter_isolid = 0;
     MaterialLaw material_law = MaterialLaw::Law36;
     double density_kg_m3 = 0;

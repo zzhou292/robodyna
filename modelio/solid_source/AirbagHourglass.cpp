@@ -4,7 +4,7 @@
 
 namespace crash::modelio::solid_source::detail {
 void ReadAirbagHourglass(const Value& files, Data& data, Limits limits) {
-    Require(data.policy == Policy::OriginalVehicleSupportsV5 && files.IsObject(),
+    Require(SelectedAirbag(AirbagPart, data.policy) && files.IsObject(),
             "Airbag original control proof requires the explicit V5 policy");
     std::size_t found = 0;
     for (const auto& file : files.GetObject()) {

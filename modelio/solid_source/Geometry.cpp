@@ -104,7 +104,10 @@ void ReadGeometry(const source::CanonicalData& source, const std::string& member
             tl::fea::solid6z::CollapsedBrickTopology mapping;
             Require(tl::fea::solid6z::MapCollapsedTopEdges(raw, mapping) == tl::fea::solid6z::Status::Success,
                     "Rubber source is outside the explicit collapsed-top-edge wedge profile");
-            row.family = Family::Solid6z;
+            // Original raw8 conversion reaches native SZFORC3, even when only
+            // six physical IDs occur. V5 remains the separate S6 projection.
+            row.family = data.policy == Policy::NativeConvertedSupportsV6 ?
+                Family::Solid24 : Family::Solid6z;
             std::copy(std::begin(mapping.six_to_raw), std::end(mapping.six_to_raw), row.six_to_raw.begin());
         }
         data.rows.push_back(std::move(row));

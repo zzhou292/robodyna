@@ -77,6 +77,10 @@ void PrepareReferences(const source::CanonicalData& source, Data& data, Limits) 
             Pack(input, row, part, positions, 8);
             input.profile.reference_strain = tl::fea::solid24::ReferenceStrain::TotalLagrangian10;
             input.profile.working_length = tl::fea::solid24::WorkingLengthUnit::Millimetre;
+            if (data.policy == Policy::NativeConvertedSupportsV6 &&
+                row.raw_node_ids[4] == row.raw_node_ids[5] &&
+                row.raw_node_ids[6] == row.raw_node_ids[7])
+                input.profile.connectivity = tl::fea::solid24::ConnectivityProfile::CollapsedTopEdges;
             Append(data.solid24, input, row);
         } else {
             tl::fea::solid6z::ReferenceInput input;
