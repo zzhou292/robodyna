@@ -1,4 +1,5 @@
 #include "../OriginalSources.h"
+#include "../Internal.h"
 #include "../MemberStorage.h"
 #include "output/full_shell/tests/TestSupport.h"
 #include "case/vehicle_self_contact/native/SourcePolicies.h"
@@ -39,6 +40,19 @@ TEST(NativeV6SourceAdmission, CompactAuthenticatedStoragePreservesBytesAndCharge
     EXPECT_EQ(compact,bytes);EXPECT_EQ(output::Sha256(compact),output::Sha256(bytes));
     EXPECT_LE(compact.capacity()+1,bytes.size()+64);
     EXPECT_GE(detail::ReadAndCompactPeak(64u<<20,bytes.size()),(64u<<20)+prior+compact.capacity()+1);
+}
+
+TEST(NativeV6SourceAdmission, SharedCorrectedBudgetRejectsForeignBackingAndInvalidPartitions) {
+    double coefficients[2]{},other[2]{};int canonical=0,foreign=0;
+    const detail::CorrectedBacking a{coefficients,2,&canonical};
+    EXPECT_EQ(detail::SharedCorrectedPeak(a,a,120,180,100,100),200u);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,{other,2,&canonical},120,180,100,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,{coefficients,1,&canonical},120,180,100,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,{coefficients,2,&foreign},120,180,100,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,a,99,180,100,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,a,120,99,100,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,a,120,180,99,100),std::runtime_error);
+    EXPECT_THROW(detail::SharedCorrectedPeak(a,a,SIZE_MAX,180,100,100),std::runtime_error);
 }
 
 }

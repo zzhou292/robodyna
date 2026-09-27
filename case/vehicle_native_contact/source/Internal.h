@@ -21,6 +21,20 @@ struct Inputs {
 inline std::size_t Add(std::size_t a,std::size_t b) {
     output::Require(b<=SIZE_MAX-a,"Native V6 source construction budget overflows");return a+b;
 }
+// Same public identity evidence used by mixed_main/Controls.cpp. Only this
+// named shared partition may be discounted; no private layouts are inferred.
+struct CorrectedBacking {
+    const void* coefficients=nullptr;std::size_t count=0;const void* canonical=nullptr;
+};
+inline std::size_t SharedCorrectedPeak(CorrectedBacking mixed,CorrectedBacking gap,
+    std::size_t mixed_retained,std::size_t gap_peak,std::size_t gap_shared,std::size_t corrected_peak) {
+    output::Require(mixed.coefficients&&mixed.count&&mixed.canonical&&
+        mixed.coefficients==gap.coefficients&&mixed.count==gap.count&&mixed.canonical==gap.canonical,
+        "Gap construction requires the exact mixed corrected source backing");
+    output::Require(gap_shared==corrected_peak&&mixed_retained>=corrected_peak&&gap_peak>=gap_shared,
+        "Gap construction shared source partition is inconsistent");
+    return Add(gap_peak,mixed_retained-corrected_peak);
+}
 inline std::size_t Extras(const Forecast& f) {
     return Add(Add(f.member_storage_bytes,f.packet_authority_reservation),f.metadata_bytes);
 }

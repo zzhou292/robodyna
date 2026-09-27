@@ -30,11 +30,19 @@ Contact PrepareContact(const Inputs& in,const Owner& owner,Limits limits,Forecas
     admit(contact::mixed_interface::MixedInterfaceSource::Preflight(*initial.source).peak_bytes,"mixed_interface");
     const auto mixed=contact::mixed_interface::MixedInterfaceSource::Prepare(*initial.source);
     output::Require(mixed.report.status==contact::mixed_interface::Status::Ready&&mixed.source,mixed.report.reason.c_str());
-    // The gap producer retains corrected context, while the mixed surface
-    // graph already exists. Charge their published bounds without subtracting
-    // unexposed internal shared storage.
-    admit(Add(mixed.source->retained_host_upper_bound(limits.host_bytes),
-        contact::gap_operands::ContactGapOperands::Preflight(*corrected.source).peak_bytes),"gap_operands_with_mixed");
+    // InitialSurface's public retained bound includes corrected.peak once;
+    // gapPreflight names the same shared_source partition. Reuse the existing
+    // PostGapm budget formula after the same exact backing checks, before any
+    // gap allocation. Retired/private workspace is never guessed or subtracted.
+    const auto identity=[](const auto& context) {
+        return CorrectedBacking{context.coefficients().data(),context.coefficients().size(),
+            &context.pre_correction().physical().shell_source().references().source().canonical().data()};
+    };
+    const auto& shared=mixed.source->initial().context();
+    const auto gap_budget=contact::gap_operands::ContactGapOperands::Preflight(*corrected.source);
+    admit(SharedCorrectedPeak(identity(shared),identity(*corrected.source),
+        mixed.source->retained_host_upper_bound(limits.host_bytes),gap_budget.peak_bytes,
+        gap_budget.shared_source,shared.forecast().peak_bytes),"gap_operands_with_mixed");
     const auto gaps=contact::gap_operands::ContactGapOperands::Prepare(*corrected.source);
     output::Require(gaps.report.status==contact::gap_operands::Status::Ready&&gaps.source,gaps.report.reason.c_str());
     admit(contact::post_gapm::PostGapmMainSource::Preflight(*mixed.source,*gaps.source).peak_bytes,"post_gapm");
