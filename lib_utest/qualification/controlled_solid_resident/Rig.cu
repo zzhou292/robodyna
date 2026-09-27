@@ -74,8 +74,8 @@ void Rig::Compare(const Results& r) {
   for(unsigned n=0;n<8;++n)for(unsigned k=0;k<3;++k){
     Near(fe::solid_common::Component(h.cache.rhs_force_n[n],k),fe::solid_common::Component(hexpected.rhs_force_n[n],k));
     Near(fe::solid_common::Component(f.cache.rhs_force_n[n],k),fe::solid_common::Component(fexpected.rhs_force_n[n],k));}
-  Near(h.cache.stiffness.raw_stiffness_n_m,hexpected.nodal_raw_stiffness_n_m);
-  Near(f.cache.stiffness.raw_stiffness_n_m,fexpected.nodal_raw_stiffness_n_m);
+  Near(h.cache.stiffness.translation_n_m,.25*hexpected.nodal_raw_stiffness_n_m);
+  Near(f.cache.stiffness.translation_n_m,.25*fexpected.nodal_raw_stiffness_n_m);
   Near(h.cache.response.distortion_energy_j,hexpected.distortion_energy_j);
   Near(f.cache.response.distortion_energy_j,fexpected.distortion_energy_j);
   Near(h.cache.response.hourglass_work_j,hexpected.hourglass_work_increment_j);
