@@ -1,0 +1,30 @@
+{
+  "commit": "90a4a8060966358714049a775e4f9f7e7838481e",
+  "source_operand_commit": "2c40dbbd5d9e6cd46db8b9fda7853b4baab32b99",
+  "files": [
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "fixture": "frozen/native_base/Arena.h.txt",
+      "bytes": 2661,
+      "sha256": "806622a1eb38b1ead65a23ccb5abc7ffde64a8af0ed79020da8c09b2a45490cc"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.cpp",
+      "fixture": "frozen/native_base/Arena.cpp.txt",
+      "bytes": 6720,
+      "sha256": "29321a4edf5acd52494d737848a8ffce99fdac14c0ffcf8d08993f9fd50f1359"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Storage.h",
+      "fixture": "frozen/native_base/Storage.h.txt",
+      "bytes": 2305,
+      "sha256": "50e315041056160be295c9c53e236972c79763f75a337b6f966f3877cb5003cf"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Upload.cpp",
+      "fixture": "frozen/native_base/Upload.cpp.txt",
+      "bytes": 2934,
+      "sha256": "28c147a7162d29f25bc0ae134c333fb2fa78f60e5e1794e7d410d5121afd2bbe"
+    }
+  ]
+}

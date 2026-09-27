@@ -24,13 +24,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 6720,
-      "sha256": "29321a4edf5acd52494d737848a8ffce99fdac14c0ffcf8d08993f9fd50f1359"
+      "bytes": 6894,
+      "sha256": "1f7befcee6b44fd49593960b4b51309d533a80f03d97bc809c661002450208b5"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
-      "bytes": 2661,
-      "sha256": "806622a1eb38b1ead65a23ccb5abc7ffde64a8af0ed79020da8c09b2a45490cc"
+      "bytes": 2765,
+      "sha256": "fa2451d4d2a2cad34077cc97c92f2a44853ff277ca3e1fc3212bb8fd74ac712a"
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",
@@ -38,9 +38,34 @@
       "sha256": "9bac819b841fe450c6fd384e691c3043ab1c6e488565ca5c2d23b2e1b5e57e83"
     },
     {
+      "path": "lib_src/elements/solids/resident/MeasurementTypes.h",
+      "bytes": 698,
+      "sha256": "ef4af0d53f3f91735b881200f73ed1a9c158a9d065ff63c921e44a3f9c0409e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementValues.h",
+      "bytes": 3755,
+      "sha256": "d3729d9fd1c51980534b341867bc4774628f3dee435a26328c2e0d4e3418447e"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementWork.h",
+      "bytes": 1212,
+      "sha256": "6ae7f6d8268c0cc109511ecdbcc19f0861910b1822dfab80bbc64ee37ea930e9"
+    },
+    {
       "path": "lib_src/elements/solids/resident/Plan.cpp",
       "bytes": 4460,
       "sha256": "2536d56f17df4044a8303d4f70f8c3f6472dc46ff7fc33bb3e33575ee599e3d0"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "bytes": 2676,
+      "sha256": "beba0aaa9adf5039ea9f24451efc2fd7f8bf29b4516a096983f04264b644972f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.h",
+      "bytes": 1287,
+      "sha256": "bbbf19bc1a9d9656b8667bc949a79ef44d0b914206baa0ba308ebef78ee1a788"
     },
     {
       "path": "lib_src/materials/law44/solid/BUILD.bazel",
@@ -201,16 +226,6 @@
       "path": "lib_utest/qualification/solid_law44_point/native/NativeSetup.F",
       "bytes": 2826,
       "sha256": "4c1fb347503266b91feeaac7b36103356732b93b56b46a5e8d3bd4cf7eed6d03"
-    },
-    {
-      "path": "lib_src/elements/solids/resident/ResultValidation.h",
-      "bytes": 1287,
-      "sha256": "bbbf19bc1a9d9656b8667bc949a79ef44d0b914206baa0ba308ebef78ee1a788"
-    },
-    {
-      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
-      "bytes": 1677,
-      "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
     }
   ],
   "solid_candidate_validation_registration": {
@@ -234,5 +249,32 @@
       "lib_src/elements/solids/resident/ResultValidation.cu"
     ]
   },
-  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged."
+  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged.",
+  "solid_measurement_operands_registration": {
+    "baseline_commit": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "scope": "Fresh per-parent scalar and accepted-RHS measurement operands in the existing five validation launches; exact serial family/parent/slot fold, status/failure order, caps, and public ownership retained. Source/host/shape author scope only; root CUDA/native/owner/full-model qualification remains required.",
+    "owning_qualifier": "lib_utest/qualification/solid_measurement_operands",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/solids/resident/Arena.cpp",
+        "bytes": 6092,
+        "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
+      },
+      {
+        "path": "lib_src/elements/solids/resident/Arena.h",
+        "bytes": 2533,
+        "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
+      },
+      {
+        "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+        "bytes": 1677,
+        "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
+      }
+    ],
+    "new_paths": [
+      "lib_src/elements/solids/resident/MeasurementTypes.h",
+      "lib_src/elements/solids/resident/MeasurementValues.h",
+      "lib_src/elements/solids/resident/MeasurementWork.h"
+    ]
+  }
 }

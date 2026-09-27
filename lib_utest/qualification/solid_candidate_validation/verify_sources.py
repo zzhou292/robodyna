@@ -3,10 +3,14 @@
 from pathlib import Path
 import hashlib
 import json
+import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-MANIFEST_SHA256 = '63e6f0af96ac93fa1ff9d5cef42b09ba5a332a55022ac8dd0b040bbfe053607c'
+MANIFEST_SHA256 = 'a6ac531d9ff3200a6dd68878170a74debec4dcaf5c4c11c844384d3bbdc6f501'
+sys.path.insert(0, str(HERE.parent / 'solid_measurement_operands'))
+from operand_proof import (authenticate_baseline, legacy_candidate, legacy_measure,
+                           legacy_result_validation)
 
 
 def body(text, signature):
@@ -21,6 +25,7 @@ def body(text, signature):
 
 
 def verify():
+    authenticate_baseline()
     raw = (HERE / 'source-manifest.json').read_bytes()
     assert hashlib.sha256(raw).hexdigest() == MANIFEST_SHA256
     manifest = json.loads(raw)
@@ -33,14 +38,15 @@ def verify():
     prefix = ROOT / 'lib_src/elements/solids/resident'
     assert (prefix / 'ResultChecks.h').read_bytes() == (HERE / 'frozen/ResultChecks.h.txt').read_bytes()
     old = (HERE / 'frozen/Measure.h.txt').read_text()
-    new = (prefix / 'Measure.h').read_text()
+    new = legacy_measure((prefix / 'Measure.h').read_text())
     expected = body(old, 'bool MeasureFamily(').replace(
         '!ValidResult(parent,\n'
         '        MaterialAt<Traits>(state, parent.material_index), now, diagnostics.time, diagnostics.epoch)',
         '!check(p, diagnostics.time, diagnostics.epoch)')
     assert body(new, 'bool MeasureFamilyWithCheck(') == expected
     old = (HERE / 'frozen/Candidate.cu.txt').read_text()
-    new = (prefix / 'Candidate.cu').read_text()
+    new = legacy_candidate((prefix / 'Candidate.cu').read_text())
+    legacy_result_validation((prefix / 'ResultValidation.cu').read_text())
     for signature in ['void Initialize(', 'void Evaluate(']:
         assert body(new, signature) == body(old, signature), signature
     assert body(new, 'void Finalize(') == body(old, 'void Finalize(').replace(
