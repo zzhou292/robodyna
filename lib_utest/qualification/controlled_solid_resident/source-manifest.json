@@ -2125,8 +2125,8 @@
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CMakeLists.txt",
-      "bytes": 2193,
-      "sha256": "1b0bfb0c6d2233c83e5f8a94105ead70476016af072f637d60b53afb36f98d7d"
+      "bytes": 2247,
+      "sha256": "be2d5500c3c49e1aca3247601417622fb6386a9dfcb0c56c473738e218efc1c3"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/HostTest.cpp",
