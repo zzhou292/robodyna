@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Results.h"
+#include "ProfiledResults.h"
 #include "../Model.h"
 #include "../../ShellBatchStartup.h"
 #include "../../../solvers/FENodalState.h"
@@ -14,7 +15,7 @@ struct NodalCinWitnessSource;
 }
 namespace tl::fea::solids {
 class BatchQualificationPeer;
-enum class BatchProfile { Unspecified, PhysicalCinV1, PhysicalCinExtendedLaw44Law90V2 };
+enum class BatchProfile { Unspecified, PhysicalCinV1, PhysicalCinExtendedLaw44Law90V2, PhysicalCinSourceControlsV3 };
 struct BatchLimits {
   std::size_t max_parents = 16384;
   std::size_t max_materials = 1024;
@@ -61,6 +62,7 @@ struct BatchDiagnostics {
   std::size_t parent_count[5]{};
   double native_internal_work_increment_j[5]{};
   double physical_hourglass_work_increment_j[5]{};
+  double distortion_work_increment_j[5]{}; // Separate native EINT_DISTOR increment.
   double plastic_work_increment_j = 0; // LAW36/44 only; already part of EINT.
   double internal_kick_work_j = 0, internal_drift_work_j = 0;
   double minimum_native_dt_s = 0;
@@ -88,6 +90,8 @@ class Batch {
       const NodalPreparedView&, BatchDiagnostics*);
   BatchReport CopyAcceptedResults(const NodalStamp&, ResultBuffers, BatchDiagnostics*);
   BatchReport CopyPreparedResults(const BatchDiagnostics&, ResultBuffers);
+  BatchReport CopyAcceptedResultsWithControls(const NodalStamp&,ProfiledResultBuffers,BatchDiagnostics*);
+  BatchReport CopyPreparedResultsWithControls(const BatchDiagnostics&,ProfiledResultBuffers);
   BatchReport CopyAcceptedDiagnostics(const NodalStamp&, BatchDiagnostics*) const noexcept;
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;

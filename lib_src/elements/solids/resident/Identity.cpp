@@ -32,7 +32,8 @@ bool SameDiagnostics(const BatchDiagnostics& a, const BatchDiagnostics& b) noexc
   for (unsigned f = 0; f < 5; ++f) {
     if (a.parent_count[f] != b.parent_count[f] ||
         !SameBits(a.native_internal_work_increment_j[f], b.native_internal_work_increment_j[f]) ||
-        !SameBits(a.physical_hourglass_work_increment_j[f], b.physical_hourglass_work_increment_j[f]))
+        !SameBits(a.physical_hourglass_work_increment_j[f], b.physical_hourglass_work_increment_j[f]) ||
+        !SameBits(a.distortion_work_increment_j[f], b.distortion_work_increment_j[f]))
       return false;
   }
   return true;
