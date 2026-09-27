@@ -1,5 +1,6 @@
 #include "ParticipantConfigs.h"
 #include "ParticipantControls.h"
+#include "SolidReadback.h"
 namespace crash::cases::vehicle_runtime::detail {
 namespace fe = tl::fea;
 namespace {
@@ -34,7 +35,9 @@ ParticipantConfigs ConfigureParticipants(const Config& config,const Source& sour
     out.qeph.max_device_bytes = out.t3.max_device_bytes = out.qbat.max_device_bytes = config.limits.shell_device_bytes;
     out.type25.element_count = source.coefficients().type25()->connection_count();
     out.type13.assembly = fe::type13::BatchAssembly::CinNativeStiffness;
-    out.solids.profile = source.solids().profile() == fe::solids::ModelProfile::ExtendedLaw44Law90
+    out.solids.profile = HasSourceSolidControls(source.solids())
+        ? fe::solids::BatchProfile::PhysicalCinSourceControlsV3
+        : source.solids().profile() == fe::solids::ModelProfile::ExtendedLaw44Law90
         ? fe::solids::BatchProfile::PhysicalCinExtendedLaw44Law90V2
         : fe::solids::BatchProfile::PhysicalCinV1;
     out.solids.cin_attachment_count = source.witnesses().data().ranges.size();

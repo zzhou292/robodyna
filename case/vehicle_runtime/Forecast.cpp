@@ -3,6 +3,7 @@
 #include "Packing.h"
 #include "JointRuntime.h"
 #include "BeamRuntime.h"
+#include "SolidReadback.h"
 #include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
@@ -92,11 +93,7 @@ Forecast ForecastStartup(const Config& config,const Source& source,std::size_t f
         c.qeph.element_count*sizeof(fe::ShellBatchLayeredSection),c.t3.element_count*sizeof(fe::ShellBatchLayeredSection),
         c.type25.element_count*sizeof(fe::type25::Evaluation),
         source.beams().connection_count()*sizeof(fe::type13::Evaluation),
-        source.solids().solid18().size()*sizeof(fe::solids::Result18) +
-        source.solids().solid24().size()*sizeof(fe::solids::Result24) +
-        source.solids().solid6z().size()*sizeof(fe::solids::Result6z) +
-        source.solids().solid18_law44().size()*sizeof(fe::solids::Result18Law44) +
-        source.solids().solid18_law90().size()*sizeof(fe::solids::Result18Law90)};
+        SolidReadbackBytes(source.solids())};
     out.readback_temporary_bytes = *std::max_element(std::begin(reads),std::end(reads));
     if(joints) out.readback_temporary_bytes=std::max(out.readback_temporary_bytes,
         (*source.joints()).joints().size()*sizeof(fe::type45::Result));
