@@ -62,6 +62,12 @@
       "original_path": "lib_src/elements/t3/mapped/AssemblyTypes.h",
       "bytes": 766,
       "sha256": "40699b4700080ab9cd5e66ddbfb0f877f38559e70560b8a384e9d2e5785d8986"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/QephActivityLayout.h.txt",
+      "original_path": "lib_src/elements/qeph/mapped/ActivityLayout.h",
+      "bytes": 1679,
+      "sha256": "a3e796be3518774b7866346755fbfc04d4009822a323db3342fc6d36ba445519"
     }
   ]
 }

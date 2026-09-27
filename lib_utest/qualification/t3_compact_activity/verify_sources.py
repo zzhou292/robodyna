@@ -9,6 +9,17 @@ for row in manifest['files']:
 generator=runpy.run_path(str(HERE/'generate_oracle.py'))
 assert (HERE/'SerialValues.h').read_text()==generator['generate']()
 body=generator['body']
+# The shared packet extraction changes only namespace and its ownership comment.
+shared=(ROOT/'lib_src/elements/mapped_shell/ActivityLayout.h').read_text()
+restored=shared.replace('tl::fea::mapped_shell','tl::fea::qeph::mapped').replace(
+    '// This bounded scratch tail holds no accepted verdict; callers refill it each time.',
+    '// Only the explicit mapped arena owns this tail. It holds no accepted verdict.')
+assert restored==(HERE/'reference/QephActivityLayout.h.txt').read_text()
+compatibility=(ROOT/'lib_src/elements/qeph/mapped/ActivityLayout.h').read_text()
+assert compatibility==('// SPDX-License-Identifier: AGPL-3.0-or-later\n#pragma once\n'
+    '#include "../../mapped_shell/ActivityLayout.h"\nnamespace tl::fea::qeph::mapped {\n'
+    'using mapped_shell::ActivityMemory;\nusing mapped_shell::ActivityBytes;\n'
+    'using mapped_shell::ActivityLayout;\n} // namespace tl::fea::qeph::mapped\n')
 # Shared readers retain their complete old bodies after literal shape extraction.
 for name,original,selected,expanded,occurrences,header,helper in (
     ('ShellOnePointStorage.cpp','lib_src/elements/one_point/ShellOnePointStorage.cpp',

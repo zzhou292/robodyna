@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "Flow.h"
+#include "lib_src/elements/qeph/mapped/ActivityLayout.h"
+#include <type_traits>
 #include "../qeph_mapped_activity/FailureValuesFixture.h"
 namespace t3_compact_test {
 TEST(T3CompactActivityValues,CompleteFrozenLoopsMatchAllRolesEpochsAndRecordFaults) {
@@ -25,6 +27,9 @@ TEST(T3CompactActivityValues,EarlierGlobalPhaseOutranksEarlierParentOfLaterPhase
   }
 }
 TEST(T3CompactActivityValues,LayoutCountsPrivatePacketsAndKeepsOneShortFailureAtomic) {
+  static_assert(std::is_same_v<fe::mapped_shell::ActivityMemory,fe::qeph::mapped::ActivityMemory>);
+  static_assert(std::is_same_v<fe::mapped_shell::ActivityLayout,fe::qeph::mapped::ActivityLayout>);
+  static_assert(&fe::mapped_shell::ActivityBytes==&fe::qeph::mapped::ActivityBytes);
   for(std::size_t count:{1u,2u,127u,128u,129u,21301u}) {
     fe::mapped_shell::ActivityLayout layout;
     ASSERT_TRUE(layout.Initialize(17,count,1u<<20));
