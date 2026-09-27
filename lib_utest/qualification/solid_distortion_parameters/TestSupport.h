@@ -20,6 +20,10 @@ inline Case Base(double nu=.463) {
   value.input.current_volume_m3=6.4e-5;
   return value;
 }
+inline std::array<double,6> SlotValues(const m::MechanicalSlots& slots) {
+  return {slots.pm20_young_pa,slots.pm21_poisson_ratio,slots.pm22_gs_pa,
+          slots.pm32_pa,slots.pm100_reader_bulk_pa,slots.pm107_control_pa};
+}
 inline std::array<double,6> NativeSlots(const Case& value) {
   const double p[]{value.material.mu_pa,value.material.poisson_ratio,
                    value.material.density_kg_m3,value.material.tension_cutoff_pa};
@@ -59,6 +63,9 @@ inline std::vector<Case> Cases() {
   const double native_point4=static_cast<double>(.4f);
   for(double nu:{0.0,.2,.4,native_point4,std::nextafter(native_point4,1.0),.463,d::MaximumPoissonRatio}) {
     auto value=Base(nu);result.push_back(value);
+    value.input.cauchy_stress_pa[3]=NativeC1(value)*1e-4;
+    result.push_back(value); // Interior F_ES ramp, shared CPU/CUDA coverage.
+    value.input.cauchy_stress_pa[3]=0;
     value.input.cauchy_stress_pa[0]=-2.0*NativeC1(value);
     value.input.cauchy_stress_pa[1]=.3*NativeC1(value);
     value.input.cauchy_stress_pa[4]=-.1*NativeC1(value);
