@@ -36,10 +36,10 @@ TL_BRICK_HD inline double HourglassWork(const Cache18Law90&) noexcept { return 0
 TL_BRICK_HD inline double PlasticWork(const Cache18Law44& c) noexcept { return c.diagnostics.plastic_work_increment_j; }
 TL_BRICK_HD inline double PlasticWork(const Cache18Law90&) noexcept { return 0; }
 template<class Traits, class Check>
-TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted, unsigned trial,
-    unsigned family_index, const NodalPreparedView* view, Check check) noexcept {
+TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, Control& control,
+    unsigned accepted, unsigned trial, unsigned family_index,
+    const NodalPreparedView* view, Check check) noexcept {
   auto& family = FamilyStorage<Traits>(state);
-  auto& control = state.control;
   auto& diagnostics = control.diagnostics;
   diagnostics.parent_count[family_index] = family.count;
   for (std::size_t p = 0; p < family.count; ++p) {
@@ -74,6 +74,13 @@ TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted
   }
   return true;
 }
+// Retained callers keep their original destination and ordered fold.
+template<class Traits, class Check>
+TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted, unsigned trial,
+    unsigned family_index, const NodalPreparedView* view, Check check) noexcept {
+  return MeasureFamilyWithCheck<Traits>(state, state.control, accepted, trial,
+      family_index, view, check);
+}
 template<class Traits>
 TL_BRICK_HD inline bool MeasureFamily(Storage& state, unsigned accepted, unsigned trial,
     unsigned family_index, const NodalPreparedView* view) noexcept {
@@ -81,9 +88,16 @@ TL_BRICK_HD inline bool MeasureFamily(Storage& state, unsigned accepted, unsigne
       DirectResultCheck<Traits>{state, trial});
 }
 template<class Traits>
+TL_BRICK_HD inline bool MeasureValidatedFamily(Storage& state, Control& control,
+    unsigned accepted, unsigned trial, unsigned family_index,
+    const NodalPreparedView* view) noexcept {
+  return MeasureFamilyWithCheck<Traits>(state, control, accepted, trial, family_index, view,
+      StagedResultCheck{FamilyStorage<Traits>(state).result_valid});
+}
+template<class Traits>
 TL_BRICK_HD inline bool MeasureValidatedFamily(Storage& state, unsigned accepted, unsigned trial,
     unsigned family_index, const NodalPreparedView* view) noexcept {
-  return MeasureFamilyWithCheck<Traits>(state, accepted, trial, family_index, view,
-      StagedResultCheck{FamilyStorage<Traits>(state).result_valid});
+  return MeasureValidatedFamily<Traits>(state, state.control, accepted, trial,
+      family_index, view);
 }
 } // namespace tl::fea::solids::batch_detail

@@ -37,10 +37,9 @@ TL_BRICK_HD inline void PrepareMeasurementOperands(Storage& state, unsigned acce
 }
 
 template<class Traits>
-TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, unsigned family_index,
-    const NodalPreparedView* view) noexcept {
+TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, Control& control,
+    unsigned family_index, const NodalPreparedView* view) noexcept {
   auto& family = FamilyStorage<Traits>(state);
-  auto& control = state.control;
   auto& diagnostics = control.diagnostics;
   diagnostics.parent_count[family_index] = family.count;
   for (std::size_t p = 0; p < family.count; ++p) {
@@ -76,10 +75,23 @@ TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, unsigned family_ind
   return true;
 }
 
+// Retained callers keep the existing state.control result location.
+template<class Traits>
+TL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, unsigned family_index,
+    const NodalPreparedView* view) noexcept {
+  return MeasureOperandFamily<Traits>(state, state.control, family_index, view);
+}
+template<class Traits>
+TL_BRICK_HD inline bool MeasureFinalFamily(Storage& state, Control& control,
+    unsigned accepted, unsigned trial, unsigned family_index,
+    const NodalPreparedView* view, bool operands_prepared) noexcept {
+  return operands_prepared ? MeasureOperandFamily<Traits>(state, control, family_index, view)
+      : MeasureValidatedFamily<Traits>(state, control, accepted, trial, family_index, view);
+}
 template<class Traits>
 TL_BRICK_HD inline bool MeasureFinalFamily(Storage& state, unsigned accepted, unsigned trial,
     unsigned family_index, const NodalPreparedView* view, bool operands_prepared) noexcept {
-  return operands_prepared ? MeasureOperandFamily<Traits>(state, family_index, view)
-      : MeasureValidatedFamily<Traits>(state, accepted, trial, family_index, view);
+  return MeasureFinalFamily<Traits>(state, state.control, accepted, trial,
+      family_index, view, operands_prepared);
 }
 } // namespace tl::fea::solids::batch_detail

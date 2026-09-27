@@ -61,7 +61,7 @@ template<class Traits> __global__ void Evaluate(Storage* storage, unsigned accep
 __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity, bool initial, bool operands_prepared = false) {
   auto& state = *storage;
-  state.control = {};
+  Control next{};
   if (initial) {
     identity.source_instance_id = state.source_instance_id;
     identity.owner_id = state.config.owner.owner_id;
@@ -70,14 +70,16 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
     identity.phase = BatchPhase::Accepted;
   }
   identity.minimum_native_dt_s = DBL_MAX;
-  state.control.diagnostics = identity;
+  next.diagnostics = identity;
   const auto* prepared = initial ? nullptr : &view;
-  if (!MeasureFinalFamily<Traits18>(state, accepted, trial, 0, prepared, operands_prepared) ||
-      !MeasureFinalFamily<Traits24>(state, accepted, trial, 1, prepared, operands_prepared) ||
-      !MeasureFinalFamily<Traits6z>(state, accepted, trial, 2, prepared, operands_prepared) ||
-      !MeasureFinalFamily<Traits18Law44>(state, accepted, trial, 3, prepared, operands_prepared) ||
-      !MeasureFinalFamily<Traits18Law90>(state, accepted, trial, 4, prepared, operands_prepared)) return;
-  state.control.diagnostics.valid = true;
+  if (MeasureFinalFamily<Traits18>(state, next, accepted, trial, 0, prepared, operands_prepared) &&
+      MeasureFinalFamily<Traits24>(state, next, accepted, trial, 1, prepared, operands_prepared) &&
+      MeasureFinalFamily<Traits6z>(state, next, accepted, trial, 2, prepared, operands_prepared) &&
+      MeasureFinalFamily<Traits18Law44>(state, next, accepted, trial, 3, prepared, operands_prepared) &&
+      MeasureFinalFamily<Traits18Law90>(state, next, accepted, trial, 4, prepared, operands_prepared)) {
+    next.diagnostics.valid = true;
+  }
+  state.control = next;
 }
 } // namespace
 void LaunchInitialize(Storage* storage, cudaStream_t stream) {

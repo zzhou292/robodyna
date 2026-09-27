@@ -39,21 +39,24 @@ TL_QBAT_HD inline bool MeasureStaged(const batch_detail::Storage& state,
 }
 TL_QBAT_HD inline void FinalizeMeasurement(batch_detail::Storage& state,
     const NodalPreparedView& view,BatchDiagnostics identity,unsigned blocks) noexcept {
-  state.control={};
-  state.control.diagnostics=identity;
+  batch_detail::Control next{};
+  next.diagnostics=identity;
   // Complete element-failure priority precedes every measurement failure,
   // including an invalid result at a lower source ordinal.
   for (std::size_t parent=0; parent<state.model.config.element_count; ++parent) {
     if (state.candidate_status[parent]==Status::kSuccess) continue;
-    state.control.status=BatchStatus::ElementFailure;
-    state.control.element=static_cast<std::uint32_t>(parent);
-    state.control.element_status=state.candidate_status[parent];
-    return;
+    next.status=BatchStatus::ElementFailure;
+    next.element=static_cast<std::uint32_t>(parent);
+    next.element_status=state.candidate_status[parent];
+    break;
   }
-  if (!MeasureStaged(state,view,state.control.diagnostics,blocks)) {
-    state.control.status=BatchStatus::NonfiniteResult;
-    return;
+  if (next.status==BatchStatus::Success) {
+    if (!MeasureStaged(state,view,next.diagnostics,blocks)) {
+      next.status=BatchStatus::NonfiniteResult;
+    } else {
+      next.diagnostics.valid=true;
+    }
   }
-  state.control.diagnostics.valid=true;
+  state.control=next;
 }
 } // namespace tl::fea::qbat::mapped
