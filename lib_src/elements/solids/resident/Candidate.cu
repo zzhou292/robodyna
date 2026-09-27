@@ -9,6 +9,7 @@ namespace {
 template<class Traits> __global__ void Initialize(Storage* storage) {
   auto& family = FamilyStorage<Traits>(*storage);
   for (std::size_t p = threadIdx.x; p < family.count; p += blockDim.x) {
+    if(ControlledIndex<Traits>(*storage,p)!=SIZE_MAX)continue;
     const auto& parent = family.parents[p];
     if constexpr (std::is_same_v<Traits, Traits18>) {
       family.status[p] = InitializeState18(parent,
@@ -35,6 +36,7 @@ template<class Traits> __global__ void Evaluate(Storage* storage, unsigned accep
   const auto first = blockIdx.x * blockDim.x + threadIdx.x;
   const auto stride = gridDim.x * blockDim.x;
   for (std::size_t p = first; p < family.count; p += stride) {
+    if(ControlledIndex<Traits>(*storage,p)!=SIZE_MAX)continue;
     const auto& parent = family.parents[p];
     auto interval = Traits::Phase(view.base_time, storage->config.owner.fixed_dt,
         view.kinematics.base_epoch);
@@ -91,6 +93,8 @@ void LaunchInitialize(Storage* storage, cudaStream_t stream) {
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Initialize<Traits18Law90><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
+  LaunchControlledInitialize(storage,stream);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, 0, 0, {}, 0, 0, true, stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, measurement::Threads, 0, stream>>>(storage, 0, 0, {}, {}, true, true);
@@ -106,6 +110,8 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   Evaluate<Traits18Law44><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Evaluate<Traits18Law90><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
+  LaunchControlledCandidate(storage,accepted,trial,view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   LaunchMeasurementValidation(storage, accepted, trial, view, identity.time, identity.epoch, false, view.stream);
   if (cudaPeekAtLastError() != cudaSuccess) return;

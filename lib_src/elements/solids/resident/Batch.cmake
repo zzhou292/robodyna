@@ -12,6 +12,7 @@ add_library(tl_solid_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/measurement/Finalize.cuh"
   "${CMAKE_CURRENT_LIST_DIR}/Batch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Candidate.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/controlled/Kernel.cu"
   "${CMAKE_CURRENT_LIST_DIR}/ResultValidation.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Assembly.cu"
   "${CMAKE_CURRENT_LIST_DIR}/AssembleOperation.cu"

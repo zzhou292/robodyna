@@ -18,13 +18,14 @@ bool DeclaredRigidScope(NodalRigidGroupInfo group, std::size_t nodes) noexcept {
 BatchReport Plan(const BatchConfig& config, const Model& model,
     ArenaLayout& output) noexcept {
   const auto& owner = config.owner;
-  if(model.control_selection()&&model.control_selection()->controlled_count())
+  const bool controlled_profile=config.profile==BatchProfile::PhysicalCinSourceControlsV3;
+  if(model.control_selection()&&model.control_selection()->controlled_count()&&!controlled_profile)
     return {BatchStatus::InvalidInput, "Source-declared structural solid controls require a qualified controlled resident"};
   const bool original = config.profile == BatchProfile::PhysicalCinV1 &&
       model.profile() == ModelProfile::OriginalThreeFamilies;
   const bool extended = config.profile == BatchProfile::PhysicalCinExtendedLaw44Law90V2 &&
       model.profile() == ModelProfile::ExtendedLaw44Law90;
-  if (!model.prepared() || (!original && !extended) ||
+  if (!model.prepared() || (!original && !extended && !controlled_profile) ||
       !model.domain() || !model.contributions() ||
       !owner.owner_id || owner.epoch || owner.time != 0 || owner.velocity_time != 0 ||
       !owner.has_rotations || owner.reactions_valid || owner.reaction_base_epoch ||
@@ -71,6 +72,25 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
   for (const auto& material : model.materials90())
     if (!add_curve(material.value.curve().count))
       return {BatchStatus::ResourceLimit, "Solid owned curve pool exceeds admitted scope"};
+  if(controlled_profile) {
+    const auto* selected=model.control_selection();
+    if(!selected||selected->profile()!=control::Profile::SourceDeclared||!selected->controlled_count())
+      return {BatchStatus::InvalidInput,"Source-controlled resident requires complete source-declared selection"};
+    std::size_t capacity[controlled::Blocks]{};
+    for(const auto& row:selected->parents())if(row.source.icontrol) {
+      if(row.family==Family::Solid24)++count.controlled.h24;
+      else if(row.family==Family::Solid18Law90)++count.controlled.foam;
+      else return {BatchStatus::InvalidInput,"Controlled resident currently supports H24 and LAW90 only",row.family,row.family_index};
+    }
+    count.controlled.packets=selected->packets().size();count.controlled.members=selected->members().size();
+    for(std::size_t p=0;p<selected->packets().size();++p) {
+      const auto& packet=selected->packets()[p].source;if(!packet.icontrol)continue;
+      if(packet.member_count>controlled::Threads)return {BatchStatus::InvalidInput,"Native NEL exceeds admitted controlled CTA width"};
+      const auto worker=p%controlled::Blocks;
+      if(packet.member_count>capacity[worker])capacity[worker]=packet.member_count;
+    }
+    for(unsigned n=0;n<controlled::Blocks;++n){count.controlled.worker_begin[n]=count.controlled.workers;count.controlled.workers+=capacity[n];}
+  }
   if (!MakeLayout(count, config, output)) {
     return {BatchStatus::ResourceLimit, "Solid typed counts or complete arena exceed limits"};
   }

@@ -32,6 +32,19 @@ template<class Traits> __device__ bool AddFamily(Storage& state, unsigned slab,
   for (std::size_t p = 0; p < family.count; ++p) {
     const auto& parent = family.parents[p];
     const auto& cache = family.slab[slab][p].cache;
+    if constexpr(std::is_same_v<Traits,Traits24>) {
+      bool repeated=false;
+      for(unsigned a=0;a<8;++a)for(unsigned b=0;b<a;++b)repeated|=parent.domain_nodes[a]==parent.domain_nodes[b];
+      if(repeated) {
+        double increments[8];for(double& value:increments)value=cache.stiffness.translation_n_m;
+        if(AccumulateRepeatedNodalStiffness<8>(parent.domain_nodes,increments,cin.translational_stiffness,
+             view.accepted.node_count)!=NodalForceAssemblyStatus::Success||
+           AccumulateRepeatedNodalTranslationalForces<8>(parent.domain_nodes,cache.rhs_force_n,view.forces)!=NodalForceAssemblyStatus::Success) {
+          state.control.family=Traits::family;state.control.parent=p;return false;
+        }
+        continue;
+      }
+    }
     double translation[Traits::nodes];
     for (unsigned n = 0; n < Traits::nodes; ++n) {
       const auto node = parent.domain_nodes[n];

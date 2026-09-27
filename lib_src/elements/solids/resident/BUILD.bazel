@@ -3,14 +3,16 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 
 cc_library(
     name = "values",
-    srcs = ["Arena.cpp", "Plan.cpp", "Upload.cpp", "MaterialUpload.cpp", "Forecast.cpp", "Identity.cpp"],
-    hdrs = glob(["*.h", "*.cuh", "measurement/*.h", "measurement/*.cuh"]),
+    srcs = ["Arena.cpp", "Plan.cpp", "Upload.cpp", "MaterialUpload.cpp", "Forecast.cpp", "Identity.cpp", "controlled/Upload.cpp"],
+    hdrs = glob(["*.h", "*.cuh", "measurement/*.h", "measurement/*.cuh", "controlled/*.h"]),
     deps = [
         "//lib_src/elements/solids:model", "//lib_src/elements/solids:force_stiffness",
         "//lib_src/elements/solid18:force",
         "//lib_src/elements/solid18/law44:force",
         "//lib_src/elements/solid18/total_strain:law90_force",
         "//lib_src/materials/law90:preparation",
+        "//lib_src/elements/solid24/controlled_distortion:stage",
+        "//lib_src/elements/solid18/total_strain/controlled_distortion:stage",
         "//lib_src/elements:shell_physical_owner_values", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_startup", "//lib_src/solvers:explicit_nodal_state",
         "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
@@ -23,7 +25,7 @@ cc_library(
 cuda_library(
     name = "batch",
     srcs = ["Batch.cu", "Candidate.cu", "ResultValidation.cu", "Assembly.cu", "AssembleOperation.cu",
-            "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp", "OutputRanges.cpp"],
+            "EvaluateOperation.cu", "Readback.cu", "controlled/Kernel.cu", "Publication.cpp", "PublicationScope.cpp", "OutputRanges.cpp"],
     deps = [":values", "//lib_src/elements:shell_physical_owner",
             "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
             "//lib_src/solvers:nodal_repeated_force_assembly",

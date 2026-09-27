@@ -23,6 +23,7 @@ TL_BRICK_HD inline void PrepareMeasurementOperands(Storage& state, unsigned acce
     const auto& cache = family.slab[trial][parent_index].cache;
     next.work = Work(cache);
     next.hourglass_work = HourglassWork(cache);
+    next.distortion_work = DistortionWork(cache);
     next.plastic_work = PlasticWork(cache);
     next.native_dt = NativeDt(cache);
     if (view) {
@@ -43,6 +44,7 @@ TL_BRICK_HD inline bool AccumulateMeasurementOperand(Control& control,unsigned f
   auto& diagnostics=control.diagnostics;
     diagnostics.native_internal_work_increment_j[family_index] += value.work;
     diagnostics.physical_hourglass_work_increment_j[family_index] += value.hourglass_work;
+    diagnostics.distortion_work_increment_j[family_index] += value.distortion_work;
     diagnostics.plastic_work_increment_j += value.plastic_work;
     if (value.native_dt < diagnostics.minimum_native_dt_s)
       diagnostics.minimum_native_dt_s = value.native_dt;
@@ -53,7 +55,7 @@ TL_BRICK_HD inline bool AccumulateMeasurementOperand(Control& control,unsigned f
       }
     }
     const double finite[]{diagnostics.native_internal_work_increment_j[family_index],
-        diagnostics.physical_hourglass_work_increment_j[family_index], diagnostics.plastic_work_increment_j,
+        diagnostics.physical_hourglass_work_increment_j[family_index], diagnostics.distortion_work_increment_j[family_index], diagnostics.plastic_work_increment_j,
         diagnostics.internal_kick_work_j, diagnostics.internal_drift_work_j};
     if (!FiniteValues(finite)) {
       control.status = BatchStatus::NonfiniteResult;

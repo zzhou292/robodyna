@@ -4,6 +4,7 @@
 #include "MeasurementTypes.h"
 #include "ExtendedScratch.h"
 #include "AssemblyTypes.h"
+#include "controlled/Storage.h"
 #include "../../ShellPhysicalOwner.h"
 
 namespace tl::fea::solids::batch_detail {
@@ -39,11 +40,13 @@ struct Storage {
   ExtendedScratch<Traits18Law90>* scratch90 = nullptr;
   AssemblyMemory assembly;
   Control control;
+  controlled::Storage controlled;
 };
 struct FamilyLayout {
   util::ArenaRegion parents, slab[2], status, staging, result_valid, measurement;
 };
 struct ArenaLayout {
+  controlled::Layout controlled;
   util::ArenaRegion header, material36, material42, curves, scratch18;
   FamilyLayout solid18, solid24, solid6z, solid18_law44, solid18_law90;
   util::ArenaRegion material44, material90, scratch44, scratch90;
@@ -56,6 +59,7 @@ struct Counts {
   std::size_t material36 = 0, material42 = 0, curve_points = 0;
   std::size_t solid18_law44 = 0, solid18_law90 = 0, material44 = 0, material90 = 0;
   std::size_t analytic_material44 = 0;
+  controlled::Counts controlled;
 };
 bool MakeLayout(Counts, const BatchConfig&, ArenaLayout&) noexcept;
 BatchReport Plan(const BatchConfig&, const Model&, ArenaLayout&) noexcept;

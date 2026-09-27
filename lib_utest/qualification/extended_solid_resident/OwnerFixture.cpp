@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OwnerFixture.h"
 namespace extended_resident_test {
-OwnerFixture::OwnerFixture(bool analytic44) {
+OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale units,bool collapsed):controlled(controls) {
   auto& f=Mechanics();
   s::Input18Law44 rear;
   auto source=f.source.a;
@@ -32,11 +32,42 @@ OwnerFixture::OwnerFixture(bool analytic44) {
   source.density_kg_m3=772;
   EXPECT_EQ(fe::solid18::total_strain::InitializeReference90(source,foam.reference),fe::solid18::Status::Success);
   foam_input.hysteresis=0;
+  if(controls)foam_input.tension_cutoff_pa=15e6;
   foam_input.density_kg_m3=772;foam_input.card_young_pa=72e6;foam_input.contact_modulus_pa=4e6;
   EXPECT_EQ(tl::material::law90::PrepareSI(foam_input,{foam_x,foam_y,3},foam.material),tl::material::law90::Status::Ok);
   s::ModelInput input{1,{&legacy.input18,1},{&legacy.input24,1},{&legacy.input6z,1},
     {&rear,1},{&foam,1},s::ModelProfile::ExtendedLaw44Law90};
-  EXPECT_TRUE(model.Initialize(f.domain,input));
+  if(collapsed) {
+    auto h=legacy.input24.reference.input();
+    h.profile.connectivity=fe::solid24::ConnectivityProfile::CollapsedTopEdges;
+    h.source_node_id[5]=h.source_node_id[4];h.position_m[5]=h.position_m[4];
+    h.source_node_id[7]=h.source_node_id[6];h.position_m[7]=h.position_m[6];
+    EXPECT_EQ(fe::solid24::InitializeReference(h,legacy.input24.reference),fe::solid24::Status::Success);
+  }
+  std::vector<s::control::SourceParent> rows;
+  std::vector<s::control::NativePacket> packets;
+  std::vector<std::uint64_t> members;
+  s::control::NativePartition partition{0,0,5,0,5};
+  if(controls) {
+    auto add=[&](const auto& ref,s::Family family,unsigned ctl) {
+      const auto& a=ref.input();const auto p=members.size();
+      rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,ctl});
+      packets.push_back({p+1,p,p,1,family,a.source_material_id,a.source_section_id,ctl});
+      members.push_back(a.source_element_id);
+    };
+    // Deliberately different packet and family orders, including all IC0 rows.
+    add(foam.reference,s::Family::Solid18Law90,1);
+    add(legacy.input24.reference,s::Family::Solid24,1);
+    add(legacy.input18.reference,s::Family::Solid18,0);
+    add(rear.reference,s::Family::Solid18Law44,0);
+    add(legacy.input6z.reference,s::Family::Solid6z,0);
+    auto& c=input.controls;c.profile=s::control::Profile::SourceDeclared;c.source_instance_id=991;
+    c.units=units;c.native_nvsiz=128;c.compiled_mvsiz=129;
+    c.parents={rows.data(),rows.size()};c.packets={packets.data(),packets.size()};
+    c.partitions={&partition,1};c.ordered_element_ids={members.data(),members.size()};
+  }
+  const auto initialized=model.Initialize(f.domain,input);
+  EXPECT_TRUE(initialized)<<initialized.message;
   EXPECT_TRUE(ledger.InitializeWithExtendedSolids({{&f.shells,&f.springs},&f.point,model.contributions()}));
   EXPECT_TRUE(parts.Initialize(f.topology,ledger,{1000,.001}));
   std::array<fe::NodalRigidGroupMember,2> members;

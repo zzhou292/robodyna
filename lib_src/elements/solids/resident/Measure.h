@@ -9,18 +9,19 @@ TL_BRICK_HD inline double NativeDt(const Cache18& c) noexcept {
   return c.diagnostics.minimum_unscaled_dt_s;
 }
 TL_BRICK_HD inline double NativeDt(const Cache24& c) noexcept {
-  return c.diagnostics.material.unscaled_element_dt_s;
+  return c.profile==ResultProfile::NativeControlled?c.controlled.material_dt_s:c.diagnostics.material.unscaled_element_dt_s;
 }
 TL_BRICK_HD inline double NativeDt(const Cache6z& c) noexcept {
   return c.material.unscaled_element_dt_s;
 }
 TL_BRICK_HD inline double Work(const Cache18& c) noexcept { return c.diagnostics.internal_work_increment_j; }
 TL_BRICK_HD inline double Work(const Cache24& c) noexcept {
-  return c.diagnostics.material.internal_work_j + c.diagnostics.stabilization_work_j;
+  return c.profile==ResultProfile::NativeControlled?c.controlled.material_work_j+c.controlled.hourglass_work_j:
+    c.diagnostics.material.internal_work_j + c.diagnostics.stabilization_work_j;
 }
 TL_BRICK_HD inline double Work(const Cache6z& c) noexcept { return c.total_internal_work_increment_j; }
 TL_BRICK_HD inline double HourglassWork(const Cache18&) noexcept { return 0; }
-TL_BRICK_HD inline double HourglassWork(const Cache24& c) noexcept { return c.diagnostics.stabilization_work_j; }
+TL_BRICK_HD inline double HourglassWork(const Cache24& c) noexcept { return c.profile==ResultProfile::NativeControlled?c.controlled.hourglass_work_j:c.diagnostics.stabilization_work_j; }
 TL_BRICK_HD inline double HourglassWork(const Cache6z& c) noexcept {
   return c.stabilization.first_work_j + c.stabilization.second_work_j;
 }
@@ -35,6 +36,9 @@ TL_BRICK_HD inline double HourglassWork(const Cache18Law44&) noexcept { return 0
 TL_BRICK_HD inline double HourglassWork(const Cache18Law90&) noexcept { return 0; }
 TL_BRICK_HD inline double PlasticWork(const Cache18Law44& c) noexcept { return c.diagnostics.plastic_work_increment_j; }
 TL_BRICK_HD inline double PlasticWork(const Cache18Law90&) noexcept { return 0; }
+template<class Cache> TL_BRICK_HD inline double DistortionWork(const Cache&)noexcept{return 0;}
+TL_BRICK_HD inline double DistortionWork(const Cache24& c)noexcept{return c.profile==ResultProfile::NativeControlled?c.controlled.distortion_work_j:0;}
+TL_BRICK_HD inline double DistortionWork(const Cache18Law90& c)noexcept{return c.profile==ResultProfile::NativeControlled?c.controlled.distortion_work_j:0;}
 template<class Traits, class Check>
 TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, Control& control,
     unsigned accepted, unsigned trial, unsigned family_index,
@@ -55,6 +59,7 @@ TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, Control& control,
     const auto& cache = now.cache;
     diagnostics.native_internal_work_increment_j[family_index] += Work(cache);
     diagnostics.physical_hourglass_work_increment_j[family_index] += HourglassWork(cache);
+    diagnostics.distortion_work_increment_j[family_index] += DistortionWork(cache);
     diagnostics.plastic_work_increment_j += PlasticWork(cache);
     if (NativeDt(cache) < diagnostics.minimum_native_dt_s)
       diagnostics.minimum_native_dt_s = NativeDt(cache);
@@ -63,7 +68,7 @@ TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, Control& control,
           diagnostics.internal_kick_work_j, diagnostics.internal_drift_work_j);
     }
     const double finite[]{diagnostics.native_internal_work_increment_j[family_index],
-        diagnostics.physical_hourglass_work_increment_j[family_index], diagnostics.plastic_work_increment_j,
+        diagnostics.physical_hourglass_work_increment_j[family_index], diagnostics.distortion_work_increment_j[family_index], diagnostics.plastic_work_increment_j,
         diagnostics.internal_kick_work_j, diagnostics.internal_drift_work_j};
     if (!FiniteValues(finite)) {
       control.status = BatchStatus::NonfiniteResult;

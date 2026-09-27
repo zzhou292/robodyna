@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include <type_traits>
+#include "controlled/Observation.h"
 #include "../ForceStiffness.h"
 #include "../../solid18/law44/ForceTypes.h"
 #include "../../solid18/total_strain/ForceTypes.h"
@@ -14,6 +15,8 @@ struct Cache18 {
   NodalStiffness stiffness;
 };
 struct Cache24 {
+  ResultProfile profile=ResultProfile::Legacy;
+  ControlledObservation controlled;
   solid24::Vec3 rhs_force_n[8]{};
   solid24::ForceDiagnostics diagnostics;
   NodalStiffness stiffness;
@@ -52,6 +55,8 @@ struct Result18Law44 {
 };
 static_assert(std::is_trivially_copyable_v<Result18Law44>);
 struct Cache18Law90 {
+  ResultProfile profile=ResultProfile::Legacy;
+  ControlledObservation controlled;
   solid18::Vec3 rhs_force_n[8]{};
   solid18::total_strain::ForceDiagnostics diagnostics;
   NodalStiffness stiffness;

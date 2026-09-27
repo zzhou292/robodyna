@@ -23,7 +23,7 @@ TL_BRICK_HD inline bool ReadFamilyOccurrence(Storage& state, unsigned slab,
     const auto& cache = family.slab[slab][parent].cache;
     output.force = cache.rhs_force_n[slot];
     output.stiffness = cache.stiffness.translation_n_m;
-    if constexpr (!std::is_same_v<Traits, Traits18Law44>)
+    if constexpr (!std::is_same_v<Traits, Traits18Law44> && !std::is_same_v<Traits, Traits24>)
       for (unsigned a = 0; a < Traits::nodes; ++a)
         for (unsigned b = 0; b < a; ++b)
           if (nodes[a] == nodes[b]) output.distinct = false;

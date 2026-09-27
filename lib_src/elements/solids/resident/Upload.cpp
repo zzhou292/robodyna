@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MaterialUpload.h"
+#include "controlled/Upload.h"
 #include "AssemblyOccurrences.h"
 #include "lib_utils/OrderedNodeIncidence.h"
 
@@ -48,6 +49,8 @@ BatchReport BuildUpload(const BatchConfig& config, const Model& model,
   next.source_instance_id = model.source_instance_id();
   const auto report = UploadMaterials(model, arena, layout);
   if (!report) return report;
+  const auto controls=controlled::Upload(model,arena,layout,next);
+  if(!controls)return controls;
   *storage = next;
   output = next;
   return {};

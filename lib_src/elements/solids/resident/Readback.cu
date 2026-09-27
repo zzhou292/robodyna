@@ -2,6 +2,8 @@
 #include "Storage.h"
 #include "ResultChecks.h"
 #include "MaterialUpload.h"
+#include "controlled/Readback.h"
+#include "controlled/Validation.h"
 
 namespace tl::fea::solids {
 namespace {
@@ -22,6 +24,26 @@ template<class Traits> BatchReport Check(const Model& model, util::HostArena& st
       if (!report) return report;
     } else {
       material = model.materials42()[index].value;
+    }
+    if constexpr(std::is_same_v<Traits,batch_detail::Traits24>) {
+      if(batch_detail::controlled::Selected(model,Traits::family,p)) {
+        batch_detail::controlled::h24::Reference expected;
+        if(batch_detail::controlled::h24::PrepareReference(parents[p].reference,material,model.control_selection()->units(),expected)!=solid24::ForceStatus::Success||
+           !batch_detail::controlled::Valid(expected,values[p],diagnostics.time,diagnostics.epoch))
+          return {BatchStatus::NonfiniteResult,"Controlled H24 native history or SI cache differs",Traits::family,p};
+        continue;
+      }
+    } else if constexpr(std::is_same_v<Traits,batch_detail::Traits18Law90>) {
+      if(batch_detail::controlled::Selected(model,Traits::family,p)) {
+        namespace f=batch_detail::controlled::foam;
+        f::Material native_material;f::Reference source,expected;
+        if(f::PrepareMaterial(model.materials90()[index].value,model.control_selection()->units(),native_material)!=solid_common::distortion::Status::Success||
+           f::PrepareReference(parents[p].reference,native_material,source)!=solid_common::distortion::Status::Success||
+           f::RelocateReference(source,material.curve(),expected)!=solid_common::distortion::Status::Success||
+           !batch_detail::controlled::Valid(expected,values[p],diagnostics.time,diagnostics.epoch))
+          return {BatchStatus::NonfiniteResult,"Controlled LAW90 native history or SI cache differs",Traits::family,p};
+        continue;
+      }
     }
     // Named values only; expected device curve addresses are compared, never
     // dereferenced by the host or exposed in a public result packet.
@@ -70,7 +92,52 @@ void Batch::Impl::PublishResults(ResultBuffers output) const noexcept {
   PublishStagedResults<batch_detail::Traits18Law44>(staging, layout.solid18_law44, output.solid18_law44);
   PublishStagedResults<batch_detail::Traits18Law90>(staging, layout.solid18_law90, output.solid18_law90);
 }
+void Batch::Impl::PublishResults(ProfiledResultBuffers output)const noexcept {
+  PublishStagedResults<batch_detail::Traits18>(staging,layout.solid18,output.solid18);
+  PublishStagedResults<batch_detail::Traits6z>(staging,layout.solid6z,output.solid6z);
+  PublishStagedResults<batch_detail::Traits18Law44>(staging,layout.solid18_law44,output.solid18_law44);
+  const auto* h24=util::ArenaPointer<batch_detail::State<batch_detail::Traits24>>(staging.data(),layout.solid24.staging);
+  for(std::size_t p=0;p<layout.solid24.staging.count;++p)output.solid24[p]=batch_detail::controlled::Read(h24[p]);
+  const auto* foam=util::ArenaPointer<batch_detail::State<batch_detail::Traits18Law90>>(staging.data(),layout.solid18_law90.staging);
+  for(std::size_t p=0;p<layout.solid18_law90.staging.count;++p)output.solid18_law90[p]=batch_detail::controlled::Read(foam[p]);
+}
 BatchReport Batch::CopyAcceptedResults(const NodalStamp& expected, ResultBuffers output,
+    BatchDiagnostics* diagnostics) {
+  if (!impl_) return {BatchStatus::NotInitialized, "Solid batch is not initialized"};
+  auto& state = *impl_;
+  if(state.model.control_selection()&&state.model.control_selection()->controlled_count())
+    return {BatchStatus::InvalidInput,"Controlled solid histories require profile-aware readback"};
+  if (!state.bound) return {BatchStatus::NotBound, "Solid common publication claim required"};
+  if (!trial_identity::SameStamp(expected, state.accepted_stamp))
+    return {BatchStatus::StaleTrial, "Solid accepted stamp differs"};
+  if (reinterpret_cast<std::uintptr_t>(diagnostics) % alignof(BatchDiagnostics) ||
+      !state.OutputBuffers(output, &expected, sizeof(expected), this, sizeof(*this)) ||
+      !state.OutputBuffers(output, diagnostics, sizeof(*diagnostics), this, sizeof(*this)) ||
+      !state.OutputDisjoint(diagnostics, sizeof(*diagnostics)) ||
+      !trial_identity::Disjoint(diagnostics, sizeof(*diagnostics), &expected, sizeof(expected)) ||
+      !trial_identity::Disjoint(diagnostics, sizeof(*diagnostics), this, sizeof(*this)))
+    return {BatchStatus::InvalidInput, "Solid readback counts, ranges or diagnostics overlap"};
+  const auto report = state.ReadResults(state.accepted_slab, state.accepted_diagnostics);
+  if (!report) return report;
+  state.PublishResults(output);
+  *diagnostics = state.accepted_diagnostics;
+  return {};
+}
+BatchReport Batch::CopyPreparedResults(const BatchDiagnostics& expected, ResultBuffers output) {
+  if (!impl_) return {BatchStatus::NotInitialized, "Solid batch is not initialized"};
+  auto& state = *impl_;
+  if(state.model.control_selection()&&state.model.control_selection()->controlled_count())
+    return {BatchStatus::InvalidInput,"Controlled solid histories require profile-aware readback"};
+  if (!state.pending || !batch_detail::SameDiagnostics(expected, state.candidate_diagnostics))
+    return {BatchStatus::StaleTrial, "Solid prepared diagnostic identity differs"};
+  if (!state.OutputBuffers(output, &expected, sizeof(expected), this, sizeof(*this)))
+    return {BatchStatus::InvalidInput, "Solid readback counts or ranges overlap"};
+  const auto report = state.ReadResults(state.TrialSlab(), state.candidate_diagnostics);
+  if (!report) return report;
+  state.PublishResults(output);
+  return {};
+}
+BatchReport Batch::CopyAcceptedResultsWithControls(const NodalStamp& expected, ProfiledResultBuffers output,
     BatchDiagnostics* diagnostics) {
   if (!impl_) return {BatchStatus::NotInitialized, "Solid batch is not initialized"};
   auto& state = *impl_;
@@ -90,7 +157,7 @@ BatchReport Batch::CopyAcceptedResults(const NodalStamp& expected, ResultBuffers
   *diagnostics = state.accepted_diagnostics;
   return {};
 }
-BatchReport Batch::CopyPreparedResults(const BatchDiagnostics& expected, ResultBuffers output) {
+BatchReport Batch::CopyPreparedResultsWithControls(const BatchDiagnostics& expected, ProfiledResultBuffers output) {
   if (!impl_) return {BatchStatus::NotInitialized, "Solid batch is not initialized"};
   auto& state = *impl_;
   if (!state.pending || !batch_detail::SameDiagnostics(expected, state.candidate_diagnostics))

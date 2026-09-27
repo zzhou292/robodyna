@@ -14,12 +14,14 @@ struct OwnerFixture {
   tl::material::law90::PreparationInput foam_input;
   double rear_x[3]{0,.2,.4},rear_y[3]{270e6,350e6,450e6};
   double foam_x[3]{0,.2,.4},foam_y[3]{0,10e6,50e6};
-  explicit OwnerFixture(bool analytic44 = false);
+  bool controlled=false;
+  explicit OwnerFixture(bool analytic44 = false,bool controls=false,
+      fe::solids::control::UnitScale units={1,1,1},bool collapsed=false);
   auto& Mechanics() { return legacy.mechanics; }
   auto Witnesses() const { return legacy.Witnesses(); }
   s::BatchConfig Configuration() const {
     auto config=legacy.Configuration();
-    config.profile=s::BatchProfile::PhysicalCinExtendedLaw44Law90V2;
+    config.profile=controlled?s::BatchProfile::PhysicalCinSourceControlsV3:s::BatchProfile::PhysicalCinExtendedLaw44Law90V2;
     config.owner.fixed_dt=1e-8;
     return config;
   }

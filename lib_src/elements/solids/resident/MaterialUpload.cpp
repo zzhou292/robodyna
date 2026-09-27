@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MaterialUpload.h"
+#include "controlled/Upload.h"
 #include "../../../materials/law90/Relocate.h"
 
 namespace tl::fea::solids::batch_detail {
@@ -96,6 +97,6 @@ BatchReport RebaseCurves(const Model& model, const ArenaLayout& layout, void* de
     const auto report = ExpectedMaterial90(model, m, curves, header.material90[m]);
     if (!report) return report;
   }
-  return {};
+  return controlled::Relocate(model,header);
 }
 } // namespace tl::fea::solids::batch_detail

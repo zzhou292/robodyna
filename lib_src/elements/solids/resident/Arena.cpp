@@ -51,6 +51,9 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       bool(count.solid24 || count.solid6z) != bool(count.material42) ||
       count.curve_points > limits.max_curve_points ||
       count.analytic_material44 > count.material44 ||
+      count.controlled.h24>count.solid24||count.controlled.foam>count.solid18_law90||
+      count.controlled.workers>controlled::Blocks*controlled::Threads||
+      count.controlled.packets>limits.max_parents||count.controlled.members>limits.max_parents||
       bool(count.material36 || count.material44 - count.analytic_material44 || count.material90) != bool(count.curve_points) ||
       config.owner.node_count > limits.max_nodes) return false;
   ArenaLayout next;
@@ -69,7 +72,8 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       !Append<Traits18Law44>(count.solid18_law44, device, host, next.solid18_law44) ||
       !Append<Traits18Law90>(count.solid18_law90, device, host, next.solid18_law90) ||
       !device.Append<ExtendedScratch<Traits18Law44>>(Scratch18Count(count.solid18_law44), next.scratch44) ||
-      !device.Append<ExtendedScratch<Traits18Law90>>(Scratch18Count(count.solid18_law90), next.scratch90) ||
+      !device.Append<ExtendedScratch<Traits18Law90>>(count.controlled.foam==count.solid18_law90?0:Scratch18Count(count.solid18_law90), next.scratch90) ||
+      !controlled::Append(count.controlled,count.solid24,count.solid18_law90,device,next.controlled) ||
       !device.Append<std::uint32_t>(config.owner.node_count + 1, next.assembly_offsets) ||
       !device.Append<std::uint32_t>(8*(count.solid18 + count.solid24 + count.solid18_law44 +
           count.solid18_law90) + 6*count.solid6z, next.assembly_incidence) ||
@@ -84,6 +88,7 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
 }
 Storage RebasedHeader(void* base, const ArenaLayout& layout) noexcept {
   Storage next;
+  next.controlled=controlled::Rebase(base,layout.controlled);
   if (layout.material36.count)
     next.material36 = util::ArenaPointer<solid18::Material>(base, layout.material36);
   if (layout.material42.count)

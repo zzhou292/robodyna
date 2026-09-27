@@ -64,7 +64,8 @@ TL_BRICK_HD inline bool ValidResult(const Parent18& p, const solid18::Material& 
 }
 TL_BRICK_HD inline bool ValidResult(const Parent24& p, const solid24::Material& material,
     const State<Traits24>& state, double time, std::uint64_t epoch) noexcept {
-  const auto& h = state.history;
+  if(!state.history.legacy()||state.cache.profile!=ResultProfile::Legacy)return false;
+  const auto& h = *state.history.legacy();
   const auto& c = state.cache;
   const auto& d = c.diagnostics;
   if (!h.initialized() || h.stamp().time_s != time || h.stamp().sample_index != epoch ||
@@ -121,7 +122,8 @@ TL_BRICK_HD inline bool ValidResult(const Parent18Law44& p,
 TL_BRICK_HD inline bool ValidResult(const Parent18Law90& p,
     const solid18::total_strain::Material& material, const State<Traits18Law90>& state,
     double time, std::uint64_t epoch) noexcept {
-  const auto& h = state.history;
+  if(!state.history.legacy()||state.cache.profile!=ResultProfile::Legacy)return false;
+  const auto& h = *state.history.legacy();
   const auto& c = state.cache;
   const auto& d = c.diagnostics;
   return h.prepared() && h.stamp().time_s == time && h.stamp().sample_index == epoch &&

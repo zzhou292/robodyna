@@ -3,12 +3,13 @@
 #include "Results.h"
 #include "../Model.h"
 #include "../../solid18/total_strain/Force.h"
+#include "controlled/History.h"
 
 namespace tl::fea::solids::batch_detail {
 struct Traits18Law90 {
   using Parent = Parent18Law90;
   using Material = solid18::total_strain::Material;
-  using History = solid18::total_strain::History;
+  using History = controlled::History90;
   using Interval = solid18::PrescribedInterval;
   using Trial = solid18::total_strain::ForceTrial;
   using Cache = Cache18Law90;
@@ -24,7 +25,9 @@ struct Traits18Law90 {
   }
   TL_SOLID18_HD static Status EvaluateScratch(const Parent& parent, const Material& material,
       const History& history, const Interval& interval, ForceScratch& scratch) noexcept {
-    return solid18::total_strain::EvaluateForce90Scratch(parent.reference, history, interval, material, scratch);
+    const auto* legacy=history.legacy();
+    if(!legacy)return Status::UnsupportedProfile;
+    return solid18::total_strain::EvaluateForce90Scratch(parent.reference, *legacy, interval, material, scratch);
   }
   TL_SOLID18_HD static const Trial& TrialValue(const ForceScratch& scratch) noexcept {
     return scratch.staged;
@@ -50,7 +53,7 @@ struct Traits18Law90 {
     return true;
   }
   TL_SOLID18_HD static Result Read(const History& history, const Cache& cache) noexcept {
-    return {history.data(), history.stamp(), cache};
+    return {history.legacy()->data(), history.stamp(), cache};
   }
 };
 } // namespace tl::fea::solids::batch_detail

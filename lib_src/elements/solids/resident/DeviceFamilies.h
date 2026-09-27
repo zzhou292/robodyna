@@ -22,6 +22,11 @@ TL_BRICK_HD inline const typename Traits::Material& MaterialAt(Storage& state,
   else if constexpr (std::is_same_v<Traits, Traits18Law90>) return state.material90[index];
   else return state.material42[index];
 }
+template<class Traits> TL_BRICK_HD inline std::size_t ControlledIndex(const Storage& state,std::size_t p)noexcept {
+  if constexpr(std::is_same_v<Traits,Traits24>)return state.controlled.index24?state.controlled.index24[p]:SIZE_MAX;
+  else if constexpr(std::is_same_v<Traits,Traits18Law90>)return state.controlled.index90?state.controlled.index90[p]:SIZE_MAX;
+  else return SIZE_MAX;
+}
 template<class Traits> TL_BRICK_HD inline auto& Scratch(Storage& state, std::size_t index) noexcept {
   if constexpr (std::is_same_v<Traits, Traits18Law44>) return state.scratch44[index];
   else return state.scratch90[index];

@@ -3,12 +3,13 @@
 #include "Results.h"
 #include "../Model.h"
 #include "../../solid24/Solid24Force.h"
+#include "controlled/History.h"
 
 namespace tl::fea::solids::batch_detail {
 struct Traits24 {
   using Parent = Parent24;
   using Material = solid24::Material;
-  using History = solid24::History;
+  using History = controlled::History24;
   using Interval = solid24::PrescribedInterval;
   using Trial = solid24::ForceTrial;
   using Cache = Cache24;
@@ -23,7 +24,9 @@ struct Traits24 {
   }
   TL_BRICK_HD static Status Evaluate(const Parent& parent, const Material& material,
       const History& accepted, const Interval& interval, Trial& output) noexcept {
-    return solid24::EvaluateForce(parent.reference, accepted, interval, material, output);
+    const auto* history=accepted.legacy();
+    if(!history)return Status::UnsupportedProfile;
+    return solid24::EvaluateForce(parent.reference, *history, interval, material, output);
   }
   TL_BRICK_HD static Interval Phase(double base, double dt, std::uint64_t epoch) noexcept {
     Interval result;
@@ -46,7 +49,7 @@ struct Traits24 {
     return true;
   }
   TL_BRICK_HD static Result Read(const History& history, const Cache& cache) noexcept {
-    return {history.values(), history.stamp(), cache};
+    return {history.legacy()->values(), history.stamp(), cache};
   }
 };
 } // namespace tl::fea::solids::batch_detail
