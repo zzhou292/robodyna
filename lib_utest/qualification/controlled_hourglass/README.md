@@ -16,11 +16,13 @@ true MVSIZ129 backing, real reader/update PM slot producer, and reversible
 output-only modal/work observations. Source bytes/flags come from the qualified
 full H24 fixture. No production C++ expression feeds native arithmetic.
 The63-double comparison packet is history12, force24, energy/STI/work3,
-modal velocity12, modal force12. Tests use native-scale128-epsilon error bounds
-and no absolute floor, preserving small-value sensitivity. The signed-work
-channel uses dt times the sum of absolute native modal products as its
-roundoff scale: using only the canceled signed sum is ill-conditioned.
-The128-epsilon multiplier remains unchanged for every channel.
+modal velocity12, modal force12. Every channel except signed work retains its
+native-scale 128-epsilon bound with no absolute floor. Signed work is checked
+against its own exact binary64 Z/X/Y ordered modal replay on both sides, plus
+the derived forward-error bound in [WORK_COMPARISON.md](WORK_COMPARISON.md).
+Its modal force/rate inputs remain subject to the original 128-epsilon bounds.
+The earlier proposed 128-epsilon native absolute-product scale is superseded;
+it was never accepted as qualification.
 
 The fixture includes raw operand/projection basis cases; these check the leaf
 binding and are not claims that arbitrary projections describe a physical cell.

@@ -57,6 +57,39 @@ TEST(ControlledHourglass, WorkObservationSurvivesEnergyCancellation) {
   const auto y=Check(x);EXPECT_EQ(y.internal_energy_density_j_m3,x.input.internal_energy_density_j_m3);
   EXPECT_NE(y.work_j,0);
 }
+TEST(ControlledHourglass, NearZeroSignedWorkUsesMeasuredModalDrift) {
+  c::Result result;result.modal_force_n[2][0]=1;result.modal_force_n[2][1]=-1;
+  result.modal_velocity_m_s[2][0]=1;result.modal_velocity_m_s[2][1]=1;
+  const auto native=Values(result);ASSERT_EQ(native[38],0);
+  result.modal_force_n[2][0]=std::nextafter(1.,2.);
+  result.work_j=b::ModePower(result.modal_force_n,result.modal_velocity_m_s);
+  const auto actual=Values(result);EXPECT_GT(actual[38],0);
+  EXPECT_GT(std::abs(actual[38]-native[38]),128*std::numeric_limits<double>::epsilon()*std::abs(native[38]));
+  const auto bound=SignedWorkBound(actual,native,1);
+  EXPECT_GT(bound.modal_drift_j,0);EXPECT_GT(bound.arithmetic_j,0);
+  EXPECT_TRUE(SignedWorkMatches(actual,native,1));Compare(result,native,1);
+  auto wrong=actual;wrong[38]=0;EXPECT_FALSE(SignedWorkMatches(wrong,native,1));
+  wrong=actual;wrong[38]=std::nextafter(wrong[38],1.);EXPECT_FALSE(SignedWorkMatches(wrong,native,1));
+  wrong=native;wrong[38]=actual[38];EXPECT_FALSE(SignedWorkMatches(actual,wrong,1));
+  EXPECT_TRUE(SignedWorkMatches(std::array<double,63>{},std::array<double,63>{},0));
+}
+TEST(ControlledHourglass, SignedWorkRejectsFourthModeFactorAndUnrelatedError) {
+  auto x=Base();const double signs[]{1,-1,1,-1,-1,1,-1,1};
+  for(unsigned n=0;n<8;++n)x.input.local_velocity_m_s[n].z=signs[n];
+  const auto result=Check(x);const auto native=Native(x);auto wrong=Values(result);
+  wrong[38]*=8;EXPECT_FALSE(SignedWorkMatches(wrong,native,x.input.dt_s));
+  wrong=Values(result);wrong[38]+=1;EXPECT_FALSE(SignedWorkMatches(wrong,native,x.input.dt_s));
+  wrong=Values(result);wrong[38]=std::numeric_limits<double>::quiet_NaN();
+  EXPECT_FALSE(SignedWorkMatches(wrong,native,x.input.dt_s));
+}
+TEST(ControlledHourglass, ModalPowerPreservesNativeZXYOrder) {
+  double force[3][4]{},rate[3][4]{};
+  force[2][0]=1e16;force[2][1]=-1e16;force[0][0]=1;
+  rate[2][0]=1;rate[2][1]=1;rate[0][0]=1;
+  EXPECT_EQ(b::ModePower(force,rate),1);
+  const double reordered=(force[0][0]*rate[0][0]+force[2][0]*rate[2][0])+force[2][1]*rate[2][1];
+  EXPECT_EQ(reordered,0);
+}
 TEST(ControlledHourglass, RejectionAndLateOverflowPreserveEveryOutputAndInputField) {
   const auto valid=Moving();c::Result sentinel=Check(valid);const auto before=Values(sentinel);
   std::vector<Case> cases;

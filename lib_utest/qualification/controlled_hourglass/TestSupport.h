@@ -2,6 +2,7 @@
 #pragma once
 #include "lib_src/elements/solid_common/controlled_hourglass/Response.h"
 #include <gtest/gtest.h>
+#include "WorkComparison.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -53,9 +54,10 @@ inline std::array<double,63> Native(const Case& x) {
 inline void Compare(const c::Result& actual,const std::array<double,63>& expected,double dt_s) {
   const auto values=Values(actual);const unsigned boundaries[]{0,12,36,37,38,39,51,63};
   for(unsigned g=0;g<7;++g){double scale=0;for(unsigned i=boundaries[g];i<boundaries[g+1];++i)scale=std::max(scale,std::abs(expected[i]));
-    // Signed work can cancel; bound roundoff by its native absolute product sum.
-    if(g==4){double power_scale=0;for(unsigned k:{2u,0u,1u})for(unsigned h=0;h<4;++h)
-      power_scale+=std::abs(expected[51+4*k+h]*expected[39+4*k+h]);scale=std::max(scale,dt_s*power_scale);}
+    if(g==4){const auto bound=SignedWorkBound(values,expected,dt_s);
+      EXPECT_TRUE(SignedWorkMatches(values,expected,dt_s))<<"work error="<<std::abs(values[38]-expected[38])
+        <<" measured modal drift bound="<<bound.modal_drift_j<<" arithmetic bound="<<bound.arithmetic_j;
+      continue;}
     for(unsigned i=boundaries[g];i<boundaries[g+1];++i){SCOPED_TRACE(i);ASSERT_TRUE(std::isfinite(values[i]));ASSERT_TRUE(std::isfinite(expected[i]));
       EXPECT_LE(std::abs(values[i]-expected[i]),128*std::numeric_limits<double>::epsilon()*scale);}}
 }
