@@ -59,19 +59,15 @@ BatchReport T3Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
       !state.OutputDisjoint(diagnostics,sizeof(*diagnostics))) {
     return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   }
-  const std::uint8_t* compact_activity = nullptr;
   const auto report = state.ReadParentActivity(state.AcceptedSlabIndex(),
-      state.accepted_diagnostics.time, state.accepted_stamp.epoch, &compact_activity);
+      state.accepted_diagnostics.time, state.accepted_stamp.epoch);
   if (report.status != BatchStatus::Success) return report;
   const auto* history = state.plasticity->failure_staging();
   const auto* sections = state.plasticity->section_staging();
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    if (compact_activity) output[parent] = compact_activity[parent];
-    else {
-      const auto* point = sections[parent].one_point();
-      const bool active = point ? point->point.failure.history.point_active : history[parent].active;
-      output[parent] = active ? 1 : 0;
-    }
+    const auto* point = sections[parent].one_point();
+    const bool active = point ? point->point.failure.history.point_active : history[parent].active;
+    output[parent] = active ? 1 : 0;
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success, "Accepted parent activity copied"};
@@ -91,8 +87,7 @@ BatchReport T3Batch::CopyPreparedParentActivity(FENodalState& owner,
   if (!shell_activity_detail::JoinedOutputDisjoint(state,output,capacity))
     return {BatchStatus::InvalidInput,"Prepared activity overlaps retained joined shell sources"};
   const auto slab = 1u - state.AcceptedSlabIndex();
-  const std::uint8_t* compact_activity = nullptr;
-  report = state.ReadParentActivity(slab, expected.time, expected.epoch, &compact_activity);
+  report = state.ReadParentActivity(slab, expected.time, expected.epoch);
   if (report.status != BatchStatus::Success) {
     state.Discard();
     return report;
@@ -100,12 +95,9 @@ BatchReport T3Batch::CopyPreparedParentActivity(FENodalState& owner,
   const auto* history = state.plasticity->failure_staging();
   const auto* sections = state.plasticity->section_staging();
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    if (compact_activity) output[parent] = compact_activity[parent];
-    else {
-      const auto* point = sections[parent].one_point();
-      const bool active = point ? point->point.failure.history.point_active : history[parent].active;
-      output[parent] = active ? 1 : 0;
-    }
+    const auto* point = sections[parent].one_point();
+    const bool active = point ? point->point.failure.history.point_active : history[parent].active;
+    output[parent] = active ? 1 : 0;
   }
   return {BatchStatus::Success, "Complete prepared parent activity copied"};
 }

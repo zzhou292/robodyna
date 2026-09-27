@@ -15,6 +15,10 @@ class MixedHostStorage {
       std::size_t device_cap,std::size_t host_cap,MixedLayout&,std::size_t& host_bytes,bool global=false) noexcept;
   SetupReport Initialize(const ShellBatchPlasticityBinding&,ShellBindingFamily,std::size_t,
       const MixedLayout&,bool execution=false);
+  bool HasReadShape(unsigned slab,std::size_t count,const ShellBatchPlasticityBinding& catalog) const noexcept {
+    return device_ && slab <= 1 && count == count_ && catalog.heterogeneous_sections();
+  }
+  ShellBindingFamily family() const noexcept { return family_; }
   SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&,
       const ShellBatchOnePointSectionState* one_point=nullptr) noexcept;
   // Shape/source preflight only; the caller must validate the fresh selected slab.

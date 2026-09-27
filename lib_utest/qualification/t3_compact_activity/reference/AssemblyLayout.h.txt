@@ -8,7 +8,6 @@ namespace tl::fea::t3::mapped {
 // resident device storage. Legacy initializers retain no gather arrays.
 struct AssemblyLayout {
   util::ArenaRegion offsets, incidence, parent, node, failure, observer;
-  mapped_shell::ActivityLayout activity;
   std::size_t bytes = 0;
   bool Initialize(std::size_t base, std::size_t parents, std::size_t nodes, std::size_t cap) noexcept {
     if (!parents || parents > UINT32_MAX / 3 || !nodes || nodes >= UINT32_MAX) return false;
@@ -22,8 +21,7 @@ struct AssemblyLayout {
         !layout.Append<AssemblyNode>(nodes, next.node) ||
         !layout.Append<unsigned long long>(1, next.failure) ||
         !layout.Append<ObserverSummary>(ObserverBlocks(parents, nodes), next.observer)) return false;
-    if (!next.activity.Initialize(layout.bytes(), parents, cap)) return false;
-    next.bytes = next.activity.bytes;
+    next.bytes = layout.bytes();
     *this = next;
     return true;
   }
@@ -35,15 +33,13 @@ struct AssemblyLayout {
     memory = {arena.Construct<std::uint32_t>(offsets), arena.Construct<std::uint32_t>(incidence),
         arena.Construct<AssemblyParent>(parent), arena.Construct<AssemblyNode>(node),
         arena.Construct<unsigned long long>(failure), arena.Construct<ObserverSummary>(observer)};
-    return memory.offsets && memory.incidence && memory.parent && memory.node && memory.failure && memory.observer &&
-        activity.Construct(arena, memory.activity);
+    return memory.offsets && memory.incidence && memory.parent && memory.node && memory.failure && memory.observer;
   }
   AssemblyMemory Rebase(void* base) const noexcept {
     if (!bytes) return {};
     return {util::ArenaPointer<std::uint32_t>(base, offsets), util::ArenaPointer<std::uint32_t>(base, incidence),
         util::ArenaPointer<AssemblyParent>(base, parent), util::ArenaPointer<AssemblyNode>(base, node),
-        util::ArenaPointer<unsigned long long>(base, failure), util::ArenaPointer<ObserverSummary>(base, observer),
-        activity.Rebase(base)};
+        util::ArenaPointer<unsigned long long>(base, failure), util::ArenaPointer<ObserverSummary>(base, observer)};
   }
 };
 } // namespace tl::fea::t3::mapped

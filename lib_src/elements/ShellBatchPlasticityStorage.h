@@ -57,6 +57,8 @@ class HostStorage {
   // Mapped QEPH compact query: no typed union staging and no one-point role.
   SetupReport CheckActivitySectionSources(unsigned slab,std::size_t count) const noexcept;
   SetupReport CheckActivityFailureSources(unsigned slab,std::size_t count) const noexcept;
+  // Eligibility only. False retains the complete legacy readback/error order.
+  bool SupportsCompactActivity(unsigned slab,std::size_t count,ShellBindingFamily family) const noexcept;
   FailureDeviceStorage* failure_device() const noexcept;
   const ShellBatchFailureState* failure_staging() const noexcept;
   std::size_t failure_device_bytes() const noexcept;

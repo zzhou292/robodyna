@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "baseline": "95664290ccf60c486174944f7399c8a9afe3b760",
+  "scope": "Complete owning validation/flow bodies before compact T3 transport",
+  "files": [
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/ShellOnePointStorage.cpp.txt",
+      "original_path": "lib_src/elements/one_point/ShellOnePointStorage.cpp",
+      "bytes": 4042,
+      "sha256": "777d868709ebdf081be057141ed55b4caa30e605418cab5034dface5135e66c5"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/ShellMixedSectionReadback.cpp.txt",
+      "original_path": "lib_src/elements/ShellMixedSectionReadback.cpp",
+      "bytes": 4014,
+      "sha256": "2cc83da03a7576c851730b86bc2b42f888e6ce2517e85cc5c47bc4315145bbaf"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/ShellFailureStorage.cpp.txt",
+      "original_path": "lib_src/elements/failure/ShellFailureStorage.cpp",
+      "bytes": 7363,
+      "sha256": "d3691577aa6ad911558358ab312c553582b54ec42c2ab38f7808de22cd7c88d1"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/Readback.cpp.txt",
+      "original_path": "lib_src/elements/t3/mapped/Readback.cpp",
+      "bytes": 3155,
+      "sha256": "928ce1ee3d38623d00f18da752ebe456a7f52c9233d537392013d6bcc1690af9"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/T3BatchOnePointReadback.cpp.txt",
+      "original_path": "lib_src/elements/t3/T3BatchOnePointReadback.cpp",
+      "bytes": 2947,
+      "sha256": "ed3deccdb86e378e818e8c85d4f1a7ff88f0becb7878d541d5b3158d52b59c56"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/T3BatchFailureReadback.cpp.txt",
+      "original_path": "lib_src/elements/t3/T3BatchFailureReadback.cpp",
+      "bytes": 7376,
+      "sha256": "3f682010eba2aaaae0c4b57df8c58df409edddc72ded22f6bb282ab413fee997"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/ShellFailureReadback.h.txt",
+      "original_path": "lib_src/elements/failure/ShellFailureReadback.h",
+      "bytes": 1842,
+      "sha256": "ca881dae778df1664f748b4edebf87223f0f48bba2fc25b001cc6612a823f3e0"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/T3BatchStorage.h.txt",
+      "original_path": "lib_src/elements/t3/T3BatchStorage.h",
+      "bytes": 7011,
+      "sha256": "d3420115a5bacaf99d6b22cf5291b7c8dc9eebf249b785f7fbe80b186a8c2947"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/AssemblyLayout.h.txt",
+      "original_path": "lib_src/elements/t3/mapped/AssemblyLayout.h",
+      "bytes": 2275,
+      "sha256": "ab9a82ffcc3a42a1bd81c884fb0afb52172d2aecd0e3ca8df09cc5b5c784354d"
+    },
+    {
+      "path": "lib_utest/qualification/t3_compact_activity/reference/AssemblyTypes.h.txt",
+      "original_path": "lib_src/elements/t3/mapped/AssemblyTypes.h",
+      "bytes": 766,
+      "sha256": "40699b4700080ab9cd5e66ddbfb0f877f38559e70560b8a384e9d2e5785d8986"
+    }
+  ]
+}

@@ -53,6 +53,23 @@ SetupReport HostStorage::CheckActivityFailureSources(unsigned slab,std::size_t c
   if(!failure_)return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
   return failure_->CheckActivitySources(slab,count);
 }
+bool HostStorage::SupportsCompactActivity(unsigned slab,std::size_t count,ShellBindingFamily family) const noexcept {
+  const auto* catalog=Collection();
+  if(!mixed_||!failure_||!catalog||count!=element_count_||mixed_->family()!=family||
+      !mixed_->HasReadShape(slab,count,*catalog)||
+      (one_point_&&!one_point_->HasReadShape(slab,count))||
+      failure_->CheckActivitySources(slab,count).status!=SetupStatus::Success) return false;
+  for(std::size_t parent=0;parent<count;++parent) {
+    ShellSectionLaw law=ShellSectionLaw::Unspecified;
+    if(!catalog->Law(family,parent,&law)) return false;
+    if(law==ShellSectionLaw::Law44Nip1) {
+      sections::PointParameters parameters;
+      if(family!=ShellBindingFamily::T3||!one_point_||!catalog->Parameters(family,parent,&parameters)) return false;
+    } else if(law!=ShellSectionLaw::LayeredLaw1Nip3&&law!=ShellSectionLaw::LayeredLaw44Nip3&&
+        ((law!=ShellSectionLaw::RigidSkin&&law!=ShellSectionLaw::GlobalLaw1Npt0)||!catalog->execution_sections())) return false;
+  }
+  return true;
+}
 SetupReport HostStorage::ReadSectionsBeforeFailure(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
   const auto* catalog=Collection();
   if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
