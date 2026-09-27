@@ -34,24 +34,21 @@ __global__ void EvaluateElements(Storage* storage, unsigned accepted,
 __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
                          NodalPreparedView view, BatchDiagnostics identity) {
   auto& state = *storage;
-  Control next;
-  next.diagnostics = identity;
+  state.control = {};
+  state.control.diagnostics = identity;
   for (std::size_t e = 0; e < state.model.element_count; ++e) {
     if (state.candidate_status[e] != Status::Success) {
-      next.status = BatchStatus::ElementFailure;
-      next.element = e;
-      next.element_status = state.candidate_status[e];
-      break;
+      state.control.status = BatchStatus::ElementFailure;
+      state.control.element = e;
+      state.control.element_status = state.candidate_status[e];
+      return;
     }
   }
-  if (next.status == BatchStatus::Success) {
-    if (!MeasurePrepared(state.model, state.measurement, next.diagnostics)) {
-      next.status = BatchStatus::NonfiniteResult;
-    } else {
-      next.diagnostics.valid = true;
-    }
+  if (!MeasurePrepared(state.model, state.measurement, state.control.diagnostics)) {
+    state.control.status = BatchStatus::NonfiniteResult;
+    return;
   }
-  state.control = next;
+  state.control.diagnostics.valid = true;
 }
 } // namespace
 

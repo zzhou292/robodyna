@@ -45,4 +45,41 @@ TYPED_TEST(ConnectorOperands, DerivedOverflowAndRetryKeepTheOriginalTerminalChec
   f.accepted[0].endpoints[0].force_N={3,5,7};
   Compare(f); EXPECT_TRUE(f.state.control.diagnostics.valid);
 }
+TYPED_TEST(ConnectorOperands, CompleteControlRetainsIncomingIdentityAndFirstOfMultipleFailures) {
+  for(std::size_t count : {2u,3u,18u}) {
+    Fixture<TypeParam> f(count); NonzeroIdentity(f);
+    TypeParam::Work(f.trial[0],0)=DBL_MAX;
+    TypeParam::Work(f.trial[1],0)=DBL_MAX;
+    f.status[0]=TypeParam::Status::DegenerateGeometry;
+    f.status.back()=TypeParam::Status::NonfiniteResult;
+    Compare(f);
+    typename TypeParam::Control expected;
+    expected.status=TypeParam::BatchStatus::ElementFailure;
+    expected.element_status=TypeParam::Status::DegenerateGeometry;
+    expected.element=0; expected.diagnostics=f.seed;
+    Same<TypeParam>(f.state.control,expected);
+    f.status[0]=TypeParam::Status::Success;
+    Compare(f);
+    expected.element=count-1; expected.element_status=TypeParam::Status::NonfiniteResult;
+    Same<TypeParam>(f.state.control,expected);
+  }
+}
+TYPED_TEST(ConnectorOperands, CompleteControlPreservesValidSeedOnNonfiniteAndOverflowThenRepairs) {
+  Fixture<TypeParam> f(3); NonzeroIdentity(f);
+  const auto original=f.trial;
+  for(double invalid : {double(NAN),double(INFINITY),DBL_MAX}) {
+    TypeParam::Work(f.trial[0],0)=invalid;
+    TypeParam::Work(f.trial[1],0)=DBL_MAX;
+    Compare(f);
+    EXPECT_EQ(f.state.control.status,TypeParam::BatchStatus::NonfiniteResult);
+    // The old caller does not erase an incoming valid bit on derived failure.
+    EXPECT_TRUE(f.state.control.diagnostics.valid);
+    const typename TypeParam::Control defaults;
+    EXPECT_EQ(f.state.control.element,defaults.element);
+    EXPECT_EQ(f.state.control.node,defaults.node);
+    std::copy(original.begin(),original.end(),f.trial.begin()); Compare(f);
+    EXPECT_EQ(f.state.control.status,TypeParam::BatchStatus::Success);
+    EXPECT_TRUE(f.state.control.diagnostics.valid);
+  }
+}
 } // namespace connector_operand_test

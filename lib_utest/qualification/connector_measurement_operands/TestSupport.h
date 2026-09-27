@@ -6,6 +6,7 @@
 #include "FrozenType25Measure.h"
 #include "FinalizeBodies.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <cfloat>
 #include <cstring>
 #include <vector>
@@ -17,6 +18,7 @@ inline std::uint64_t Bits(double x) { std::uint64_t bits; std::memcpy(&bits, &x,
 struct Type13 {
   using State = a::batch_detail::Storage; using Element = a::batch_detail::DeviceElement;
   using Evaluation = a::Evaluation; using Status = a::Status; using Diagnostics = a::BatchDiagnostics;
+  using BatchStatus = a::BatchStatus; using Phase = a::BatchPhase;
   using Measurement = a::batch_detail::Measurement; using Control = a::batch_detail::Control;
   static constexpr unsigned Channels = a::ChannelCount;
   static void Bind(State& s, std::size_t n, Evaluation* x, Evaluation* y) { s.model.element_count=n; s.slab[0]=x; s.slab[1]=y; }
@@ -33,6 +35,7 @@ struct Type13 {
 struct Type25 {
   using State = b::batch_detail::Storage; using Element = b::batch_detail::DeviceElement;
   using Evaluation = b::Evaluation; using Status = b::Status; using Diagnostics = b::BatchDiagnostics;
+  using BatchStatus = b::BatchStatus; using Phase = b::BatchPhase;
   using Measurement = b::batch_detail::Measurement; using Control = b::batch_detail::Control;
   static constexpr unsigned Channels = 4;
   static void Bind(State& s, std::size_t n, Evaluation* x, Evaluation* y) { s.model.config.element_count=n; s.slab[0].element=x; s.slab[1].element=y; }
@@ -111,8 +114,25 @@ template<class T> void Same(const typename T::Control& x,const typename T::Contr
   EXPECT_EQ(Bits(T::Kick(a)),Bits(T::Kick(b))); EXPECT_EQ(Bits(T::Drift(a)),Bits(T::Drift(b)));
   EXPECT_EQ(Bits(T::Minimum(a)),Bits(T::Minimum(b)));
 }
+template<class T> typename T::Control StaleControl() {
+  typename T::Control control;
+  control.status=T::BatchStatus::Unusable;
+  control.element_status=T::Status::DegenerateGeometry;
+  control.element=3; control.node=2;
+  control.diagnostics.valid=true;
+  control.diagnostics.source_instance_id=UINT64_MAX;
+  control.diagnostics.element_count=71;
+  T::Kick(control.diagnostics)=-13;
+  return control;
+}
+template<class T> void NonzeroIdentity(Fixture<T>& f) {
+  f.seed.valid=true; f.seed.phase=T::Phase::Prepared;
+  f.seed.element_count=101; f.seed.active_count=103; f.seed.newly_failed_count=107;
+}
 template<class T> void Compare(Fixture<T>& f) {
   T::Reference(f.state,f.view,f.seed); const auto reference=f.state.control;
+  // The current caller must overwrite every field of an unrelated old control.
+  f.state.control=StaleControl<T>();
   f.Stage(); T::Current(f.state,f.view,f.seed); Same<T>(f.state.control,reference);
 }
 } // namespace connector_operand_test

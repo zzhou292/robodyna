@@ -3,10 +3,11 @@
 from pathlib import Path
 import hashlib
 import json
+from local_control_proof import reverse as reverse_local_control
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[2]
 BASELINE_SHA256='82f8d6a78321482cac8da57f6239a9fbaad480233c4612ec99bb98bfe6f65803'
-MANIFEST_SHA256='1658a9968d5dd81a68af45047e334e209a14bdbee1dcd83ce537a46764e839b9'
+MANIFEST_SHA256='2dcfdf54796519a86b3bf0e55af3d9a35c95b042db62f6f3e8f037b65c5af238'
 def once(text,old,new):
     assert text.count(old)==1,(old,text.count(old))
     return text.replace(old,new)
@@ -25,13 +26,15 @@ def verify():
         assert len(data)==row['bytes'] and hashlib.sha256(data).hexdigest()==row['sha256'],row['path']
     for label,relative in [('Type13','type13/resident/Measure.h'),('Type25','type25/Type25BatchMeasure.h')]:
         assert (ROOT/'lib_src/elements'/relative).read_bytes()==(HERE/'frozen'/f'{label}Measure.h').read_bytes()
-    current=(ROOT/'lib_src/elements/type13/resident/Candidate.cu').read_text()
+    current=reverse_local_control('Type13Candidate.cu',
+        (ROOT/'lib_src/elements/type13/resident/Candidate.cu').read_text())
     current=once(current,'#include "Measurement.h"','#include "Measure.h"')
     current=once(current,'MeasurePrepared(state.model, state.measurement, state.control.diagnostics)',
         'Measure(state.model, state.slab[accepted], state.slab[trial], view,\n               state.control.diagnostics)')
     current=once(current,'  LaunchMeasurement(storage, accepted, trial, view, count);\n  if (cudaPeekAtLastError() != cudaSuccess) return;\n','')
     assert current==(HERE/'frozen/Type13Candidate.cu').read_text()
-    current=(ROOT/'lib_src/elements/type25/Type25BatchKernels.cu').read_text()
+    current=reverse_local_control('Type25Candidate.cu',
+        (ROOT/'lib_src/elements/type25/Type25BatchKernels.cu').read_text())
     current=once(current,'#include "Type25BatchMeasurement.h"\n#include "Type25BatchStorage.h"','#include "Type25BatchMeasure.h"')
     current=once(current,'MeasurePrepared(s.model,s.measurement,s.control.diagnostics)',
         'Measure(s.model,*accepted,*trial,view,s.control.diagnostics)')

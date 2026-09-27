@@ -6,6 +6,14 @@ find_package(GTest REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_package(CUDAToolkit REQUIRED)
 set(oracle "${CMAKE_CURRENT_BINARY_DIR}/oracle")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_LIST_DIR}/local-control-baseline.json"
+  "${CMAKE_CURRENT_LIST_DIR}/local_control_proof.py"
+  "${CMAKE_CURRENT_LIST_DIR}/source-manifest.json"
+  "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py"
+  "${CMAKE_CURRENT_LIST_DIR}/generate_oracle.py"
+  "${TL_ROOT}/lib_src/elements/type13/resident/Candidate.cu"
+  "${TL_ROOT}/lib_src/elements/type25/Type25BatchKernels.cu")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py"
   COMMAND_ERROR_IS_FATAL ANY)
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/generate_oracle.py"

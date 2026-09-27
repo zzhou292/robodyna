@@ -39,3 +39,20 @@ The independent assembly successor adds distinct `assembly` arena regions and
 optional mapped arguments. This branch adds only `measurement` regions, leaving
 those arguments untouched. Merge both additive layouts deliberately and rerun
 exact current forecasts. No active source or binary is replaced by this draft.
+
+The local-Control successor from 759e486a changes only where each finalizer
+accumulates its diagnostics: a private Control value receives the unchanged
+ordered folds and is assigned to device storage once. The complete source-order
+status scan still precedes all measurement. Its first failure, default indices,
+all input identity fields (including valid=true) and aggregate-nonfinite fields
+are retained exactly. No public API observes an intermediate finalizer store;
+the authenticated owner reads control only after its same-stream drain.
+
+`local-control-baseline.json` pins both full 759 callers, unchanged measurement
+bodies, arenas, and public owner/readback files. `local_control_proof.py` accepts
+only the stated storage transformation; the original 90a source reversals still
+run afterward. Added tests compare complete controls for multiple failures,
+nonfinite/overflow, nonzero identity/counters and repaired reuse of the same
+device allocation. Frozen 90a numeric oracles remain unchanged. The focused
+package now contains 14 host and 8 CUDA GTests, plus its source proof. These are
+source additions pending execution; no performance gain is claimed.

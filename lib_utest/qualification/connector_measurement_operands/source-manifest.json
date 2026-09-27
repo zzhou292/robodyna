@@ -1,7 +1,7 @@
 {
   "schema": "connector-measurement-operands-source-v1",
   "baseline_commit": "90a4a8060966358714049a775e4f9f7e7838481e",
-  "scope": "Independent per-parent operand preparation and original ordered diagnostic reduction; no force/material equation change.",
+  "scope": "Independent per-parent operand preparation and original ordered diagnostic reduction; no force/material equation change. Terminal local-Control storage preserves exact final fields and all ordered arithmetic.",
   "files": [
     {
       "path": "lib_src/elements/BUILD.bazel",
@@ -35,8 +35,8 @@
     },
     {
       "path": "lib_src/elements/type13/resident/Candidate.cu",
-      "bytes": 2892,
-      "sha256": "427ecaa01e8962327199b85d968a51d69a88e291f00cb8c9008118f786f37f10"
+      "bytes": 2906,
+      "sha256": "6a3d7190b3a159ba267f20db479577d0fed725a0acd3b7bdd9a5e94af862c546"
     },
     {
       "path": "lib_src/elements/type13/resident/Measurement.cu",
@@ -80,8 +80,8 @@
     },
     {
       "path": "lib_src/elements/type25/Type25BatchKernels.cu",
-      "bytes": 5573,
-      "sha256": "0e70381da2a27f98c10b2f0238ff42cfe349f075cc34b8bf730ecd8e90b1900a"
+      "bytes": 5601,
+      "sha256": "4550cf839ff6f75e714f4de0e538c5eb6180a8feefd4b5f02c9d83bfbfb8ceec"
     },
     {
       "path": "lib_src/elements/type25/Type25BatchMeasurement.cu",
@@ -110,28 +110,28 @@
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/CMakeLists.txt",
-      "bytes": 2539,
-      "sha256": "95c28583a3bed71be3928bc0d253a26f0acef68e168ab18229eb2b559605450b"
+      "bytes": 2984,
+      "sha256": "379f4b65f15ea5c0d9e41374b8a2bbd5c893458422a056c8f54677b34948c634"
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/CudaTest.cu",
-      "bytes": 5280,
-      "sha256": "0e5b0969e7fa16653875b1cc058964d4ccb10921bf43222341456c46c9de0dea"
+      "bytes": 6951,
+      "sha256": "a08d923b2f8cc13ec612d0ceb67990d5173ddb53a3984f72b87e152562576d55"
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/HostTest.cpp",
-      "bytes": 2404,
-      "sha256": "80dd437591aebba93daeed82b178c708b0782517438e1db6ba5e04499b5efa06"
+      "bytes": 4197,
+      "sha256": "410c1181687030daf5796fb20cf96e22acb11c605529721ddc603bbbc3553acd"
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/README.md",
-      "bytes": 2687,
-      "sha256": "2ca98bc766d48b5e3a144c436d0eea4d239a9fe8f2b0ddb84faf530c4747d793"
+      "bytes": 3851,
+      "sha256": "685c735820354cacde7d314ded03515b531a5fa97220ed27f1d01ad3cef3afb7"
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/TestSupport.h",
-      "bytes": 7597,
-      "sha256": "f0e8fafaa9bc45ba4f0bae64d5dfa3ead9797d5b283b21679f32264b604f3ebc"
+      "bytes": 8470,
+      "sha256": "4e3a12f2f87096027d99f10c26b15a716d65e742ae2e10388554c47153f7a0ad"
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/baseline.json",
@@ -182,6 +182,26 @@
       "path": "lib_utest/qualification/connector_measurement_operands/generate_oracle.py",
       "bytes": 3818,
       "sha256": "c0cf34b5c5ffc8303a650ceb25c9d95b5638de5f169ffe0bc8c6ab98c8c92667"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local-control-baseline.json",
+      "bytes": 2019,
+      "sha256": "429ddd424a1088d2c5d90bddbf3495e3efbd232f7866be95ee7c79cf44c17ddd"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_proof.py",
+      "bytes": 3980,
+      "sha256": "fdd3978df82aae9170c77acd836ab50d36742c9b199720c99badc0b28eda8481"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_frozen/Type13Candidate.cu",
+      "bytes": 2892,
+      "sha256": "427ecaa01e8962327199b85d968a51d69a88e291f00cb8c9008118f786f37f10"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_frozen/Type25Candidate.cu",
+      "bytes": 5573,
+      "sha256": "0e70381da2a27f98c10b2f0238ff42cfe349f075cc34b8bf730ecd8e90b1900a"
     }
   ],
   "integration_provenance": {
@@ -199,5 +219,9 @@
       "lib_src/elements/type25/Type25BatchArena.h",
       "lib_src/elements/type25/Type25BatchStartup.cpp"
     ]
+  },
+  "local_control_provenance": {
+    "base": "759e486a0e1a8c072bca48423be833b9c04e9b21",
+    "scope": "Only terminal Control storage changes in the two full finalizers; unchanged arithmetic, layout, owner and readback pins are authenticated separately."
   }
 }

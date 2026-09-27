@@ -1,0 +1,59 @@
+{
+  "commit": "759e486a0e1a8c072bca48423be833b9c04e9b21",
+  "callers": [
+    {
+      "path": "lib_src/elements/type13/resident/Candidate.cu",
+      "fixture": "local_control_frozen/Type13Candidate.cu",
+      "bytes": 2892,
+      "sha256": "427ecaa01e8962327199b85d968a51d69a88e291f00cb8c9008118f786f37f10"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchKernels.cu",
+      "fixture": "local_control_frozen/Type25Candidate.cu",
+      "bytes": 5573,
+      "sha256": "0e70381da2a27f98c10b2f0238ff42cfe349f075cc34b8bf730ecd8e90b1900a"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.h",
+      "bytes": 2451,
+      "sha256": "ecce9e2eb5193e7215d7a59e6637fe1bd36d53a28d19f43709be444c73c832fd"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasurement.h",
+      "bytes": 2163,
+      "sha256": "22a864997b030552703376831d601f5ac8886b652826c7dadd40bf2bd8a90ff4"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.cpp",
+      "bytes": 2235,
+      "sha256": "54439fdc5cf4cb126340182960f5005afff0f40d0ceda47777b1c2ac8413535c"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.cpp",
+      "bytes": 1817,
+      "sha256": "77a5a1357cea979271f26fc69cc27457e6f2e5305475a94741b6b5038fad7262"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/EvaluateOperation.cu",
+      "bytes": 3169,
+      "sha256": "3ccdac214a14ba8a00407f06b242cdfc27ee0507158e9bec3c3329f277802b3a"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchOperations.cu",
+      "bytes": 6626,
+      "sha256": "abde61757211552c8233118617eea8c6076002661f0c9336b1548016768b38c6"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Batch.cu",
+      "bytes": 3133,
+      "sha256": "8c4a435ed03cb2a97fd7a302f2091012e3410464642df370e9277462bc00c93f"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25Batch.cu",
+      "bytes": 6662,
+      "sha256": "21189d3d675bce116d7c10984c896c7988828ddaf2f9c1b93f5bc3da7243b4f2"
+    }
+  ]
+}

@@ -62,16 +62,13 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
 }
 __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,
                                   NodalPreparedView view,BatchDiagnostics identity) {
-  auto& s=*storage;Control next;next.diagnostics=identity;
+  auto& s=*storage;s.control={};s.control.diagnostics=identity;
   for(std::size_t e=0;e<s.model.config.element_count;++e)if(s.candidate_status[e]!=Status::Success) {
-    next.status=BatchStatus::ElementFailure;next.element=static_cast<std::uint32_t>(e);
-    next.element_status=s.candidate_status[e];break;
+    s.control.status=BatchStatus::ElementFailure;s.control.element=static_cast<std::uint32_t>(e);
+    s.control.element_status=s.candidate_status[e];return;
   }
-  if(next.status==BatchStatus::Success) {
-    if(!MeasurePrepared(s.model,s.measurement,next.diagnostics)) next.status=BatchStatus::NonfiniteResult;
-    else next.diagnostics.valid=true;
-  }
-  s.control=next;
+  if(!MeasurePrepared(s.model,s.measurement,s.control.diagnostics)) {s.control.status=BatchStatus::NonfiniteResult;return;}
+  s.control.diagnostics.valid=true;
 }
 }
 void LaunchAssembly(Storage* s,const Slab* accepted,NodalAssemblyView view,bool initial) {Assemble<<<1,1,0,view.stream>>>(s,accepted,view,initial);}

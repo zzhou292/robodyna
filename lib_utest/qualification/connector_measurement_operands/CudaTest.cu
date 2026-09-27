@@ -18,14 +18,20 @@ template<class T> struct Rig {
   typename T::State* current=nullptr;
   typename T::State* reference=nullptr;
   fe::NodalPreparedView view;
+  typename T::Evaluation* trial_values=nullptr;
+  typename T::Status* statuses=nullptr;
+  std::size_t count=0;
   explicit Rig(Fixture<T>& fixture,bool unavailable=false) {
     auto state=fixture.state;
-    const auto count=fixture.status.size();
+    state.control=StaleControl<T>();
+    count=fixture.status.size();
     auto* accepted=unavailable ? nullptr : memory.Copy(fixture.accepted.data(),count);
     auto* trial=unavailable ? nullptr : memory.Copy(fixture.trial.data(),count);
     T::Bind(state,count,accepted,trial);
     state.model.elements=unavailable ? nullptr : memory.Copy(fixture.elements.data(),count);
-    state.candidate_status=memory.Copy(fixture.status.data(),count);
+    trial_values=trial;
+    statuses=memory.Copy(fixture.status.data(),count);
+    state.candidate_status=statuses;
     state.measurement=memory.Copy(fixture.operands.data(),count);
     current=memory.Copy(&state,1); reference=memory.Copy(&state,1);
     view=fixture.view;
@@ -39,6 +45,11 @@ template<class T> struct Rig {
       view.kinematics.angular_velocity_xyz=memory.Copy(fixture.omega.data(),fixture.omega.size());
     }
   }
+  void UpdateTrial(const Fixture<T>& fixture) {
+    ASSERT_EQ(fixture.status.size(),count);
+    Check(cudaMemcpy(trial_values,fixture.trial.data(),count*sizeof(*trial_values),cudaMemcpyHostToDevice));
+    Check(cudaMemcpy(statuses,fixture.status.data(),count*sizeof(*statuses),cudaMemcpyHostToDevice));
+  }
 };
 template<class T> __global__ void Stage(typename T::State* state,fe::NodalPreparedView view,std::size_t count,bool reverse) {
   for(std::size_t ordinal=blockIdx.x*blockDim.x+threadIdx.x;ordinal<count;ordinal+=blockDim.x*gridDim.x) {
@@ -50,8 +61,7 @@ template<class T> __global__ void Finish(typename T::State* state,fe::NodalPrepa
     typename T::Diagnostics seed,bool reference) {
   if(reference) T::Reference(*state,view,seed); else T::Current(*state,view,seed);
 }
-template<class T> void CompareDevice(Fixture<T>& fixture,unsigned repeats=1,bool unavailable=false) {
-  Rig<T> rig(fixture,unavailable);
+template<class T> void CompareDevice(Fixture<T>& fixture,Rig<T>& rig,unsigned repeats=1) {
   Finish<T><<<1,1>>>(rig.reference,rig.view,fixture.seed,true); Check(cudaPeekAtLastError());
   typename T::State expected;
   Check(cudaMemcpy(&expected,rig.reference,sizeof(expected),cudaMemcpyDeviceToHost));
@@ -69,6 +79,10 @@ template<class T> void CompareDevice(Fixture<T>& fixture,unsigned repeats=1,bool
       for(double x:operands[e].work) EXPECT_EQ(Bits(x),Bits(0));
     }
   }
+}
+template<class T> void CompareDevice(Fixture<T>& fixture,unsigned repeats=1,bool unavailable=false) {
+  Rig<T> rig(fixture,unavailable);
+  CompareDevice(fixture,rig,repeats);
 }
 template<class T> class ConnectorOperandCuda : public ::testing::Test {
   void SetUp() override { int count=0; ASSERT_EQ(cudaGetDeviceCount(&count),cudaSuccess); ASSERT_GT(count,0); }
@@ -90,6 +104,27 @@ TYPED_TEST(ConnectorOperandCuda, FailedRowsDoNotReadUnavailableInputsAndOverwrit
   for(auto& status:fixture.status) status=TypeParam::Status::DegenerateGeometry;
   for(auto& packet:fixture.operands) { for(auto& value:packet.work) value=NAN; for(auto& value:packet.kick) value=NAN; }
   CompareDevice(fixture,2,true);
+}
+TYPED_TEST(ConnectorOperandCuda, CompleteControlMultipleErrorsAndNonfiniteRepairReuseSameDeviceState) {
+  Fixture<TypeParam> fixture(18); NonzeroIdentity(fixture);
+  const auto original=fixture.trial;
+  Rig<TypeParam> rig(fixture);
+  CompareDevice(fixture,rig,2);
+  TypeParam::Work(fixture.trial[0],0)=DBL_MAX;
+  TypeParam::Work(fixture.trial[1],0)=DBL_MAX;
+  fixture.status[7]=TypeParam::Status::DegenerateGeometry;
+  fixture.status.back()=TypeParam::Status::NonfiniteResult;
+  rig.UpdateTrial(fixture); CompareDevice(fixture,rig,2);
+  fixture.status[7]=TypeParam::Status::Success;
+  rig.UpdateTrial(fixture); CompareDevice(fixture,rig,2);
+  fixture.status.back()=TypeParam::Status::Success;
+  rig.UpdateTrial(fixture); CompareDevice(fixture,rig,2);
+  for(double invalid : {double(NAN),double(INFINITY)}) {
+    TypeParam::Work(fixture.trial[0],0)=invalid;
+    rig.UpdateTrial(fixture); CompareDevice(fixture,rig,2);
+  }
+  std::copy(original.begin(),original.end(),fixture.trial.begin());
+  rig.UpdateTrial(fixture); CompareDevice(fixture,rig,2);
 }
 } // namespace
 } // namespace connector_operand_test
