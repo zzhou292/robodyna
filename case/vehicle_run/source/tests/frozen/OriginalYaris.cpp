@@ -1,4 +1,3 @@
-#include "OriginalYaris.h"
 #include "OriginalSources.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h"

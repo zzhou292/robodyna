@@ -14,10 +14,9 @@ target_link_libraries(robo_dyna_vehicle_run PUBLIC robo_dyna_vehicle_run_values 
 target_compile_features(robo_dyna_vehicle_run PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_vehicle_run PRIVATE -fno-fast-math -ffp-contract=off)
 
-include("${CMAKE_CURRENT_LIST_DIR}/source/OriginalSourceIO.cmake")
 add_library(robo_dyna_vehicle_run_original_source STATIC
   "${CMAKE_CURRENT_LIST_DIR}/source/OriginalSources.cpp" "${CMAKE_CURRENT_LIST_DIR}/source/OriginalYaris.cpp")
-target_link_libraries(robo_dyna_vehicle_run_original_source PUBLIC robo_dyna_vehicle_run robo_dyna_original_source_io)
+target_link_libraries(robo_dyna_vehicle_run_original_source PUBLIC robo_dyna_vehicle_run)
 target_compile_options(robo_dyna_vehicle_run_original_source PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(robo_dyna_vehicle_run_cli "${CMAKE_CURRENT_LIST_DIR}/cli/Main.cpp")
 set_target_properties(robo_dyna_vehicle_run_cli PROPERTIES OUTPUT_NAME robo_dyna_vehicle_run)

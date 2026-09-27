@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../../../modelio/vehicle_sections/VehicleSectionResolution.cmake")
+add_library(robo_dyna_original_source_io STATIC "${CMAKE_CURRENT_LIST_DIR}/OriginalSourceIO.cpp")
+target_link_libraries(robo_dyna_original_source_io PUBLIC robo_dyna_vehicle_sections)
+target_compile_features(robo_dyna_original_source_io PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_original_source_io PRIVATE -fno-fast-math -ffp-contract=off)
