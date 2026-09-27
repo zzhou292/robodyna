@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Groups.h"
+#include "group_motion/Motion.cuh"
 
 namespace tl::fea::cin_advance::groups {
 namespace {
@@ -15,10 +16,10 @@ __global__ void Begin(Input input) {
 }
 __global__ void Advance(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
-  for (std::uint32_t group = blockIdx.x*blockDim.x+threadIdx.x;
-       group < input.groups.group_count; group += gridDim.x*blockDim.x) {
-    input.group_reports[group] = AdvanceGroup(input, group);
-  }
+  __shared__ group_motion::Tile tile;
+  const auto group=blockIdx.x;
+  if (input.capture.node) group_motion::Advance<true>(input,group,tile);
+  else group_motion::Advance<false>(input,group,tile);
 }
 __global__ void Complete(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
@@ -34,8 +35,7 @@ cudaError_t LaunchMotion(const Input& input, cudaStream_t stream) {
   Begin<<<1, 1, 0, stream>>>(input);
   auto error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  const auto blocks = 1+(input.groups.group_count-1)/Threads;
-  Advance<<<blocks, Threads, 0, stream>>>(input);
+  Advance<<<input.groups.group_count, group_motion::Threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   Complete<<<1, 1, 0, stream>>>(input);

@@ -1,0 +1,198 @@
+{
+  "schema": "tlfea.cin_cooperative_motion_source.v1",
+  "baseline_commit": "2733b4ccb916db96fc4d7d51cdfa21566d6e227d",
+  "unchanged": [
+    {
+      "path": "lib_src/solvers/cin_advance/Groups.h",
+      "bytes": 2870,
+      "sha256": "16fbb5cef91be992aae4af136fb3dbc8099201dc3a109f20a75683305d8d9705"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupReport.h",
+      "bytes": 603,
+      "sha256": "14f1d5ed60f5b3d9a1893e185ddf6906cc1d82e9976371cef90fc53e170a9692"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreen.cuh",
+      "bytes": 1558,
+      "sha256": "3d926a2a8d66787dd5181d3d231b89279331c89e54e65ac8b543ef14ccf1d147"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreenValues.h",
+      "bytes": 4176,
+      "sha256": "63809336cadb7d4366f5c2a2daf4ba155f0c055e1eca49004b9fe396575618a1"
+    },
+    {
+      "path": "lib_src/solvers/NodalNodeStep.h",
+      "bytes": 3280,
+      "sha256": "4c9487d4becff2406ccba666765ec0eabc59dcc2dd7719e43e26a7335af9b09a"
+    },
+    {
+      "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
+      "bytes": 11004,
+      "sha256": "a1302bf548330c38c8e608dde7b232f8f83d3e83362f8a44cad4eff980ca7e11"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinLayout.h",
+      "bytes": 4949,
+      "sha256": "f2433c6c2500cda6d6b522cec45e65cfad732fffb3e100efbd52cff6ed6bc97e"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStartup.cpp",
+      "bytes": 13692,
+      "sha256": "11a63d8d1fa62c7f62ad269f2adac63f75bef99ac793f445d02efcc192d5a6b4"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidGroupCandidate.h",
+      "bytes": 4771,
+      "sha256": "a9e530294e1cb1fbe3ed7c82bbff0245b83ca9889fa497c8f6cf3bbb47b5d2c1"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidGroupState.h",
+      "bytes": 3247,
+      "sha256": "aa1a193980e74e0b5da4d5a96142490b1edc29290ceb5d652cae41578ddd272b"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidGroupMath.h",
+      "bytes": 6047,
+      "sha256": "2c9547ceb9dc392921613616bdee707be8f0da4595fe2ab19b87bee019b2ad94"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidGroupStepMath.h",
+      "bytes": 9190,
+      "sha256": "24ec99735f7e211e8da113ad84b33e7e525b413b0aedbdb92e684d11c6c8caba"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidFrameStep.h",
+      "bytes": 2589,
+      "sha256": "f3fdd447c2f9b1e4dcc27dfa71f34327c50a57a40191ae0a8c24698921c70fcb"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidTwoMemberStep.h",
+      "bytes": 2734,
+      "sha256": "ff1b354e5a45ded03bd9a33cca82aea4ff2a56f2f7b8bab5ce446e8cdf2d2463"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidAccelerationSink.h",
+      "bytes": 624,
+      "sha256": "b2949a3d7b7b3d6d1c73255b5fee041ed154cecd7ddbcd9f7db9f61f98915cd6"
+    },
+    {
+      "path": "lib_src/constraints/NodalRigidGroupModel.cpp",
+      "bytes": 13268,
+      "sha256": "0464371cdd7f6e2da95782a9e3fa8d7c6227c7c95ada002190d02d0ba6dead04"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/CallerTest.cu",
+      "bytes": 6209,
+      "sha256": "09b05796fefc05b86f331fdc51f22a803549f64f0b0e6ef279e36f4ef2d2ebcb"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/OwnerTest.cu",
+      "bytes": 2907,
+      "sha256": "6703086dfca043051825055f9550f1d35fec303d8c9c3587aa8054275bb1bac9"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/Frozen.cu",
+      "bytes": 10622,
+      "sha256": "fd0525b4284b0f5a32a624cc08b9947244a3f449444edb645e48652481858163"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/FrozenMotion.h",
+      "bytes": 1655,
+      "sha256": "bb78552f0c37c057ecbab7e55f6b8df881d12fbd47d287157bf37d075f2b8da1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/Fixture.h",
+      "bytes": 2720,
+      "sha256": "52dbb7923a688590fc458af54f0c3527d11e79b90ae510fe7d202597adab3c3c"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.cpp",
+      "bytes": 4871,
+      "sha256": "f50a20dd7436a2214d2aac87f43a99d5fbed610048c6b1ffa76d8be86fb9d99d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/DevicePacket.cu",
+      "bytes": 3797,
+      "sha256": "dfbf3739e5b9bb04cc68feb1ddfee8edf968ff3944fa4825b3fb359d184580c6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
+      "bytes": 2800,
+      "sha256": "612e89698416f49201c4e899a73c3677bc6029fa7260a44ce22a3b7a1faa16be"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/OwnerTest.cu",
+      "bytes": 5143,
+      "sha256": "65fff86af92001b681b45a3296e17f7015287fb50ca3b05455d60042177772fc"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/Fixture.h",
+      "bytes": 5032,
+      "sha256": "c3546958ef4d0799241cb1bc81a4616e6d6ceff3fc6fd2f4f28239c14caa4f5c"
+    },
+    {
+      "path": "lib_src/solvers/NodalRotation.h",
+      "bytes": 1035,
+      "sha256": "8fac333008b464aba896101b3c2ba29063ba766bcb7bbaf997f9aecf324b51b3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/Frozen.h",
+      "bytes": 211,
+      "sha256": "419cbf66b4dbbb9feeb2ce7f5a495a8f6896c96a3b9d9b1053f32c15351c0ef7"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/FrozenSummary.h",
+      "bytes": 2889,
+      "sha256": "5643015d27dfa6b2fcb0c9150390cfc02ecafa531e1715c3954767f4286adc7b"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/FrozenValues.h",
+      "bytes": 4204,
+      "sha256": "33a3549d9669265c1287cf1e3d9837db75fc2c5f6d096ab7d464270921ba0af0"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.h",
+      "bytes": 1449,
+      "sha256": "04d40284e691da8907490f12bae6ac5286c264fa05c5d6df2fd5929913706844"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/DevicePacket.h",
+      "bytes": 807,
+      "sha256": "dc09e15e26939bf351095ebdea0ab71f33750e16aa43d0d6b4400071f3b5d5c6"
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/Fixture.cpp",
+      "bytes": 6398,
+      "sha256": "7dd7822135b0cc78a7726e9e97ec18ede395aee92dd454c9b92f971b09095077"
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/Fixture.h",
+      "bytes": 2021,
+      "sha256": "fd25719ba91df6d3b3446bab849c575fda9e62cd861aee74d34bd7de71145bd8"
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/OwnerFixture.h",
+      "bytes": 4095,
+      "sha256": "2d441cca222d96be74c14b148006e4bc4adf5ea7ee079918df4576952ac347ad"
+    },
+    {
+      "path": "lib_utest/qualification/tied_cin_runtime/OwnerFixture.h",
+      "bytes": 3324,
+      "sha256": "99fb6d323d74ce79166359059e4a12db0f9ab7c6e5dea748553b00c088a8493b"
+    }
+  ],
+  "dispatch_registration_baseline": [
+    {
+      "path": "lib_src/solvers/cin_advance/Groups.cu",
+      "bytes": 1697,
+      "sha256": "9715410927fd53b45a4e4c5c88de1af691f65678975a4dbddca9874ae6ec0f96"
+    },
+    {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 9379,
+      "sha256": "3bd62dca788df7b01272e7b431af57e5412307bbb953d9ba54673d1368822929"
+    }
+  ]
+}
