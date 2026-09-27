@@ -66,6 +66,11 @@ TEST(QbatCompactActivityOwner, EachDeviceOperationFailureKeepsCallerOutputAndAcc
     std::vector<std::uint8_t> flags(count,19);q::BatchDiagnostics diagnostics;
     CapturePacket(count);
     ASSERT_EQ(rig.qbat.CopyAcceptedParentActivity(stamp,flags.data(),count,&diagnostics).status,q::BatchStatus::Success);
+    CaptureFullSource(count);
+    std::vector<q::BatchResult> accepted(count),after(count);
+    ASSERT_EQ(rig.qbat.CopyAcceptedResults(stamp,accepted.data(),count,&diagnostics).status,q::BatchStatus::Success);
+    ASSERT_NE(FullSource(),nullptr);
+    const auto* accepted_device=FullSource();
     r::Prepared candidate;ASSERT_TRUE(rig.Prepare(candidate,1));
     std::fill(flags.begin(),flags.end(),19);
     ASSERT_TRUE(ArmError(phase));
@@ -76,6 +81,13 @@ TEST(QbatCompactActivityOwner, EachDeviceOperationFailureKeepsCallerOutputAndAcc
     EXPECT_EQ(rig.qbat.CopyPreparedParentActivity(rig.owner,candidate.token,candidate.diagnostics.qbat,flags.data(),count).status,
         q::BatchStatus::DeviceFailure);
     ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
+    ASSERT_EQ(cudaMemcpy(after.data(),accepted_device,count*sizeof(q::BatchResult),cudaMemcpyDeviceToHost),cudaSuccess);
+    for(std::size_t parent=0;parent<count;++parent) {
+      q::Material material;
+      ASSERT_TRUE(source.catalog->Parameters(tl::fea::ShellBindingFamily::Qbat,parent,&material));
+      ASSERT_TRUE(q::batch_detail::ValidResult(after[parent],material,stamp.time,stamp.epoch));
+      EXPECT_EQ(r::ResultValues(accepted[parent]),r::ResultValues(after[parent]));
+    }
   }
 }
 } // namespace qbat_activity_test

@@ -6,7 +6,7 @@ import json
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[2]
 BASELINE_SHA256='c76f42e8439c4440f3ef7354469f695090a6bba21e3e9b094f59a5987c83b989'
-MANIFEST_SHA256='edba911a9507e34584ca45d7423bd49e1f09edae33163d863191d09be10949d5'
+MANIFEST_SHA256='67034c94637006fab481a16a20bdafec96392e3f39931fa8aab3c78c0d751e9b'
 def once(text,old,new):
     assert text.count(old)==1,(old,text.count(old))
     return text.replace(old,new)
