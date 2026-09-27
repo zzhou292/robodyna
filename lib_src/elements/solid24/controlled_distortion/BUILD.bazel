@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "stage",
+    hdrs = ["Reference.h", "Types.h", "Prepare.h", "Stage.h"],
+    deps = ["//lib_src/elements/solid24/controlled_hourglass:working_units",
+            "//lib_src/elements/solid_common/distortion:working_units", "//lib_src/materials/law42:mechanical_slots"],
+    visibility = ["//visibility:public"],
+)

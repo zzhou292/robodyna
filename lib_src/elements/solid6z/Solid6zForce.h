@@ -3,6 +3,7 @@
 #include "Solid6zForceInitialize.h"
 #include "Solid6zForceGeometry.h"
 #include "Solid6zForceResultants.h"
+#include "Solid6zForceMaterial.h"
 #include "Solid6zHourglassResponse.h"
 #include "lib_src/materials/law42/Caller.h"
 
@@ -14,17 +15,9 @@ TL_BRICK_HD inline Status CalculateForce(const Reference& reference, const Histo
   ForceTrial next;
   Status status = force_detail::Current(reference,interval,next.geometry);
   if (status != Status::Success) return status;
-  tl::material::law42::CallerInput input;
-  for (unsigned k = 0; k < 9; ++k) input.displacement_gradient[k] = next.geometry.material_displacement_gradient[k];
-  for (unsigned k = 0; k < 6; ++k) input.engineering_rate_per_s[k] = next.geometry.engineering_rate_per_s[k];
-  input.dt_s = interval.dt_s;
-  input.current_volume_m3 = next.geometry.current_volume_m3;
-  input.storage_volume_m3 = reference.geometry().volume_m3;
-  input.characteristic_length_m = next.geometry.characteristic_length_m;
-  const auto material_status=initialization ?
-      tl::material::law42::InitializeCaller(material,input,next.material) :
-      tl::material::law42::UpdateCaller(material,accepted.data().material,input,next.material);
-  if (material_status!=tl::material::law42::Status::Ok) return Status::NonfiniteResult;
+  status=force_detail::EvaluateMaterial(reference,material,next.geometry,interval.dt_s,
+      accepted.data().material,initialization,next.material);
+  if(status!=Status::Success)return status;
   if (!force_detail::MaterialForces(next.geometry,next.material,next.material_local_force_n)) return Status::NonfiniteResult;
   HistoryValues proposed = accepted.data();
   proposed.material = next.material.history;

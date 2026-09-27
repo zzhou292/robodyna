@@ -1,0 +1,24 @@
+{
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "owned_sources": [
+    {
+      "source": "engine/source/elements/thickshell/solide6c/s6chour_ctl.F90",
+      "path": "original/engine/source/elements/thickshell/solide6c/s6chour_ctl.F90",
+      "bytes": 15669,
+      "sha256": "f0497bcf90ab6bec85c96a78ebf4b18b74357bd4e3f7128adc86638a713c2f1d",
+      "git_blob_sha1": "15cddea7384f4a4606be38a5f518d4a3ce7f75ef"
+    },
+    {
+      "source": "engine/source/elements/thickshell/solide6c/s6cumu3.F",
+      "path": "original/engine/source/elements/thickshell/solide6c/s6cumu3.F",
+      "bytes": 7994,
+      "sha256": "202631f37f0405a2a0b1de5b0e7a60c810cecc5e9c365a76c124972d680f6d8f",
+      "git_blob_sha1": "e1af0acc5bb90177df8d519c72f3a86ae1c8060b"
+    }
+  ],
+  "wrapper_pins": {
+    "solid6z_force/native/NativeForce.F90": "8c3f88e9b934e176ea79c0d672bacb7dc9f149ad341721bf189d5a34fbb4090f",
+    "solid6z_force/native/NativeResultants.F90": "cbea50a7931565fccd740dc6c930911e8817f1861481dcb759b05f2c9ac1e798",
+    "solid6z_force/native/NativeInitial.F90": "f76fb5eb938c8e79799f12513ca99c374d9bf2fcc15f41d1bc24ed866e97577f"
+  }
+}

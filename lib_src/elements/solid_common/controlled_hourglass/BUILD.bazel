@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "controlled_hourglass",
+    hdrs = ["Types.h", "Modes.h", "Response.h"],
+    deps = ["//lib_src/elements/solid_common:brick_frame"],
+    visibility = ["//visibility:public"],
+)
