@@ -320,3 +320,10 @@ cc_library(
     hdrs = ["ShellGlobalLaw1Profile.h"],
     deps = ["//lib_src/math:quaternion"],
 )
+
+cc_library(
+    name = "connector_measurement",
+    hdrs = ["ConnectorMeasurement.h"],
+    deps = [":shell_batch_fields"],
+    visibility = ["//visibility:public"],
+)

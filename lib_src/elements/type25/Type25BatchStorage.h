@@ -15,6 +15,7 @@ BatchReport ConstructStartup(const BatchConfig&,const Model&,util::HostArena&,
 BatchReport BuildElements(const BatchConfig&,const Model&,Storage&,BatchDiagnostics&);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t element_count);
+void LaunchMeasurement(Storage*, const Slab* accepted, const Slab* trial, NodalPreparedView, std::size_t count);
 void LaunchFailure(NodalAssemblyView);
 BatchReport BuildStartup(const BatchConfig&,const Model&,const NodalMassBinding&,util::HostArena&,
                         const ArenaLayout&,Storage& host_header,BatchDiagnostics&);

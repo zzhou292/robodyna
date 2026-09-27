@@ -5,11 +5,11 @@ cuda_library(
     srcs = [
         "Arena.cpp", "Forecast.cpp", "Startup.cpp", "Identity.cpp", "OutputRanges.cpp",
         "mapped/Forecast.cpp", "mapped/Initialize.cu", "mapped/Assemble.cu", "mapped/Publication.cpp",
-        "Upload.cu", "Batch.cu", "Assembly.cu", "Candidate.cu", "AssembleOperation.cu",
+        "Upload.cu", "Batch.cu", "Assembly.cu", "Candidate.cu", "Measurement.cu", "AssembleOperation.cu",
         "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp",
     ],
     hdrs = [
-        "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h", "AssemblyValues.h",
+        "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h", "Measurement.h", "AssemblyValues.h",
         "OperationChecks.h", "ResultChecks.h", "mapped/State.h", "mapped/Startup.h",
     ],
     copts = [
@@ -18,6 +18,7 @@ cuda_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//lib_src/elements:connector_measurement",
         "//lib_src/elements/mapped_connector:values", "//lib_src/elements/mapped_connector:kernels",
         "//lib_src/elements/type13:type13_math", "//lib_src/elements/type13:type13_model",
         "//lib_src/assembly:type13_node_contributions", "//lib_src/assembly:nodal_node_domain",

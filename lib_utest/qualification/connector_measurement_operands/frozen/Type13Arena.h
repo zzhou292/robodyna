@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Batch.h"
-#include "../../mapped_connector/Storage.h"
-#include "../../ConnectorMeasurement.h"
 #include "../../../../lib_utils/BoundedArena.h"
 
 namespace tl::fea::type13::batch_detail {
@@ -26,24 +24,20 @@ struct Control {
   std::size_t element = SIZE_MAX, node = SIZE_MAX;
   BatchDiagnostics diagnostics;
 };
-using Measurement = connector_measurement::ParentOperands<ChannelCount>;
 struct Storage {
   DeviceModel model;
   Evaluation* slab[2]{};
   Status* candidate_status = nullptr;
-  Measurement* measurement = nullptr;
-  mapped_connector::Memory assembly;
   Control control;
 };
 static_assert(std::is_trivially_copyable_v<Storage>);
 static_assert(std::is_trivially_copyable_v<Property>);
 static_assert(std::is_trivially_copyable_v<Evaluation>);
 struct ArenaLayout {
-  util::ArenaRegion header, properties, elements, slab[2], status, measurement;
-  mapped_connector::Layout assembly;
+  util::ArenaRegion header, properties, elements, slab[2], status;
   std::size_t bytes = 0;
 };
 bool MakeLayout(std::size_t properties, std::size_t elements,
-                const BatchLimits&, ArenaLayout&, std::size_t mapped_nodes = 0) noexcept;
+                const BatchLimits&, ArenaLayout&) noexcept;
 Storage RebasedHeader(void*, const ArenaLayout&) noexcept;
 } // namespace tl::fea::type13::batch_detail
