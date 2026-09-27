@@ -82,9 +82,26 @@ inline Case Folded(double fraction=1.005) {
   auto c=Base(true);c.input.position_m[0]={.01,.015,.04*fraction};
   c.input.velocity_m_s[0]={0,0,.004};c.input.velocity_m_s[1]={0,0,-.002};return c;
 }
+inline Case CenterContact() {
+  // Frozen LCG seed431237/sample4 positive-volume coupon. This is artificial
+  // branch coverage, independently evaluated by the unchanged native oracle.
+  auto c=Base(true);
+  const b::Vec3 x[]{
+    {.0097364897533929063,.011099444872627207,-.028603094484874296},
+    {.037933813197581698,.00013028644900392239,-.013492894966458561},
+    {-.00070959335268812665,.018305501876602244,-.019822860447808979},
+    {.029047015800088075,.022045152994726855,.016136033693877682},
+    {.02918877688567342,.022365107733597577,.021367077476713788},
+    {.0091842155661382256,.022487046881284355,.025075978790742855},
+    {.030707048627220856,.045362591413032192,.041193984827960876},
+    {-.015937416943894108,.04011675133267871,.055819701827258698}};
+  for(unsigned n=0;n<8;++n){c.input.position_m[n]=x[n];c.input.velocity_m_s[n]={0,0,n%2?.02:-.02};}
+  return c;
+}
 inline std::vector<Case> Cases() {
   std::vector<Case> out;
   for(auto units:{d::UnitScale{1,1,1},d::UnitScale{.001,1000,1}}) {
+    auto center=CenterContact();center.units=units;out.push_back(center);
     auto base=Base();base.units=units;out.push_back(base);
     for(auto& v:base.input.velocity_m_s)v={1,-2,.5};out.push_back(base);
     for(bool stress:{false,true})for(double mean:{0.,.01,.1,.125}) {
