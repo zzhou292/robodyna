@@ -22,7 +22,8 @@ TL_BRICK_HD inline bool SameReference(const Reference& a,const Reference& b) noe
   if (p.engine_jhbe!=q.engine_jhbe || p.integration_points!=q.integration_points ||
       p.startup_frame!=q.startup_frame || p.rotational_inertia!=q.rotational_inertia ||
       p.ale!=q.ale || p.reference_shape!=q.reference_shape ||
-      p.reference_strain!=q.reference_strain || p.working_length!=q.working_length) return false;
+      p.reference_strain!=q.reference_strain || p.working_length!=q.working_length ||
+      p.connectivity!=q.connectivity) return false;
   for (unsigned n=0; n<8; ++n) {
     if (x.source_node_id[n]!=y.source_node_id[n]) return false;
     for (unsigned k=0; k<3; ++k)

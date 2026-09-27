@@ -9,6 +9,10 @@ using Matrix3 = tl::math::Matrix3;
 enum class Status { Success, InvalidInput, UnsupportedProfile, InvalidGeometry, NonfiniteResult };
 enum class ReferenceStrain : std::uint8_t { LocalGeometryOnly, TotalLagrangian10 };
 enum class WorkingLengthUnit : std::uint8_t { Metre, Millimetre };
+enum class ConnectivityProfile : std::uint8_t {
+  EightDistinct,
+  CollapsedTopEdges // Exact raw [A,B,C,D,E,E,F,F], retained as eight native slots.
+};
 
 // The SINIT3 startup call, after INITIA's local JCVT override. Runtime frame,
 // pressure, material and strain-formulation admission are separate contracts.
@@ -17,6 +21,7 @@ struct StartupProfile {
   int rotational_inertia = 0, ale = 0, reference_shape = 0;
   ReferenceStrain reference_strain = ReferenceStrain::LocalGeometryOnly;
   WorkingLengthUnit working_length = WorkingLengthUnit::Metre;
+  ConnectivityProfile connectivity = ConnectivityProfile::EightDistinct;
 };
 struct ReferenceInput {
   std::uint64_t source_element_id = 0, source_part_id = 0;
@@ -34,8 +39,8 @@ struct StartupGeometry {
 struct Mass {
   double source_slot_mass_kg[8]{};
   double element_mass_kg = 0;
-  // This HEPH startup accepts eight distinct nodes. An explicit six-node
-  // packet uses the separate S6ZINIT3 wedge profile; source conversion is external.
+  // Every native slot contributes independently, including explicit aliases.
+  // A repeated NID is not a six-node formulation or a unique-node mass division.
   static constexpr double isotropic_inertia_kg_m2() noexcept { return 0; }
 };
 struct ReferenceJacobian {

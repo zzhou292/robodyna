@@ -8,6 +8,8 @@
 namespace tl::fea::solid24::force_detail {
 TL_BRICK_HD inline ForceStatus CurrentKinematics(const Reference& reference,
     const PrescribedInterval& interval,ForceGeometry& g) noexcept {
+  if(!detail::ValidCurrentAliases(reference.input(),interval.position_m,interval.velocity_m_s))
+    return ForceStatus::InvalidInput;
   Vec3 world[8];
   for (unsigned n=0; n<8; ++n) world[n]=interval.position_m[reference.source_slot(n)];
   if (!brick::CyclicFrame(world,g.current.frame)) return ForceStatus::InvalidGeometry;

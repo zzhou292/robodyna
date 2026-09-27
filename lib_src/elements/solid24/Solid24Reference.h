@@ -2,6 +2,7 @@
 #pragma once
 #include "Solid24Geometry.h"
 #include "Solid24ReferenceJacobian.h"
+#include "Solid24Topology.h"
 
 namespace tl::fea::solid24 {
 TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Reference& output) noexcept {
@@ -17,18 +18,15 @@ TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Refer
     return Status::UnsupportedProfile;
   if (!input.source_element_id || !input.source_part_id || !input.source_section_id ||
       !input.source_material_id || !brick::Positive(input.density_kg_m3)) return Status::InvalidInput;
-  for (unsigned n = 0; n < 8; ++n) {
-    if (!input.source_node_id[n] || !brick::Finite(input.position_m[n])) return Status::InvalidInput;
-    for (unsigned j = 0; j < n; ++j) {
-      if (input.source_node_id[n] == input.source_node_id[j]) return Status::UnsupportedProfile;
-    }
-  }
+  unsigned unique_count=0;
+  const auto connectivity_status=detail::ValidateConnectivity(input,unique_count);
+  if(connectivity_status!=Status::Success)return connectivity_status;
   const double signed_volume = brick::SignedCenterVolume(input.position_m);
   if (!tl::math::Finite(signed_volume)) return Status::NonfiniteResult;
   if (signed_volume == 0) return Status::InvalidGeometry;
   Reference next;
   next.input_ = input;
-  next.unique_node_count_ = 8;
+  next.unique_node_count_ = static_cast<std::uint8_t>(unique_count);
   Vec3 native[8];
   for (unsigned n = 0; n < 8; ++n) {
     const unsigned source = signed_volume < 0 ? (n+4)%8 : n;
@@ -48,7 +46,7 @@ TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Refer
   if (!brick::Positive(next.geometry_.volume_m3)) return Status::InvalidGeometry;
   const Status status = detail::CharacteristicLength(next.geometry_);
   if (status != Status::Success) return status;
-  // SMASS3 selected FILL=1. All eight distinct source slots contribute.
+  // SMASS3 selected FILL=1. All eight native source slots contribute, including aliases.
   const double slot_mass = 1.0*input.density_kg_m3*next.geometry_.volume_m3*(1.0/8.0);
   if (!brick::Positive(slot_mass)) return Status::NonfiniteResult;
   for (unsigned n = 0; n < 8; ++n) next.mass_.source_slot_mass_kg[n] = slot_mass;
