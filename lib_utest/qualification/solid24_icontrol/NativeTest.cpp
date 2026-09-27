@@ -49,19 +49,21 @@ TEST(Solid24IcontrolNative, FoldedPositiveVolumeCellExercisesDistortionEnergyAnd
   const auto reference=heph_test::Reference();const auto material=heph_test::Material(reference.input().density_kg_m3);
   History history(reference.input());s::History ignored;ASSERT_EQ(s::InitializeHistory(reference,material,ignored),s::ForceStatus::Success);
   auto interval=heph_test::Interval(reference,ignored);const auto a=history.reference.reference.permutation[0],b=history.reference.reference.permutation[6];
-  bool exercised=false;
+  bool exercised=false,geometric=false;
   for(double fraction:{1.0005,1.005,1.01}) {
     interval=heph_test::Interval(reference,ignored);const auto first=reference.input().position_m[a],opposite=reference.input().position_m[b];
-    interval.position_m[a]={first.x+fraction*(opposite.x-first.x),first.y+fraction*(opposite.y-first.y),first.z+fraction*(opposite.z-first.z)};
-    interval.velocity_m_s[a]={(opposite.x-first.x)*.1,(opposite.y-first.y)*.1,(opposite.z-first.z)*.1};
+    interval.position_m[a]={first.x+.5*(opposite.x-first.x),first.y+.5*(opposite.y-first.y),first.z+fraction*(opposite.z-first.z)};
+    interval.velocity_m_s[a]={0,0,(opposite.z-first.z)*.1};
+    interval.velocity_m_s[history.reference.reference.permutation[1]]={0,0,-.05*(opposite.z-first.z)};
     const auto trial=Step(history,interval,material);Ready(trial);ASSERT_FALSE(HasFailure());
     exercised=exercised||trial.values[21]!=0.;
+    geometric=geometric||(trial.center_contacts+trial.corner_contacts)>0;
     for(unsigned axis=0;axis<3;++axis) {
       double sum=0,scale=0;for(unsigned n=0;n<8;++n){const auto f=trial.values[22+3*n+axis];sum+=f;scale+=std::abs(f);}
       EXPECT_LE(std::abs(sum),1e-11*std::max(1.,scale));
     }
   }
-  EXPECT_TRUE(exercised);
+  EXPECT_TRUE(exercised);EXPECT_TRUE(geometric);
 }
 TEST(Solid24IcontrolNative, LateNonfiniteStageRejectsOutputAndRepairs) {
   const auto reference=heph_test::Reference();const auto material=heph_test::Material(reference.input().density_kg_m3);

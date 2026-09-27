@@ -10,6 +10,7 @@ class Sources(unittest.TestCase):
             if not row.get("compile",True):continue
             raw=(source.ROOT/row["path"]).read_text();name=Path(row["source"]).name
             prepared=values[name]
+            prepared=re.sub(r"^.*CALL IC1_NATIVE_GEOMETRY_FORCE.*\n","",prepared,flags=re.M)
             if name=="shour_ctl.F90":
                 first=prepared.index("\n          call IC1_NATIVE_HOUR_WORK(")
                 end=prepared.index("\n",prepared.index("hy4(i)*hgy4(i) )",first))+1

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 extern "C" void ic1_native_slots(const double*,double*);
+extern "C" void ic1_native_geometry_counts(int*,int*);
 extern "C" void ic1_force_native(const double*,const double*,const double*,const double*,const double*,
   const double*,const double*,const double*,double*,std::int64_t*,int*);
 namespace solid24_icontrol_test {
@@ -19,7 +20,7 @@ struct History {
 struct Trial {
   std::array<double,93> values{};
   std::int64_t stages=0;
-  int status=-1;
+  int status=-1,center_contacts=0,corner_contacts=0;
 };
 inline Trial Step(const History& history,const s::PrescribedInterval& interval,const s::Material& material) {
   std::array<double,24> x{},v{};
@@ -33,6 +34,7 @@ inline Trial Step(const History& history,const s::PrescribedInterval& interval,c
   const double volume=history.reference.reference.values[33];Trial result;result.values.fill(-9876.25);
   ic1_force_native(p,history.reference.initial.data(),x.data(),v.data(),jac.data(),&volume,
     history.values.data(),time,result.values.data(),&result.stages,&result.status);
+  ic1_native_geometry_counts(&result.center_contacts,&result.corner_contacts);
   if(result.status==0) {
     const auto raw=result.values;
     for(unsigned n=0;n<8;++n) {

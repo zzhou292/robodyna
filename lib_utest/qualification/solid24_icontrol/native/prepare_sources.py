@@ -44,6 +44,14 @@ def generated(root=ROOT):
             changed=converted[:end]+hook+converted[end:]
             assert changed.replace(hook,"",1)==converted
             converted=changed
+        if name in ("sfor_n2s4.F","sfor_ns2s4.F90"):
+            match=re.search(r"^.*fn\(i\)\s*=\s*\(fac\+one\)\*stif0\(i\)\*pene\(i\).*$",converted,re.M|re.I)
+            assert match,name
+            category=1 if name=="sfor_n2s4.F" else 2
+            hook="\n      CALL IC1_NATIVE_GEOMETRY_FORCE("+str(category)+",I,FN(I))"
+            changed=converted[:match.end()]+hook+converted[match.end():]
+            assert changed.replace(hook,"",1)==converted
+            converted=changed
         result[name]=converted
     sources={row.get("source",""):(root/row["path"]).read_text() for row in meta["owned_native_sources"]+meta["reused_sources"]}
     for name,(source,first,last) in meta["statement_slices"].items():
