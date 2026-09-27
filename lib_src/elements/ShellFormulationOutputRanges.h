@@ -2,6 +2,7 @@
 #pragma once
 #include "ShellFormulationScope.h"
 #include "ShellCatalogCurveView.h"
+#include "ShellSourceRangeFilter.h"
 #include "../assembly/NodalMassBinding.h"
 #include "../solvers/NodalTrialIdentity.h"
 
@@ -11,17 +12,30 @@ inline bool BindingOutputDisjoint(const ShellBatchBinding& binding,const void* o
   using trial_identity::Disjoint;
   if(!Disjoint(output,bytes,&binding,sizeof(binding)) ||
       !Disjoint(output,bytes,binding.nodes().data(),binding.node_count()*sizeof(ShellBindingNode))) return false;
-  for(std::size_t parent=0;parent<binding.qbat_count();++parent) {
-    if(!Disjoint(output,bytes,&binding.qbat_reference(parent),sizeof(qbat::Reference))||
-        !Disjoint(output,bytes,binding.qbat_nodes(parent).data(),sizeof(std::array<std::size_t,4>))) return false;
+  // Each family owns one contiguous Parent array of reference/node subobjects.
+  if (binding.qbat_count() && !shell_source_range_detail::DisjointEnvelope(output,bytes,
+      &binding.qbat_reference(0),sizeof(qbat::Reference),
+      binding.qbat_nodes(binding.qbat_count()-1).data(),sizeof(std::array<std::size_t,4>))) {
+    for(std::size_t parent=0;parent<binding.qbat_count();++parent) {
+      if(!Disjoint(output,bytes,&binding.qbat_reference(parent),sizeof(qbat::Reference))||
+          !Disjoint(output,bytes,binding.qbat_nodes(parent).data(),sizeof(std::array<std::size_t,4>))) return false;
+    }
   }
-  for(std::size_t parent=0;parent<binding.qeph_count();++parent) {
-    if(!Disjoint(output,bytes,&binding.qeph_reference(parent),sizeof(qeph::ReferenceData))||
-        !Disjoint(output,bytes,binding.qeph_nodes(parent).data(),sizeof(std::array<std::size_t,4>))) return false;
+  if (binding.qeph_count() && !shell_source_range_detail::DisjointEnvelope(output,bytes,
+      &binding.qeph_reference(0),sizeof(qeph::ReferenceData),
+      binding.qeph_nodes(binding.qeph_count()-1).data(),sizeof(std::array<std::size_t,4>))) {
+    for(std::size_t parent=0;parent<binding.qeph_count();++parent) {
+      if(!Disjoint(output,bytes,&binding.qeph_reference(parent),sizeof(qeph::ReferenceData))||
+          !Disjoint(output,bytes,binding.qeph_nodes(parent).data(),sizeof(std::array<std::size_t,4>))) return false;
+    }
   }
-  for(std::size_t parent=0;parent<binding.t3_count();++parent) {
-    if(!Disjoint(output,bytes,&binding.t3_reference(parent),sizeof(t3::ReferenceData))||
-        !Disjoint(output,bytes,binding.t3_nodes(parent).data(),sizeof(std::array<std::size_t,3>))) return false;
+  if (binding.t3_count() && !shell_source_range_detail::DisjointEnvelope(output,bytes,
+      &binding.t3_reference(0),sizeof(t3::ReferenceData),
+      binding.t3_nodes(binding.t3_count()-1).data(),sizeof(std::array<std::size_t,3>))) {
+    for(std::size_t parent=0;parent<binding.t3_count();++parent) {
+      if(!Disjoint(output,bytes,&binding.t3_reference(parent),sizeof(t3::ReferenceData))||
+          !Disjoint(output,bytes,binding.t3_nodes(parent).data(),sizeof(std::array<std::size_t,3>))) return false;
+    }
   }
   const auto& inventory=binding.inventory().words();
   if(!Disjoint(output,bytes,inventory.data(),inventory.size()*sizeof(std::uint64_t))) return false;
@@ -39,9 +53,19 @@ inline bool OutputDisjoint(const ShellFormulationScope& scope,const void* output
   if(!Disjoint(output,bytes,&catalog,sizeof(catalog))||
       (curves.count&&(!Disjoint(output,bytes,curves.x,curves.count*sizeof(double))||
                      !Disjoint(output,bytes,curves.y,curves.count*sizeof(double))))) return false;
-  for(std::size_t parent=0;parent<catalog.parent_count();++parent) {
-    if(!Disjoint(output,bytes,catalog.parent(parent),sizeof(ShellPlasticityParentInput))||
-        !Disjoint(output,bytes,scope.failure->parent(parent),sizeof(ShellFailureParentInput))) return false;
+  // Catalog declarations are strided within owned Parent records; failure rows
+  // are contiguous. Keep the exact interleaved scan if either envelope overlaps.
+  if (catalog.parent_count() &&
+      !(shell_source_range_detail::DisjointEnvelope(output,bytes,
+          catalog.parent(0),sizeof(ShellPlasticityParentInput),
+          catalog.parent(catalog.parent_count()-1),sizeof(ShellPlasticityParentInput)) &&
+        shell_source_range_detail::DisjointEnvelope(output,bytes,
+          scope.failure->parent(0),sizeof(ShellFailureParentInput),
+          scope.failure->parent(catalog.parent_count()-1),sizeof(ShellFailureParentInput)))) {
+    for(std::size_t parent=0;parent<catalog.parent_count();++parent) {
+      if(!Disjoint(output,bytes,catalog.parent(parent),sizeof(ShellPlasticityParentInput))||
+          !Disjoint(output,bytes,scope.failure->parent(parent),sizeof(ShellFailureParentInput))) return false;
+    }
   }
   return !scope.mass||Disjoint(output,bytes,scope.mass->nodes().data(),scope.mass->node_count()*sizeof(NodalMassNode));
 }

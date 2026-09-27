@@ -133,7 +133,7 @@ cc_library(
 
 cc_library(
     name = "shell_formulation_output_ranges",
-    hdrs = ["ShellFormulationOutputRanges.h"],
+    hdrs = ["ShellFormulationOutputRanges.h", "ShellSourceRangeFilter.h"],
     deps = [":shell_formulation_scope", ":shell_batch_plasticity_binding",
             "//lib_src/solvers:nodal_trial_identity"],
 )

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ShellExecutionOutputRanges.h"
 #include "ShellCatalogCurveView.h"
+#include "ShellSourceRangeFilter.h"
 #include "../solvers/NodalTrialIdentity.h"
 
 namespace tl::fea::shell_execution_detail {
@@ -36,8 +37,12 @@ bool OutputDisjoint(const ShellExecutionBinding& execution,
       !Range(output,bytes,curves.y,curves.count) ||
       !Range(output,bytes,inventory.data(),inventory.size())) return false;
   // The failure catalog can own equivalent, independent declaration backing.
-  for (std::size_t row=0;row<catalog.parent_count();++row) {
-    if (!Range(output,bytes,catalog.parent(row))) return false;
+  if (catalog.parent_count() && !shell_source_range_detail::DisjointEnvelope(output,bytes,
+      catalog.parent(0),sizeof(ShellPlasticityParentInput),
+      catalog.parent(catalog.parent_count()-1),sizeof(ShellPlasticityParentInput))) {
+    for (std::size_t row=0;row<catalog.parent_count();++row) {
+      if (!Range(output,bytes,catalog.parent(row))) return false;
+    }
   }
   const auto& binding=*execution.rigid();
   return OutputDisjoint(binding,output,bytes);
