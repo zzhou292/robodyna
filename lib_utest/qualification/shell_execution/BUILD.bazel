@@ -25,7 +25,8 @@ cc_test(
 cc_library(
     name = "fixture",
     testonly = True,
-    visibility = ["//lib_utest/qualification/qt_mapped:__pkg__",
+    visibility = ["//lib_utest/qualification/shell_output_ranges:__pkg__",
+                  "//lib_utest/qualification/qt_mapped:__pkg__",
                   "//lib_utest/qualification/contact_facets:__pkg__",
                   "//lib_utest/qualification/self_contact_surface:__pkg__"],
     hdrs = ["Fixture.h"],

@@ -1,0 +1,23 @@
+{
+  "commit": "341d60f090f2a1c7a1282fdd5d043b2387f98580",
+  "files": [
+    {
+      "path": "lib_src/elements/ShellFormulationOutputRanges.h",
+      "fixture": "frozen/ShellFormulationOutputRanges.h",
+      "bytes": 2971,
+      "sha256": "06b9734dc221af1c76df163f901e8bea5784311f8aa1e02171bddd1cfe840675"
+    },
+    {
+      "path": "lib_src/elements/ShellExecutionOutputRanges.h",
+      "fixture": "frozen/ShellExecutionOutputRanges.h",
+      "bytes": 523,
+      "sha256": "a7dd7979036699bcf87f8d28dbaa2a95e714d5ed061c8ed6dc29106084907426"
+    },
+    {
+      "path": "lib_src/elements/ShellExecutionOutputRanges.cpp",
+      "fixture": "frozen/ShellExecutionOutputRanges.cpp",
+      "bytes": 3279,
+      "sha256": "4d20500c51b1158c69914d59b74a63f40dfe8a6e7b46ef16bad72a6f9eaf71f9"
+    }
+  ]
+}

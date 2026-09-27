@@ -1,0 +1,91 @@
+{
+  "baseline": "341d60f090f2a1c7a1282fdd5d043b2387f98580",
+  "production": "fee85ced407671398b695718f4b12503abe9df6f",
+  "unchanged": [
+    {
+      "path": "lib_utils/BoundedStartupArray.h",
+      "bytes": 2054,
+      "sha256": "531345b3e7b0eddb7c90931ea1dfaab62c6ec8a03159cf9a4943d615063d325d"
+    },
+    {
+      "path": "lib_src/solvers/NodalTrialIdentity.h",
+      "bytes": 3892,
+      "sha256": "de39cb4f1a0ec6f7a75b026c7917602618a82010cdd4ffa9247801a8b3af4aa3"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchBinding.h",
+      "bytes": 11696,
+      "sha256": "18dc95c04f2c0071155ddd0f4a41fec78eb283de9e7db083ee7eafea46f7e422"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchBinding.cpp",
+      "bytes": 6385,
+      "sha256": "fc729a883510b3db856d4981170d020872a9a97a16bd75b90e619e8914196df7"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchBindingBuild.cpp",
+      "bytes": 8769,
+      "sha256": "9ed844de0ac29ba13003b9035d5356571d76e240753cd4e878fe03587832abcd"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchBindingQbat.cpp",
+      "bytes": 1505,
+      "sha256": "d546ccad750f82cfb8c36ee7c4c026a65fd57a863f1b9f205383db0746dccad3"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchPlasticityBinding.h",
+      "bytes": 10679,
+      "sha256": "d85dd344aaa35f9c50e0fe478eee44547cc30ac7c30319e09c96a30012042b4a"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchPlasticityBinding.cpp",
+      "bytes": 4596,
+      "sha256": "aae9a430e705360836f1367e60930b4112debf3076f941efc43fee63524b1f0d"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFailureBinding.h",
+      "bytes": 2038,
+      "sha256": "44cea1d85e15ebc92d056f561e7a927f9823d4343897f8d4e558740493ad7aea"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureBinding.cpp",
+      "bytes": 9095,
+      "sha256": "2a0fed0ee7f0b2ce4f4a1440defd9931997f38145549d6b780f8f4ce199aa56d"
+    },
+    {
+      "path": "lib_src/elements/ShellCatalogCurveView.h",
+      "bytes": 1463,
+      "sha256": "e25891a944f6094e49969f06f35b45a1bb471d743e22ee8dc70f9ee96191a120"
+    },
+    {
+      "path": "lib_src/assembly/ShellExecutionBinding.h",
+      "bytes": 3172,
+      "sha256": "f6fbdd619b07aa6e5a92f27c4e6f286c1f970484c7ffb547a9f1bae2efdd88fe"
+    },
+    {
+      "path": "lib_src/elements/ShellHostBindingLimits.h",
+      "bytes": 1299,
+      "sha256": "13fd8559f587b54e706cf245c4aa153c0aa344b5dcb2000ce9147362d1ce08bb"
+    },
+    {
+      "path": "lib_src/elements/ShellPlasticityCatalogLimits.h",
+      "bytes": 1402,
+      "sha256": "7f2f56fb3763abe8bf9e27f7ed080be27d7cea2b84dcff5a84fe3856ddc412ab"
+    },
+    {
+      "path": "lib_src/elements/ShellPhysicalOutputRanges.cpp",
+      "bytes": 4718,
+      "sha256": "eebfa798a78eca92988fa996dc5e1931c67960b0bb637006309323769181ba25"
+    },
+    {
+      "path": "lib_src/elements/ShellPhysicalOwnerLayout.cpp",
+      "bytes": 662,
+      "sha256": "eb1b09730e2b20d208ab6bf2d7b402788c053fc2e20f5931b86684dad2e2ec4d"
+    }
+  ],
+  "helper": {
+    "path": "lib_src/elements/ShellSourceRangeFilter.h",
+    "bytes": 1231,
+    "sha256": "9e079dde4d9d5f5c0f5e96ca988505075db1095c43c0167a658943224fc83a2f"
+  }
+}

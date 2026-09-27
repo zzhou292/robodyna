@@ -4,7 +4,8 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_library(
     name = "fixture",
     testonly = True,
-    visibility = ["//lib_utest/qualification/physical_mesh_wall:__pkg__",
+    visibility = ["//lib_utest/qualification/shell_output_ranges:__pkg__",
+                  "//lib_utest/qualification/physical_mesh_wall:__pkg__",
                   "//lib_utest/qualification/qt_mapped:__pkg__", "//lib_utest:__pkg__", "//lib_utest/qualification/qbat_catalog:__pkg__",
                   "//lib_utest/qualification/qbat_resident:__pkg__",
                   "//lib_utest/qualification/nodal_coefficients:__pkg__",
