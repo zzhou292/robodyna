@@ -3,6 +3,12 @@
 #include "TestSupport.h"
 #include "lib_src/elements/solid24/controlled_hourglass/UnitResponse.h"
 namespace h24_test {
+namespace mm_wire {
+// Independent dimensional declarations; match the declared division contract
+// so the native routine receives the same binary64 operands as production.
+inline constexpr double length=.001,mass=1000,area=length*length,volume=area*length;
+inline constexpr double force=mass*length,pressure=force/area,density=mass/volume;
+}
 inline Case MillimetreCase(s::ReferenceInput input=solid24_test::Brick()) {
   input.profile.working_length=s::WorkingLengthUnit::Millimetre;return Base(input);
 }
@@ -14,20 +20,20 @@ inline c::WorkingReference WorkingReference(const Case& x) {
 // Independent wire conversion is dimension-labelled and does not call the
 // production unit adapter. Complete Fortran routines run in mm/Mg/s values.
 inline native::History MillimetreNativeHistory(const Case& x) {
-  auto source=x.reference.input();source.density_kg_m3*=1e-12;
-  for(auto& p:source.position_m){p.x*=1000;p.y*=1000;p.z*=1000;}
+  auto source=x.reference.input();source.density_kg_m3/=mm_wire::density;
+  for(auto& p:source.position_m){p.x/=mm_wire::length;p.y/=mm_wire::length;p.z/=mm_wire::length;}
   native::History h(source);
-  for(unsigned k=0;k<6;++k)h.values[k]=x.accepted.material.stress_pa[k]*1e-6;
-  h.values[6]=x.accepted.material.density_kg_m3*1e-12;
-  h.values[7]=x.accepted.material.internal_energy_density_j_m3*1e-6;h.values[8]=x.accepted.material.bulk_pressure_pa*1e-6;
+  for(unsigned k=0;k<6;++k)h.values[k]=x.accepted.material.stress_pa[k]/mm_wire::pressure;
+  h.values[6]=x.accepted.material.density_kg_m3/mm_wire::density;
+  h.values[7]=x.accepted.material.internal_energy_density_j_m3/mm_wire::pressure;h.values[8]=x.accepted.material.bulk_pressure_pa/mm_wire::pressure;
   for(unsigned k=0;k<3;++k)for(unsigned j=0;j<4;++j)h.values[9+4*k+j]=x.accepted.controlled_hourglass.force_n[k][j];
   return h;
 }
 struct MillimetreNativeTrial {NativeTrial physical;std::array<double,22> carried{};std::array<double,63> raw_work{};};
 inline MillimetreNativeTrial MillimetreNative(const native::History& history,const Case& x) {
-  auto interval=x.interval;for(unsigned n=0;n<8;++n){auto& p=interval.position_m[n];p.x*=1000;p.y*=1000;p.z*=1000;
-    auto& v=interval.velocity_m_s[n];v.x*=1000;v.y*=1000;v.z*=1000;}
-  auto material=x.material;material.mu_pa*=1e-6;material.bulk_pa*=1e-6;material.density_kg_m3*=1e-12;material.tension_cutoff_pa*=1e-6;
+  auto interval=x.interval;for(unsigned n=0;n<8;++n){auto& p=interval.position_m[n];p.x/=mm_wire::length;p.y/=mm_wire::length;p.z/=mm_wire::length;
+    auto& v=interval.velocity_m_s[n];v.x/=mm_wire::length;v.y/=mm_wire::length;v.z/=mm_wire::length;}
+  auto material=x.material;material.mu_pa/=mm_wire::pressure;material.bulk_pa/=mm_wire::pressure;material.density_kg_m3/=mm_wire::density;material.tension_cutoff_pa/=mm_wire::pressure;
   MillimetreNativeTrial r;auto& p=r.physical;p.full=native::Step(history,interval,material);
   h24_adapter_observations(p.snapshot.data(),p.calls.data(),&p.valid);
   auto& v=p.full.values;std::copy_n(v.begin(),22,r.carried.begin());
