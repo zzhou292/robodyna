@@ -8,6 +8,8 @@ TEST(SolidControlDeclarations, DirectMembershipDoesNotRequireSelfContactOrResolv
     const auto direct=fixture.Read();
     ASSERT_EQ(direct.parts.size(),1u);
     EXPECT_EQ(direct.parts[0].part_id,91u);
+    EXPECT_EQ(direct.parts[0].section_id,401u);
+    EXPECT_EQ(direct.parts[0].material_id,701u);
     EXPECT_EQ(direct.parts[0].original_solids,1u);
     // No SINGLE_SURFACE card exists; SOFT1 remains the legacy contact caller's preflight.
     EXPECT_EQ(direct.original_solids,1u);

@@ -190,7 +190,7 @@ TEST(CorrectedNodalSourceActual, SharedControlAuthorityRetainsBackingAndChecksEx
     EXPECT_NO_THROW(control::DirectSource::Prepare(canonical,Members().Input(),direct_limits));
     --direct_limits.retained_bytes;
     EXPECT_THROW(control::DirectSource::Prepare(canonical,Members().Input(),direct_limits),std::exception);
-    const auto clone=output::full_shell::source::CanonicalSource::Read(canonical.data().inputs,canonical.data().limits);
+    const auto clone=output::full_shell::source::CanonicalSource::ReadWithMemberBytes(canonical.data().inputs,physical::Inputs().member,canonical.data().limits);
     ASSERT_NE(&clone.data(),&canonical.data());
     const auto clone_import=modelio::native_spring_ids::ImportContext::Prepare(clone,Members().Input());
     const auto cloned=control::EffectiveSource::Prepare(direct,clone_import,Members().Input());

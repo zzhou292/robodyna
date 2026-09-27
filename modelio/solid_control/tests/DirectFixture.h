@@ -8,7 +8,7 @@ struct Fixture {
     native_spring_ids::test::Fixture arrays;
     std::vector<std::pair<std::string,std::string>> storage;
     explicit Fixture(bool nested = false, bool bad_option = false) {
-        arrays.canonical.parts = {{19,401,702,0,false},{91,401,701,0,false}};
+        arrays.canonical.parts = {{19,702,401,0,false},{91,701,401,0,false}};
         const std::uint64_t solids[]{501,91,1,2,3,4,5,6,7,8,502,19,1,2,3,4,5,6,7,8};
         arrays.Add<std::uint64_t>("solids_records",solids,20,10);
         FileBuilder combine("combine.key"), auxiliary("set-yaris-coarse-v1l.key");
