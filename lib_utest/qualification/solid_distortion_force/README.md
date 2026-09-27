@@ -3,6 +3,8 @@
 Complete element-local S8FOR_DISTOR response, source-isolated from all active
 profiles. Small headers retain native damping, face classification, projection,
 penalty, center/corner order, force scatter, STI and cumulative EINT_DISTOR.
+Family callers own Jacobian/volume admission; the raw force leaf adds no extra
+center-volume rule and retains native degenerate-face behavior.
 Direct signed work is accumulated separately, so a large carried energy cannot
 hide a nonzero increment. No floating-point force atomics or global contact path.
 

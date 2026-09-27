@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "lib_src/elements/solid_common/distortion/UnitResponse.h"
+#include "RawProbe.h"
 #include <gtest/gtest.h>
 #include <array>
 #include <cmath>

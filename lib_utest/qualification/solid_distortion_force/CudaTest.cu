@@ -50,6 +50,15 @@ TEST_F(DistortionForceCuda, LoadingUnloadingKeepsNativeCumulativeAndSeparateWork
     c.input.distortion_energy_j=rows[0].result.distortion_energy_j;
   }
 }
+TEST_F(DistortionForceCuda, DegenerateLeafMatchesNativeWithoutExtraVolumeGuard) {
+  std::vector<Packet> rows;
+  for(auto units:{d::UnitScale{1,1,1},d::UnitScale{.001,1000,1}}) {
+    auto c=Folded();c.units=units;auto values=Prepare(c);
+    for(auto& point:values.input.position)point={};rows.push_back({values,{},Batch(values)?1:0});
+  }
+  Upload(rows);ASSERT_FALSE(HasFailure());Run(rows);ASSERT_FALSE(HasFailure());
+  for(const auto& row:rows){ASSERT_EQ(row.status,d::Status::Success);Compare(row.result,NativePrepared(row.values));}
+}
 TEST_F(DistortionForceCuda, MixedFailuresPreserveOutputsAndRepair) {
   const auto good=Prepare(Folded());const auto sentinel=Check(Folded());std::vector<Packet> rows(4);
   for(auto& row:rows)row={good,sentinel,Batch(good)?1:0};
