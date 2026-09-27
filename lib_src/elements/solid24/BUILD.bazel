@@ -13,6 +13,8 @@ cc_library(
         "Solid24ForceDerivatives.h",
         "Solid24ForceHistory.h",
         "Solid24ForceKinematics.h",
+        "Solid24ForceMaterial.h",
+        "Solid24ForceResultants.h",
         "Solid24ForceTypes.h",
         "Solid24Stabilization.h",
     ],
