@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OwnerFixture.h"
 namespace extended_resident_test {
-OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale units,bool collapsed):controlled(controls) {
+OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale units,bool collapsed,bool packet_pair):controlled(controls) {
   auto& f=Mechanics();
   s::Input18Law44 rear;
   auto source=f.source.a;
@@ -45,6 +45,13 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     h.source_node_id[7]=h.source_node_id[6];h.position_m[7]=h.position_m[6];}
     EXPECT_EQ(fe::solid24::InitializeReference(h,legacy.input24.reference),fe::solid24::Status::Success);
   }
+  s::Input24 pair[2]{legacy.input24,legacy.input24};
+  if(packet_pair){
+    auto h=f.source.b;h.source_element_id=19102;
+    h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
+    EXPECT_EQ(fe::solid24::InitializeReference(h,pair[1].reference),fe::solid24::Status::Success);
+    input.solid24={pair,2};
+  }
   std::vector<s::control::SourceParent> rows;
   std::vector<s::control::NativePacket> packets;
   std::vector<std::uint64_t> packet_members;
@@ -59,6 +66,11 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     // Deliberately different packet and family orders, including all IC0 rows.
     add(foam.reference,s::Family::Solid18Law90,1);
     add(legacy.input24.reference,s::Family::Solid24,1);
+    if(packet_pair){
+      const auto& a=pair[1].reference.input();
+      rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,1});
+      ++packets.back().member_count;packet_members.push_back(a.source_element_id);++partition.member_count;
+    }
     add(legacy.input18.reference,s::Family::Solid18,0);
     add(rear.reference,s::Family::Solid18Law44,0);
     add(legacy.input6z.reference,s::Family::Solid6z,0);

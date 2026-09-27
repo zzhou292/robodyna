@@ -61,6 +61,9 @@ class BatchQualificationPeer {
     const auto index=batch.impl_->model.solid6z()[0].material_index;
     return &batch.impl_->device_header.material42[index].density_kg_m3;
   }
+  // Qualification-only prescribed packet launch; never grants publication authority.
+  static batch_detail::Storage* DeviceForPacketProbe(Batch& batch){return batch.impl_->device;}
+  static const batch_detail::Storage& HeaderForPacketProbe(Batch& batch){return batch.impl_->device_header;}
   static BatchReport ReadConstructed(Batch& batch,ResultBuffers output,BatchDiagnostics& diagnostics) {
     // Qualified constructor values only: this does not attach an owner or label
     // an unclaimed source fixture as an accepted physical run.
