@@ -100,12 +100,10 @@ SetupReport FailureHostStorage::CheckActivitySources(unsigned slab,std::size_t c
   if (!device_ || slab > 1 || count != count_) {
     return {SetupStatus::InvalidInput, "Invalid failure readback shape"};
   }
-  // Immutable family maps contain every prefix index. parent() returns null
-  // only for a missing binding/family or an index beyond that family's extent;
-  // the original loop did not inspect policy or numerical history values.
-  // Keep the empty prefix successful without probing an absent source.
-  if (count && !binding_.parent(family_,count-1)) {
-    return {SetupStatus::InvalidInput, "Incomplete failure readback source"};
+  for (std::size_t e = 0; e < count; ++e) {
+    if (!binding_.parent(family_, e)) {
+      return {SetupStatus::InvalidInput, "Incomplete failure readback source"};
+    }
   }
   return {SetupStatus::Success, "OK"};
 }
