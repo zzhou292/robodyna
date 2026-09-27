@@ -15,7 +15,7 @@ void VehiclePhysicalStartup::Storage::InspectSolids(InitialInspection& out) {
         detail::RequireSuccess(solids.CopyAcceptedResultsWithControls(out.stamp,
             {a.data(),a.size(),b.data(),b.size(),c.data(),c.size(),rear.data(),rear.size(),foam.data(),foam.size()},
             &diagnostics));
-        for(const auto& parent:model.control_selection().parents()) {
+        for(const auto& parent:model.control_selection()->parents()) {
             const auto expected=parent.source.icontrol?s::ResultProfile::NativeControlled:s::ResultProfile::Legacy;
             if(parent.family==s::Family::Solid24)
                 output::Require(b.at(parent.family_index).history.profile()==expected,"HEPH readback control profile differs from source");

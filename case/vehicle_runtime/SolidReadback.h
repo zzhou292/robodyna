@@ -3,7 +3,9 @@
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_runtime::detail {
 inline bool HasSourceSolidControls(const tl::fea::solids::Model& model) noexcept {
-    return model.control_selection().profile()==tl::fea::solids::control::Profile::SourceDeclared;
+    const auto* selection=model.control_selection();
+    return selection && selection->profile()==tl::fea::solids::control::Profile::SourceDeclared &&
+        selection->controlled_count()!=0;
 }
 inline std::size_t SolidReadbackBytes(const tl::fea::solids::Model& model) noexcept {
     namespace s=tl::fea::solids;const bool controlled=HasSourceSolidControls(model);

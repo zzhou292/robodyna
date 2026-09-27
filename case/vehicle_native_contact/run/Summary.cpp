@@ -1,4 +1,5 @@
 #include "State.h"
+#include "case/vehicle_runtime/SolidReadback.h"
 #include "case/vehicle_run/SampledShellPlasticity.h"
 #include "case/vehicle_run/MechanicsDocument.h"
 #include "case/vehicle_run/StageTimingDocument.h"
@@ -12,7 +13,9 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
     Document doc;
     doc.SetObject();
     String(doc, "schema", "robo_dyna.native_vehicle_contact_run.v1");
-    String(doc, "physical_profile", "selected_vehicle_supports_v5_with_declared_finite_mesh_wall");
+    const bool controlled=vehicle_runtime::detail::HasSourceSolidControls(source.owner_source().execution_source().mechanical().solids());
+    String(doc, "physical_profile", controlled?"native_v6_raw8_heph_explicit_cin28_with_declared_finite_mesh_wall":
+        "selected_vehicle_supports_v5_with_declared_finite_mesh_wall");
     String(doc, "contact_profile", "source_type25_self_and_all_retained_nodes_to_fixed_mesh");
     String(doc, "initial_state", "source_produced_starter_history_and_final_type2_removals");
     Boolean(doc, "visualization_only_not_restart", true);

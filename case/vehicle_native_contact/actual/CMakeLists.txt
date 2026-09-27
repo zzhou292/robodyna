@@ -7,12 +7,13 @@ find_package(CUDAToolkit REQUIRED)
 set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Explicit qualified General TYPE25 source")
 set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
 include("${CMAKE_CURRENT_LIST_DIR}/../Run.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../source/Sources.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/controls/Controls.cmake")
 get_filename_component(APP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
-add_executable(native_vehicle_contact_actual ActualTest.cpp RunActualTest.cpp Report.cpp
+add_executable(native_vehicle_contact_actual ActualTest.cpp RunActualTest.cpp Report.cpp SourceSelection.cpp
   "${APP_ROOT}/case/vehicle_startup/physical_model/tests/supports/Source.cpp")
 target_link_libraries(native_vehicle_contact_actual PRIVATE robo_dyna_native_vehicle_run
-  robo_dyna_native_preview_controls GTest::gtest_main)
+  robo_dyna_native_preview_controls robo_dyna_native_v6_sources GTest::gtest_main)
 target_compile_options(native_vehicle_contact_actual PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(native_vehicle_case_fields "${CMAKE_CURRENT_LIST_DIR}/../tests/FieldPackingTest.cpp")
 target_link_libraries(native_vehicle_case_fields PRIVATE robo_dyna_native_vehicle_field_packing GTest::gtest_main)

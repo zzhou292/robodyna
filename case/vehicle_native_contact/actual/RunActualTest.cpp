@@ -2,7 +2,8 @@
 #include "PreviewResources.h"
 #include "controls/PreviewControls.h"
 #include "../Run.h"
-#include "../tests/ActualSources.h"
+#include "SourceSelection.h"
+#include "TimingReport.h"
 #include "output/physical_run/ViewerInput.h"
 #include <gtest/gtest.h>
 #include <cmath>
@@ -33,6 +34,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
             output::Boolean(doc, "stage_timing_requested", preview_controls.stage_timing);
         }
         auto config = PreviewResources();
+        SourceSelection selection(config);
         if (preview) config.dynamics.timing.enabled = preview_controls.stage_timing;
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
@@ -41,6 +43,10 @@ void RunAcceptedQualification(bool execute, bool preview) {
         run_config.identity.run = UINT64_C(0x4e41545635434152);
         run_config.identity.topology = UINT64_C(0x4e4154563557414c);
         run_config.verify_initial_retry = !preview;
+        if(selection.native_v6()){
+            run_config.identity.run=UINT64_C(0x4e41545636434152);
+            run_config.identity.topology=UINT64_C(0x4e4154563657414c);
+        }
         if (preview) {
             const double samples = EnvironmentReal("ROBO_NATIVE_VEHICLE_SAMPLES");
             output::Require(samples >= 2 && samples <= 1000 && std::floor(samples) == samples,
@@ -50,11 +56,17 @@ void RunAcceptedQualification(bool execute, bool preview) {
             // archive forecast is inspected before the owning launch.
             run_config.archive_bytes = records::FullRunByteCap;
         }
-        const auto input = ActualSources();
+        const auto input = selection.Prepare();
+        const auto extras=selection.extra_retained_bytes();
+        output::Require(extras<=GuardBytes-ExportBytes,"Selected source extras exceed qualification guard");
+        const auto execution_host_cap=GuardBytes-ExportBytes-extras;
+        output::Integer(doc,"source_extra_retained_bytes",extras);
+        output::String(doc,"selected_source_profile",selection.native_v6()?"native_v6_raw8_heph_explicit_cin28":"vehicle_supports_v5");
+        output::Number(doc,"fixed_dt_s",config.dynamics.startup.reserved_step_s);
         output::Number(doc, "source_construction_s", Seconds(begin));
         Sources(doc, input);
         const auto early = VehicleContactStartup::ForecastPreparation(input.owner, input.self, input.wall, input.controls, config);
-        output::Require(early.host_preparation_ceiling <= GuardBytes - ExportBytes,
+        output::Require(early.host_preparation_ceiling <= execution_host_cap,
                         "Host preparation exceeds the unchanged 18GiB qualification guard");
         const auto preparation_start = Clock::now();
         const auto source = VehicleContactStartup::Prepare(input.owner, input.self, input.wall, input.controls, config);
@@ -87,7 +99,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
         output::Integer(doc, "archive_forecast_bytes", f.archive.archive.archive.forecast_bytes);
         output::Integer(doc, "archive_cap_bytes", run_config.archive_bytes);
         output::Boolean(doc, "run_fits_runtime_limits", f.fits_runtime_limits);
-        output::Require(f.complete_peak_host_bytes <= GuardBytes - ExportBytes,
+        output::Require(f.complete_peak_host_bytes <= execution_host_cap,
                         "Complete native run/output exceeds the unchanged 18GiB qualification guard");
         // Execute destroys the owner/capture/writer before Replay::Open. The
         // immutable case/mapping remain, and their published bounds are charged.
@@ -95,11 +107,18 @@ void RunAcceptedQualification(bool execute, bool preview) {
         const auto replay_phase = base.sources.retained_bytes + base.packing_retained + base.prepared_source_retained +
             run.mapping().payload_bytes() + f.controller_bytes + ReplayBytes + ExportBytes;
         output::Integer(doc, "sequential_replay_peak_host_bytes", replay_phase);
-        output::Require(replay_phase <= GuardBytes, "Sequential accepted replay exceeds the qualification guard");
+        output::Require(replay_phase <= GuardBytes-extras, "Sequential accepted replay exceeds the qualification guard");
         if (execute) {
             const auto run_path = destination / "accepted";
             output::Require(std::filesystem::create_directory(run_path), "Accepted output already exists");
             auto control = MakePreviewControl(preview_controls);
+            std::optional<vehicle_run::TimingWindow> timing;
+            if(const auto request=RequestedTimingWindow()){
+                output::Require(!preview_controls.stage_timing,"Matched wall timing requires stage profiling disabled");
+                const auto& schedule=f.archive.archive.archive;
+                timing.emplace(*request,schedule.frame_epochs.back(),schedule.frame_epochs,schedule.rows_per_chunk);
+                control.accepted_boundary=[&](const vehicle_run::Progress& p){timing->Observe(p);};
+            }
             control.progress = [](const vehicle_run::Progress& p) {
                 std::cout << "accepted=" << p.accepted.epoch << " time_s=" << p.accepted.time_s
                           << " runtime_s=" << p.elapsed_s << " steps_per_s=" << p.accepted_intervals_per_second << std::endl;
@@ -107,6 +126,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
             doc.RemoveMember("physical_owner_created");
             output::Boolean(doc, "owner_creation_attempted", true);
             const auto result = run.Execute(run_path, control);
+            if(timing)TimingReport(doc,timing->result());
             output::Boolean(doc, "physical_session_initialized", result.session_initialized);
             complete = result.loop.kind == vehicle_run::StopKind::Completed && result.loop.valid_manifest &&
                 result.archive_manifest.has_value() && result.viewer_input.has_value();
