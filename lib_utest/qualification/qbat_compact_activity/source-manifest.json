@@ -114,8 +114,8 @@
     },
     {
       "path": "lib_utest/qualification/qbat_compact_activity/OwnerTest.cu",
-      "bytes": 6132,
-      "sha256": "b65a1a12682ad3ee8883c08ef0d76050182e70186be71eb4df4fb615685514ed"
+      "bytes": 6131,
+      "sha256": "46d4bdfc3aa20e579cd554b33a28b40bcce6fd21b68ab919c403b691df5b5356"
     },
     {
       "path": "lib_utest/qualification/qbat_compact_activity/README.md",

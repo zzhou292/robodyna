@@ -84,7 +84,7 @@ TEST(QbatCompactActivityOwner, EachDeviceOperationFailureKeepsCallerOutputAndAcc
     ASSERT_EQ(cudaMemcpy(after.data(),accepted_device,count*sizeof(q::BatchResult),cudaMemcpyDeviceToHost),cudaSuccess);
     for(std::size_t parent=0;parent<count;++parent) {
       q::Material material;
-      ASSERT_TRUE(source.catalog->Parameters(tl::fea::ShellBindingFamily::Qbat,parent,&material));
+      ASSERT_TRUE(source.catalog.Parameters(tl::fea::ShellBindingFamily::Qbat,parent,&material));
       ASSERT_TRUE(q::batch_detail::ValidResult(after[parent],material,stamp.time,stamp.epoch));
       EXPECT_EQ(r::ResultValues(accepted[parent]),r::ResultValues(after[parent]));
     }
