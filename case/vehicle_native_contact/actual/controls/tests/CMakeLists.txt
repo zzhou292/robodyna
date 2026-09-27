@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaNativePreviewControls LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/../Controls.cmake")
+add_executable(native_preview_controls_check PreviewControlsTest.cpp
+    "${CMAKE_CURRENT_LIST_DIR}/../../../../vehicle_run/tests/LoopTest.cpp")
+target_link_libraries(native_preview_controls_check PRIVATE robo_dyna_native_preview_controls GTest::gtest_main)
+add_test(NAME native_preview_controls COMMAND native_preview_controls_check)
+set_tests_properties(native_preview_controls PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

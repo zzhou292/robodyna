@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../../../vehicle_run/Values.cmake")
+add_library(robo_dyna_native_preview_controls STATIC "${CMAKE_CURRENT_LIST_DIR}/PreviewControls.cpp")
+target_link_libraries(robo_dyna_native_preview_controls PUBLIC robo_dyna_vehicle_run_values)
+target_compile_features(robo_dyna_native_preview_controls PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_native_preview_controls PRIVATE -fno-fast-math -ffp-contract=off)

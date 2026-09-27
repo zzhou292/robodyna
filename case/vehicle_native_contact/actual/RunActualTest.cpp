@@ -1,5 +1,6 @@
 #include "Report.h"
 #include "PreviewResources.h"
+#include "controls/PreviewControls.h"
 #include "../Run.h"
 #include "../tests/ActualSources.h"
 #include "output/physical_run/ViewerInput.h"
@@ -25,6 +26,11 @@ void RunAcceptedQualification(bool execute, bool preview) {
     const auto begin = Clock::now();
     bool complete = !execute;
     try {
+        const auto preview_controls = preview ? ReadPreviewControls() : PreviewControls{};
+        if (preview) {
+            output::Number(doc, "cooperative_maximum_elapsed_s", preview_controls.maximum_elapsed_s);
+            output::String(doc, "cooperative_stop_file", preview_controls.stop_file.string());
+        }
         auto config = PreviewResources();
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
@@ -91,7 +97,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
         if (execute) {
             const auto run_path = destination / "accepted";
             output::Require(std::filesystem::create_directory(run_path), "Accepted output already exists");
-            vehicle_run::Control control;
+            auto control = MakePreviewControl(preview_controls);
             control.progress = [](const vehicle_run::Progress& p) {
                 std::cout << "accepted=" << p.accepted.epoch << " time_s=" << p.accepted.time_s
                           << " runtime_s=" << p.elapsed_s << " steps_per_s=" << p.accepted_intervals_per_second << std::endl;
