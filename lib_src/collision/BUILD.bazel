@@ -1187,7 +1187,7 @@ cc_library(
 cc_library(
     name = "radioss_type25_runtime_values",
     srcs = ["radioss_type25/runtime/physical_main/Index.cpp", "radioss_type25/runtime/physical_main/Origins.cpp", "radioss_type25/runtime/physical_main/Validate.cpp", "radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp", "radioss_type25/runtime/MovingSource.cpp", "radioss_type25/runtime/MixedSource.cpp"],
-    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h", "radioss_type25/runtime/physical_main/*.h"]),
+    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h", "radioss_type25/runtime/physical_main/*.h", "radioss_type25/runtime/diagnostics/*.h"]),
     deps = [":radioss_type25_surface_source", "//lib_utils:source_identity_index", ":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
             ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
             "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena",

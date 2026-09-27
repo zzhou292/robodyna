@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Launch.h"
 #include "Response.h"
-#include "diagnostics/Read.h"
 #include "../assembly/Gather.h"
 #include <cub/cub.cuh>
 #include <algorithm>
@@ -135,33 +134,18 @@ __global__ void PackForces(Device d,std::size_t candidates,std::size_t kept) {
     d.cohort_ends[i]=std::uint32_t((i+1)*d.force_packet_size<kept?(i+1)*d.force_packet_size:kept);
 }
 __global__ void Diagnostics(Device d,std::size_t candidates,units_detail::Factors units) {
-  if(blockIdx.x)return;
-  __shared__ diagnostics::Tile tile;
-  const unsigned lane=threadIdx.x;
-  std::uint64_t active=0;
-  double elastic_energy=0,damping_work=0,friction_work=0;
-  if(!lane) {
-    active=d.control->active;
-    elastic_energy=d.control->elastic_energy;damping_work=d.control->damping_work;
-    friction_work=d.control->friction_work;
+  if(threadIdx.x||blockIdx.x)return;
+  // Diagnostic only; no atomics/reassociated native work sums or host packets.
+  auto active=d.control->active;
+  double elastic_energy=d.control->elastic_energy,damping_work=d.control->damping_work;
+  double friction_work=d.control->friction_work;
+  for(std::size_t i=0;i<candidates;++i)if(d.positive_flags[i]) {
+    const auto& result=d.responses[d.sorted_slots[i]];
+    if(result.contact_active)++active;
+    elastic_energy+=result.normal.elastic_energy;
+    damping_work+=result.normal.damping_work;
+    friction_work+=result.friction_work;
   }
-  for(std::size_t first=0;first<candidates;) {
-    const auto remaining=candidates-first;
-    const auto count=remaining<diagnostics::Threads?remaining:diagnostics::Threads;
-    if(lane<count)diagnostics::Store(tile,lane,diagnostics::Read(d,first+lane));
-    __syncthreads();
-    // Keep every original canonical addition, including incoming totals. No
-    // tile subtotal, inactive +0, floating atomics or reassociated reduction.
-    if(!lane)for(unsigned local=0;local<count;++local)if(tile.positive[local]) {
-      if(tile.contact_active[local])++active;
-      elastic_energy+=tile.elastic_energy[local];
-      damping_work+=tile.damping_work[local];
-      friction_work+=tile.friction_work[local];
-    }
-    __syncthreads(); // All leader reads finish before another tile overwrites it.
-    first+=count;
-  }
-  if(lane)return;
   elastic_energy*=units.energy;damping_work*=units.energy;friction_work*=units.energy;
   d.control->active=active;d.control->elastic_energy=elastic_energy;
   d.control->damping_work=damping_work;d.control->friction_work=friction_work;
@@ -226,7 +210,7 @@ cudaError_t Respond(Device d,lifecycle::Input input,const TransactionConfig& con
     MassOperands mass,double kick,unsigned trial,std::size_t count,std::size_t kept,cudaStream_t s) noexcept {
   ResponseRows<<<Blocks(d.source.secondary_count),128,0,s>>>(d,input,config,units,mass,kick,trial);auto e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
   PackForces<<<Blocks(count),128,0,s>>>(d,count,kept);e=cudaPeekAtLastError();if(e!=cudaSuccess)return e;
-  Diagnostics<<<1,diagnostics::Threads,0,s>>>(d,count,units);return cudaPeekAtLastError();
+  Diagnostics<<<1,1,0,s>>>(d,count,units);return cudaPeekAtLastError();
 }
 cudaError_t Gather(Device d,assembly::Schedule schedule,assembly::Incidence incidence,const tl::fea::NodalAssemblyView& view,
     const tl::fea::NodalCinAssemblyView& cin,cudaStream_t s) noexcept {
