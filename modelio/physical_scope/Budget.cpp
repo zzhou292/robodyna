@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "SourcePolicy.h"
 #include <type_traits>
 
 namespace crash::modelio::physical_scope::detail {
@@ -48,8 +49,8 @@ Forecast PhysicalScope::PreflightImpl(const rigid::point_mass::Source& masses,
         masses.rigid_source().topology().other_rigid_member_count() <=
             limits.members - masses.rigid_source().topology().member_count(),
         "Physical source complete group members exceed cap");
-    const bool supports=solids.data().policy==solid_source::Policy::OriginalVehicleSupportsV5;
-    Require(supports==bool(structural),"Complete support source requires both V5 solids and structural beams");
+    const bool supports=HasVehicleSupports(solids.data().policy);
+    Require(supports==bool(structural),"Complete support source requires declared support solids and structural beams");
     if(structural) Require(&structural->canonical().data()==&canonical &&
         structural->data().policy==beam18::Policy::OriginalCircularFourPointLaw44V1 &&
         structural->data().rows.size()==142 && structural->data().canonical_endpoints.size()==146 &&

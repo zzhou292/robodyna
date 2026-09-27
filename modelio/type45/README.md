@@ -68,3 +68,11 @@ Root owns these complete-source/heavy gates. Author evidence:
 targets enabled), and the small
 streamed pinned-card extent audit `vehicle-type45-card-extents-1` under
 `crash-work/reports`.
+
+
+The explicit native V6 support-source policy preserves the V5 physical node,
+rigid group, point-mass, structural-beam and joint populations while binding
+`NativeConvertedSupportsV6` solid references (raw8 HEPH aliases). Shared
+`HasVehicleSupports` predicates centralize complete-support admission. V5 stays
+explicit and unchanged; mismatched V5/V6 source/domain/joint policy combinations
+are rejected. This layer does not enable mechanics, a runtime owner or CLI mode.

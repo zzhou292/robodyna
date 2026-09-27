@@ -13,7 +13,7 @@ void CheckSelection(const std::vector<physical_scope::Group>& groups,
         const auto& group = groups[i];
         const bool known_extended = RequiresCompleteGroup(policy, group.id);
         bool beam_support = false;
-        if (policy == Policy::RetainedShellAssembliesVehicleSupportsV5)
+        if (HasVehicleSupports(policy))
             for (const auto& member : group.members)
                 beam_support |= (member.roles & physical_scope::Beam18Endpoint) != 0;
         if (!known_extended && !beam_support) continue;
@@ -38,7 +38,7 @@ void CheckSelection(const std::vector<physical_scope::Group>& groups,
         ++added;
     }
     output::Require(added == 2, "Extended physical point-card census changed");
-    const bool supports = policy == Policy::RetainedShellAssembliesVehicleSupportsV5;
+    const bool supports = HasVehicleSupports(policy);
     if (supports) {
         const std::uint64_t ids[]{2409489, 2409491, 2409492, 2409494};
         const std::uint64_t nodes[]{2348766, 2348765, 2348729, 2348802};

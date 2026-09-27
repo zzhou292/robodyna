@@ -1,5 +1,6 @@
 #pragma once
 #include "../PhysicalScope.h"
+#include "../SourcePolicy.h"
 #include "modelio/vehicle_source/tests/TestSupport.h"
 #include <iostream>
 
@@ -21,7 +22,7 @@ struct OriginalInputs {
               "c15fc2096317ac0206397ac50776f8456ddd23495e0c65aeee98e093ebd0b1b1"})),
           solids(solid_source::VehicleSolidSource::Prepare(vehicle::test::Canonical(), member,
               policy, (policy == solid_source::Policy::OriginalExtendedSolidsV4 ||
-                         policy == solid_source::Policy::OriginalVehicleSupportsV5)
+                         HasVehicleSupports(policy))
                   ? solid_source::Limits::ExtendedSolids() : solid_source::Limits{})) {}
     static std::filesystem::path BeamPath() {
         const auto* value = std::getenv("ROBO_DYNA_TYPE13_DECLARATION");

@@ -82,3 +82,11 @@ assign it implicitly to shell coefficients.
 The complete census preflight is 474,705,250 B and its owned result is 4,814,162 B.
 The 5,102 original rigid skin parent/PID/root associations are preserved. Existing
 native material execution and owner admission remain separate gates.
+
+
+The explicit native V6 support-source policy preserves the V5 physical node,
+rigid group, point-mass, structural-beam and joint populations while binding
+`NativeConvertedSupportsV6` solid references (raw8 HEPH aliases). Shared
+`HasVehicleSupports` predicates centralize complete-support admission. V5 stays
+explicit and unchanged; mismatched V5/V6 source/domain/joint policy combinations
+are rejected. This layer does not enable mechanics, a runtime owner or CLI mode.

@@ -59,4 +59,15 @@ TEST(VehicleType45Profile, SupportsAdmitsAll44OnlyWithTheirActualEndpointAndAxis
     EXPECT_NO_THROW(accepted=Resolve(Rows(supports),supports));
     EXPECT_THROW(Resolve(Rows(Policy::OriginalDirectSdiType45ExtendedSolidsV4),supports),std::runtime_error);
 }
+TEST(VehicleType45Profile, NativeV6PreservesAll44WithoutAdmittingTheLegacyDomainPolicy) {
+    const auto native=Policy::OriginalDirectSdiType45NativeSupportsV6;
+    const auto legacy=Policy::OriginalDirectSdiType45VehicleSupportsV5;
+    EXPECT_EQ(detail::DomainPolicy(native),physical_domain::Policy::RetainedShellAssembliesNativeSupportsV6);
+    EXPECT_NE(detail::DomainPolicy(native),detail::DomainPolicy(legacy));
+    EXPECT_TRUE(detail::HasVehicleSupports(native));EXPECT_TRUE(detail::HasVehicleSupports(legacy));
+    const auto value=Resolve(Rows(native),native);EXPECT_EQ(value.required,44u);EXPECT_EQ(value.boundaries,0u);
+    for(const auto& row:value.rows)EXPECT_FALSE(detail::Boundary(native,row.source_id));
+    auto bad=Rows(native);bad.rows[0].nodes[1].domain_index=SIZE_MAX;
+    EXPECT_THROW(Resolve(bad,native),std::runtime_error);
+}
 } // namespace crash::modelio::type45

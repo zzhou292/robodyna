@@ -100,4 +100,20 @@ TEST(VehiclePhysicalDomainProfile, SupportsRequiresActualBeamMembersAndAllFourRo
     f.masses.back().node=nodes[3];
     EXPECT_NO_THROW(accepted=prepare());
 }
+TEST(VehiclePhysicalDomainProfile, NativeV6RequiresItsOwnSolidPolicyAndPreservesSupportRules) {
+    const auto legacy=Policy::RetainedShellAssembliesVehicleSupportsV5;
+    const auto native=Policy::RetainedShellAssembliesNativeSupportsV6;
+    EXPECT_EQ(detail::SolidPolicy(native),solid_source::Policy::NativeConvertedSupportsV6);
+    EXPECT_TRUE(detail::HasVehicleSupports(legacy));EXPECT_TRUE(detail::HasVehicleSupports(native));
+    EXPECT_FALSE(detail::HasVehicleSupports(Policy::RetainedShellAssembliesV1));
+    for(const auto id:{2200175u,2200176u,2200177u,2200178u,2200666u,2200667u,2200123u})
+        EXPECT_EQ(detail::RequiresCompleteGroup(native,id),detail::RequiresCompleteGroup(legacy,id));
+    Fixture f;const std::uint64_t ids[]{2409489,2409491,2409492,2409494};
+    const std::uint64_t nodes[]{2348766,2348765,2348729,2348802};
+    for(unsigned i=0;i<4;++i)f.masses.push_back({ids[i],nodes[i],150+i,SIZE_MAX,physical_scope::Beam18Endpoint});
+    auto selected=detail::Select(f.groups,f.masses);
+    EXPECT_NO_THROW(detail::CheckSelection(f.groups,f.masses,selected,legacy));
+    EXPECT_NO_THROW(detail::CheckSelection(f.groups,f.masses,selected,native));
+    f.masses.back().node=999;EXPECT_THROW(detail::CheckSelection(f.groups,f.masses,selected,native),std::runtime_error);
+}
 } // namespace crash::modelio::physical_domain

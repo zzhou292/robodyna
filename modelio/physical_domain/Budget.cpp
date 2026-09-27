@@ -13,7 +13,7 @@ Forecast VehiclePhysicalDomain::Preflight(const physical_scope::PhysicalScope& s
         limits.domain_bytes && limits.domain_bytes <= hard.domain_bytes && limits.topology_bytes &&
         limits.topology_bytes <= hard.topology_bytes, "Invalid physical domain source policy or limits");
     output::Require(bool(source.structural_beam_source()) ==
-        (policy == Policy::RetainedShellAssembliesVehicleSupportsV5),
+        detail::HasVehicleSupports(policy),
         "Physical domain policy and structural beam authority differ");
     const auto& data = source.data();
     output::Require(data.plain_groups.size() == 759 && data.part_roots.size() == 20 && data.point_masses.size() == 155 &&

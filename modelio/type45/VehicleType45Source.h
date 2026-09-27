@@ -5,7 +5,8 @@
 
 namespace crash::modelio::type45 {
 namespace native = tl::fea::type45;
-enum class Policy { OriginalDirectSdiType45V1, OriginalDirectSdiType45ExtendedSolidsV4, OriginalDirectSdiType45VehicleSupportsV5 };
+enum class Policy { OriginalDirectSdiType45V1, OriginalDirectSdiType45ExtendedSolidsV4, OriginalDirectSdiType45VehicleSupportsV5,
+    OriginalDirectSdiType45NativeSupportsV6 };
 enum class Disposition { Required, OmittedAssemblyBoundary };
 enum class NodeUse { Endpoint, InitialAxis, OriginalEvidence };
 enum class BodyKind { None, PlainGroup, PartRoot };
