@@ -7,6 +7,7 @@ namespace control_schedule_test {
 namespace s=tl::fea::solids;
 namespace c=s::control;
 namespace fe=tl::fea;
+using solid_model_test::Require;
 struct Fixture:extended_model_test::Fixture {
   s::Model base;
   std::vector<c::SourceParent> source;
