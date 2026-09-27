@@ -41,6 +41,7 @@ BatchReport Batch::InitializeMapped(const BatchConfig& config,const ShellPhysica
   next->cin_witness_count=source.witness_count;
   next->accepted_diagnostics=diagnostics;
   next->staging=std::make_unique<BatchResult[]>(config.element_count);
+  next->activity_staging.resize(mapped_shell::ActivityBytes(config.element_count));
   next->host_payload_bytes=forecast.host_bytes;
   report=next->Upload(arena,*host,*physical.catalog());
   if (report.status!=BatchStatus::Success) return report;

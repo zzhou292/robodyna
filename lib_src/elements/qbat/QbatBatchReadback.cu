@@ -11,6 +11,7 @@ bool Batch::Impl::OutputDisjoint(const void* output,std::size_t bytes) const noe
   using trial_identity::Disjoint;
   if(!Disjoint(output,bytes,this,sizeof(*this))||
       !Disjoint(output,bytes,staging.get(),config.element_count*sizeof(BatchResult))||
+      !Disjoint(output,bytes,activity_staging.data(),activity_staging.size())||
       !Disjoint(output,bytes,Scope().binding->nodes().data(),Scope().binding->node_count()*sizeof(ShellBindingNode))) return false;
   return physical ? shell_physical_owner::OutputDisjoint(*physical,output,bytes)
       : shell_formulation_detail::OutputDisjoint(Scope(),output,bytes);
@@ -79,10 +80,10 @@ BatchReport Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
       !Disjoint(diagnostics,sizeof(*diagnostics),this,sizeof(*this))) {
     return {BatchStatus::InvalidInput,"QBAT activity output overlaps inspected or owned data"};
   }
-  const auto report = state.ReadResults(state.accepted,state.accepted_diagnostics);
+  const auto report = state.ReadParentActivity(state.accepted,state.accepted_diagnostics);
   if (report.status != BatchStatus::Success) return report;
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    output[parent] = state.staging[parent].history.element_active ? 1 : 0;
+    output[parent] = state.ParentActivity()[parent];
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success,"Accepted QBAT parent activity copied"};
@@ -95,13 +96,13 @@ BatchReport Batch::CopyPreparedParentActivity(FENodalState& owner,
   auto report = shell_activity_detail::PreparedPreflight(state, *this, owner, token,
       expected, batch_detail::SameDiagnostics(expected, state.candidate_diagnostics), output, capacity);
   if (report.status != BatchStatus::Success) return report;
-  report = state.ReadResults(state.trial, expected);
+  report = state.ReadParentActivity(state.trial, expected);
   if (report.status != BatchStatus::Success) {
     state.Discard();
     return report;
   }
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    output[parent] = state.staging[parent].history.element_active ? 1 : 0;
+    output[parent] = state.ParentActivity()[parent];
   }
   return {BatchStatus::Success, "Complete prepared QBAT parent activity copied"};
 }

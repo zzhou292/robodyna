@@ -3,6 +3,7 @@
 #include "QbatBatchTypes.h"
 #include "../ShellBatchArenaLayout.h"
 #include "mapped/AssemblyLayout.h"
+#include "../mapped_shell/ActivityLayout.h"
 
 namespace tl::fea::qbat::batch_detail {
 struct Element {
@@ -38,6 +39,7 @@ struct Storage {
   Control control;
   Status* candidate_status=nullptr;
   mapped::AssemblyMemory assembly;
+  mapped_shell::ActivityMemory activity;
 };
 static_assert(std::is_trivially_copyable_v<Storage>);
 static_assert(sizeof(Storage)<=2048,"No capacity-sized device header fields");
@@ -49,6 +51,7 @@ struct Layout {
   Common common;
   util::ArenaRegion curve_x,curve_y;
   mapped::AssemblyLayout assembly;
+  mapped_shell::ActivityLayout activity;
   std::size_t bytes=0;
   bool Initialize(std::size_t parents,std::size_t nodes,std::size_t points,
                   std::size_t cap) noexcept;

@@ -8,11 +8,13 @@
 #include "../../solvers/NodalCinRuntime.h"
 #include <optional>
 #include <utility>
+#include <vector>
 
 namespace tl::fea::qbat::batch_detail {
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t count,std::size_t mapped_nodes=0);
 void LaunchMappedMeasurements(Storage*,const Slab*,const Slab*,NodalPreparedView,BatchDiagnostics,std::size_t nodes);
+void LaunchParentActivity(Storage*,std::size_t parents,unsigned slab,double time,std::uint64_t epoch,cudaStream_t);
 void LaunchFailure(NodalAssemblyView);
 void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,bool initial);
 } // namespace tl::fea::qbat::batch_detail
@@ -34,6 +36,7 @@ struct Batch::Impl {
   batch_detail::Slab* trial=nullptr;
   batch_detail::Control control;
   std::unique_ptr<BatchResult[]> staging;
+  std::vector<std::uint8_t> activity_staging;
   BatchDiagnostics accepted_diagnostics,candidate_diagnostics;
   NodalPreparedView candidate_view;
   NodalAssemblyView initial_sources;
@@ -46,6 +49,10 @@ struct Batch::Impl {
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*,const BatchDiagnostics&);
+  BatchReport ReadParentActivity(const batch_detail::Slab*,const BatchDiagnostics&);
+  const std::uint8_t* ParentActivity() const noexcept {
+    return activity_staging.data()+sizeof(std::uint32_t);
+  }
   BatchReport Upload(util::HostArena&,batch_detail::Storage&,const ShellBatchPlasticityBinding&);
   bool OutputDisjoint(const void*,std::size_t) const noexcept;
   ShellFormulationScope Scope() const noexcept {
