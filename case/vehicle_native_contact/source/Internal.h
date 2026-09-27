@@ -24,9 +24,12 @@ inline std::size_t Add(std::size_t a,std::size_t b) {
 inline std::size_t Extras(const Forecast& f) {
     return Add(Add(f.member_storage_bytes,f.packet_authority_reservation),f.metadata_bytes);
 }
-inline void Admit(Forecast& f,std::size_t& phase,std::size_t existing,std::size_t producer,Limits limits) {
+inline void Admit(Forecast& f,std::size_t& phase,std::size_t existing,std::size_t producer,Limits limits,const char* stage) {
     const auto bytes=Add(Add(existing,producer),Extras(f));
-    output::Require(bytes<=limits.host_bytes,"Complete native V6 source phase exceeds host cap");
+    output::Require(bytes<=limits.host_bytes,(std::string("Native V6 source phase ")+stage+
+        " exceeds host cap: total="+std::to_string(bytes)+" cap="+std::to_string(limits.host_bytes)+
+        " existing="+std::to_string(existing)+" producer="+std::to_string(producer)+
+        " extras="+std::to_string(Extras(f))).c_str());
     phase=std::max(phase,bytes);f.peak_bytes=std::max(f.peak_bytes,bytes);
 }
 std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths&,

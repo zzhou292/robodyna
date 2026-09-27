@@ -33,7 +33,7 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
         "Original four-member source closure exceeds byte cap before reads");
     forecast.metadata_bytes=sizeof(Inputs)+sizeof(OriginalSources)+sizeof(Forecast)+65536;
     forecast.member_read_compaction_peak=ReadAndCompactPeak(limits.member_bytes,42846753);
-    Admit(forecast,forecast.input_peak,0,forecast.member_read_compaction_peak,limits);
+    Admit(forecast,forecast.input_peak,0,forecast.member_read_compaction_peak,limits,"input_graph");
     namespace io=vehicle_run::detail;
     Members members;
     members.vehicle=CompactMember(io::ReadOriginal(paths.member,42846753,"67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301"),42846753);
@@ -47,7 +47,7 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
     const auto reader_bound=Add(output::full_shell::source::SourceLimits{}.host_bytes,
         Add(modelio::vehicle::Limits{}.host_bytes,Add(modelio::physical_scope::Limits{}.host_bytes,
         modelio::solid_source::Limits::ExtendedSolids().host_bytes)));
-    Admit(forecast,forecast.input_peak,0,reader_bound,limits);
+    Admit(forecast,forecast.input_peak,0,reader_bound,limits,"input_graph");
     const auto canonical=io::ReadCanonical(paths,members.vehicle);
     const auto plan=modelio::vehicle::VehicleSourcePlan::Read(canonical,paths.declarations,
         {3648589,"a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"});
@@ -64,13 +64,13 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
     const auto domain=modelio::physical_domain::VehiclePhysicalDomain::Prepare(scope,
         modelio::physical_domain::Policy::RetainedShellAssembliesNativeSupportsV6);
     Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,
-        modelio::vehicle::ResolutionLimits::CompleteRigidOverlay().host_bytes,limits);
+        modelio::vehicle::ResolutionLimits::CompleteRigidOverlay().host_bytes,limits,"input_graph");
     const auto resolution=io::Resolve(plan,paths,members.vehicle);
     const auto import_forecast=modelio::native_spring_ids::ImportContext::Preflight(canonical,members.Input());
     forecast.packet_authority_reservation=Add(import_forecast.total_bytes,
         Add(modelio::solid_control::DirectLimits{}.retained_bytes,
         Add(modelio::solid_control::Limits{}.retained_bytes,modelio::solid_control_packets::Limits{}.startup_bytes)));
-    Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,resolution.startup_budget_bytes(),limits);
+    Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,resolution.startup_budget_bytes(),limits,"input_graph");
     const auto imported=modelio::native_spring_ids::ImportContext::Prepare(canonical,members.Input());
     output::Require(imported.data().diagnostic.status==modelio::native_spring_ids::Readiness::Ready,
         "Native V6 four-member import context is unavailable");
@@ -80,7 +80,7 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
         effective.report.reason.c_str());
     forecast.packet_authority_reservation=Add(Add(imported.data().forecast.total_bytes,direct.owned_payload_bytes()),
         Add(effective.source->owned_payload_bytes(),modelio::solid_control_packets::Limits{}.startup_bytes));
-    Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,resolution.startup_budget_bytes(),limits);
+    Admit(forecast,forecast.input_peak,domain.forecast().total_bytes,resolution.startup_budget_bytes(),limits,"input_graph");
     const auto packets=modelio::solid_control_packets::NativePacketSource::Prepare(solids,*effective.source,artifact);
     // Keep the conservative packet startup reservation in later coexistence
     // budgets: it also covers retained direct/import authority, without guessing
@@ -102,7 +102,7 @@ OriginalSources OriginalSources::Prepare(const vehicle_run::OriginalPaths& paths
     const auto contact=detail::PrepareContact(*backing,owner,limits,forecast);
     const vehicle_native_contact::detail::SourceInputs inputs{owner,contact.self,contact.wall,contact.controls};
     forecast.sources=vehicle_native_contact::detail::AdmitSources(inputs,limits.host_bytes);
-    detail::Admit(forecast,forecast.contact_peak,0,forecast.sources.construction_peak,limits);
+    detail::Admit(forecast,forecast.contact_peak,0,forecast.sources.construction_peak,limits,"input_graph");
     forecast.retained_bytes=detail::Add(forecast.sources.retained_bytes,detail::Extras(forecast));
     return OriginalSources(std::make_shared<const Data>(Data{backing,owner,contact.self,contact.wall,contact.controls,forecast}));
 }
