@@ -11,7 +11,8 @@ TL_BRICK_HD inline Status PrepareParameters(double pm21,double pm22,double pm32,
     Parameters& output) noexcept {
   Parameters next;next.damping_coefficient=5.0/100.0;next.quadratic_limit=100;
   double fnu=1;
-  if(pm21>static_cast<double>(.4f)){fnu=1-2*pm21;next.damping_coefficient=fnu*next.damping_coefficient;}
+  if(pm21>static_cast<double>(.48999f))fnu=1.0/100.0;
+  else if(pm21>static_cast<double>(.4f)){fnu=1-2*pm21;next.damping_coefficient=fnu*next.damping_coefficient;}
   else if(pm107>=180*pm32)fnu=10;
   const double c1=::fmax(pm32,pm100)+NativeOneP333*pm22,c2=fnu*c1;
   const double aj2=.5*(sig[0]*sig[0]+sig[1]*sig[1]+sig[2]*sig[2])+sig[3]*sig[3]+sig[4]*sig[4]+sig[5]*sig[5];
