@@ -17,7 +17,7 @@ vehicle_run::OriginalPaths Paths() {
         Required("ROBO_SELF_CONTACT_COMBINE_MEMBER")};
 }
 }
-SourceSelection::SourceSelection(Config& config) {
+SourceSelection::SourceSelection(Config& config,source::Limits limits):limits_(limits) {
     const auto* path=std::getenv("ROBO_NATIVE_SOLID_PACKETS");
     if(!path||!*path)return;
     const auto size=Required("ROBO_NATIVE_SOLID_PACKETS_BYTES");std::size_t used=0;
@@ -36,8 +36,11 @@ SourceSelection::SourceSelection(Config& config) {
 detail::SourceInputs SourceSelection::Prepare() {
     if(!artifact_)return ActualSources();
     output::Require(!source_,"Native source selection cannot be prepared twice");
-    source_=source::OriginalSources::Prepare(Paths(),*artifact_);
+    source_=source::OriginalSources::Prepare(Paths(),*artifact_,limits_);
     return source_->inputs();
+}
+std::size_t SourceSelection::construction_peak_bytes()const noexcept {
+    return source_?source_->forecast().peak_bytes:0;
 }
 std::size_t SourceSelection::extra_retained_bytes()const noexcept {
     if(!source_)return 0;

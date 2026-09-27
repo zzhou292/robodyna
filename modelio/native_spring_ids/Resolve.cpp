@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "modelio/type45/SourcePolicy.h"
 #include <algorithm>
 namespace crash::modelio::native_spring_ids {
 namespace {
@@ -13,9 +14,10 @@ void SharedSource(const type13::SourceType13& beams, const type25::VehicleType25
         &joints.source_domain().source().tied_source().canonical().data() != &canonical ||
         beams.data().canonical_manifest_sha256 != canonical.inputs.canonical_manifest.sha256 ||
         !welds.domain().SharesStorage(joints.source_domain().domain()) ||
-        joints.policy() != type45::Policy::OriginalDirectSdiType45VehicleSupportsV5 ||
+        !type45::detail::HasVehicleSupports(joints.policy()) ||
+        joints.source_domain().policy() != type45::detail::DomainPolicy(joints.policy()) ||
         welds.declaration().policy != type25::Policy::OriginalDefaultSpotweldsV1)
-        detail::Reject(Readiness::IdentityMismatch, "Generated ID handles do not share the retained V5 source/domain");
+        detail::Reject(Readiness::IdentityMismatch, "Generated ID handles do not share the retained vehicle-support source/domain");
 }
 }
 Forecast Preflight(const type13::SourceType13& beams, const type25::VehicleType25Source& welds,

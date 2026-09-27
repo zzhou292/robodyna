@@ -22,6 +22,19 @@ void Sources(output::Document& doc, const detail::SourceInputs& source) {
     output::String(doc, "wall_source_digest", source.wall.provenance().output_digest);
     output::String(doc, "controls_digest", source.controls.provenance().output_digest);
     output::Integer(doc, "physical_nodes", source.owner.physical().domain()->node_count());
+    const auto& solids=source.owner.execution_source().mechanical().solids();
+    if(const auto* controls=solids.control_selection();controls&&
+        controls->profile()==tl::fea::solids::control::Profile::SourceDeclared) {
+        output::Integer(doc,"solid_source_control_count",controls->controlled_count());
+        output::Integer(doc,"solid_native_packet_count",controls->packets().size());
+        output::Integer(doc,"solid_native_nvsiz",controls->native_nvsiz());
+        output::Integer(doc,"solid_compiled_mvsiz",controls->compiled_mvsiz());
+        output::Integer(doc,"solid18_count",solids.solid18().size());
+        output::Integer(doc,"solid24_count",solids.solid24().size());
+        output::Integer(doc,"solid6z_count",solids.solid6z().size());
+        output::Integer(doc,"solid18_law44_count",solids.solid18_law44().size());
+        output::Integer(doc,"solid18_law90_count",solids.solid18_law90().size());
+    }
     output::Integer(doc, "self_primaries", source.self.snapshot().primary_count);
     output::Integer(doc, "self_mains", source.self.snapshot().main_count);
     output::Integer(doc, "self_secondaries", source.self.main_source().secondary_nodes().size());

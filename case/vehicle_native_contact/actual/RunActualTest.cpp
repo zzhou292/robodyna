@@ -34,7 +34,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
             output::Boolean(doc, "stage_timing_requested", preview_controls.stage_timing);
         }
         auto config = PreviewResources();
-        SourceSelection selection(config);
+        SourceSelection selection(config,{GuardBytes-ExportBytes});
         if (preview) config.dynamics.timing.enabled = preview_controls.stage_timing;
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
@@ -61,6 +61,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
         output::Require(extras<=GuardBytes-ExportBytes,"Selected source extras exceed qualification guard");
         const auto execution_host_cap=GuardBytes-ExportBytes-extras;
         output::Integer(doc,"source_extra_retained_bytes",extras);
+        if(selection.native_v6())output::Integer(doc,"production_source_construction_peak_bytes",selection.construction_peak_bytes());
         output::String(doc,"selected_source_profile",selection.native_v6()?"native_v6_raw8_heph_explicit_cin28":"vehicle_supports_v5");
         output::Number(doc,"fixed_dt_s",config.dynamics.startup.reserved_step_s);
         output::Number(doc, "source_construction_s", Seconds(begin));
