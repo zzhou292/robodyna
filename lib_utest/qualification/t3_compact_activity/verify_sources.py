@@ -9,6 +9,22 @@ for row in manifest['files']:
 generator=runpy.run_path(str(HERE/'generate_oracle.py'))
 assert (HERE/'SerialValues.h').read_text()==generator['generate']()
 body=generator['body']
+# Shared readers retain their complete old bodies after literal shape extraction.
+for name,original,selected,expanded,occurrences,header,helper in (
+    ('ShellOnePointStorage.cpp','lib_src/elements/one_point/ShellOnePointStorage.cpp',
+     'if (!HasReadShape(slab, count))', 'if (!device_ || slab > 1 || count != count_)', 1,
+     'lib_src/elements/one_point/ShellOnePointStorage.h',
+     'return device_ && slab <= 1 && count == count_;'),
+    ('ShellMixedSectionReadback.cpp','lib_src/elements/ShellMixedSectionReadback.cpp',
+     'if(!HasReadShape(slab,count,catalog))',
+     'if(!device_||slab>1||count!=count_||!catalog.heterogeneous_sections())', 2,
+     'lib_src/elements/ShellMixedSectionStorage.h',
+     'return device_ && slab <= 1 && count == count_ && catalog.heterogeneous_sections();')):
+    shared=(ROOT/original).read_text()
+    assert shared.count(selected)==occurrences,name+' shape extraction count'
+    assert shared.replace(selected,expanded)==(HERE/'reference'/(name+'.txt')).read_text(),name
+    assert helper in (ROOT/header).read_text(),name+' literal shape predicate'
+assert (ROOT/'lib_src/elements/failure/ShellFailureStorage.cpp').read_text()==(HERE/'reference/ShellFailureStorage.cpp.txt').read_text()
 old=(HERE/'reference/T3BatchOnePointReadback.cpp.txt').read_text()
 current=(ROOT/'lib_src/elements/t3/T3BatchOnePointReadback.cpp').read_text()
 for name in ('ReadOnePoint','T3Batch::Impl::ValidateOnePointReadback'):
