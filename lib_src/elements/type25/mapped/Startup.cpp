@@ -40,7 +40,7 @@ BatchReport MakeForecast(const BatchConfig& config,const ShellPhysicalBinding& p
   }
   Forecast next;
   if (!batch_detail::MakeLayout(model.property_count(),config.element_count,owner.node_count,
-      config.max_device_bytes,next.device,profile) ||
+      config.max_device_bytes,next.device,profile,true) ||
       !shell_physical_owner::ForecastProof(owner.node_count,source.range_count,
           config.max_host_bytes,next.proof)) {
     return {BatchStatus::ResourceLimit,"Mapped TYPE25 arena/initial proof exceeds its cap"};
@@ -95,6 +95,9 @@ BatchReport BuildModel(const BatchConfig& config,const ShellPhysicalBinding& phy
   }
   report=batch_detail::BuildElements(config,model,next,diagnostics);
   if (report.status!=BatchStatus::Success) return report;
+  if (!mapped_connector::Build(next.model.elements, config.element_count,
+          config.owner.node_count, layout.assembly, next.assembly))
+    return {BatchStatus::InvalidInput,"Mapped TYPE25 incidence differs from source endpoints"};
   *util::ArenaPointer<batch_detail::Storage>(arena.data(),layout.header)=next;
   output=next;
   return {BatchStatus::Success,"OK"};

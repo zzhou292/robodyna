@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/elements/type13/resident:type13_batch", "//lib_src/elements/type25:type25_batch",
+            "//lib_src/elements/mapped_connector:values", "//lib_src/elements/mapped_shell:values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["CudaTest.cu", "Fixture.h", "Serial13.cuh", "Serial25.cuh"],
+    deps = ["//lib_src/elements/type13/resident:type13_batch", "//lib_src/elements/type25:type25_batch",
+            "//lib_src/elements/mapped_connector:kernels", "//lib_src/elements/mapped_connector:values",
+            "//lib_src/elements/mapped_shell:values", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

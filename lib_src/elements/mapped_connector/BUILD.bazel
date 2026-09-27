@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//lib_src/elements/type13/resident:__pkg__", "//lib_src/elements/type25:__pkg__", "//lib_utest/qualification/connector_mapped_assembly:__pkg__"])
+cc_library(
+    name = "values",
+    hdrs = ["Storage.h", "Values.h"],
+    deps = ["//lib_src/elements/mapped_shell:values", "//lib_utils:bounded_arena", "//lib_src/solvers:nodal_force_assembly"],
+)
+cc_library(
+    name = "kernels",
+    hdrs = ["Kernels.cuh"],
+    deps = [":values", "//lib_src/solvers:explicit_nodal_state"],
+)
