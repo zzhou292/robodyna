@@ -4,7 +4,7 @@
 #include "case/vehicle_startup/physical_model/VehiclePhysicalModel.h"
 namespace crash::cases::vehicle_self_contact::native::coated {
 using PhysicalModel = vehicle_startup::physical_model::VehiclePhysicalModel;
-enum class Scope { RetainedV5PhysicalShellsAndOriginalContact };
+enum class Scope { RetainedV5PhysicalShellsAndOriginalContact, RetainedV6NativePhysicalShellsAndOriginalContact };
 enum class SourceCoordinates { OriginalNativeNodeCards };
 enum class NativeOrder { CaseDeclaredAscendingPhysicalNidItab };
 enum class SurfaceMembership { SingleSurfaceImbinZero };
@@ -14,6 +14,13 @@ struct Config {
     NativeOrder order = NativeOrder::CaseDeclaredAscendingPhysicalNidItab;
     SurfaceMembership membership = SurfaceMembership::SingleSurfaceImbinZero;
 };
+// Source-only extraction follows the explicitly selected physical domain.
+inline Config ConfigFor(const PhysicalModel& model) noexcept {
+    Config result;
+    if(model.source_domain().policy()==modelio::physical_domain::Policy::RetainedShellAssembliesNativeSupportsV6)
+        result.scope=Scope::RetainedV6NativePhysicalShellsAndOriginalContact;
+    return result;
+}
 struct Limits {
     // New assessment envelope. Existing physical-model/source caps are retained;
     // their inclusive backing is charged before this incremental workspace.

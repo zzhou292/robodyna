@@ -75,15 +75,20 @@ output::Document ForecastDocument(const Forecast& f, std::size_t cap) {
 }
 output::Document ResultDocument(const Result& r, std::size_t cap) {
     output::Require(r.contact_parts.size() <= selection::Limits{}.parts &&
-        r.config.scope == Scope::RetainedV5PhysicalShellsAndOriginalContact &&
+        (r.config.scope == Scope::RetainedV5PhysicalShellsAndOriginalContact ||
+         r.config.scope == Scope::RetainedV6NativePhysicalShellsAndOriginalContact) &&
         r.config.coordinates == SourceCoordinates::OriginalNativeNodeCards &&
         r.config.order == NativeOrder::CaseDeclaredAscendingPhysicalNidItab &&
         r.config.membership == SurfaceMembership::SingleSurfaceImbinZero &&
         (!r.topology_complete || (r.selected_roles_complete && r.topology_attempted && r.topology_report.status == s::Status::Ok)),
         "Inconsistent V5 coated result scope or completion");
-    auto result = Object(); String(result, "schema", "robo_dyna.v5_coated_source_assessment.v1");
-    String(result, "scope", "all retained V5 physical shells/solids; original-contact shell topology only; no runtime, solid-face or full-original case admission");
-    String(result, "reader_packet", "declared V5 H8/PENTA6 before INITIA; original source-native coordinates");
+    auto result = Object();
+    const bool native=r.config.scope==Scope::RetainedV6NativePhysicalShellsAndOriginalContact;
+    String(result, "schema", native?"robo_dyna.v6_coated_source_assessment.v1":"robo_dyna.v5_coated_source_assessment.v1");
+    String(result, "scope", native?"retained V6 raw8 native physical shells/solids; source assessment only; no runtime admission":
+        "all retained V5 physical shells/solids; original-contact shell topology only; no runtime, solid-face or full-original case admission");
+    String(result, "reader_packet", native?"declared V6 raw8 H8 before INITIA; original source-native coordinates":
+        "declared V5 H8/PENTA6 before INITIA; original source-native coordinates");
     String(result, "native_order", "case-declared ascending physical-NID ITAB; unsigned six-word surface order; IMBIN=0");
     String(result, "limitation", "not proof of original full-case internal numbering, converter choices, or omitted original families");
     Boolean(result, "all_physical_roles_complete", r.physical_roles_complete);

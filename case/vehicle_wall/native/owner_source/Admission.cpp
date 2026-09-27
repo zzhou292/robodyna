@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "case/vehicle_self_contact/native/SourcePolicies.h"
 namespace crash::cases::vehicle_wall::native::owner_source_detail {
 void Check(const EnvelopeExecutionSource& execution,const vehicle_startup::TiedSearchPostKinChk& post,
     const modelio::type45::VehicleType45Source& joints,EnvelopeOwnerLimits limits) {
@@ -18,7 +19,8 @@ void Check(const EnvelopeExecutionSource& execution,const vehicle_startup::TiedS
         &joints.source_domain().source().tied_source().canonical().data()==&canonical&&
         joints.source_domain().domain().SharesStorage(source.embedding().original())&&
         joints.source_domain().policy()==origin.policy()&&
-        joints.policy()==modelio::type45::Policy::OriginalDirectSdiType45VehicleSupportsV5,
+        vehicle_self_contact::native::source_policy::Joints(origin.policy(),joints.policy())&&
+        vehicle_self_contact::native::source_policy::Controls(origin.policy(),source.solids()),
         "Combined execution/CIN/joint inputs do not share exact original source authority");
     Require(post.phase()==vehicle_startup::TiedPostKinChkPhase::ObservedKinetAfterKinChk&&
         post.result().source_instance_id()==source.domain().source_instance_id()&&

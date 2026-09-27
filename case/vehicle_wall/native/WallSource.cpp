@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "modelio/physical_domain/Policy.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "lib_src/math/ScalarBits.h"
 #include "case/vehicle_self_contact/native/TopologyDigestFields.h"
@@ -40,7 +41,7 @@ Forecast WallSource::Preflight(const modelio::physical_domain::VehiclePhysicalDo
         const modelio::native_spring_ids::ImportMembers& members,Limits limits) {
     detail::CheckLimits(limits);
     using Policy=modelio::physical_domain::Policy;
-    if(vehicle.policy()!=Policy::RetainedShellAssembliesVehicleSupportsV5)
+    if(!modelio::physical_domain::detail::HasVehicleSupports(vehicle.policy()))
         detail::Reject(Status::UnsupportedSource,"Envelope supplement requires the complete named retained V5 domain");
     const auto count=vehicle.domain().node_count();
     const auto hard=tl::fea::NodalDomainLimits::Vehicle();

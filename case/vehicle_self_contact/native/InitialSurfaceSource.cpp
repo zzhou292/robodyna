@@ -34,7 +34,7 @@ Preparation InitialSurfaceSource::Prepare(const Context& context, const Selectio
         geometry_limits.shells = limits.shells;
         geometry_limits.solids = limits.solids;
         geometry_limits.metadata_bytes = limits.metadata_bytes;
-        next->geometry = coated::detail::PrepareInputs(model, selection, member, {}, geometry_limits);
+        next->geometry = coated::detail::PrepareInputs(model, selection, member, coated::ConfigFor(model), geometry_limits);
         const auto packed = d::Pack(next->geometry, selection.data().selected_part_ids);
         d::CheckCapacity(next->geometry, packed, 0);
         next->provenance.source_digest = context.provenance().source_digest;

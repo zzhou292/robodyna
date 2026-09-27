@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "../SourcePolicies.h"
 #include "modelio/source_assembly/JsonReader.h"
 #include "lib_src/collision/self_contact_filters/Environment.h"
 #include <cmath>
@@ -36,8 +37,9 @@ SourceProof Context(const source::CorrectedNodalSource& corrected) {
         !corrected.provenance().source_digest.empty() &&
         corrected.provenance().interfaces.disposition==source::InterfaceDisposition::CompleteNoApplicableType24,
         "Gap operands lack the same complete fresh direct import authority");
-    Require(physical.source_domain().policy()==modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5,
-        "Gap operands require the complete named V5 physical domain");
+    Require(source_policy::Geometry(physical.source_domain().policy(),physical.source_domain().source().solid_source().data().policy)&&
+        source_policy::Controls(physical.source_domain().policy(),physical.solids()),
+        "Gap operands require the complete named physical domain and V6 packet controls");
     Require(tlfea::contact::self_contact_filters::CompatibleHostArithmetic(),
         "Gap source requires round-to-nearest, gradual underflow and masked traps");
     const auto units=seed.provenance().units;

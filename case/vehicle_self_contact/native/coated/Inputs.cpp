@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "../SourcePolicies.h"
 #include "modelio/source_assembly/NativeCoordinates.h"
 #include "modelio/solid_source/SourcePolicy.h"
 #include "lib_src/elements/solid6z/CollapsedBrickTopology.h"
@@ -93,7 +94,7 @@ const source::CanonicalData& CheckSource(const PhysicalModel& model,
         limits.topology.max_output_bytes && limits.topology.max_output_bytes <= topology_hard.max_output_bytes &&
         limits.topology.max_scratch_bytes && limits.topology.max_scratch_bytes <= topology_hard.max_scratch_bytes,
         "Invalid coated topology limits");
-    output::Require(config.scope == Scope::RetainedV5PhysicalShellsAndOriginalContact &&
+    output::Require(config.scope == ConfigFor(model).scope &&
         config.coordinates == SourceCoordinates::OriginalNativeNodeCards &&
         config.order == NativeOrder::CaseDeclaredAscendingPhysicalNidItab &&
         config.membership == SurfaceMembership::SingleSurfaceImbinZero,
@@ -102,8 +103,8 @@ const source::CanonicalData& CheckSource(const PhysicalModel& model,
         limits.nodes && limits.nodes <= hard.nodes && limits.shells && limits.shells <= hard.shells &&
         limits.solids && limits.solids <= hard.solids && limits.metadata_bytes && limits.metadata_bytes <= hard.metadata_bytes,
         "Invalid V5 coating source limits");
-    output::Require(source_domain.policy() == physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5 &&
-        solid_input.data().policy == solid_source::Policy::OriginalVehicleSupportsV5 &&
+    output::Require(source_policy::Geometry(source_domain.policy(),solid_input.data().policy) &&
+        source_policy::Controls(source_domain.policy(),model.solids()) &&
         &canonical == &solid_input.canonical().data() && &canonical == &shells.references().source().canonical().data(),
         "V5 coating source handles do not share the required retained canonical authority");
     output::Require(domain.prepared() && model.solids().prepared() && model.solids().domain() &&
@@ -113,7 +114,9 @@ const source::CanonicalData& CheckSource(const PhysicalModel& model,
         solid_input.data().rows.size() <= limits.solids && selection.data().counts.retained_shells <= limits.shells,
         "V5 coating source count exceeds capacity");
     const auto& solids = model.solids();
-    output::Require(solids.solid18().size() == 908 && solids.solid24().size() == 1991 && solids.solid6z().size() == 350 &&
+    output::Require(solids.solid18().size() == 908 &&
+        solids.solid24().size() == (source_policy::NativeV6(source_domain.policy())?2341u:1991u) &&
+        solids.solid6z().size() == (source_policy::NativeV6(source_domain.policy())?0u:350u) &&
         solids.solid18_law44().size() == 386 && solids.solid18_law90().size() == 1345 &&
         solid_input.data().rows.size() == 4980 && shells.references().rows().size() == 349645 &&
         selection.data().counts.retained_shells == 337092, "Complete retained V5 source census changed");

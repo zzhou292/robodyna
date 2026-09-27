@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "../SourcePolicies.h"
 #include "modelio/self_contact/OriginalSelection.h"
 #include "modelio/vehicle_source/OriginalAuthority.h"
 #include "modelio/solid_source/SourcePolicy.h"
@@ -21,10 +22,10 @@ Counts CheckModel(const PhysicalModel& model, const JointModel& joints, Limits l
     const auto& solid_source = source.solid_source();
     const auto& canonical = solid_source.canonical().data();
     modelio::vehicle::CheckOriginalYarisAuthority(canonical);
-    Require(physical.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5 &&
-        solid_source.data().policy == modelio::solid_source::Policy::OriginalVehicleSupportsV5 &&
-        joints.source().policy() == modelio::type45::Policy::OriginalDirectSdiType45VehicleSupportsV5,
-        "Contact seed requires the complete declared V5 source policies");
+    Require(source_policy::Geometry(physical.policy(),solid_source.data().policy) &&
+        source_policy::Joints(physical.policy(),joints.source().policy()) &&
+        source_policy::Controls(physical.policy(),model.solids()),
+        "Contact seed requires matching complete declared source policies and V6 packet controls");
     Require(model.SharesStorage(joints.physical()) && domain.prepared() &&
         joints.model().prepared() && joints.model().domain() && joints.model().domain()->SharesStorage(domain) &&
         model.solids().prepared() && model.solids().domain() && model.solids().domain()->SharesStorage(domain) &&

@@ -20,7 +20,7 @@ Forecast Budget(const Context& context, const Selection& selection, Limits limit
     geometry_limits.shells = limits.shells;
     geometry_limits.solids = limits.solids;
     geometry_limits.metadata_bytes = limits.metadata_bytes;
-    const auto upstream = coated::Preflight(physical, selection, {}, geometry_limits);
+    const auto upstream = coated::Preflight(physical, selection, coated::ConfigFor(physical), geometry_limits);
     if (!upstream.admitted) Reject(Status::ResourceLimit, "Authenticated geometry reservation exceeds source cap");
     const auto shells = physical.shell_source().references().rows().size();
     const auto solids = physical.source_domain().source().solid_source().data().rows.size();
