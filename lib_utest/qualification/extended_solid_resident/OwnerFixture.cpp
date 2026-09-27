@@ -37,11 +37,12 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
   EXPECT_EQ(tl::material::law90::PrepareSI(foam_input,{foam_x,foam_y,3},foam.material),tl::material::law90::Status::Ok);
   s::ModelInput input{1,{&legacy.input18,1},{&legacy.input24,1},{&legacy.input6z,1},
     {&rear,1},{&foam,1},s::ModelProfile::ExtendedLaw44Law90};
-  if(collapsed) {
+  if(controls||collapsed) {
     auto h=legacy.input24.reference.input();
-    h.profile.connectivity=fe::solid24::ConnectivityProfile::CollapsedTopEdges;
+    if(controls)h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
+    if(collapsed){h.profile.connectivity=fe::solid24::ConnectivityProfile::CollapsedTopEdges;
     h.source_node_id[5]=h.source_node_id[4];h.position_m[5]=h.position_m[4];
-    h.source_node_id[7]=h.source_node_id[6];h.position_m[7]=h.position_m[6];
+    h.source_node_id[7]=h.source_node_id[6];h.position_m[7]=h.position_m[6];}
     EXPECT_EQ(fe::solid24::InitializeReference(h,legacy.input24.reference),fe::solid24::Status::Success);
   }
   std::vector<s::control::SourceParent> rows;
