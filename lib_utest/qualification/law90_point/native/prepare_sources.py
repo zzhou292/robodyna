@@ -42,7 +42,8 @@ def prepare(output, check, observe_modulus=False):
             return 'LAW90_POINT_REF_' + match.group().upper()
         if observe_modulus and name == 'sigeps90.F':
             anchor = '            E_OLD = UVAR(II,8)'
-            if value.count(anchor) != 1:
+            # Failure-enabled and FAIL0 branches have identical modulus tails.
+            if value.count(anchor) != 2:
                 raise RuntimeError('LAW90 modulus observation anchor changed')
             value = value.replace(anchor, anchor + '\n' +
                 '            CALL LAW90_MODULUS_OBSERVE(EPST(I),YLD(I),E_OLD,E0,E_MAX)')
