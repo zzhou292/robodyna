@@ -27,7 +27,13 @@ def generate(output):
         (output/f'Frozen{label}Measure.h').write_text(text)
         for scope,source in [('reference',(HERE/'frozen'/f'{label}Candidate.cu').read_text()),
                              ('qualification_current',(ROOT/relative/candidate).read_text())]:
-            finalizers.append(f'namespace tl::fea::{family}::batch_detail::{scope} {{\n'+body(source,finalize)+'\n}')
+            caller=body(source,finalize)
+            if scope=='reference':
+                # DeviceModel belongs to the live namespace. Keep ADL from
+                # adding the production Measure to the frozen overload set.
+                assert caller.count('Measure(')==1
+                caller=caller.replace('Measure(',f'::tl::fea::{family}::batch_detail::reference::Measure(',1)
+            finalizers.append(f'namespace tl::fea::{family}::batch_detail::{scope} {{\n'+caller+'\n}')
     for label,family in [('Type13','type13'),('Type25','type25')]:
         prefix='lib_src/elements/'+family+'/'
         header=(HERE/'frozen'/f'{label}Arena.h').read_text()

@@ -180,8 +180,8 @@
     },
     {
       "path": "lib_utest/qualification/connector_measurement_operands/generate_oracle.py",
-      "bytes": 3445,
-      "sha256": "d2a000d1e52ffeb7869f331ecedbd502bf78b75d78285a2e984bd88fea4d1671"
+      "bytes": 3818,
+      "sha256": "c0cf34b5c5ffc8303a650ceb25c9d95b5638de5f169ffe0bc8c6ab98c8c92667"
     }
   ]
 }
