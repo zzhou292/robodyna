@@ -34,7 +34,7 @@ BatchReport MakeForecast(const BatchConfig& config, const ShellPhysicalBinding& 
   Forecast next;
   if (config.owner.node_count > config.limits.max_nodes ||
       !batch_detail::MakeLayout(source.model()->property_count(), source.model()->connection_count(),
-                               config.limits, next.device) ||
+                               config.limits, next.device, config.owner.node_count) ||
       !shell_physical_owner::ForecastProof(config.owner.node_count, cin.range_count,
                                           limits.max_host_bytes, next.proof)) {
     return {BatchStatus::ResourceLimit, "Mapped TYPE13 arena or proof exceeds its count/byte cap"};

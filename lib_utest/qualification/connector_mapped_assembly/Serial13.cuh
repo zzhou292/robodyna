@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "Storage.h"
-#include "AssemblyValues.h"
-#include "../../mapped_connector/Kernels.cuh"
-#include "../../ShellBatchFields.h"
-#include "../../../solvers/NodalForceAssembly.h"
+#include "lib_src/elements/type13/resident/Storage.h"
+#include "lib_src/elements/type13/resident/Kinematics.h"
+#include "lib_src/elements/ShellBatchFields.h"
+#include "lib_src/solvers/NodalForceAssembly.h"
 
-namespace tl::fea::type13::batch_detail {
+namespace tl::fea::type13::batch_detail::serial_reference {
 namespace {
 namespace contact = tlfea::contact;
 
@@ -14,10 +13,31 @@ __device__ bool CheckEndpoints(Storage& state, const NodalAssemblyView& view,
   for (std::size_t e = 0; e < state.model.element_count; ++e) {
     const auto& element = state.model.elements[e];
     for (unsigned local = 0; local < 2; ++local) {
-      if (!ValidEndpoint(state.model, element, local, view, initial, mapped)) {
+      const auto node = element.nodes[local];
+      if (mapped && (node >= state.model.config.owner.node_count ||
+          view.mass.fixed[node] || view.translation_fixed_bits[node] || view.rotation_fixed[node] ||
+          (view.rotation_present && view.rotation_present[node] != 1) ||
+          !detail::Nonnegative(view.mass.inverse_mass[node]) ||
+          !detail::Nonnegative(view.inverse_inertia[node]))) {
         state.control.status = BatchStatus::InvalidInput;
         state.control.element = e;
-        state.control.node = element.nodes[local];
+        state.control.node = node;
+        return false;
+      }
+      const auto x = shell_batch_fields::ReadVector(view.accepted.position_xyz, node);
+      const auto v = shell_batch_fields::ReadVector(view.accepted.velocity_xyz, node);
+      const auto w = shell_batch_fields::ReadVector(view.accepted.angular_velocity_xyz, node);
+      const auto* q = view.accepted.orientation_wxyz + 4 * node;
+      if (!tl::math::fixed3::Finite(x) || !tl::math::fixed3::Finite(v) ||
+          !tl::math::fixed3::Finite(w) ||
+          !tl::math::UnitQuaternion({q[0], q[1], q[2], q[3]}) ||
+          (initial && !(mapped ? shell_startup_detail::MatchesInitialFreePhysicalNode(
+              state.model.config.startup, x, element.reference.position_m[local], v, w, q) :
+              shell_startup_detail::MatchesInitialNode(
+              state.model.config.startup, x, element.reference.position_m[local], v, w, q)))) {
+        state.control.status = BatchStatus::InvalidInput;
+        state.control.element = e;
+        state.control.node = node;
         return false;
       }
     }
@@ -100,10 +120,9 @@ __global__ void Failure(NodalAssemblyView view) {
 
 void LaunchAssembly(Storage* storage, unsigned accepted, NodalAssemblyView view,
                      NodalCinAssemblyView cin, bool initial, bool mapped) {
-  if (mapped) mapped_connector::Launch<AssemblyFamily>(storage, accepted, view, cin, initial);
-  else Assemble<<<1, 1, 0, view.stream>>>(storage, accepted, view, cin, initial, false);
+  Assemble<<<1, 1, 0, view.stream>>>(storage, accepted, view, cin, initial, mapped);
 }
 void LaunchFailure(NodalAssemblyView view) {
   Failure<<<1, 1, 0, view.stream>>>(view);
 }
-} // namespace tl::fea::type13::batch_detail
+} // namespace tl::fea::type13::batch_detail::serial_reference

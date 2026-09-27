@@ -10,7 +10,7 @@ template<unsigned Slots, class Element>
 bool BuildIncidence(const Element* elements, std::size_t parents, std::size_t nodes,
     std::uint32_t* offsets, std::size_t offset_count,
     std::uint32_t* incidence, std::size_t incidence_count) noexcept {
-  static_assert(Slots == 3 || Slots == 4, "Only the qualified T3/QEPH slots");
+  static_assert(Slots == 2 || Slots == 3 || Slots == 4, "Only two-endpoint connectors or three/four-node shells");
   if (!parents || parents > UINT32_MAX / Slots || !nodes || nodes >= UINT32_MAX ||
       offset_count != nodes + 1 || incidence_count != Slots * parents ||
       !elements || !offsets || !incidence) return false;

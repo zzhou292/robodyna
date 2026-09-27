@@ -1,0 +1,15 @@
+{
+  "Serial13.cuh": {
+    "source": "lib_src/elements/type13/resident/Assembly.cu",
+    "base": "90a4a8060966358714049a775e4f9f7e7838481e",
+    "source_sha256": "071fd8fbf820a398e09a82bcf5260f3d8ae8eeaf975f59192713d88ff9865ea0",
+    "adapted_sha256": "edacb5ba61f2bea7608ff681c555b1aed60bcfd47f177b3f7b55bf5b3c1789a3"
+  },
+  "Serial25.cuh": {
+    "source": "lib_src/elements/type25/mapped/Kernels.cu",
+    "base": "90a4a8060966358714049a775e4f9f7e7838481e",
+    "source_sha256": "0c06fc08d10e0a2edcd9df0dfd84c0d4091430ffb2d5b546882140feb766524a",
+    "adapted_sha256": "b3b44b9d49d64e4290410af1473e39e0f9a2daa4b2c6314dbb738985c61a9ae1",
+    "lookup_adaptation": "Qualify original MappedNode call to its frozen serial-reference namespace; numerical operands/body unchanged."
+  }
+}

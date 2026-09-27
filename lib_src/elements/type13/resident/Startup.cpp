@@ -61,7 +61,7 @@ BatchReport BuildSourceValues(const BatchConfig& config,
       !arena.Construct<DeviceElement>(layout.elements) ||
       !arena.Construct<Evaluation>(layout.slab[0]) ||
       !arena.Construct<Evaluation>(layout.slab[1]) ||
-      !arena.Construct<Status>(layout.status)) {
+      !arena.Construct<Status>(layout.status) || !mapped_connector::Construct(arena, layout.assembly)) {
     return {BatchStatus::ResourceLimit, "TYPE13 arena cannot construct admitted records"};
   }
   const auto& model = *source.model();
@@ -116,6 +116,9 @@ BatchReport BuildSourceValues(const BatchConfig& config,
     }
     d.minimum_native_dt_s = ::fmin(d.minimum_native_dt_s, value.stability.critical_dt_s);
   }
+  if (!mapped_connector::Build(next.model.elements, next.model.element_count,
+          config.owner.node_count, layout.assembly, next.assembly))
+    return {BatchStatus::InvalidInput, "TYPE13 mapped incidence differs from source endpoints"};
   d.valid = true;
   next.control.diagnostics = d;
   *storage = next;

@@ -41,7 +41,8 @@ BatchReport ConstructStartup(const BatchConfig& c,const Model& source,util::Host
   auto* initial=arena.Construct<Storage>(layout.header);
   if(!initial||!arena.Construct<Property>(layout.properties)||!arena.Construct<DeviceElement>(layout.elements)||
      !arena.Construct<DeviceNode>(layout.nodes)||!arena.Construct<Evaluation>(layout.slab[0])||
-     !arena.Construct<Evaluation>(layout.slab[1])||!arena.Construct<Status>(layout.status))
+     !arena.Construct<Evaluation>(layout.slab[1])||!arena.Construct<Status>(layout.status)||
+     !mapped_connector::Construct(arena,layout.assembly))
     return {BatchStatus::ResourceLimit,"TYPE25 startup arena cannot construct its admitted records"};
   auto next=RebasedHeader(arena.data(),layout);
   next.model.config=c;next.model.units=source.source_units();next.model.source_instance_id=source.source_instance_id();

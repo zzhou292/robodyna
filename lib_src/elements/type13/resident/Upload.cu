@@ -18,6 +18,7 @@ BatchReport Batch::Impl::Upload(util::HostArena& arena,
   uploaded_header.model.source_instance_id = header.model.source_instance_id;
   uploaded_header.model.element_count = header.model.element_count;
   uploaded_header.control = header.control;
+  uploaded_header.assembly.touched_count = header.assembly.touched_count;
   device_header = uploaded_header;
   *util::ArenaPointer<batch_detail::Storage>(arena.data(), layout.header) = uploaded_header;
   report = Runtime(cudaMemcpy(device, arena.data(), layout.bytes,
