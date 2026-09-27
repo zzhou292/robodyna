@@ -76,6 +76,10 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
     const auto* selected=model.control_selection();
     if(!selected||selected->profile()!=control::Profile::SourceDeclared||!selected->controlled_count())
       return {BatchStatus::InvalidInput,"Source-controlled resident requires complete source-declared selection"};
+    const auto units=selected->units();
+    if(!((units.length_m==1&&units.mass_kg==1&&units.time_s==1)||
+         (units.length_m==.001&&units.mass_kg==1000&&units.time_s==1)))
+      return {BatchStatus::InvalidInput,"Controlled resident admits qualified SI or mm/Mg/s working units only"};
     std::size_t capacity[controlled::Blocks]{};
     for(const auto& row:selected->parents())if(row.source.icontrol) {
       if(row.family==Family::Solid24)++count.controlled.h24;
