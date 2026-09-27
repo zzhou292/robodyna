@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "MemberStorage.h"
 #include "modelio/physical_scope/PhysicalScope.h"
 #include "modelio/solid_control/DirectSource.h"
 #include "modelio/solid_control/EffectiveSource.h"
@@ -30,15 +31,17 @@ std::shared_ptr<const Inputs> PrepareInputs(const vehicle_run::OriginalPaths& pa
     constexpr std::size_t maximum_members=42846753+44991+(64u<<10)+10604;
     output::Require(maximum_members<=limits.member_bytes&&maximum_members<=limits.host_bytes,
         "Original four-member source closure exceeds byte cap before reads");
+    forecast.metadata_bytes=sizeof(Inputs)+sizeof(OriginalSources)+sizeof(Forecast)+65536;
+    forecast.member_read_compaction_peak=ReadAndCompactPeak(limits.member_bytes,42846753);
+    Admit(forecast,forecast.input_peak,0,forecast.member_read_compaction_peak,limits);
     namespace io=vehicle_run::detail;
     Members members;
-    members.vehicle=io::ReadOriginal(paths.member,42846753,"67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301");
-    members.auxiliary=io::ReadOriginal(paths.auxiliary_member,44991,"b93d5370a899f6f70299ea61cd55142c1f8b765b8ab7f9ac979d078486028929");
-    members.combine=output::ReadBounded(paths.self_contact_combine_member,64u<<10);
-    members.wall=io::ReadOriginal(paths.original_wall_member,10604,"ef02a4701b37d27cec81b1f9a02ab555f55ac61f68b070e8b0c18dc23b1d5155");
+    members.vehicle=CompactMember(io::ReadOriginal(paths.member,42846753,"67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301"),42846753);
+    members.auxiliary=CompactMember(io::ReadOriginal(paths.auxiliary_member,44991,"b93d5370a899f6f70299ea61cd55142c1f8b765b8ab7f9ac979d078486028929"),44991);
+    members.combine=CompactMember(output::ReadBounded(paths.self_contact_combine_member,64u<<10),64u<<10);
+    members.wall=CompactMember(io::ReadOriginal(paths.original_wall_member,10604,"ef02a4701b37d27cec81b1f9a02ab555f55ac61f68b070e8b0c18dc23b1d5155"),10604);
     forecast.member_storage_bytes=members.bytes();
     output::Require(forecast.member_storage_bytes<=limits.member_bytes,"Owned original member capacities exceed cap");
-    forecast.metadata_bytes=sizeof(Inputs)+sizeof(OriginalSources)+sizeof(Forecast)+65536;
     // Existing source readers enforce their own inclusive caps. Charge the
     // simultaneously retained stages conservatively before entering the chain.
     const auto reader_bound=Add(output::full_shell::source::SourceLimits{}.host_bytes,

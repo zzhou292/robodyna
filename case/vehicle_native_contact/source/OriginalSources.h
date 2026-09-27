@@ -13,7 +13,7 @@ struct Limits {
     std::size_t member_bytes=64u<<20;
 };
 struct Forecast {
-    std::size_t member_storage_bytes=0,packet_authority_reservation=0,metadata_bytes=0;
+    std::size_t member_storage_bytes=0,member_read_compaction_peak=0,packet_authority_reservation=0,metadata_bytes=0;
     std::size_t input_peak=0,owner_peak=0,contact_peak=0,retained_bytes=0,peak_bytes=0;
     vehicle_native_contact::detail::SourceAdmission sources;
 };
