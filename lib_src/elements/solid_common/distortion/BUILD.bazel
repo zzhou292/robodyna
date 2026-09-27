@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "parameters",
+    hdrs = ["Types.h", "Parameters.h"],
+    deps = ["//lib_src/materials/law42:mechanical_slots"],
+    visibility = ["//visibility:public"],
+)
