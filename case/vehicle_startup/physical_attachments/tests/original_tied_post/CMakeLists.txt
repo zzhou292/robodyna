@@ -18,7 +18,8 @@ include("${APP_ROOT}/case/vehicle_startup/TiedSearchPostKinChkValues.cmake")
 add_library(original_tied_post_callers OBJECT
   "${CMAKE_CURRENT_LIST_DIR}/../../OriginalTiedPost.cpp"
   "${APP_ROOT}/case/vehicle_run/source/OriginalYaris.cpp" CompileContract.cpp)
-target_include_directories(original_tied_post_callers PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+target_include_directories(original_tied_post_callers PRIVATE
+  ${CUDAToolkit_INCLUDE_DIRS} "${ROBO_DYNA_TL_ROOT}/lib_src")
 target_link_libraries(original_tied_post_callers PRIVATE
   robo_dyna_original_source_io robo_dyna_tied_post_kinchk_values)
 target_compile_options(original_tied_post_callers PRIVATE -fno-fast-math -ffp-contract=off)
