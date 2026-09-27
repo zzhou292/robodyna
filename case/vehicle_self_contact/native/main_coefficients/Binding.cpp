@@ -9,7 +9,7 @@ bool Starts(const std::string& text, const char* prefix) { return text.rfind(pre
 void CheckContext(const c::CorrectedNodalSource& corrected, const modelio::self_contact::OriginalSelection& selection) {
     namespace r = modelio::assembly::reader;
     const auto& physical = corrected.pre_correction().physical();
-    const auto& canonical = coated::detail::CheckSource(physical, selection, {}, {});
+    const auto& canonical = coated::detail::CheckSource(physical, selection, coated::ConfigFor(physical), {});
     const auto& source = corrected.pre_correction().provenance();
     Require(&canonical == &physical.shell_source().references().source().canonical().data(),
         "Main coefficient handles do not share canonical source authority");

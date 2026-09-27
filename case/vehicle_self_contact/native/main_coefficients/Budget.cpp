@@ -13,7 +13,7 @@ Forecast Budget(const c::CorrectedNodalSource& corrected, const modelio::self_co
         !limits.metadata_bytes || limits.metadata_bytes>hard.metadata_bytes)
         Reject(Status::ResourceLimit,"Invalid main source capacity limits");
     const auto& physical = corrected.pre_correction().physical();
-    Forecast result; result.coating = coated::Preflight(physical, selection, {}, limits.coating);
+    Forecast result; result.coating = coated::Preflight(physical, selection, coated::ConfigFor(physical), limits.coating);
     if (!result.coating.admitted)Reject(Status::ResourceLimit,"Complete main geometry source reservation rejected");
     result.shared_corrected_reservation = corrected.forecast().peak_bytes;
     const auto h = physical.shell_source().references().rows().size();

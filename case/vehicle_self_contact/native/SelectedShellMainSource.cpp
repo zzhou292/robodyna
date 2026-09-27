@@ -84,7 +84,7 @@ Preparation SelectedShellMainSource::Prepare(const c::CorrectedNodalSource& sour
         const bool grouping = d::GroupingContext(selection, combine_member);
         auto next = std::make_shared<Data>(source, selection, forecast);
         const auto& model = source.pre_correction().physical();
-        const auto input = coated::detail::PrepareInputs(model, selection, member, {}, limits.coating);
+        const auto input = coated::detail::PrepareInputs(model, selection, member, coated::ConfigFor(model), limits.coating);
         const auto classified = coated::Classify(input);
         if (!classified.contact_complete)
             d::Reject(Status::UnsupportedSource, "Selected coating support is ambiguous or unsupported");
@@ -96,7 +96,7 @@ Preparation SelectedShellMainSource::Prepare(const c::CorrectedNodalSource& sour
         const native::Provenance bound{canonical.inputs.canonical_manifest, canonical.inputs.scope_report,
             canonical.inputs.source_member, declared.auxiliary_sha256, declared.combine_sha256, canonical.inputs.units};
         next->provenance.units = input.units;
-        next->provenance.input_digest = coated::detail::InputDigest(input, classified, &order, {},
+        next->provenance.input_digest = coated::detail::InputDigest(input, classified, &order, coated::ConfigFor(model),
             coated::detail::SourceBinding(bound), limits.metadata_bytes).sha256;
         next->provenance.property_digest = source.provenance().property_digest;
         next->provenance.material_digest = source.provenance().material_digest;
