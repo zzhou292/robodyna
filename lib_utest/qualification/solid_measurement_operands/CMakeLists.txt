@@ -9,6 +9,8 @@ set(oracle "${CMAKE_CURRENT_BINARY_DIR}/oracle")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/source-manifest.json"
   "${CMAKE_CURRENT_SOURCE_DIR}/baseline.json"
+  "${CMAKE_CURRENT_SOURCE_DIR}/integration-baseline.json"
+  "${CMAKE_CURRENT_SOURCE_DIR}/integration_proof.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/verify_sources.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/operand_proof.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/generate_oracle.py"

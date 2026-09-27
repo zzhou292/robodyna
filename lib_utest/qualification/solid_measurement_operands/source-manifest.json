@@ -90,8 +90,8 @@
     },
     {
       "path": "lib_utest/qualification/solid_measurement_operands/CMakeLists.txt",
-      "bytes": 3189,
-      "sha256": "da32c898b1d819c4b74ddf0f54404dcf0df9b2772400638dc21e6d76d0c27300"
+      "bytes": 3300,
+      "sha256": "7cb188882078e5b18bcb814d51b7176e5bc1316d358cd56e67a02e5130a7037c"
     },
     {
       "path": "lib_utest/qualification/solid_measurement_operands/CudaTest.cu",
@@ -110,8 +110,8 @@
     },
     {
       "path": "lib_utest/qualification/solid_measurement_operands/README.md",
-      "bytes": 6498,
-      "sha256": "87bf187a1932c383a411330cd9ff059be1ad8a32791bbfa81e070b3a1af17c90"
+      "bytes": 6500,
+      "sha256": "666443eed8a12e246f0dcc33112b224d74766fb1118e345bfd6c553edf1ad015"
     },
     {
       "path": "lib_utest/qualification/solid_measurement_operands/TestSupport.h",

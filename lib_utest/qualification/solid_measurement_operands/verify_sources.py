@@ -11,7 +11,7 @@ from integration_proof import verify as verify_integration_proof
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-MANIFEST_SHA256 = 'db176e7438950135a37d8264230ee5aea969143f97aa0b8d2c84f7134eb454e4'
+MANIFEST_SHA256 = 'd0baa2ba4c6b7a0dce72d56c61e5909c65081bd797a86d18d7991b17226d1319'
 COMPOSED = [
     ROOT / 'lib_utest/qualification/solid_candidate_validation/verify_sources.py',
     ROOT / 'lib_utest/qualification/extended_solid_resident/verify_sources.py',

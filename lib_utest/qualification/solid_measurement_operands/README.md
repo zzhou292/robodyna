@@ -5,8 +5,8 @@ from 2c40dbbd. This successor applies them to 90a4a806 while preserving its newe
 ordered assembly layout and cudaError_t assembly contract. Original frozen
 numerical bodies remain unchanged. A separate `frozen/native_base` fixture and
 `integration_proof.py` authenticate complete reversals of the four composed
-storage/upload files to90a. The budget oracle now uses that current layout;
-its expected operand-only growth remains785,640 device bytes. Fresh focused and
+storage/upload files to 90a. The budget oracle now uses that current layout;
+its expected operand-only growth remains 785,640 device bytes. Fresh focused and
 public-owner gates are required; old focused receipts are not new acceptance.
 
 # Solid measurement operands
