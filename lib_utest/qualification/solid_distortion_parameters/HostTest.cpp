@@ -4,8 +4,7 @@ namespace distortion_test {
 TEST(DistortionParameters, MechanicalSlotsMatchAuthenticatedReaderAndUpdate) {
   for(const auto& value:Cases()) {
     m::MechanicalSlots slots;ASSERT_EQ(m::PrepareMechanicalSlots(value.material,slots),m::Status::Ok);
-    const std::array<double,6> actual{slots.pm20_young_pa,slots.pm21_poisson_ratio,slots.pm22_gs_pa,
-      slots.pm32_pa,slots.pm100_reader_bulk_pa,slots.pm107_control_pa};
+    const auto actual=SlotValues(slots);
     const auto expected=NativeSlots(value);
     for(unsigned i=0;i<6;++i)EXPECT_DOUBLE_EQ(actual[i],expected[i]);
     EXPECT_DOUBLE_EQ(slots.pm32_pa,slots.pm22_gs_pa);
@@ -51,7 +50,10 @@ TEST(DistortionParameters, ComponentMinimumIsStrictAndNotPrincipalStress) {
 TEST(DistortionParameters, StressDampingFloorCapAndResponseScaling) {
   auto value=Base();const auto zero=Check(value);const double c1=NativeC1(value);
   value.input.cauchy_stress_pa[3]=c1*1e-8;EXPECT_DOUBLE_EQ(Check(value).damping_n_s_m2,zero.damping_n_s_m2);
+  value.input.cauchy_stress_pa[3]=c1*1e-4;const auto ramp=Check(value);
+  EXPECT_GT(ramp.damping_n_s_m2,zero.damping_n_s_m2);
   value.input.cauchy_stress_pa[3]=c1;const auto cap=Check(value);
+  EXPECT_LT(ramp.damping_n_s_m2,cap.damping_n_s_m2);
   value.input.cauchy_stress_pa[3]=100*c1;EXPECT_DOUBLE_EQ(Check(value).damping_n_s_m2,cap.damping_n_s_m2);
   value.input.density_kg_m3*=2;value.input.material_sound_speed_m_s*=3;
   const auto scaled=Check(value);EXPECT_NEAR(scaled.damping_n_s_m2,6*cap.damping_n_s_m2,1e-10);
@@ -65,8 +67,7 @@ TEST(DistortionParameters, InvalidProfileMaterialAndLateOverflowDoNotPublish) {
   reject(value,d::Status::InvalidMaterial);
   m::MechanicalSlots slots{1,2,3,4,5,6};const auto unchanged=slots;
   EXPECT_EQ(m::PrepareMechanicalSlots(value.material,slots),m::Status::InvalidParameters);
-  EXPECT_DOUBLE_EQ(slots.pm100_reader_bulk_pa,unchanged.pm100_reader_bulk_pa);
-  EXPECT_DOUBLE_EQ(slots.pm107_control_pa,unchanged.pm107_control_pa);
+  EXPECT_EQ(SlotValues(slots),SlotValues(unchanged));
   for(unsigned field=0;field<4;++field) {value=valid;
     if(field==0)value.input.off=0;if(field==1)value.input.offg=0;
     if(field==2)value.input.ismstr=12;if(field==3)value.input.units=static_cast<d::WorkingUnits>(2);
