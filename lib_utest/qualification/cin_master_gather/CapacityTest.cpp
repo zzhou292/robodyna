@@ -63,7 +63,7 @@ TEST(CinMasterGatherCapacity, V5AllocationIsCountedWithoutPopulationAndDisabledT
   EXPECT_FALSE(missing.Initialize(0,10,0,128u<<20,128u<<20));
   EXPECT_FALSE(missing.Initialize(0,10,UINT32_MAX,128u<<20,128u<<20));
   EXPECT_EQ(missing.device_bytes,0u);
-  EXPECT_EQ(sizeof(nodal_detail::CinStorage),992u);
+  EXPECT_EQ(sizeof(nodal_detail::CinStorage),1000u);
   EXPECT_EQ(sizeof(nodal_detail::CinLayout),648u);
   EXPECT_EQ(sizeof(gather::View),64u);
   RecordProperty("cin_storage_bytes",std::to_string(sizeof(nodal_detail::CinStorage)));

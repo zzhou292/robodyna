@@ -73,3 +73,10 @@ On any failed prepared leaf, gathered value, or numerical-mass prefix, original
 destinations are untouched until the existing serial apply reproduces its exact
 failure and partial packet. A raw/foreign descriptor or insufficient optional
 capacity retains the complete serial path.
+
+The current baseline ABI is measured as `CinStorage=672` by the executed
+`cin-post-node-inputs-host-1` XML property. Explicit-empty support adds the
+existing StageView field relative to the donor's historical 664-byte baseline.
+The reused gather still adds 328 bytes of metadata: current expectations are
+`CinLayout=648`, `CinStorage=1000`, and private view 64 bytes. These fixed ABI
+assertions do not change allocation formulas or any numerical tolerance.

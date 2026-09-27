@@ -42,15 +42,15 @@ def main() -> None:
         compile_check(
             work, "baseline",
             [str(work / "baseline"), str(ROOT), str(ROOT / "lib_src/solvers")],
-            400, 664)
+            400, 672)
         compile_check(
             work, "current",
             [str(ROOT), str(ROOT / "lib_src/solvers")],
-            648, 992)
+            648, 1000)
     print(json.dumps({
         "status": "passed",
-        "baseline": {"CinLayout": 400, "CinStorage": 664},
-        "current": {"CinLayout": 648, "CinStorage": 992},
+        "baseline": {"CinLayout": 400, "CinStorage": 672},
+        "current": {"CinLayout": 648, "CinStorage": 1000},
         "cuda_compilation": False,
         "cuda_execution": False,
     }))
