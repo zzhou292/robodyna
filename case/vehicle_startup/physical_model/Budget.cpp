@@ -24,7 +24,7 @@ void ValidateComponentLimits(Limits limits, bool extended) {
 }
 ComponentFootprint NativeFootprint(const modelio::physical_domain::VehiclePhysicalDomain& source,
     Limits limits) {
-    const bool supports = source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5;
+    const bool supports = modelio::physical_scope::HasVehicleSupports(source.source().solid_source().data().policy);
     const auto requested = Requested(limits);
     ComponentFootprint f;
     tl::util::BoundedArenaLayout native(limits.host_bytes), packing(limits.host_bytes);
@@ -59,10 +59,11 @@ ComponentFootprint NativeFootprint(const modelio::physical_domain::VehiclePhysic
 } // namespace crash::cases::vehicle_startup::physical_model::detail
 
 namespace crash::cases::vehicle_startup::physical_model {
-Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::VehiclePhysicalDomain& source,
-                                         const VehicleShellBinding& shells, Limits limits) {
+Forecast VehiclePhysicalModel::PreflightImpl(const modelio::physical_domain::VehiclePhysicalDomain& source,
+        const VehicleShellBinding& shells, const modelio::solid_control_packets::NativePacketSource* packets, Limits limits) {
     using detail::Require;
-    const bool supports = source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5;
+    detail::CheckControlBinding(source, packets);
+    const bool supports = modelio::physical_scope::HasVehicleSupports(source.source().solid_source().data().policy);
     const bool extended = supports || source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4;
     detail::ValidateComponentLimits(limits, extended);
     Require(bool(source.source().structural_beam_source()) == supports,
@@ -88,12 +89,14 @@ Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::Vehicle
     const auto footprint = detail::NativeFootprint(source, limits);
     f.native_reservation = footprint.native_reservation;
     f.packing_bytes = footprint.packing_bytes;
+    f.solid_control_input = packets ? packets->owned_payload_bytes() : 0;
     tl::util::BoundedArenaLayout all(limits.host_bytes);
     tl::util::ArenaRegion ignored;
     Require(all.Append<unsigned char>(sizeof(VehiclePhysicalModel) + 4096, ignored) &&
         all.Append<unsigned char>(f.shell_source, ignored) && all.Append<unsigned char>(f.physical_source, ignored) &&
         all.Append<unsigned char>(masses.total_bytes, ignored) && all.Append<unsigned char>(welds.total_bytes, ignored) &&
-        all.Append<unsigned char>(f.native_reservation, ignored) && all.Append<unsigned char>(f.packing_bytes, ignored),
+        all.Append<unsigned char>(f.native_reservation, ignored) && all.Append<unsigned char>(f.packing_bytes, ignored) &&
+        all.Append<unsigned char>(f.solid_control_input, ignored),
         "Complete vehicle physical model construction exceeds cap");
     f.producer_source = masses.total_bytes + welds.total_bytes;
     f.total_bytes = all.bytes();

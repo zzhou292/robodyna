@@ -31,6 +31,7 @@ NativePacketSource NativePacketSource::Prepare(const solid_source::VehicleSolidS
     return NativePacketSource(std::move(next));
 }
 control::Input NativePacketSource::InputFor(std::uint64_t instance)const{return detail::View(data_->values,instance);}
+const solid_source::VehicleSolidSource& NativePacketSource::solid_source()const noexcept{return data_->solids;}
 const Artifact& NativePacketSource::artifact()const noexcept{return data_->artifact;}
 const Forecast& NativePacketSource::forecast()const noexcept{return data_->forecast;}
 std::size_t NativePacketSource::controlled_count()const noexcept{return data_->values.controlled_count;}

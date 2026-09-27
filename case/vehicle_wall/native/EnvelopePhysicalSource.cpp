@@ -15,9 +15,11 @@ struct EnvelopePhysicalSource::Data {
     std::optional<d::model::detail::Components> components;
     EnvelopePhysicalForecast forecast;
 };
-EnvelopePhysicalForecast EnvelopePhysicalSource::Preflight(const WallSource& wall,
-        const vehicle_startup::VehicleShellReferences& refs, EnvelopePhysicalLimits limits) {
+EnvelopePhysicalForecast EnvelopePhysicalSource::PreflightImpl(const WallSource& wall,
+        const vehicle_startup::VehicleShellReferences& refs,
+        const modelio::solid_control_packets::NativePacketSource* packets, EnvelopePhysicalLimits limits) {
     d::Check(wall, refs, limits);
+    d::model::detail::CheckControlBinding(wall.vehicle_origin(), packets);
     const auto& origin = wall.vehicle_origin();
     EnvelopePhysicalForecast f;
     f.wall_source = wall.forecast().peak_bytes;
@@ -51,15 +53,17 @@ EnvelopePhysicalForecast EnvelopePhysicalSource::Preflight(const WallSource& wal
     f.native_components = native.native_reservation;
     f.component_packing = native.packing_bytes;
     f.fixed_bytes = sizeof(EnvelopePhysicalSource)+sizeof(Data)+4096;
+    f.solid_control_input = packets ? packets->owned_payload_bytes() : 0;
     for (const auto bytes : {f.wall_source, f.embedding, f.shell_binding, f.contributor_sources,
-            f.native_components, f.component_packing, f.fixed_bytes})
+            f.native_components, f.component_packing, f.fixed_bytes, f.solid_control_input})
         d::Require(all.Append<std::byte>(bytes, region), "Complete envelope physical-source forecast exceeds cap");
     f.peak_bytes = all.bytes();
     return f;
 }
-EnvelopePhysicalSource EnvelopePhysicalSource::Prepare(const WallSource& wall,
-        const vehicle_startup::VehicleShellReferences& refs, EnvelopePhysicalLimits limits) {
-    const auto forecast = Preflight(wall, refs, limits);
+EnvelopePhysicalSource EnvelopePhysicalSource::PrepareImpl(const WallSource& wall,
+        const vehicle_startup::VehicleShellReferences& refs,
+        const modelio::solid_control_packets::NativePacketSource* packets, EnvelopePhysicalLimits limits) {
+    const auto forecast = PreflightImpl(wall, refs, packets, limits);
     const auto& origin = wall.vehicle_origin();
     const auto embedding = modelio::physical_scope::DomainEmbedding::Prepare(origin.source(), origin.domain(),
         wall.domain(), d::Suffix(wall), limits.embedding);
@@ -70,7 +74,7 @@ EnvelopePhysicalSource EnvelopePhysicalSource::Prepare(const WallSource& wall,
         d::Require(report.status == d::fe::ShellBindingStatus::Success, report.message);
     }
     next->components.emplace(embedding, d::model::detail::WeldDeclaration());
-    d::model::detail::PrepareComponents(origin, embedding.domain(), next->shells, limits.components, *next->components);
+    d::model::detail::PrepareComponents(origin, embedding.domain(), next->shells, limits.components, *next->components, packets);
     const auto& ledger = next->components->ledger;
     d::Require(ledger.domain() && ledger.domain()->SharesStorage(embedding.domain()) &&
         ledger.scope().uncovered_nodes == 0 && ledger.nodes().size() == wall.domain().node_count(),
@@ -92,6 +96,20 @@ EnvelopePhysicalSource EnvelopePhysicalSource::Prepare(const WallSource& wall,
     next->forecast=forecast;
     return EnvelopePhysicalSource(std::move(next));
 }
+EnvelopePhysicalForecast EnvelopePhysicalSource::Preflight(const WallSource& wall,
+    const vehicle_startup::VehicleShellReferences& refs,EnvelopePhysicalLimits limits) {
+    return PreflightImpl(wall,refs,nullptr,limits);
+}
+EnvelopePhysicalForecast EnvelopePhysicalSource::PreflightWithControls(const WallSource& wall,
+    const vehicle_startup::VehicleShellReferences& refs,const modelio::solid_control_packets::NativePacketSource& packets,
+    EnvelopePhysicalLimits limits) { return PreflightImpl(wall,refs,&packets,limits); }
+EnvelopePhysicalSource EnvelopePhysicalSource::Prepare(const WallSource& wall,
+    const vehicle_startup::VehicleShellReferences& refs,EnvelopePhysicalLimits limits) {
+    return PrepareImpl(wall,refs,nullptr,limits);
+}
+EnvelopePhysicalSource EnvelopePhysicalSource::PrepareWithControls(const WallSource& wall,
+    const vehicle_startup::VehicleShellReferences& refs,const modelio::solid_control_packets::NativePacketSource& packets,
+    EnvelopePhysicalLimits limits) { return PrepareImpl(wall,refs,&packets,limits); }
 const WallSource& EnvelopePhysicalSource::wall() const noexcept { return data_->wall; }
 const modelio::physical_scope::DomainEmbedding& EnvelopePhysicalSource::embedding() const noexcept { return data_->embedding; }
 const tl::fea::NodalNodeDomain& EnvelopePhysicalSource::domain() const noexcept { return data_->embedding.domain(); }

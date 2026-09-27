@@ -37,7 +37,7 @@ void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain& selecti
     auto limits = fe::NodalRigidGroupLimits::Vehicle(); limits.max_host_bytes = cap;
     const fe::NodalRigidGroupModelInput input{domain.source_instance_id(), domain.node_count(),
         groups.data(), groups.size(), {1000, .001}, limits};
-    const auto report = selection.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5
+    const auto report = modelio::physical_scope::HasVehicleSupports(selection.source().solid_source().data().policy)
         ? model.InitializeNativeTotal(input) : model.InitializePhysical(input);
     if (!report) throw std::runtime_error("Original plain rigid group " + std::to_string(report.group) +
                                          " rejected: " + report.message);

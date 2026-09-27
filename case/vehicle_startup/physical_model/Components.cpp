@@ -3,12 +3,13 @@
 namespace crash::cases::vehicle_startup::physical_model::detail {
 void PrepareComponents(const modelio::physical_domain::VehiclePhysicalDomain& source,
     const fe::NodalNodeDomain& domain, const fe::ShellBatchBinding& shells,
-    Limits limits, Components& next) {
+    Limits limits, Components& next, const modelio::solid_control_packets::NativePacketSource* packets) {
+    CheckControlBinding(source, packets);
     auto shell_limits = fe::ShellNodeMapLimits::Vehicle(); shell_limits.max_host_bytes = limits.shell_map_bytes;
     const auto shell_report = next.shell_map.Initialize(shells, domain, shell_limits);
     Require(bool(shell_report), shell_report.message);
     detail::PrepareBeams(source.source().type13_source(), domain, limits.beam_bytes, next.beams);
-    detail::PrepareSolids(source.source().solid_source(), domain, limits.solid_bytes, next.solids);
+    detail::PrepareSolids(source.source().solid_source(), domain, limits.solid_bytes, next.solids, packets);
     fe::Type13ContributionLimits beam_limits; beam_limits.max_host_bytes = limits.beam_contribution_bytes;
     const auto beam_report = next.beam_coefficients.Initialize(next.beams, domain, beam_limits);
     Require(bool(beam_report), beam_report.message);

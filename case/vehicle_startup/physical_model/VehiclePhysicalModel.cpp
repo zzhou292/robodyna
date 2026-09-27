@@ -10,14 +10,26 @@ struct VehiclePhysicalModel::Storage {
     detail::Components components;
     Forecast forecast;
 };
-VehiclePhysicalModel VehiclePhysicalModel::Prepare(const modelio::physical_domain::VehiclePhysicalDomain& source,
-                                                  const VehicleShellBinding& shells, Limits limits) {
+VehiclePhysicalModel VehiclePhysicalModel::PrepareImpl(const modelio::physical_domain::VehiclePhysicalDomain& source,
+        const VehicleShellBinding& shells, const modelio::solid_control_packets::NativePacketSource* packets, Limits limits) {
     using detail::Require;
-    const auto forecast = Preflight(source, shells, limits);
+    const auto forecast = PreflightImpl(source, shells, packets, limits);
     auto next = std::make_shared<Storage>(source, shells);
-    detail::PrepareComponents(source, source.domain(), shells.shells(), limits, next->components);
+    detail::PrepareComponents(source, source.domain(), shells.shells(), limits, next->components, packets);
     next->forecast = forecast;
     return VehiclePhysicalModel(std::move(next));
+}
+Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::VehiclePhysicalDomain& source,
+    const VehicleShellBinding& shells,Limits limits) { return PreflightImpl(source,shells,nullptr,limits); }
+Forecast VehiclePhysicalModel::PreflightWithControls(const modelio::physical_domain::VehiclePhysicalDomain& source,
+    const VehicleShellBinding& shells,const modelio::solid_control_packets::NativePacketSource& packets,Limits limits) {
+    return PreflightImpl(source,shells,&packets,limits);
+}
+VehiclePhysicalModel VehiclePhysicalModel::Prepare(const modelio::physical_domain::VehiclePhysicalDomain& source,
+    const VehicleShellBinding& shells,Limits limits) { return PrepareImpl(source,shells,nullptr,limits); }
+VehiclePhysicalModel VehiclePhysicalModel::PrepareWithControls(const modelio::physical_domain::VehiclePhysicalDomain& source,
+    const VehicleShellBinding& shells,const modelio::solid_control_packets::NativePacketSource& packets,Limits limits) {
+    return PrepareImpl(source,shells,&packets,limits);
 }
 const modelio::physical_domain::VehiclePhysicalDomain& VehiclePhysicalModel::source_domain() const noexcept { return storage_->source; }
 const VehicleShellBinding& VehiclePhysicalModel::shell_source() const noexcept { return storage_->shells; }

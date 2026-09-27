@@ -13,6 +13,7 @@ struct EnvelopePhysicalForecast {
     std::size_t wall_source = 0, embedding = 0, shell_binding = 0;
     std::size_t contributor_sources = 0, native_components = 0, component_packing = 0;
     std::size_t fixed_bytes = 0, peak_bytes = 0;
+    std::size_t solid_control_input = 0;
     std::size_t embedding_prior_peak = 0, point_mass_current = 0, point_mass_chain_peak = 0;
     std::size_t type25_current = 0, type25_chain_peak = 0;
 };
@@ -31,6 +32,12 @@ class EnvelopePhysicalSource {
         const vehicle_startup::VehicleShellReferences&, EnvelopePhysicalLimits = {});
     static EnvelopePhysicalSource Prepare(const WallSource&,
         const vehicle_startup::VehicleShellReferences&, EnvelopePhysicalLimits = {});
+    static EnvelopePhysicalForecast PreflightWithControls(const WallSource&,
+        const vehicle_startup::VehicleShellReferences&,
+        const modelio::solid_control_packets::NativePacketSource&, EnvelopePhysicalLimits = {});
+    static EnvelopePhysicalSource PrepareWithControls(const WallSource&,
+        const vehicle_startup::VehicleShellReferences&,
+        const modelio::solid_control_packets::NativePacketSource&, EnvelopePhysicalLimits = {});
     const WallSource& wall() const noexcept;
     const modelio::physical_scope::DomainEmbedding& embedding() const noexcept;
     const tl::fea::NodalNodeDomain& domain() const noexcept;
@@ -50,6 +57,12 @@ class EnvelopePhysicalSource {
     // scratch/cap peaks remain separately available in forecast().
     std::size_t retained_host_upper_bound(std::size_t cap) const;
   private:
+    static EnvelopePhysicalForecast PreflightImpl(const WallSource&,
+        const vehicle_startup::VehicleShellReferences&,
+        const modelio::solid_control_packets::NativePacketSource*, EnvelopePhysicalLimits);
+    static EnvelopePhysicalSource PrepareImpl(const WallSource&,
+        const vehicle_startup::VehicleShellReferences&,
+        const modelio::solid_control_packets::NativePacketSource*, EnvelopePhysicalLimits);
     struct Data;
     explicit EnvelopePhysicalSource(std::shared_ptr<const Data> data) : data_(std::move(data)) {}
     std::shared_ptr<const Data> data_;

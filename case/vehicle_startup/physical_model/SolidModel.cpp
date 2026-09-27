@@ -2,7 +2,8 @@
 
 namespace crash::cases::vehicle_startup::physical_model::detail {
 void PrepareSolids(const modelio::solid_source::VehicleSolidSource& source, const fe::NodalNodeDomain& domain,
-                   std::size_t cap, fe::solids::Model& model) {
+                   std::size_t cap, fe::solids::Model& model,
+                   const modelio::solid_control_packets::NativePacketSource* packets) {
     const auto& data = source.data();
     namespace src = modelio::solid_source;
     std::vector<fe::solids::Input18> adhesive;
@@ -39,6 +40,12 @@ void PrepareSolids(const modelio::solid_source::VehicleSolidSource& source, cons
     input.solid18_law44 = {rear.data(), rear.size()};
     input.solid18_law90 = {foam.data(), foam.size()};
     if (!rear.empty() || !foam.empty()) input.profile = fe::solids::ModelProfile::ExtendedLaw44Law90;
+    const bool required=data.policy==src::Policy::NativeConvertedSupportsV6;
+    Require(required==bool(packets),"Source-faithful V6 solids cannot default to legacy IC0 mechanics");
+    if(packets) {
+        Require(&packets->solid_source().data()==&data,"Solid control binding has different prepared backing");
+        input.controls=packets->InputFor(domain.source_instance_id());
+    }
     const auto report = model.Initialize(domain, input, limits);
     Require(bool(report), report.message);
 }

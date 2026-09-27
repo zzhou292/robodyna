@@ -24,6 +24,7 @@ class NativePacketSource {
         const solid_control::EffectiveSource&,const Artifact&,Limits={});
     control::Input InputFor(std::uint64_t source_instance_id) const;
     const Artifact& artifact()const noexcept;
+    const solid_source::VehicleSolidSource& solid_source()const noexcept;
     const Forecast& forecast()const noexcept;
     std::size_t controlled_count()const noexcept;
     std::size_t owned_payload_bytes()const noexcept;

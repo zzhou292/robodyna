@@ -7,11 +7,11 @@ void Check(const WallSource& wall, const vehicle_startup::VehicleShellReferences
     Require(limits.host_bytes && limits.host_bytes <= EnvelopePhysicalLimits{}.host_bytes,
         "Invalid combined physical-source host cap");
     const auto& origin = wall.vehicle_origin();
-    Require(origin.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5 &&
+    Require(modelio::physical_scope::HasVehicleSupports(origin.source().solid_source().data().policy) &&
         wall.declaration().profile == Profile::EnvelopeFixedElasticV1 &&
         wall.vehicle_prefix().nodes == origin.domain().node_count() &&
         wall.domain().node_count() == origin.domain().node_count()+4,
-        "Combined physical source requires the complete original V5 and declared wall suffix");
+        "Combined physical source requires complete supported vehicle sources and the declared wall suffix");
     Require(&origin.source().tied_source().canonical().data() == &refs.source().canonical().data(),
         "Wall and vehicle shell references do not share immutable canonical authority");
     Require(refs.qeph_metric().profile() == vehicle_startup::QephMetricProfile::AuthenticatedSourceLength &&

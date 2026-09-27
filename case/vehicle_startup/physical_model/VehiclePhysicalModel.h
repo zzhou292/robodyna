@@ -1,6 +1,7 @@
 #pragma once
 #include "case/vehicle_startup/VehicleShellBinding.h"
 #include "modelio/physical_domain/VehiclePhysicalDomain.h"
+#include "modelio/solid_control_packets/NativePacketSource.h"
 #include "modelio/point_mass/VehiclePointMassSource.h"
 #include "modelio/type25/VehicleType25Source.h"
 #include "lib_src/elements/solids/Model.h"
@@ -29,6 +30,7 @@ struct Limits {
 struct Forecast {
     std::size_t shell_source = 0, physical_source = 0, producer_source = 0;
     std::size_t native_reservation = 0, packing_bytes = 0, total_bytes = 0;
+    std::size_t solid_control_input = 0; // Additional borrowed packet payload; case owns upstream authority.
 };
 // Complete immutable startup mechanics on the explicit retained source domain.
 // Owns all typed producers, their additive ledger and native PART/plain models.
@@ -40,6 +42,10 @@ class VehiclePhysicalModel {
                               const VehicleShellBinding&, Limits = {});
     static VehiclePhysicalModel Prepare(const modelio::physical_domain::VehiclePhysicalDomain&,
                                         const VehicleShellBinding&, Limits = {});
+    static Forecast PreflightWithControls(const modelio::physical_domain::VehiclePhysicalDomain&,
+        const VehicleShellBinding&, const modelio::solid_control_packets::NativePacketSource&, Limits = {});
+    static VehiclePhysicalModel PrepareWithControls(const modelio::physical_domain::VehiclePhysicalDomain&,
+        const VehicleShellBinding&, const modelio::solid_control_packets::NativePacketSource&, Limits = {});
     const modelio::physical_domain::VehiclePhysicalDomain& source_domain() const noexcept;
     const VehicleShellBinding& shell_source() const noexcept;
     const modelio::point_mass::VehiclePointMassSource& point_masses() const noexcept;
@@ -55,6 +61,10 @@ class VehiclePhysicalModel {
         return storage_ == other.storage_;
     }
   private:
+    static Forecast PreflightImpl(const modelio::physical_domain::VehiclePhysicalDomain&,
+        const VehicleShellBinding&, const modelio::solid_control_packets::NativePacketSource*, Limits);
+    static VehiclePhysicalModel PrepareImpl(const modelio::physical_domain::VehiclePhysicalDomain&,
+        const VehicleShellBinding&, const modelio::solid_control_packets::NativePacketSource*, Limits);
     struct Storage;
     explicit VehiclePhysicalModel(std::shared_ptr<const Storage> value) : storage_(std::move(value)) {}
     std::shared_ptr<const Storage> storage_;

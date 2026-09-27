@@ -28,5 +28,5 @@ struct Components {
 };
 void PrepareComponents(const modelio::physical_domain::VehiclePhysicalDomain& original,
     const fe::NodalNodeDomain& actual_domain, const fe::ShellBatchBinding& shells,
-    Limits, Components&);
+    Limits, Components&, const modelio::solid_control_packets::NativePacketSource* = nullptr);
 } // namespace crash::cases::vehicle_startup::physical_model::detail
