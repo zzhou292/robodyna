@@ -1,0 +1,53 @@
+{
+  "commit": "90a4a8060966358714049a775e4f9f7e7838481e",
+  "files": [
+    {
+      "path": "lib_src/elements/type13/resident/Measure.h",
+      "fixture": "frozen/Type13Measure.h",
+      "bytes": 3067,
+      "sha256": "a9a1b0269bf63f8b2967dd69461e764d231089fc335fd2a613d829a89a3fee37"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasure.h",
+      "fixture": "frozen/Type25Measure.h",
+      "bytes": 2473,
+      "sha256": "9f6c5e4c2d4ab3d2a639f86ae0c42183cbe6a61ef8a6df3433d45237582bc814"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Candidate.cu",
+      "fixture": "frozen/Type13Candidate.cu",
+      "bytes": 2811,
+      "sha256": "c6ed9a146af04dfaaecf4944254e7f4e07c68528ec103be2c34887712ce718ce"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchKernels.cu",
+      "fixture": "frozen/Type25Candidate.cu",
+      "bytes": 5439,
+      "sha256": "7e1a0b84a3f6a125ad318fea22f7efdd6f72366d16b263e1c2630f351d37cf25"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.h",
+      "fixture": "frozen/Type13Arena.h",
+      "bytes": 1344,
+      "sha256": "fbcd94c93d3cf17023412c26fd366b77c78e5f307fc474a4af6fb4ed5d81de70"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.cpp",
+      "fixture": "frozen/Type13Arena.cpp",
+      "bytes": 1846,
+      "sha256": "720670ffad583e69c26e240457f250d977035b4fef567b1ad23429509acbbd0d"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.h",
+      "fixture": "frozen/Type25Arena.h",
+      "bytes": 1568,
+      "sha256": "eae0b47fdb8bfdbde8243db87c322c11ddf932411e6cfb89794612028ddcc8f9"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.cpp",
+      "fixture": "frozen/Type25Arena.cpp",
+      "bytes": 1539,
+      "sha256": "7313bb179ee80e55e8c1c6692d31ceb5acb2f964ff51ab022427b98f503071c4"
+    }
+  ]
+}

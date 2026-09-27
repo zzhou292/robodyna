@@ -22,6 +22,7 @@ void LaunchAssembly(Storage*, unsigned slab, NodalAssemblyView,
                      NodalCinAssemblyView, bool initial, bool mapped = false);
 void LaunchCandidate(Storage*, unsigned accepted, unsigned trial,
                       NodalPreparedView, BatchDiagnostics, std::size_t count);
+void LaunchMeasurement(Storage*, unsigned accepted, unsigned trial, NodalPreparedView, std::size_t count);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::type13::batch_detail
 

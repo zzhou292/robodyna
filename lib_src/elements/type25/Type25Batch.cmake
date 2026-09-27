@@ -8,6 +8,7 @@ add_library(tl_type25_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Type25Batch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Type25BatchOperations.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Type25BatchKernels.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/Type25BatchMeasurement.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Type25BatchReadback.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Type25BatchStartup.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Type25BatchArena.cpp"

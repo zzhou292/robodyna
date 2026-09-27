@@ -1,0 +1,187 @@
+{
+  "schema": "connector-measurement-operands-source-v1",
+  "baseline_commit": "90a4a8060966358714049a775e4f9f7e7838481e",
+  "scope": "Independent per-parent operand preparation and original ordered diagnostic reduction; no force/material equation change.",
+  "files": [
+    {
+      "path": "lib_src/elements/BUILD.bazel",
+      "bytes": 13903,
+      "sha256": "eb8dee4d6b24cb21a93c2d3b5a853318655cd7eb1efbb65ac95e4a93f7898263"
+    },
+    {
+      "path": "lib_src/elements/ConnectorMeasurement.h",
+      "bytes": 2056,
+      "sha256": "b54583bdd1f1e2f172905c2e241191a3fe56d994c18eced6cda93b27982deb6b"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.cpp",
+      "bytes": 1991,
+      "sha256": "3c5a977bf83a3acf74eb53475c23a03249f4c5256080e3c887baf56519e41131"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.h",
+      "bytes": 1508,
+      "sha256": "e7f3ebeb29f92edfe845097a4c19c3963d0c90f1d629e6fd06b4ce0e4edafdca"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/BUILD.bazel",
+      "bytes": 1757,
+      "sha256": "45aef7cc33cf61b0680c211db34a1fc130eb4ac80f0e00a52940e17d2a4fd1cf"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Batch.cmake",
+      "bytes": 1373,
+      "sha256": "c28f2ef28b05e7f3b28968a97ba020bbd78d7afa6506405ab27f83ab587b0e64"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Candidate.cu",
+      "bytes": 2892,
+      "sha256": "427ecaa01e8962327199b85d968a51d69a88e291f00cb8c9008118f786f37f10"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.cu",
+      "bytes": 888,
+      "sha256": "724a50404b4764c36bf4c20fe03ca758c91e52a4a8332a36d91105a9be2da78c"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.h",
+      "bytes": 2451,
+      "sha256": "ecce9e2eb5193e7215d7a59e6637fe1bd36d53a28d19f43709be444c73c832fd"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Startup.cpp",
+      "bytes": 6178,
+      "sha256": "0065607dedc7a340147971849a70497973f1ea0bf4ba2f5d9b533d0dc47e3b4f"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Storage.h",
+      "bytes": 3158,
+      "sha256": "08d7e42d84691dbeb5729afaba218d10052064df3a43bd19652c54ecf380dd67"
+    },
+    {
+      "path": "lib_src/elements/type25/BUILD.bazel",
+      "bytes": 2380,
+      "sha256": "0f776509c337a7a18fd1901100d5a51e9d43983678cb8af5747b7643698a4ebe"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25Batch.cmake",
+      "bytes": 1660,
+      "sha256": "61a39761f6f07e295d9c5bb9472e0162e28be4fa10f837e39d336499453f06e5"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.cpp",
+      "bytes": 1657,
+      "sha256": "c78087f3cbc3fb57d94594072a82b6d1bdd2aebad85dd8ab533cacb29aa2dd0b"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.h",
+      "bytes": 1712,
+      "sha256": "7ead95017c7b8b2669fa954145f6a09d01e7a68da2629a2898c027c6fee472dc"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchKernels.cu",
+      "bytes": 5573,
+      "sha256": "0e70381da2a27f98c10b2f0238ff42cfe349f075cc34b8bf730ecd8e90b1900a"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasurement.cu",
+      "bytes": 905,
+      "sha256": "fdcd6735183ff03b41e66713ae08a608534d055e3ef984e6d1141c0684545d88"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasurement.h",
+      "bytes": 2163,
+      "sha256": "22a864997b030552703376831d601f5ac8886b652826c7dadd40bf2bd8a90ff4"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchStartup.cpp",
+      "bytes": 5229,
+      "sha256": "7c9ac7147505989889326c4da0e5186371f498595d27d64fe5d7561e65b3dd2e"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchStorage.h",
+      "bytes": 2861,
+      "sha256": "2e82d322d8bf358898862395d51059bb052fae29282c9671adea046e34e99d61"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/BudgetTest.cpp",
+      "bytes": 2633,
+      "sha256": "a55446c8c011c578cab22d0256ef508cfbbc2e316dd33426c23763ff18077a5f"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/CMakeLists.txt",
+      "bytes": 2539,
+      "sha256": "95c28583a3bed71be3928bc0d253a26f0acef68e168ab18229eb2b559605450b"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/CudaTest.cu",
+      "bytes": 5280,
+      "sha256": "0e5b0969e7fa16653875b1cc058964d4ccb10921bf43222341456c46c9de0dea"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/HostTest.cpp",
+      "bytes": 2404,
+      "sha256": "80dd437591aebba93daeed82b178c708b0782517438e1db6ba5e04499b5efa06"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/README.md",
+      "bytes": 2687,
+      "sha256": "2ca98bc766d48b5e3a144c436d0eea4d239a9fe8f2b0ddb84faf530c4747d793"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/TestSupport.h",
+      "bytes": 7597,
+      "sha256": "f0e8fafaa9bc45ba4f0bae64d5dfa3ead9797d5b283b21679f32264b604f3ebc"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/baseline.json",
+      "bytes": 1846,
+      "sha256": "82f8d6a78321482cac8da57f6239a9fbaad480233c4612ec99bb98bfe6f65803"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Arena.cpp",
+      "bytes": 1846,
+      "sha256": "720670ffad583e69c26e240457f250d977035b4fef567b1ad23429509acbbd0d"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Arena.h",
+      "bytes": 1344,
+      "sha256": "fbcd94c93d3cf17023412c26fd366b77c78e5f307fc474a4af6fb4ed5d81de70"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Candidate.cu",
+      "bytes": 2811,
+      "sha256": "c6ed9a146af04dfaaecf4944254e7f4e07c68528ec103be2c34887712ce718ce"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Measure.h",
+      "bytes": 3067,
+      "sha256": "a9a1b0269bf63f8b2967dd69461e764d231089fc335fd2a613d829a89a3fee37"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Arena.cpp",
+      "bytes": 1539,
+      "sha256": "7313bb179ee80e55e8c1c6692d31ceb5acb2f964ff51ab022427b98f503071c4"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Arena.h",
+      "bytes": 1568,
+      "sha256": "eae0b47fdb8bfdbde8243db87c322c11ddf932411e6cfb89794612028ddcc8f9"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Candidate.cu",
+      "bytes": 5439,
+      "sha256": "7e1a0b84a3f6a125ad318fea22f7efdd6f72366d16b263e1c2630f351d37cf25"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Measure.h",
+      "bytes": 2473,
+      "sha256": "9f6c5e4c2d4ab3d2a639f86ae0c42183cbe6a61ef8a6df3433d45237582bc814"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/generate_oracle.py",
+      "bytes": 3445,
+      "sha256": "d2a000d1e52ffeb7869f331ecedbd502bf78b75d78285a2e984bd88fea4d1671"
+    }
+  ]
+}

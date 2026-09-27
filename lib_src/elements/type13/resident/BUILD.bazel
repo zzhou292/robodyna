@@ -5,11 +5,11 @@ cuda_library(
     srcs = [
         "Arena.cpp", "Forecast.cpp", "Startup.cpp", "Identity.cpp", "OutputRanges.cpp",
         "mapped/Forecast.cpp", "mapped/Initialize.cu", "mapped/Assemble.cu", "mapped/Publication.cpp",
-        "Upload.cu", "Batch.cu", "Assembly.cu", "Candidate.cu", "AssembleOperation.cu",
+        "Upload.cu", "Batch.cu", "Assembly.cu", "Candidate.cu", "Measurement.cu", "AssembleOperation.cu",
         "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp",
     ],
     hdrs = [
-        "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h",
+        "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h", "Measurement.h",
         "OperationChecks.h", "ResultChecks.h", "mapped/State.h", "mapped/Startup.h",
     ],
     copts = [
@@ -22,7 +22,7 @@ cuda_library(
         "//lib_src/assembly:type13_node_contributions", "//lib_src/assembly:nodal_node_domain",
         "//lib_src/elements:shell_physical_owner", "//lib_src/elements:shell_physical_owner_values",
         "//lib_src/assembly:shell_physical_binding", "//lib_src/constraints:nodal_rigid_assembly_binding",
-        "//lib_src/elements:shell_batch_fields", "//lib_src/elements:shell_batch_startup",
+        "//lib_src/elements:shell_batch_fields", "//lib_src/elements:connector_measurement", "//lib_src/elements:shell_batch_startup",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity", "//lib_src/solvers:nodal_native_physical_coefficients",
         "//lib_src/math:fixed3_operations", "//lib_src/math:quaternion", "//lib_utils:bounded_arena",

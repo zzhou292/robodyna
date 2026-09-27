@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "Type25BatchMeasurement.h"
-#include "Type25BatchStorage.h"
+#include "Type25BatchMeasure.h"
 #include "Type25Math.h"
 #include "../../solvers/NodalForceAssembly.h"
 #include "../../solvers/NodalNativePhysicalCoefficients.h"
@@ -67,7 +66,7 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
     s.control.status=BatchStatus::ElementFailure;s.control.element=static_cast<std::uint32_t>(e);
     s.control.element_status=s.candidate_status[e];return;
   }
-  if(!MeasurePrepared(s.model,s.measurement,s.control.diagnostics)) {s.control.status=BatchStatus::NonfiniteResult;return;}
+  if(!Measure(s.model,*accepted,*trial,view,s.control.diagnostics)) {s.control.status=BatchStatus::NonfiniteResult;return;}
   s.control.diagnostics.valid=true;
 }
 }
@@ -75,8 +74,6 @@ void LaunchAssembly(Storage* s,const Slab* accepted,NodalAssemblyView view,bool 
 void LaunchCandidate(Storage* s,const Slab* accepted,Slab* trial,NodalPreparedView view,BatchDiagnostics diagnostics,std::size_t count) {
   constexpr unsigned threads=64;const unsigned blocks=1u+static_cast<unsigned>((count-1)/threads);
   CandidateElements<<<blocks,threads,0,view.stream>>>(s,accepted,trial,view);
-  if(cudaPeekAtLastError()!=cudaSuccess)return;
-  LaunchMeasurement(s,accepted,trial,view,count);
   if(cudaPeekAtLastError()!=cudaSuccess)return;
   FinalizeCandidate<<<1,1,0,view.stream>>>(s,accepted,trial,view,diagnostics);
 }

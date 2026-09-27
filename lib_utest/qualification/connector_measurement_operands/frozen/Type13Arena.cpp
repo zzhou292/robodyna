@@ -21,8 +21,7 @@ bool MakeLayout(std::size_t properties, std::size_t elements,
       !layout.Append<DeviceElement>(elements, next.elements) ||
       !layout.Append<Evaluation>(elements, next.slab[0]) ||
       !layout.Append<Evaluation>(elements, next.slab[1]) ||
-      !layout.Append<Status>(elements, next.status) ||
-      !layout.Append<Measurement>(elements, next.measurement)) {
+      !layout.Append<Status>(elements, next.status)) {
     return false;
   }
   next.bytes = layout.bytes();
@@ -37,7 +36,6 @@ Storage RebasedHeader(void* base, const ArenaLayout& layout) noexcept {
   next.slab[0] = util::ArenaPointer<Evaluation>(base, layout.slab[0]);
   next.slab[1] = util::ArenaPointer<Evaluation>(base, layout.slab[1]);
   next.candidate_status = util::ArenaPointer<Status>(base, layout.status);
-  next.measurement = util::ArenaPointer<Measurement>(base, layout.measurement);
   return next;
 }
 } // namespace tl::fea::type13::batch_detail

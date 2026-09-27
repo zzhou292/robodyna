@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "Kinematics.h"
-#include "Measurement.h"
+#include "Measure.h"
 #include "../Type13Math.h"
 
 namespace tl::fea::type13::batch_detail {
@@ -44,7 +44,8 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
       return;
     }
   }
-  if (!MeasurePrepared(state.model, state.measurement, state.control.diagnostics)) {
+  if (!Measure(state.model, state.slab[accepted], state.slab[trial], view,
+               state.control.diagnostics)) {
     state.control.status = BatchStatus::NonfiniteResult;
     return;
   }
@@ -61,8 +62,6 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   if (cudaPeekAtLastError() != cudaSuccess) {
     return;
   }
-  LaunchMeasurement(storage, accepted, trial, view, count);
-  if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, 1, 0, view.stream>>>(storage, accepted, trial, view, identity);
 }
 } // namespace tl::fea::type13::batch_detail

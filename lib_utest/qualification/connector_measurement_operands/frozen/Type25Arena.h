@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Type25Batch.h"
-#include "../ConnectorMeasurement.h"
 #include "../../../lib_utils/BoundedArena.h"
 
 namespace tl::fea::type25::batch_detail {
@@ -22,11 +21,10 @@ struct Control {
   std::uint32_t element=UINT32_MAX,node=UINT32_MAX;
   BatchDiagnostics diagnostics;
 };
-using Measurement = connector_measurement::ParentOperands<4>;
-struct Storage { DeviceModel model;Slab slab[2];Status* candidate_status=nullptr;Measurement* measurement=nullptr;Control control; };
+struct Storage { DeviceModel model;Slab slab[2];Status* candidate_status=nullptr;Control control; };
 static_assert(std::is_trivially_copyable_v<Storage>);
 struct ArenaLayout {
-  util::ArenaRegion header,properties,elements,nodes,slab[2],status,measurement;
+  util::ArenaRegion header,properties,elements,nodes,slab[2],status;
   std::size_t bytes=0;
 };
 bool MakeLayout(std::size_t properties,std::size_t elements,std::size_t nodes,std::size_t cap,ArenaLayout&) noexcept;

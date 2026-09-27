@@ -61,7 +61,8 @@ BatchReport BuildSourceValues(const BatchConfig& config,
       !arena.Construct<DeviceElement>(layout.elements) ||
       !arena.Construct<Evaluation>(layout.slab[0]) ||
       !arena.Construct<Evaluation>(layout.slab[1]) ||
-      !arena.Construct<Status>(layout.status)) {
+      !arena.Construct<Status>(layout.status) ||
+      !arena.Construct<Measurement>(layout.measurement)) {
     return {BatchStatus::ResourceLimit, "TYPE13 arena cannot construct admitted records"};
   }
   const auto& model = *source.model();
