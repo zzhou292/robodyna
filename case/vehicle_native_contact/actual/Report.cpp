@@ -26,6 +26,12 @@ void Sources(output::Document& doc, const detail::SourceInputs& source) {
     if(const auto* controls=solids.control_selection();controls&&
         controls->profile()==tl::fea::solids::control::Profile::SourceDeclared) {
         output::Integer(doc,"solid_source_control_count",controls->controlled_count());
+        output::Integer(doc,"solid_model_owned_payload_bytes",solids.owned_payload_bytes());
+        std::size_t curve_points=0;
+        for(const auto& material:solids.materials36())curve_points+=material.value.curve.count;
+        for(const auto& material:solids.materials44())curve_points+=material.value.curve.count;
+        for(const auto& material:solids.materials90())curve_points+=material.value.curve().count;
+        output::Integer(doc,"solid_owned_curve_points",curve_points);
         output::Integer(doc,"solid_native_packet_count",controls->packets().size());
         output::Integer(doc,"solid_native_nvsiz",controls->native_nvsiz());
         output::Integer(doc,"solid_compiled_mvsiz",controls->compiled_mvsiz());
