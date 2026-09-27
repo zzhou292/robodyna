@@ -52,7 +52,7 @@ TEST(ExtendedResidentRelocation, ThreeOwnedPoolsRebaseWithoutBorrowedLifetimeOrD
   EXPECT_EQ(header.material90[0].curve().stress_pa,curves+15);
   EXPECT_EQ(model.materials90()[0].value.curve().stress_pa[2],50e6);
   EXPECT_FALSE(header.solid18_law44.slab[0][0].history.prepared());
-  EXPECT_FALSE(header.solid18_law90.slab[0][0].history.prepared());
+  EXPECT_FALSE(header.solid18_law90.slab[0][0].history.legacy()->prepared());
 }
 TEST(ExtendedResidentRelocation, ActualBlankHuAndExplicitHuOneKeepTheirPreparedBranch) {
   namespace law=tl::material::law90;
