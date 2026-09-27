@@ -25,6 +25,7 @@ ParticipantConfigs ConfigureParticipants(const Config& config,const Source& sour
     SetParticipantIdentity(out.type25,config,stamp,source.startup());
     SetParticipantIdentity(out.type13,config,stamp,source.startup());
     SetParticipantIdentity(out.solids,config,stamp,source.startup());
+    out.solids.limits=config.limits.solids;
     out.qeph.element_count = source.physical().shells()->qeph_count();
     out.t3.element_count = source.physical().shells()->t3_count();
     out.qbat.element_count = source.physical().shells()->qbat_count();
