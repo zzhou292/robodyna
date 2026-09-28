@@ -30,6 +30,9 @@ struct Device {
       for(unsigned n=0;n<2;++n){const auto node=2*p+n;const_cast<double*>(view.base_kinematics.position_xyz)[3*node]=n*.1;const_cast<double*>(view.kinematics.position_xyz)[3*node]=n*.1+1.;
         const_cast<double*>(view.base_kinematics.velocity_xyz)[3*node]=const_cast<double*>(view.kinematics.velocity_xyz)[3*node]=1.;
         const_cast<double*>(view.base_kinematics.orientation_wxyz)[4*node]=const_cast<double*>(view.kinematics.orientation_wxyz)[4*node]=1.;}}
+    if(!d::ValidResult(parents[0],*material,now[0],0,0)){ADD_FAILURE()<<"Reset result is invalid";return false;}
+    double kick=0,drift=0;
+    if(!fe::beam_endpoint::AccumulateRhsWork(parents[0].domain_nodes,old[0].rhs_force_n,old[0].rhs_couple_nm,view,state->config.owner.fixed_dt,kick,drift)){ADD_FAILURE()<<"Reset endpoint view is invalid";return false;}
     return true;
   }
   ~Device(){cudaFree(fields);cudaFree(curve);cudaFree(status);cudaFree(now);cudaFree(old);cudaFree(material);cudaFree(parents);cudaFree(state);}

@@ -11,7 +11,7 @@ d::Control Compare(Device&x,b::BatchDiagnostics seed=Seed(),bool initial=false){
 }
 TEST(Beam18ReadTileCuda, EveryControlFieldMatchesInitialCandidateAndTileTails){
   for(std::size_t n:{0u,1u,2u,31u,32u,63u,64u,65u,127u,128u,129u,142u,193u}){SCOPED_TRACE(n);Device x;ASSERT_TRUE(x.Initialize(n));
-    for(bool initial:{false,true})for(bool valid:{false,true}){Compare(x,Seed(valid,-0.),initial);ASSERT_FALSE(HasFailure());}}
+    for(bool initial:{false,true})for(bool valid:{false,true}){const auto c=Compare(x,Seed(valid,-0.),initial);ASSERT_FALSE(HasFailure());EXPECT_EQ(c.status,b::BatchStatus::Success);}}
 }
 TEST(Beam18ReadTileCuda, PerParentPriorityRejectsBeforeLaterStatusAndPreservesExactPrefix){
   Device x;ASSERT_TRUE(x.Initialize(129));x.now[0].geometry.length_m=-1;x.status[128]=int(b::Status::InvalidInput);
