@@ -4,6 +4,13 @@
 #include "lib_src/elements/beam18/resident/measurement/Finalize.cuh"
 namespace beam18_read_tile_test {
 __global__ void Current(d::Storage*s,fe::NodalPreparedView v,b::BatchDiagnostics seed,bool initial){__shared__ tile::Tile stage;tile::Finalize(*s,0,initial?0:1,v,seed,initial,stage);}
+__global__ void Probe(d::Storage*s,fe::NodalPreparedView v,int*out){
+ const auto&p=s->parents[0];const auto&n=s->slab[1][0];const auto&m=s->materials[0];
+ out[0]=d::ValidResult(p,m,n,0,0);out[1]=b::force_detail::MaterialValid(p.reference,m);out[2]=b::force_detail::SameReference(p.reference,n.proposed_history.reference());
+ out[3]=b::force_detail::SameMaterial(m,n.proposed_history.material());out[4]=b::force_detail::HistoryValid(m,n.proposed_history.values());
+ fe::beam_endpoint::Motion a,z;out[5]=fe::beam_endpoint::Gather(p.domain_nodes,v.base_kinematics,a);out[6]=fe::beam_endpoint::Gather(p.domain_nodes,v.kinematics,z);
+ double k=0,f=0;out[7]=fe::beam_endpoint::AccumulateRhsWork(p.domain_nodes,s->slab[0][0].rhs_force_n,s->slab[0][0].rhs_couple_nm,v,s->config.owner.fixed_dt,k,f);
+}
 void Drain(){ASSERT_EQ(cudaGetLastError(),cudaSuccess);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);}
 d::Control Compare(Device&x,b::BatchDiagnostics seed=Seed(),bool initial=false){
   x.state->control=Poison();d::read_tile_reference::Finalize<<<1,1>>>(x.state,0,initial?0:1,x.view,seed,initial);Drain();const auto expected=x.state->control;
@@ -11,6 +18,7 @@ d::Control Compare(Device&x,b::BatchDiagnostics seed=Seed(),bool initial=false){
 }
 TEST(Beam18ReadTileCuda, EveryControlFieldMatchesInitialCandidateAndTileTails){
   for(std::size_t n:{0u,1u,2u,31u,32u,63u,64u,65u,127u,128u,129u,142u,193u}){SCOPED_TRACE(n);Device x;ASSERT_TRUE(x.Initialize(n));
+    if(n==1){int* probe=nullptr;ASSERT_EQ(cudaMallocManaged(&probe,8*sizeof(int)),cudaSuccess);Probe<<<1,1>>>(x.state,x.view,probe);Drain();for(int i=0;i<8;++i)EXPECT_EQ(probe[i],1)<<"source probe "<<i;cudaFree(probe);}
     for(bool initial:{false,true})for(bool valid:{false,true}){const auto c=Compare(x,Seed(valid,-0.),initial);ASSERT_FALSE(HasFailure());EXPECT_EQ(c.status,b::BatchStatus::Success);}}
 }
 TEST(Beam18ReadTileCuda, PerParentPriorityRejectsBeforeLaterStatusAndPreservesExactPrefix){
