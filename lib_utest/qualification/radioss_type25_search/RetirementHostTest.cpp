@@ -46,6 +46,9 @@ TEST(Type25SearchRetirement, EmptySentinelsAndExplicitPolicyAreValidatedWithoutO
 }
 TEST(Type25SearchRetirement, PairedRoleMasksHaveExactSeparateResourceAdmission) {
   Fixture f;s::Forecast legacy,next;
+  // Small mask additions may fit existing arena alignment padding. This
+  // complete unique roster deliberately crosses that allocation boundary.
+  f.main.resize(17);for(unsigned i=0;i<17;++i)f.main[i]=i+1;f.Bind();
   ASSERT_EQ(s::Maintenance::Preflight(f.source,{},legacy),s::Status::Ok);
   f.EnableRetirement();
   ASSERT_EQ(s::Maintenance::Preflight(f.source,{},next),s::Status::Ok);
