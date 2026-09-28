@@ -146,8 +146,8 @@ cc_library(
 
 cuda_library(
     name = "shell_batch_plasticity_storage",
-    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp", "one_point/ShellOnePointStorage.cpp", "failure/ShellFailureStorage.cpp", "failure/ShellFailureCollectionStorage.cpp"],
-    hdrs = ["ShellBatchPlasticityStorage.h", "one_point/ShellOnePointStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h", "failure/ShellFailureArenaLayout.h", "failure/ShellFailureStorage.h", "failure/ShellFailureValues.h", "failure/ShellFailureReadback.h", "failure/ShellFailureSectionAdvance.h"],
+    srcs = ["ShellDiagnosticDeviceSources.cpp", "ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp", "one_point/ShellOnePointStorage.cpp", "failure/ShellFailureStorage.cpp", "failure/ShellFailureCollectionStorage.cpp"],
+    hdrs = ["ShellDiagnosticDeviceSources.h", "ShellBatchPlasticityStorage.h", "one_point/ShellOnePointStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h", "failure/ShellFailureArenaLayout.h", "failure/ShellFailureStorage.h", "failure/ShellFailureValues.h", "failure/ShellFailureReadback.h", "failure/ShellFailureSectionAdvance.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = ["//lib_src/assembly:shell_physical_binding", ":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_batch_failure_binding", ":shell_batch_one_point", "//lib_src/solvers:nodal_trial_identity", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_src/elements/sections:shell_layered_law1", "//lib_utils:bounded_startup_array"],
 )

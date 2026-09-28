@@ -28,6 +28,7 @@ class MixedHostStorage {
   std::size_t device_bytes() const noexcept { return device_?layout_.bytes:0; }
   const ShellBatchLayeredSection* staging() const noexcept { return output_.data(); }
  private:
+  friend class HostStorage;
   MixedDeviceStorage* device_=nullptr;
   MixedDeviceStorage header_;
   MixedLayout layout_;

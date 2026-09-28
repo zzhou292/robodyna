@@ -5,6 +5,9 @@ include("${CMAKE_CURRENT_LIST_DIR}/../ShellBatchPlasticity.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellMappedStartup.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellPhysicalOwner.cmake")
 add_library(tl_qeph_batch STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/rejected_candidate/Copy.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/rejected_candidate/Inputs.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/rejected_candidate/Replay.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Startup.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Initialize.cu"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Assemble.cu"

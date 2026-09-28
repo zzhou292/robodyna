@@ -1,0 +1,576 @@
+{
+  "schema": "tl.qeph_rejected_candidate.mechanics_preservation.v1",
+  "baseline": "7987e033195038622f6eb363181359570db7a11d",
+  "unchanged_mechanics": [
+    {
+      "file": "lib_src/elements/qeph/QephBatch.cu",
+      "sha256": "91ed10083b6238dfc0d03dee286d368aa0dcf62c5b3732189015e85dd66cd023"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchDiagnostics.h",
+      "sha256": "58637b6162a754f793e4dab546fe2c241d65a9698b39e3179d7df451883d5e2b"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchFailure.cpp",
+      "sha256": "11ef08131277e75463711699a048e2320f9afe81994580d1214faf97597c55cf"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchFailureReadback.cpp",
+      "sha256": "c234ec7be8570681419b3f77a86e5ac0d775d54758db1214c15cee434a0ca105"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchFailureSection.h",
+      "sha256": "f8075fa86f11470dae0c1382853e019e4c8f931674018da7f8fd856bd9332d1e"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchIdentity.cpp",
+      "sha256": "30babf3a427bc08bb9497d020a625c4433a17c51104d9f4ab6b43cc708bb531d"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchKernels.cu",
+      "sha256": "ac3e62ae25bf6f45c4524381d38d68e7851594895f0518f130de1dc3f6af48ee"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchLayeredSection.h",
+      "sha256": "b170715feede0a000e0060b5c5a76e647e3816bf927b0830ececcabf08015ee8"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchModel.cpp",
+      "sha256": "4018a60ab8847a50802370388743cdf25bc0b8814e72d70e984dc2550f624b5b"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchPlasticity.cpp",
+      "sha256": "18e184aeeb76b29c288cca1895f793eb6e63c21bb482473681db36f04b248c0d"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchPublication.cpp",
+      "sha256": "3d47cfceb6f85371be6bb755fb0bd33c42cdd591189872bdb154a49b6586b0c5"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchSections.cpp",
+      "sha256": "5f7f87f1a82cd0c12eb14eccaddcead3a2d5bcfbf06b72420f472950cd72d203"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephBatchStartup.h",
+      "sha256": "294a6bfd1d33a538d02bb02c43a074fab705ba826bb132304f574117ad489372"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephCurrentFrame.h",
+      "sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephData.h",
+      "sha256": "789c0655cb498d80a3ec92cc39c491b5fc648a48b09fe65aedc901f95c580031"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephElasticForces.h",
+      "sha256": "1a840c6af8c623d3c6f5e5766254de97a166788bbb8b38aadc0feb5008e66037"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephForce.h",
+      "sha256": "7bdfa1ab27fe155d131bb035b9663082b5d291b63c1a567e47056da6810158eb"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephForceData.h",
+      "sha256": "a1ecf7bf9f57044597bff04988fb62f2dc93a299b6bc700c7d3ba552fd6e74f4"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephForceProjection.h",
+      "sha256": "482263ba09996dafd20bca44232bcf8130afbfb2cd5e0bbec49bfa0dccc3ff61"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephForceProjectionUnits.h",
+      "sha256": "e9b839d4a62ac564f6aa766fee7f675f6852199ca14a3f31ebd9686f992d7887"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephGeometryWork.h",
+      "sha256": "ad56e80b373c608465db8c82fc5f4c8298f876b6db9eb4658f441a0d8cef83cf"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephHistory.h",
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephHistoryData.h",
+      "sha256": "17a5dfe9697e6d985cd54fdb888c9222f25c0f893f9e6389bccb44fb9b9ed17a"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephKinematics.h",
+      "sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephKinematicsData.h",
+      "sha256": "1e1342d9dd3767f8613124436c5c2fe706ef2aaa1285a44a7bef63a9c55ee018"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLaw1.h",
+      "sha256": "dc3fd8bf528c87445790e1a5b4c2b754d8370852689029e4c818a75902b2c149"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLayeredForceCore.h",
+      "sha256": "d0ed04f5724fb98420035f60581a55a28f0661cf9e9e5ba15965d6a1bc3a9c88"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLayeredJ2.h",
+      "sha256": "f3b147832f1dc33f0d503890e4fb79d88c1ddf012943e721826667f294b49442"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLayeredJ2Failure.h",
+      "sha256": "a34d38082404514f228506e4897a1cb57b32214871035c9695dc77aada1808bc"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLayeredLaw1.h",
+      "sha256": "5adb0ac06c25d662eba77806087ecf8ad9cf512e04d4bf4c68350f2fef261adb"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephLayeredTab1.h",
+      "sha256": "6ecd7ba1d2caffecda413e362de0e7904cced8399c7fb8563e30f460747d72c9"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephMaterial.h",
+      "sha256": "4dac252b7730159a33d9a8cd06baea4a569be911fafc699919eaad9b3011e4c1"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephPlasticStabilization.h",
+      "sha256": "79983bf56c4fd78d101cc88cce9397d771afca39ce3935a889d2f4841ce93b53"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephProjection.h",
+      "sha256": "568878aa2fa3cf406fcf3ec9284728024873e19b1d53d3306e9693fec71443e5"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephProjectionInverse.h",
+      "sha256": "608a5890d52ccb79ae6196bfdab6b939b7d0124f2c3b3df8d398b2641acf34b5"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephProjectionUnits.h",
+      "sha256": "4783e0b2e59d6ff094d1184bea00fe53cde48b8d866aaffc6812d183fa10c153"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephRates.h",
+      "sha256": "a36f7af8c4bb42095085e8894a5ce8bb56e38475d0e12f01c02ff12d0b5fa068"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephStabilizationForces.h",
+      "sha256": "40787ce0132246bb24bcf6175999cd569027b91ad846726fb4b41d76eafc1cd4"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephStabilizationState.h",
+      "sha256": "8d627e55a2a7e28702ce99bf58d189654c22ad2a1887b6f23b2de54cd4f09acb"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephStartup.h",
+      "sha256": "da4cd3435755e73ab466996a7f24d39670c9aa1589fed65417d3bcba5ccf1957"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephStartupFrame.h",
+      "sha256": "36b65c6c570e7314fda752f07b1aa48c5543aff4cf6f043d4ea476ff23cbada4"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
+      "sha256": "663e40efb514fca51ea21d8d66eef5733018258bba29f63729ec3682ece18d5a"
+    },
+    {
+      "file": "lib_src/elements/qeph/QephVelocityCorrection.h",
+      "sha256": "f09752adf0b4086fa67a5c6fd4bc2ef481632a5d5eb7db79d1fc2b8a35166eef"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ActivityKernels.cu",
+      "sha256": "8f2f05dc8946c2034db3d6581937f5388011693f7fba87b53317f1d0f23f5bb2"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ActivityLayout.h",
+      "sha256": "d7a25fe2a0e0c1db938dd8a8bef7ea539db2ec9f4ff9cf2086b9ac7a83477894"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ActivityReadback.cu",
+      "sha256": "5014b7a73fa65ace02691d21ca629f8a37f6f759478f63f5930c9182b558849b"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ActivityValues.h",
+      "sha256": "226421a2240b7ba5f14f6054082133f0a291b675d26932856ed05d66faf704ef"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Assemble.cu",
+      "sha256": "4fc03045e91b2f98e176141aa23fb3b25e692e828aa63de24152f16de06e0679"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/AssemblyLayout.h",
+      "sha256": "9b49b8be173c8eb26412cc85b7494396fe7deb2075efd486636354bad062750c"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/AssemblyTypes.h",
+      "sha256": "5a39729e00705709e6bb7ff4f0a8d40d61f1f4b16c520adf879b5d21e0a45872"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/AssemblyValues.h",
+      "sha256": "c890cab758ec87371396da8b552c41886f8b6ba91b73da79eb6a6d97f232591f"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/CandidateDiagnostics.h",
+      "sha256": "cbda9a0fc528a9e9750c8872613bcc74f789d5014e1c554806232ae037a601f9"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/FailureActivityKernels.cu",
+      "sha256": "64646480418dbf62d3ce4be88e06defcff2a22be25fa14f783c9bc5cc6d744b7"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/FailureActivityReadback.cu",
+      "sha256": "cedebfb91f6e58599874b9a00764277c0bdcac03b777a0ccf4af0faaba3987e5"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/FailureActivityValues.h",
+      "sha256": "7362e37e7e10dceb35aa70f704c3f8ea440b18e14884e32253487e741ddae928"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Incidence.h",
+      "sha256": "e9f4a1c04bb6116aa5748b3384ded2ebbfc581f865bcb0c3eb332db310dd55af"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Initialize.cu",
+      "sha256": "9423889856f7b57656ec5f323d6abd85abdffe2c34903cb27697c8630c4f00d3"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Kernels.cu",
+      "sha256": "d61cd3b750d3af2047b9ec4650572318bf4fbf2767299f532ff37c4c1dadf122"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/MixedActivityKernels.cu",
+      "sha256": "1a550064e6b8f389d614b4d1d2a6584ce4eb601a2419a9db31c57902e19e8c09"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/MixedActivityReadback.cu",
+      "sha256": "313ba65e1ea10f21322aa2cca8f507577b2fa87b51f034a7d3d1faeaa802a1bc"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/MixedActivityValues.h",
+      "sha256": "1f270e93392f697e0b51a50de30555e1a9828f17747463373d684db5207984cc"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ObserverKernels.cu",
+      "sha256": "4ed913d56a6b6d42691550755a4296d32b7899cbafb19487c2cc47dc867111fb"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ObserverSums.h",
+      "sha256": "c06f9b69edeafb1624528718ace7aaf8f1c5b2faa62ee81f031759ccafae9930"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ObserverTypes.h",
+      "sha256": "19e5b08c45f742267be0015f38eabcc695a3e485a43d1c55a0f14e747f55b0da"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/ObserverValues.h",
+      "sha256": "8abd9250550d80548fcaed9871609e1e0a0dfbe6d19957cddc56b76ccce3e10a"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Publication.cpp",
+      "sha256": "a07251997615c4725fe731e10b0d846ae602c8f5919f3723734d1e43b5af2107"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Readback.cpp",
+      "sha256": "89b2e60787fa2d6b78a5568dc5828bcdbafff7d12501ccfd11cfe06f24a063f4"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Result.h",
+      "sha256": "93bde1836116c1b1f55e5dafd850fd40e9a77bf671164883a4b8e8327cc5209e"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Startup.cpp",
+      "sha256": "a07c9b39dd839d8bc20bb462124f488b057563f6537877e7405b3384bf912c07"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Startup.h",
+      "sha256": "cad8ea30f9fa62b9ed4e882de6e3a00f6d79a3259efd6de0d59fbce2e913b341"
+    },
+    {
+      "file": "lib_src/elements/qeph/mapped/Stiffness.h",
+      "sha256": "4f94e502309c03f5685d6ec31efb454f66c33dda7b40828bc1d17da6fd57e633"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLaw44MembranePoint.h",
+      "sha256": "d97affd33c612b13a93cccb85a0cb0c6986af395e90d97e7048624aa270b37b7"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredFailureWork.h",
+      "sha256": "b071c87aac7ba0d0e49318280db2965ff132a88c3d1a7c28f4e122e116971a36"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2.h",
+      "sha256": "6afbde84fac049d57cdf2e8333483aca1ff0470c48920c9250b704ea52ac17af"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2Failure.h",
+      "sha256": "d0c0159eb59d8f801d4d999a80b418588ee3ada8b58cdef1f23c374722391965"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
+      "sha256": "bf2bb29c16fe2c11f1c85b399a95ac4997599997b055a093211102a4e7cbcb31"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2FailureUpdate.h",
+      "sha256": "bc968391898f305170afe5c6d7418fce7a06088d31d0d627dc93d07b82bd1e80"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2FailureWork.h",
+      "sha256": "7cc0dbea62b62ccefea80d92cbf80fa9b56e8bd57a72d2170dd86149b0c750ff"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
+      "sha256": "0ba587bc3e37cfccac919e4b55856e18d72234935451978a2509b31cdf18c8f5"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredJ2Work.h",
+      "sha256": "988f66baef8327f6db12d1a905063eb2d6407555829e3bd1e48ac352a4567877"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredLaw1.h",
+      "sha256": "838b424c5c547d593e6d1eb20fe258a51d95e6ab207fa6aa4058e10b793fd5bf"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredTab1.h",
+      "sha256": "dcf29c45b338945e0792a6baf14d6556530c4b642f7658f3bb059dbec869f992"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredTab1ForceAdapter.h",
+      "sha256": "df2b786cc788513802e99d0bb225cdb316492b34b3e5d518286e08ddf700068a"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredTab1Work.h",
+      "sha256": "e182c2406df6e5d96cad45b96327345addadf6cfd9643e7352541862440a118c"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellLayeredWork.h",
+      "sha256": "14bee4bc733dbecfb7c597ca20a1c460b08d96312f4e53e27788d25a044365d6"
+    },
+    {
+      "file": "lib_src/elements/sections/ShellNip3.h",
+      "sha256": "3a5985263bd8904fbbdef558d9045a6c231ac63aac7801f5aaf45b2db1836e6b"
+    },
+    {
+      "file": "lib_src/materials/Law44MaterialScope.h",
+      "sha256": "64ead8f3e58e15862833d04458655ccbd3941850a1c774bb6f59f3e532e86761"
+    },
+    {
+      "file": "lib_src/materials/Law44MembranePlasticity.h",
+      "sha256": "2978f042e6756605240ba72d266fe6c1b7d903e034f96e9bb4dff70d2268a0fe"
+    },
+    {
+      "file": "lib_src/materials/Law44ZeroShearPlasticity.h",
+      "sha256": "93680e9fe3c9ebeb996562bbca16b70354caf81aa69134078e038b2641b552db"
+    },
+    {
+      "file": "lib_src/materials/ShellElasticLaw1.h",
+      "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
+    },
+    {
+      "file": "lib_src/materials/ShellElasticLaw1Point.h",
+      "sha256": "88acf71b621bb7c68bf76c60251dccba068f95fa91546357f128c9cabf039887"
+    },
+    {
+      "file": "lib_src/materials/SolidLaw36Point.h",
+      "sha256": "f19a1205f1d2861213c46718948e86324c5bcf141bc3adc3b974c01df891e928"
+    },
+    {
+      "file": "lib_src/materials/SolidMaterialProperties.h",
+      "sha256": "338d439961510843ce638f1594fa86d7f6a6926f2dd7685211a665c4bd132b6b"
+    },
+    {
+      "file": "lib_src/materials/TabulatedShellPlasticity.h",
+      "sha256": "eb947321d1a4663bc25b28443599336d6911ec38569b2c3d282e487757da8600"
+    },
+    {
+      "file": "lib_src/materials/detail/Law44ElasticParameters.h",
+      "sha256": "46bbe1f8dc9366973d155206c25e01b945ce0457306ce247ef63c4c774eb6b1c"
+    },
+    {
+      "file": "lib_src/materials/detail/Law44Hardening.h",
+      "sha256": "684a0ee402adf91d31ab2684a4adcfe4ada5d37412d2db0cbcc23a4482601efd"
+    },
+    {
+      "file": "lib_src/materials/detail/SolidCallerValues.h",
+      "sha256": "e1394bf404582ae5bb2ec7dfcbf5f815a508352f158aa7344d1a16db956f160c"
+    },
+    {
+      "file": "lib_src/materials/detail/TabulatedShellPlasticityCurve.h",
+      "sha256": "57d382fe45288c72008fbd07288c5299b5cf58e6280c9be0ad625320ef12f279"
+    },
+    {
+      "file": "lib_src/materials/detail/TabulatedShellPlasticityRate.h",
+      "sha256": "8ea710667f18adec499dc041c87dac2a9377c8cba432a7af81340c90ca5015b8"
+    },
+    {
+      "file": "lib_src/materials/detail/TabulatedShellPlasticityUpdate.h",
+      "sha256": "02277f75d2a7155ca57bdaf66eadfa325e89444f37597c5a08c9ce85b8d5b441"
+    },
+    {
+      "file": "lib_src/materials/detail/Vinter2Value.h",
+      "sha256": "5cef4012507a752c7f14a15846dec1ff986ab3a54e373747dd471f002181d70f"
+    },
+    {
+      "file": "lib_src/materials/detail/VinterValue.h",
+      "sha256": "56f6e54bf8f5b5a5bb2613b3f04d1f561a18dee62261aa0412130d1495407678"
+    },
+    {
+      "file": "lib_src/materials/failure/ShellConstantPlasticFailure.h",
+      "sha256": "80789c4c59fc46ab304662cb70063b83016744877a7663479c325d7d4871a50d"
+    },
+    {
+      "file": "lib_src/materials/failure/ShellTab1ConstantFailure.h",
+      "sha256": "721b47d9b44227bc2e7f1137e6e8ca601f5b59b799d8943bdbd58cad4b964cf8"
+    },
+    {
+      "file": "lib_src/materials/law36/Caller.h",
+      "sha256": "ff9b123013a0da9e38e6b92096e7b50dd0cb05847c515e8c63483d98df00b17c"
+    },
+    {
+      "file": "lib_src/materials/law36/Prepare.h",
+      "sha256": "dfe380bdff025e4bcabe663d8a64912ae60df49999650bd680c0d082ff10094a"
+    },
+    {
+      "file": "lib_src/materials/law36/Types.h",
+      "sha256": "734e67d4c7558a75c70508e69d9c819371a0ff9b4564c385bf7a2a9fbd8d18f3"
+    },
+    {
+      "file": "lib_src/materials/law36/Update.h",
+      "sha256": "50e175532bf5d5160629341be63b2a46b8faa06b1af578ba655270f9e0c14681"
+    },
+    {
+      "file": "lib_src/materials/law42/Caller.h",
+      "sha256": "286fa456c4c8717137214a5cc2037d5df4d737fa654b21e0f81487efaf49caab"
+    },
+    {
+      "file": "lib_src/materials/law42/CallerTypes.h",
+      "sha256": "f677869a3f8525feac291023130d5d6895e2cdb1e0c567980ac5ee3db827b739"
+    },
+    {
+      "file": "lib_src/materials/law42/MechanicalSlots.h",
+      "sha256": "b305752a8dcbf35b2c19b3075ce5c3a38997007fc20643801e372a823902bce3"
+    },
+    {
+      "file": "lib_src/materials/law42/Prepare.h",
+      "sha256": "ae756cf94189f89c7984a36c7f78cbda73dd688c08d8d2025da2006aa74be8cb"
+    },
+    {
+      "file": "lib_src/materials/law42/Stress.h",
+      "sha256": "c887f10460d40a8c4d37e902c4c318651460299d8064b8fcad1fa99c7059fe0a"
+    },
+    {
+      "file": "lib_src/materials/law42/TotalStrain.h",
+      "sha256": "202e978e56e8dd3eeb5c65a89a62bb402ac320847b2831c3e96ff27fba661e53"
+    },
+    {
+      "file": "lib_src/materials/law42/Types.h",
+      "sha256": "552b9dbf44987688e91201db6d88b64c82294aed08d0d260584d0e20f166b410"
+    },
+    {
+      "file": "lib_src/materials/law42/Update.h",
+      "sha256": "ba218fb2a572ade696b6a6b60e22fcd9f2823ed9e2afcc8b7725b58befd756f3"
+    },
+    {
+      "file": "lib_src/materials/law44/beam/Types.h",
+      "sha256": "8fbdef325a602ce4275a79fa60d96cbffca49e749390f2e440eea55ccb545759"
+    },
+    {
+      "file": "lib_src/materials/law44/beam/Update.h",
+      "sha256": "45ed3464f759837a2c8a9135b9f8ca0f2c9df5315b77d19c876eb5ff5e873fd2"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Curve.h",
+      "sha256": "2204fa7b07286e44d28c1e64beca6dcb88dc99ff4718afd28cecb567d21c64ac"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Hardening.h",
+      "sha256": "ebefc1b1bd75070225306ae104bc0c2cac74e1f111065250cd22153fb9573d5c"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Prepare.h",
+      "sha256": "15490c1bf783389ba61cc88cb999f8bfe19bfacbd9b66773f9032c50cd503cbb"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Rate.h",
+      "sha256": "286491b6e58debd1d1e32a1b636464cd9f974424a630cd442bf4a131e5667db0"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Tension.h",
+      "sha256": "8bc05f5fdb5e7527a2172fcf6b70e7c790f70c542df7a1d5aa2622a176951e7a"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Types.h",
+      "sha256": "6f8358dd50c4291b4da9811c3bcf4b1f9c2c9771cfacf7ea2b2dd3be75d11835"
+    },
+    {
+      "file": "lib_src/materials/law44/solid/Update.h",
+      "sha256": "b4130f30dae34a4bf0007cf8c9b77dcd322ce6e1cfd6af849682604116416527"
+    },
+    {
+      "file": "lib_src/materials/law90/Caller.h",
+      "sha256": "802e9f4204e9e577ab437db53c7abd58df6359ab79e1090c3242528cd7760097"
+    },
+    {
+      "file": "lib_src/materials/law90/CallerChecks.h",
+      "sha256": "6cd46490e900515e49c7ea9f98b41f5c32cbc958940bdcc42b222f3b49c8176b"
+    },
+    {
+      "file": "lib_src/materials/law90/CallerTypes.h",
+      "sha256": "6f47f43f86d4e37425615d9664bb13b754598e530b9cec4dd5bec6070f02a4f6"
+    },
+    {
+      "file": "lib_src/materials/law90/Curve.h",
+      "sha256": "f11604c824f51ef5fb74a7f46674c52cd89361b126e870cee4920d10d58d6a37"
+    },
+    {
+      "file": "lib_src/materials/law90/MaterialIdentity.h",
+      "sha256": "f669b58b923ad827c57564731f7a948a7d5347e813f3c8e8569f04e137d84e86"
+    },
+    {
+      "file": "lib_src/materials/law90/MechanicalSlots.h",
+      "sha256": "419cef66539d3c00b73e435116b81aa1dcec8b43f1786d0ef3ef955fcc2aa769"
+    },
+    {
+      "file": "lib_src/materials/law90/Point.h",
+      "sha256": "5c9f88a6a784ac83c23b0405ef6a1682880c2475da677b4797f89b9517ed462d"
+    },
+    {
+      "file": "lib_src/materials/law90/PointChecks.h",
+      "sha256": "fd7269c06807a9489a2c98f09e25ba76f107a20710e38c571599f5595fe92618"
+    },
+    {
+      "file": "lib_src/materials/law90/PointCurves.h",
+      "sha256": "4a16308877c6fd2cf9a35924b8501f519cb4abe809f845a3b37d68a40ef4568e"
+    },
+    {
+      "file": "lib_src/materials/law90/PointHistoryUpdate.h",
+      "sha256": "9ff762a5bed44d42312d413b9820d6dfef1a86117354d63380034479d0bf489d"
+    },
+    {
+      "file": "lib_src/materials/law90/PointKinematics.h",
+      "sha256": "c35e4dfb8ed60c8dbbdbbcb5c9bd498bd9ec4bc8ee78d9afcca82c0e4293cf45"
+    },
+    {
+      "file": "lib_src/materials/law90/PointStress.h",
+      "sha256": "c2b58eb8a0ece8100d4a5ceea78f64e5fba5a0e6c447ff6f29ada5d76c0b578c"
+    },
+    {
+      "file": "lib_src/materials/law90/PointTypes.h",
+      "sha256": "9f06df7ab7c8ec5e571425af61aa9568bfdca9f0f5677f2c7d65a980f21f8826"
+    },
+    {
+      "file": "lib_src/materials/law90/Prepare.h",
+      "sha256": "85f2bdd3734575053fddc117ad83d8c572bf4f14c24352827cbbbeb5b7f80e63"
+    },
+    {
+      "file": "lib_src/materials/law90/Relocate.h",
+      "sha256": "b5d2096bcf7ac9f9834ee2953aaa113836d06b27b4c981c948d79e773c63fb0e"
+    },
+    {
+      "file": "lib_src/materials/law90/Types.h",
+      "sha256": "8c943dcba93771dad58a3b3fb8496a317f22d2b331dc6de25c7198efd76e68d5"
+    }
+  ],
+  "allowed_existing_qeph_changes": [
+    "lib_src/elements/qeph/QephBatch.h",
+    "lib_src/elements/qeph/QephBatchOperations.cu",
+    "lib_src/elements/qeph/QephBatchStorage.h"
+  ],
+  "scope": "Immutable equation/evaluator/material/section sources; additional capture modules and their app integration are independently tested."
+}

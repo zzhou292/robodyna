@@ -69,6 +69,8 @@ struct MappedForecast {
   BatchReport report;
   ShellMappedFootprint footprint;
 };
+struct RejectedCandidateInput;
+struct RejectedCaptureReport;
 class QephBatch;
 BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                            const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
@@ -179,6 +181,10 @@ class QephBatch {
   BatchReport InitializeMapped(const QephBatchConfig&,const ShellPhysicalBinding&,
       FENodalState&,const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {});
   BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);
+  // Failure-only diagnostic copy before common owner discard. The caller cannot
+  // select a parent; only the exact latched failed report can admit a record.
+  RejectedCaptureReport CopyRejectedCandidate(FENodalState&,const NodalTrialToken&,
+      const NodalPreparedView&,const BatchReport&,RejectedCandidateInput*) noexcept;
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:

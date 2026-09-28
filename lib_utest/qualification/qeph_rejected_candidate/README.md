@@ -1,0 +1,15 @@
+# Failed QEPH candidate diagnostics
+
+This optional readback captures the exact incoming inputs for one authenticated rejected parent before the common owner is discarded. It cannot create a trial, select an arbitrary parent, change history, publish state or restart a physical run.
+
+`QephBatch::EvaluateCandidate` latches its existing prepared view and diagnostics only after an actual post-launch control failure. `pending` remains false. `Discard` clears the latch; accepted publication and subsequent assembly/evaluation already call that operation. Only one additional boolean is retained, and all existing startup/forecast paths charge `sizeof(Impl)`. Material storage classes add methods/friend declarations only; their object and device layouts do not grow.
+
+`CopyRejectedCandidate` authenticates the live owner, common token, exact failed view and numeric report fields. It freshly checks device control and the selected worker status. Parent-indexed element/result failures can capture; aggregate/no-index failures return typed partial diagnostics with an unsupported-input outcome. No parent zero fallback exists. All caller output is staged and published only on complete success. App capture/export failures must preserve the original mechanics rejection.
+
+The record owns the accepted force/history, reference and physical node indices; the four prepared node positions, velocities and angular velocities; exact material coefficients, native projection working length, applicable section/failure history and policy; and a bounded owned material curve. Device pointers and padding are not persisted. Immutable host arena mirrors authenticate device header pointers before selected reads; curve subranges must lie inside their admitted arena, and one copied curve cannot exceed 1024 points. Unprepared/mismatched or nonpersistable accepted history returns an explicit unavailable-source outcome rather than reconstructing different history.
+
+The frozen ABI here measures 20,208 bytes per input, 600 per capture report and 2,024 per host replay result. `ForecastRejectedCandidateCapture()` publishes 65,536 bytes total host peak, including the caller record, failure-atomic copy scratch, headers/report and replay scratch; device bytes are zero. App serialization storage is additional. There are no success-path CUDA transfers, kernels or diagnostic allocations.
+
+`ReplayRejectedCandidate` rebases only local curve/storage pointers and calls the same existing private force/section dispatchers. Worker status and subsequent mapped-result validation are reported separately. Failed partial trial packets are not exposed. Host libm and CUDA math need not be bit-identical; the exact original device rejection remains separate evidence.
+
+Qualification covers source preservation, pointer-free exact coefficients, all current dispatcher routes, malformed-shape atomicity, actual mapped owner/token lifecycle, prepared input bits including NaNs, unsupported aggregate metadata, every transfer failure, and retry after discard. No vehicle rerun is part of this focused gate.

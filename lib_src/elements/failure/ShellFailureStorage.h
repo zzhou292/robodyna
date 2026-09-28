@@ -21,6 +21,7 @@ class FailureHostStorage {
   const ShellBatchFailureBinding& binding() const noexcept { return binding_; }
   const ShellBatchFailureState* staging() const noexcept { return staging_.data(); }
  private:
+  friend class HostStorage;
   ShellBatchFailureBinding binding_;
   FailureDeviceStorage* device_ = nullptr;
   FailureDeviceStorage header_;

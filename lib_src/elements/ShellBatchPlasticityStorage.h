@@ -31,6 +31,7 @@ class MixedHostStorage;
 struct MixedDeviceStorage;
 class OnePointHostStorage;
 struct OnePointDeviceStorage;
+struct DiagnosticDeviceSources;
 class HostStorage {
  public:
   HostStorage();
@@ -44,6 +45,7 @@ class HostStorage {
       bool vehicle_shared_inventory=false);
   cudaError_t Read(unsigned slab,std::size_t count,cudaStream_t) noexcept;
   DeviceStorage* device() const noexcept { return device_; }
+  bool DiagnosticSources(DiagnosticDeviceSources&) const noexcept;
   std::size_t device_bytes() const noexcept;
   MixedDeviceStorage* mixed_device() const noexcept;
   OnePointDeviceStorage* one_point_device() const noexcept;

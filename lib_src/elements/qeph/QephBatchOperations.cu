@@ -141,7 +141,15 @@ BatchReport QephBatch::EvaluateCandidateImpl(FENodalState* owner,const NodalTria
       s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex(),s.config.element_count,
       s.plasticity?s.plasticity->mixed_device():nullptr,
       s.plasticity?s.plasticity->failure_device():nullptr,s.physical.has_value());
-  report=s.ReadControl(); if(report.status!=BatchStatus::Success) return report;
+  report=s.ReadControl();
+  if(report.status!=BatchStatus::Success) {
+    // The existing views are a failure-only diagnostic latch; pending remains
+    // false, so every success/publication API continues to reject this attempt.
+    if(s.usable&&(report.status==BatchStatus::ElementFailure||report.status==BatchStatus::NonfiniteResult)) {
+      s.candidate_view=v;s.candidate_diagnostics=s.control.diagnostics;s.rejected_candidate=true;
+    }
+    return report;
+  }
   s.candidate_diagnostics=s.control.diagnostics; s.candidate_view=v; s.pending=true;
   *output=s.candidate_diagnostics; return {BatchStatus::Success,"OK"};
 }

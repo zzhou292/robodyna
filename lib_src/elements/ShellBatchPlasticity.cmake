@@ -4,6 +4,7 @@ if(NOT TARGET tl_shell_batch_plasticity)
   find_package(CUDAToolkit REQUIRED)
   add_library(tl_shell_batch_plasticity STATIC
     "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityStorage.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/ShellDiagnosticDeviceSources.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityCollectionStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionReadback.cpp"

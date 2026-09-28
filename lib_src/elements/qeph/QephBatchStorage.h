@@ -115,7 +115,7 @@ struct QephBatch::Impl {
   NodalAssemblyView initial_sources;
   cudaStream_t stream=nullptr;
   std::uint64_t assembled_epoch=UINT64_MAX,assembled_attempt=0,last_candidate_attempt=0;
-  bool usable=true,bound=false,pending=false;
+  bool usable=true,bound=false,pending=false,rejected_candidate=false;
   ~Impl();
   BatchReport Runtime(cudaError_t,const char*) noexcept;
   BatchReport PendingError() noexcept;
@@ -138,7 +138,7 @@ struct QephBatch::Impl {
   }
   bool OutputDisjoint(const void*,std::size_t) const noexcept;
   unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }
-  void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
+  void Discard() noexcept { pending=false; rejected_candidate=false; candidate_view={}; candidate_diagnostics={}; }
   // Infallible sole publication boundary, shared by standalone and joined paths.
   void Publish(const NodalStamp& stamp) noexcept {
     std::swap(accepted,trial); accepted_stamp=stamp; accepted_diagnostics=candidate_diagnostics;
