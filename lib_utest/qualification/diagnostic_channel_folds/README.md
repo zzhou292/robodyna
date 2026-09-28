@@ -8,4 +8,4 @@ Only block-local shared scratch grows: solid11080→11144B; QBAT10440→10576B. 
 
 The source proof pins the complete production dependency tree and reused fixtures, with literal frozen7695 authorities. New tests reuse every earlier CUDA read-tile assertion plus all-channel overflow/cancellation cases. Current and frozen complete Control values are compared through fieldwise binary64 comparators, excluding undefined padding. Historical manifests remain frozen; this package owns the current source proof.
 
-Planned gates:8host+19CUDA tests, source proof, compiled kernel resources; then existing controlled resident host/CUDA rollback and sixteen-carried-step export compared to the qualified snapshot. Fullvehicle archive equality and normal paired timing remain separate root gates. No performance claim precedes them.
+Planned gates:8host+20CUDA tests, source proof, compiled kernel resources; then existing controlled resident host/CUDA rollback and sixteen-carried-step export compared to the qualified snapshot. Fullvehicle archive equality and normal paired timing remain separate root gates. No performance claim precedes them.

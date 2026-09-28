@@ -55,4 +55,20 @@ TEST(QbatChannelsCuda, SignedOpposedNaNPayloadsKeepTheSerialOperandSelection) {
     rows[128].valid=0;Compare(rig,Seed(false,0.));ASSERT_FALSE(HasFailure());
   }
 }
+inline double& DiagnosticChannel(q::BatchDiagnostics& d,unsigned c) {
+  if(c<2)return d.internal_work_j[c];if(c<4)return d.internal_work_increment_j[c-2];
+  if(c==4)return d.plastic_work_j;if(c==5)return d.plastic_work_increment_j;
+  if(c==6)return d.numerical_viscous_work_j;if(c==7)return d.numerical_viscous_work_increment_j;
+  if(c==8)return d.internal_kick_work;return d.internal_drift_work;
+}
+TEST(QbatChannelsCuda, NonfiniteIncomingSeedsUseTheOriginalScalarAuthority) {
+  f::DeviceFixture rig(129);ASSERT_FALSE(HasFailure());
+  for(unsigned c=0;c<10;++c)for(double incoming:{std::nan("17"),-std::nan("17"),double(INFINITY),double(-INFINITY)}) {
+    rig.source.Reset();rig.source.Stage();rig.Restore();auto* rows=rig.storage->assembly.measurement;
+    auto seed=Seed(true,0.);DiagnosticChannel(seed,c)=incoming;
+    seed.minimum_area_ratio=std::nan("23");seed.maximum_absolute_strain=-std::nan("29");
+    ChannelOperand(rows[0],c)=-std::nan("31");ChannelOperand(rows[64],c)=std::nan("37");
+    Compare(rig,seed);ASSERT_FALSE(HasFailure());rows[128].valid=0;Compare(rig,seed);ASSERT_FALSE(HasFailure());
+  }
+}
 } // namespace qbat_read_tile_test
