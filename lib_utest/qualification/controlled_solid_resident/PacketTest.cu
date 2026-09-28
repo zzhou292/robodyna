@@ -34,7 +34,7 @@ TEST_F(ControlledResidentCuda, AuthenticatedMixedPacketOrAndFailingLaneBarrier) 
   ASSERT_EQ(h24::Complete(scratch[0],false,isolated),fe::solid24::ForceStatus::Success);
   double witness=0;for(unsigned slot=0;slot<8;++slot)witness+=std::abs(expected[0].rhs_force_n[slot].x-isolated.rhs_force_n[slot].x);
   ASSERT_GT(witness,1e-9);ASSERT_GT(expected[0].distortion_work_increment_j-isolated.distortion_work_increment_j,0);
-  d::LaunchControlledCandidate(device,0,1,view);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
+  d::LaunchControlledCandidate(device,0,1,view,header.controlled.blocks);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
   int status[2];ASSERT_EQ(cudaMemcpy(status,header.solid24.status,sizeof(status),cudaMemcpyDeviceToHost),cudaSuccess);
   ASSERT_EQ(status[0],0);ASSERT_EQ(status[1],0);
   ASSERT_EQ(cudaMemcpy(actual,header.solid24.slab[1],sizeof(actual),cudaMemcpyDeviceToHost),cudaSuccess);
@@ -46,7 +46,7 @@ TEST_F(ControlledResidentCuda, AuthenticatedMixedPacketOrAndFailingLaneBarrier) 
   // the OR/complete barriers; the accepted slab remains byte-for-byte intact.
   x[3*distinct.domain_nodes[5]]=std::numeric_limits<double>::quiet_NaN();
   ASSERT_EQ(cudaMemcpy(fields,x.data(),3*n*sizeof(double),cudaMemcpyHostToDevice),cudaSuccess);
-  d::LaunchControlledCandidate(device,0,1,view);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
+  d::LaunchControlledCandidate(device,0,1,view,header.controlled.blocks);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(status,header.solid24.status,sizeof(status),cudaMemcpyDeviceToHost),cudaSuccess);
   EXPECT_EQ(status[0],0);EXPECT_NE(status[1],0);
   ASSERT_EQ(cudaMemcpy(unchanged,header.solid24.slab[0],sizeof(unchanged),cudaMemcpyDeviceToHost),cudaSuccess);

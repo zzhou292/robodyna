@@ -1000,8 +1000,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 7507,
-      "sha256": "03cb11bd482d3b4e1a41f5a120b537dec92be1a6251cf7266574a65d560e8fd3"
+      "bytes": 7824,
+      "sha256": "037936134bb895688e8966e60509da09e0692be28c482d0b81bb2f37879f14d3"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
@@ -1055,13 +1055,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Batch.cu",
-      "bytes": 4482,
-      "sha256": "b226a7a2fc4fc6c2a41e82a9c262e3ccfce75b874f7303f2b93c75ca39c3eede"
+      "bytes": 4405,
+      "sha256": "cea488873267037a260cb48e322ed8eb2e28d6d369167f3f013bb4e3d69632d9"
     },
     {
       "path": "lib_src/elements/solids/resident/Batch.h",
-      "bytes": 5629,
-      "sha256": "d0d7bc399d75b680c863b41c15f68b83cabc1994de5622bfb75f5aef2b3eb272"
+      "bytes": 5946,
+      "sha256": "9551ca5cc0fdaefebcbc21dad81b364c37b687e344deba5eb2036833a74406e9"
     },
     {
       "path": "lib_src/elements/solids/resident/CMakeLists.txt",
@@ -1070,8 +1070,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Candidate.cu",
-      "bytes": 6684,
-      "sha256": "c8c0fc89174cf455f86e8249e36ff26a4a5ac9f88250e5f6fdd2e1e3a63a3c59"
+      "bytes": 6732,
+      "sha256": "ab2b8c88748f848cc38b600512c1c343b525b6cc48973e45c241ed191631f30b"
     },
     {
       "path": "lib_src/elements/solids/resident/DeviceFamilies.h",
@@ -1080,8 +1080,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/EvaluateOperation.cu",
-      "bytes": 2974,
-      "sha256": "c243b79cf01465898e050135131f0b05c921792afd8540725f96f40acd2f8c7f"
+      "bytes": 2968,
+      "sha256": "db5fe912395f0bc13a34fbcdcb7c8a4617e5e1929fd2ce517278518de0cf00c0"
     },
     {
       "path": "lib_src/elements/solids/resident/ExtendedScratch.h",
@@ -1090,13 +1090,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Forecast.cpp",
-      "bytes": 1140,
-      "sha256": "215fc6b5b6c18470b6a8452a33859193cf1a1349c07ab0f3a67fc5246d3cb37d"
+      "bytes": 2463,
+      "sha256": "ab0ac5ed2a890450ea2ec47cb83ada9746a26daff881dc8108b6e53f843430a1"
     },
     {
       "path": "lib_src/elements/solids/resident/Identity.cpp",
-      "bytes": 2391,
-      "sha256": "14d461ed602998ffb31bb33c1d7a2b2d8a95555af43c2533d24c3f80e039e5d4"
+      "bytes": 2595,
+      "sha256": "d76b6acf94dc839631b1cff3555849890913efcf160e4dccb0c614e95d954bd3"
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",
@@ -1140,8 +1140,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Plan.cpp",
-      "bytes": 6456,
-      "sha256": "3a2bfdb2af60ee2b56d620819f43bde3da08577615f5b9362c6fb028cfa00ac1"
+      "bytes": 6683,
+      "sha256": "ca0b8b31b2a98b965c38c8a3efa21f36bf531c443ef2fe094c0d08c672be6b03"
     },
     {
       "path": "lib_src/elements/solids/resident/ProfiledResults.h",
@@ -1195,8 +1195,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Storage.h",
-      "bytes": 2844,
-      "sha256": "c881073f963a0047e7d9a39298d940cebce013fed24fe8a1ad13802d91f045b5"
+      "bytes": 3207,
+      "sha256": "43a27cd9c87818736becd00e20115da55c9b936bbc4c7ce1827874e2ba4057fe"
     },
     {
       "path": "lib_src/elements/solids/resident/Traits18.h",
@@ -1240,8 +1240,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/controlled/Kernel.cu",
-      "bytes": 4532,
-      "sha256": "42ddfb1709608761a51b38fb39f8da57e96c88280f86bca9799ab93dfa229416"
+      "bytes": 5276,
+      "sha256": "b413b646b1ecca4c569113d8359c92b40ae778b0aa976123d93f2f89a740a7bd"
     },
     {
       "path": "lib_src/elements/solids/resident/controlled/Observation.h",
@@ -1255,8 +1255,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/controlled/Storage.h",
-      "bytes": 3257,
-      "sha256": "10733beaf6659b51931f440483a9e4b5dff513c2d7fa0a518a551a52b9bac55b"
+      "bytes": 3481,
+      "sha256": "dd1a59308e244171b3e3056a5b9bbcf49b64223d46157a754982bd20dc7d8663"
     },
     {
       "path": "lib_src/elements/solids/resident/controlled/Upload.cpp",
@@ -1275,8 +1275,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/measurement/Begin.h",
-      "bytes": 740,
-      "sha256": "740134c3d6600b13142236b532d63b619f0fb294fe1eafc603a1f50d95a436aa"
+      "bytes": 870,
+      "sha256": "3ea7f8a42fe7995526356dea0500d7d16ed632ef4731c95170272e4b4e07eea0"
     },
     {
       "path": "lib_src/elements/solids/resident/measurement/Family.cuh",
@@ -2125,38 +2125,38 @@
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CMakeLists.txt",
-      "bytes": 2280,
-      "sha256": "6e37434c742a5d936466593057d9fca95ab13d6b9b235f28a400af5de3237ab3"
+      "bytes": 2323,
+      "sha256": "cb57753c6dc958eb36d844c64490c437c20f7067ee2616393b456cb97ef08bcc"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/CapacityTest.cpp",
-      "bytes": 2867,
-      "sha256": "4f94d70efcfeeba3a4a9908e9622486fb11c7fea7a3811127dade984815972f5"
+      "bytes": 2873,
+      "sha256": "5dd31949ec9d8459feef3dd2710d6ceaa07725f5deb4b2ce1c613ae30716fbae"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/HostTest.cpp",
-      "bytes": 4371,
-      "sha256": "39f528fafa72e804a574a9391048833af1734b6e42a9ee09cff4ab338a2e94ba"
+      "bytes": 4432,
+      "sha256": "8c4b0bf2bd785d760598d7839114cffece9d108eb3b60e0175007c1d4c36d772"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/OwnerTest.cu",
-      "bytes": 5120,
-      "sha256": "57a631d1ec11db27c85d01b6157cea49cba4d7d444264e284626bc913f2daa0d"
+      "bytes": 5160,
+      "sha256": "7a1de1f50fc9dfeef7a97687d2908d120296f0eeff0041c28e8c06c81566d93e"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/PacketTest.cu",
-      "bytes": 4654,
-      "sha256": "9b5054d6fa5fe41186a6154b416849724d186dfa8c950cedc3f8b73c40d3868f"
+      "bytes": 4704,
+      "sha256": "c2e973d2ef851e01b18aca79d6daae5fe3f4a1e5d45700c2f771d33bd73cbc7c"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/Rig.cu",
-      "bytes": 8852,
-      "sha256": "fc70060fb7c2ab294b262d2e8e134851cc52e5d7cd3d3ca47eed5e551a7f8672"
+      "bytes": 8873,
+      "sha256": "2b80dae6488c7e1907518d479dde045dbc83eda7e4339db812b71b956a0d26f4"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/Rig.h",
-      "bytes": 2257,
-      "sha256": "f597623182ecc67bfb9fb60d42a2755252f971fb9003744ee7c6ed14df9878fa"
+      "bytes": 2373,
+      "sha256": "d2249861ee3d032e00a6f7c17292559fad8818e81df79af7f4722002918d81d9"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/Snapshot.h",
@@ -2167,6 +2167,16 @@
       "path": "lib_utest/qualification/controlled_solid_resident/SnapshotTest.cu",
       "bytes": 1940,
       "sha256": "48fe135be1a4045535ec3bd5aec93d5b1d0c9a4baf6b29a74320a5053088973e"
+    },
+    {
+      "path": "lib_utest/qualification/controlled_solid_resident/WorkerBudgetTest.cpp",
+      "bytes": 2693,
+      "sha256": "278e8b3831721d25c9a8436523f617ea4cc214c6515a4b797b862c3aefc2b996"
+    },
+    {
+      "path": "lib_utest/qualification/controlled_solid_resident/WorkerSnapshotTest.cu",
+      "bytes": 3392,
+      "sha256": "5fc5cc0cf24c435c681aafd9af82f8de30649e9737b3e75467af8cd4d0800c3a"
     },
     {
       "path": "lib_utest/qualification/controlled_solid_resident/verify_sources.py",
@@ -2230,13 +2240,13 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.cpp",
-      "bytes": 6945,
-      "sha256": "691b4ed143a8458d3c0262981bf595943162d95f05d0d9943aad477092959da3"
+      "bytes": 7050,
+      "sha256": "c29c4fd6314e6de887ee5ba88bc05c4b9a31ebdce0d86901494be0c6301d0cd0"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.h",
-      "bytes": 1923,
-      "sha256": "df8c9ca61a669fcbc42817b82cd82aa2a07db1c522a34f4986faf8b667614834"
+      "bytes": 1958,
+      "sha256": "c34ea1b92caca8791d85b5816c4bcace439927304c86d390bf64f0ae1935cae6"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixtureTest.cpp",
@@ -2554,5 +2564,9 @@
     "kind": "eight_cta_candidate",
     "base": "5a78feb9",
     "scope": "Identical19-packet force-producing model: eight H24 packets then eight LAW90 packets, followed by three legacy packets. Numerical snapshot includes all controlled numeric histories/forces/STI/work and complete BatchDiagnostics; no pointer/padding comparisons."
+  },
+  "controlled_worker_budget_extension": {
+    "base": "1c8cf7e73a475075a3665c800779b8daf7a0be60",
+    "scope": "Shared exact host/device resolver with bounded4/8/16/32 choice and fallback; default8, unchanged native packets/math/folds; explicitV3 hardcaps256/384, legacy128/256"
   }
 }

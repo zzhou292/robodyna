@@ -23,6 +23,9 @@ struct BatchLimits {
   std::size_t max_nodes = 524288;
   std::size_t max_device_bytes = 128u << 20;
   std::size_t max_host_bytes = 256u << 20;
+  // Controlled-profile ceiling; deterministic budget fallback may admit fewer.
+  unsigned max_controlled_packet_blocks = 8; // Exactly4,8,16 or32.
+
 };
 // Explicit caller opt-in for native-unit controlled references and worker storage.
 // Legacy profiles retain the default hard ceiling; this does not allocate the cap.
@@ -67,6 +70,8 @@ struct BatchDiagnostics {
   // Fixed family order: Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90. Every admitted solid is active;
   // the qualified rubber cutoff rejects the entire trial instead of deleting it.
   std::size_t parent_count[5]{};
+  unsigned controlled_packet_blocks = 0;
+  std::size_t controlled_worker_slots = 0;
   double native_internal_work_increment_j[5]{};
   double physical_hourglass_work_increment_j[5]{};
   double distortion_work_increment_j[5]{}; // Separate native EINT_DISTOR increment.
@@ -79,6 +84,8 @@ struct BatchForecast {
   // Includes complete retained Model backing, upload/staging and the temporary
   // initial owner proof. Proof storage and external ledgers are not retained.
   std::size_t startup_host_bytes = 0;
+  unsigned controlled_packet_blocks = 0;
+  std::size_t controlled_worker_slots = 0;
 };
 
 // One model, five explicitly profiled typed spans and one private common-publication selector.

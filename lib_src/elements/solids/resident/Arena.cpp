@@ -4,8 +4,10 @@
 namespace tl::fea::solids::batch_detail {
 namespace {
 bool LimitsValid(const BatchLimits& value, BatchProfile profile) noexcept {
-  const BatchLimits hard = profile == BatchProfile::PhysicalCinSourceControlsV3
-      ? SourceControlledBatchLimits() : BatchLimits{};
+  BatchLimits hard;
+  if(profile==BatchProfile::PhysicalCinSourceControlsV3){
+    hard.max_device_bytes=256u<<20;hard.max_host_bytes=384u<<20;
+  }
   return value.max_parents && value.max_parents <= hard.max_parents &&
       value.max_materials && value.max_materials <= hard.max_materials &&
       value.max_curve_points && value.max_curve_points <= hard.max_curve_points &&
@@ -52,8 +54,12 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       bool(count.solid24 || count.solid6z) != bool(count.material42) ||
       count.curve_points > limits.max_curve_points ||
       count.analytic_material44 > count.material44 ||
+      (count.controlled.blocks!=0&&count.controlled.blocks!=4&&count.controlled.blocks!=8&&
+       count.controlled.blocks!=16&&count.controlled.blocks!=32)||
+      (count.controlled.workers&& !count.controlled.blocks)||
       count.controlled.h24>count.solid24||count.controlled.foam>count.solid18_law90||
-      count.controlled.workers>controlled::Blocks*controlled::Threads||
+      count.controlled.workers>controlled::MaximumBlocks*controlled::Threads||
+      count.controlled.workers>count.controlled.blocks*controlled::Threads||
       count.controlled.packets>limits.max_parents||count.controlled.members>limits.max_parents||
       bool(count.material36 || count.material44 - count.analytic_material44 || count.material90) != bool(count.curve_points) ||
       config.owner.node_count > limits.max_nodes) return false;

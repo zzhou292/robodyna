@@ -22,10 +22,10 @@ struct Results {
 };
 struct Rig {
   OwnerFixture fixture;
-  fe::FENodalState owner;s::Batch batch;s::BatchConfig config;
+  fe::FENodalState owner;s::Batch batch;s::BatchConfig config;s::BatchLimits limits;
   h24::Reference hreference;foam::Reference freference;
   h24::Result hexpected;foam::Result fexpected;
-  explicit Rig(s::control::UnitScale units={1,1,1},bool collapsed=false):fixture(false,true,units,collapsed){}
+  explicit Rig(s::control::UnitScale units={1,1,1},bool collapsed=false,unsigned blocks=8,unsigned packets=8):fixture(false,true,units,collapsed,false,packets){limits.max_controlled_packet_blocks=blocks;}
   bool Initialize();bool Read(Results&,s::BatchDiagnostics&);
   bool Begin(fe::NodalTrialToken&,fe::NodalAssemblyView&);
   bool Prepare(const fe::NodalTrialToken&,const fe::NodalAssemblyView&,fe::NodalPreparedView&);

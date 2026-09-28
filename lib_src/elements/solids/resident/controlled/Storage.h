@@ -4,7 +4,7 @@
 #include "lib_utils/BoundedArena.h"
 #include "lib_src/elements/solids/control/Selection.h"
 namespace tl::fea::solids::batch_detail::controlled {
-inline constexpr unsigned Threads=128,Blocks=8;
+inline constexpr unsigned Threads=128,Blocks=8,MaximumBlocks=32;
 struct Work24 {h24::Scratch scratch;h24::Result result;};
 struct Work90 {foam::Scratch scratch;foam::Result result;};
 struct Workspace {
@@ -25,19 +25,22 @@ struct Storage {
   control::Packet* packets=nullptr;control::Member* members=nullptr;
   Workspace* workspace=nullptr;
   std::size_t packet_count=0,member_count=0,count24=0,count90=0;
-  std::size_t worker_begin[Blocks]{};
+  unsigned blocks=0;std::size_t workspace_count=0;
+  std::size_t worker_begin[MaximumBlocks]{};
 };
 struct Layout {
+  unsigned blocks=0;
   util::ArenaRegion index24,index90,reference24,reference90,packets,members,workspace;
-  std::size_t worker_begin[Blocks]{};
+  std::size_t worker_begin[MaximumBlocks]{};
 };
 struct Counts {
+  unsigned blocks=0;
   std::size_t h24=0,foam=0,packets=0,members=0,workers=0;
-  std::size_t worker_begin[Blocks]{};
+  std::size_t worker_begin[MaximumBlocks]{};
 };
 inline bool Append(const Counts& count,std::size_t all24,std::size_t all90,
     util::BoundedArenaLayout& arena,Layout& output)noexcept {
-  Layout next;
+  Layout next;next.blocks=count.blocks;
   if(!arena.Append<std::size_t>(count.h24?all24:0,next.index24)||
      !arena.Append<std::size_t>(count.foam?all90:0,next.index90)||
      !arena.Append<h24::Reference>(count.h24,next.reference24)||
@@ -45,11 +48,11 @@ inline bool Append(const Counts& count,std::size_t all24,std::size_t all90,
      !arena.Append<control::Packet>(count.packets,next.packets)||
      !arena.Append<control::Member>(count.members,next.members)||
      !arena.Append<Workspace>(count.workers,next.workspace))return false;
-  for(unsigned n=0;n<Blocks;++n)next.worker_begin[n]=count.worker_begin[n];
+  for(unsigned n=0;n<MaximumBlocks;++n)next.worker_begin[n]=count.worker_begin[n];
   output=next;return true;
 }
 inline Storage Rebase(void* base,const Layout& l)noexcept {
-  Storage s;
+  Storage s;s.blocks=l.blocks;s.workspace_count=l.workspace.count;
   if(l.index24.count)s.index24=util::ArenaPointer<std::size_t>(base,l.index24);
   if(l.index90.count)s.index90=util::ArenaPointer<std::size_t>(base,l.index90);
   if(l.reference24.count)s.reference24=util::ArenaPointer<h24::Reference>(base,l.reference24);
@@ -58,6 +61,6 @@ inline Storage Rebase(void* base,const Layout& l)noexcept {
   if(l.members.count)s.members=util::ArenaPointer<control::Member>(base,l.members);
   if(l.workspace.count)s.workspace=util::ArenaPointer<Workspace>(base,l.workspace);
   s.packet_count=l.packets.count;s.member_count=l.members.count;s.count24=l.reference24.count;s.count90=l.reference90.count;
-  for(unsigned n=0;n<Blocks;++n)s.worker_begin[n]=l.worker_begin[n];return s;
+  for(unsigned n=0;n<MaximumBlocks;++n)s.worker_begin[n]=l.worker_begin[n];return s;
 }
 } // namespace tl::fea::solids::batch_detail::controlled

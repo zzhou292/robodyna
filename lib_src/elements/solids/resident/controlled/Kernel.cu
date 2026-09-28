@@ -19,7 +19,7 @@ __global__ void Packets(Storage* storage,unsigned accepted,unsigned trial,NodalP
   using namespace controlled;
   __shared__ unsigned gate;
   auto& state=*storage;auto& controls=state.controlled;
-  for(std::size_t packet_index=blockIdx.x;packet_index<controls.packet_count;packet_index+=Blocks) {
+  for(std::size_t packet_index=blockIdx.x;packet_index<controls.packet_count;packet_index+=gridDim.x) {
     const auto& packet=controls.packets[packet_index].source;
     if(!packet.icontrol)continue; // Uniform branch; unchanged legacy kernels own these rows.
     if(threadIdx.x==0)gate=0;
@@ -67,10 +67,20 @@ __global__ void Packets(Storage* storage,unsigned accepted,unsigned trial,NodalP
   }
 }
 } // namespace
-void LaunchControlledInitialize(Storage* storage,cudaStream_t stream) {
-  Packets<<<controlled::Blocks,controlled::Threads,0,stream>>>(storage,0,0,{},true);
+cudaError_t InspectControlledKernel(ControlledKernelResources& output) {
+  ControlledKernelResources next;
+  auto error=cudaFuncGetAttributes(&next.attributes,Packets);if(error!=cudaSuccess)return error;
+  error=cudaOccupancyMaxActiveBlocksPerMultiprocessor(&next.active_blocks_per_multiprocessor,Packets,controlled::Threads,0);
+  if(error!=cudaSuccess)return error;
+  int device=0;error=cudaGetDevice(&device);if(error!=cudaSuccess)return error;
+  cudaDeviceProp properties{};error=cudaGetDeviceProperties(&properties,device);if(error!=cudaSuccess)return error;
+  next.multiprocessors=properties.multiProcessorCount;next.maximum_threads_per_multiprocessor=properties.maxThreadsPerMultiProcessor;
+  output=next;return cudaSuccess;
 }
-void LaunchControlledCandidate(Storage* storage,unsigned accepted,unsigned trial,NodalPreparedView view) {
-  Packets<<<controlled::Blocks,controlled::Threads,0,view.stream>>>(storage,accepted,trial,view,false);
+void LaunchControlledInitialize(Storage* storage,cudaStream_t stream,unsigned blocks) {
+  Packets<<<blocks,controlled::Threads,0,stream>>>(storage,0,0,{},true);
+}
+void LaunchControlledCandidate(Storage* storage,unsigned accepted,unsigned trial,NodalPreparedView view,unsigned blocks) {
+  Packets<<<blocks,controlled::Threads,0,view.stream>>>(storage,accepted,trial,view,false);
 }
 } // namespace tl::fea::solids::batch_detail
