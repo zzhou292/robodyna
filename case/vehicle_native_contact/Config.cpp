@@ -38,6 +38,9 @@ std::size_t AddBytes(std::size_t a, std::size_t b) {
     return a + b;
 }
 void CheckConfig(const Config& config, const ControlsSource& controls) {
+    output::Require(config.activity == n::ContactActivityPolicy::AllActivePrefix ||
+                        config.activity == n::ContactActivityPolicy::ShellRemoval,
+                    "Unknown native vehicle contact activity policy");
     std::uint64_t intervals = 0;
     output::Require(config.dynamics.structural.profile == tl::fea::NodalCinStructuralProfile::NativeOrdinaryRigidTrace &&
                         tl::fea::ValidCinStructuralStep(config.dynamics.structural) &&

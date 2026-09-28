@@ -11,6 +11,12 @@ bool SameBits(const std::vector<double>& a, const std::vector<double>& b) {
 bool Same(const n::TransactionDiagnostics& a, const n::TransactionDiagnostics& b) {
     return a.raw_candidates == b.raw_candidates && a.optimized_candidates == b.optimized_candidates &&
         a.kept_occurrences == b.kept_occurrences && a.active_forces == b.active_forces &&
+        a.activity_removed_qeph == b.activity_removed_qeph && a.activity_removed_t3 == b.activity_removed_t3 &&
+        a.activity_first_removed_qeph == b.activity_first_removed_qeph &&
+        a.activity_first_removed_t3 == b.activity_first_removed_t3 &&
+        a.activity_changed == b.activity_changed &&
+        a.activity_affected_events == b.activity_affected_events && a.activity_removed_events == b.activity_removed_events &&
+        a.activity_removed_mains == b.activity_removed_mains && a.activity_orphan_secondaries == b.activity_orphan_secondaries &&
         a.reference_rebuilt == b.reference_rebuilt && output::Bits(a.elastic_energy) == output::Bits(b.elastic_energy) &&
         output::Bits(a.damping_work) == output::Bits(b.damping_work) && output::Bits(a.friction_work) == output::Bits(b.friction_work);
 }
@@ -18,6 +24,9 @@ bool Same(const tl::fea::NativeContactPublicationSnapshot& a, const tl::fea::Nat
     return a.available == b.available && a.force_phase_available == b.force_phase_available &&
         a.generation == b.generation && a.selectors.history == b.selectors.history &&
         a.selectors.reference == b.selectors.reference && a.selectors.reference_generation == b.selectors.reference_generation &&
+        a.selectors.activity == b.selectors.activity &&
+        a.selectors.activity_generation == b.selectors.activity_generation &&
+        a.selectors.reference_activity_generation == b.selectors.reference_activity_generation &&
         a.selectors.has_reference == b.selectors.has_reference && tl::fea::trial_identity::SameStamp(a.stamp, b.stamp) &&
         tl::fea::trial_identity::SameStamp(a.force_base_stamp, b.force_base_stamp);
 }

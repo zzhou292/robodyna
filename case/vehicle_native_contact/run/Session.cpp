@@ -53,6 +53,24 @@ void PreparedRun::Session::Append() {
         totals.peak_active_forces = std::max(totals.peak_active_forces, counters.active_forces);
         totals.peak_raw_candidates = std::max(totals.peak_raw_candidates, counters.raw_candidates);
         totals.peak_optimized_candidates = std::max(totals.peak_optimized_candidates, counters.optimized_candidates);
+        if (counters.activity_changed) ++totals.activity_changes;
+        totals.removed_mains += counters.activity_removed_mains;
+        totals.orphan_secondaries += counters.activity_orphan_secondaries;
+        totals.observed_removed_qeph += counters.activity_removed_qeph;
+        totals.observed_removed_t3 += counters.activity_removed_t3;
+        if (!totals.first_removal_epoch && (counters.activity_removed_qeph || counters.activity_removed_t3)) {
+            totals.first_removal_epoch = dynamics.accepted().epoch;
+            totals.first_removal_time_s = dynamics.accepted().time;
+            const auto& shells = *source.source.owner_source().physical().shells();
+            if (counters.activity_removed_qeph) {
+                output::Require(counters.activity_first_removed_qeph < shells.qeph_count(), "Removal source QEPH index is invalid");
+                totals.first_removed_qeph_id = shells.qeph_source_id(counters.activity_first_removed_qeph);
+            }
+            if (counters.activity_removed_t3) {
+                output::Require(counters.activity_first_removed_t3 < shells.t3_count(), "Removal source T3 index is invalid");
+                totals.first_removed_t3_id = shells.t3_source_id(counters.activity_first_removed_t3);
+            }
+        }
         if (counters.active_forces) {
             ++totals.active_force_intervals;
             if (!totals.first_active_epoch) {

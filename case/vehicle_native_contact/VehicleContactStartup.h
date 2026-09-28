@@ -9,6 +9,7 @@
 #include <memory>
 namespace crash::cases::vehicle_native_contact {
 namespace n = tlfea::contact::radioss_type25;
+namespace activity { class Declaration; }
 using Role = vehicle_dynamics::native_contact::Role;
 using OwnerSource = vehicle_wall::native::EnvelopeOwnerSource;
 using SelfSource = vehicle_self_contact::native::mixed_starter::MixedStarterSource;
@@ -16,6 +17,7 @@ using WallSource = vehicle_wall::native::wall_interface::FiniteWallContactSource
 using ControlsSource = vehicle_self_contact::native::initial_controls::InitializerControlsSource;
 struct Config {
     Config();
+    n::ContactActivityPolicy activity = n::ContactActivityPolicy::AllActivePrefix;
     vehicle_dynamics::Config dynamics;
     double requested_duration_s = .002;
     // Independent plan ceilings, not permission for a larger live case. The
@@ -37,6 +39,7 @@ struct Forecast {
     std::array<n::initial_source::Forecast, 2> initialization;
     std::array<n::GeneralTransactionForecast, 2> contact;
     std::size_t case_metadata = 0, packing_retained = 0;
+    std::size_t activity_metadata_reservation = 0, activity_workspace_reservation = 0;
     std::size_t host_preparation_ceiling = 0, prepared_source_retained = 0;
     std::size_t retained_host_bytes = 0, peak_host_bytes = 0;
     std::size_t steady_device_bytes = 0, peak_device_bytes = 0;
@@ -75,6 +78,7 @@ class VehicleContactStartup {
     const SelfSource& self_source() const noexcept;
     const WallSource& wall_source() const noexcept;
     const ControlsSource& controls_source() const noexcept;
+    const activity::Declaration* activity_source() const noexcept;
     tl::util::ConstView<detail::OrderedInterface> interface_order() const noexcept;
     // Immutable borrowed original operands, before BUC/history production.
     // Available for independent source qualification; lifetime is this case.

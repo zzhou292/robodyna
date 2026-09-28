@@ -31,6 +31,10 @@ struct NativeTotals {
     std::uint64_t peak_active_forces = 0, peak_raw_candidates = 0, peak_optimized_candidates = 0;
     std::uint64_t first_active_epoch = 0;
     double first_active_time_s = 0;
+    std::uint64_t activity_changes = 0, removed_mains = 0, orphan_secondaries = 0;
+    std::uint64_t observed_removed_qeph = 0, observed_removed_t3 = 0;
+    std::uint64_t first_removal_epoch = 0, first_removed_qeph_id = 0, first_removed_t3_id = 0;
+    double first_removal_time_s = 0;
 };
 struct RunResult {
     vehicle_run::LoopResult loop;

@@ -28,6 +28,12 @@ void VehicleContactStartup::Data::ForecastPreparation() {
     // Its owning API includes a small additional wrapper, charged explicitly.
     f.case_metadata = AddBytes(f.case_metadata,
         Extra(f.physical.startup.retained_source_upper_bound, f.sources.owner_retained));
+    if (config.activity == n::ContactActivityPolicy::ShellRemoval) {
+        const activity::Limits limits;
+        f.activity_metadata_reservation = limits.metadata_bytes;
+        f.activity_workspace_reservation = limits.workspace_bytes;
+        f.case_metadata = AddBytes(f.case_metadata, limits.metadata_bytes);
+    }
     f.packing_retained = AddBytes(AddBytes(f.tied.retained_bytes, f.model.retained_bytes), f.case_metadata);
     for (const auto& field : f.fields) f.packing_retained = AddBytes(f.packing_retained, field.retained_bytes);
     auto transient = f.tied.temporary_bytes;
@@ -39,7 +45,7 @@ void VehicleContactStartup::Data::ForecastPreparation() {
                         "Initializer preparation reservation exceeds its public ceiling");
         preparation_reserve = AddBytes(preparation_reserve, limit.max_host_bytes);
     }
-    transient = std::max(transient, preparation_reserve);
+    transient = std::max({transient, preparation_reserve, f.activity_workspace_reservation});
     f.host_preparation_ceiling = std::max(f.sources.construction_peak,
         AddBytes(AddBytes(f.sources.retained_bytes, f.packing_retained), transient));
     output::Require(f.host_preparation_ceiling <= cap,

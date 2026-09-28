@@ -1,4 +1,5 @@
 #include "State.h"
+#include "../activity/Declaration.h"
 #include "case/vehicle_runtime/SolidReadback.h"
 #include "case/vehicle_run/SampledShellPlasticity.h"
 #include "case/vehicle_run/MechanicsDocument.h"
@@ -17,7 +18,11 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
     String(doc, "physical_profile", controlled?"native_v6_raw8_heph_explicit_cin28_with_declared_finite_mesh_wall":
         "selected_vehicle_supports_v5_with_declared_finite_mesh_wall");
     String(doc, "contact_profile", "source_type25_self_and_all_retained_nodes_to_fixed_mesh");
+    if (source.config().activity == n::ContactActivityPolicy::ShellRemoval)
+        String(doc, "contact_activity_profile", "source_declared_shell_removal_fixed_solid_topology_positive_cin");
     String(doc, "initial_state", "source_produced_starter_history_and_final_type2_removals");
+    if (source.activity_source())
+        array_json::Child(doc, "contact_activity_source", activity::Document(*source.activity_source()));
     Boolean(doc, "visualization_only_not_restart", true);
     Boolean(doc, "session_initialized", result.session_initialized);
     Boolean(doc, "valid_closed_archive", result.loop.valid_manifest && result.archive_manifest.has_value());
@@ -67,6 +72,17 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
         Integer(one, "peak_optimized_candidates", totals.peak_optimized_candidates);
         Integer(one, "first_active_epoch", totals.first_active_epoch);
         Number(one, "first_active_time_s", totals.first_active_time_s);
+        if (source.config().activity == n::ContactActivityPolicy::ShellRemoval) {
+            Integer(one, "activity_changes", totals.activity_changes);
+            Integer(one, "removed_contact_mains", totals.removed_mains);
+            Integer(one, "removed_orphan_secondaries", totals.orphan_secondaries);
+            Integer(one, "observed_removed_qeph", totals.observed_removed_qeph);
+            Integer(one, "observed_removed_t3", totals.observed_removed_t3);
+            Integer(one, "first_removal_epoch", totals.first_removal_epoch);
+            Number(one, "first_removal_time_s", totals.first_removal_time_s);
+            Integer(one, "first_removed_qeph_id", totals.first_removed_qeph_id);
+            Integer(one, "first_removed_t3_id", totals.first_removed_t3_id);
+        }
         const auto& initial = result.initialization[i];
         Boolean(one, "initialization_available", initial.available);
         if (initial.available) {

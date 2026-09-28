@@ -14,6 +14,15 @@ VehicleContactStartup VehicleContactStartup::Prepare(const OwnerSource& owner, c
     auto next = std::make_shared<Data>(owner, self, wall, controls, std::move(config));
     next->ForecastPreparation();
     const auto input = next->sources();
+    if (next->config.activity == n::ContactActivityPolicy::ShellRemoval) {
+        activity::Limits limits;
+        limits.source_host_cap = next->config.dynamics.startup.limits.host_bytes;
+        next->activity_declaration.emplace(activity::Declaration::Prepare(input, limits));
+        const auto observed = next->activity_declaration->forecast();
+        output::Require(observed.owned_metadata_bytes <= next->forecast.activity_metadata_reservation &&
+                            observed.construction_workspace_bytes <= next->forecast.activity_workspace_reservation,
+                        "Native activity declaration exceeds its reserved preparation budget");
+    }
     next->tied.emplace(TiedRemovalSource::Prepare(owner, controls, next->config.tied));
     next->model.emplace(detail::InitialModel::Prepare(input, *next->tied, next->config.model_staging_bytes));
     for (const auto& entry : next->forecast.sources.interfaces) {
@@ -46,6 +55,9 @@ const OwnerSource& VehicleContactStartup::owner_source() const noexcept { return
 const SelfSource& VehicleContactStartup::self_source() const noexcept { return data_->self; }
 const WallSource& VehicleContactStartup::wall_source() const noexcept { return data_->wall; }
 const ControlsSource& VehicleContactStartup::controls_source() const noexcept { return data_->controls; }
+const activity::Declaration* VehicleContactStartup::activity_source() const noexcept {
+    return data_->activity_declaration ? &*data_->activity_declaration : nullptr;
+}
 tl::util::ConstView<detail::OrderedInterface> VehicleContactStartup::interface_order() const noexcept {
     return {data_->forecast.sources.interfaces.data(), data_->forecast.sources.interfaces.size()};
 }

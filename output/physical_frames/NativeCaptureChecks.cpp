@@ -41,6 +41,9 @@ void CheckSameNativeScope(const NativeCaptureScope& a,const NativeCaptureScope& 
         (!a.contact.force_phase_available||tl::fea::trial_identity::SameStamp(a.contact.force_base_stamp,b.contact.force_base_stamp))&&
         a.contact.selectors.history==b.contact.selectors.history&&a.contact.selectors.reference==b.contact.selectors.reference&&
         a.contact.selectors.reference_generation==b.contact.selectors.reference_generation&&
+        a.contact.selectors.activity==b.contact.selectors.activity&&
+        a.contact.selectors.activity_generation==b.contact.selectors.activity_generation&&
+        a.contact.selectors.reference_activity_generation==b.contact.selectors.reference_activity_generation&&
         a.source.source_id==b.source.source_id&&a.source.topology_generation==b.source.topology_generation&&
         a.source.source_generation==b.source.source_generation&&a.source.nodes==b.source.nodes&&
         a.source.secondaries==b.source.secondaries&&a.source.primary_mains==b.source.primary_mains&&a.source.expanded_mains==b.source.expanded_mains,

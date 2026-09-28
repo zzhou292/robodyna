@@ -1,5 +1,6 @@
 #include "SourceSelection.h"
 #include "SolidExecutionLimits.h"
+#include "ContactActivitySelection.h"
 #include "../tests/ActualSources.h"
 #include <cmath>
 #include <cstdlib>
@@ -19,8 +20,13 @@ vehicle_run::OriginalPaths Paths() {
 }
 }
 SourceSelection::SourceSelection(Config& config,source::Limits limits):limits_(limits) {
+    config.activity=ParseContactActivity(std::getenv("ROBO_NATIVE_CONTACT_ACTIVITY"));
     const auto* path=std::getenv("ROBO_NATIVE_SOLID_PACKETS");
-    if(!path||!*path)return;
+    if(!path||!*path) {
+        output::Require(config.activity==n::ContactActivityPolicy::AllActivePrefix,
+            "Shell removal qualification requires the authenticated native V6 executed source");
+        return;
+    }
     const auto size=Required("ROBO_NATIVE_SOLID_PACKETS_BYTES");std::size_t used=0;
     output::Require(size.find_first_not_of("0123456789")==std::string::npos,"Packet byte count must be unsigned decimal");
     const auto bytes=std::stoull(size,&used);

@@ -15,7 +15,9 @@ n::initial_source::Input VehicleContactStartup::Data::InitialInput(Role role) co
     return input;
 }
 n::TransactionConfig VehicleContactStartup::Data::ContactConfig(Role role) const {
-    return role == Role::Self ? controls.self_runtime_controls() : wall.controls().runtime;
+    auto result = role == Role::Self ? controls.self_runtime_controls() : wall.controls().runtime;
+    result.activity = config.activity;
+    return result;
 }
 namespace {
 void Common(n::ContactSourceInput& out, std::uint64_t id, std::uint64_t topology,
@@ -44,6 +46,11 @@ n::MixedMovingMainSource VehicleContactStartup::Data::Self() const {
     n::MixedMovingMainSource out;
     Common(out, controls.self_interface_id(), TopologyGeneration(Role::Self), self.snapshot(),
         fields[0]->runtime_view(), prepared[0], controls.controls());
+    if (config.activity == n::ContactActivityPolicy::ShellRemoval) {
+        output::Require(bool(activity_declaration), "Shell-removal source declaration is unavailable");
+        out.activity_controls = &activity_declaration->self();
+        out.activity_type45 = &activity_declaration->joints();
+    }
     out.starter = self.snapshot();
     const auto& c = controls.controls();
     out.activation.edge_mode = c.edge_mode;
@@ -59,6 +66,11 @@ n::FixedMainSource VehicleContactStartup::Data::Wall() const {
     n::FixedMainSource out;
     Common(out, controls.wall_interface_id(), TopologyGeneration(Role::MeshWall), wall.starter(),
         fields[1]->runtime_view(), prepared[1], *controls.wall_controls());
+    if (config.activity == n::ContactActivityPolicy::ShellRemoval) {
+        output::Require(bool(activity_declaration), "Shell-removal wall declaration is unavailable");
+        out.activity_controls = &activity_declaration->wall();
+        out.activity_type45 = &activity_declaration->joints();
+    }
     out.primary_parent_ids = &wall.wall().ids().shell;
     return out;
 }

@@ -35,6 +35,8 @@ void RunAcceptedQualification(bool execute, bool preview) {
         }
         auto config = PreviewResources();
         SourceSelection selection(config,{GuardBytes-ExportBytes});
+        if (config.activity == n::ContactActivityPolicy::ShellRemoval)
+            output::String(doc, "contact_activity_profile", "source_declared_shell_removal_fixed_solid_topology_positive_cin");
         if (preview) {
             config.dynamics.timing.enabled = preview_controls.stage_timing;
             config.dynamics.capture_qeph_rejection = preview_controls.capture_qeph_rejection;

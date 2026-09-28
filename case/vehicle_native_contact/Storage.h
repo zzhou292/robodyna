@@ -1,5 +1,6 @@
 #pragma once
 #include "VehicleContactStartup.h"
+#include "activity/Declaration.h"
 namespace crash::cases::vehicle_native_contact {
 struct VehicleContactStartup::Data {
     Data(const OwnerSource& o, const SelfSource& s, const WallSource& w, const ControlsSource& c, Config options)
@@ -12,6 +13,7 @@ struct VehicleContactStartup::Data {
     Config config;
     vehicle_runtime::Source physical_source;
     Forecast forecast;
+    std::optional<activity::Declaration> activity_declaration;
     std::optional<TiedRemovalSource> tied;
     std::optional<detail::InitialModel> model;
     std::array<std::optional<detail::InterfaceFields>, 2> fields;
