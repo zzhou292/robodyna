@@ -22,3 +22,28 @@ target_link_libraries(qeph_rejected_input_check PRIVATE robo_dyna_physical_run_r
 target_compile_options(qeph_rejected_input_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME qeph_rejected_input_host COMMAND qeph_rejected_input_check)
 set_tests_properties(qeph_rejected_input_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+option(QEPH_APP_CAPTURE_CUDA "Qualify the app bridge against a genuine rejected mapped owner" OFF)
+if(QEPH_APP_CAPTURE_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_src/solvers" nodal-owner)
+  add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_src/elements/qeph" qeph-values)
+  include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/qeph/QephBatch.cmake")
+  include("${ROBO_DYNA_TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+  include("${ROBO_DYNA_TL_ROOT}/lib_src/constraints/NodalRigidAssemblyBinding.cmake")
+  add_executable(qeph_rejected_bridge_cuda LiveCudaTest.cu
+    "${CMAKE_CURRENT_LIST_DIR}/../Capture.cpp" "${CMAKE_CURRENT_LIST_DIR}/../CaptureValues.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/../Codec.cpp" "${CMAKE_CURRENT_LIST_DIR}/../Export.cpp"
+    "${APP_ROOT}/case/vehicle_dynamics/NativeStageError.cpp"
+    "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/qt_mapped/PrepareOwner.cu"
+    "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/qt_mapped/OwnerFixture.cpp"
+    "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/rigid_assembly_owner/Fixture.cpp")
+  target_link_libraries(qeph_rejected_bridge_cuda PRIVATE tl_qeph_batch tl_nodal_rigid_assembly_binding
+    tl_tied_cin_attachment robo_dyna_physical_run_records GTest::gtest_main CUDA::cudart)
+  set_target_properties(qeph_rejected_bridge_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(qeph_rejected_bridge_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+  add_test(NAME qeph_rejected_bridge_cuda COMMAND qeph_rejected_bridge_cuda)
+  set_tests_properties(qeph_rejected_bridge_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+endif()
