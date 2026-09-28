@@ -6,6 +6,7 @@
 #include "lib_src/collision/RadiossType25AssemblyDevice.h"
 #include "Launch.h"
 #include "Source.h"
+#include "ActivityRuntime.h"
 #include "lib_src/elements/publication/PhysicalActivePrefix.h"
 namespace tlfea::contact::radioss_type25 {
 struct Transaction::Impl {
@@ -15,6 +16,7 @@ struct Transaction::Impl {
   tl::fea::ShellPhysicalParticipants participants;
   tl::fea::ShellPhysicalPublicationIdentity identity;
   tl::fea::PhysicalActivePrefix active_prefix;
+  std::unique_ptr<runtime_detail::ActivityRuntime> activity;
   tl::fea::FENodalState* owner=nullptr;
   tl::fea::ShellBatchPublication* publication=nullptr;
   tl::fea::ShellPhysicalScratchParticipation issuer;
@@ -32,6 +34,11 @@ struct Transaction::Impl {
   tl::fea::NativeContactSelectors trial_selectors;
   enum class Phase { Idle,Assembled,Sealed };Phase phase=Phase::Idle;
   bool usable=true,normal_ready=false;
+  TransactionReport CaptureAcceptedActivity(const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalAssemblyView&,const tl::fea::NativeContactPublicationSnapshot&) noexcept;
+  TransactionReport StageCandidateActivity(const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&) noexcept;
+  TransactionReport SelectActivity(unsigned) noexcept;
   TransactionReport Fence(cudaError_t) noexcept;
   TransactionReport Fail(TransactionReport) noexcept;
   void DiscardLocal() noexcept;

@@ -9,7 +9,8 @@ bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::s
      rows>=INT_MAX||limits.sliding_entries>=INT_MAX||!limits.max_device_bytes)return false;
   if(normal.enabled&&(!source.primary_main_count||source.primary_main_count>INT_MAX/8||
       (normal.mixed?(s.main_count<source.primary_main_count||s.main_count>2*source.primary_main_count):s.main_count!=2*source.primary_main_count)||!s.normal_count||s.normal_count>4*s.main_count||
-      normal.free_count>s.main_count))return false;
+      normal.free_count>s.main_count||
+      (normal.free_capacity&&(normal.free_capacity<normal.free_count||normal.free_capacity>s.main_count))))return false;
   tl::util::BoundedArenaLayout a(limits.max_device_bytes);Layout l;
 #define ADD(type,count,name) if(!a.Append<type>(count,l.name))return false
   ADD(lifecycle::Node,s.node_count,nodes);ADD(lifecycle::Main,s.main_count,mains);
@@ -41,7 +42,7 @@ bool MakeLayout(const ContactSourceInput& source,TransactionLimits limits,std::s
     const auto before=a.bytes();
     if(normal.mixed){ADD(std::uint32_t,source.primary_main_count,normal.partners);}
     ADD(startup::Main,s.main_count,normal.topology);ADD(double,s.main_count,normal.coefficients);
-    ADD(std::uint32_t,normal.free_count,normal.free_mains);ADD(lifecycle::OptimizedRow,rows,normal.optimized);
+    ADD(std::uint32_t,normal.free_capacity?normal.free_capacity:normal.free_count,normal.free_mains);ADD(lifecycle::OptimizedRow,rows,normal.optimized);
     for(unsigned i=0;i<2;++i) {
       ADD(StoredNormal,4*s.main_count,normal.face[i]);ADD(startup::NormalReference,s.normal_count,normal.references[i]);
     }

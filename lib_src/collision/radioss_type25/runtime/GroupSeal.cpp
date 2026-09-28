@@ -33,8 +33,9 @@ TransactionGroupReport Transaction::SealCandidateGroup(Transaction* const* membe
       "Native group borrow and receipt staging must stay within the fixed stack bound");
   GroupSealSession session(owner,publication,token,physical,view,count);
   // No caller callback or physical producer occurs inside this bounded loop.
-  // Successful selector staging and issuer sealing are host-only and cannot
-  // modify the observed material backing. The private proof dies on return.
+  // Shell-removal projection may write private alternate contact operands; it
+  // never modifies the observed material backing. Selector staging and issuer
+  // sealing are host-only. The legacy grouped activity proof dies on return.
   for(std::size_t i=0;i<count;++i) {
     auto* member=borrowed[i];
     if(!member)return fail({TransactionStatus::NotInitialized,"Native transaction is not initialized"},i);

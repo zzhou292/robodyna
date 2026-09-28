@@ -44,6 +44,8 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
   if(prepared.status!=TransactionStatus::Ok)return prepared;
   const auto bound=BindMainRoster(source,roster,limits,plan.upload);
   if(bound.status!=TransactionStatus::Ok)return bound;
+  const auto activity_prepared=PrepareActivity(config,source,physical,limits,plan.upload,plan.activity);
+  if(activity_prepared.status!=TransactionStatus::Ok)return activity_prepared;
   const auto& upload=plan.upload;
   candidates::Forecast inventory;search::Forecast maintenance;assembly::IncidenceForecast incidence;
   const auto candidates_status=candidates::Inventory::Preflight(upload.inventory,limits.inventory,inventory);
@@ -59,6 +61,8 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
   if(QueryScratch(source.selection.secondary_count,limits.optimized_candidates,cub)!=cudaSuccess)
     return Error(TransactionStatus::DeviceFailure,"Native runtime scratch query failed");
   plan.normal={upload.moving.enabled,upload.moving.free_main_ids.size(),upload.moving.activation,upload.moving.mixed};
+  if(config.activity==ContactActivityPolicy::ShellRemoval&&plan.normal.enabled)
+    plan.normal.free_capacity=source.selection.main_count;
   auto& layout=plan.layout;if(!MakeLayout(source,limits,cub,layout,plan.normal,config.response_mass))return Error(TransactionStatus::ResourceLimit,"Native runtime arena exceeds cap");
   auto& forecast=plan.forecast;forecast.raw_pair_capacity=limits.inventory.max_pairs;
   forecast.optimized_capacity=limits.optimized_candidates;forecast.sliding_capacity=limits.sliding_entries;
@@ -69,6 +73,7 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
   forecast.incidence_device_bytes=incidence.device_bytes;
   if(!Add(layout.bytes,forecast.device_bytes)||!Add(forecast.inventory_device_bytes,forecast.device_bytes)||
      !Add(forecast.maintenance_device_bytes,forecast.device_bytes)||!Add(incidence.device_bytes,forecast.device_bytes)||
+     !Add(plan.activity.device_bytes,forecast.device_bytes)||
      forecast.device_bytes>limits.max_device_bytes)
     return Error(TransactionStatus::ResourceLimit,"Complete native device forecast exceeds cap");
   auto& readback_layout=plan.readback;auto& rows=plan.rows;auto& secondary=plan.secondary;
@@ -81,7 +86,12 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
     if(checked.status!=fe::ActivePrefixStatus::Ok)
       return Error(TransactionStatus::ResourceLimit,checked.message);
   }
+  forecast.activity_device_bytes=plan.activity.device_bytes;
+  forecast.activity_host_bytes=plan.activity.host_bytes;
+  forecast.activity_startup_host_bytes=plan.activity.startup_host_bytes;
   forecast.host_bytes=fixed_host_bytes;
+  if(!Add(plan.activity.host_bytes,forecast.host_bytes))
+    return Error(TransactionStatus::ResourceLimit,"Native activity host forecast overflows");
   // The member handle is already counted inside Impl; only its owned backing
   // and retained activity scratch are additional payload.
   if(activity.owned_host_bytes&&!Add(activity.owned_host_bytes-sizeof(fe::PhysicalActivePrefix),forecast.host_bytes))
@@ -89,6 +99,7 @@ TransactionReport Build(const TransactionConfig& config,const Source& source,
   if(!Add(readback_layout.bytes(),forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||!Add(inventory.startup_host_bytes,forecast.host_bytes)||
      !Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(maintenance.startup_host_bytes,forecast.host_bytes)||!Add(incidence.host_bytes,forecast.host_bytes)||
      !Add(forecast.host_bytes,forecast.startup_host_bytes)||!Add(upload.bytes,forecast.startup_host_bytes)||!Add(sizeof(Plan),forecast.startup_host_bytes)||
+     !Add(plan.activity.startup_host_bytes-plan.activity.host_bytes,forecast.startup_host_bytes)||
      forecast.startup_host_bytes>limits.max_host_bytes)
     return Error(TransactionStatus::ResourceLimit,"Complete native host forecast exceeds cap");
   return {TransactionStatus::Ok,"OK"};

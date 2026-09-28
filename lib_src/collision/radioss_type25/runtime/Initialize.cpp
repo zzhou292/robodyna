@@ -11,7 +11,7 @@ namespace {
 TransactionReport Error(TransactionStatus s,const char* message){return {s,message};}
 }
 Transaction::Transaction()=default;Transaction::~Transaction()=default;
-Transaction::Impl::~Impl(){if(stream)cudaStreamSynchronize(stream);if(arena)cudaFree(arena);}
+Transaction::Impl::~Impl(){if(stream)cudaStreamSynchronize(stream);activity.reset();if(arena)cudaFree(arena);}
 template<class Source>
 TransactionReport Transaction::InitializeSource(const TransactionConfig& config,const Source& input_source,
     fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::ShellPhysicalBinding& physical,
@@ -62,9 +62,11 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   auto error=cudaGetLastError();if(error!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Pending CUDA error at initialization");
   error=cudaMalloc(&next->arena,layout.bytes);if(error!=cudaSuccess)return Error(TransactionStatus::DeviceFailure,"Native runtime allocation failed");
   next->device=rd::Bind(next->arena,layout,source,limits,normal);
-  const auto copy=[&](const void* values,const tl::util::ArenaRegion& region) {
-    if(error==cudaSuccess&&region.bytes)error=cudaMemcpyAsync(tl::util::ArenaPointer<std::byte>(next->arena,region),values,
-        region.bytes,cudaMemcpyHostToDevice,stream);
+  const auto copy=[&](const void* values,const tl::util::ArenaRegion& region,std::size_t bytes=SIZE_MAX) {
+    const auto count=bytes==SIZE_MAX?region.bytes:bytes;
+    if(count>region.bytes){error=cudaErrorInvalidValue;return;}
+    if(error==cudaSuccess&&count)error=cudaMemcpyAsync(tl::util::ArenaPointer<std::byte>(next->arena,region),values,
+        count,cudaMemcpyHostToDevice,stream);
   };
   const auto& s=source.selection;
   copy(s.nodes,layout.nodes);copy(s.mains,layout.mains);copy(s.normals,layout.normals);
@@ -78,7 +80,7 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
     copy(upload.moving.topology.mains,layout.normal.topology);
     if(normal.mixed)copy(upload.moving.starter.primary_to_partner,layout.normal.partners);
     copy(upload.moving.main_coefficients.data(),layout.normal.coefficients);
-    copy(upload.moving.free_main_ids.data(),layout.normal.free_mains);
+    copy(upload.moving.free_main_ids.data(),layout.normal.free_mains,normal.free_count*sizeof(std::uint32_t));
     for(unsigned slab=0;slab<2;++slab) {
       copy(upload.moving.starter.starter.face_normals,layout.normal.face[slab]);
       copy(upload.moving.starter.starter.references,layout.normal.references[slab]);
@@ -93,6 +95,18 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
     const auto seeded=rd::InitialSeedAccess::Upload(*prepared,next->device,stream,next->initialization);
     if(seeded.status!=TransactionStatus::Ok)return seeded;
   }
+  if(config.activity==ContactActivityPolicy::ShellRemoval) {
+    next->activity=std::make_unique<rd::ActivityRuntime>();
+    auto checked=rd::ActivityReport(next->activity->snapshot.Initialize(owner,publication,physical,
+        participants,identity,plan.activity.snapshot_limits));
+    if(checked.status!=TransactionStatus::Ok)return checked;
+    checked=rd::ActivityReport(next->activity->snapshot.ValidateType45Source(source.activity_type45));
+    if(checked.status!=TransactionStatus::Ok)return checked;
+    checked=next->activity->operands.Initialize(plan.activity.source,source,
+        normal.enabled?&upload.moving.topology:nullptr,config.units,
+        rd::ActivitySlot(next->arena,layout,source,normal),stream,plan.activity.operand_limits);
+    if(checked.status!=TransactionStatus::Ok)return checked;
+  }
   for(unsigned slab=0;slab<2;++slab) {
     if(next->inventory[slab].Initialize(upload.inventory,limits.inventory,stream)!=candidates::Status::Ok||
        next->maintenance[slab].Initialize(upload.maintenance,limits.maintenance,stream)!=search::Status::Ok)
@@ -101,7 +115,8 @@ TransactionReport Transaction::InitializeSource(const TransactionConfig& config,
   if(next->incidence.Initialize(incidence_limits,stream)!=assembly::IncidenceStatus::Ok)
     return Error(TransactionStatus::DeviceFailure,"Native incidence initialization failed");
   next->source.selection=next->device.source;next->source.primary_parent_ids=nullptr;next->source.primary_curvature=nullptr;
-  if(!next->state.Attach(owner,source.source_id,next->issuer))return Error(TransactionStatus::PublicationFailure,"Native participant attachment rejected");
+  next->source.activity_controls=nullptr;next->source.activity_type45=nullptr;
+  if(!next->state.Attach(owner,source.source_id,next->issuer,bool(next->activity)))return Error(TransactionStatus::PublicationFailure,"Native participant attachment rejected");
   impl_=std::move(next);return {TransactionStatus::Ok,"OK"};
 } catch(const std::bad_alloc&){return Error(TransactionStatus::ResourceLimit,"Native startup allocation failed");}
 TransactionReport Transaction::Initialize(const TransactionConfig& config,const FixedMainSource& source,

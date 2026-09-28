@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Source.h"
 #include "PhysicalMainSource.h"
+#include "../activity_source/Types.h"
 #include "../selection/lifecycle/Admission.h"
 #include "../assembly/Endpoints.h"
 #include "lib_src/elements/ShellBatchFailureBinding.h"
@@ -88,20 +89,25 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   // Extra contributor families affect their real shared nodal coefficients;
   // this profile creates no substitute mass or constitutive model.
   const bool active_prefix=config.activity==ContactActivityPolicy::AllActivePrefix;
-  if(config.activity!=ContactActivityPolicy::NoDeclaredFailure&&!active_prefix)
+  const bool shell_removal=config.activity==ContactActivityPolicy::ShellRemoval;
+  const bool declared_activity=active_prefix||shell_removal;
+  if(config.activity!=ContactActivityPolicy::NoDeclaredFailure&&!declared_activity)
     return Fail(TransactionStatus::UnsupportedProfile,"Unknown contact activity policy");
-  if(active_prefix&&(!complete||static_mass||source.contact_thickness_update!=0))
+  if(shell_removal?!lifecycle::detail::Span(source.activity_controls,1):
+      (source.activity_controls!=nullptr||source.activity_type45!=nullptr))
+    return Fail(TransactionStatus::SourceMismatch,"Activity source declaration differs from selected policy");
+  if(declared_activity&&(!complete||static_mass||source.contact_thickness_update!=0))
     return Fail(TransactionStatus::UnsupportedProfile,
-      "Active prefix requires a complete accepted-owner source with resolved ITHK0");
+      "Declared activity requires a complete accepted-owner source with resolved ITHK0");
   const auto* failure=physical.failure();
   if(!failure)return Fail(TransactionStatus::SourceMismatch,"Physical failure declaration is missing");
   for(std::size_t i=0;i<failure->parent_count();++i)
-    if(!failure->parent(i)||(!active_prefix&&failure->parent(i)->policy!=tl::fea::ShellFailurePolicy::None))
+    if(!failure->parent(i)||(!declared_activity&&failure->parent(i)->policy!=tl::fea::ShellFailurePolicy::None))
       return Fail(TransactionStatus::UnsupportedProfile,"Contact activity changes are not admitted",i);
   PhysicalMainValidation main_validation;
   if(mixed) {
-    if(require_fixed||!complete||!active_prefix)
-      return Fail(TransactionStatus::UnsupportedProfile,"Mixed contact requires the complete all-active physical profile");
+    if(require_fixed||!complete||!declared_activity)
+      return Fail(TransactionStatus::UnsupportedProfile,"Mixed contact requires a complete declared-activity physical profile");
     main_validation=ValidateMixedPhysicalMains(physical,*mixed,limits.max_host_bytes);
     if(main_validation.report.status!=TransactionStatus::Ok)return main_validation.report;
   }
@@ -112,7 +118,7 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   CHARGE(std::uint64_t,s.node_count);CHARGE(int,s.node_count);CHARGE(std::uint32_t,s.secondary_count+4*p);
   CHARGE(candidates::Main,p);CHARGE(NativeGeometryHistory,s.secondary_count);CHARGE(Vector,2*s.node_count);
   CHARGE(double,(static_mass?s.node_count:0)+2*s.secondary_count+3*p);CHARGE(std::uint64_t,2*(p+1));
-  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,mixed?0:shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
+  CHARGE(std::uint32_t,s.removed_main_by_secondary.entry_count);CHARGE(Parent,mixed?0:shells->qeph_count()+shells->t3_count()+(declared_activity?shells->qbat_count():0));
   CHARGE(std::uint64_t,mixed?0:p);CHARGE(std::uint32_t,s.secondary_count+1);
   CHARGE(std::byte,main_validation.startup_host_bytes);
 #undef CHARGE
@@ -149,10 +155,10 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   if(admitted!=selection::Status::Ok)return {TransactionStatus::InvalidInput,"Native lifecycle source admission failed",SIZE_MAX,SIZE_MAX,admitted};
   if(!mixed) {
     std::vector<Parent> parents;
-    parents.reserve(shells->qeph_count()+shells->t3_count()+(active_prefix?shells->qbat_count():0));
+    parents.reserve(shells->qeph_count()+shells->t3_count()+(declared_activity?shells->qbat_count():0));
     for(std::size_t i=0;i<shells->qeph_count();++i)parents.push_back({shells->qeph_source_id(i),ParentFamily::Qeph,i});
     for(std::size_t i=0;i<shells->t3_count();++i)parents.push_back({shells->t3_source_id(i),ParentFamily::T3,i});
-    if(active_prefix)for(std::size_t i=0;i<shells->qbat_count();++i)
+    if(declared_activity)for(std::size_t i=0;i<shells->qbat_count();++i)
       parents.push_back({shells->qbat_source_id(i),ParentFamily::Qbat,i});
     std::sort(parents.begin(),parents.end(),[](auto a,auto b){return a.id<b.id;});
     std::vector<std::uint64_t> selected(source.primary_parent_ids,source.primary_parent_ids+p);

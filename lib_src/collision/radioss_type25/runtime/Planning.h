@@ -2,6 +2,7 @@
 #pragma once
 #include "Source.h"
 #include "Layout.h"
+#include "ActivityPlanning.h"
 #include "lib_src/collision/RadiossType25AssemblyDevice.h"
 namespace tlfea::contact::radioss_type25::runtime_detail {
 // General-only borrowed producer roster. An empty descriptor preserves legacy
@@ -14,6 +15,7 @@ struct Plan {
   explicit Plan(TransactionLimits limits):readback(limits.max_host_bytes){}
   Plan(const Plan&)=delete;Plan& operator=(const Plan&)=delete;
   SourceStaging upload;
+  ActivityPlan activity;
   TransactionForecast forecast;
   Layout layout;
   NormalShape normal;

@@ -28,8 +28,8 @@ struct Device {
   lifecycle::Secondary* secondary[2]{};
   NativeGeometryHistory* history[2]{};
   double* native_mass=nullptr;Vector* reference_positions=nullptr;
-  double* secondary_stiffness=nullptr;double* secondary_gaps=nullptr;
-  double* main_stiffness=nullptr;double* main_gaps=nullptr;double* main_curvature=nullptr;
+  const double* secondary_stiffness=nullptr;double* secondary_gaps=nullptr;
+  const double* main_stiffness=nullptr;double* main_gaps=nullptr;double* main_curvature=nullptr;
   lifecycle::SpatialOccurrence* spatial=nullptr;
   std::uint32_t* spatial_offsets=nullptr;std::uint32_t* spatial_entries=nullptr;
   lifecycle::PreparedRow* prepared=nullptr;lifecycle::RowStageResult* row_results=nullptr;

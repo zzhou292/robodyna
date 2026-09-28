@@ -1,6 +1,7 @@
 # Native TYPE25 GPU runtime. No native oracle or executable is a production dependency.
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25PhysicalMainSource.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25ActivityOperands.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Lifecycle.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Candidates.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Search.cmake")
@@ -16,10 +17,11 @@ add_library(tl_radioss_type25_transaction STATIC
   "${_type25_runtime}/Planning.cpp" "${_type25_runtime}/GeneralPlanning.cpp" "${_type25_runtime}/InitialSeed.cpp"
   "${_type25_runtime}/Initialize.cpp" "${_type25_runtime}/Transaction.cpp" "${_type25_runtime}/GroupSeal.cpp"
   "${_type25_runtime}/AssemblyTail.h"
+  "${_type25_runtime}/ActivityPlanning.cpp" "${_type25_runtime}/ActivityRuntime.cpp" "${_type25_runtime}/ActivityTransfer.cu"
   "${_type25_runtime}/Kernels.cu" "${_type25_runtime}/NormalStage.cu"
   "${_type25_runtime}/RowLaunch.h"
   "${_type25_runtime}/diagnostics/Tile.h" "${_type25_runtime}/diagnostics/Read.h")
-target_link_libraries(tl_radioss_type25_transaction PUBLIC
+target_link_libraries(tl_radioss_type25_transaction PUBLIC tl_radioss_type25_activity_operands
   tl_radioss_type25_physical_main_source
   tl_radioss_type25_lifecycle tl_radioss_type25_candidates tl_radioss_type25_search
   tl_radioss_type25_assembly_device tl_radioss_type25_current_normals tl_radioss_type25_initial_state tl_shell_batch_publication CUDA::cudart)

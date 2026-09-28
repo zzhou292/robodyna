@@ -11,6 +11,9 @@ struct NormalShape {
   std::size_t free_count=0;
   normal_activation::Profile activation;
   bool mixed=false;
+  // Zero preserves the immutable-source exact-size allocation. Dynamic shell
+  // activity reserves every main so newly exposed free edges fit without realloc.
+  std::size_t free_capacity=0;
 };
 struct NormalLayout {
   tl::util::ArenaRegion topology,coefficients,free_mains,optimized,partners;

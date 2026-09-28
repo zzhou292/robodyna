@@ -6,7 +6,9 @@
 #include "../candidates/InventoryTypes.h"
 #include "../startup/Types.h"
 #include "../normal_activation/Types.h"
+namespace tl::fea::type45 { class Model; }
 namespace tlfea::contact::radioss_type25 {
+namespace activity_source { struct Controls; }
 namespace lifecycle=selection::lifecycle;
 namespace runtime_detail {
 // Preserve literal native ISKEW (selection treats1 as its global-axis branch).
@@ -41,6 +43,10 @@ struct ContactSourceInput {
   // Resolved native ITHK. Mandatory in the all-active profile; it is source
   // policy, not a claim that activity alone makes contact gaps constant.
   int contact_thickness_update=-1;
+  // Explicit source declaration for ShellRemoval only. Borrowed through the
+  // drained preflight/initializer; runtime never keeps these host pointers.
+  const activity_source::Controls* activity_controls=nullptr;
+  const tl::fea::type45::Model* activity_type45=nullptr;
 };
 // The explicit wrappers select admissible source semantics. There is no public
 // Transaction initializer accepting ContactSourceInput alone.
@@ -66,7 +72,7 @@ enum class ResponseMassPolicy { StaticPhysicalLedger,AcceptedOwnerCoefficients }
 // authentication of every mechanical participant. It does not widen contact
 // surface topology or failure/activity support.
 enum class PhysicalSourceProfile { QephT3Only, CompleteBoundLedger };
-enum class ContactActivityPolicy { NoDeclaredFailure, AllActivePrefix };
+enum class ContactActivityPolicy { NoDeclaredFailure, AllActivePrefix, ShellRemoval };
 struct TransactionConfig {
   UnitScale units;
   lifecycle::Profile lifecycle;
@@ -99,11 +105,18 @@ struct TransactionForecast {
   std::size_t device_bytes=0,host_bytes=0,startup_host_bytes=0;
   std::size_t runtime_device_bytes=0,inventory_device_bytes=0,maintenance_device_bytes=0,incidence_device_bytes=0;
   std::size_t raw_pair_capacity=0,optimized_capacity=0,sliding_capacity=0;
+  // Included totals: resident payload and complete phase-aware activity peak.
+  std::size_t activity_device_bytes=0,activity_host_bytes=0,activity_startup_host_bytes=0;
   std::size_t normal_device_bytes=0; // Included in runtime_device_bytes; zero for fixed profile.
 };
 struct TransactionDiagnostics {
   std::uint64_t raw_candidates=0,optimized_candidates=0,kept_occurrences=0,active_forces=0;
   bool reference_rebuilt=false;
+  bool activity_changed=false;
+  std::size_t activity_removed_qeph=0,activity_removed_t3=0;
+  std::size_t activity_first_removed_qeph=SIZE_MAX,activity_first_removed_t3=SIZE_MAX;
+  std::uint64_t activity_affected_events=0,activity_removed_events=0;
+  std::size_t activity_removed_mains=0,activity_orphan_secondaries=0;
   // Native per-attempt sums in source occurrence order, converted once to SI.
   double elastic_energy=0,damping_work=0,friction_work=0;
   // Last attempted inventory Stage report, preserved through common discard

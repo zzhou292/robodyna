@@ -42,6 +42,11 @@ void Transaction::Impl::DiscardLocal() noexcept {
     inventory[trial_selectors.reference].Discard();maintenance[trial_selectors.reference].DiscardReference();
     inventory_view[trial_selectors.reference]={};
   }
+  if(activity) {
+    activity->snapshot.DiscardTrial();
+    if(accepted.available)activity->operands.DiscardStaged(accepted.selectors.activity,accepted.selectors.activity^1u);
+    activity->accepted={};activity->prepared={};
+  }
   incidence.Discard();normal_ready=false;phase=Phase::Idle;assembly_view={};assembly_stamp={};trial_selectors={};
 }
 TransactionReport Transaction::Impl::Fail(TransactionReport result) noexcept {
@@ -52,7 +57,8 @@ TransactionReport Transaction::Impl::Fail(TransactionReport result) noexcept {
 bool Transaction::Impl::OutputDisjoint(const void* p,std::size_t bytes) const noexcept {
   using fe::trial_identity::Disjoint;
   return p&&Disjoint(p,bytes,this,sizeof(*this))&&Disjoint(p,bytes,arena,layout.bytes)&&
-      Disjoint(p,bytes,readback.data(),readback.bytes())&&issuer.configured()&&publication->PhysicalOutputDisjoint(p,bytes);
+      Disjoint(p,bytes,readback.data(),readback.bytes())&&
+      (!activity||(Disjoint(p,bytes,activity.get(),sizeof(*activity))&&activity->operands.OutputDisjoint(p,bytes)))&&issuer.configured()&&publication->PhysicalOutputDisjoint(p,bytes);
 }
 TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe::NodalTrialToken& token,
     const fe::NodalAssemblyView& view) noexcept {
@@ -80,6 +86,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   }
   p.diagnostics={};p.normal_ready=false;p.trial_selectors=accepted.selectors;p.trial_selectors.history=accepted.selectors.history^1u;
   p.assembly_view=view;p.assembly_stamp=accepted.stamp;p.phase=Impl::Phase::Assembled;
+  auto activity_status=p.CaptureAcceptedActivity(token,view,accepted);
+  if(activity_status.status!=TransactionStatus::Ok)return p.Fail(activity_status);
   fe::NodalCinAssemblyView cin;
   check=fe::shell_physical_owner::BorrowAssembly(owner,token,accepted.stamp,view,p.issuer.witness_count_,&cin);
   if(check.status!=fe::NodalStatus::Ok)return p.Fail(Error(TransactionStatus::OwnerFailure,check.message));
@@ -108,7 +116,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   // Immutable source gaps select Maintenance::GapMode::Fixed, independently
   // of whether main geometry moves; this profile does not update thickness gaps.
   current.main_gaps=nullptr;current.main_gap_count=0;
-  search::Report budget;bool rebuild=!accepted.selectors.has_reference;unsigned reference=accepted.selectors.reference;
+  search::Report budget;bool rebuild=!accepted.selectors.has_reference||
+      accepted.selectors.reference_activity_generation!=accepted.selectors.activity_generation;unsigned reference=accepted.selectors.reference;
   if(!rebuild) {
     const auto evaluated=p.maintenance[reference].Evaluate(current,drift,false,budget);
     if(evaluated!=search::Status::Ok)return p.Fail(Error(evaluated==search::Status::DeviceFailure?
@@ -120,6 +129,7 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
     reference=accepted.selectors.has_reference?(accepted.selectors.reference^1u):1u;
     p.trial_selectors.reference=reference;p.trial_selectors.reference_generation=accepted.selectors.reference_generation+1;
     p.trial_selectors.has_reference=true;
+    p.trial_selectors.reference_activity_generation=accepted.selectors.activity_generation;
     search::ReferenceToken captured;
     auto maintenance_status=p.maintenance[reference].StageReference(current,captured);
     if(maintenance_status==search::Status::Ok)maintenance_status=p.maintenance[reference].PublishReference(captured);
@@ -237,6 +247,8 @@ TransactionReport Transaction::SealCandidateImpl(fe::FENodalState& owner,const f
       return p.Fail({checked.status==fe::ActivePrefixStatus::InactiveParent?TransactionStatus::ActivityChange:
           TransactionStatus::PublicationFailure,checked.message,checked.parent});
   }
+  const auto activity_status=p.StageCandidateActivity(token,view,physical);
+  if(activity_status.status!=TransactionStatus::Ok)return p.Fail(activity_status);
   if(!p.state.Stage(view,p.trial_selectors))return p.Fail(Error(TransactionStatus::PublicationFailure,"Native selector plan rejected"));
   fe::ShellPhysicalScratchParticipationReceipt result;
   if(group) {
