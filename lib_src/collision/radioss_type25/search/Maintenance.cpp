@@ -3,9 +3,19 @@
 #include "lib_src/solvers/NodalTrialIdentity.h"
 namespace tlfea::contact::radioss_type25::search {
 Status Maintenance::StageReference(const Current& input, ReferenceToken& output) noexcept {
+  return StageReference(input, ReferenceCapturePolicy::UnchangedActivity, output);
+}
+Status Maintenance::StageReference(const Current& input, ReferenceCapturePolicy policy,
+    ReferenceToken& output) noexcept {
   if (!impl_) return Status::NotInitialized;
   auto& state = *impl_;
   state.pending = false;
+  if (policy != ReferenceCapturePolicy::UnchangedActivity &&
+      policy != ReferenceCapturePolicy::MonotoneRoleRetirement)
+    return state.Result(Status::InvalidInput, &input);
+  if (policy == ReferenceCapturePolicy::MonotoneRoleRetirement &&
+      state.source.activity_policy != ActivityPolicy::MonotoneRetirement)
+    return state.Result(Status::UnsupportedProfile, &input);
   auto status = state.Check(input, true);
   if (status != Status::Ok) return state.Result(status, &input);
   if (!state.OutputDisjoint(&output, sizeof(output), input) ||
@@ -14,7 +24,7 @@ Status Maintenance::StageReference(const Current& input, ReferenceToken& output)
   if (state.sequence == UINT64_MAX || state.generation == UINT64_MAX)
     return state.Result(Status::ResourceLimit, &input);
   ++state.sequence;
-  status = state.Execute(input, 1 - state.accepted, true, 0, false);
+  status = state.Execute(input, 1 - state.accepted, true, 0, false, policy);
   if (status != Status::Ok) return status;
   state.staged_stamp = input.stamp;
   state.pending = true;

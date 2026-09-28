@@ -30,9 +30,28 @@ retains that clamp and uses its own copy; a test proves the pre-clamp contributi
 `DiscardReference` invalidates pending staging. Failed staging invalidates older
 pending tokens and preserves the published reference. Tokens are bound to a bounded
 per-instance identity, sequence and generation; those are cache identities, not
-physical owner IDs. Changed source generations or changed secondary activity masks
-return UnsupportedLifecycle, including during a new capture. Empty active sides
-also return UnsupportedLifecycle; no successful reuse result is invented.
+physical owner IDs. Changed source generations always reject. The default
+Immutable activity profile keeps its original behavior: any changed secondary
+mask rejects, including during capture, and empty active sides are unsupported.
+
+An explicit Source::MonotoneRetirement profile requires Current.main_node_activity
+for the complete physical node domain. Valid MSR/MSR1D roles consume their node's
+0/1 mask; non-role bytes are unused. It allocates paired masks for every reference
+role and charges them in the normal forecast. The explicit
+StageReference(Current, MonotoneRoleRetirement, token) overload admits only1->0
+secondary/main retirement while capturing a new reference. The old overload
+still requires unchanged activity. Evaluate always checks the published masks;
+0->1 reactivation, negative stiffness, changed source identity, unknown policy
+and invalid descriptors reject. The caller must authenticate physical activity
+and invalidate candidate inventories; this numerical module supplies no such
+authority. Retirement may be requested on every recapture because a reused
+alternate cache can lag an earlier source retirement.
+
+The explicit profile preserves the original EP30 empty extrema and NTY25
+MAX(relative displacement/speed,ZERO) arithmetic when one or both live sides
+are empty. Empty boxes must have their exact sentinel shape; malformed data
+still reject. Numerical budget success does not authorize inventory reuse or
+prove any remaining physical contact.
 Successful Report and token outputs are unchanged on failure. `last_failure()`
 provides a copied status, current-query stamp when present, and the first flattened
 role/gap row when device validation identifies one. Host admission failures have
@@ -55,8 +74,13 @@ DIST0, forced-sort and strict2x/5x high-velocity thresholds. High-velocity Error
 an explicit Budget diagnostic, not a physical acceptance result or a swallowed
 warning. Global native error handling remains the future coordinator's duty.
 
-The Fortran oracle compiles the complete pinned I25BUCE_CRIT routine (one reference
-thread), the verbatim selected INTCRIT block and the exact gap-difference loop.
+The Fortran oracle compiles the complete pinned I25XSAVE and I25BUCE_CRIT routines
+(one reference thread), the verbatim selected INTCRIT block and the exact
+gap-difference loop. I25XSAVE saves every valid NSV without a stiffness argument
+and skips nonpositive MSR/MSR1D roles. Only its module/dependency names are made
+private in generated test source; no reference-position formulas are copied into
+C++. The native removal dispatcher/CHKMSR3NB scope is separately qualified by the
+activity-source/operand oracle.
 Test-only boundaries supply source constants/common shapes, suppress I/O and reject
 unselected MPI calls. They never call production numerical helpers. Reference
 layout packing and SI input preparation are independent. Source extraction is
@@ -76,8 +100,9 @@ nonfinite data, empty sides, negative-STFN rejection, malformed map/device range
 managed output aliases, copied failure evidence, multiple blocks and injected CUDA
 copy failure.
 
-Not yet implemented: full native candidate search/build, inventory binding, topology
-or activity replacement, distributed/FI ownership, contact geometry/force/history
-integration, physical publication, or a matched full-scene performance claim.
+This module alone does not implement candidate search/build, inventory binding,
+source/topology replacement, distributed/FI ownership, physical publication or a
+matched full-scene performance claim. The explicit monotone role retirement
+profile does not authorize general reactivation or physical source mutation.
 The scene controller must stage reference publication with the common owner commit.
-This source has not been compiled or numerically qualified by its author.
+Owning receipts determine which frozen source revision has actually passed qualification.

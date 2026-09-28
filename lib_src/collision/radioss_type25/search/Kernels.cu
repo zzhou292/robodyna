@@ -23,13 +23,13 @@ __device__ void Reduce(ReductionTile& tile) {
   __syncthreads();
 }
 __global__ void ObserveRows(Device d, Current input, unsigned slab,
-    bool capture, bool has_reference) {
+    bool capture, bool has_reference, ReferenceCapturePolicy policy) {
   __shared__ ReductionTile tile;
   Partial value;
   const auto begin = std::size_t(blockIdx.x) * blockDim.x + threadIdx.x;
   const auto stride = std::size_t(gridDim.x) * blockDim.x;
   for (auto i = begin; i < RoleCount(d); i += stride)
-    ObserveRole(d, input, slab, i, capture, has_reference, value);
+    ObserveRole(d, input, slab, i, capture, has_reference, policy, value);
   for (auto i = begin; i < d.segments; i += stride)
     ObserveGap(d, input, slab, i, capture, value);
   Store(tile, threadIdx.x, value);
@@ -48,19 +48,20 @@ __global__ void Complete(Device d, unsigned blocks, bool capture,
   DeviceControl result;
   result.partial = Load(tile, 0);
   if (!d.gap_changes) result.partial.extrema.maximum_gap_change = 0;
-  if (result.partial.status == Status::Ok &&
+  if (result.partial.status == Status::Ok && !d.retirement &&
       (!result.partial.extrema.secondary_uses || !result.partial.extrema.main_uses))
     result.partial.status = Status::UnsupportedLifecycle;
   if (result.partial.status == Status::Ok && !capture) {
     result.partial.status = EvaluateBudget(result.partial.extrema, margin,
-        previous_dt, force_sort, result.budget);
+        previous_dt, force_sort, d.retirement ? ActivityPolicy::MonotoneRetirement : ActivityPolicy::Immutable,
+        result.budget);
   }
   *d.control = result;
 }
 }
 cudaError_t Run(Device d, const Current& input, unsigned slab, bool capture,
     double margin, double previous_dt, bool force_sort, bool has_reference,
-    cudaStream_t stream) noexcept {
+    ReferenceCapturePolicy policy, cudaStream_t stream) noexcept {
   // CheckSource admits a nonempty role roster before allocating this Device.
   const auto count = RoleCount(d) > d.segments ? RoleCount(d) : d.segments;
   const auto requested = (count + Threads - 1) / Threads;
@@ -70,7 +71,7 @@ cudaError_t Run(Device d, const Current& input, unsigned slab, bool capture,
     const auto error = cudaGetLastError();
     if (error != cudaSuccess) return error;
   }
-  ObserveRows<<<blocks, Threads, 0, stream>>>(d, input, slab, capture, has_reference);
+  ObserveRows<<<blocks, Threads, 0, stream>>>(d, input, slab, capture, has_reference, policy);
   const auto error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   Complete<<<1, Threads, 0, stream>>>(d, blocks, capture, margin, previous_dt, force_sort);

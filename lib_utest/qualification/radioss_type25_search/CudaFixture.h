@@ -12,16 +12,17 @@ struct DeviceFixture {
   Fixture fixture;
   double* data=nullptr;
   s::Current current;
-  explicit DeviceFixture(bool compact=true,bool gaps=true,bool si=false,std::size_t nodes=32)
+  explicit DeviceFixture(bool compact=true,bool gaps=true,bool si=false,std::size_t nodes=32,bool retirement=false)
       : fixture(compact,gaps,nodes) {
     if(si)fixture.ToSi();
+    if(retirement)fixture.EnableRetirement();
     try {
       Cuda(cudaMalloc(reinterpret_cast<void**>(&data),Bytes()));
       Upload();
     } catch (...) {if(data)cudaFree(data);data=nullptr;throw;}
   }
   ~DeviceFixture(){cudaStreamSynchronize(stream.value);if(data)cudaFree(data);}
-  std::size_t Bytes() const {return sizeof(double)*(fixture.positions.size()+fixture.velocities.size()+fixture.stiffness.size()+fixture.gaps.size());}
+  std::size_t Bytes() const {return sizeof(double)*(fixture.positions.size()+fixture.velocities.size()+fixture.stiffness.size()+fixture.gaps.size())+fixture.main_activity.size();}
   void Upload() {
     current=fixture.Current();std::size_t offset=0;
     for(const auto* row:{&fixture.positions,&fixture.velocities,&fixture.stiffness,&fixture.gaps}) {
@@ -30,6 +31,11 @@ struct DeviceFixture {
     current.positions.data=data;current.velocities.data=data+fixture.positions.size();
     current.secondary_stiffness=current.velocities.data+fixture.velocities.size();
     if(current.main_gap_count)current.main_gaps=current.secondary_stiffness+fixture.stiffness.size();
+    if(!fixture.main_activity.empty()){
+      auto* mask=reinterpret_cast<std::uint8_t*>(data+offset);
+      Cuda(cudaMemcpy(mask,fixture.main_activity.data(),fixture.main_activity.size(),cudaMemcpyHostToDevice));
+      current.main_node_activity=mask;
+    }
   }
   void Initialize(){ASSERT_EQ(owner.Initialize(fixture.source,{},stream.value),s::Status::Ok);}
   s::ReferenceToken Stage() {

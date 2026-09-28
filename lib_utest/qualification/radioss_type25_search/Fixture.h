@@ -7,6 +7,7 @@ namespace type25_search_test {
 struct Fixture {
   std::vector<std::uint32_t> secondary,main,one_d;
   std::vector<double> positions,velocities,stiffness,gaps;
+  std::vector<std::uint8_t> main_activity;
   s::Source source;
   s::QueryStamp stamp{{17,3,5},0,1};
   explicit Fixture(bool compact=true,bool updated_gaps=true,std::size_t nodes=32) {
@@ -22,6 +23,10 @@ struct Fixture {
     source.gap_mode=updated_gaps ? s::GapMode::CurrentMainGaps : s::GapMode::Fixed;
     Bind();
   }
+  void EnableRetirement() {
+    source.activity_policy=s::ActivityPolicy::MonotoneRetirement;
+    main_activity.assign(source.physical_nodes,1);
+  }
   void Bind() {
     source.secondary_nodes=secondary.empty()?nullptr:secondary.data();source.secondaries=secondary.size();
     source.main_nodes=main.empty()?nullptr:main.data();source.mains=main.size();
@@ -33,6 +38,7 @@ struct Fixture {
     c.velocities={velocities.data(),std::uint32_t(source.physical_nodes),3,1};
     c.secondary_stiffness=stiffness.data();c.secondary_count=stiffness.size();
     if(source.gap_mode==s::GapMode::CurrentMainGaps){c.main_gaps=gaps.data();c.main_gap_count=gaps.size();}
+    if(!main_activity.empty()){c.main_node_activity=main_activity.data();c.main_node_activity_count=main_activity.size();}
     return c;
   }
   void ToSi() {

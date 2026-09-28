@@ -6,5 +6,5 @@
 namespace tlfea::contact::radioss_type25::search::detail {
 cudaError_t Run(Device, const Current&, unsigned slab, bool capture,
     double margin, double previous_dt, bool force_sort, bool has_reference,
-    cudaStream_t) noexcept;
+    ReferenceCapturePolicy, cudaStream_t) noexcept;
 } // namespace tlfea::contact::radioss_type25::search::detail

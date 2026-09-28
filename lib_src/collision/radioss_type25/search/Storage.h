@@ -19,7 +19,8 @@ struct Maintenance::Impl {
   unsigned accepted = 0;
   bool usable = true, reference = false, pending = false;
   Status Check(const Current&,bool capture) const noexcept;
-  Status Execute(const Current&,unsigned slab,bool capture,double previous_dt,bool force_sort) noexcept;
+  Status Execute(const Current&,unsigned slab,bool capture,double previous_dt,bool force_sort,
+      ReferenceCapturePolicy = ReferenceCapturePolicy::UnchangedActivity) noexcept;
   bool OutputDisjoint(const void*, std::size_t, const Current&) const noexcept;
   Status Result(Status, const Current* = nullptr, std::size_t row = SIZE_MAX) noexcept;
 };

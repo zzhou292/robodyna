@@ -12,7 +12,9 @@ Status CheckSource(const Source& s,Limits limits) noexcept {
   if (!s.stamp.source || !s.stamp.topology || !s.stamp.activity || !s.physical_nodes ||
       !normal_detail::Nonnegative(s.margin) ||
       (s.input_units!=InputUnits::Native && s.input_units!=InputUnits::Si) ||
-      (s.gap_mode!=GapMode::Fixed && s.gap_mode!=GapMode::CurrentMainGaps)) return Status::InvalidInput;
+      (s.gap_mode!=GapMode::Fixed && s.gap_mode!=GapMode::CurrentMainGaps) ||
+      (s.activity_policy!=ActivityPolicy::Immutable && s.activity_policy!=ActivityPolicy::MonotoneRetirement))
+    return Status::InvalidInput;
   if (s.processors!=1 || s.edge_mode!=0 || s.converged!=1) return Status::UnsupportedProfile;
   if (s.physical_nodes>limits.max_nodes || s.secondaries>limits.max_role_entries ||
       s.mains>limits.max_role_entries-s.secondaries ||
@@ -44,9 +46,11 @@ Status MakeLayout(const Source& source,Limits limits,std::size_t owner_bytes,Lay
   if (!arena.Append<std::uint32_t>(f.role_entries,next.roles) ||
       !arena.Append<Partial>(MaximumBlocks,next.partials) ||
       !arena.Append<DeviceControl>(1,next.control)) return Status::ResourceLimit;
+  const auto masks=source.activity_policy==ActivityPolicy::MonotoneRetirement ?
+      f.role_entries : source.secondaries;
   for(unsigned i=0;i<2;++i)
     if (!arena.Append<Vector>(f.reference_positions,next.reference[i]) ||
-        !arena.Append<std::uint8_t>(source.secondaries,next.masks[i]) ||
+        !arena.Append<std::uint8_t>(masks,next.masks[i]) ||
         !arena.Append<double>(f.reference_gaps,next.gaps[i])) return Status::ResourceLimit;
   f.device_bytes=arena.bytes();
   tl::util::BoundedArenaLayout host(limits.max_host_bytes);tl::util::ArenaRegion ignored;
@@ -61,12 +65,13 @@ Device Bind(void* base,const Layout& l,const Source& s,const units_detail::Facto
   d.control=tl::util::ArenaPointer<DeviceControl>(base,l.control);
   for(unsigned i=0;i<2;++i) {
     d.reference[i]=tl::util::ArenaPointer<Vector>(base,l.reference[i]);
-    d.masks[i]=s.secondaries ? tl::util::ArenaPointer<std::uint8_t>(base,l.masks[i]) : nullptr;
+    d.masks[i]=l.masks[i].count ? tl::util::ArenaPointer<std::uint8_t>(base,l.masks[i]) : nullptr;
     d.gaps[i]=l.forecast.reference_gaps ? tl::util::ArenaPointer<double>(base,l.gaps[i]) : nullptr;
   }
   d.nodes=s.physical_nodes;d.secondary=s.secondaries;d.main=s.mains;d.one_d=s.main_1d;
   d.segments=l.forecast.reference_gaps;d.reference_count=l.forecast.reference_positions;
   d.compact=l.forecast.compact_reference;d.gap_changes=s.gap_mode==GapMode::CurrentMainGaps;
+  d.retirement=s.activity_policy==ActivityPolicy::MonotoneRetirement;
   d.si=s.input_units==InputUnits::Si;d.length=f.length;d.velocity=f.velocity;return d;
 }
 } // namespace tlfea::contact::radioss_type25::search::detail

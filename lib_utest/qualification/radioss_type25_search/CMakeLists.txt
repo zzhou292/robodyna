@@ -13,18 +13,18 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/na
 if(NOT prepared EQUAL 0)
   message(FATAL_ERROR "Pinned native search source preparation failed")
 endif()
-add_library(type25_search_oracle STATIC NativeOracle.cpp "${native}/Constants.F90" "${native}/Boundary.F90" "${native}/Extrema.F" "${native}/Budget.F" "${native}/Gap.F")
+add_library(type25_search_oracle STATIC NativeOracle.cpp NativeReference.cpp "${native}/Constants.F90" "${native}/Boundary.F90" "${native}/Extrema.F" "${native}/Budget.F" "${native}/Gap.F" "${native}/Xsave.F90" "${native}/Reference.F90")
 target_include_directories(type25_search_oracle PRIVATE "${native}" PUBLIC "${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(type25_search_oracle PUBLIC tl_radioss_type25_search_values)
 target_compile_options(type25_search_oracle PRIVATE
   "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
-add_executable(type25_search_host HostTest.cpp HeaderTest.cpp)
+add_executable(type25_search_host HostTest.cpp HeaderTest.cpp RetirementHostTest.cpp)
 target_link_libraries(type25_search_host PRIVATE type25_search_oracle GTest::gtest_main)
 add_test(NAME type25_search_host COMMAND type25_search_host)
 add_test(NAME type25_search_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${native}" --check)
 set_tests_properties(type25_search_host type25_search_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90)
 if(TYPE25_SEARCH_CUDA)
-  add_executable(type25_search_cuda CudaTest.cu CopyFault.cpp)
+  add_executable(type25_search_cuda CudaTest.cu RetirementCudaTest.cu RetirementRejectionTest.cu CopyFault.cpp)
   target_link_options(type25_search_cuda PRIVATE -Wl,--wrap=cudaMemcpyAsync)
   target_link_libraries(type25_search_cuda PRIVATE tl_radioss_type25_search type25_search_oracle GTest::gtest_main)
   set_target_properties(type25_search_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
@@ -33,5 +33,5 @@ if(TYPE25_SEARCH_CUDA)
 endif()
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-  native/prepare.py native/source-manifest.json native/Budget.F.in native/Gap.F.in native/Boundary.F90
-  native/original/intcrit.F native/original/i25buce_crit.F native/original/i25gap3.F native/original/constant_mod.F)
+  native/prepare.py native/source-manifest.json native/Budget.F.in native/Gap.F.in native/Boundary.F90 native/Reference.F90
+  native/original/intcrit.F native/original/i25buce_crit.F native/original/i25gap3.F native/original/constant_mod.F native/original/i25xsave.F90)

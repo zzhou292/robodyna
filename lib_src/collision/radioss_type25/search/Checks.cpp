@@ -36,7 +36,8 @@ bool Maintenance::Impl::OutputDisjoint(const void* output, std::size_t bytes,
       Separate(output, bytes, input.velocities.data, velocities) &&
       Separate(output, bytes, input.secondary_stiffness,
           input.secondary_count * sizeof(double)) &&
-      Separate(output, bytes, input.main_gaps, input.main_gap_count * sizeof(double));
+      Separate(output, bytes, input.main_gaps, input.main_gap_count * sizeof(double)) &&
+      Separate(output, bytes, input.main_node_activity, input.main_node_activity_count);
 }
 Status Maintenance::Impl::Check(const Current& input, bool capture) const noexcept {
   if (!usable) return Status::Unusable;
@@ -57,6 +58,11 @@ Status Maintenance::Impl::Check(const Current& input, bool capture) const noexce
       !detail::Span(input.secondary_stiffness, input.secondary_count) ||
       !Separate(input.secondary_stiffness, input.secondary_count * sizeof(double), arena, bytes))
     return Status::InvalidInput;
+  if (source.activity_policy == ActivityPolicy::MonotoneRetirement) {
+    if (input.main_node_activity_count != nodes ||
+        !detail::Span(input.main_node_activity, nodes) ||
+        !Separate(input.main_node_activity, nodes, arena, bytes)) return Status::InvalidInput;
+  } else if (input.main_node_activity || input.main_node_activity_count) return Status::InvalidInput;
   const auto gaps = layout.forecast.reference_gaps;
   if (input.main_gap_count != gaps || !detail::Span(input.main_gaps, gaps) ||
       !Separate(input.main_gaps, gaps * sizeof(double), arena, bytes))
@@ -76,11 +82,11 @@ Status Maintenance::Impl::Result(Status status, const Current* input,
   return status;
 }
 Status Maintenance::Impl::Execute(const Current& input, unsigned slab, bool capture,
-    double previous_dt, bool force_sort) noexcept {
+    double previous_dt, bool force_sort, ReferenceCapturePolicy policy) noexcept {
   auto error = cudaGetLastError();
   if (error == cudaSuccess) {
     error = detail::Run(device, input, slab, capture, source.margin, previous_dt,
-        force_sort, reference, stream);
+        force_sort, reference, policy, stream);
   }
   if (error == cudaSuccess) {
     error = cudaMemcpyAsync(&control, device.control, sizeof(control),
