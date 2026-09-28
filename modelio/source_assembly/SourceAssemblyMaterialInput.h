@@ -8,6 +8,8 @@ enum class MaterialRatePolicy { OpenRadiossDirectImportDefault };
 class SourceAssemblyShellInput;
 // Mandatory named policy: original LAW44 C/P/VP declarations stay in SourceAssembly;
 // LAW1 has no rate declarations and uses canonical unused native controls.
+// Native tabulated LAW44 uses VINTER final-segment continuation regardless of
+// failure policy; standalone TL material preparation remains separately strict.
 // No default argument silently enables/disables filtering. Curves borrow from
 // shared immutable source ownership, so copies/moves never dangle curve pointers.
 class SourceAssemblyMaterialInput {

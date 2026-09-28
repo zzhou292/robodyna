@@ -42,6 +42,7 @@ TEST(SourceAssemblyInputs,MaterialRangesKeepEveryCurveAndExactParentAssociation)
         SameBits(m.poisson_ratio, original.poisson_ratio); EXPECT_TRUE(m.rate.enabled);
         SameBits(m.rate.cowper_symonds_c_per_s, original.rate_c_per_s); SameBits(m.rate.cowper_symonds_p, original.rate_p);
         SameBits(m.rate.cutoff_hz, 10000);
+        EXPECT_EQ(m.continuation, tl::material::ShellPlasticityCurveContinuation::NativeLastSegment);
     }
     for (std::size_t i = 0; i < input.parent_count; ++i) {
         const auto& p = input.parents[i]; const auto& original = d.parents[i];

@@ -47,11 +47,13 @@ TEST(SourceAnalyticInputs, ActualOriginalPartAndMixedMaterialsPrepareEveryNative
                 EXPECT_EQ(m.hardening, MaterialHardening::LinearLaw44); EXPECT_EQ(p.curve_index, NoCurveIndex);
                 EXPECT_EQ(parameters.hardening, tl::material::ShellPlasticityHardeningKind::LinearLaw44);
                 EXPECT_EQ(parameters.curve.count, 0u); EXPECT_EQ(parameters.curve.plastic_strain, nullptr);
+                EXPECT_EQ(parameters.continuation, tl::material::ShellPlasticityCurveContinuation::StrictDomain);
                 SameBits(parameters.linear.initial_yield_pa, 20e6); SameBits(parameters.linear.tangent_modulus_pa, 10e6);
             } else {
                 EXPECT_EQ(m.hardening, MaterialHardening::TabulatedLaw44);
                 EXPECT_EQ(parameters.hardening, tl::material::ShellPlasticityHardeningKind::Tabulated);
                 EXPECT_GT(parameters.curve.count, 1u); EXPECT_NE(p.curve_index, NoCurveIndex);
+                EXPECT_EQ(parameters.continuation, tl::material::ShellPlasticityCurveContinuation::NativeLastSegment);
             }
         }
     }

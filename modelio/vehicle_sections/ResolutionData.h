@@ -69,11 +69,7 @@ struct VehicleSectionResolution::Data {
                 native_materials[p] = resolution::NativeGlassMaterial(*material);
                 continue;
             }
-            auto native = assembly::detail::NativeMaterial(*material);
-            if (declarations.parts[p].status == SectionDisposition::ConstantFailure && material->curve_id) {
-                native.continuation = tl::material::ShellPlasticityCurveContinuation::NativeLastSegment;
-            }
-            native_materials[p] = native;
+            native_materials[p] = assembly::detail::NativeMaterial(*material);
         }
         native_parents.resize(parents.size());
         for (std::size_t e = 0; e < parents.size(); ++e) {

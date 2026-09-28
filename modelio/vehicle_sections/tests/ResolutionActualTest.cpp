@@ -3,6 +3,35 @@
 #include <map>
 
 namespace crash::modelio::vehicle::test {
+TEST(VehicleSectionResolution, OrdinaryFailZeroTableKeepsItsSourceAndUsesNativeContinuation) {
+    // Regression source for the captured Yaris failure. Selection in production
+    // is by native declaration type, never this part or element ID.
+    const auto& resolution = Resolution();
+    const auto p = PartIndex(2000141);
+    ASSERT_EQ(resolution.parts()[p].status, SectionDisposition::Existing);
+    ASSERT_EQ(resolution.material(p), Plan().material(p));
+    const auto& source = *resolution.material(p);
+    const auto& native = *resolution.native_material(p);
+    EXPECT_EQ(source.hardening, assembly::MaterialHardening::TabulatedLaw44);
+    ASSERT_NE(source.curve_id, 0u);
+    EXPECT_EQ(native.curve_id, source.curve_id);
+    EXPECT_EQ(native.continuation, tl::material::ShellPlasticityCurveContinuation::NativeLastSegment);
+    EXPECT_EQ(native.rate.policy, tl::material::ShellPlasticityRatePolicy::Legacy);
+    EXPECT_EQ(output::Bits(native.rate.cowper_symonds_c_per_s), output::Bits(source.rate_c_per_s));
+    EXPECT_EQ(output::Bits(native.rate.cowper_symonds_p), output::Bits(source.rate_p));
+    std::size_t parents = 0;
+    for (std::size_t i = 0; i < resolution.parents().size(); ++i) {
+        if (resolution.parents()[i].part_index != p) continue;
+        const auto* row = resolution.native_parent(i);
+        ASSERT_NE(row, nullptr);
+        EXPECT_EQ(row->policy, tl::fea::ShellFailurePolicy::None);
+        EXPECT_EQ(row->source.source_part_id, 2000141u);
+        ++parents;
+    }
+    EXPECT_EQ(parents, Plan().parts()[p].shell_count);
+    EXPECT_GT(parents, 0u);
+}
+
 TEST(VehicleSectionResolution, CompleteOriginalScopeResolvesOnlyOrdinaryConstantFailure) {
     const auto& r = Resolution();
     const auto& count = r.counts();
@@ -33,6 +62,10 @@ TEST(VehicleSectionResolution, CompleteOriginalScopeResolvesOnlyOrdinaryConstant
         if (part.status == SectionDisposition::Existing) {
             EXPECT_EQ(r.material(p), Plan().material(p));
             EXPECT_EQ(r.section(p), Plan().section(p));
+            const auto expected = r.material(p)->curve_id
+                ? tl::material::ShellPlasticityCurveContinuation::NativeLastSegment
+                : tl::material::ShellPlasticityCurveContinuation::StrictDomain;
+            EXPECT_EQ(r.native_material(p)->continuation, expected);
             continue;
         }
         ++failure_parts;

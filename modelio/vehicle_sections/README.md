@@ -17,7 +17,9 @@ VP0 and no other unsupported card options. Pinned OpenRadioss
 `a62b27e6baa555d222a580d6218867d0be4d70b5` `convertmats.cxx` maps FAIL to Johnson D1,
 IFAIL_SH2 and clears point EPS_MAX. The qualified three-point caller gives the
 constant all-points policy. Source seconds resolve the existing 10,000/s filter;
-new failure tables explicitly use `NativeLastSegment` continuation. Supplied zero
+all native tabulated LAW44 declarations, including ordinary FAIL=0 materials,
+explicitly use `NativeLastSegment` continuation through the shared native source
+adapter. Failure activation is independent of curve continuation. Supplied zero
 ETAN on the table branch is retained with its original bits: that converter branch
 sets native B to zero. Nonzero table ETAN remains outside this narrow resolution;
 legacy readers still require their original blank table ETAN and reject FAIL.

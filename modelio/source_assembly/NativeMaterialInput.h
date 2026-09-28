@@ -28,7 +28,15 @@ inline tl::fea::ShellPlasticityMaterialInput NativeMaterial(const Material& mate
                         "Filtered zero-C source policy requires analytic LAW44");
         native.rate={true,0,1,10000,tl::material::ShellPlasticityRatePolicy::FilteredZeroC};
     }
-    if(material.hardening==MaterialHardening::LinearLaw44) {
+    if (material.hardening == MaterialHardening::TabulatedLaw44) {
+        output::Require(material.curve_id != 0, "Tabulated native LAW44 requires its source curve");
+        // Native SIGEPS44C calls VINTER independently of the failure card.
+        // The final source knot selects a segment; it is not a strain limit.
+        // Standalone TL material preparation keeps its explicit strict default.
+        native.continuation = tl::material::ShellPlasticityCurveContinuation::NativeLastSegment;
+    } else {
+        output::Require(material.hardening == MaterialHardening::LinearLaw44,
+                        "Unsupported native LAW44 hardening declaration");
         output::Require(material.supplied_sigy_pa&&material.supplied_etan_pa&&!material.curve_id,
             "Analytic source material requires explicit SIGY/ETAN and no curve");
         native.hardening=tl::material::ShellPlasticityHardeningKind::LinearLaw44;
