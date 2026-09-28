@@ -4,7 +4,8 @@
   "production_changes": [
     "lib_src/solvers/cin_advance/ForceGather.cu",
     "lib_src/solvers/cin_advance/ForceGatherValues.h",
-    "lib_src/solvers/cin_advance/NumericalMassRead.cuh"
+    "lib_src/solvers/cin_advance/NumericalMassRead.cuh",
+    "lib_src/solvers/BUILD.bazel"
   ],
   "files": {
     "lib_src/constraints/tied_shell/runtime/CinForceStage.h": {
@@ -186,6 +187,14 @@
     "lib_utest/qualification/cin_master_gather/reference/ExplicitNodalCinStep.cu": {
       "bytes": 10568,
       "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f"
+    },
+    "lib_src/solvers/BUILD.bazel": {
+      "bytes": 9648,
+      "sha256": "4f524bc501d9a304400a10d6932e36c6ad1812080b594a8c2220512d65e2062d"
+    },
+    "lib_utest/qualification/cin_mass_read_tile/BUILD.bazel": {
+      "bytes": 403,
+      "sha256": "63feb1a17c935fa1df9470d74ec568e929a157b42fef58578adea68a23daedcc"
     }
   },
   "scope": "Reviewed read scheduling delta only; numerical/failure/owner behavior requires executed tests. Historical source manifests unchanged."

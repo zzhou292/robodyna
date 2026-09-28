@@ -1,0 +1,10 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = ["CudaTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
