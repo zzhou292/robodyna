@@ -49,16 +49,28 @@ TL_TIED_PATCH_HD inline bool GatherMaster(cin::StageView source, cin::ForceTrial
   return true;
 }
 
+// Scalar operands shared by the serial reference path and cooperative reads.
+// Rejected rows do not expose their uninitialized numeric payload.
+struct NumericalMassOperand { double master_mass=0,secondary_mass=0;bool valid=false; };
+TL_TIED_PATCH_HD inline NumericalMassOperand ReadNumericalMass(const cin::detail::PreparedForceRow& row) noexcept {
+  NumericalMassOperand value;value.valid=static_cast<bool>(row.report);
+  if(value.valid){value.master_mass=row.transferred_coefficients.master[0].mass;value.secondary_mass=row.secondary_mass;}
+  return value;
+}
+TL_TIED_PATCH_HD inline bool AppendNumericalMass(const NumericalMassOperand& row,double& value) noexcept {
+  if(!row.valid)return false;
+  const auto next=value + 4 * row.master_mass - row.secondary_mass;
+  if(!constraints::tied_shell::detail::math::Finite(next))return false;
+  value=next;return true;
+}
+
 // Preserve the native add-then-subtract recurrence and every finite prefix.
 // No value from a rejected prepared row may be consumed.
 TL_TIED_PATCH_HD inline bool NumericalMass(cin::StageView source, cin::ForceTrial trial,
     const cin::detail::PreparedForceRow* prepared, double& output) noexcept {
   double next = *trial.numerical_mass;
   for (std::uint32_t row = 0; row < source.row_count; ++row) {
-    if (!prepared[row].report) return false;
-    next = next + 4 * prepared[row].transferred_coefficients.master[0].mass
-        - prepared[row].secondary_mass;
-    if (!constraints::tied_shell::detail::math::Finite(next)) return false;
+    if (!AppendNumericalMass(ReadNumericalMass(prepared[row]), next)) return false;
   }
   output = next;
   return true;
