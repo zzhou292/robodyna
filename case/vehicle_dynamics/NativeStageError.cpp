@@ -35,6 +35,25 @@ std::string Message(const Report& report, const char* stage, const std::string& 
     return result;
 }
 
+// Keep the native uint32 sentinel explicit: widening it would not equal
+// SIZE_MAX on this 64-bit target and would print an unavailable index as real.
+std::string QephIndex(std::uint32_t index) {
+    return index == UINT32_MAX ? "unavailable" : std::to_string(index);
+}
+
+std::string QephMessage(const tl::fea::qeph::BatchReport& report, const char* stage) {
+    std::string result = stage ? stage : "Physical stage";
+    result += ": ";
+    result += report.message ? report.message : "Native operation rejected";
+    result += " [participant=qeph element_index=" + QephIndex(report.element);
+    result += " node_index=" + QephIndex(report.node);
+    result += " batch_status=" + std::to_string(static_cast<int>(report.status));
+    result += " element_status=" + std::to_string(static_cast<int>(report.element_status));
+    result += " nodal_status=" + std::to_string(static_cast<int>(report.nodal_status));
+    result += "]";
+    return result;
+}
+
 } // namespace
 
 NativeStageError::NativeStageError(const tl::fea::solids::BatchReport& report, const char* stage)
@@ -46,5 +65,10 @@ NativeStageError::NativeStageError(const tl::fea::beam18::BatchReport& report, c
     : std::runtime_error(Message(report, stage, "participant=beam18")),
       failure_(StructuralBeamFailure{report.status, report.parent, report.node,
                                      report.element_status, report.nodal_status}) {}
+
+NativeStageError::NativeStageError(const tl::fea::qeph::BatchReport& report, const char* stage)
+    : std::runtime_error(QephMessage(report, stage)),
+      failure_(QephFailure{report.status, report.element, report.node,
+                          report.element_status, report.nodal_status}) {}
 
 } // namespace crash::cases::vehicle_dynamics

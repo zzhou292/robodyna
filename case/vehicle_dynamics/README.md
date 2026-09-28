@@ -13,14 +13,16 @@ selected physical model, not a connected-vehicle crash. Uniform-motion errors
 are observed from actual computed positions, velocities, orientations and spins
 against original coordinates; the adapter never sets prescribed trajectories.
 
-Rejected solid and structural-beam stages throw `NativeStageError`, preserving
+Rejected solid, structural-beam and QEPH stages throw `NativeStageError`, preserving
 the report's typed batch status, reported solid family, parent/node indices,
 native element status and nodal status. The exception owns its message and copies
 only scalar context; it borrows no report, source or device storage. The concise
 stage message includes these values, so the existing run loop retains them in a
 failed accepted-prefix reason. A solid parent index addresses its reported family
-span; a beam parent index addresses the beam span. Neither index is an EID/PID.
-`SIZE_MAX` is reported as unavailable, including reports that identify no parent.
+span; a beam parent index addresses the beam span; a QEPH element index addresses
+the QEPH family span. These indices are not EIDs/PIDs. `SIZE_MAX` for solid/beam
+indices and `UINT32_MAX` for QEPH indices are explicitly unavailable, including
+reports that identify no element.
 The native integer element status keeps its family-specific meaning (including
 the existing `-1` cache-validation sentinel); no failure cause is inferred from it.
 Other report types retain the existing generic exception behavior.
@@ -28,7 +30,7 @@ Other report types retain the existing generic exception behavior.
 Success checks, complete discard on a failed attempt, and the common commit path
 are unchanged. No success-path array, readback, source lookup or clock is added.
 The standalone CXX-only `tests/reports` gate checks report ownership, exact typed
-conversion and late solid/beam failures through the existing run-loop test seam.
+conversion and late solid/beam/QEPH failures through the existing run-loop test seam.
 Its prefix tests qualify host orchestration, not material numerics or GPU rollback.
 
 The public preparation/commit/discard phases allow the caller to inspect the

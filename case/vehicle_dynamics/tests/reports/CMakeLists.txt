@@ -11,7 +11,8 @@ if(NOT EXISTS "${ROBO_DYNA_TL_ROOT}/lib_src/elements/beam18/resident/Batch.h")
 endif()
 include("../../../vehicle_run/Values.cmake")
 add_executable(robo_dyna_native_stage_reports_check
-  "../../NativeStageError.cpp" ReportsTest.cpp LoopFailureTest.cpp)
+  "../../NativeStageError.cpp" ReportsTest.cpp LoopFailureTest.cpp
+  QephReportsTest.cpp QephLoopFailureTest.cpp)
 target_include_directories(robo_dyna_native_stage_reports_check PRIVATE
   "${ROBO_DYNA_TL_ROOT}" "${ROBO_DYNA_TL_ROOT}/lib_src"
   "${CUDAToolkit_INCLUDE_DIRS}")
