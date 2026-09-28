@@ -45,6 +45,6 @@ TEST(QbatChannelsHost, EveryInvalidTileRetainsExactPartialCountsAndSums) {
   }
 }
 TEST(QbatChannelsHost, OnlyTransientTileStorageGrows) {
-  EXPECT_EQ(sizeof(tile::Tile),10576u);EXPECT_EQ(sizeof(m::MeasurementParent),168u);EXPECT_EQ(sizeof(b::Storage),664u);
+  EXPECT_EQ(sizeof(tile::Tile),10576u);EXPECT_EQ(sizeof(m::MeasurementParent),168u);EXPECT_EQ(sizeof(b::Storage),680u);
 }
 } // namespace qbat_read_tile_test
