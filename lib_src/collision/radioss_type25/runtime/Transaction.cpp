@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "GroupSealSession.h"
 #include "NormalStage.h"
 #include "AssemblyTail.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
@@ -203,8 +204,17 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
 TransactionReport Transaction::SealCandidate(fe::FENodalState& owner,const fe::NodalTrialToken& token,
     const fe::NodalPreparedView& view,const fe::ShellPhysicalDiagnostics& physical,
     fe::ShellPhysicalScratchParticipationReceipt* output) noexcept {
+  return SealCandidateImpl(owner,token,view,physical,output,nullptr,SIZE_MAX);
+}
+TransactionReport Transaction::SealCandidateImpl(fe::FENodalState& owner,const fe::NodalTrialToken& token,
+    const fe::NodalPreparedView& view,const fe::ShellPhysicalDiagnostics& physical,
+    fe::ShellPhysicalScratchParticipationReceipt* output,GroupSealSession* group,std::size_t index) noexcept {
   if(!impl_)return Error(TransactionStatus::NotInitialized,"Native transaction is not initialized");auto& p=*impl_;
   if(!p.usable)return Error(TransactionStatus::Unusable,"Native transaction is poisoned");
+  // A foreign group descriptor cannot discard another owner's pending state.
+  // Standalone behavior is unchanged; the group wrapper revokes its own scope.
+  if(group && (&owner!=p.owner || p.publication!=&group->publication))
+    return Error(TransactionStatus::StaleAttempt,"Native candidate does not match its accepted force stage");
   if(&owner!=p.owner||p.phase!=Impl::Phase::Assembled||
      (p.device.normal.shape.enabled&&!p.normal_ready)||!p.OutputDisjoint(output,sizeof(*output))||
      !fe::trial_identity::Disjoint(output,sizeof(*output),this,sizeof(*this))||
@@ -220,13 +230,20 @@ TransactionReport Transaction::SealCandidate(fe::FENodalState& owner,const fe::N
     // Initialization authenticated a wholly active epoch0. Every later owner
     // commit requires this mandatory participant's receipt, proving the active
     // accepted prefix by induction without another full accepted-state read.
-    const auto checked=p.active_prefix.CheckPrepared(owner,*p.publication,token,physical,view);
+    const auto checked=group ? p.active_prefix.CheckPreparedWithinGroup(owner,*p.publication,
+        token,physical,view,group->activity) :
+        p.active_prefix.CheckPrepared(owner,*p.publication,token,physical,view);
     if(checked.status!=fe::ActivePrefixStatus::Ok)
       return p.Fail({checked.status==fe::ActivePrefixStatus::InactiveParent?TransactionStatus::ActivityChange:
           TransactionStatus::PublicationFailure,checked.message,checked.parent});
   }
   if(!p.state.Stage(view,p.trial_selectors))return p.Fail(Error(TransactionStatus::PublicationFailure,"Native selector plan rejected"));
   fe::ShellPhysicalScratchParticipationReceipt result;
+  if(group) {
+    const auto member=group->publication.CheckNativeCandidateGroupMember(p.issuer,group->count,index);
+    if(member.status!=fe::ShellPublicationStatus::Success)
+      return p.Fail(Error(TransactionStatus::PublicationFailure,member.message));
+  }
   const auto sealed=p.issuer.SealNativeContactCandidate(p.source.source_id,owner,token,view,&result);
   if(sealed.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,sealed.message));
   p.phase=Impl::Phase::Sealed;*output=result;return {TransactionStatus::Ok,"OK"};

@@ -35,6 +35,11 @@ class PhysicalActivePrefix {
       const ShellPhysicalDiagnostics&,const NodalPreparedView&);
   ActivePrefixForecast allocations() const noexcept;
  private:
+  friend class ::tlfea::contact::radioss_type25::Transaction;
+  struct PreparedGroupSession;
+  ActivePrefixReport CheckPreparedWithinGroup(FENodalState&,ShellBatchPublication&,
+      const NodalTrialToken&,const ShellPhysicalDiagnostics&,const NodalPreparedView&,
+      PreparedGroupSession&);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

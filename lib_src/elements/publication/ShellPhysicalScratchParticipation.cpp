@@ -542,6 +542,23 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchCandidate(
   return Ok();
 }
 
+void ShellBatchPublication::DiscardNativeCandidateGroup(FENodalState& owner) noexcept {
+  // A forged group descriptor must not revoke a foreign owner's publication.
+  if(impl_ && impl_->physical && impl_->physical->owner==&owner)DiscardTrial();
+}
+ShellPublicationReport ShellBatchPublication::CheckNativeCandidateGroupMember(
+    const ShellPhysicalScratchParticipation& issuer,std::size_t count,std::size_t index) const noexcept {
+  if(!impl_ || !impl_->physical)return {S::NotInitialized,"Physical publication is not initialized"};
+  const auto* group=impl_->physical->ScratchParticipation();
+  if(!group || !group->native_group || group->entry_count!=count || index>=count ||
+      issuer.publication_!=this || issuer.slot_!=index ||
+      group->entries[index].issuer!=&issuer ||
+      group->entries[index].kind!=ShellPhysicalScratchContributorKind::NativeContact ||
+      group->entries[index].source_id!=issuer.source_id_)
+    return {S::ParticipationFailure,"Native candidate group differs from the complete registered order"};
+  return Ok();
+}
+
 ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
     FENodalState& owner,const NodalTrialToken& token,
     const ShellPhysicalScratchReceiptRoster& receipts) noexcept {

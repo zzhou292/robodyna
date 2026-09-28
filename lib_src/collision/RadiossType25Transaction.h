@@ -7,6 +7,10 @@
 #include <memory>
 namespace tlfea::contact::radioss_type25 {
 namespace runtime_qualification {class Access;}
+struct TransactionGroupReport {
+  TransactionReport report;
+  std::size_t interface_index=SIZE_MAX;
+};
 struct AcceptedContactBuffer {
   NativeGeometryHistory* rows=nullptr;
   int* initial_contact_flags=nullptr;
@@ -100,6 +104,16 @@ class Transaction {
   TransactionReport SealCandidate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
       const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,
       tl::fea::ShellPhysicalScratchParticipationReceipt*) noexcept;
+  // One serialized, callback-free operation over the complete registered native
+  // roster. Only within this call can identical prepared activity be reused.
+  // Receipts publish together; failure revokes the common attempt. Standalone
+  // SealCandidate remains a fresh query, including repeated same-attempt calls.
+  static TransactionGroupReport SealCandidateGroup(Transaction* const* members,
+      std::size_t count,tl::fea::ShellBatchPublication&,tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,const tl::fea::NodalPreparedView&,
+      const tl::fea::ShellPhysicalDiagnostics&,
+      tl::fea::ShellPhysicalScratchParticipationReceipt* receipts,
+      std::size_t receipt_count) noexcept;
   void DiscardTrial() noexcept;
   tl::fea::NativeContactPublicationSnapshot accepted() const noexcept;
   TransactionReport CopyAccepted(AcceptedContactBuffer,
@@ -111,6 +125,10 @@ class Transaction {
   // receipt. Legacy cold Initialize reports unavailable. No GPU row readback.
   TransactionInitializationDiagnostics initialization_diagnostics() const noexcept;
  private:
+  struct GroupSealSession;
+  TransactionReport SealCandidateImpl(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,
+      tl::fea::ShellPhysicalScratchParticipationReceipt*,GroupSealSession*,std::size_t) noexcept;
   template<class Source> TransactionReport InitializeSource(const TransactionConfig&,const Source&,
       tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,
       const tl::fea::ShellPhysicalBinding&,const tl::fea::ShellPhysicalParticipants&,

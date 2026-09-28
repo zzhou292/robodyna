@@ -168,7 +168,7 @@ cuda_library(
             "ShellBatchPublicationValues.cpp", "ShellBatchFormulationStartup.cpp",
             "ShellBatchFormulationPreflight.cpp", "ShellBatchFormulationPublication.cpp"],
     hdrs = ["ShellBatchPublication.h", "ShellPhysicalPublication.h",
-            "publication/PhysicalActivePrefix.h",
+            "publication/PhysicalActivePrefix.h", "publication/PhysicalActivePrefixGroup.h",
             "publication/PhysicalState.h", "publication/PhysicalChecks.h",
             "publication/PhysicalScratchParticipationState.h", "publication/ScratchRoster.h",
             "publication/ShellPhysicalScratchParticipation.h", "publication/NativeContactPublicationState.h", "ShellBatchPublicationStorage.h",
