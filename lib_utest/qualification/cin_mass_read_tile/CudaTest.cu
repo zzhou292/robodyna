@@ -49,7 +49,8 @@ void Compare(std::vector<Row> rows,double incoming,unsigned repeat=1) {
 }
 TEST(CinMassReadTileCuda,ZeroSignsAndCancellationAcrossEveryTileBoundary) {
   for(unsigned count:{0,1,63,64,65,127,128,129,11165})for(double seed:{0.,-0.,1.}) {
-    SCOPED_TRACE(count);SCOPED_TRACE(Bits(seed));std::vector<Row> rows(count);
+    SCOPED_TRACE(count);
+    SCOPED_TRACE(Bits(seed));std::vector<Row> rows(count);
     for(unsigned i=0;i<count;++i){
       auto& row=rows[i];row.transferred_coefficients.master[0].mass=i%3==0?2.5e15:.25;
       row.secondary_mass=i%3==0?1e16:0.;
