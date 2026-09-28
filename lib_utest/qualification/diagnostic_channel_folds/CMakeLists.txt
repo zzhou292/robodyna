@@ -7,6 +7,7 @@ find_package(CUDAToolkit REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 set(oracle "${CMAKE_CURRENT_BINARY_DIR}/oracle")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/source_proof.py" "${CMAKE_CURRENT_LIST_DIR}/source-manifest.json")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/source_proof.py" --output "${oracle}" COMMAND_ERROR_IS_FATAL ANY)
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/../finalizer_local_control/generate_oracles.py" --output "${oracle}/qbat" COMMAND_ERROR_IS_FATAL ANY)
 add_library(channel_values STATIC

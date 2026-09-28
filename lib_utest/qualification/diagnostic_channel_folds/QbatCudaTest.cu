@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "lib_utest/qualification/qbat_measurement_read_tile/CudaTest.cu"
+#include "BaselineFinalize.cuh"
+#include <cstdio>
 namespace qbat_read_tile_test {
 inline double& ChannelOperand(m::MeasurementParent& row,unsigned c) {
   if(c<2)return row.internal_work[c];if(c<4)return row.internal_increment[c-2];
@@ -69,6 +71,32 @@ TEST(QbatChannelsCuda, NonfiniteIncomingSeedsUseTheOriginalScalarAuthority) {
     seed.minimum_area_ratio=std::nan("23");seed.maximum_absolute_strain=-std::nan("29");
     ChannelOperand(rows[0],c)=-std::nan("31");ChannelOperand(rows[64],c)=std::nan("37");
     Compare(rig,seed);ASSERT_FALSE(HasFailure());rows[128].valid=0;Compare(rig,seed);ASSERT_FALSE(HasFailure());
+  }
+}
+__global__ void BaselineLeaf(b::Storage* state,tl::fea::NodalPreparedView view,q::BatchDiagnostics seed) {
+  __shared__ m::baseline_measurement::Tile stage;m::baseline_measurement::Finalize(*state,view,seed,1,stage);
+}
+TEST(QbatChannelsCuda, Literal7695BaselineComparesBothNonfiniteOracleContexts) {
+  f::DeviceFixture rig(129);ASSERT_FALSE(HasFailure());
+  std::printf("kind,channel,input_bits,current_bits,baseline_bits,serial_bits,current_baseline_equal,baseline_serial_equal\n");
+  for(unsigned kind=0;kind<2;++kind)for(unsigned c=0;c<10;++c)
+  for(double input:{std::nan("17"),-std::nan("17"),double(INFINITY),double(-INFINITY)}) {
+    rig.source.Reset();rig.source.Stage();rig.Restore();auto* rows=rig.storage->assembly.measurement;auto seed=Seed(true,0.);
+    if(kind==0) {
+      ChannelOperand(rows[63],c)=input;ChannelOperand(rows[64],c)=std::nan("53");ChannelOperand(rows[128],c)=-input;
+    } else {
+      DiagnosticChannel(seed,c)=input;seed.minimum_area_ratio=std::nan("23");seed.maximum_absolute_strain=-std::nan("29");
+      ChannelOperand(rows[0],c)=-std::nan("31");ChannelOperand(rows[64],c)=std::nan("37");
+    }
+    const auto view=rig.input->Prepared(2);
+    FrozenLeaf<<<1,1>>>(rig.storage,view,seed);Drain();auto serial=rig.storage->control;
+    BaselineLeaf<<<1,64>>>(rig.storage,view,seed);Drain();auto baseline=rig.storage->control;
+    CurrentLeaf<<<1,tile::Threads>>>(rig.storage,view,seed);Drain();auto current=rig.storage->control;
+    std::printf("%u,%u,%016llx,%016llx,%016llx,%016llx,%d,%d\n",kind,c,
+      (unsigned long long)f::Bits(input),(unsigned long long)f::Bits(DiagnosticChannel(current.diagnostics,c)),
+      (unsigned long long)f::Bits(DiagnosticChannel(baseline.diagnostics,c)),(unsigned long long)f::Bits(DiagnosticChannel(serial.diagnostics,c)),
+      int(b::SameDiagnostics(current.diagnostics,baseline.diagnostics)),int(b::SameDiagnostics(baseline.diagnostics,serial.diagnostics)));
+    SCOPED_TRACE(::testing::Message()<<kind<<":"<<c<<":"<<f::Bits(input));Same(current,baseline);
   }
 }
 } // namespace qbat_read_tile_test

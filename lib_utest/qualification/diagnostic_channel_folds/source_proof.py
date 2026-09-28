@@ -41,6 +41,12 @@ def generated():
     text=text.replace('namespace tl::fea::qbat::mapped {','namespace '+ns[:-2]+' {')
     for old,new in [('MergeMaximum(maximum,',ns+'MergeMaximum(maximum,'),('&& FinishMeasurement(','&& '+ns+'FinishMeasurement('),('!MeasureStaged(','!'+ns+'MeasureStaged('),('auto next=BeginMeasurement(','auto next='+ns+'BeginMeasurement(')]:text=text.replace(old,new)
     out['qbat/ReferenceMeasurement.h']=text
+    for name in ('Tile.h','Read.h','Finalize.cuh'):
+        text=(frozen/p/'measurement'/name).read_text()
+        text=text.replace('namespace tl::fea::qbat::mapped::measurement {','namespace tl::fea::qbat::mapped::baseline_measurement {')
+        text=text.replace('#include "Tile.h"','#include "BaselineTile.h"').replace('#include "Read.h"','#include "BaselineRead.h"')
+        text=text.replace('#include "../MeasurementValues.h"','#include "'+p+'MeasurementValues.h"').replace('#include "../Measurement.h"','#include "'+p+'Measurement.h"')
+        out['qbat/Baseline'+name]=text
     return out
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--output',type=Path);a=p.parse_args();m=checked()
