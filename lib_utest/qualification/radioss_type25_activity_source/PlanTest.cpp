@@ -22,7 +22,7 @@ TEST(NativeActivitySource, CompleteGlobalRosterRetainsUnselectedCoincidentShellS
   const auto containing=Containing(v,0);EXPECT_TRUE(containing.count(100));EXPECT_TRUE(containing.count(101));
   EXPECT_EQ(v.main_to_primary[0],v.main_to_primary[source.primary_main_count]);
   EXPECT_EQ(v.mains[0].first,v.mains[source.primary_main_count].first);
-  EXPECT_EQ(v.origins.count,source.primary_main_count);
+  EXPECT_EQ(v.origins.size(),source.primary_main_count);
 }
 TEST(NativeActivitySource, MixedFinalSupportsRemainDistinctFromCompleteRawOriginsAndContainment) {
   type25_physical_main_test::Fixture f;a::Plan plan;
@@ -30,7 +30,7 @@ TEST(NativeActivitySource, MixedFinalSupportsRemainDistinctFromCompleteRawOrigin
   ASSERT_EQ(result.status,Status::Ok)<<result.message;const auto v=plan.view();
   EXPECT_EQ(v.parents[v.mains[2].first].source_element_id,9101u);
   EXPECT_EQ(v.parents[v.mains[2].second].source_element_id,9100u);
-  ASSERT_EQ(v.origins.count,4u);EXPECT_EQ(v.parents[v.origins[2].parent].source_element_id,9100u);
+  ASSERT_EQ(v.origins.size(),4u);EXPECT_EQ(v.parents[v.origins[2].parent].source_element_id,9100u);
   EXPECT_EQ(v.parents[v.origins[3].parent].source_element_id,9101u);
   EXPECT_TRUE(Containing(v,2).count(9100));EXPECT_TRUE(Containing(v,2).count(9101));
   const auto q=Containing(v,0);EXPECT_TRUE(q.count(100));EXPECT_TRUE(q.count(101));EXPECT_TRUE(q.count(103));
@@ -39,10 +39,10 @@ TEST(NativeActivitySource, NodeIncidenceHasOneEntryPerActualParentAndNoBareMassS
   type25_physical_main_test::Fixture f;a::Plan plan;
   ASSERT_EQ(plan.Initialize(f.physical.physical,f.sides,f.post,MixedControls()).status,Status::Ok);
   const auto v=plan.view();
-  for(std::size_t node=0;node+1<v.node_offsets.count;++node) {
+  for(std::size_t node=0;node+1<v.node_offsets.size();++node) {
     std::uint32_t prior=0;bool first=true;
     for(auto i=v.node_offsets[node];i<v.node_offsets[node+1];++i) {
-      EXPECT_LT(v.node_parents[i],v.parents.count);
+      EXPECT_LT(v.node_parents[i],v.parents.size());
       if(!first)EXPECT_GT(v.node_parents[i],prior);prior=v.node_parents[i];first=false;
     }
   }

@@ -47,13 +47,13 @@ struct Forecast {
   std::size_t output_bytes=0,startup_bytes=0;
 };
 struct View {
-  tl::util::ConstView<ParentIdentity> parents;
-  tl::util::ConstView<std::uint32_t> node_offsets,node_parents;
-  tl::util::ConstView<MainSupport> mains;
+  tl::util::ConstView<ParentIdentity> parents{nullptr,0};
+  tl::util::ConstView<std::uint32_t> node_offsets{nullptr,0},node_parents{nullptr,0};
+  tl::util::ConstView<MainSupport> mains{nullptr,0};
   // Every eligible bound source parent containing ALL distinct primary corners.
   // These are independent of the final IELEM support operands above.
-  tl::util::ConstView<std::uint32_t> main_to_primary,containing_offsets,containing_parents;
-  tl::util::ConstView<Origin> origins;
+  tl::util::ConstView<std::uint32_t> main_to_primary{nullptr,0},containing_offsets{nullptr,0},containing_parents{nullptr,0};
+  tl::util::ConstView<Origin> origins{nullptr,0};
   Controls controls;
   std::uint64_t source_generation=0;
 };
