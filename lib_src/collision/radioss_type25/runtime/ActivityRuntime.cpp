@@ -26,6 +26,7 @@ TransactionReport Transaction::Impl::SelectActivity(unsigned slot) noexcept {
   if(selected.main_count!=source.selection.main_count||selected.primary_count!=source.primary_main_count||
       selected.secondary_count!=source.selection.secondary_count||!selected.mains||
       !selected.main_stiffness_si||!selected.secondary_stiffness_si||
+      selected.node_count!=source.selection.node_count||!selected.main_node_activity||
       (device.normal.shape.enabled&&(!selected.normal_mains||!selected.normal_coefficients||
         selected.free_count>device.normal.shape.free_capacity||
         (selected.free_count&&!selected.free_mains))))

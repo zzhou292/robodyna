@@ -114,6 +114,13 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   search::Current current;current.stamp={{p.source.source_id,p.source.topology_generation,p.source.selection.generation},accepted.stamp.epoch,view.attempt};
   current.positions=View(view.accepted.position_xyz,view.accepted.node_count);current.velocities=View(view.accepted.velocity_xyz,view.accepted.node_count);
   current.secondary_stiffness=p.device.secondary_stiffness;current.secondary_count=p.source.selection.secondary_count;
+  if(p.activity) {
+    // CaptureAcceptedActivity authenticated this source slot against the same
+    // owner and attempt. Borrow its published mask, never preparation scratch.
+    const auto activity=p.activity->operands.view(accepted.selectors.activity);
+    current.main_node_activity=activity.main_node_activity;
+    current.main_node_activity_count=activity.node_count;
+  }
   // Immutable source gaps select Maintenance::GapMode::Fixed, independently
   // of whether main geometry moves; this profile does not update thickness gaps.
   current.main_gaps=nullptr;current.main_gap_count=0;
@@ -133,7 +140,13 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
     p.trial_selectors.reference_activity_generation=accepted.selectors.activity_generation;
     search::ReferenceToken captured;
     auto operation=MaintenanceOperation::CaptureReference;
-    auto maintenance_status=p.maintenance[reference].StageReference(current,captured);
+    // Either cache may still describe an earlier accepted activity set.
+    // Every explicit shell-removal recapture permits retirement; ordinary
+    // Evaluate still requires exact agreement with its published reference.
+    const auto capture_policy=p.config.activity==ContactActivityPolicy::ShellRemoval?
+        search::ReferenceCapturePolicy::MonotoneRoleRetirement:
+        search::ReferenceCapturePolicy::UnchangedActivity;
+    auto maintenance_status=p.maintenance[reference].StageReference(current,capture_policy,captured);
     if(maintenance_status==search::Status::Ok) {
       operation=MaintenanceOperation::PublishReference;
       maintenance_status=p.maintenance[reference].PublishReference(captured);

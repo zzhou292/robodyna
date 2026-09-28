@@ -219,6 +219,8 @@ TransactionReport PrepareSourceChecked(const TransactionConfig& config,const Con
   next.maintenance.secondary_nodes=next.secondary_nodes.data();next.maintenance.secondaries=s.secondary_count;
   next.maintenance.main_nodes=next.main_nodes.data();next.maintenance.mains=4*p;
   next.maintenance.main_segments=p;next.maintenance.margin=source.margin;
+  next.maintenance.activity_policy=config.activity==ContactActivityPolicy::ShellRemoval?
+      search::ActivityPolicy::MonotoneRetirement:search::ActivityPolicy::Immutable;
   out=std::move(next);return {TransactionStatus::Ok,"OK"};
 } catch(const std::bad_alloc&){return Fail(TransactionStatus::ResourceLimit,"Source startup allocation failed");}
   catch(const std::length_error&){return Fail(TransactionStatus::ResourceLimit,"Source startup length overflow");}

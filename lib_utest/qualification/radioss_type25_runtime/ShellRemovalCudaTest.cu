@@ -159,4 +159,48 @@ TEST(NativeShellRemovalCuda, RetirementAfterBothReferencesWerePublishedCanAdvanc
   }
 }
 
+TEST(NativeShellRemovalCuda, RetiredReferenceRebuildCanDiscardAndRetryWithoutPublishing) {
+  ShellRemovalRig rig;
+  ASSERT_NO_THROW(rig.InitializeRemoval(n::ContactActivityPolicy::ShellRemoval,0.));
+  ASSERT_NO_THROW(rig.Warm());
+  ASSERT_GE(rig.contact.accepted().selectors.reference_generation,2u);
+  FullLedgerAttempt removal;
+  ASSERT_NO_THROW(rig.Begin(removal));
+  ASSERT_NO_THROW(rig.RemovalLoad(removal));
+  ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,removal.token,removal.assembly)));
+  ASSERT_NO_THROW(rig.Prepare(removal));
+  ASSERT_NO_THROW(rig.Seal(removal));
+  ASSERT_GT(rig.contact.last_diagnostics().activity_orphan_secondaries,0u);
+  ASSERT_NO_THROW(Check(rig.Commit(removal)));
+  const AcceptedHistory before(rig);
+  const auto stamp=rig.owner.accepted();
+  std::vector<double> expected;
+  for(unsigned retry=0;retry<2;++retry) {
+    FullLedgerAttempt next;
+    ASSERT_NO_THROW(rig.Begin(next));
+    ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,next.token,next.assembly)));
+    ASSERT_TRUE(rig.contact.last_diagnostics().reference_rebuilt);
+    const auto actual=rig.Force(next);
+    if(!retry)expected=actual;
+    else {
+      ASSERT_EQ(actual.size(),expected.size());
+      EXPECT_EQ(std::memcmp(actual.data(),expected.data(),actual.size()*sizeof(double)),0);
+    }
+    ASSERT_NO_THROW(rig.Prepare(next));
+    ASSERT_NO_THROW(rig.Seal(next));
+    if(!retry) {
+      EXPECT_NE(rig.Commit(next,false).status,fe::ShellPublicationStatus::Success);
+      rig.Discard();
+      const AcceptedHistory after(rig);
+      Same(before,after);
+      EXPECT_EQ(before.snapshot.selectors.reference,after.snapshot.selectors.reference);
+      EXPECT_EQ(before.snapshot.selectors.reference_generation,after.snapshot.selectors.reference_generation);
+      EXPECT_TRUE(fe::trial_identity::SameStamp(stamp,rig.owner.accepted()));
+    } else {
+      ASSERT_NO_THROW(Check(rig.Commit(next)));
+    }
+  }
+  ASSERT_NO_THROW(rig.Warm(3));
+}
+
 }
