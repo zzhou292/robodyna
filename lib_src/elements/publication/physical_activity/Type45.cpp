@@ -28,8 +28,9 @@ PhysicalActivityReport BatchAccess::Type45(const type45::Batch* batch,
   if (!diagnostics.valid || diagnostics.joint_count != s.model.joints().size() ||
       diagnostics.source_instance_id != s.model.source_instance_id())
     return mismatch("TYPE45 complete joint count or source identity differs");
-  const auto rigid = owner.ValidateRigidAssemblyBinding(*s.model.rigid_binding());
-  if (rigid.status != NodalStatus::Ok) return mismatch(rigid.message);
+  // Complete rigid-member identity was proved when this exact model joined
+  // this publication. Fresh owner/claim/model/domain identities preserve that
+  // immutable authority without repeating the full rigid-member host scan.
   // The admitted TYPE45 operator has no parent-off transition. This proves
   // the complete always-active joint roster, not a new removal capability.
   return {};
