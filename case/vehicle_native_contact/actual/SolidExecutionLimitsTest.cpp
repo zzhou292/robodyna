@@ -1,8 +1,10 @@
 #include "SolidExecutionLimits.h"
 #include <gtest/gtest.h>
+#include <stdexcept>
+#include <string>
 namespace crash::cases::vehicle_native_contact::test {
 TEST(SolidExecutionRequest, AbsentRequestPreservesExistingEightWorkerEnvelope) {
-    for(const char* value:{nullptr,""}) {
+    for(const char* value:{static_cast<const char*>(nullptr),""}) {
         const auto limits=SolidExecutionLimits(value);
         EXPECT_EQ(limits.max_controlled_packet_blocks,8u);
         EXPECT_EQ(limits.max_device_bytes,192u<<20);EXPECT_EQ(limits.max_host_bytes,256u<<20);
