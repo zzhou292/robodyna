@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Rig.h"
 #include <gtest/gtest.h>
+#include <sstream>
+#include <iomanip>
 namespace glass_removal_test {
 namespace {
 // Loads, geometry and timestep are declared synthetic. The glass material,
@@ -21,6 +23,18 @@ bool GlassMain(const Rig& rig,int id) {
   }
   return false;
 }
+std::string WallWitness(const State& state) {
+  std::ostringstream text;text<<std::setprecision(17)<<"epoch="<<state.stamp.epoch;
+  for(std::size_t i=0;i<state.contacts[1].size();++i){
+    const auto& row=state.contacts[1][i].row;const auto& h=row.history.normal;
+    text<<"\nrow="<<i<<" irtlm=";
+    for(auto value:row.irtlm)text<<value<<",";
+    text<<" K="<<h.previous_stiffness<<","<<h.staged_stiffness
+        <<" P="<<h.previous_penetration<<","<<h.staged_penetration
+        <<" offset="<<row.penetration_offset;
+  }
+  return text.str();
+}
 void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   const auto candidate=rig.PreparedFailure(a);
   EXPECT_TRUE(before.failure[0].active);
@@ -38,7 +52,7 @@ void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   for(const auto& row:before.contacts[1])active_wall_history=active_wall_history||
       (row.row.irtlm[0]>0&&(row.row.history.normal.previous_stiffness>0||row.row.history.normal.staged_stiffness>0));
   EXPECT_TRUE(retained_glass);
-  EXPECT_TRUE(active_wall_history);
+  EXPECT_TRUE(active_wall_history)<<WallWitness(before);
   const auto self=rig.self.last_diagnostics(),wall=rig.wall.last_diagnostics();
   EXPECT_GT(self.active_forces,0u);
   EXPECT_GT(wall.active_forces,0u);
