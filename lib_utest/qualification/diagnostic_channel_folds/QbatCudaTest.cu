@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "lib_utest/qualification/qbat_measurement_read_tile/CudaTest.cu"
+#include "OriginalQbatCases.cuh"
 namespace qbat_read_tile_test {
 inline double& ChannelOperand(m::MeasurementParent& row,unsigned c) {
   if(c<2)return row.internal_work[c];if(c<4)return row.internal_increment[c-2];
