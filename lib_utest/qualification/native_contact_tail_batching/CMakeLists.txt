@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(TLNativeContactTailBatch LANGUAGES C CXX CUDA Fortran)
 enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_runtime" native-runtime)
 get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 add_executable(native_contact_tail_cuda CudaTest.cu)
