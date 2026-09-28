@@ -14,7 +14,7 @@ struct Device {
   DeviceControl* control = nullptr;
   std::size_t nodes = 0, secondary = 0, main = 0, one_d = 0, segments = 0;
   std::size_t reference_count = 0;
-  bool compact = false, gap_changes = false, si = false;
+  bool compact = false, gap_changes = false, si = false, retirement = false;
   double length = 1, velocity = 1;
 };
 TL_MATH_HOST_DEVICE inline std::size_t RoleCount(const Device& d) noexcept {
@@ -37,23 +37,39 @@ TL_MATH_HOST_DEVICE inline void Merge(Partial& a,const Partial& b) noexcept {
 // Same source masks as I25BUCE_CRIT. Reference capture validates only consumed
 // active positions; inactive data can remain unused, as in the native routine.
 TL_MATH_HOST_DEVICE inline void ObserveRole(const Device& d, const Current& input,
-    unsigned slab, std::size_t role, bool capture, bool has_reference, Partial& output) noexcept {
+    unsigned slab, std::size_t role, bool capture, bool has_reference,
+    ReferenceCapturePolicy policy, Partial& output) noexcept {
   const auto node=d.roles[role];
   const bool secondary=role<d.secondary;
   const bool one_d=role>=d.secondary+d.main;
+  bool active=true;
   if (secondary) {
     const double stiffness=input.secondary_stiffness[role];
     if (!tl::math::Finite(stiffness)) {Fail(output,Status::NonfiniteResult,role);return;}
-    // Native observes the nonzero row before its NSPMD=1 negative clamp.
-    // Supporting that transition requires a staged caller phase, not pre-clamping.
+    // Native observes a negative row before its serial clamp. Retirement uses
+    // the caller's completed zero state, never an implicit clamp here.
     if (stiffness < 0) {Fail(output,Status::UnsupportedLifecycle,role);return;}
-    const bool active=stiffness!=0;
-    if ((!capture || has_reference) && bool(d.masks[capture ? 1-slab : slab][role])!=active) {
-      Fail(output,Status::UnsupportedLifecycle,role);return;
+    active=stiffness!=0;
+  } else {
+    if (node==UINT32_MAX) return;
+    if (d.retirement) {
+      const auto mask=input.main_node_activity[node];
+      if (mask>1) {Fail(output,Status::UnsupportedLifecycle,role);return;}
+      active=mask!=0;
+    }
+  }
+  if (secondary || d.retirement) {
+    if (!capture || has_reference) {
+      const bool previous=bool(d.masks[capture ? 1-slab : slab][role]);
+      const bool retirement=capture && d.retirement &&
+          policy==ReferenceCapturePolicy::MonotoneRoleRetirement && previous && !active;
+      if (previous!=active && !retirement) {
+        Fail(output,Status::UnsupportedLifecycle,role);return;
+      }
     }
     if (capture) d.masks[slab][role]=active;
     if (!active) return;
-  } else if (node==UINT32_MAX) return;
+  }
   const auto current=Position(d,input.positions,node);
   const auto reference=capture ? current : d.reference[slab][d.compact ? role : node];
   const auto velocity=capture ? Vector{} : Velocity(d,input.velocities,node);

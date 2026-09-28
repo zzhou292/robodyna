@@ -14,6 +14,11 @@ enum class Status { Ok, InvalidInput, UnsupportedProfile, UnsupportedLifecycle,
   NonfiniteResult, DeviceFailure, Unusable };
 enum class GapMode { Fixed, CurrentMainGaps };
 enum class InputUnits { Native, Si };
+enum class ActivityPolicy { Immutable, MonotoneRetirement };
+// Reference replacement is separate from reusing a published reference. The
+// retirement mode admits only1->0 role activity during explicit capture;
+// caller still owns physical activity authority and candidate invalidation.
+enum class ReferenceCapturePolicy { UnchangedActivity, MonotoneRoleRetirement };
 enum class VelocityStatus { Normal, Warning, Error };
 struct SourceStamp {
   std::uint64_t source = 0, topology = 0, activity = 0;
@@ -33,6 +38,7 @@ struct Source {
   double margin = 0; // Resolved initialization output in native units; not a tuning factor.
   GapMode gap_mode = GapMode::Fixed;
   int processors = 1, edge_mode = 0, converged = 1;
+  ActivityPolicy activity_policy = ActivityPolicy::Immutable;
 };
 // Borrowed DEVICE arrays on the Initialize stream; every operation drains its
 // use before returning, including errors. Native/SI kinematics and gaps follow
@@ -45,6 +51,11 @@ struct Current {
   VectorView positions, velocities;
   const double* secondary_stiffness = nullptr; std::size_t secondary_count = 0;
   const double* main_gaps = nullptr; std::size_t main_gap_count = 0;
+  // Required only by MonotoneRetirement. Complete physical-node device mask;
+  // each consumed main/MSR1D node must have0/1 activity. It is not physical
+  // authority; caller authenticates its source/owner/epoch before this query.
+  const std::uint8_t* main_node_activity = nullptr;
+  std::size_t main_node_activity_count = 0;
 };
 struct MotionExtrema {
   Vector maximum{-ExtentIdentity, -ExtentIdentity, -ExtentIdentity};

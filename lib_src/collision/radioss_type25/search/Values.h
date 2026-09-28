@@ -33,16 +33,30 @@ TL_MATH_HOST_DEVICE inline bool Finite(const MotionExtrema& e) noexcept {
       e.maximum.x >= e.minimum.x && e.maximum.y >= e.minimum.y && e.maximum.z >= e.minimum.z;
 }
 }
+namespace detail {
+TL_MATH_HOST_DEVICE inline bool Empty(const MotionExtrema& e) noexcept {
+  return e.maximum.x==-ExtentIdentity && e.maximum.y==-ExtentIdentity && e.maximum.z==-ExtentIdentity &&
+      e.minimum.x==ExtentIdentity && e.minimum.y==ExtentIdentity && e.minimum.z==ExtentIdentity;
+}
+TL_MATH_HOST_DEVICE inline bool Valid(const MotionExtrema& e,std::uint64_t uses) noexcept {
+  return uses ? Finite(e) : Empty(e);
+}
+}
 // force_sort represents the native KFORSMS/frontier override at the value
 // boundary. This helper alone grants no authority over a candidate inventory.
 TL_MATH_HOST_DEVICE inline Status EvaluateBudget(const Extrema& extrema, double margin,
-    double previous_dt, bool force_sort, Budget& output) noexcept {
+    double previous_dt, bool force_sort, ActivityPolicy activity, Budget& output) noexcept {
   using namespace detail;
   if (!normal_detail::Nonnegative(margin) || !normal_detail::Nonnegative(previous_dt) ||
       !tl::math::Finite(extrema.maximum_gap_change)) return Status::InvalidInput;
-  if (!extrema.secondary_uses || !extrema.main_uses) return Status::UnsupportedLifecycle;
-  if (!Finite(extrema.secondary_displacement) || !Finite(extrema.main_displacement) ||
-      !Finite(extrema.secondary_velocity) || !Finite(extrema.main_velocity)) return Status::NonfiniteResult;
+  if (activity!=ActivityPolicy::Immutable && activity!=ActivityPolicy::MonotoneRetirement)
+    return Status::InvalidInput;
+  if (activity==ActivityPolicy::Immutable && (!extrema.secondary_uses || !extrema.main_uses))
+    return Status::UnsupportedLifecycle;
+  if (!Valid(extrema.secondary_displacement,extrema.secondary_uses) ||
+      !Valid(extrema.main_displacement,extrema.main_uses) ||
+      !Valid(extrema.secondary_velocity,extrema.secondary_uses) ||
+      !Valid(extrema.main_velocity,extrema.main_uses)) return Status::NonfiniteResult;
   const auto delta = Relative(extrema.secondary_displacement,extrema.main_displacement);
   const auto velocity = Relative(extrema.secondary_velocity,extrema.main_velocity);
   Budget next;
@@ -66,5 +80,9 @@ TL_MATH_HOST_DEVICE inline Status EvaluateBudget(const Extrema& extrema, double 
   for (double value:values) if (!tl::math::Finite(value)) return Status::NonfiniteResult;
   output = next;
   return Status::Ok;
+}
+TL_MATH_HOST_DEVICE inline Status EvaluateBudget(const Extrema& extrema,double margin,
+    double previous_dt,bool force_sort,Budget& output) noexcept {
+  return EvaluateBudget(extrema,margin,previous_dt,force_sort,ActivityPolicy::Immutable,output);
 }
 } // namespace tlfea::contact::radioss_type25::search

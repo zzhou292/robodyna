@@ -29,10 +29,17 @@ class Maintenance {
   // Failure invalidates pending staging while preserving the published reference.
   // Current velocities are required only for Evaluate, not reference capture.
   Status StageReference(const Current&, ReferenceToken&) noexcept;
+  // Explicit reference replacement after source-authorized role removal.
+  // Requires Source::MonotoneRetirement and a complete current main-node mask.
+  // Published evaluation still rejects changed masks; reactivation and changed
+  // source/topology stamps reject. Native empty extrema are supported only in
+  // the explicit retirement profile, without granting candidate reuse authority.
+  Status StageReference(const Current&, ReferenceCapturePolicy, ReferenceToken&) noexcept;
   Status PublishReference(const ReferenceToken&) noexcept;
   void DiscardReference() noexcept;
   // previous_dt follows input_units; snapshots/scalar results always use native units.
-  // Empty active secondary or main side returns UnsupportedLifecycle, not reuse.
+  // Legacy empty active sides reject. The explicit retirement profile follows
+  // native empty extrema; success remains numerical maintenance, not reuse authority.
   Status Evaluate(const Current&, double previous_dt, bool force_sort, Report&) noexcept;
   // Last Stage/Evaluate/Publish result, copied independently of success output.
   // A device-reduced row is a flattened role ordinal, then a main-gap ordinal.
