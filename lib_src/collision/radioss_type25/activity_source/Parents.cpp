@@ -2,8 +2,9 @@
 #include "Internal.h"
 #include <algorithm>
 namespace tlfea::contact::radioss_type25::activity_source::detail {
-TransactionReport Parents(const tl::fea::ShellPhysicalBinding& physical,Counts& counts,
+TransactionReport Parents(PhysicalSources sources,Counts& counts,
     void* context,Visit visit) noexcept {
+  const auto& physical=sources.binding;
   if(!physical.prepared()||!physical.domain()||!physical.shells()||!physical.coefficients())
     return Fail(S::SourceMismatch,"Complete physical source is required");
   const auto& ledger=*physical.coefficients();const auto& shells=*physical.shells();
@@ -78,6 +79,21 @@ TransactionReport Parents(const tl::fea::ShellPhysicalBinding& physical,Counts& 
       const std::size_t nodes[]{endpoint[0].global_node,endpoint[1].global_node};
       if(!add(Family::Type13,i,endpoint[0].source_element_id,nodes,2))return Fail(S::SourceMismatch,"Invalid TYPE13 support",i);
     }
+  }
+  if(const auto* joints=sources.type45) {
+    const auto* execution=physical.execution();
+    const auto* actual=joints->rigid_binding();
+    const auto* expected=execution?execution->rigid():nullptr;
+    if(!joints->prepared()||!joints->domain()||!joints->domain()->Matches(*physical.domain())||
+        joints->source_instance_id()!=physical.domain()->source_instance_id()||!actual||!expected||
+        !actual->coefficients()||!actual->coefficients()->Matches(ledger)||
+        actual->groups().data()!=expected->groups().data()||actual->groups().size()!=expected->groups().size()||
+        actual->members().data()!=expected->members().data()||actual->members().size()!=expected->members().size())
+      return Fail(S::SourceMismatch,"TYPE45 support is not the actual physical rigid source");
+    const auto rows=joints->joints();
+    for(std::size_t i=0;i<rows.size();++i)
+      if(!add(Family::Type45,i,rows[i].geometry.source_joint_id,rows[i].domain_nodes,2))
+        return Fail(S::SourceMismatch,"Invalid TYPE45 physical endpoint support",i);
   }
   // Native TAGOFF support excludes bare element/nodal mass and constraint-only
   // membership. The named beam/spring models exclude orientation node N3;

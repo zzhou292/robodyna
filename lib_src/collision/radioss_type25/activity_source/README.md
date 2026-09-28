@@ -4,8 +4,12 @@
 operand, mask, parent state, force, contact history, mass, or owner publication.
 The runtime must authenticate accepted/prepared activity independently.
 
+`PhysicalSources` requires an explicit TYPE45 model or authenticated no-joint null.
+TYPE45 model storage, domain and rigid binding must match the actual physical
+source; only endpoints N1/N2 contribute, never axis N3.
+
 The global parent table retains the actual bound QEPH, T3, QBAT, five solid
-families, beam18, TYPE25 springs and TYPE13 springs. Node CSR entries have one
+families, beam18, TYPE25 springs, TYPE13 springs and explicitly bound TYPE45 joints. Node CSR entries have one
 ordinal per physical element, even for repeated source slots. Beam and spring
 orientation nodes do not participate. Bare element mass, rigid membership and
 CIN constraints do not create native TAGOFF support. Only QEPH and T3 removal

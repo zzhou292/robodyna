@@ -13,22 +13,22 @@ class Plan {
  public:
   Plan(); ~Plan();
   Plan(const Plan&)=delete; Plan& operator=(const Plan&)=delete;
-  static Forecast Preflight(const tl::fea::ShellPhysicalBinding&,
+  static Forecast Preflight(PhysicalSources,
       const ContactSourceInput&,Controls,Limits={}) noexcept;
-  static Forecast Preflight(const tl::fea::ShellPhysicalBinding&,
+  static Forecast Preflight(PhysicalSources,
       const startup::MixedSidesSnapshot&,const startup::PostGapmTopology&,
       Controls,Limits={}) noexcept;
-  static Forecast Preflight(const tl::fea::ShellPhysicalBinding&,
+  static Forecast Preflight(PhysicalSources,
       const startup::Snapshot&,Controls,Limits={}) noexcept;
-  TransactionReport Initialize(const tl::fea::ShellPhysicalBinding&,
+  TransactionReport Initialize(PhysicalSources,
       const ContactSourceInput&,Controls,Limits={}) noexcept;
-  TransactionReport Initialize(const tl::fea::ShellPhysicalBinding&,
+  TransactionReport Initialize(PhysicalSources,
       const startup::MixedSidesSnapshot&,const startup::PostGapmTopology&,
       Controls,Limits={}) noexcept;
-  TransactionReport Initialize(const tl::fea::ShellPhysicalBinding&,
+  TransactionReport Initialize(PhysicalSources,
       const startup::Snapshot&,Controls,Limits={}) noexcept;
   bool initialized() const noexcept;
-  bool Matches(const tl::fea::ShellPhysicalBinding&) const noexcept;
+  bool Matches(PhysicalSources) const noexcept;
   View view() const noexcept;
   Forecast forecast() const noexcept;
  private:

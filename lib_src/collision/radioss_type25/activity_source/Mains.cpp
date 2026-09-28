@@ -6,7 +6,7 @@ namespace tlfea::contact::radioss_type25::activity_source::detail {
 namespace {
 namespace ld=selection::lifecycle::detail;
 bool Valid(Controls c) {
-  return (c.deletion==Deletion::Disabled||c.deletion==Deletion::AllSupports||c.deletion==Deletion::AnySupport)&&
+  return (c.deletion==Deletion::Disabled||c.deletion==Deletion::ContainingElement||c.deletion==Deletion::AssociatedElement)&&
       (c.solid_erosion==startup::SolidErosion::Disabled||c.solid_erosion==startup::SolidErosion::Enabled);
 }
 std::uint32_t Shell(const pm::Index& index,std::uint64_t id) {

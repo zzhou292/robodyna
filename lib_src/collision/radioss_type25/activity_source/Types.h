@@ -3,13 +3,14 @@
 #include "../runtime/Types.h"
 #include "../startup/PostGapmTypes.h"
 #include "lib_src/assembly/ShellPhysicalBinding.h"
+#include "lib_src/elements/type45/Model.h"
 #include <array>
 namespace tlfea::contact::radioss_type25::activity_source {
 // These categories describe the actual bound physical population, not a raw
 // deck census. The source producer must separately authenticate its coverage.
 enum class Family : std::uint32_t {
   Qeph, T3, Qbat, Solid18, Solid24, Solid6z, Solid18Law44,
-  Solid18Law90, Beam18, Type25, Type13, Count
+  Solid18Law90, Beam18, Type25, Type13, Type45, Count
 };
 inline constexpr std::size_t FamilyCount=static_cast<std::size_t>(Family::Count);
 struct ParentIdentity {
@@ -25,11 +26,20 @@ struct Origin {
   std::uint32_t parent=NoParent,primary=0;
   std::uint8_t local_face=0;
 };
-enum class Deletion : unsigned char { Disabled=0, AllSupports=1, AnySupport=2 };
+enum class Deletion : unsigned char { Disabled=0, ContainingElement=1, AssociatedElement=2 };
 struct Controls {
   Deletion deletion=Deletion::Disabled;
   bool keep_disconnected_nodes=false;
   startup::SolidErosion solid_erosion=startup::SolidErosion::Unspecified;
+};
+// Contact support is broader than the mass ledger: TYPE45 joints contribute
+// native SPRING endpoints even though they add no nodal mass. Null is an
+// explicit declaration for an authenticated source with no TYPE45 joints.
+struct PhysicalSources {
+  PhysicalSources(const tl::fea::ShellPhysicalBinding& value,const tl::fea::type45::Model* joints) noexcept
+      :binding(value),type45(joints){}
+  const tl::fea::ShellPhysicalBinding& binding;
+  const tl::fea::type45::Model* type45;
 };
 struct Limits {
   std::size_t nodes=1048576,parents=1048576,mains=2097152,origins=1572864;

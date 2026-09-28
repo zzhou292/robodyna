@@ -4,6 +4,7 @@
 #include "../runtime/PhysicalMainSource.h"
 #include "../runtime/physical_main/Index.h"
 #include "lib_utils/BoundedArena.h"
+#include <optional>
 namespace tlfea::contact::radioss_type25::activity_source::detail {
 namespace pm=runtime_detail::physical_main;
 using S=TransactionStatus;
@@ -11,7 +12,7 @@ inline TransactionReport Ok(){return {S::Ok,"Activity source binding ready"};}
 inline TransactionReport Fail(S s,const char* text,std::size_t row=SIZE_MAX){return {s,text,row};}
 struct ParentRow { ParentIdentity identity;std::uint32_t nodes[8]{};unsigned count=0; };
 using Visit=bool(*)(void*,const ParentRow&);
-TransactionReport Parents(const tl::fea::ShellPhysicalBinding&,Counts&,void*,Visit) noexcept;
+TransactionReport Parents(PhysicalSources,Counts&,void*,Visit) noexcept;
 struct Source {
   const ContactSourceInput* ordinary=nullptr;
   const startup::MixedSidesSnapshot* mixed=nullptr;
@@ -30,13 +31,14 @@ struct Layout {
   std::size_t bytes=0;
 };
 struct Storage {
-  explicit Storage(const tl::fea::ShellPhysicalBinding& p):physical(p){}
+  explicit Storage(PhysicalSources source):physical(source.binding){if(source.type45)type45.emplace(*source.type45);}
   tl::fea::ShellPhysicalBinding physical;
+  std::optional<tl::fea::type45::Model> type45;
   tl::util::HostArena arena;
   View view;
   Forecast forecast;
 };
-Forecast Preflight(const tl::fea::ShellPhysicalBinding&,Source,Controls,Limits,Layout* =nullptr) noexcept;
-TransactionReport Build(const tl::fea::ShellPhysicalBinding&,Source,Controls,Limits,
+Forecast Preflight(PhysicalSources,Source,Controls,Limits,Layout* =nullptr) noexcept;
+TransactionReport Build(PhysicalSources,Source,Controls,Limits,
     std::unique_ptr<Storage>&) noexcept;
 }

@@ -24,12 +24,13 @@ bool Contains(const std::uint32_t* offsets,const std::uint32_t* parents,
   return true;
 }
 }
-Forecast Preflight(const tl::fea::ShellPhysicalBinding& physical,Source source,Controls controls,
+Forecast Preflight(PhysicalSources physical_sources,Source source,Controls controls,
     Limits limits,Layout* output) noexcept try {
+  const auto& physical=physical_sources.binding;
   Forecast result;auto reject=[&](S status,const char* message){result.report=Fail(status,message);return result;};
   if((source.ordinary!=nullptr)==(source.mixed!=nullptr)||!limits.output_bytes||!limits.startup_bytes||limits.containing_parents>=UINT32_MAX)
     return reject(S::InvalidInput,"Exactly one complete contact source is required");
-  auto status=Parents(physical,result.counts,nullptr,nullptr);if(status.status!=S::Ok){result.report=status;return result;}
+  auto status=Parents(physical_sources,result.counts,nullptr,nullptr);if(status.status!=S::Ok){result.report=status;return result;}
   auto& count=result.counts;count.mains=source.mains();count.origins=source.origins();count.primaries=source.primaries();
   if(!count.nodes||count.nodes>=UINT32_MAX||count.nodes>limits.nodes||count.parents>limits.parents||
       count.incidence>limits.incidence||count.mains>limits.mains||count.origins>limits.origins||
@@ -45,7 +46,7 @@ Forecast Preflight(const tl::fea::ShellPhysicalBinding& physical,Source source,C
   tl::util::HostArena scratch;if(!scratch.Initialize(scratch_layout.bytes()))
     return reject(S::ResourceLimit,"Activity incidence count allocation failed");
   auto* node_counts=scratch.Construct<std::uint32_t>(node_region);std::fill_n(node_counts,count.nodes,0);
-  Counts inspected;status=Parents(physical,inspected,node_counts,CountNodes);
+  Counts inspected;status=Parents(physical_sources,inspected,node_counts,CountNodes);
   if(status.status!=S::Ok){result.report=status;return result;}
   for(std::size_t i=0;i<count.primaries;++i) {
     const auto* nodes=source.nodes(i);const auto additional=node_counts[nodes[0]];
@@ -79,25 +80,26 @@ Forecast Preflight(const tl::fea::ShellPhysicalBinding& physical,Source source,C
     return reject(S::ResourceLimit,"Complete activity-source startup peak exceeds cap");
   result.startup_bytes=peak.bytes();result.report=Ok();if(output)*output=layout;return result;
 } catch(const std::bad_alloc&) {Forecast result;result.report=Fail(S::ResourceLimit,"Activity-source preflight allocation failed");return result;}
-TransactionReport Build(const tl::fea::ShellPhysicalBinding& physical,Source source,Controls controls,
+TransactionReport Build(PhysicalSources physical_sources,Source source,Controls controls,
     Limits limits,std::unique_ptr<Storage>& output) noexcept try {
+  const auto& physical=physical_sources.binding;
   if(output)return Fail(S::AlreadyInitialized,"Activity source plan is immutable");
-  Layout layout;const auto forecast=Preflight(physical,source,controls,limits,&layout);
+  Layout layout;const auto forecast=Preflight(physical_sources,source,controls,limits,&layout);
   if(forecast.report.status!=S::Ok)return forecast.report;
-  auto next=std::make_unique<Storage>(physical);next->forecast=forecast;
+  auto next=std::make_unique<Storage>(physical_sources);next->forecast=forecast;
   if(!next->arena.Initialize(layout.bytes))return Fail(S::ResourceLimit,"Activity-source retained allocation failed");
   const auto& count=forecast.counts;
   auto* parents=next->arena.Construct<ParentIdentity>(layout.parents);
   auto* offsets=next->arena.Construct<std::uint32_t>(layout.offsets);
   auto* entries=next->arena.Construct<std::uint32_t>(layout.incidence);
   std::fill_n(offsets,count.nodes+1,0);Counts inspected;
-  auto status=Parents(physical,inspected,offsets+1,CountNodes);if(status.status!=S::Ok)return status;
+  auto status=Parents(physical_sources,inspected,offsets+1,CountNodes);if(status.status!=S::Ok)return status;
   for(std::size_t i=1;i<=count.nodes;++i)offsets[i]+=offsets[i-1];
   if(offsets[count.nodes]!=count.incidence)return Fail(S::SourceMismatch,"Physical incidence count changed");
   tl::util::HostArena scratch;if(!scratch.Initialize(count.nodes*sizeof(std::uint32_t)))
     return Fail(S::ResourceLimit,"Activity-source cursor allocation failed");
   auto* cursor=static_cast<std::uint32_t*>(scratch.data());std::copy_n(offsets,count.nodes,cursor);
-  WriteContext writer{parents,cursor,entries};status=Parents(physical,inspected,&writer,WriteParent);
+  WriteContext writer{parents,cursor,entries};status=Parents(physical_sources,inspected,&writer,WriteParent);
   if(status.status!=S::Ok)return status;
   auto* main_support=next->arena.Construct<MainSupport>(layout.mains);
   auto* origins=next->arena.Construct<Origin>(layout.origins);
@@ -128,25 +130,29 @@ TransactionReport Build(const tl::fea::ShellPhysicalBinding& physical,Source sou
 namespace tlfea::contact::radioss_type25::activity_source {
 Plan::Plan()=default;Plan::~Plan()=default;
 bool Plan::initialized()const noexcept{return bool(storage_);}
-bool Plan::Matches(const tl::fea::ShellPhysicalBinding& p)const noexcept{return storage_&&storage_->physical.Matches(p);}
+bool Plan::Matches(PhysicalSources p)const noexcept {
+  return storage_&&storage_->physical.Matches(p.binding)&&
+      (storage_->type45.has_value()==bool(p.type45))&&
+      (!p.type45||storage_->type45->SharesStorage(*p.type45));
+}
 View Plan::view()const noexcept{return storage_?storage_->view:View{};}
 Forecast Plan::forecast()const noexcept{return storage_?storage_->forecast:Forecast{};}
-Forecast Plan::Preflight(const tl::fea::ShellPhysicalBinding& p,const ContactSourceInput& s,Controls c,Limits l)noexcept {
+Forecast Plan::Preflight(PhysicalSources p,const ContactSourceInput& s,Controls c,Limits l)noexcept {
   return detail::Preflight(p,{&s,nullptr,nullptr},c,l);
 }
-Forecast Plan::Preflight(const tl::fea::ShellPhysicalBinding& p,const startup::MixedSidesSnapshot& s,
+Forecast Plan::Preflight(PhysicalSources p,const startup::MixedSidesSnapshot& s,
     const startup::PostGapmTopology& post,Controls c,Limits l)noexcept{return detail::Preflight(p,{nullptr,&s,&post},c,l);}
-Forecast Plan::Preflight(const tl::fea::ShellPhysicalBinding& p,const startup::Snapshot& s,Controls c,Limits l)noexcept {
+Forecast Plan::Preflight(PhysicalSources p,const startup::Snapshot& s,Controls c,Limits l)noexcept {
   if(s.profile!=startup::Profile::MixedSurface||s.topology!=startup::TopologyPolicy::NativeMixedSurface||
       s.primary_identity_count!=s.primary_count||!s.post_gapm){Forecast f;f.report=detail::Fail(TransactionStatus::InvalidInput,"Post-GAPM source is missing");return f;}
   const auto mixed=detail::Mixed(s);return Preflight(p,mixed,*s.post_gapm,c,l);
 }
-TransactionReport Plan::Initialize(const tl::fea::ShellPhysicalBinding& p,const ContactSourceInput& s,Controls c,Limits l)noexcept {
+TransactionReport Plan::Initialize(PhysicalSources p,const ContactSourceInput& s,Controls c,Limits l)noexcept {
   return detail::Build(p,{&s,nullptr,nullptr},c,l,storage_);
 }
-TransactionReport Plan::Initialize(const tl::fea::ShellPhysicalBinding& p,const startup::MixedSidesSnapshot& s,
+TransactionReport Plan::Initialize(PhysicalSources p,const startup::MixedSidesSnapshot& s,
     const startup::PostGapmTopology& post,Controls c,Limits l)noexcept{return detail::Build(p,{nullptr,&s,&post},c,l,storage_);}
-TransactionReport Plan::Initialize(const tl::fea::ShellPhysicalBinding& p,const startup::Snapshot& s,Controls c,Limits l)noexcept {
+TransactionReport Plan::Initialize(PhysicalSources p,const startup::Snapshot& s,Controls c,Limits l)noexcept {
   if(s.profile!=startup::Profile::MixedSurface||s.topology!=startup::TopologyPolicy::NativeMixedSurface||
       s.primary_identity_count!=s.primary_count||!s.post_gapm)return detail::Fail(TransactionStatus::InvalidInput,"Post-GAPM source is missing");
   const auto mixed=detail::Mixed(s);return Initialize(p,mixed,*s.post_gapm,c,l);
