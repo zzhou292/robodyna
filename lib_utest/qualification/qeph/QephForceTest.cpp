@@ -173,7 +173,8 @@ TEST(QephForcePort, CoincidentCurrentCornerRetainsThePreparedReferenceAndFiniteF
   const auto input=Case(0);port::ReferenceData reference;port::History history;
   ASSERT_EQ(port::InitializeReference(input,reference),port::Status::kSuccess);
   ASSERT_EQ(port::PreparePrescribedHistory(reference,Seed(input,true),{.125,72},history),port::Status::kSuccess);
-  const auto old_history=Bytes(history),old_reference=Bytes(reference);
+  const auto old_history=Bytes(history);
+  const auto old_reference=Bytes(reference);
   auto interval=Next(input,history,.001);interval.position_endpoint[3]=interval.position_endpoint[0];
   port::ForceTrial result;
   ASSERT_EQ(port::EvaluateForce(reference,history,interval,result),port::Status::kSuccess);

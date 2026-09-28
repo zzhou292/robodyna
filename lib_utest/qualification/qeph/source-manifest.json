@@ -578,16 +578,16 @@
     },
     {
       "path": "lib_utest/qualification/qeph/QephForceTest.cpp",
-      "bytes": 17294,
-      "sha256": "a9f3dd10ca12e062f1e35b6ab0dfa231fa41008820c6b5f1b056458fff71e399",
+      "bytes": 17308,
+      "sha256": "9cf517a28a8bec269cb16a07805f6a561c862b01ad464f0149189d3dd4f0c1a6",
       "prior_sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec",
       "prior_bytes": 16394,
       "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
     },
     {
       "path": "lib_utest/qualification/qeph/QephForceCudaTest.cu",
-      "bytes": 9051,
-      "sha256": "c0f4eaecbcd66d2fb5c57fe59ab327655c21ad46fec5e66195e40c8d54ce3515",
+      "bytes": 9065,
+      "sha256": "38e12b82dbec786a872924d65589dba739769eab1c1fe0e1f2bf24fb4a3d47fe",
       "prior_sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465",
       "prior_bytes": 8151,
       "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
