@@ -25,6 +25,9 @@ struct GpuFixture {
   std::unique_ptr<type25_source_test::MixedRuntimeSource> mixed_source;
   tl::util::HostArena mixed_output,mixed_scratch;
   n::ContactSourceInput source;
+  std::array<n::lifecycle::Main,2> quad_only_mains{};
+  n::lifecycle::Secondary quad_only_secondary;
+  std::uint64_t quad_only_parent=0;
   n::activity_source::Plan plan;
   n::current_normals::Topology topology;
   n::activity_source::Controls controls;
@@ -34,10 +37,11 @@ struct GpuFixture {
   a::BorrowedSlot borrowed;
   std::uint8_t *qbase=nullptr,*qcurrent=nullptr,*tbase=nullptr,*tcurrent=nullptr;
   a::State operands;
-  explicit GpuFixture(bool moving=true,bool deletion=true,bool mixed=false,bool erosion=false)
-      :physical(mixed),controls{
+  explicit GpuFixture(bool moving=true,bool deletion=true,bool mixed=false,bool erosion=false,
+      bool contact_geometry=false,bool quad_only=false,bool keep_disconnected=false)
+      :physical(mixed,contact_geometry),controls{
         deletion?n::activity_source::Deletion::ContainingElement:n::activity_source::Deletion::Disabled,
-        false,erosion?n::startup::SolidErosion::Enabled:n::startup::SolidErosion::Disabled},normals(moving) {
+        keep_disconnected,erosion?n::startup::SolidErosion::Enabled:n::startup::SolidErosion::Disabled},normals(moving) {
     n::TransactionReport report;
     if(mixed) {
       mixed_source=std::make_unique<type25_source_test::MixedRuntimeSource>(physical);
@@ -45,7 +49,22 @@ struct GpuFixture {
       source=mixed_source->Source();
       report=plan.Initialize({physical.physical,nullptr},mixed_source->starter,controls);
     } else {
-      source=physical.Contact();report=plan.Initialize({physical.physical,nullptr},source,controls);
+      source=physical.Contact();
+      if(quad_only) {
+        if(moving)throw std::runtime_error("Quad-only numerical fixture requires fixed-normal scope");
+        const auto old_count=source.primary_main_count;
+        quad_only_mains={source.selection.mains[0],source.selection.mains[old_count]};
+        for(unsigned i=0;i<2;++i) {
+          quad_only_mains[i].global_id=i+1;quad_only_mains[i].segment_type=i?-1:2;
+          for(auto& neighbor:quad_only_mains[i].neighbors)neighbor=0;
+        }
+        quad_only_parent=source.primary_parent_ids[0];
+        quad_only_secondary={quad_only_mains[0].nodes[0],1e6,.001,0};
+        source.selection.mains=quad_only_mains.data();source.selection.main_count=2;
+        source.selection.secondary=&quad_only_secondary;source.selection.secondary_count=1;
+        source.primary_main_count=1;source.primary_parent_ids=&quad_only_parent;
+      }
+      report=plan.Initialize({physical.physical,nullptr},source,controls);
     }
     if(!Good(report))throw std::runtime_error(report.message);
     const auto& s=physical.starter;

@@ -119,6 +119,9 @@ Forecast State::Preflight(const activity_source::Plan& plan, const ContactSource
     f.report = {TransactionStatus::ResourceLimit, "Contact activity host startup exceeds its cap"}; return f;
   }
   f.startup_host_bytes = peak.bytes(); f.owned_device_bytes = layout.bytes;
+  f.main_node_mask_device_bytes = 2*shape.nodes;
+  f.main_membership_device_bytes = shape.nodes;
+  f.main_node_upload_host_bytes = 2*shape.nodes;
   f.borrowed_device_bytes = shape.mains*sizeof(lifecycle::Main) +
       (shape.normals ? shape.mains*(sizeof(startup::Main)+sizeof(double)+sizeof(std::uint32_t)) : 0) +
       (shape.primaries+shape.secondaries)*sizeof(double);

@@ -42,6 +42,13 @@ TL_MATH_HOST_DEVICE inline MainResult Main(double coefficient, std::int32_t conn
            std::int64_t(connected) - events <= 1) out.exposure = true;
   out.valid = true; return out;
 }
+// Native CHKMSR3NB tests global ITAG independently of IDELKEEP. The source
+// main geometry defines MSR membership; nonmembers are neutral and cannot
+// cause a source-generation change when unrelated elements are removed.
+TL_MATH_HOST_DEVICE inline std::uint8_t MainNodeActivity(bool member, bool supported,
+    activity_source::Controls controls) {
+  return controls.deletion == activity_source::Deletion::Disabled || !member || supported ? 1 : 0;
+}
 TL_MATH_HOST_DEVICE inline double MarkSecondary(double coefficient, bool supported,
     activity_source::Controls controls) {
   const bool registered = controls.deletion != activity_source::Deletion::Disabled &&

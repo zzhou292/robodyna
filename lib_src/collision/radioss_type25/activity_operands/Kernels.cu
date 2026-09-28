@@ -22,13 +22,16 @@ __global__ void Parents(Device d, tl::fea::PhysicalActivityDeviceView activity) 
   if (base > 1 || current > 1 || current > base) { Fail(d, Failure::Mask, i); return; }
   d.parent_active[i] = current; d.parent_removed[i] = base && !current;
 }
-__global__ void Nodes(Device d) {
+__global__ void Nodes(Device d, unsigned accepted) {
   const auto node = std::size_t(blockIdx.x)*blockDim.x+threadIdx.x;
   if (node >= d.shape.nodes) return;
   bool active = false;
   for (auto j = d.node_offsets[node]; j < d.node_offsets[node+1]; ++j)
     active = active || d.parent_active[d.node_parents[j]];
   d.node_active[node] = active;
+  const auto value = MainNodeActivity(d.main_membership[node] != 0, active, d.controls);
+  d.slots[accepted^1u].main_node_activity[node] = value;
+  if (value != d.slots[accepted].main_node_activity[node]) atomicExch(&d.control->changed, 1u);
 }
 __global__ void Events(Device d) {
   if (d.control->failure != UINT64_MAX || d.controls.deletion == activity_source::Deletion::Disabled) return;
@@ -112,7 +115,7 @@ cudaError_t Launch(Device d, unsigned accepted, const tl::fea::PhysicalActivityD
     cudaStream_t stream) noexcept {
 #define RUN(expr) expr; { const auto error = cudaGetLastError(); if (error != cudaSuccess) return error; }
   RUN((Parents<<<Blocks(d.shape.parents),128,0,stream>>>(d, activity)))
-  RUN((Nodes<<<Blocks(d.shape.nodes),128,0,stream>>>(d)))
+  RUN((Nodes<<<Blocks(d.shape.nodes),128,0,stream>>>(d, accepted)))
   RUN((Events<<<Blocks(d.shape.parents),128,0,stream>>>(d)))
   RUN((Mains<<<Blocks(d.shape.mains),128,0,stream>>>(d, accepted)))
   RUN((Neighbors<<<Blocks(d.shape.mains),128,0,stream>>>(d, accepted)))

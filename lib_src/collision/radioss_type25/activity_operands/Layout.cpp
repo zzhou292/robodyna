@@ -5,7 +5,9 @@ bool MakeStartupLayout(Shape shape, std::size_t cap, StartupLayout& output) noex
   tl::util::BoundedArenaLayout a(cap); StartupLayout next;
   if (!a.Append<std::uint32_t>(shape.secondaries, next.secondary_nodes) ||
       !a.Append<double>(shape.secondaries, next.secondary_coefficients) ||
-      !a.Append<std::int32_t>(shape.mains, next.connected)) return false;
+      !a.Append<std::int32_t>(shape.mains, next.connected) ||
+      !a.Append<std::uint8_t>(shape.nodes, next.main_membership) ||
+      !a.Append<std::uint8_t>(shape.nodes, next.main_node_activity)) return false;
   next.bytes = a.bytes(); output = next; return true;
 }
 bool MakeLayout(Shape s, std::size_t scan_bytes, std::size_t cap, Layout& output) noexcept {
@@ -18,7 +20,9 @@ bool MakeLayout(Shape s, std::size_t scan_bytes, std::size_t cap, Layout& output
   ADD(std::uint32_t, s.emitting, emitting_mains); ADD(std::uint32_t, s.secondaries, secondary_nodes);
   for (unsigned i = 0; i < 2; ++i) {
     ADD(double, s.secondaries, secondary_coefficients[i]); ADD(std::int32_t, s.mains, connected[i]);
+    ADD(std::uint8_t, s.nodes, main_node_activity[i]);
   }
+  ADD(std::uint8_t, s.nodes, main_membership);
   ADD(lifecycle::Main, s.mains, mains); ADD(startup::Main, s.normals ? s.mains : 0, normal_mains);
   ADD(double, s.normals ? s.mains : 0, normal_coefficients); ADD(std::uint32_t, s.normals ? s.mains : 0, free_mains);
   ADD(double, s.primaries, main_si); ADD(double, s.secondaries, secondary_si);
@@ -42,6 +46,7 @@ Device Bind(void* base, const Layout& l, Shape shape, activity_source::Controls 
   BIND(std::uint32_t, emitting_offsets); BIND(std::uint32_t, emitting_mains); BIND(std::uint32_t, secondary_nodes);
   BIND(std::uint8_t, parent_active); BIND(std::uint8_t, parent_removed); BIND(std::uint8_t, node_active);
   BIND(std::uint8_t, removed); BIND(std::uint32_t, events); BIND(std::uint32_t, flags); BIND(std::uint32_t, offsets);
+  BIND(std::uint8_t, main_membership);
   BIND(Control, control); BIND(std::byte, scan); d.scan_bytes = l.scan.bytes;
 #undef BIND
   d.slots[0] = {borrowed.mains, borrowed.normal_mains, borrowed.normal_coefficients, borrowed.free_mains,
@@ -55,6 +60,7 @@ Device Bind(void* base, const Layout& l, Shape shape, activity_source::Controls 
   for (unsigned i = 0; i < 2; ++i) {
     d.slots[i].secondary_coefficients = tl::util::ArenaPointer<double>(base, l.secondary_coefficients[i]);
     d.slots[i].connected = tl::util::ArenaPointer<std::int32_t>(base, l.connected[i]);
+    d.slots[i].main_node_activity = tl::util::ArenaPointer<std::uint8_t>(base, l.main_node_activity[i]);
   }
   return d;
 }
