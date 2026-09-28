@@ -1,0 +1,18 @@
+{
+  "baseline": "f934123036a48d54b3420ed4878258f07d4363d7",
+  "scope": "Existing physical source identity/face/support validation remains unchanged.",
+  "files": {
+    "lib_src/collision/radioss_type25/runtime/physical_main/Index.cpp": {
+      "bytes": 5625,
+      "sha256": "3fe1b38e3801a57d828838e4dcf49d4b16051573bb4addd134b44693910d2cfd"
+    },
+    "lib_src/collision/radioss_type25/runtime/physical_main/Origins.cpp": {
+      "bytes": 2424,
+      "sha256": "d6b84741ed178bb6059471438b26a6dd50d9654cae82fd39e3d2120582bb6ef3"
+    },
+    "lib_src/collision/radioss_type25/runtime/physical_main/Validate.cpp": {
+      "bytes": 6788,
+      "sha256": "0a2a5ec46ef318aa6aa80c05324b7f9a1c20bd833ad7e33387d4731d6bedb690"
+    }
+  }
+}
