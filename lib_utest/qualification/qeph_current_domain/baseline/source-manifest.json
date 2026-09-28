@@ -280,11 +280,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephCurrentFrame.h",
-      "bytes": 4809,
-      "sha256": "1497c780dd2b6b4c8741fd07a3b4d3568e46a603224799ae17a900cb6317d903",
-      "prior_sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e",
-      "prior_bytes": 4630,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 4630,
+      "sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e"
     },
     {
       "path": "lib_src/elements/qeph/QephVelocityCorrection.h",
@@ -308,11 +305,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephKinematics.h",
-      "bytes": 5488,
-      "sha256": "3b20c31786537dcac06b361d5a54b317058e76b71309875630e617a69efd4117",
-      "prior_sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663",
-      "prior_bytes": 5454,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 5454,
+      "sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663"
     },
     {
       "path": "lib_src/elements/qeph/QephElasticForces.h",
@@ -549,27 +543,18 @@
     },
     {
       "path": "lib_utest/qualification/qeph/QephKinematicsFixture.h",
-      "bytes": 11896,
-      "sha256": "3f1d09522a0d480612ddd8109b50308a096d6598040e5740a8793829571089f0",
-      "prior_sha256": "8ae458bf57887f91faecf9bc67d933faecfb4ee5b6d9cce6b9ff6a5156fefb22",
-      "prior_bytes": 11457,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 11457,
+      "sha256": "8ae458bf57887f91faecf9bc67d933faecfb4ee5b6d9cce6b9ff6a5156fefb22"
     },
     {
       "path": "lib_utest/qualification/qeph/QephKinematicsTest.cpp",
-      "bytes": 10052,
-      "sha256": "3e3fc20c6c95acdcc696b59799088ca73e5771f08029f56e0cb9fc5a7c52ed26",
-      "prior_sha256": "faff66a16b5c1f00f51be96c873633afacc78baa92871e13f0dc629cf9bfdfad",
-      "prior_bytes": 8200,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 8200,
+      "sha256": "faff66a16b5c1f00f51be96c873633afacc78baa92871e13f0dc629cf9bfdfad"
     },
     {
       "path": "lib_utest/qualification/qeph/QephKinematicsCudaTest.cu",
-      "bytes": 7739,
-      "sha256": "6e324648917dbae67487053c5252afb0a0886eb7772e5e13962b2aa0850ed68d",
-      "prior_sha256": "d34e10b74ccabfe20f05dbafdc16c2de7181eb49576d22582c779825750d7d96",
-      "prior_bytes": 6945,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 6945,
+      "sha256": "d34e10b74ccabfe20f05dbafdc16c2de7181eb49576d22582c779825750d7d96"
     },
     {
       "path": "lib_utest/qualification/qeph/QephForceFixture.h",
@@ -578,24 +563,13 @@
     },
     {
       "path": "lib_utest/qualification/qeph/QephForceTest.cpp",
-      "bytes": 17294,
-      "sha256": "a9f3dd10ca12e062f1e35b6ab0dfa231fa41008820c6b5f1b056458fff71e399",
-      "prior_sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec",
-      "prior_bytes": 16394,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
+      "bytes": 16394,
+      "sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec"
     },
     {
       "path": "lib_utest/qualification/qeph/QephForceCudaTest.cu",
-      "bytes": 9051,
-      "sha256": "c0f4eaecbcd66d2fb5c57fe59ab327655c21ad46fec5e66195e40c8d54ce3515",
-      "prior_sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465",
-      "prior_bytes": 8151,
-      "followup": "Explicit current mean-frame domain extension; exact production header reversal and unchanged arithmetic/startup guards in qeph_current_domain/verify_sources.py. Historical fixture shapes receive positive current-domain tests; genuine degenerate/invalid atomic retry checks remain."
-    },
-    {
-      "path": "lib_utest/qualification/qeph_current_domain/FrozenCurrentFrame.h",
-      "bytes": 1889,
-      "sha256": "673c6878e116a4dada9bf3df902fe8d064fa8e26643e6f2dfdca970f43a11dd6"
+      "bytes": 8151,
+      "sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465"
     }
   ],
   "transformations": [
@@ -710,7 +684,7 @@
       "IDT1SH": 0
     },
     "reference": "immutable successful startup POD with prepared and finite-positive sane fields; not authentication",
-    "current_geometry": "ENGINE mean-frame arithmetic with retained determinant floor exclusion including64epsilon band; proper frame and positive area; TL startup/reference convexity remains separate",
+    "current_geometry": "same Q3a binary64 determinant/convexity predicates, actual engine frame arithmetic",
     "time": "finite base>=0, dt>0, finite base+dt strictly>base",
     "sample_index": "arbitrary uint64 caller label, not incremented",
     "native_planar_switch": "raw_Z1^2 < LM*1e-8",
@@ -930,15 +904,5 @@
       }
     ],
     "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
-  },
-  "current_mean_frame_domain_extension": {
-    "baseline_commit": "37f9e91116c3a8cb26c7f122682cd5c99ae2e2e9",
-    "historical_manifest": "lib_utest/qualification/qeph_current_domain/baseline/source-manifest.json",
-    "historical_manifest_sha256": "697200fbfdc7f250097a1241a18377e670b645d927119e17820a254e07c8216b",
-    "proof": "lib_utest/qualification/qeph_current_domain/source-proof.json",
-    "proof_sha256": "8c30b3eb1f232b28a949c4ff8d97e49f648e9802e79483abec84cf99f3e9d762",
-    "selection": "prototype awaiting independent raw native complete-caller and host/CUDA qualification",
-    "unchanged": "startup/reference convexity, determinant floor/band, frame/area validity, projection/finiteness/material/stability/publication checks",
-    "new_current_shapes": "finite positive proper mean frames without an inherited startup corner-turn veto"
   }
 }

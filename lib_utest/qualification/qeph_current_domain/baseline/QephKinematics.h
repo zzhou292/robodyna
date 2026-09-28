@@ -79,9 +79,8 @@ namespace tl::fea::qeph {
 // IREP0, IRESP2, ISMSTR-1, IMPL_S0, IVECTOR0, NPT0, IDRIL0, IXFEM0.
 // ReferenceData must be the immutable successful startup result; public POD
 // sanity checks cannot authenticate arbitrary coordinated finite mutations.
-// Current geometry uses ENGINE mean-frame arithmetic with the retained
-// determinant floor exclusion. Startup/reference convexity remains separate.
-// Every observable must be finite.
+// Current geometry uses the declared Q3a determinant/convexity thresholds,
+// but the actual ENGINE frame arithmetic. Every observable must be finite.
 // Native planar switching and its O(h) general-rigid shear-rate residual are
 // preserved. This is not dynamics admission or an initial-force operation.
 // All output bytes are unchanged on failure; no owner/clock/history is mutated.

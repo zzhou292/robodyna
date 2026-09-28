@@ -105,6 +105,21 @@ TEST(QephKinematicsCuda, IndependentAffineAndRigidPhaseTruthAtSourceScale) {
   }
 }
 
+TEST(QephKinematicsCuda, CurrentGeometryExtensionUsesTheSameFiniteHostAndDeviceOperator) {
+  DevicePacket device;ASSERT_EQ(device.Allocate(),cudaSuccess);
+  Packet packet;ASSERT_EQ(port::InitializeReference(Case(1),packet.reference),port::Status::kSuccess);
+  const auto reference=Bytes(packet.reference);
+  for(unsigned kind:{3u,7u}) {
+    SCOPED_TRACE(kind);packet.interval=ExtendedCurrentInterval(kind);
+    port::Kinematics expected;
+    ASSERT_EQ(port::EvaluatePrescribed(packet.reference,packet.interval,expected),port::Status::kSuccess);
+    ASSERT_EQ(device.Run(packet),cudaSuccess);Guards(packet);
+    ASSERT_EQ(packet.status,port::Status::kSuccess);
+    qeph_kinematics_test::Agreement(packet.output,expected,packet.interval);
+    EXPECT_EQ(Bytes(packet.reference),reference);
+  }
+}
+
 TEST(QephKinematicsCuda, MalformedPODAndLateFailurePreserveEntirePublicationAndRetry) {
   DevicePacket device;
   ASSERT_EQ(device.Allocate(),cudaSuccess);

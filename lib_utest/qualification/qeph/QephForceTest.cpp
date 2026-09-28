@@ -169,6 +169,19 @@ TEST(QephForcePort, CommonWorldRotationTransformsForceAndCoupleWithoutChangingHi
   }
 }
 
+TEST(QephForcePort, CoincidentCurrentCornerRetainsThePreparedReferenceAndFiniteForceContract) {
+  const auto input=Case(0);port::ReferenceData reference;port::History history;
+  ASSERT_EQ(port::InitializeReference(input,reference),port::Status::kSuccess);
+  ASSERT_EQ(port::PreparePrescribedHistory(reference,Seed(input,true),{.125,72},history),port::Status::kSuccess);
+  const auto old_history=Bytes(history),old_reference=Bytes(reference);
+  auto interval=Next(input,history,.001);interval.position_endpoint[3]=interval.position_endpoint[0];
+  port::ForceTrial result;
+  ASSERT_EQ(port::EvaluateForce(reference,history,interval,result),port::Status::kSuccess);
+  EXPECT_GT(result.kinematics.area,0.);
+  EXPECT_TRUE(port::detail::ValidForceDiagnostics(result.diagnostics));
+  EXPECT_EQ(Bytes(history),old_history);EXPECT_EQ(Bytes(reference),old_reference);
+}
+
 TEST(QephForcePort, HistoryBindingMalformedStampsAndLateFailurePreserveEveryByteThenRetry) {
   const auto input=Case(0); port::ReferenceData reference; port::History h;
   ASSERT_EQ(port::InitializeReference(input,reference),port::Status::kSuccess);
@@ -183,7 +196,7 @@ TEST(QephForcePort, HistoryBindingMalformedStampsAndLateFailurePreserveEveryByte
     if(kind==0) bad.base_time=std::nextafter(bad.base_time,1.);
     if(kind==1) ++bad.sample_index;
     if(kind==2) bad.dt=std::numeric_limits<double>::denorm_min();
-    if(kind==3) bad.position_endpoint[3]=bad.position_endpoint[0];
+    if(kind==3) for(auto& x:bad.position_endpoint)x=bad.position_endpoint[0]; // True zero-area collapse.
     if(kind==4) bad.omega_midpoint[3].z=std::numeric_limits<double>::infinity();
     if(kind==5) ApplyMode(bad,0,4./bad.dt); // Late finite-input THKN rejection.
     const auto bad_bytes=Bytes(bad);

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import runpy
 
-MANIFEST_SHA256 = "697200fbfdc7f250097a1241a18377e670b645d927119e17820a254e07c8216b"
+MANIFEST_SHA256 = "e2fd8accd61d0ce3ce6749f8c2e0f9aa198cf09ff6294615b05e48e99e868505"
 
 
 def verify():
@@ -31,6 +31,7 @@ def verify():
         if hashlib.sha256(baseline_bytes).hexdigest() != baseline["sha256"]:
             raise RuntimeError("Historical Q3 manifest changed: " + stage)
     runpy.run_path(str(directory.parent / "qeph_private_trial/verify_sources.py"))["verify"]()
+    runpy.run_path(str(directory.parent / "qeph_current_domain/verify_sources.py"))["verify"]()
     count = 0
     for group in ("ported_files", "shared_and_native_dependencies", "tests", "donor_routines"):
         for entry in manifest[group]:

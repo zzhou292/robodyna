@@ -1,4 +1,6 @@
 #include "QephKinematicsFixture.h"
+#include "lib_utest/qualification/qeph_current_domain/FrozenCurrentFrame.h"
+#include "lib_src/math/ScalarBits.h"
 
 namespace {
 using namespace qeph_kinematics_test;
@@ -123,6 +125,36 @@ TEST(QephKinematicsPort, CommonWorldRotationCovarianceIncludesWarpedProjectionAn
       qeph_kinematics_test::Agreement(b,a,in,false,kCovariance);
       for(unsigned n=0;n<3;++n) Field(Column(b.frame,n),Rotate(CommonRotation(),Column(a.frame,n)),1,kCovariance);
     }
+  }
+}
+
+TEST(QephKinematicsPort, CurrentMeanFrameIsBitIdenticalInsideTheFormerAdmittedDomain) {
+  for(unsigned fixture=0;fixture<kCases;++fixture)for(unsigned shift=0;shift<4;++shift)
+    for(bool transform:{false,true})for(unsigned pattern=0;pattern<3;++pattern) {
+      const auto interval=qeph_kinematics_test::Reparameterize(Pattern(Case(fixture),pattern),shift,transform);
+      port::Matrix3 old_frame{},current_frame{};double old_area=0,current_area=0;
+      ASSERT_EQ(tl::qualification::qeph_current_domain::FrozenCurrentFrame(interval.position_endpoint,old_frame,old_area),port::Status::kSuccess);
+      ASSERT_EQ(port::detail::CurrentFrame(interval.position_endpoint,current_frame,current_area),port::Status::kSuccess);
+      for(unsigned i=0;i<9;++i)EXPECT_TRUE(tl::math::SameScalarBits(old_frame.v[i],current_frame.v[i]));
+      EXPECT_TRUE(tl::math::SameScalarBits(old_area,current_area));
+    }
+}
+
+TEST(QephKinematicsPort, CurrentConcavityAndCoincidentCornerDoNotRelaxStartupReferenceChecks) {
+  const auto input=Case(1);port::ReferenceData ref;
+  ASSERT_EQ(port::InitializeReference(input,ref),port::Status::kSuccess);
+  const auto saved=Bytes(ref);
+  for(unsigned kind:{3u,7u}) {
+    SCOPED_TRACE(kind);
+    const auto interval=ExtendedCurrentInterval(kind);
+    port::Kinematics result;
+    ASSERT_EQ(port::EvaluatePrescribed(ref,interval,result),port::Status::kSuccess);
+    EXPECT_GT(result.area,0.);EXPECT_TRUE(port::detail::Proper(result.frame));
+    auto startup=input;
+    for(unsigned n=0;n<4;++n)startup.position[n]=interval.position_endpoint[n];
+    port::ReferenceData unsupported;
+    EXPECT_EQ(port::InitializeReference(startup,unsupported),port::Status::kUnsupportedGeometry);
+    EXPECT_EQ(Bytes(ref),saved);
   }
 }
 

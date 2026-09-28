@@ -55,8 +55,13 @@ ReferenceData is the caller-immutable successful startup result. Sanity checks
 reject missing preparation, invalid material/IDs, improper frame, nonfinite
 stored geometry and nonpositive mass/inertia. They do not authenticate
 coordinated finite mutations or recompute complete startup on every call.
-Current positions must satisfy the Q3a determinant exclusion and conditioned
-projected convexity domain using actual engine arithmetic. All observable and
+Current positions use ENGINE mean-frame arithmetic with the retained
+determinant floor exclusion (including its64epsilon band), a proper frame and
+positive area. TL startup/reference geometry still requires conditioned
+projected convexity; the current deformed geometry no longer inherits that
+startup qualification restriction. See the [current-domain extension](../qeph_current_domain/README.md)
+for source reversal, positive shape coverage and separate raw-native proof.
+The historical Q3b test counts and execution receipts below remain unchanged. All observable and
 retained work values must be finite; area, reciprocal area, characteristic
 length and nodal factors must be positive. Every failure leaves the complete
 caller output bytes unchanged; reference and interval are never modified.

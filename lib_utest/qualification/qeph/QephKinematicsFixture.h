@@ -183,19 +183,27 @@ inline void AffineTruth(const port::Kinematics& result,const port::ReferenceInpu
     Field(result.hourglass_rate[i],hg,i==2||i==3?1:l);
   }
 }
+inline port::PrescribedInterval ExtendedCurrentInterval(unsigned kind) {
+  auto in=Stationary(Case(1));
+  // Former runtime-negative cases: the current mean frame remains valid.
+  // They are still invalid startup/reference geometry.
+  if(kind==3) in.position_endpoint[3]=in.position_endpoint[0];
+  if(kind==7) in.position_endpoint[2]={-.2,0,0};
+  return in;
+}
 inline port::PrescribedInterval InvalidInterval(unsigned kind) {
   auto in=Stationary(Case(1));
   if(kind==0) in.dt=0;
   if(kind==1) in.base_time=1e30; // finite but nonadvancing represented endpoint
   if(kind==2) in.position_endpoint[3].z=std::numeric_limits<double>::quiet_NaN();
-  if(kind==3) in.position_endpoint[3]=in.position_endpoint[0];
+  if(kind==3) for(auto& x:in.position_endpoint)x=in.position_endpoint[0]; // Complete collapse.
   if(kind==4) in.omega_midpoint[3].x=std::numeric_limits<double>::infinity();
   if(kind==5) {
     in.velocity_midpoint[0].x=std::numeric_limits<double>::max();
     in.velocity_midpoint[2].x=-std::numeric_limits<double>::max(); // late difference overflow
   }
   if(kind==6) in.dt=std::numeric_limits<double>::max(),in.base_time=in.dt;
-  if(kind==7) in.position_endpoint[2]={-.2,0,0};
+  if(kind==7) for(unsigned n=0;n<4;++n)in.position_endpoint[n]={double(n),0,0}; // Collinear.
   return in;
 }
 inline void CorruptReference(port::ReferenceData& ref,unsigned kind) {

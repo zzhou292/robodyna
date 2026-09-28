@@ -114,6 +114,20 @@ TEST(QephForceCuda, IndependentPhysicalStressMomentsAndAcceptedByValueSequence) 
   }
 }
 
+TEST(QephForceCuda, CoincidentCurrentCornerKeepsFiniteForceAndAcceptedHistoryOnDevice) {
+  DevicePacket device;ASSERT_EQ(device.Allocate(),cudaSuccess);
+  const auto input=Case(0);Packet p;
+  ASSERT_EQ(port::InitializeReference(input,p.reference),port::Status::kSuccess);
+  ASSERT_EQ(port::PreparePrescribedHistory(p.reference,Seed(input,true),{.125,72},p.base),port::Status::kSuccess);
+  p.interval=Next(input,p.base,.001);p.interval.position_endpoint[3]=p.interval.position_endpoint[0];
+  const auto base=Bytes(p.base),reference=Bytes(p.reference);
+  port::ForceTrial expected;
+  ASSERT_EQ(port::EvaluateForce(p.reference,p.base,p.interval,expected),port::Status::kSuccess);
+  ASSERT_EQ(device.Run(p),cudaSuccess);Guards(p);ASSERT_EQ(p.status,port::Status::kSuccess);
+  ForceAgreement(p.output,expected,input,p.interval);
+  EXPECT_EQ(Bytes(p.base),base);EXPECT_EQ(Bytes(p.reference),reference);
+}
+
 TEST(QephForceCuda, ForeignStaleAndLateThicknessFailurePreserveCompleteOutputThenRetry) {
   DevicePacket device;
   ASSERT_EQ(device.Allocate(),cudaSuccess);

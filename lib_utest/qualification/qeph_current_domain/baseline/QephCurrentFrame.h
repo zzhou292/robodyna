@@ -34,10 +34,7 @@ TL_QEPH_HD inline Status CurrentFrame(const Vec3 (&x)[4],Matrix3& f,double& area
   f={{e1x,e2x,e3x,e1y,e2y,e3y,e1z,e2z,e3z}};
   area=.25*det;
   if (!Proper(f)||!Positive(area)) return Status::kNonfiniteResult;
-  // ENGINE current geometry uses this finite positive mean frame. The
-  // startup/reference convexity restriction is not a current-shape condition.
-  // All downstream geometry, projection and force checks remain authoritative.
-  return Status::kSuccess;
+  return ConvexProjection(x,f)?Status::kSuccess:Status::kUnsupportedGeometry;
 }
 
 TL_QEPH_HD inline Status CurrentGeometry(const PrescribedInterval& interval,GeometryWork& g) {

@@ -1,0 +1,43 @@
+{
+  "baseline_commit": "37f9e91116c3a8cb26c7f122682cd5c99ae2e2e9",
+  "scope": "Current mean-frame domain only. Startup/source convexity and all numerical bodies are preserved. Native and numerical tests remain required.",
+  "changes": [
+    {
+      "path": "lib_src/elements/qeph/QephCurrentFrame.h",
+      "baseline_file": "baseline/QephCurrentFrame.h",
+      "before_sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e",
+      "after_sha256": "1497c780dd2b6b4c8741fd07a3b4d3568e46a603224799ae17a900cb6317d903",
+      "before": "  return ConvexProjection(x,f)?Status::kSuccess:Status::kUnsupportedGeometry;",
+      "after": "  // ENGINE current geometry uses this finite positive mean frame. The\n  // startup/reference convexity restriction is not a current-shape condition.\n  // All downstream geometry, projection and force checks remain authoritative.\n  return Status::kSuccess;"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephKinematics.h",
+      "baseline_file": "baseline/QephKinematics.h",
+      "before_sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663",
+      "after_sha256": "3b20c31786537dcac06b361d5a54b317058e76b71309875630e617a69efd4117",
+      "before": "// Current geometry uses the declared Q3a determinant/convexity thresholds,\n// but the actual ENGINE frame arithmetic. Every observable must be finite.",
+      "after": "// Current geometry uses ENGINE mean-frame arithmetic with the retained\n// determinant floor exclusion. Startup/reference convexity remains separate.\n// Every observable must be finite."
+    }
+  ],
+  "unchanged": {
+    "lib_src/elements/qeph/QephStartup.h": "da4cd3435755e73ab466996a7f24d39670c9aa1589fed65417d3bcba5ccf1957",
+    "lib_src/elements/qeph/QephStartupFrame.h": "36b65c6c570e7314fda752f07b1aa48c5543aff4cf6f043d4ea476ff23cbada4",
+    "lib_src/elements/qeph/QephProjection.h": "568878aa2fa3cf406fcf3ec9284728024873e19b1d53d3306e9693fec71443e5",
+    "lib_src/elements/qeph/QephProjectionInverse.h": "608a5890d52ccb79ae6196bfdab6b939b7d0124f2c3b3df8d398b2641acf34b5",
+    "lib_src/elements/qeph/QephProjectionUnits.h": "4783e0b2e59d6ff094d1184bea00fe53cde48b8d866aaffc6812d183fa10c153",
+    "lib_src/elements/qeph/QephRates.h": "a36f7af8c4bb42095085e8894a5ce8bb56e38475d0e12f01c02ff12d0b5fa068",
+    "lib_src/elements/qeph/QephVelocityCorrection.h": "f09752adf0b4086fa67a5c6fd4bc2ef481632a5d5eb7db79d1fc2b8a35166eef",
+    "lib_src/elements/qeph/QephForce.h": "7bdfa1ab27fe155d131bb035b9663082b5d291b63c1a567e47056da6810158eb",
+    "lib_src/elements/qeph/QephLayeredForceCore.h": "d0ed04f5724fb98420035f60581a55a28f0661cf9e9e5ba15965d6a1bc3a9c88",
+    "lib_src/elements/qeph/QephLayeredLaw1.h": "5adb0ac06c25d662eba77806087ecf8ad9cf512e04d4bf4c68350f2fef261adb",
+    "lib_src/elements/qeph/QephBatchOperations.cu": "ef5ced05fe5a5cdc378ed5643e61cfb73289f239c4302425bfdb4992658689cb",
+    "lib_src/elements/qeph/QephBatchKernels.cu": "ac3e62ae25bf6f45c4524381d38d68e7851594895f0518f130de1dc3f6af48ee"
+  },
+  "frozen_comparator": {
+    "path": "FrozenCurrentFrame.h",
+    "sha256": "673c6878e116a4dada9bf3df902fe8d064fa8e26643e6f2dfdca970f43a11dd6",
+    "baseline_function": "CurrentFrame",
+    "function": "FrozenCurrentFrame",
+    "scope": "Exact complete function text after renaming only; source helper arithmetic retained."
+  }
+}
