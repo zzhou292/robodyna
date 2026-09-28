@@ -35,8 +35,8 @@ PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* 
         std::size_t bytes = 0;
         const auto parsed = std::from_chars(text.data(), text.data() + text.size(), bytes);
         if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
-            !bytes || bytes > output::kArtifactFileCap)
-            throw std::invalid_argument("Preview artifact byte limit must be an unsigned decimal in 1..33554432");
+            !bytes)
+            throw std::invalid_argument("Preview artifact byte limit must be a positive unsigned decimal");
         result.artifact_file_bytes = bytes;
     }
     return result;

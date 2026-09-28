@@ -55,7 +55,8 @@ void RunAcceptedQualification(bool execute, bool preview) {
             // Explicit full-preview archive allowance. The concrete complete
             // archive forecast is inspected before the owning launch.
             run_config.archive_bytes = records::FullRunByteCap;
-            run_config.artifact_file_bytes = preview_controls.artifact_file_bytes;
+            if (preview_controls.artifact_file_bytes)
+                run_config.artifact_file_bytes = *preview_controls.artifact_file_bytes;
         }
         const auto input = selection.Prepare();
         const auto extras=selection.extra_retained_bytes();

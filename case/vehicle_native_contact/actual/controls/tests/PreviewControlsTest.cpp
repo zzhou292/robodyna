@@ -71,15 +71,16 @@ TEST_F(NativePreviewControls, DefaultsAndExplicitZeroLeaveTheExistingLoopUnbound
     }
 }
 TEST_F(NativePreviewControls, ExplicitArtifactLimitIsStrictAndDoesNotChangeRunControls) {
-    EXPECT_EQ(ParsePreviewControls(nullptr, nullptr).artifact_file_bytes, 32u << 20);
+    EXPECT_FALSE(ParsePreviewControls(nullptr, nullptr).artifact_file_bytes);
     const auto selected = ParsePreviewControls(nullptr, nullptr, nullptr, "25165824");
-    EXPECT_EQ(selected.artifact_file_bytes, 24u << 20);
+    ASSERT_TRUE(selected.artifact_file_bytes);
+    EXPECT_EQ(*selected.artifact_file_bytes, 24u << 20);
     const auto controls = MakePreviewControl(selected);
     EXPECT_EQ(controls.maximum_elapsed_s, 0);
     EXPECT_EQ(controls.maximum_accepted_intervals, 0u);
     EXPECT_FALSE(controls.stop_requested);
     EXPECT_FALSE(selected.stage_timing);
-    for (const auto* text : {"", "0", "-1", "+1", "33554433", "25165824 ", " 25165824",
+    for (const auto* text : {"", "0", "-1", "+1", "25165824 ", " 25165824",
                             "24MiB", "2.5", "18446744073709551616"})
         EXPECT_THROW(ParsePreviewControls(nullptr, nullptr, nullptr, text), std::exception) << text;
 }
