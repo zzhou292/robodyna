@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include <algorithm>
+#include <iostream>
 namespace crash::cases::vehicle_native_contact::activity {
 namespace {
 std::string Required(const char* key) {
@@ -21,6 +22,11 @@ TEST(NativeActivitySourceActual, AuthenticatedV6CoverageAndSourcePlanForecastNee
     const modelio::solid_control_packets::Artifact artifact{Required("ROBO_NATIVE_SOLID_PACKETS"),std::stoull(bytes),
         Required("ROBO_NATIVE_SOLID_PACKETS_SHA256"),"native_v6_raw8_heph_explicit_cin28"};
     const auto original=source::OriginalSources::Prepare(Paths(),artifact);const auto inputs=original.inputs();
+    const auto* post=inputs.self.snapshot().post_gapm;ASSERT_NE(post,nullptr);
+    std::cout<<"V6 source reader_idel="<<inputs.controls.raw_controls().reader_idel
+        <<" pre_shell_internal="<<post->pre_shell_internal_count
+        <<" incoming_erosion="<<static_cast<unsigned>(post->incoming_solid_erosion)
+        <<" final_erosion="<<static_cast<unsigned>(post->final_solid_erosion)<<std::endl;
     const auto declaration=Declaration::Prepare(inputs);const auto& c=declaration.coverage();
     EXPECT_EQ(c.physical_nodes,376934u);EXPECT_EQ(c.shells.executed,349645u);EXPECT_EQ(c.solids.executed,4980u);
     EXPECT_EQ(c.type13,4442u);EXPECT_EQ(c.beam18,142u);EXPECT_EQ(c.welds,2828u);EXPECT_EQ(c.joints,44u);

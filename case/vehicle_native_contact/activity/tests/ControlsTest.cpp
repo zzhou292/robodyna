@@ -13,7 +13,11 @@ TEST(NativeActivityDeclaration, OriginalSelfAndDeclaredWallKeepDifferentDeletion
 TEST(NativeActivityDeclaration, UnknownOrDifferentSourceControlsRejectRatherThanDefault) {
     values::RawControls raw;
     for(int value:{-1,0,2,3}){raw.reader_idel=value;EXPECT_THROW(values::Self(raw,s::SolidErosion::Enabled),std::exception);}
-    raw.reader_idel=1;EXPECT_THROW(values::Self(raw,s::SolidErosion::Disabled),std::exception);
+    raw.reader_idel=1;
+    EXPECT_THROW(values::Self(raw,s::SolidErosion::Unspecified),std::exception);
+    const auto no_internal=values::Self(raw,s::SolidErosion::Disabled);
+    EXPECT_EQ(no_internal.solid_erosion,s::SolidErosion::Disabled);
+    EXPECT_EQ(no_internal.deletion,native::Deletion::ContainingElement);
     EXPECT_THROW(values::Wall(raw,0),std::exception);
     raw.reader_idel=0;
     EXPECT_THROW(values::Wall(raw,1),std::exception);

@@ -5,8 +5,10 @@ policy, the source contact law, or a runtime mask/history. The owning case must
 explicitly opt in and authenticate the actual TYPE45 model through the physical
 publication before using these controls.
 
-The original self source resolves to positive I_DEL1, keep-node0 and enabled
-post-GAPM solid erosion. The additional mesh wall resolves to I_DEL0 and retains
+The original self source resolves to positive I_DEL1 and keep-node0. Its final
+solid-erosion flag follows the authenticated post-GAPM result; native GAPM clears
+it when the pre-shell NSOL_INT count is zero. The declaration rechecks that rule
+instead of inferring the flag from the presence of solids. The additional mesh wall resolves to I_DEL0 and retains
 its own secondary coefficients. These controls come from the existing original
 card/default resolver and the actual post-GAPM/wall source declarations.
 
