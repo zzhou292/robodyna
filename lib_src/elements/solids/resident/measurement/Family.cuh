@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "Read.h"
+#include "Channels.h"
 namespace tl::fea::solids::batch_detail::measurement {
 template<class Traits>
 __device__ inline bool Measure(Storage& state,Control& control,unsigned family_index,
@@ -11,22 +11,29 @@ __device__ inline bool Measure(Storage& state,Control& control,unsigned family_i
   __syncthreads();
   for(std::size_t first=0;first<family.count;first+=Threads) {
     const auto remaining=family.count-first;
-    const unsigned count=remaining<Threads ? unsigned(remaining) : Threads;
-    if(lane<count) Read<Traits>(tile,lane,family,first+lane,view!=nullptr);
+    const unsigned count=remaining<Threads?unsigned(remaining):Threads;
+    if(lane<count)Read<Traits>(tile,lane,family,first+lane,view!=nullptr);
+    const bool invalid=lane<count && (tile.status[lane]!=0 || tile.valid[lane]!=1);
+    const unsigned mask=__ballot_sync(0xffffffffu,invalid);
+    if((lane&31)==0)tile.invalid[lane/32]=mask;
+    if(!lane)SeedChannels(tile,control.diagnostics,family_index);
     __syncthreads();
-    if(!lane) for(unsigned local=0;local<count;++local) {
-      if(tile.status[local]!=0 || tile.valid[local]!=1) {
-        control.status=tile.status[local] ? BatchStatus::ElementFailure : BatchStatus::NonfiniteResult;
-        control.family=Traits::family;control.parent=first+local;control.element_status=tile.status[local];
-        tile.proceed=false;break;
-      }
-      const auto value=Load<Traits>(tile,local,view!=nullptr);
-      if(!AccumulateMeasurementOperand<Traits>(control,family_index,first+local,value,view)) {
-        tile.proceed=false;break;
-      }
+    const bool serial=tile.invalid[0] || tile.invalid[1];
+    if(!serial) {
+      if(lane<4)ScalarChannel(tile,lane,count);
+      if(lane==4)MinimumChannel(tile,count);
+      if(lane==32 || lane==33)WorkChannel<Traits::nodes>(tile,lane-28,count,view!=nullptr);
     }
     __syncthreads();
-    if(!tile.proceed) break;
+    if(!lane) {
+      // Speculative channels never touch Control. Replay recovers every field
+      // through the exact first failure, including all failing-parent writes.
+      if(serial || !ChannelsFinite(tile))
+        tile.proceed=ReplayTile<Traits>(control,family_index,first,count,view,tile);
+      else StoreChannels(tile,control.diagnostics,family_index);
+    }
+    __syncthreads();
+    if(!tile.proceed)break;
   }
   return tile.proceed;
 }
