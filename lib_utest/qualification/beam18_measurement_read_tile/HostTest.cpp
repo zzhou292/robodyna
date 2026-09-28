@@ -2,7 +2,7 @@
 #include "Support.h"
 namespace beam18_read_tile_test {
 TEST(Beam18ReadTileHost, RefactoredFoldPreservesFrozenParentFailureAndPartialDiagnostics) {
-  b::Parent parent;parent.reference=beam18_force_test::Reference();parent.domain_nodes[0]=0;parent.domain_nodes[1]=1;
+  b::Parent parent;parent.material_index=0;parent.reference=beam18_force_test::Reference();parent.domain_nodes[0]=0;parent.domain_nodes[1]=1;
   auto material=beam18_force_test::Material(parent.reference);b::ForceTrial value;
   ASSERT_EQ(b::InitializeForce(parent.reference,material,{},value),b::Status::Success);
   int status=0;d::Storage s;s.parents=&parent;s.materials=&material;s.slab[0]=s.slab[1]=&value;s.status=&status;s.count=1;

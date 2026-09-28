@@ -5,7 +5,7 @@
 namespace beam18_read_tile_test {
 __global__ void Current(d::Storage*s,fe::NodalPreparedView v,b::BatchDiagnostics seed,bool initial){__shared__ tile::Tile stage;tile::Finalize(*s,0,initial?0:1,v,seed,initial,stage);}
 __global__ void Probe(d::Storage*s,fe::NodalPreparedView v,int*out){
- const auto&p=s->parents[0];const auto&n=s->slab[1][0];const auto&m=s->materials[0];
+ const auto&p=s->parents[0];const auto&n=s->slab[1][0];const auto&m=s->materials[p.material_index];
  out[0]=d::ValidResult(p,m,n,0,0);out[1]=b::force_detail::MaterialValid(p.reference,m);out[2]=b::force_detail::SameReference(p.reference,n.proposed_history.reference());
  out[3]=b::force_detail::SameMaterial(m,n.proposed_history.material());out[4]=b::force_detail::HistoryValid(m,n.proposed_history.values());
  fe::beam_endpoint::Motion a,z;out[5]=fe::beam_endpoint::Gather(p.domain_nodes,v.base_kinematics,a);out[6]=fe::beam_endpoint::Gather(p.domain_nodes,v.kinematics,z);
