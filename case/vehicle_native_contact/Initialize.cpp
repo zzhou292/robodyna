@@ -1,5 +1,6 @@
 #include "Storage.h"
 #include "case/vehicle_dynamics/Storage.h"
+#include "case/vehicle_dynamics/native_contact/Group.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_native_contact {
 vehicle_dynamics::VehiclePhysicalDynamics VehicleContactStartup::Initialize() const {
@@ -35,6 +36,16 @@ vehicle_dynamics::VehiclePhysicalDynamics VehicleContactStartup::Initialize() co
         group[count++] = {entry.role, std::move(transaction)};
     }
     dynamics.InstallNativeContact(vehicle_dynamics::native_contact::Group::Adopt(std::move(group), count));
+    const auto* installed = dynamics.native_contact_group();
+    output::Require(installed && installed->count() == count, "Native activity group was not installed");
+    const std::uint64_t initial_activity = data.config.activity == n::ContactActivityPolicy::ShellRemoval ? 1 : 0;
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto selected = installed->transaction(i).accepted();
+        output::Require(selected.available && selected.selectors.activity == 0 &&
+                            selected.selectors.activity_generation == initial_activity &&
+                            selected.selectors.reference_activity_generation == 0,
+                        "Installed native source activity differs from the declared case policy");
+    }
     output::Require(dynamics.allocations().device_bytes == data.forecast.steady_device_bytes &&
                         !dynamics.allocations().device_allocation_count_complete,
                     "Complete physical/native device byte accounting differs from the actual installed group");
