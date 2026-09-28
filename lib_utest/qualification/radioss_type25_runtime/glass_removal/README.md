@@ -31,10 +31,16 @@ Both interfaces use the existing `initial_source::PrepareSource` and
 `Transaction::GeneralInitialize` path, including genuine Starter-normal input,
 fixed-wall ready-normal authentication, complete two-interface census and
 source-derived geometric exclusions. This is the same initialization API used
-by the vehicle. Cold empty-history initialization did not produce a nonzero
-saved wall stiffness in this initially overlapping INACTI5 fixture; its failed
-witness receipt remains evidence. The stronger wall-history witness is kept,
-and no history field is seeded by the test.
+by the vehicle. No history field is seeded by the test.
+
+The contact coefficient range is explicitly[0,1e30], as in the existing
+MovingCacheRig mechanics fixture. The reused source-admission helper defaults
+KMAX to zero; carrying that admission-only default into the first version of
+this coupon clamped every incoming contact coefficient to zero. The strong
+wall-history and actual-force witnesses caught that fixture error. Its failed
+receipts are preserved; GeneralInitialize alone did not fix that zero clamp.
+The correction changes only the declared synthetic contact clamp, preserving
+the original glass material/failure, geometry, physical loads and timestep.
 
 The contact-response witness reads each interface's actual endpoint force and
 couple additions separately, excluding STI-only changes. Both must be nonzero

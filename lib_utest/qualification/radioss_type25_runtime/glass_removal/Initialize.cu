@@ -27,6 +27,11 @@ void Rig::Initialize() {
   Check(publication.InitializePhysical(owner,physical,base.rigid,base.Witnesses(),Participants(),Identity()));
   self_source.Initialize(base,source,false);wall_source.Initialize(base,source,true);
   auto config=type25_source_test::Fixture::Config();
+  // SourceAdmissionFixture defaults to a zero clamp for admission-only tests.
+  // This mechanics coupon declares the same open coefficient range as the
+  // existing MovingCacheRig, admitting its explicit1e6 source coefficients.
+  config.lifecycle.minimum_coefficient=0;
+  config.lifecycle.maximum_coefficient=1e30;
   config.response_mass=n::ResponseMassPolicy::AcceptedOwnerCoefficients;
   config.physical_source=n::PhysicalSourceProfile::CompleteBoundLedger;
   config.activity=n::ContactActivityPolicy::ShellRemoval;
