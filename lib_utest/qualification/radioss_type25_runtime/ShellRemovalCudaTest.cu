@@ -5,6 +5,11 @@
 #include <cstring>
 namespace type25_source_test {
 namespace {
+bool ForceAdded(const std::vector<double>& before,const std::vector<double>& after,std::size_t nodes) {
+  if(before.size()!=after.size()||before.size()<3*nodes)return false;
+  for(std::size_t i=0;i<3*nodes;++i)if(before[i]!=after[i])return true;
+  return false;
+}
 struct AcceptedHistory {
   std::vector<n::NativeGeometryHistory> rows;
   std::vector<int> flags;
@@ -30,7 +35,9 @@ TEST(NativeShellRemovalCuda, RealRemovalCommitsThenRebuildsSearchAndContinues) {
   FullLedgerAttempt a;
   ASSERT_NO_THROW(rig.Begin(a));
   ASSERT_NO_THROW(rig.RemovalLoad(a));
+  const auto structural_force=rig.Force(a);
   ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,a.token,a.assembly)));
+  EXPECT_TRUE(ForceAdded(structural_force,rig.Force(a),rig.m.size()));
   ASSERT_GT(rig.contact.last_diagnostics().active_forces,0u);
   ASSERT_NO_THROW(rig.Prepare(a));
   ASSERT_NO_THROW(rig.Seal(a));
@@ -94,8 +101,8 @@ TEST(NativeShellRemovalCuda, LateCommonRejectionPreservesHistoryAndRetriesRemova
   ASSERT_NO_THROW(rig.Warm(1));
 }
 TEST(NativeShellRemovalCuda, NoRemovalPreservesLegacyForceAndHistoryValues) {
-  FullLedgerRig old(true);ShellRemovalRig next(2.5);
-  ASSERT_NO_THROW(old.Initialize());
+  ShellRemovalRig old(2.5),next(2.5);
+  ASSERT_NO_THROW(old.InitializeRemoval(n::ContactActivityPolicy::AllActivePrefix));
   ASSERT_NO_THROW(next.InitializeRemoval());
   for(unsigned step=0;step<4;++step) {
     FullLedgerAttempt a,b;
