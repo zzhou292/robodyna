@@ -7,6 +7,7 @@
 #include "../vehicle_startup/TiedCinWitnessActivity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <array>
+#include "diagnostics/qeph_rejection/Capture.h"
 namespace crash::cases::vehicle_dynamics {
 struct VehiclePhysicalDynamics::Storage {
     Storage(vehicle_runtime::VehiclePhysicalStartup&& value,Config c,Forecast f);
@@ -19,6 +20,7 @@ struct VehiclePhysicalDynamics::Storage {
     std::unique_ptr<detail::SelfContactContribution> self_contact;
     std::unique_ptr<native_contact::Group> native_contact;
     tl::fea::NodalUniformMotionObserver motion;
+    std::unique_ptr<diagnostics::qeph_rejection::CaptureState> qeph_capture;
     std::array<StepObservation,2> observations;
     tl::fea::NodalTrialToken token;
     tl::fea::NodalPreparedView prepared;

@@ -84,6 +84,13 @@ TEST_F(NativePreviewControls, ExplicitArtifactLimitIsStrictAndDoesNotChangeRunCo
                             "24MiB", "2.5", "18446744073709551616"})
         EXPECT_THROW(ParsePreviewControls(nullptr, nullptr, nullptr, text), std::exception) << text;
 }
+TEST_F(NativePreviewControls, QephDiagnosticCaptureRequiresExplicitBooleanOptIn) {
+    EXPECT_FALSE(ParsePreviewControls(nullptr, nullptr).capture_qeph_rejection);
+    EXPECT_FALSE(ParsePreviewControls(nullptr, nullptr, nullptr, nullptr, "0").capture_qeph_rejection);
+    EXPECT_TRUE(ParsePreviewControls(nullptr, nullptr, nullptr, nullptr, "1").capture_qeph_rejection);
+    for (const auto* value : {"", "true", "false", "2", "-1", "1 "})
+        EXPECT_THROW(ParsePreviewControls(nullptr, nullptr, nullptr, nullptr, value), std::exception);
+}
 TEST_F(NativePreviewControls, MalformedLimitsAndEmptyOrOversizePathsRejectBeforeRunning) {
     for (const auto* value : {"", "-1", "nan", "inf", "1.2seconds", "3 ", "1e9999"})
         EXPECT_THROW(ParsePreviewControls(value, nullptr), std::exception) << value;

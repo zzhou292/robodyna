@@ -23,7 +23,9 @@ Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Source& sourc
     tl::util::ArenaRegion region;
     output::Require(workspace.Append<unsigned char>(sizeof(Storage),region) &&
         workspace.Append<unsigned char>(result.motion.host_bytes,region) &&
-        workspace.Append<unsigned char>(activity.workspace_bytes,region),
+        workspace.Append<unsigned char>(activity.workspace_bytes,region) &&
+        (!config.capture_qeph_rejection || workspace.Append<unsigned char>(
+            diagnostics::qeph_rejection::CaptureWorkspaceBytes,region)),
         "Complete physical-step workspace exceeds its host cap");
     result.workspace_bytes=workspace.bytes();
     output::Require(result.workspace_bytes<=config.startup.limits.host_bytes &&
@@ -49,6 +51,8 @@ VehiclePhysicalDynamics::Storage::Storage(vehicle_runtime::VehiclePhysicalStartu
     :startup(std::move(value)),config(c),forecast(f),timer(c.timing),
      activity(vehicle_startup::TiedCinWitnessActivity::Create(startup.source().witnesses())),
      stamp(startup.accepted()) {
+    if (config.capture_qeph_rejection)
+        qeph_capture = std::make_unique<diagnostics::qeph_rejection::CaptureState>();
     // Startup already authenticates original owner coordinates against the
     // complete physical domain. The observer captures that same initial X once.
     detail::Require(motion.Initialize(state().owner,config.motion_limits),"Initial physical motion reference");
@@ -62,6 +66,9 @@ VehiclePhysicalDynamics::VehiclePhysicalDynamics(VehiclePhysicalDynamics&&) noex
 VehiclePhysicalDynamics& VehiclePhysicalDynamics::operator=(VehiclePhysicalDynamics&&) noexcept=default;
 const Forecast& VehiclePhysicalDynamics::forecast() const noexcept { return storage_->forecast; }
 StepTimingSnapshot VehiclePhysicalDynamics::timing() const noexcept { return storage_->timer.snapshot(); }
+const diagnostics::qeph_rejection::CaptureState* VehiclePhysicalDynamics::qeph_rejection() const noexcept {
+    return storage_->qeph_capture.get();
+}
 tl::fea::NodalStamp VehiclePhysicalDynamics::accepted() const noexcept { return storage_->stamp; }
 AllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
     const auto physical=storage_->startup.allocations();

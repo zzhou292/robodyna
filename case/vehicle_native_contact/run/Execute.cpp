@@ -49,6 +49,9 @@ RunResult PreparedRun::Execute(const std::filesystem::path& destination, const v
     const auto clock = [&] { return seconds(loop_start); };
     result.loop = vehicle_run::detail::RunLoop(*session, data_->horizon,
         session->archive.forecast().archive.archive.frame_epochs, control, clock);
+    if (const auto* captured = session->dynamics.qeph_rejection())
+        result.qeph_rejection = vehicle_dynamics::diagnostics::qeph_rejection::ExportForRun(
+            *captured, destination);
     result.native = session->native;
     result.archive_manifest = session->manifest;
     result.rejected_native = session->rejected_native;

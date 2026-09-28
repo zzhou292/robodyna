@@ -22,6 +22,7 @@ struct RuntimeForecast;
 namespace crash::cases::vehicle_native_contact { class VehicleContactStartup; }
 namespace crash::cases::vehicle_dynamics {
 namespace native_contact { class Group; }
+namespace diagnostics::qeph_rejection { struct CaptureState; }
 struct AllocationInfo {
     std::size_t device_bytes=0,device_allocations=0;
     // Byte accounting is complete. The native transaction reports payload
@@ -35,6 +36,7 @@ struct Config {
     double maximum_rotation_increment=.2;
     tl::fea::NodalCinStructuralStep structural;
     StepTimingOptions timing;
+    bool capture_qeph_rejection = false; // Failure-only diagnostic; never a restart.
     tl::fea::NodalUniformMotionLimits motion_limits;
 };
 struct Forecast {
@@ -91,6 +93,7 @@ class VehiclePhysicalDynamics {
     AllocationInfo allocations() const noexcept;
     const native_contact::Group* native_contact_group() const noexcept;
     StepTimingSnapshot timing() const noexcept;
+    const diagnostics::qeph_rejection::CaptureState* qeph_rejection() const noexcept;
     // Null on the unchanged free-flight profile. Returned source/budget views
     // remain immutable and valid while the dynamics object is alive.
     const vehicle_wall::VehicleWallSetup* wall_setup() const noexcept;

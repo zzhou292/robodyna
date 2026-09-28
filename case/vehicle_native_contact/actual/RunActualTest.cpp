@@ -35,7 +35,11 @@ void RunAcceptedQualification(bool execute, bool preview) {
         }
         auto config = PreviewResources();
         SourceSelection selection(config,{GuardBytes-ExportBytes});
-        if (preview) config.dynamics.timing.enabled = preview_controls.stage_timing;
+        if (preview) {
+            config.dynamics.timing.enabled = preview_controls.stage_timing;
+            config.dynamics.capture_qeph_rejection = preview_controls.capture_qeph_rejection;
+            output::Boolean(doc, "qeph_rejection_capture_requested", preview_controls.capture_qeph_rejection);
+        }
         config.requested_duration_s = preview ? EnvironmentReal("ROBO_NATIVE_VEHICLE_DURATION_S") :
             2 * config.dynamics.startup.reserved_step_s;
         RunConfig run_config;

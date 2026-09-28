@@ -98,7 +98,11 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     auto& s=state();
     tl::fea::ShellPhysicalDiagnostics d;
     Timed<StepStage::EvaluateQeph>(timer,[&] {
-        return s.qeph.EvaluateCandidate(s.owner,token,prepared,&d.qeph);
+        const auto report = s.qeph.EvaluateCandidate(s.owner,token,prepared,&d.qeph);
+        if (report.status != tl::fea::qeph::BatchStatus::Success && qeph_capture)
+            diagnostics::qeph_rejection::CaptureRejected(*qeph_capture, s.qeph, s.owner,
+                token, prepared, report, s.source.physical());
+        return report;
     },"QEPH candidate");
     Timed<StepStage::EvaluateT3>(timer,[&] {
         return s.t3.EvaluateCandidate(s.owner,token,prepared,&d.t3);

@@ -79,6 +79,9 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
         interfaces.PushBack(Value(one, doc.GetAllocator()), doc.GetAllocator());
     }
     doc.AddMember("interfaces", interfaces, doc.GetAllocator());
+    if (result.qeph_rejection)
+        array_json::Child(doc, "qeph_rejection_capture",
+            vehicle_dynamics::diagnostics::qeph_rejection::ExportDocument(*result.qeph_rejection));
     if (result.rejected_native) {
         Document failure;
         failure.SetObject();

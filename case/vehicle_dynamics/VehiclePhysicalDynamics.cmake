@@ -6,6 +6,8 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../benchmarks/stage_timing/StageTiming.cma
 add_library(robo_dyna_vehicle_physical_dynamics STATIC
   "${CMAKE_CURRENT_LIST_DIR}/VehiclePhysicalDynamics.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/NativeStageError.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/diagnostics/qeph_rejection/Capture.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/diagnostics/qeph_rejection/CaptureValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/native_contact/Installation.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Trial.cpp" "${CMAKE_CURRENT_LIST_DIR}/MotionSummary.cpp")
 target_link_libraries(robo_dyna_vehicle_physical_dynamics PUBLIC

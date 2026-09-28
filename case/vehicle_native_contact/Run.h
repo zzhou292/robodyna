@@ -4,6 +4,7 @@
 #include "case/vehicle_dynamics/native_contact/Error.h"
 #include "output/physical_run/RunArchive.h"
 #include "output/physical_frames/PhysicalAcceptedFrames.h"
+#include "case/vehicle_dynamics/diagnostics/qeph_rejection/Export.h"
 namespace crash::cases::vehicle_native_contact {
 namespace records = output::full_shell;
 struct RunConfig {
@@ -39,6 +40,7 @@ struct RunResult {
     std::array<NativeTotals, 2> native;
     std::optional<vehicle_dynamics::native_contact::Failure> rejected_native;
     std::optional<double> rejected_step_limit_s;
+    std::optional<vehicle_dynamics::diagnostics::qeph_rejection::ExportResult> qeph_rejection;
     std::optional<records::RecordFile> archive_manifest, viewer_input, summary;
     std::string viewer_error, summary_error;
 };
