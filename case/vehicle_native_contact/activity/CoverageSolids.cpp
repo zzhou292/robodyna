@@ -15,7 +15,7 @@ tl::fea::SolidCoefficientFamily PhysicalFamily(modelio::solid_source::Family fam
     output::Require(false,"Unknown source solid support family");return B::Solid18;
 }
 }
-Population Solids(const detail::SourceInputs& in,const Canonical& canonical) {
+Population Solids(const detail::SourceInputs& in,const Canonical& canonical,std::size_t index_cap) {
     const auto& source=in.owner.execution_source().mechanical().embedding().source().solid_source().data();
     output::Require(source.policy==modelio::solid_source::Policy::NativeConvertedSupportsV6,
         "Activity support requires the explicit native V6 raw8 solid source");
@@ -26,7 +26,7 @@ Population Solids(const detail::SourceInputs& in,const Canonical& canonical) {
     const auto& physical=in.owner.physical();const auto* solids=physical.coefficients()->solids();
     output::Require(solids&&solids->parents().size()==source.rows.size(),"Activity solid coverage differs from the actual physical roster");
     tlfea::contact::radioss_type25::runtime_detail::physical_main::Index index;
-    const auto indexed=index.Initialize(physical,32u<<20);output::Require(indexed.status==tlfea::contact::radioss_type25::TransactionStatus::Ok,indexed.message);
+    const auto indexed=index.Initialize(physical,index_cap);output::Require(indexed.status==tlfea::contact::radioss_type25::TransactionStatus::Ok,indexed.message);
     for(const auto& row:source.rows) {
         const auto ordinal=index.SolidOrdinal(row.element_id);output::Require(ordinal<solids->parents().size(),"Selected solid has no physical support row");
         const auto& actual=solids->parents()[ordinal];
