@@ -103,6 +103,13 @@ class HostStorage {
   bool SameFailureScope(const HostStorage&) const noexcept;
   std::unique_ptr<MixedHostStorage> mixed_; // Explicit mode only, same caller-provided slab index.
   std::unique_ptr<OnePointHostStorage> one_point_; // Optional T3 payload, no selector.
+  // Only the immutable source scan is certified. Selected slabs and all device
+  // flags remain fresh. HostStorage/readback has the existing single-owner use.
+  mutable const ShellBatchPlasticityBinding* activity_source_catalog_=nullptr;
+  mutable const MixedHostStorage* activity_source_mixed_=nullptr;
+  void InvalidateActivitySources() noexcept {
+    activity_source_catalog_=nullptr;activity_source_mixed_=nullptr;
+  }
   SetupReport InitializeSections(const ShellBatchPlasticityBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t,std::size_t,bool);
 };

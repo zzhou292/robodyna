@@ -57,6 +57,7 @@ SetupReport HostStorage::InitializeCollection(const ShellBatchPlasticityBinding&
   error=cudaMemcpy(candidate,arena.data(),layout.bytes,cudaMemcpyHostToDevice);
   if(error!=cudaSuccess) { cudaFree(candidate); return {SetupStatus::DeviceFailure,"Collection plastic section initialization copy failed",error}; }
   device_=candidate; device_header_=header; layout_=layout;
+  InvalidateActivitySources();
   element_count_=count; collection_=std::move(owned);
   return {SetupStatus::Success,"OK"};
 } catch(const std::bad_alloc&) { return {SetupStatus::ResourceLimit,"Collection plasticity host allocation failed"}; }

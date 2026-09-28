@@ -1,0 +1,34 @@
+{
+  "baseline": "1c8cf7e73a475075a3665c800779b8daf7a0be60",
+  "scope": "Only four production files differ; original scan and all CUDA/readback/math source unchanged. Cache contains two owned-source identities, success only, and every successful collection/mixed publication invalidates it.",
+  "changed_production_files": [
+    {
+      "path": "lib_src/elements/ShellBatchPlasticityStorage.h",
+      "baseline_bytes": 6752,
+      "baseline_sha256": "d1bb4fed4cdec9ff06d3399557f50c2f35f975fcae261921f5188dd1221cfc38",
+      "candidate_bytes": 7177,
+      "candidate_sha256": "7f2556caee232ff9a217a52de0d6fbdc6c61d3e42778844d38da861a5967b443"
+    },
+    {
+      "path": "lib_src/elements/ShellMixedSectionStorage.cpp",
+      "baseline_bytes": 10541,
+      "baseline_sha256": "ef57ff13102456840ce8d4ec8bff7a93732aa692fb6632591d18d7ef353de657",
+      "candidate_bytes": 10971,
+      "candidate_sha256": "dcc574c6306b1e2c413a74675d125f187ace964ed9fc7d54b7c4d67e0404e96b"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchPlasticityCollectionStorage.cpp",
+      "baseline_bytes": 4237,
+      "baseline_sha256": "a905aca6482eaa7cb06fbd8f1dbc4612b83ef84b73ffbbfa6c09d4b38c6eb20d",
+      "candidate_bytes": 4268,
+      "candidate_sha256": "70e5ba3777f62623b23d2aa3ca1c29b5e4eb4238436ccd28d5ba4120d1bbba39"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureCollectionStorage.cpp",
+      "baseline_bytes": 6958,
+      "baseline_sha256": "48ccc3169bfa689d9af90d5d1597aa1510a827e97108e8e366cfa37223ed3028",
+      "candidate_bytes": 6989,
+      "candidate_sha256": "81a6bd9732bacb540fcb9557c7410092fafb55a6182b459f2d758d77c3b7a83a"
+    }
+  ]
+}

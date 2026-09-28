@@ -99,6 +99,7 @@ SetupReport HostStorage::InitializeFailureCollectionImpl(const ShellBatchFailure
     result = point_storage->Initialize(*catalog, binding, count, point_layout);
     if (result.status != SetupStatus::Success) return result;
   }
+  InvalidateActivitySources();
   failure_ = std::move(failure_storage);
   mixed_ = std::move(mixed_storage);
   one_point_ = std::move(point_storage);
