@@ -33,7 +33,8 @@ TransactionReport State::Initialize(const activity_source::Plan& plan, const Con
     nodes[i] = source.selection.secondary[i].node; coefficients[i] = source.selection.secondary[i].coefficient;
   }
   for (std::size_t i = 0; i < shape.mains; ++i)
-    connected[i] = source.selection.mains[i].coefficient < 0 ?
+    connected[i] = plan_view.controls.solid_erosion == startup::SolidErosion::Enabled &&
+        source.selection.mains[i].coefficient < 0 ?
         1 + (plan_view.mains[i].second != activity_source::NoParent) : 0;
   if (cudaMalloc(&next->arena, next->layout.bytes) != cudaSuccess)
     return {S::ResourceLimit, "Contact operand device allocation failed"};

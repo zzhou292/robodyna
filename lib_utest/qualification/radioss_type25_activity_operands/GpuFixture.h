@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "../radioss_type25_runtime/FullLedgerFixture.h"
+#include "MixedSource.h"
 #include "lib_src/collision/radioss_type25/activity_operands/State.h"
 #include "lib_src/collision/radioss_type25/normal_activation/Values.h"
 #include "NativeOracle.h"
@@ -22,6 +22,8 @@ struct Resources {
 // separately exercised by the owning snapshot and transaction integration gates.
 struct GpuFixture {
   type25_source_test::FullLedgerFixture physical;
+  std::unique_ptr<type25_source_test::MixedRuntimeSource> mixed_source;
+  tl::util::HostArena mixed_output,mixed_scratch;
   n::ContactSourceInput source;
   n::activity_source::Plan plan;
   n::current_normals::Topology topology;
@@ -32,15 +34,26 @@ struct GpuFixture {
   a::BorrowedSlot borrowed;
   std::uint8_t *qbase=nullptr,*qcurrent=nullptr,*tbase=nullptr,*tcurrent=nullptr;
   a::State operands;
-  explicit GpuFixture(bool moving=true,bool deletion=true):controls{
-      deletion?n::activity_source::Deletion::ContainingElement:n::activity_source::Deletion::Disabled,
-      false,n::startup::SolidErosion::Disabled},normals(moving) {
-    source=physical.Contact();
-    const auto report=plan.Initialize({physical.physical,nullptr},source,controls);
+  explicit GpuFixture(bool moving=true,bool deletion=true,bool mixed=false,bool erosion=false)
+      :physical(mixed),controls{
+        deletion?n::activity_source::Deletion::ContainingElement:n::activity_source::Deletion::Disabled,
+        false,erosion?n::startup::SolidErosion::Enabled:n::startup::SolidErosion::Disabled},normals(moving) {
+    n::TransactionReport report;
+    if(mixed) {
+      mixed_source=std::make_unique<type25_source_test::MixedRuntimeSource>(physical);
+      if(!erosion)DisableErosion(*mixed_source,mixed_output,mixed_scratch);
+      source=mixed_source->Source();
+      report=plan.Initialize({physical.physical,nullptr},mixed_source->starter,controls);
+    } else {
+      source=physical.Contact();report=plan.Initialize({physical.physical,nullptr},source,controls);
+    }
     if(!Good(report))throw std::runtime_error(report.message);
     const auto& s=physical.starter;
     topology={s.mains,s.node_count,s.primary_count,s.main_count,s.starter.reference_count,
       {s.normal_offsets,s.starter.reference_count+1,s.normal_mains,s.normal_incidence_count}};
+    topology.source_profile=s.profile;topology.source_topology=s.topology;
+    topology.primary_roles=s.primary_roles;topology.primary_role_count=s.primary_role_count;
+    if(mixed)topology.mixed_maps={s.primary_to_partner,s.primary_count};
   }
   a::BorrowedSlot Shape() const {
     a::BorrowedSlot out;out.main_capacity=source.selection.main_count;
@@ -93,6 +106,7 @@ struct GpuFixture {
     EXPECT_TRUE(Good(cudaMemcpyAsync(tcurrent,&t_after,1,cudaMemcpyHostToDevice,resources.stream)));
     EXPECT_TRUE(Good(cudaStreamSynchronize(resources.stream)));
     fe::PhysicalActivityDeviceView v;v.qeph={qbase,qcurrent,{2}};v.t3={tbase,tcurrent,{1}};
+    v.qbat_count=physical.shells.qbat_count();
     v.accepted.owner_id=77;v.accepted.node_count=source.selection.node_count;
     v.stream=resources.stream;v.generation=generation;v.attempt=generation;return v;
   }

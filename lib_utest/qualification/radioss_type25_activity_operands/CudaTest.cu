@@ -52,6 +52,17 @@ TEST(ActivityOperandsCuda, WallDeletionDisabledRetainsEveryOperand) {
   EXPECT_FALSE(report.changed);EXPECT_EQ(report.affected_events,0u);EXPECT_EQ(report.orphan_secondaries,0u);
   const auto next=Read(f,report.staged_slot);Exact(old,next);Compare(f,old,next,Mesh(f,{1,1},{0,0},1,0),report);
 }
+TEST(ActivityOperandsCuda, NegativeMainCounterInitializationObeysFinalErosionDeclaration) {
+  for(bool erosion:{false,true}) {
+    SCOPED_TRACE(erosion);GpuFixture f(true,true,true,erosion);ASSERT_TRUE(f.Initialize());
+    const auto old=Read(f,0);ASSERT_EQ(old.mains.size(),5u);ASSERT_LT(old.mains[2].coefficient,0);
+    for(std::size_t i=0;i<old.connected.size();++i)EXPECT_EQ(old.connected[i],erosion&&i==2?2:0);
+    const auto report=f.operands.Stage(0,f.Activity({1,1},{0,1}));ASSERT_TRUE(Good(report.report));
+    const auto next=Read(f,report.staged_slot);
+    Compare(f,old,next,Mesh(f,{1,1},{0,1},1,1),report);
+    if(!erosion)for(auto count:next.connected)EXPECT_EQ(count,0);
+  }
+}
 TEST(ActivityOperandsCuda, BadActivityAndAliasCannotAlterAcceptedOperands) {
   GpuFixture f;ASSERT_TRUE(f.Initialize());const auto before=Read(f,0);
   for(unsigned repeat=0;repeat<3;++repeat){
