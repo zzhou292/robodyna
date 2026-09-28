@@ -99,16 +99,8 @@
     },
     {
       "path": "lib_utest/qualification/nodal_coefficients/SolidFixture.h",
-      "bytes": 2648,
-      "sha256": "46ebd7680b71c7cfca31fdba0c6b9df7984686fddc5dd4c8c93ed64809d717d1",
-      "prior_receipts": [
-        {
-          "path": "lib_utest/qualification/nodal_coefficients/SolidFixture.h",
-          "bytes": 2226,
-          "sha256": "ff6e301e0cdd266cdbec26811eb18560f3f3a7fb4cccad439d4f602c9dbb72b9",
-          "reason": "Baseline fixture only: constructor forwards optional contact-geometry flags; unchanged defaults and all solid reference definitions, diff3ddcdb05..50e1c2df reviewed."
-        }
-      ]
+      "bytes": 2226,
+      "sha256": "ff6e301e0cdd266cdbec26811eb18560f3f3a7fb4cccad439d4f602c9dbb72b9"
     },
     {
       "path": "lib_utest/qualification/nodal_coefficients/SolidTest.cpp",

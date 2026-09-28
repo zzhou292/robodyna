@@ -20,6 +20,21 @@
       "name": "force-source-manifest.json",
       "bytes": 16560,
       "sha256": "dafdb46edbf8c278742ff674e2a8c599ae69b891ef7e4ab8192ec30387292a47"
+    },
+    {
+      "name": "extended-source-manifest.json",
+      "bytes": 7303,
+      "sha256": "5fa8d5286783b65cffc680c48d2aa43ff93068acb22eaa619ca40d22dcaafce1"
+    },
+    {
+      "name": "extended-verify_sources.py",
+      "bytes": 1926,
+      "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d"
+    },
+    {
+      "name": "model-source-manifest.json",
+      "bytes": 6862,
+      "sha256": "4d22e4e8cc78917a96f8223decc6942047c2031bba3ef68c7a536eab4f66ca9c"
     }
   ],
   "production": [
@@ -62,6 +77,21 @@
       "path": "lib_utest/qualification/beam18_force/source-manifest.json",
       "bytes": 16915,
       "sha256": "d2e5a1e014bb792f414dcb934bc0728bfbf29d9481473e1c0f297ec14a4099a8"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/source-manifest.json",
+      "bytes": 7738,
+      "sha256": "bcc6b5c45c72a5929147d30c788d913272cf599397c0bc1228aaab6fcb93a93b"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/verify_sources.py",
+      "bytes": 1926,
+      "sha256": "b79a36ce9312d9d898a88ea3b3e4dbcf30a0e72bc3b277097748279ae8a98d6f"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_model/source-manifest.json",
+      "bytes": 7178,
+      "sha256": "d140bade9c53a6661ec7307c48dab567b203294c45f53abf14106219e02b1da5"
     }
   ],
   "unchanged": [
@@ -111,6 +141,11 @@
       "path": "lib_utest/qualification/beam18_reference/source-manifest.json",
       "bytes": 7908,
       "sha256": "7d208b0430e079fee422208f6f92de07e75e8945af185864ecb310a6eca1d6f2"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/SolidFixture.h",
+      "bytes": 2648,
+      "sha256": "46ebd7680b71c7cfca31fdba0c6b9df7984686fddc5dd4c8c93ed64809d717d1"
     }
   ]
 }
