@@ -68,8 +68,15 @@
       "sha256": "64123eb743f2d4a92e6a5014a1b97e510c5f3a26dc25b5812068025c6589b9ed"
     },
     "lib_src/elements/beam18/resident/Plan.cpp": {
-      "bytes": 3031,
-      "sha256": "e36484b328e884ab387cbdc5f6e0871c22e165f527e2e11778043e3097791b8c"
+      "bytes": 3037,
+      "sha256": "7e6c71b4bfc36cac20661b15c326db18987b9528be4abd03c7ca9a9b27fd6175",
+      "prior_receipts": [
+        {
+          "bytes": 3031,
+          "sha256": "e36484b328e884ab387cbdc5f6e0871c22e165f527e2e11778043e3097791b8c",
+          "reason": "Baseline50e1c2df; constrained-startup qualified801d467: add ValidStartup third true argument only. No change in this tile candidate."
+        }
+      ]
     },
     "lib_src/elements/beam18/resident/Publication.cpp": {
       "bytes": 2587,
@@ -184,13 +191,18 @@
       "sha256": "04e99db58cb2d9e867ccf582a687db517ed24da7d9a5a4168c1517c4f21da6ca"
     },
     "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel": {
-      "bytes": 2629,
-      "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+      "bytes": 2781,
+      "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f",
       "prior_receipts": [
         {
           "bytes": 2554,
           "sha256": "7fd0e3057c5a858c6343bd1b02341717c493a22851794b1cfc9d722d57aa4ae5",
           "reason": "Add CIN group qualifier fixture visibility only"
+        },
+        {
+          "bytes": 2629,
+          "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+          "reason": "Baseline561026c2 and11370dc1: add CIN force-transfer/recovery qualification visibility only. No production effect."
         }
       ]
     },

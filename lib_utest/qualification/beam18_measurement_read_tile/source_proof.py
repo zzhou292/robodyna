@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse,hashlib,json,re
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2];SOURCE="lib_src/elements/beam18/resident/"
-MANIFEST="2b9077d33c7dc1f989bf71599618fcac07be8606680522cd9bfabc65ec5ba264"
+MANIFEST="47046a18907f35261d9dba8dea43aa554e67b9aac6700c37c52df7fb19af3be2"
 def pin(path,row):
     raw=path.read_bytes();assert len(raw)==row["bytes"] and hashlib.sha256(raw).hexdigest()==row["sha256"],str(path);return raw.decode()
 def checked():
@@ -23,6 +23,7 @@ def checked():
     assert c==(ROOT/SOURCE/"Candidate.cu").read_text(),"Other candidate/initialize operations changed"
     previous=json.loads(old["resident-source-manifest.json"]);now=json.loads((ROOT/"lib_utest/qualification/beam18_resident/source-manifest.json").read_text())
     allowed={SOURCE+n for n in ['Candidate.cu','Measure.h','BUILD.bazel']}
+    allowed.update({'lib_src/elements/beam18/resident/Plan.cpp','lib_utest/qualification/rigid_assembly_owner/BUILD.bazel'})
     for name,row in previous['files'].items():
         if name not in allowed:assert now['files'][name]==row,"Unrelated native identity changed"
     return old

@@ -50,8 +50,8 @@
     },
     {
       "path": "lib_utest/qualification/beam18_resident/source-manifest.json",
-      "bytes": 9593,
-      "sha256": "fe033f87a48d52dfaef334cd69b93c5ec88d28f8c74d305013be06d03aa797f2"
+      "bytes": 10187,
+      "sha256": "ae02a203aad738318e44b110d63ec94e02b25a5ef8d4bc8d7e269cdc48c8c036"
     }
   ],
   "unchanged": [
@@ -84,6 +84,18 @@
       "path": "lib_src/elements/beam18/Force.h",
       "bytes": 3119,
       "sha256": "4241cdbd5efce8026345985a71b19843ec7b9b11c7c700cd9ecb4eb9916be884"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Plan.cpp",
+      "bytes": 3037,
+      "sha256": "7e6c71b4bfc36cac20661b15c326db18987b9528be4abd03c7ca9a9b27fd6175",
+      "baseline_refresh_reason": "Baseline50e1c2df; constrained-startup qualified801d467: add ValidStartup third true argument only. No change in this tile candidate."
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
+      "bytes": 2781,
+      "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f",
+      "baseline_refresh_reason": "Baseline561026c2 and11370dc1: add CIN force-transfer/recovery qualification visibility only. No production effect."
     }
   ]
 }
