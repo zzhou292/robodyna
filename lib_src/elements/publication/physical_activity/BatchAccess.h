@@ -22,6 +22,11 @@ using QephInput = FamilyInput<qeph::QephBatchElement, qeph::ForceTrial>;
 using T3Input = FamilyInput<t3::T3BatchElement, t3::ForceTrial>;
 // Internal batch friend. Raw descriptors cannot authorize public capture.
 struct BatchAccess {
+  // Internal complete-count proof. check_source additionally authenticates a
+  // caller-supplied source handle, including explicit absence.
+  static PhysicalActivityReport Type45(const type45::Batch*, const type45::Model*, bool check_source,
+      FENodalState&, ShellBatchPublication&, const ShellPhysicalBinding&,
+      bool has_diagnostics, const type45::BatchDiagnostics&) noexcept;
   static PhysicalActivityReport Borrow(qeph::QephBatch&, FENodalState&,
       ShellBatchPublication&, const ShellPhysicalBinding&, const NodalTrialToken&,
       const NodalAssemblyView*, const NodalPreparedView*, const qeph::BatchDiagnostics&, QephInput&);

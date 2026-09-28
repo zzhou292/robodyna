@@ -58,6 +58,7 @@ PhysicalActivityDeviceView State::View() const noexcept {
   if (forecast.qeph_count) view.qeph = {base, endpoint, summaries[0]};
   if (forecast.t3_count) view.t3 = {base + forecast.qeph_count, endpoint + forecast.qeph_count, summaries[1]};
   view.qbat_count = forecast.qbat_count;
+  view.type45_count = diagnostics.has_type45 ? diagnostics.type45.joint_count : 0;
   view.accepted = stamp; view.attempt = attempt; view.generation = generation; view.stream = stream;
   return view;
 }

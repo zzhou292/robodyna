@@ -171,6 +171,7 @@ cuda_library(
             "publication/physical_activity/Layout.cpp",
             "publication/physical_activity/Prepared.cpp",
             "publication/physical_activity/Startup.cpp",
+            "publication/physical_activity/Type45.cpp",
             "publication/physical_activity/Values.cpp",
 
             "publication/ShellPhysicalScratchParticipation.cpp",

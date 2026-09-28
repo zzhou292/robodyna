@@ -6,6 +6,9 @@ PhysicalActivityReport State::Capture(const NodalTrialToken& trial, const NodalA
   using S = PhysicalActivityStatus;
   auto report = GuardOtherFamilies(physical, d);
   if (report.status != S::Ok) return report;
+  report = BatchAccess::Type45(participants.type45, nullptr, false,
+      *owner, *publication, physical, d.has_type45, d.type45);
+  if (report.status != S::Ok) return report;
   QephInput q; T3Input t;
   if (forecast.qeph_count) {
     report = BatchAccess::Borrow(*participants.qeph, *owner, *publication, physical, trial, a, p, d.qeph, q);

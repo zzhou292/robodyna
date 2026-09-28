@@ -54,7 +54,7 @@ struct PhysicalActivityFamilyView {
 // this view neither deletes nodes/mass nor decides native contact topology.
 struct PhysicalActivityDeviceView {
   PhysicalActivityFamilyView qeph, t3;
-  std::size_t qbat_count = 0;
+  std::size_t qbat_count = 0, type45_count = 0;
   NodalStamp accepted;
   std::uint64_t attempt = 0, generation = 0;
   cudaStream_t stream = nullptr;

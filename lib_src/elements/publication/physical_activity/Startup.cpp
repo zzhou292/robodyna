@@ -16,6 +16,12 @@ PhysicalActivityReport PhysicalActivitySnapshot::Initialize(FENodalState& owner,
   if (owner.accepted().epoch) return {S::InvalidInput, "Initialize activity before the first interval"};
   const auto checked = publication.ValidatePhysicalSources(owner, physical, participants, identity);
   if (checked.status != ShellPublicationStatus::Success) return a::PublicationReport(checked);
+  ShellPhysicalDiagnostics accepted;
+  auto source_report = a::PublicationReport(publication.CopyAcceptedPhysicalDiagnostics(owner.accepted(), &accepted));
+  if (source_report.status != S::Ok) return source_report;
+  source_report = a::BatchAccess::Type45(participants.type45, nullptr, false,
+      owner, publication, physical, accepted.has_type45, accepted.type45);
+  if (source_report.status != S::Ok) return source_report;
   PhysicalActivityForecast forecast;
   auto report = Preflight(physical, limits, forecast);
   if (report.status != S::Ok) return report;

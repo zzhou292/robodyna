@@ -30,6 +30,9 @@ class PhysicalActivitySnapshot {
   PhysicalActivityReport BorrowPrepared(FENodalState&, const NodalTrialToken&,
       const ShellPhysicalDiagnostics&, const NodalPreparedView&,
       const PhysicalPreparedActivityReceipt&, PhysicalActivityDeviceView*) const noexcept;
+  // SourcePlan may name only the actual attached massless-joint model.
+  // Null is explicit and succeeds only when the common roster has no TYPE45.
+  PhysicalActivityReport ValidateType45Source(const type45::Model*) const noexcept;
   void DiscardTrial() noexcept;
   PhysicalActivityForecast allocations() const noexcept;
  private:

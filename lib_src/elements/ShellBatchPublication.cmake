@@ -31,6 +31,7 @@ add_library(tl_shell_batch_publication STATIC
   "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Prepared.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Startup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Type45.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Values.cpp"
 
   "${CMAKE_CURRENT_LIST_DIR}/publication/ShellPhysicalScratchParticipation.cpp"

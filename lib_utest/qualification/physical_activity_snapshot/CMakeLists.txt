@@ -7,7 +7,9 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../physical_publication" physical-pu
 add_executable(physical_activity_snapshot_host HostTest.cpp)
 target_link_libraries(physical_activity_snapshot_host PRIVATE physical_publication_fixture tl_shell_batch_publication)
 add_test(NAME physical_activity_snapshot_host COMMAND physical_activity_snapshot_host)
-add_executable(physical_activity_snapshot_cuda AuthTest.cu RemovalTest.cu FaultTest.cu
+add_executable(physical_activity_snapshot_cuda AuthTest.cu RemovalTest.cu FaultTest.cu Type45Test.cu
+  "${CMAKE_CURRENT_LIST_DIR}/../type45_resident/OwnerFixture.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/../type45_resident/OwnerScatter.cu"
   "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerStartup.cu"
   "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerAttempt.cu"
   "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerSnapshot.cu")
