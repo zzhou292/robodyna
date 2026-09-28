@@ -10,7 +10,8 @@ state=source('lib_src/elements/publication/NativeContactPublicationState.cpp')
 header=source('lib_src/elements/publication/NativeContactPublicationState.h')
 transaction=source('lib_src/elements/publication/PhysicalTransaction.cpp')
 issuer=source('lib_src/elements/publication/ShellPhysicalScratchParticipation.cpp')
-for text in (state,header):
+activity=source('lib_src/elements/publication/NativeContactActivitySelectors.h')
+for text in (state,header,activity):
     for forbidden in ('std::function','cudaMalloc','cudaMemcpy','cudaStreamSynchronize','std::vector'):
         assert forbidden not in text, forbidden
 assert header.index('private:')<header.index('bool Attach(')<header.index('bool Stage(')
@@ -27,3 +28,6 @@ assert 'DiscardTrial' not in consume
 assert 'native_contact_->Ready(owner,authentic,issuer.generation_)' in issuer
 assert 'native_contact_->Discard()' in issuer
 print('Closed native contact publication source proof: PASS')
+
+assert 'ValidActivityPlan(accepted_,next)' in state
+assert 'next.reference_activity_generation==accepted_.reference_activity_generation' in state

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeContactPublicationState.h"
+#include "NativeContactActivitySelectors.h"
 #include "ShellPhysicalScratchParticipation.h"
 #include "../../solvers/NodalTrialIdentity.h"
 namespace tl::fea {
@@ -7,12 +8,14 @@ NativeContactPublicationState::~NativeContactPublicationState() noexcept {
   if(issuer_)issuer_->DetachNativeContactState(*this);
 }
 bool NativeContactPublicationState::Attach(FENodalState& owner,std::uint64_t source,
-    ShellPhysicalScratchParticipation& issuer) noexcept {
+    ShellPhysicalScratchParticipation& issuer,bool track_activity) noexcept {
   const auto stamp=owner.accepted();
   if(attached_||generation_||force_phase_available_||issuer.native_contact_||issuer.configured()||!source||!stamp.owner_id||stamp.epoch)
     return false;
   issuer_=&issuer;owner_=&owner;source_id_=source;accepted_stamp_=stamp;
-  issuer_lifetime_=issuer.lifetime_id_;issuer.native_contact_=this;attached_=true;return true;
+  issuer_lifetime_=issuer.lifetime_id_;issuer.native_contact_=this;
+  accepted_.activity_generation=track_activity?1:0;
+  attached_=true;return true;
 }
 bool NativeContactPublicationState::CanBind(const FENodalState& owner,std::uint64_t source) const noexcept {
   const auto stamp=owner.accepted();
@@ -34,10 +37,12 @@ bool NativeContactPublicationState::Stage(const NodalPreparedView& view,NativeCo
      issuer_->base_epoch_!=view.kinematics.base_epoch||issuer_->attempt_!=view.attempt||
      issuer_->stream_!=view.stream||view.owner_id!=accepted_stamp_.owner_id||
      view.kinematics.base_epoch!=accepted_stamp_.epoch||!view.attempt||
-     next.history!=(accepted_.history^1u)||next.reference>1||!next.has_reference||!next.reference_generation)
+     next.history!=(accepted_.history^1u)||next.reference>1||!next.has_reference||!next.reference_generation||
+     !native_contact_publication::ValidActivityPlan(accepted_,next))
     return false;
   const bool reuse=accepted_.has_reference&&next.reference==accepted_.reference&&
-      next.reference_generation==accepted_.reference_generation;
+      next.reference_generation==accepted_.reference_generation&&
+      next.reference_activity_generation==accepted_.reference_activity_generation;
   const bool rebuilt=accepted_.reference_generation!=UINT64_MAX&&
       next.reference_generation==accepted_.reference_generation+1&&
       (!accepted_.has_reference||next.reference!=accepted_.reference);

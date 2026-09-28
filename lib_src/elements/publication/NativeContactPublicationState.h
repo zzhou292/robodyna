@@ -13,6 +13,10 @@ struct NativeContactSelectors {
   unsigned history=0,reference=0;
   std::uint64_t reference_generation=0;
   bool has_reference=false;
+  // Generation zero selects the legacy immutable-source contract. A declared
+  // lifecycle binds generation one at startup and publishes source slabs here.
+  unsigned activity=0;
+  std::uint64_t activity_generation=0,reference_activity_generation=0;
 };
 // available proves binding/stamp coherence only. Initial generation0 has no
 // retained inventory/reference; callers must inspect selectors.has_reference.
@@ -42,7 +46,8 @@ class NativeContactPublicationState {
   friend class ::tlfea::contact::radioss_type25::Transaction;
   friend class native_contact_publication::QualificationAccess;
   // Called only after the concrete native source/owner binding is authenticated.
-  bool Attach(FENodalState&,std::uint64_t,ShellPhysicalScratchParticipation&) noexcept;
+  bool Attach(FENodalState&,std::uint64_t,ShellPhysicalScratchParticipation&,
+      bool track_activity=false) noexcept;
   bool CanBind(const FENodalState&,std::uint64_t) const noexcept;
   void Bind(ShellBatchPublication&,FENodalState&,std::uint64_t,std::uint64_t) noexcept;
   void Unbind() noexcept;
