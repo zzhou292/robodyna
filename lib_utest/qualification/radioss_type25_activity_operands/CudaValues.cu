@@ -30,7 +30,7 @@ struct Device {
   Input* input=nullptr;Output* output=nullptr;cudaStream_t stream=nullptr;
   ~Device(){if(input)cudaFree(input);if(output)cudaFree(output);if(stream)cudaStreamDestroy(stream);}
 };
-void Run(const std::vector<Input>& input,std::vector<Output>& output) {
+void RunDeviceValues(const std::vector<Input>& input,std::vector<Output>& output) {
   Device device;output.resize(input.size());
   ASSERT_EQ(cudaStreamCreateWithFlags(&device.stream,cudaStreamNonBlocking),cudaSuccess);
   ASSERT_EQ(cudaMalloc(&device.input,input.size()*sizeof(Input)),cudaSuccess);
@@ -67,7 +67,7 @@ TEST(NativeActivityOperandValuesCuda, NativeDiscoveryAndSequentialExposureAgreeW
       !ref::Removed(c.mesh,c.corners[0]),{n::activity_source::Deletion::ContainingElement,false,n::startup::SolidErosion::Enabled}});}
   ASSERT_EQ(cases[0].affected,(std::vector<int>{1}));
   ASSERT_EQ(cases[1].affected,(std::vector<int>{1,1}));
-  std::vector<Output> outputs;Run(inputs,outputs);
+  std::vector<Output> outputs;RunDeviceValues(inputs,outputs);
   ASSERT_FALSE(HasFailure());
   for(unsigned i=0;i<inputs.size();++i){SCOPED_TRACE(i);const auto& actual=outputs[i].main;const auto& expected=native[i];
     EXPECT_TRUE(actual.valid);
@@ -93,7 +93,7 @@ TEST(NativeActivityOperandValuesCuda, WallRetentionSignedZeroAndScaleFailuresPre
   std::vector<Input> inputs{{17,0,2,false,wall,17,1000},{-0.,0,0,false,wall,-0.,1000},
     {std::numeric_limits<double>::denorm_min(),0,0,true,wall,17,.5},
     {std::numeric_limits<double>::quiet_NaN(),0,0,true,wall,17,1}};
-  std::vector<Output> outputs;Run(inputs,outputs);
+  std::vector<Output> outputs;RunDeviceValues(inputs,outputs);
   ASSERT_FALSE(HasFailure());
   EXPECT_DOUBLE_EQ(outputs[0].main.coefficient,17);
   EXPECT_FALSE(outputs[0].main.removed);
