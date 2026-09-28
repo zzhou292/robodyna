@@ -2,7 +2,6 @@
 #include "Storage.h"
 #include "Kinematics.h"
 #include "Measurement.h"
-#include "measurement/Finalize.cuh"
 #include "../Type13Math.h"
 
 namespace tl::fea::type13::batch_detail {
@@ -34,8 +33,25 @@ __global__ void EvaluateElements(Storage* storage, unsigned accepted,
 
 __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
                          NodalPreparedView view, BatchDiagnostics identity) {
-  __shared__ measurement::Tile tile;
-  measurement::Finalize(*storage,identity,tile);
+  auto& state = *storage;
+  Control next;
+  next.diagnostics = identity;
+  for (std::size_t e = 0; e < state.model.element_count; ++e) {
+    if (state.candidate_status[e] != Status::Success) {
+      next.status = BatchStatus::ElementFailure;
+      next.element = e;
+      next.element_status = state.candidate_status[e];
+      break;
+    }
+  }
+  if (next.status == BatchStatus::Success) {
+    if (!MeasurePrepared(state.model, state.measurement, next.diagnostics)) {
+      next.status = BatchStatus::NonfiniteResult;
+    } else {
+      next.diagnostics.valid = true;
+    }
+  }
+  state.control = next;
 }
 } // namespace
 
@@ -50,6 +66,6 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   }
   LaunchMeasurement(storage, accepted, trial, view, count);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Finalize<<<1, measurement::Threads, 0, view.stream>>>(storage, accepted, trial, view, identity);
+  Finalize<<<1, 1, 0, view.stream>>>(storage, accepted, trial, view, identity);
 }
 } // namespace tl::fea::type13::batch_detail
