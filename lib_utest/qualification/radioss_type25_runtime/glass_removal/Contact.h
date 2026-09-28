@@ -15,6 +15,8 @@ struct ContactSource {
  std::vector<std::uint32_t> removal_offsets;
  tl::util::HostArena arena,scratch,ready_arena,ready_scratch;
  s::Snapshot starter;s::FixedMainView ready;
+ n::initial_source::PreparedSource initial;
+ void PrepareInitial(const nodal_empty_test::Fixture&,const n::TransactionConfig&);
  n::activity_source::Controls controls;
  std::uint64_t id=0;
  void Initialize(const nodal_empty_test::Fixture& physical,const nodal_empty_test::Source& mesh,bool wall) {
@@ -64,7 +66,12 @@ struct ContactSource {
    references.data(),references.size(),{starter.normal_offsets,references.size()+1,starter.normal_mains,starter.normal_incidence_count},
    {removal_offsets.data(),removal_offsets.size(),nullptr,0},7};
   out.primary_main_count=primary.size();out.primary_parent_ids=parents.data();out.primary_curvature=curvature.data();
-  out.margin=.01;out.force_packet_size=128;out.native_workers=1;out.contact_thickness_update=0;out.activity_controls=&controls;return out;
+  out.margin=initial.prepared()?initial.removals().engine_margin:.01;
+  if(initial.prepared()){
+   out.primary_curvature=initial.removals().primary_extent;
+   out.selection.removed_main_by_secondary={}; // The genuine producer supplies its exact finalized CSR.
+  }
+  out.force_packet_size=128;out.native_workers=1;out.contact_thickness_update=0;out.activity_controls=&controls;return out;
  }
  n::MovingMainSource Moving() const {
   n::MovingMainSource out;static_cast<n::ContactSourceInput&>(out)=Common();out.starter=starter;

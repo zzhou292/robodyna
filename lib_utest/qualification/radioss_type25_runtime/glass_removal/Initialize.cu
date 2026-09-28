@@ -30,8 +30,12 @@ void Rig::Initialize() {
   config.response_mass=n::ResponseMassPolicy::AcceptedOwnerCoefficients;
   config.physical_source=n::PhysicalSourceProfile::CompleteBoundLedger;
   config.activity=n::ContactActivityPolicy::ShellRemoval;
-  Check(self.Initialize(config,self_source.Moving(),owner,publication,physical,Participants(),Identity()));
-  Check(wall.Initialize(config,wall_source.Common(),owner,publication,physical,Participants(),Identity()));
+  self_source.PrepareInitial(base,config);wall_source.PrepareInitial(base,config);
+  Check(self.GeneralInitialize(config,self_source.Moving(),self_source.initial,owner,publication,physical,Participants(),Identity()));
+  Check(wall.GeneralInitialize(config,wall_source.Common(),wall_source.ready,wall_source.initial,
+      owner,publication,physical,Participants(),Identity()));
+  base.Require(self.initialization_diagnostics().available&&wall.initialization_diagnostics().available,
+      "Both contacts require the genuine initial-source handoff");
   const std::array<fe::NativeContactRosterEntry,2> entries{self.native_roster_entry(),wall.native_roster_entry()};
   Check(publication.ConfigurePhysicalScratchParticipation(owner,physical,Participants(),Identity(),
       {{},{},{entries.data(),entries.size()}}));

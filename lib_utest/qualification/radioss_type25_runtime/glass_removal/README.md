@@ -26,3 +26,12 @@ Rollback comparisons cover all owner coordinates/velocities/rotations/M/J,
 both physical families' complete typed force/material/failure values, both
 contact histories and all publication selectors. No raw struct padding is an
 equality contract. This is a lifecycle coupon, not a vehicle trajectory oracle.
+
+Both interfaces use the existing `initial_source::PrepareSource` and
+`Transaction::GeneralInitialize` path, including genuine Starter-normal input,
+fixed-wall ready-normal authentication, complete two-interface census and
+source-derived geometric exclusions. This is the same initialization API used
+by the vehicle. Cold empty-history initialization did not produce a nonzero
+saved wall stiffness in this initially overlapping INACTI5 fixture; its failed
+witness receipt remains evidence. The stronger wall-history witness is kept,
+and no history field is seeded by the test.
