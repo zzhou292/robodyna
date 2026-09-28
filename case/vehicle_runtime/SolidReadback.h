@@ -7,6 +7,11 @@ inline bool HasSourceSolidControls(const tl::fea::solids::Model& model) noexcept
     return selection && selection->profile()==tl::fea::solids::control::Profile::SourceDeclared &&
         selection->controlled_count()!=0;
 }
+inline void CheckSolidWorkers(const tl::fea::solids::BatchDiagnostics& actual,
+    unsigned blocks,std::size_t slots) {
+    output::Require(actual.controlled_packet_blocks==blocks&&actual.controlled_worker_slots==slots,
+        "Actual solid worker allocation differs from admitted forecast");
+}
 inline std::size_t SolidReadbackBytes(const tl::fea::solids::Model& model) noexcept {
     namespace s=tl::fea::solids;const bool controlled=HasSourceSolidControls(model);
     return model.solid18().size()*sizeof(s::Result18)+model.solid6z().size()*sizeof(s::Result6z)+

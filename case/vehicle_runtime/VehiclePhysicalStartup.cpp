@@ -1,5 +1,6 @@
 #include "Storage.h"
 #include "Reports.h"
+#include "SolidReadback.h"
 #include "lib_utils/BoundedArena.h"
 namespace crash::cases::vehicle_runtime {
 VehiclePhysicalStartup::VehiclePhysicalStartup(std::unique_ptr<Storage> value) : storage_(std::move(value)) {}
@@ -28,6 +29,11 @@ VehiclePhysicalStartup VehiclePhysicalStartup::Prepare(const Source& source,Conf
     staged->InitializeJoints();
     staged->BindInitialCaches();
     staged->InitializePublication();
+    if(forecast.solid_packet_blocks) {
+        tl::fea::solids::BatchDiagnostics actual;
+        detail::RequireSuccess(staged->solids.CopyAcceptedDiagnostics(staged->owner.accepted(),&actual));
+        detail::CheckSolidWorkers(actual,forecast.solid_packet_blocks,forecast.solid_worker_slots);
+    }
     output::Require(staged->Allocations().device_bytes==forecast.device_bytes,
         "Actual native allocations disagree with complete startup forecast");
     return VehiclePhysicalStartup(std::move(staged));
