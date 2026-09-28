@@ -63,15 +63,22 @@ void Contribution::SealCandidate(fe::FENodalState& owner, const fe::NodalTrialTo
                                  const fe::NodalPreparedView& prepared,
                                  const fe::ShellPhysicalDiagnostics& diagnostics,
                                  Observation& output) {
+    PreflightSeal(prepared);
+    fe::ShellPhysicalScratchParticipationReceipt receipt;
+    Require(Operation::SealCandidate,
+            transaction_->SealCandidate(owner, token, prepared, diagnostics, &receipt));
+    AdoptGroupSeal(receipt,output);
+}
+void Contribution::PreflightSeal(const fe::NodalPreparedView& prepared) {
     if (phase_ != Phase::Assembled)
         Reject(Operation::SealCandidate, "Native accepted-force assembly is missing or already sealed");
     if (prepared.owner_id != candidate_.force_base.owner_id ||
         prepared.kinematics.base_epoch != candidate_.force_base.epoch ||
         prepared.attempt != candidate_.attempt)
         Reject(Operation::SealCandidate, "Native candidate belongs to another owner/epoch/attempt");
-    fe::ShellPhysicalScratchParticipationReceipt receipt;
-    Require(Operation::SealCandidate,
-            transaction_->SealCandidate(owner, token, prepared, diagnostics, &receipt));
+}
+void Contribution::AdoptGroupSeal(const fe::ShellPhysicalScratchParticipationReceipt& receipt,
+                                 Observation& output) noexcept {
     auto next = candidate_;
     next.diagnostics = transaction_->last_diagnostics();
     receipt_ = receipt;

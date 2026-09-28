@@ -44,4 +44,13 @@ TEST(NativeAppGroupCuda, WrongAppPhaseKeepsOutputAndRevokesEveryPendingChild) {
     rig.Discard();ASSERT_NO_FATAL_FAILURE(base::Same(before,rig.Read()));
     ASSERT_NO_THROW(rig.Step());EXPECT_EQ(rig.Read().physical.stamp.epoch,1u);
 }
+TEST(NativeAppGroupCuda, DetachedPublisherGroupRejectsBeforeDereferencingFormerPublisher) {
+ base::Rig rig;ASSERT_NO_THROW(rig.Initialize());base::Attempt a;ASSERT_NO_THROW(rig.Begin(a));ASSERT_NO_THROW(rig.Assemble(a));ASSERT_NO_THROW(rig.PrepareMaterials(a));
+ const auto stamp=rig.physical.owner.accepted();rig.physical.publication.reset();base::fe::ShellBatchPublication replacement;
+ std::array<base::n::Transaction*,2> members{{rig.native[0].get(),rig.native[1].get()}};
+ const auto report=base::n::Transaction::SealCandidateGroup(members.data(),2,replacement,rig.physical.owner,a.token,a.prepared,a.common,rig.receipts.data(),2);
+ EXPECT_EQ(report.interface_index,0u);EXPECT_EQ(report.report.status,base::n::TransactionStatus::StaleAttempt);
+ EXPECT_TRUE(base::fe::trial_identity::SameStamp(stamp,rig.physical.owner.accepted()));
+}
+
 }

@@ -45,13 +45,27 @@ void Group::Assemble(fe::FENodalState& owner,const fe::NodalTrialToken& token,
         staged_=next;phase_=Phase::Assembled;output=next;
     } catch(...) {Discard();throw;}
 }
-void Group::SealCandidate(fe::FENodalState& owner,const fe::NodalTrialToken& token,
+void Group::SealCandidate(fe::FENodalState& owner,fe::ShellBatchPublication& publication,const fe::NodalTrialToken& token,
     const fe::NodalPreparedView& view,const fe::ShellPhysicalDiagnostics& diagnostics,GroupObservation& output) {
     try {
         Require(phase_==Phase::Assembled,"Native group accepted assembly is missing");
         auto next=staged_;
+        std::array<native::Transaction*,fe::MaxNativeContactInterfaces> members{};
+        // Assembled is established only after every private child assembled
+        // this same owner attempt. No child is externally mutable through Group.
         for(std::size_t i=0;i<count_;++i) {
-            entries_[i]->SealCandidate(owner,token,view,diagnostics,next.interfaces[i]);
+            entries_[i]->PreflightSeal(view);
+            members[i]=entries_[i]->transaction_.get();
+        }
+        std::array<fe::ShellPhysicalScratchParticipationReceipt,fe::MaxNativeContactInterfaces> staged;
+        const auto sealed=native::Transaction::SealCandidateGroup(members.data(),count_,publication,
+            owner,token,view,diagnostics,staged.data(),count_);
+        if(sealed.report.status!=native::TransactionStatus::Ok) {
+            const auto index=sealed.interface_index<count_?sealed.interface_index:0;
+            entries_[index]->Require(Operation::SealCandidate,sealed.report);
+        }
+        for(std::size_t i=0;i<count_;++i) {
+            entries_[i]->AdoptGroupSeal(staged[i],next.interfaces[i]);
             receipts_[i]=entries_[i]->native_receipt();
             Require(receipts_[i]!=nullptr,"Native group child did not seal its actual receipt");
         }

@@ -19,7 +19,7 @@ class Group {
     void Bind(tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,const tl::fea::ShellPhysicalBinding&,
         const tl::fea::ShellPhysicalParticipants&,const tl::fea::ShellPhysicalPublicationIdentity&);
     void Assemble(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,const tl::fea::NodalAssemblyView&,GroupObservation&);
-    void SealCandidate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,const tl::fea::NodalPreparedView&,
+    void SealCandidate(tl::fea::FENodalState&,tl::fea::ShellBatchPublication&,const tl::fea::NodalTrialToken&,const tl::fea::NodalPreparedView&,
         const tl::fea::ShellPhysicalDiagnostics&,GroupObservation&);
     tl::fea::ShellPhysicalScratchReceiptRoster scratch_receipts() const noexcept;
     void Discard() noexcept;

@@ -26,7 +26,7 @@ struct Rig {
     }
     void Prepare(base::Attempt& a) {
         backend.PrepareMaterials(a);
-        group->SealCandidate(backend.physical.owner,a.token,a.prepared,a.common,observed);
+        group->SealCandidate(backend.physical.owner,*backend.physical.publication,a.token,a.prepared,a.common,observed);
         Check(backend.physical.publication->SealPhysicalScratchParticipation(
             backend.physical.owner,a.token,group->scratch_receipts()));
     }

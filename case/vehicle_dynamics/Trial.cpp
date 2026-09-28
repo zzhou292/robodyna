@@ -147,7 +147,7 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     }
     if(native_contact) {
         timer.Measure<StepStage::EvaluateNativeContact>([&] {
-            native_contact->SealCandidate(s.owner,token,prepared,candidate().mechanics,candidate().native_contact);
+            native_contact->SealCandidate(s.owner,s.publication,token,prepared,candidate().mechanics,candidate().native_contact);
             return true;
         });
     }

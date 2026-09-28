@@ -37,6 +37,9 @@ class Contribution {
     const native::Transaction& transaction() const noexcept { return *transaction_; }
 
   private:
+    friend class Group;
+    void PreflightSeal(const tl::fea::NodalPreparedView&);
+    void AdoptGroupSeal(const tl::fea::ShellPhysicalScratchParticipationReceipt&,Observation&) noexcept;
     enum class Phase { Idle, Assembled, Sealed };
     explicit Contribution(std::unique_ptr<native::Transaction>, native::TransactionSourceInfo);
     [[noreturn]] void Reject(Operation, const char*);
