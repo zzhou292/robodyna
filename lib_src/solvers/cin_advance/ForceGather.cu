@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ForceGather.h"
+#include "NumericalMassRead.cuh"
 
 namespace tl::fea::cin_advance::force_gather {
 namespace {
@@ -17,7 +18,19 @@ __global__ void Gather(Input input) {
   }
 }
 __global__ void Complete(Input input) {
-  if (input.control->status == NodalStatus::Ok) Resolve(input);
+  if(input.control->status!=NodalStatus::Ok)return;
+  __shared__ mass_read::Tile tile;
+  auto& summary=*input.force_gather.summary;
+  double numerical_mass=0;
+  const bool ready=summary.mode==Mode::Staging && mass_read::Evaluate(input.model,
+      force_inputs::ForceView(input),input.prepared_transfers,tile,numerical_mass);
+  if(threadIdx.x)return;
+  if(ready){summary.numerical_mass=numerical_mass;summary.report={};summary.mode=Mode::Publish;}
+  else {
+    // Staging has changed no original destinations. The existing serial apply
+    // still owns fallback, first error and every partly published failing row.
+    summary.report=force_transfers::Apply(input);summary.mode=Mode::SerialCompleted;
+  }
 }
 __global__ void PublishDestinations(Input input) {
   if (input.control->status != NodalStatus::Ok || input.force_gather.summary->mode != Mode::Publish) return;
@@ -40,7 +53,7 @@ cudaError_t Launch(const Input& input, cudaStream_t stream) {
   Gather<<<blocks, threads, 0, stream>>>(input);
   auto error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  Complete<<<1, 1, 0, stream>>>(input);
+  Complete<<<1, mass_read::Threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   PublishDestinations<<<blocks, threads, 0, stream>>>(input);
