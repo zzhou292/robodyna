@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Launch.h"
+#include "RowLaunch.h"
 #include "Response.h"
 #include "diagnostics/Read.h"
 #include "../assembly/Gather.h"
@@ -213,7 +214,7 @@ cudaError_t CountCandidates(Device d,lifecycle::Input input,const units_detail::
   if(e!=cudaSuccess)return e;CandidateTotal<<<1,1,0,s>>>(d);return cudaPeekAtLastError();
 }
 cudaError_t Complete(Device d,lifecycle::Input input,const units_detail::Factors& units,std::size_t,cudaStream_t s) noexcept {
-  CompleteRows<<<Blocks(d.source.secondary_count),128,0,s>>>(d,input,units);return cudaPeekAtLastError();
+  CompleteRows<<<IndependentRowBlocks(d.source.secondary_count),RowThreads,0,s>>>(d,input,units);return cudaPeekAtLastError();
 }
 cudaError_t Order(Device d,std::size_t count,cudaStream_t s) noexcept {
   if(count) {auto bytes=d.cub_bytes;const auto e=cub::DeviceRadixSort::SortPairs(d.cub,bytes,d.order_keys,d.sorted_keys,

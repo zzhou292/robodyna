@@ -18,6 +18,7 @@ add_library(tl_radioss_type25_transaction STATIC
   "${_type25_runtime}/Planning.cpp" "${_type25_runtime}/GeneralPlanning.cpp" "${_type25_runtime}/InitialSeed.cpp"
   "${_type25_runtime}/Initialize.cpp" "${_type25_runtime}/Transaction.cpp"
   "${_type25_runtime}/Kernels.cu" "${_type25_runtime}/NormalStage.cu"
+  "${_type25_runtime}/RowLaunch.h"
   "${_type25_runtime}/diagnostics/Tile.h" "${_type25_runtime}/diagnostics/Read.h")
 target_link_libraries(tl_radioss_type25_transaction PUBLIC
   tl_radioss_type25_lifecycle tl_radioss_type25_candidates tl_radioss_type25_search
