@@ -6,14 +6,14 @@ namespace type25_source_test {
 struct ShellRemovalRig : FullLedgerRig {
   explicit ShellRemovalRig(double failure_strain=1e-3):FullLedgerRig(true,failure_strain){}
   n::activity_source::Controls deletion{n::activity_source::Deletion::ContainingElement,false,s::SolidErosion::Disabled};
-  void InitializeRemoval(n::ContactActivityPolicy policy=n::ContactActivityPolicy::ShellRemoval) {
+  void InitializeRemoval(n::ContactActivityPolicy policy=n::ContactActivityPolicy::ShellRemoval,double margin=.01) {
     Initialize(false);
     auto config=Config();config.activity=policy;
     // The source-admission fixture deliberately defaults KMAX to zero. This
     // mechanics coupon declares the real vehicle/native unclipped bound.
     config.lifecycle.minimum_coefficient=0;
     config.lifecycle.maximum_coefficient=1e30;
-    auto source=Source();
+    auto source=Source();source.margin=margin;
     if(policy==n::ContactActivityPolicy::ShellRemoval)source.activity_controls=&deletion;
     Check(contact.Initialize(config,source,owner,publication,fixture.physical,Participants(),Identity()));
     Check(publication.ConfigurePhysicalScratchParticipation(owner,fixture.physical,Participants(),Identity(),{{},contact.roster_entry()}));

@@ -131,4 +131,32 @@ TEST(NativeShellRemovalCuda, NoRemovalPreservesLegacyForceAndHistoryValues) {
     EXPECT_EQ(f1,f2);for(std::size_t i=0;i<count;++i)type25_geometry_test::Same(h1[i],h2[i]);
   }
 }
+TEST(NativeShellRemovalCuda, RetirementAfterBothReferencesWerePublishedCanAdvance) {
+  ShellRemovalRig rig;
+  // Zero search margin deliberately requires a complete rebuild every step.
+  // It changes neither source geometry nor material/contact force coefficients.
+  ASSERT_NO_THROW(rig.InitializeRemoval(n::ContactActivityPolicy::ShellRemoval,0.));
+  ASSERT_NO_THROW(rig.Warm());
+  ASSERT_GE(rig.contact.accepted().selectors.reference_generation,2u);
+  FullLedgerAttempt removal;
+  ASSERT_NO_THROW(rig.Begin(removal));
+  ASSERT_NO_THROW(rig.RemovalLoad(removal));
+  ASSERT_NO_THROW(Check(rig.contact.AssembleAccepted(rig.owner,removal.token,removal.assembly)));
+  ASSERT_NO_THROW(rig.Prepare(removal));
+  ASSERT_NO_THROW(rig.Seal(removal));
+  ASSERT_GT(rig.contact.last_diagnostics().activity_orphan_secondaries,0u);
+  ASSERT_NO_THROW(Check(rig.Commit(removal)));
+  for(unsigned step=0;step<3;++step) {
+    FullLedgerAttempt next;
+    ASSERT_NO_THROW(rig.Begin(next));
+    const auto report=rig.contact.AssembleAccepted(rig.owner,next.token,next.assembly);
+    ASSERT_EQ(report.status,n::TransactionStatus::Ok)<<report.message<<" maintenance="
+        <<int(rig.contact.last_diagnostics().maintenance_failure.status);
+    EXPECT_TRUE(rig.contact.last_diagnostics().reference_rebuilt);
+    ASSERT_NO_THROW(rig.Prepare(next));
+    ASSERT_NO_THROW(rig.Seal(next));
+    ASSERT_NO_THROW(Check(rig.Commit(next)));
+  }
+}
+
 }

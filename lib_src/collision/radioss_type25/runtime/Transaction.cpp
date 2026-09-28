@@ -3,6 +3,7 @@
 #include "GroupSealSession.h"
 #include "NormalStage.h"
 #include "AssemblyTail.h"
+#include "MaintenanceFailure.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <cstring>
@@ -120,8 +121,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
       accepted.selectors.reference_activity_generation!=accepted.selectors.activity_generation;unsigned reference=accepted.selectors.reference;
   if(!rebuild) {
     const auto evaluated=p.maintenance[reference].Evaluate(current,drift,false,budget);
-    if(evaluated!=search::Status::Ok)return p.Fail(Error(evaluated==search::Status::DeviceFailure?
-        TransactionStatus::DeviceFailure:TransactionStatus::NumericalFailure,"Native maintenance rejected"));
+    if(evaluated!=search::Status::Ok)return p.Fail(rd::MaintenanceFailure(p.diagnostics,
+        p.maintenance[reference],evaluated,MaintenanceOperation::Evaluate,false,"Native maintenance rejected"));
     rebuild=budget.budget.requires_sort;
   }
   if(rebuild) {
@@ -131,11 +132,19 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
     p.trial_selectors.has_reference=true;
     p.trial_selectors.reference_activity_generation=accepted.selectors.activity_generation;
     search::ReferenceToken captured;
+    auto operation=MaintenanceOperation::CaptureReference;
     auto maintenance_status=p.maintenance[reference].StageReference(current,captured);
-    if(maintenance_status==search::Status::Ok)maintenance_status=p.maintenance[reference].PublishReference(captured);
-    if(maintenance_status==search::Status::Ok)maintenance_status=p.maintenance[reference].Evaluate(current,drift,true,budget);
-    if(maintenance_status!=search::Status::Ok)return p.Fail(Error(maintenance_status==search::Status::DeviceFailure?
-        TransactionStatus::DeviceFailure:TransactionStatus::NumericalFailure,"Native trial reference rebuild rejected"));
+    if(maintenance_status==search::Status::Ok) {
+      operation=MaintenanceOperation::PublishReference;
+      maintenance_status=p.maintenance[reference].PublishReference(captured);
+    }
+    if(maintenance_status==search::Status::Ok) {
+      operation=MaintenanceOperation::Evaluate;
+      maintenance_status=p.maintenance[reference].Evaluate(current,drift,true,budget);
+    }
+    if(maintenance_status!=search::Status::Ok)return p.Fail(rd::MaintenanceFailure(p.diagnostics,
+        p.maintenance[reference],maintenance_status,operation,operation==MaintenanceOperation::Evaluate,
+        "Native trial reference rebuild rejected"));
     candidates::Current query;query.stamp={{p.source.source_id,p.source.topology_generation},p.source.selection.generation,
       p.source.selection.generation,accepted.stamp.epoch+1,view.attempt,p.trial_selectors.reference_generation};
     query.positions=current.positions;query.velocities=current.velocities;

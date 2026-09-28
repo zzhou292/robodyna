@@ -109,6 +109,7 @@ struct TransactionForecast {
   std::size_t activity_device_bytes=0,activity_host_bytes=0,activity_startup_host_bytes=0;
   std::size_t normal_device_bytes=0; // Included in runtime_device_bytes; zero for fixed profile.
 };
+enum class MaintenanceOperation { None, CaptureReference, PublishReference, Evaluate };
 struct TransactionDiagnostics {
   std::uint64_t raw_candidates=0,optimized_candidates=0,kept_occurrences=0,active_forces=0;
   bool reference_rebuilt=false;
@@ -123,6 +124,11 @@ struct TransactionDiagnostics {
   // and cleared at the next validated assembly. Its stamp identifies the
   // attempt. Availability implies neither complete pair counts nor success:
   // encounters_counted/pairs_counted distinguish completed count stages.
+  // Exact last failed search-maintenance operation, retained through discard.
+  bool maintenance_failure_available=false;
+  MaintenanceOperation maintenance_operation=MaintenanceOperation::None;
+  bool maintenance_force_sort=false;
+  search::FailureInfo maintenance_failure;
   bool candidate_rebuild_available=false;
   candidates::Report candidate_rebuild;
 };
