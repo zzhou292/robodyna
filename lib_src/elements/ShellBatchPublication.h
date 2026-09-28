@@ -190,6 +190,10 @@ class ShellBatchPublication {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  friend class ::tlfea::contact::radioss_type25::Transaction;
+  void DiscardNativeCandidateGroup(FENodalState&) noexcept;
+  ShellPublicationReport CheckNativeCandidateGroupMember(
+      const ShellPhysicalScratchParticipation&,std::size_t count,std::size_t index) const noexcept;
   friend class ShellPhysicalScratchParticipation;
   ShellPublicationReport CheckNativePhysicalScratchAssemblyOrder(
       ShellPhysicalScratchParticipation&, FENodalState&, const NodalTrialToken&,

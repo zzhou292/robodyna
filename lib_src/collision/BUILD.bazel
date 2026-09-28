@@ -1203,7 +1203,8 @@ cuda_library(
 cc_library(
     name = "radioss_type25_transaction",
     srcs = ["radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/GeneralPlanning.cpp", "radioss_type25/runtime/InitialSeed.cpp",
-            "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp"],
+            "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp",
+            "radioss_type25/runtime/GroupSeal.cpp"],
     deps = [":radioss_type25_runtime_kernels", "//lib_src/solvers:nodal_trial_identity"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

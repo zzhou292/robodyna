@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLNativeGroupedActivity LANGUAGES C CXX CUDA)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_multi_interface" native-regression)
+include("${CMAKE_CURRENT_LIST_DIR}/Tests.cmake")

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PhysicalActivePrefix.h"
+#include "PhysicalActivePrefixGroup.h"
 #include "../ShellPhysicalOutputRanges.h"
 #include "../../solvers/NodalTrialIdentity.h"
 #include "lib_utils/BoundedArena.h"
@@ -30,9 +31,19 @@ struct PhysicalActivePrefix::Impl {
   util::HostArena arena;
   std::uint8_t* flags=nullptr;
   ActivePrefixForecast forecast;
+  bool SameAuthority(const Impl& other) const noexcept {
+    return source.Matches(other.source) &&
+        participants.qeph==other.participants.qeph && participants.t3==other.participants.t3 &&
+        participants.qbat==other.participants.qbat && participants.type25==other.participants.type25 &&
+        participants.type13==other.participants.type13 && participants.solids==other.participants.solids &&
+        participants.beam18==other.participants.beam18 && participants.type45==other.participants.type45 &&
+        identity.configuration_id==other.identity.configuration_id &&
+        identity.qualification_id==other.identity.qualification_id &&
+        shell_startup_detail::SameStartup(identity.startup,other.identity.startup);
+  }
   ActivePrefixReport Check(FENodalState& owner,ShellBatchPublication& publication,
       const NodalTrialToken* token,const ShellPhysicalDiagnostics* candidate,
-      const NodalPreparedView* view) {
+      const NodalPreparedView* view,const Impl* within_group=nullptr) {
     const auto bound=publication.ValidatePhysicalSources(owner,source,participants,identity);
     if(bound.status!=ShellPublicationStatus::Success)return {S::SourceMismatch,bound.message};
     ShellPhysicalDiagnostics diagnostics;
@@ -45,6 +56,9 @@ struct PhysicalActivePrefix::Impl {
       const auto checked=publication.CopyAcceptedPhysicalDiagnostics(owner.accepted(),&diagnostics);
       if(checked.status!=ShellPublicationStatus::Success)return {S::SourceMismatch,checked.message};
     }
+    // Host source/candidate authentication above remains fresh for every child.
+    // Only this single uninterrupted group call may reuse the completed traversal.
+    if(candidate && within_group && SameAuthority(*within_group))return Ok();
     const auto family=[&](auto* batch,std::size_t count,const auto& expected,F which) -> ActivePrefixReport {
       if(!count)return Ok();
       if(!batch||count>forecast.activity_capacity)return {S::SourceMismatch,"Incomplete activity family",which};
@@ -120,6 +134,18 @@ ActivePrefixReport PhysicalActivePrefix::CheckPrepared(FENodalState& owner,Shell
     const NodalTrialToken& token,const ShellPhysicalDiagnostics& candidate,const NodalPreparedView& view) {
   return impl_?impl_->Check(owner,publication,&token,&candidate,&view):
       ActivePrefixReport{S::NotInitialized,"Active prefix is not initialized"};
+}
+ActivePrefixReport PhysicalActivePrefix::CheckPreparedWithinGroup(FENodalState& owner,
+    ShellBatchPublication& publication,const NodalTrialToken& token,
+    const ShellPhysicalDiagnostics& candidate,const NodalPreparedView& view,
+    PreparedGroupSession& session) {
+  if(!impl_)return {S::NotInitialized,"Active prefix is not initialized"};
+  const bool same_call=session.owner==&owner && session.publication==&publication &&
+      session.token==&token && session.candidate==&candidate && session.view==&view;
+  const auto* prior=same_call && session.validated ? session.validated->impl_.get() : nullptr;
+  const auto result=impl_->Check(owner,publication,&token,&candidate,&view,prior);
+  if(same_call && result.status==S::Ok)session.validated=this;
+  return result;
 }
 ActivePrefixForecast PhysicalActivePrefix::allocations() const noexcept {return impl_?impl_->forecast:ActivePrefixForecast{};}
 } // namespace tl::fea
