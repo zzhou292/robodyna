@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "NormalStage.h"
-#include "AssemblyTail.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <cstring>
@@ -191,11 +190,8 @@ TransactionReport Transaction::AssembleAccepted(fe::FENodalState& owner,const fe
   if(incidence_status!=assembly::IncidenceStatus::Ok)return p.Fail(Error(incidence_status==assembly::IncidenceStatus::DeviceFailure?
       TransactionStatus::DeviceFailure:TransactionStatus::NumericalFailure,"Native dynamic ASS0 incidence rejected"));
   const auto incidence=p.incidence.view();if(!p.incidence.IsCurrent(incidence))return p.Fail(Error(TransactionStatus::StaleAttempt,"Native ASS0 incidence expired"));
-  status=rd::AssembleTail(
-      [&]{return rd::Gather(p.device,schedule,incidence.incidence(),view,cin,p.stream);},
-      [&]{return rd::Apply(p.device,view,cin,p.stream);},
-      [&](cudaError_t error){return p.Fence(error);},[]{return cudaGetLastError();});
-  if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+  status=p.Fence(rd::Gather(p.device,schedule,incidence.incidence(),view,cin,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
+  status=p.Fence(rd::Apply(p.device,view,cin,p.stream));if(status.status!=TransactionStatus::Ok)return p.Fail(status);
   publication=p.issuer.RecordNativeContactAcceptedAssembly(p.source.source_id,owner,token,view);
   if(publication.status!=fe::ShellPublicationStatus::Success)return p.Fail(Error(TransactionStatus::PublicationFailure,publication.message));
   return {TransactionStatus::Ok,"OK"};

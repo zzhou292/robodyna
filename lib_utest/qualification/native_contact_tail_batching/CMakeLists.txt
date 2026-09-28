@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLNativeContactTailBatch LANGUAGES C CXX CUDA Fortran)
+enable_testing()
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_runtime" native-runtime)
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_executable(native_contact_tail_cuda CudaTest.cu)
+target_link_libraries(native_contact_tail_cuda PRIVATE tl_radioss_type25_transaction GTest::gtest_main CUDA::cudart)
+set_target_properties(native_contact_tail_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+target_compile_options(native_contact_tail_cuda PRIVATE
+ "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+ "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+add_test(NAME native_contact_tail_cuda COMMAND native_contact_tail_cuda)
+set_tests_properties(native_contact_tail_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_test(NAME native_contact_tail_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+set_tests_properties(native_contact_tail_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
