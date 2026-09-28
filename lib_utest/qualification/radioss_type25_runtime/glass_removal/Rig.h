@@ -2,6 +2,7 @@
 #pragma once
 #include "Contact.h"
 #include "../FullLedgerRig.h"
+#include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_src/solvers/ExplicitNodalStep.h"
 #include "lib_src/solvers/NodalCinStructuralLimit.h"
 #include "../../resident_shell_tab1/Values.h"
