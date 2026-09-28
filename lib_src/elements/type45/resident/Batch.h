@@ -5,6 +5,7 @@
 #include "../../ShellBatchStartup.h"
 #include "../../../solvers/FENodalState.h"
 
+namespace tl::fea::physical_activity { struct BatchAccess; }
 namespace tl::fea {
 class ShellBatchPublication;
 class ShellPhysicalBinding;
@@ -92,6 +93,7 @@ class Batch {
   std::size_t startup_host_bytes() const noexcept;
  private:
   friend class ::tl::fea::ShellBatchPublication;
+  friend struct ::tl::fea::physical_activity::BatchAccess;
   friend class BatchQualificationPeer;
   BatchReport PreflightAttach(FENodalState&,const ShellPhysicalBinding&,const NodalCinWitnessSource&,const Model&,
       const BatchConfig&,const ShellBatchPublication*);
