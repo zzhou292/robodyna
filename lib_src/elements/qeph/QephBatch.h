@@ -8,6 +8,7 @@
 #include <memory>
 #include "../ShellFormulationScope.h"
 
+namespace tl::fea::physical_activity { struct BatchAccess; }
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
   class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection;
   class ShellBatchFailureBinding; class ShellPhysicalBinding; struct NodalCinWitnessSource;
@@ -188,6 +189,7 @@ class QephBatch {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  friend struct ::tl::fea::physical_activity::BatchAccess;
   const ShellPhysicalBinding* MappedBinding() const noexcept;
   BatchReport PreflightAttachMapped(FENodalState&,const ShellPhysicalBinding&,
       std::uint64_t,std::uint64_t,const ShellBatchStartup&,const ShellBatchPublication*) const noexcept;

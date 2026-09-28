@@ -22,6 +22,17 @@ add_library(tl_shell_batch_publication STATIC
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalTransaction.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalReadback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalActivePrefix.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Accepted.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/BatchAccess.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Capture.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Device.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/DeviceValues.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Guards.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Layout.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Prepared.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Startup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/publication/physical_activity/Values.cpp"
+
   "${CMAKE_CURRENT_LIST_DIR}/publication/ShellPhysicalScratchParticipation.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/NativeContactPublicationState.cpp"
 
