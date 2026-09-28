@@ -1182,13 +1182,58 @@ cc_library(
 )
 
 
+# Contact lifecycle support is separate from its numerical transaction owner.
+cc_library(
+    name = "radioss_type25_runtime_types",
+    hdrs = ["radioss_type25/runtime/Types.h"],
+    deps = [":radioss_type25_lifecycle", ":radioss_type25_assembly_device_values",
+            ":radioss_type25_search_values", ":radioss_type25_candidate_values",
+            ":radioss_type25_fixed_main_startup", ":radioss_type25_normal_activation"],
+)
+cc_library(
+    name = "radioss_type25_physical_main_source",
+    srcs = glob(["radioss_type25/runtime/physical_main/*.cpp"]),
+    hdrs = ["radioss_type25/runtime/PhysicalMainSource.h"] + glob(["radioss_type25/runtime/physical_main/*.h"]),
+    deps = [":radioss_type25_runtime_types", ":radioss_type25_surface_source",
+            "//lib_src/assembly:shell_physical_binding", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_source",
+    srcs = glob(["radioss_type25/activity_source/*.cpp"]),
+    hdrs = glob(["radioss_type25/activity_source/*.h"]),
+    deps = [":radioss_type25_physical_main_source", "//lib_src/elements/type45:model",
+            "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_operand_values",
+    hdrs = glob(["radioss_type25/activity_operands/*.h"]),
+    deps = [":radioss_type25_activity_source", ":radioss_type25_current_normals",
+            "//lib_src/elements:shell_batch_publication", "//lib_utils:bounded_arena"],
+)
+cuda_library(
+    name = "radioss_type25_activity_operand_kernels",
+    srcs = ["radioss_type25/activity_operands/Kernels.cu"],
+    deps = [":radioss_type25_activity_operand_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_operands",
+    srcs = glob(["radioss_type25/activity_operands/*.cpp"]),
+    deps = [":radioss_type25_activity_operand_values", ":radioss_type25_activity_operand_kernels"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
 # Concrete common-owner native TYPE25 transaction. Native qualification oracles
 # are never a transitive dependency of these complete production libraries.
 cc_library(
     name = "radioss_type25_runtime_values",
-    srcs = ["radioss_type25/runtime/physical_main/Index.cpp", "radioss_type25/runtime/physical_main/Origins.cpp", "radioss_type25/runtime/physical_main/Validate.cpp", "radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp", "radioss_type25/runtime/MovingSource.cpp", "radioss_type25/runtime/MixedSource.cpp"],
-    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h", "radioss_type25/runtime/physical_main/*.h", "radioss_type25/runtime/diagnostics/*.h"]),
-    deps = [":radioss_type25_surface_source", "//lib_utils:source_identity_index", ":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
+    srcs = ["radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp", "radioss_type25/runtime/MovingSource.cpp", "radioss_type25/runtime/MixedSource.cpp"],
+    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h", "radioss_type25/runtime/diagnostics/*.h"],
+        exclude = ["radioss_type25/runtime/Types.h", "radioss_type25/runtime/PhysicalMainSource.h"]),
+    deps = [":radioss_type25_physical_main_source", ":radioss_type25_activity_operands", ":radioss_type25_runtime_types",
+            ":radioss_type25_surface_source", "//lib_utils:source_identity_index", ":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
             ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
             "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena",
             ":radioss_type25_current_normals", ":radioss_type25_initial_state", "//lib_src/math:scalar_bits"],
@@ -1196,13 +1241,14 @@ cc_library(
 )
 cuda_library(
     name = "radioss_type25_runtime_kernels",
-    srcs = ["radioss_type25/runtime/Kernels.cu", "radioss_type25/runtime/NormalStage.cu"],
+    srcs = ["radioss_type25/runtime/Kernels.cu", "radioss_type25/runtime/NormalStage.cu", "radioss_type25/runtime/ActivityTransfer.cu"],
     deps = [":radioss_type25_runtime_values"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
 )
 cc_library(
     name = "radioss_type25_transaction",
-    srcs = ["radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/GeneralPlanning.cpp", "radioss_type25/runtime/InitialSeed.cpp",
+    srcs = ["radioss_type25/runtime/ActivityPlanning.cpp", "radioss_type25/runtime/ActivityRuntime.cpp",
+            "radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/GeneralPlanning.cpp", "radioss_type25/runtime/InitialSeed.cpp",
             "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp",
             "radioss_type25/runtime/GroupSeal.cpp"],
     deps = [":radioss_type25_runtime_kernels", "//lib_src/solvers:nodal_trial_identity"],
