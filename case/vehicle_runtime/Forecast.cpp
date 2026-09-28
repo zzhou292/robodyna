@@ -47,6 +47,8 @@ Forecast ForecastStartup(const Config& config,const Source& source,std::size_t f
     fe::solids::BatchForecast solid;
     const auto solid_report = fe::solids::Batch::Forecast(c.solids,source.solids(),solid);
     Require(bool(solid_report),solid_report.message);
+    out.solid_packet_blocks=solid.controlled_packet_blocks;
+    out.solid_worker_slots=solid.controlled_worker_slots;
     // These two existing APIs expose a complete bound. Charge all incremental
     // scratch as retained, conservatively, rather than duplicate private math.
     Require(beam.startup_host_bytes >= physical.owned_payload_bytes() &&

@@ -39,3 +39,9 @@ target_link_libraries(native_vehicle_contact_diagnostics PRIVATE robo_dyna_nativ
 target_compile_options(native_vehicle_contact_diagnostics PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME native_vehicle_contact_diagnostics COMMAND native_vehicle_contact_diagnostics)
 set_tests_properties(native_vehicle_contact_diagnostics PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+
+add_executable(native_vehicle_solid_execution_controls SolidExecutionLimitsTest.cpp)
+target_link_libraries(native_vehicle_solid_execution_controls PRIVATE robo_dyna_native_vehicle_run GTest::gtest_main)
+target_compile_options(native_vehicle_solid_execution_controls PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME native_vehicle_solid_execution_controls COMMAND native_vehicle_solid_execution_controls)
+set_tests_properties(native_vehicle_solid_execution_controls PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

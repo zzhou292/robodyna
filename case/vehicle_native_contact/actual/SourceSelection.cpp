@@ -1,4 +1,5 @@
 #include "SourceSelection.h"
+#include "SolidExecutionLimits.h"
 #include "../tests/ActualSources.h"
 #include <cmath>
 #include <cstdlib>
@@ -32,7 +33,7 @@ SourceSelection::SourceSelection(Config& config,source::Limits limits):limits_(l
     output::Require(used==dt.size()&&std::isfinite(value)&&value>0,
         "Native V6 requires an explicit finite positive physical timestep");
     config.dynamics.startup.reserved_step_s=value;
-    config.dynamics.startup.limits.solids=tl::fea::solids::SourceControlledBatchLimits();
+    config.dynamics.startup.limits.solids=SolidExecutionLimits(std::getenv("ROBO_NATIVE_SOLID_WORKER_BLOCKS"));
 }
 detail::SourceInputs SourceSelection::Prepare() {
     if(!artifact_)return ActualSources();

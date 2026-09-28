@@ -75,6 +75,8 @@ void Plan(output::Document& doc, const Forecast& f, bool complete) {
     output::Integer(doc, "census_conservative_peak_host_bytes", f.census_peak_host_bytes);
     output::Integer(doc, "census_peak_device_bytes", f.census_peak_device_bytes);
     output::Boolean(doc, "fits_runtime_limits", f.fits_runtime_limits);
+    output::Integer(doc,"admitted_solid_packet_blocks",f.physical.startup.solid_packet_blocks);
+    output::Integer(doc,"admitted_solid_worker_slots",f.physical.startup.solid_worker_slots);
     output::Value table(rapidjson::kArrayType);
     for (const auto& entry : f.sources.interfaces) {
         const auto index = entry.role == Role::Self ? 0u : 1u;

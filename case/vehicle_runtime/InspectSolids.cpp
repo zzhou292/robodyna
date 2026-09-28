@@ -31,6 +31,9 @@ void VehiclePhysicalStartup::Storage::InspectSolids(InitialInspection& out) {
             &diagnostics));
         detail::CheckInitialSolidStamps(b);detail::CheckInitialSolidStamps(foam);
     }
+    output::Require(diagnostics.controlled_packet_blocks==forecast.solid_packet_blocks &&
+        diagnostics.controlled_worker_slots==forecast.solid_worker_slots,
+        "Actual solid worker allocation differs from admitted forecast");
     output::Require(diagnostics.valid && !diagnostics.has_completed_interval &&
         diagnostics.parent_count[0]==a.size() && diagnostics.parent_count[1]==model.solid24().size() &&
         diagnostics.parent_count[2]==c.size() && diagnostics.parent_count[3]==rear.size() &&
