@@ -1,4 +1,4 @@
-#include "NativeOracle.h"
+#include "NativeMaps.h"
 #include <array>
 namespace type25_search_test {
 extern "C" void rd_search_budget(const double*,const double*,const double*,const double*,const int*,double*,int*);
@@ -28,23 +28,17 @@ s::Extrema NativeExtrema(const s::Source& source,const s::Current& current,const
   const int nodes=source.physical_nodes,ns=source.secondaries,nm=source.mains,no=source.main_1d;
   std::vector<int> secondary(ns),main(nm),one_d(no);
   for(int i=0;i<ns;++i)secondary[i]=source.secondary_nodes[i]+1;
-  for(int i=0;i<nm;++i)main[i]=source.main_nodes[i]==UINT32_MAX ? 0 : source.main_nodes[i]+1;
-  for(int i=0;i<no;++i)one_d[i]=source.main_1d_nodes[i]==UINT32_MAX ? 0 : source.main_1d_nodes[i]+1;
+  for(int i=0;i<nm;++i)main[i]=NativeMain(source,current,source.main_nodes[i]);
+  for(int i=0;i<no;++i)one_d[i]=NativeMain(source,current,source.main_1d_nodes[i]);
   const bool si=source.input_units==s::InputUnits::Si;
   const double length=si ? source.units.length_m : 1;
   const double velocity=si ? source.units.length_m/source.units.time_s : 1;
-  std::vector<double> x(3*nodes),v(3*nodes),saved(3*((ns+nm+no<nodes)?ns+nm+no:nodes));
+  std::vector<double> x(3*nodes),v(3*nodes);
+  const auto saved=NativeReference(source,reference);
   for(int i=0;i<nodes;++i) {
     const auto a=current.positions.at(i),b=current.velocities.at(i);
     x[3*i]=a.x/length;x[3*i+1]=a.y/length;x[3*i+2]=a.z/length;
     v[3*i]=b.x/velocity;v[3*i+1]=b.y/velocity;v[3*i+2]=b.z/velocity;
-  }
-  const bool compact=ns+nm+no<nodes;
-  for(std::size_t i=0;i<saved.size()/3;++i) {
-    int node=i;
-    if(compact)node=i<std::size_t(ns) ? secondary[i]-1 : (i<std::size_t(ns+nm) ? main[i-ns]-1 : one_d[i-ns-nm]-1);
-    if(node<0)continue;
-    const auto a=reference.positions.at(node);saved[3*i]=a.x/length;saved[3*i+1]=a.y/length;saved[3*i+2]=a.z/length;
   }
   // I25BUCE_CRIT observes pre-clamp activity, then mutates STFN for NSPMD=1.
   // Give the complete donor a private copy; never mutate borrowed fixture input.
