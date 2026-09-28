@@ -1,5 +1,6 @@
 #include "Coverage.h"
 #include "lib_utils/BoundedArena.h"
+#include "lib_src/collision/radioss_type25/runtime/physical_main/Index.h"
 #include <algorithm>
 namespace crash::cases::vehicle_native_contact::activity::coverage {
 Coverage Audit(const detail::SourceInputs& in,Limits limits) {
@@ -15,14 +16,17 @@ Coverage Audit(const detail::SourceInputs& in,Limits limits) {
     // Decode temporarily retains native bytes and the typed vector. Finish
     // keeps two bounded ID buffers and one serialized digest buffer. The
     // physical source identity index is conservatively charged simultaneously.
+    const auto index=tlfea::contact::radioss_type25::runtime_detail::physical_main::Index::Preflight(
+        in.owner.physical(),limits.workspace_bytes);
+    output::Require(index.report.status==tlfea::contact::radioss_type25::TransactionStatus::Ok,index.report.message);
     tl::util::BoundedArenaLayout budget(limits.workspace_bytes);tl::util::ArenaRegion ignored;
     output::Require(budget.Append<std::byte>(2*largest,ignored)&&budget.Append<std::uint64_t>(3*rows,ignored)&&
-        budget.Append<std::uint8_t>(rows,ignored)&&budget.Append<std::byte>(8u<<20,ignored),
+        budget.Append<std::uint8_t>(rows,ignored)&&budget.Append<std::byte>(index.bytes,ignored),
         "Complete source coverage construction exceeds workspace cap");
     Coverage result;result.physical_nodes=in.owner.physical().domain()->node_count();result.wall_shells=1;
     result.canonical_sha256=canonical.inputs.canonical_manifest.sha256;
     result.scope_sha256=canonical.inputs.scope_report.sha256;result.source_member_sha256=canonical.inputs.source_member.sha256;
-    result.shells=Shells(in,canonical);result.beams=Beams(in,canonical);result.solids=Solids(in,canonical);
+    result.shells=Shells(in,canonical);result.beams=Beams(in,canonical);result.solids=Solids(in,canonical,index.bytes);
     result.type13=mechanical.beams().connection_count();result.beam18=mechanical.structural_beams().parents().size();
     Connections(in,result);
     const auto& shell=*in.owner.physical().shells();const auto& scope=in.owner.physical().coefficients()->scope();

@@ -5,7 +5,7 @@ namespace crash::cases::vehicle_native_contact::activity::coverage {
 using Canonical=output::full_shell::source::CanonicalData;
 Coverage Audit(const detail::SourceInputs&,Limits);
 Population Shells(const detail::SourceInputs&,const Canonical&);
-Population Solids(const detail::SourceInputs&,const Canonical&);
+Population Solids(const detail::SourceInputs&,const Canonical&,std::size_t index_cap);
 Population Beams(const detail::SourceInputs&,const Canonical&);
 void Connections(const detail::SourceInputs&,Coverage&);
 // Reusable exact source-row checks used by all array-backed families.
