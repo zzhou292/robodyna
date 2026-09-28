@@ -10,6 +10,7 @@ cuda_library(
     ],
     hdrs = [
         "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h", "Measurement.h", "AssemblyValues.h",
+        "measurement/Tile.h", "measurement/Read.h", "measurement/Finalize.cuh",
         "OperationChecks.h", "ResultChecks.h", "mapped/State.h", "mapped/Startup.h",
     ],
     copts = [

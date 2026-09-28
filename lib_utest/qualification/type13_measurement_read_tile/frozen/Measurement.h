@@ -22,8 +22,12 @@ TL_TYPE13_HD inline Measurement PrepareMeasurement(const Storage& state,
       old.endpoints, view, state.model.config.owner.fixed_dt, kick, drift);
   return out;
 }
-TL_TYPE13_HD inline void AccumulatePrepared(const Measurement& now,
-    BatchDiagnostics& diagnostics) noexcept {
+TL_TYPE13_HD inline bool MeasurePrepared(const DeviceModel& model,
+    const Measurement* values, BatchDiagnostics& diagnostics) noexcept {
+  diagnostics.element_count = model.element_count;
+  diagnostics.minimum_native_dt_s = values[0].native_dt;
+  for (std::size_t e = 0; e < model.element_count; ++e) {
+    const auto& now = values[e];
     diagnostics.active_count += now.active;
     diagnostics.newly_failed_count += now.newly_failed;
     for (unsigned k = 0; k < ChannelCount; ++k) {
@@ -35,8 +39,7 @@ TL_TYPE13_HD inline void AccumulatePrepared(const Measurement& now,
       diagnostics.internal_kick_work_J += now.kick[local];
       diagnostics.internal_drift_work_J += now.drift[local];
     }
-}
-TL_TYPE13_HD inline bool FinishPrepared(const BatchDiagnostics& diagnostics) noexcept {
+  }
   for (unsigned k = 0; k < ChannelCount; ++k) {
     if (!tl::math::Finite(diagnostics.internal_work_J[k]) ||
         !tl::math::Finite(diagnostics.internal_work_increment_J[k])) return false;
@@ -44,15 +47,5 @@ TL_TYPE13_HD inline bool FinishPrepared(const BatchDiagnostics& diagnostics) noe
   return tl::math::Finite(diagnostics.internal_kick_work_J) &&
       tl::math::Finite(diagnostics.internal_drift_work_J) &&
       tl::math::Finite(diagnostics.minimum_native_dt_s) && diagnostics.minimum_native_dt_s > 0;
-}
-TL_TYPE13_HD inline bool MeasurePrepared(const DeviceModel& model,
-    const Measurement* values, BatchDiagnostics& diagnostics) noexcept {
-  diagnostics.element_count = model.element_count;
-  diagnostics.minimum_native_dt_s = values[0].native_dt;
-  for (std::size_t e = 0; e < model.element_count; ++e) {
-    const auto& now = values[e];
-    AccumulatePrepared(now,diagnostics);
-  }
-  return FinishPrepared(diagnostics);
 }
 } // namespace tl::fea::type13::batch_detail
