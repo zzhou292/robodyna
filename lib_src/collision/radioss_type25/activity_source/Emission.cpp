@@ -9,7 +9,7 @@ struct ScratchLayout {
   tl::util::ArenaRegion offsets,cursor,mains;
   std::size_t bytes=0,incidence=0;
 };
-TransactionReport Layout(Source source,std::size_t nodes,std::size_t cap,ScratchLayout& out) {
+TransactionReport MakeEmissionLayout(Source source,std::size_t nodes,std::size_t cap,ScratchLayout& out) {
   for(std::size_t i=0;i<source.mains();++i) {
     const auto additional=Corners(source.nodes(i));
     if(out.incidence>UINT32_MAX-additional)return Fail(S::ResourceLimit,"Registered-main incidence overflows");
@@ -52,7 +52,7 @@ bool Write(void* opaque,const ParentRow& row) {
 }
 TransactionReport ForecastEmissions(PhysicalSources physical,Source source,Counts& counts,
     Limits limits,std::size_t& scratch_bytes) noexcept {
-  ScratchLayout layout;auto report=Layout(source,counts.nodes,limits.startup_bytes,layout);
+  ScratchLayout layout;auto report=MakeEmissionLayout(source,counts.nodes,limits.startup_bytes,layout);
   if(report.status!=S::Ok)return report;
   tl::util::HostArena arena;
   if(!arena.Initialize(counts.nodes*sizeof(std::uint32_t)))return Fail(S::ResourceLimit,"Emission count allocation failed");
@@ -69,7 +69,7 @@ TransactionReport ForecastEmissions(PhysicalSources physical,Source source,Count
 }
 TransactionReport Emit(PhysicalSources physical,Source source,const Counts& counts,Limits limits,
     std::uint32_t* offsets,std::uint32_t* mains,std::size_t& used) noexcept {
-  ScratchLayout layout;auto report=Layout(source,counts.nodes,limits.startup_bytes,layout);
+  ScratchLayout layout;auto report=MakeEmissionLayout(source,counts.nodes,limits.startup_bytes,layout);
   if(report.status!=S::Ok)return report;
   tl::util::HostArena arena;
   if(!arena.Initialize(layout.bytes))return Fail(S::ResourceLimit,"Registered-main discovery allocation failed");
