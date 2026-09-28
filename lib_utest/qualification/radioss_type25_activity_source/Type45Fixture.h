@@ -8,7 +8,7 @@ namespace a=tlfea::contact::radioss_type25::activity_source;
 namespace n=tlfea::contact::radioss_type25;
 namespace fe=tl::fea;
 struct Type45Fixture {
-  type45_model_test::Fixture rigid;
+  type45_model_test::Fixture rigid{false,false,.002,true};
   fe::ShellBatchPlasticityBinding catalog;
   fe::ShellBatchFailureBinding failure;
   fe::ShellExecutionBinding execution;
@@ -34,7 +34,8 @@ struct Type45Fixture {
     }
     EXPECT_EQ(failure.InitializeExecution(catalog,policies,4).status,fe::ShellPlasticityBindingStatus::Success);
     EXPECT_EQ(execution.Initialize(catalog,rigid.ledger,rigid.binding).status,fe::ShellPlasticityBindingStatus::Success);
-    EXPECT_TRUE(physical.InitializeExecution({&rigid.source.shells,&catalog,&failure,nullptr},rigid.ledger,execution));
+    const auto bound=physical.InitializeExecution({&rigid.source.shells,&catalog,&failure,nullptr},rigid.ledger,execution);
+    EXPECT_TRUE(bound)<<bound.message;
     inputs=type45_model_test::Inputs(rigid);
     EXPECT_TRUE(joints.Initialize(rigid.binding,{rigid.domain.source_instance_id(),{inputs.data(),inputs.size()}}));
     mains[0].global_id=1;mains[0].segment_type=2;mains[1].global_id=2;mains[1].segment_type=-1;
