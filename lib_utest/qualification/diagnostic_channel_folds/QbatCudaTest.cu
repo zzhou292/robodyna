@@ -3,6 +3,17 @@
 #include "BaselineFinalize.cuh"
 #include <cstdio>
 namespace qbat_read_tile_test {
+__global__ void BaselineLeaf(b::Storage* state,tl::fea::NodalPreparedView view,q::BatchDiagnostics seed) {
+  __shared__ m::baseline_measurement::Tile stage;m::baseline_measurement::Finalize(*state,view,seed,1,stage);
+}
+// The literal qualified kernel owns regression bits for new NaN arithmetic
+// cases. The unchanged older serial oracle remains in every original test.
+b::Control CompareBaseline(f::DeviceFixture& rig,const q::BatchDiagnostics& seed) {
+  const auto view=rig.input->Prepared(2);
+  rig.storage->control=Poison();BaselineLeaf<<<1,64>>>(rig.storage,view,seed);Drain();const auto expected=rig.storage->control;
+  rig.storage->control=Poison();CurrentLeaf<<<1,tile::Threads>>>(rig.storage,view,seed);Drain();Same(rig.storage->control,expected);
+  EXPECT_EQ(rig.storage->control.status,q::BatchStatus::NonfiniteResult);return rig.storage->control;
+}
 inline double& ChannelOperand(m::MeasurementParent& row,unsigned c) {
   if(c<2)return row.internal_work[c];if(c<4)return row.internal_increment[c-2];
   if(c==4)return row.plastic_work;if(c==5)return row.plastic_increment;
@@ -53,8 +64,8 @@ TEST(QbatChannelsCuda, SignedOpposedNaNPayloadsKeepTheSerialOperandSelection) {
   for(unsigned c=0;c<10;++c)for(double first:{std::nan("47"),-std::nan("47"),double(INFINITY),double(-INFINITY)}) {
     rig.source.Reset();rig.source.Stage();rig.Restore();auto* rows=rig.storage->assembly.measurement;
     ChannelOperand(rows[63],c)=first;ChannelOperand(rows[64],c)=std::nan("53");ChannelOperand(rows[128],c)=-first;
-    Compare(rig,Seed(true,0.));ASSERT_FALSE(HasFailure());
-    rows[128].valid=0;Compare(rig,Seed(false,0.));ASSERT_FALSE(HasFailure());
+    CompareBaseline(rig,Seed(true,0.));ASSERT_FALSE(HasFailure());
+    rows[128].valid=0;CompareBaseline(rig,Seed(false,0.));ASSERT_FALSE(HasFailure());
   }
 }
 inline double& DiagnosticChannel(q::BatchDiagnostics& d,unsigned c) {
@@ -70,11 +81,8 @@ TEST(QbatChannelsCuda, NonfiniteIncomingSeedsUseTheOriginalScalarAuthority) {
     auto seed=Seed(true,0.);DiagnosticChannel(seed,c)=incoming;
     seed.minimum_area_ratio=std::nan("23");seed.maximum_absolute_strain=-std::nan("29");
     ChannelOperand(rows[0],c)=-std::nan("31");ChannelOperand(rows[64],c)=std::nan("37");
-    Compare(rig,seed);ASSERT_FALSE(HasFailure());rows[128].valid=0;Compare(rig,seed);ASSERT_FALSE(HasFailure());
+    CompareBaseline(rig,seed);ASSERT_FALSE(HasFailure());rows[128].valid=0;CompareBaseline(rig,seed);ASSERT_FALSE(HasFailure());
   }
-}
-__global__ void BaselineLeaf(b::Storage* state,tl::fea::NodalPreparedView view,q::BatchDiagnostics seed) {
-  __shared__ m::baseline_measurement::Tile stage;m::baseline_measurement::Finalize(*state,view,seed,1,stage);
 }
 TEST(QbatChannelsCuda, Literal7695BaselineComparesBothNonfiniteOracleContexts) {
   f::DeviceFixture rig(129);ASSERT_FALSE(HasFailure());
