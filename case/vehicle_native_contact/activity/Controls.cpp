@@ -3,8 +3,8 @@
 namespace crash::cases::vehicle_native_contact::activity::values {
 namespace s=tlfea::contact::radioss_type25::startup;
 native::Controls Self(const RawControls& raw,s::SolidErosion erosion) {
-    output::Require(raw.reader_idel==1&&erosion==s::SolidErosion::Enabled,
-        "Selected V6 self removal requires authenticated positive I_DEL1 and final solid-erosion policy");
+    output::Require(raw.reader_idel==1&&(erosion==s::SolidErosion::Enabled||erosion==s::SolidErosion::Disabled),
+        "Selected V6 self removal requires authenticated positive I_DEL1 and an explicit final solid-erosion policy");
     // Original HM_READ sets IDELKEEP only for negative I_DEL. This source's
     // positive1 therefore keeps the native disconnected-node removal policy.
     return {native::Deletion::ContainingElement,false,erosion};

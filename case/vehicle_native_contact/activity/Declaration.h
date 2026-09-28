@@ -11,6 +11,9 @@ struct Population {
 struct Coverage {
     Population shells,beams,solids;
     std::size_t physical_nodes=0,wall_shells=0,type13=0,beam18=0,welds=0,joints=0;
+    std::size_t pre_shell_internal=0;
+    tlfea::contact::radioss_type25::startup::SolidErosion incoming_solid_erosion=tlfea::contact::radioss_type25::startup::SolidErosion::Unspecified;
+    tlfea::contact::radioss_type25::startup::SolidErosion final_solid_erosion=tlfea::contact::radioss_type25::startup::SolidErosion::Unspecified;
     std::array<std::size_t,native::FamilyCount> families{};
     std::string canonical_sha256,scope_sha256,source_member_sha256;
     std::string executed_profile="native_v6_raw8_heph_explicit_cin28";

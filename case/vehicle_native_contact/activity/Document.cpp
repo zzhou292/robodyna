@@ -15,6 +15,9 @@ output::Document Document(const Declaration& declaration) {
         output::Value copy;copy.CopyFrom(row,d.GetAllocator());d.AddMember(output::Value(name,d.GetAllocator()),copy,d.GetAllocator());
     };
     population("shells",c.shells);population("beams",c.beams);population("solids",c.solids);
+    output::Integer(d,"pre_shell_internal_count",c.pre_shell_internal);
+    output::String(d,"incoming_solid_erosion",c.incoming_solid_erosion==tlfea::contact::radioss_type25::startup::SolidErosion::Enabled?"enabled":"disabled");
+    output::String(d,"final_solid_erosion",c.final_solid_erosion==tlfea::contact::radioss_type25::startup::SolidErosion::Enabled?"enabled":"disabled");
     output::Integer(d,"self_idel",static_cast<unsigned>(declaration.self().deletion));
     output::Integer(d,"wall_idel",static_cast<unsigned>(declaration.wall().deletion));
     output::Boolean(d,"self_keep_disconnected_nodes",declaration.self().keep_disconnected_nodes);
