@@ -13,6 +13,14 @@ class Index {
  public:
   static IndexForecast Preflight(const tl::fea::ShellPhysicalBinding&,std::size_t cap) noexcept;
   TransactionReport Initialize(const tl::fea::ShellPhysicalBinding&,std::size_t cap);
+  // Ordinals preserve the complete physical shell/solid table order. They are
+  // source lookups only, never runtime activity or synthetic contact owners.
+  std::size_t ShellOrdinal(std::uint64_t id) const noexcept {
+    return physical_&&id ? shells_.First(id) : SIZE_MAX;
+  }
+  std::size_t SolidOrdinal(std::uint64_t id) const noexcept {
+    return physical_&&id ? solids_.First(id) : SIZE_MAX;
+  }
   bool Shell(std::uint64_t source_id,Face&,bool& triangle) const noexcept;
   bool Solid(std::uint64_t source_id,std::array<std::uint32_t,8>&) const noexcept;
  private:
