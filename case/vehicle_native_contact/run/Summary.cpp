@@ -109,6 +109,27 @@ records::RecordFile WriteSummary(const std::filesystem::path& root, const Vehicl
         const auto& rejected = *result.rejected_native;
         Boolean(failure, "source_available", rejected.source.available);
         if (rejected.source.available) Integer(failure, "source_id", rejected.source.source_id);
+        if (rejected.diagnostics.maintenance_failure_available) {
+            const auto& diagnostic = rejected.diagnostics;
+            const auto& report = diagnostic.maintenance_failure;
+            Document maintenance;
+            maintenance.SetObject();
+            String(maintenance, "scope", "exact failed maintenance leaf, not a physical or candidate receipt");
+            Integer(maintenance, "operation", static_cast<unsigned>(diagnostic.maintenance_operation));
+            Integer(maintenance, "status", static_cast<unsigned>(report.status));
+            Boolean(maintenance, "force_sort", diagnostic.maintenance_force_sort);
+            Boolean(maintenance, "query_available", report.query_available);
+            Boolean(maintenance, "row_available", report.row_available);
+            if (report.row_available) Integer(maintenance, "input_row", report.input_row);
+            if (report.query_available) {
+                Integer(maintenance, "source_id", report.stamp.source.source);
+                Integer(maintenance, "topology_generation", report.stamp.source.topology);
+                Integer(maintenance, "source_activity_generation", report.stamp.source.activity);
+                Integer(maintenance, "epoch", report.stamp.epoch);
+                Integer(maintenance, "attempt", report.stamp.attempt);
+            }
+            array_json::Child(failure, "maintenance_failure", maintenance);
+        }
         Boolean(failure, "candidate_rebuild_available", rejected.diagnostics.candidate_rebuild_available);
         if (rejected.diagnostics.candidate_rebuild_available) {
             const auto& report = rejected.diagnostics.candidate_rebuild;

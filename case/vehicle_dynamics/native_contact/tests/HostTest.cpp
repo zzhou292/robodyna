@@ -67,3 +67,24 @@ TEST(NativeContributionHost, ErrorsOwnTheBorrowedMessageAndEveryNativeDiagnostic
     EXPECT_FALSE(protocol.failure().source.available);
     EXPECT_FALSE(protocol.failure().diagnostics.candidate_rebuild_available);
 }
+
+TEST(NativeContributionHost, SearchMaintenanceFailureRetainsExactLeafAndRow) {
+    n::TransactionDiagnostics diagnostics;
+    diagnostics.maintenance_failure_available = true;
+    diagnostics.maintenance_operation = n::MaintenanceOperation::CaptureReference;
+    diagnostics.maintenance_failure.status = n::search::Status::UnsupportedLifecycle;
+    diagnostics.maintenance_failure.input_row = 42;
+    diagnostics.maintenance_failure.row_available = true;
+    diagnostics.maintenance_failure.query_available = true;
+    diagnostics.maintenance_failure.stamp = {{71,2,3},17,19};
+    app::StageError error(app::Operation::Assemble,
+        {n::TransactionStatus::NumericalFailure,"Native trial reference rebuild rejected"},{},diagnostics);
+    diagnostics = {};
+    const auto& saved = error.failure().diagnostics;
+    EXPECT_TRUE(saved.maintenance_failure_available);
+    EXPECT_EQ(saved.maintenance_operation,n::MaintenanceOperation::CaptureReference);
+    EXPECT_EQ(saved.maintenance_failure.status,n::search::Status::UnsupportedLifecycle);
+    EXPECT_EQ(saved.maintenance_failure.input_row,42u);
+    EXPECT_EQ(saved.maintenance_failure.stamp.epoch,17u);
+    EXPECT_NE(std::string(error.what()).find("search_row=42"),std::string::npos);
+}
