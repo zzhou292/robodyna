@@ -15,6 +15,12 @@ void ReachRemoval(Rig& rig,Attempt& a,State& before,std::vector<double>& force) 
   }
   rig.Discard();throw std::runtime_error("Declared bounded glass bending load did not reach TAB1 removal");
 }
+bool GlassMain(const Rig& rig,int id) {
+  for(const auto& main:rig.self_source.mains)if(main.global_id==id){
+    bool glass=true;for(auto node:main.nodes)glass=glass&&node>=4&&node<8;return glass;
+  }
+  return false;
+}
 void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   const auto candidate=rig.PreparedFailure(a);
   EXPECT_TRUE(before.failure[0].active);
@@ -25,7 +31,17 @@ void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   EXPECT_FALSE(candidate[1].active);
   EXPECT_GT(FailedPoints(candidate[1]),0u);
   EXPECT_LT(FailedPoints(candidate[1]),3u);
+  // Release assertions below require a genuinely retained removed main and
+  // an independently active fixed-wall ledger, not empty initial histories.
+  bool retained_glass=false,active_wall_history=false;
+  for(const auto& row:before.contacts[0])retained_glass=retained_glass||GlassMain(rig,row.row.irtlm[0]);
+  for(const auto& row:before.contacts[1])active_wall_history=active_wall_history||
+      (row.row.irtlm[0]>0&&(row.row.history.normal.previous_stiffness>0||row.row.history.normal.staged_stiffness>0));
+  EXPECT_TRUE(retained_glass);
+  EXPECT_TRUE(active_wall_history);
   const auto self=rig.self.last_diagnostics(),wall=rig.wall.last_diagnostics();
+  EXPECT_GT(self.active_forces,0u);
+  EXPECT_GT(wall.active_forces,0u);
   EXPECT_TRUE(self.activity_changed);
   EXPECT_EQ(self.activity_removed_mains,2u);
   EXPECT_EQ(self.activity_orphan_secondaries,4u);
@@ -34,12 +50,6 @@ void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   EXPECT_EQ(wall.activity_orphan_secondaries,0u);
   // Candidate source slabs/history cannot become visible before common commit.
   Same(before,rig.Read());
-}
-bool GlassMain(const Rig& rig,int id) {
-  for(const auto& main:rig.self_source.mains)if(main.global_id==id){
-    bool glass=true;for(auto node:main.nodes)glass=glass&&node>=4&&node<8;return glass;
-  }
-  return false;
 }
 void ContinueAfterRemoval(Rig& rig,const State& before) {
   const auto accepted=rig.Read();
