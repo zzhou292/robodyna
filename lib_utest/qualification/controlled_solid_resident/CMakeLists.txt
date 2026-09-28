@@ -10,11 +10,11 @@ set(TL_EXTENDED_SOLID_RESIDENT_CUDA OFF)
 # This profile owns a new complete source pin; the older frozen manifest remains intact.
 set(TL_EXTENDED_SOLID_RESIDENT_IDENTITY_CHECK OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../extended_solid_resident" legacy)
-add_executable(controlled_solid_resident_host HostTest.cpp CapacityTest.cpp ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
+add_executable(controlled_solid_resident_host HostTest.cpp CapacityTest.cpp WorkerBudgetTest.cpp ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
 target_link_libraries(controlled_solid_resident_host PRIVATE tl_solid_batch_values tl_tied_cin_attachment tl_nodal_rigid_assembly_binding GTest::gtest_main)
 target_compile_options(controlled_solid_resident_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME controlled_solid_resident_host COMMAND controlled_solid_resident_host)
-add_executable(controlled_solid_resident_cuda OwnerTest.cu PacketTest.cu AssemblyTest.cu SnapshotTest.cu Rig.cu ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
+add_executable(controlled_solid_resident_cuda OwnerTest.cu PacketTest.cu AssemblyTest.cu SnapshotTest.cu WorkerSnapshotTest.cu Rig.cu ../extended_solid_resident/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
 target_link_libraries(controlled_solid_resident_cuda PRIVATE tl_solid_batch tl_tied_cin_attachment tl_nodal_rigid_assembly_binding GTest::gtest_main)
 set_target_properties(controlled_solid_resident_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 target_compile_options(controlled_solid_resident_cuda PRIVATE

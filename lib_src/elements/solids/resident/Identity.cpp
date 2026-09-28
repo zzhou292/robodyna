@@ -12,7 +12,8 @@ bool SameConfig(const BatchConfig& a, const BatchConfig& b) noexcept {
   const auto& y = b.limits;
   return x.max_parents == y.max_parents && x.max_materials == y.max_materials &&
       x.max_curve_points == y.max_curve_points && x.max_nodes == y.max_nodes &&
-      x.max_device_bytes == y.max_device_bytes && x.max_host_bytes == y.max_host_bytes;
+      x.max_device_bytes == y.max_device_bytes && x.max_host_bytes == y.max_host_bytes &&
+      x.max_controlled_packet_blocks == y.max_controlled_packet_blocks;
 }
 bool SameDiagnostics(const BatchDiagnostics& a, const BatchDiagnostics& b) noexcept {
   using shell_startup_detail::SameBits;
@@ -22,6 +23,8 @@ bool SameDiagnostics(const BatchDiagnostics& a, const BatchDiagnostics& b) noexc
       !SameBits(a.time, b.time) || !SameBits(a.base_time, b.base_time) ||
       !SameBits(a.velocity_time, b.velocity_time) ||
       !SameBits(a.base_velocity_time, b.base_velocity_time) || !SameBits(a.kick_dt, b.kick_dt) ||
+      a.controlled_packet_blocks != b.controlled_packet_blocks ||
+      a.controlled_worker_slots != b.controlled_worker_slots ||
       a.phase != b.phase || a.valid != b.valid ||
       a.has_completed_interval != b.has_completed_interval ||
       a.accepted_force_assembled != b.accepted_force_assembled ||

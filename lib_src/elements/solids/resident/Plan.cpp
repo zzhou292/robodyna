@@ -80,7 +80,11 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
     if(!((units.length_m==1&&units.mass_kg==1&&units.time_s==1)||
          (units.length_m==.001&&units.mass_kg==1000&&units.time_s==1)))
       return {BatchStatus::InvalidInput,"Controlled resident admits qualified SI or mm/Mg/s working units only"};
-    std::size_t capacity[controlled::Blocks]{};
+    const auto blocks=config.limits.max_controlled_packet_blocks;
+    if(blocks!=4&&blocks!=8&&blocks!=16&&blocks!=32)
+      return {BatchStatus::InvalidInput,"Controlled packet ceiling must be4,8,16 or32"};
+    count.controlled.blocks=blocks;
+    std::size_t capacity[controlled::MaximumBlocks]{};
     for(const auto& row:selected->parents())if(row.source.icontrol) {
       if(row.family==Family::Solid24)++count.controlled.h24;
       else if(row.family==Family::Solid18Law90)++count.controlled.foam;
@@ -90,10 +94,10 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
     for(std::size_t p=0;p<selected->packets().size();++p) {
       const auto& packet=selected->packets()[p].source;if(!packet.icontrol)continue;
       if(packet.member_count>controlled::Threads)return {BatchStatus::InvalidInput,"Native NEL exceeds admitted controlled CTA width"};
-      const auto worker=p%controlled::Blocks;
+      const auto worker=p%blocks;
       if(packet.member_count>capacity[worker])capacity[worker]=packet.member_count;
     }
-    for(unsigned n=0;n<controlled::Blocks;++n){count.controlled.worker_begin[n]=count.controlled.workers;count.controlled.workers+=capacity[n];}
+    for(unsigned n=0;n<blocks;++n){count.controlled.worker_begin[n]=count.controlled.workers;count.controlled.workers+=capacity[n];}
   }
   if (!MakeLayout(count, config, output)) {
     return {BatchStatus::ResourceLimit, "Solid typed counts or complete arena exceed limits"};

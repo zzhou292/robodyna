@@ -16,7 +16,7 @@ struct OwnerFixture {
   double foam_x[3]{0,.2,.4},foam_y[3]{0,10e6,50e6};
   bool controlled=false;
   explicit OwnerFixture(bool analytic44 = false,bool controls=false,
-      fe::solids::control::UnitScale units={1,1,1},bool collapsed=false,bool packet_pair=false);
+      fe::solids::control::UnitScale units={1,1,1},bool collapsed=false,bool packet_pair=false,unsigned controlled_packet_pairs=8);
   auto& Mechanics() { return legacy.mechanics; }
   auto Witnesses() const { return legacy.Witnesses(); }
   s::BatchConfig Configuration() const {

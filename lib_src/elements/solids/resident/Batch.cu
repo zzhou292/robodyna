@@ -32,10 +32,8 @@ BatchReport Batch::Impl::ReadControl() {
 BatchReport Batch::InitializeJoined(const BatchConfig& config, const Model& model) try {
   if (impl_) return {BatchStatus::InvalidInput, "Solid batch is already initialized"};
   BatchForecast forecast;
-  auto report = Forecast(config, model, forecast);
-  if (!report) return report;
   batch_detail::ArenaLayout layout;
-  report = batch_detail::Plan(config, model, layout);
+  auto report = Impl::Resolve(config, model, layout, forecast);
   if (!report) return report;
   util::HostArena upload;
   if (!upload.Initialize(layout.bytes))
@@ -69,7 +67,7 @@ BatchReport Batch::InitializeJoined(const BatchConfig& config, const Model& mode
   report = next->Runtime(cudaMemcpy(next->device, upload.data(), layout.bytes, cudaMemcpyHostToDevice),
       "Solid model upload failed");
   if (!report) return report;
-  batch_detail::LaunchInitialize(next->device, next->stream,next->device_header.controlled.packet_count);
+  batch_detail::LaunchInitialize(next->device, next->stream,next->device_header.controlled.blocks);
   report = next->ReadControl();
   if (!report) return report;
   next->accepted_diagnostics = next->control.diagnostics;

@@ -9,8 +9,8 @@ TEST(ControlledResidentCapacity, ExplicitEnvelopePreservesLegacyLimitsAndHardCei
   EXPECT_EQ(limits.max_device_bytes,192u<<20);EXPECT_EQ(limits.max_host_bytes,256u<<20);
   OwnerFixture fixture(false,true,{.001,1000,1});auto c=fixture.Configuration();c.limits=limits;
   s::BatchForecast value;ASSERT_TRUE(s::Batch::Forecast(c,fixture.model,value));
-  c.limits.max_device_bytes=limits.max_device_bytes+1;EXPECT_FALSE(s::Batch::Forecast(c,fixture.model,value));
-  c.limits=limits;c.limits.max_host_bytes=limits.max_host_bytes+1;EXPECT_FALSE(s::Batch::Forecast(c,fixture.model,value));
+  c.limits.max_device_bytes=(256u<<20)+1;EXPECT_FALSE(s::Batch::Forecast(c,fixture.model,value));
+  c.limits=limits;c.limits.max_host_bytes=(384u<<20)+1;EXPECT_FALSE(s::Batch::Forecast(c,fixture.model,value));
   OwnerFixture legacy;auto old=legacy.Configuration();old.limits=limits;
   EXPECT_FALSE(s::Batch::Forecast(old,legacy.model,value));
 }
@@ -21,12 +21,12 @@ TEST(ControlledResidentCapacity, CompleteControlledCountShapeRejects128AndFits19
   // admitted curve pool is used, so actual curve counts cannot exceed this arena.
   d::Counts n{908,2341,0,1,12,s::BatchLimits{}.max_curve_points,386,1345,3,1};
   n.controlled.h24=2341;n.controlled.foam=1345;n.controlled.packets=47;
-  n.controlled.members=4980;n.controlled.workers=d::controlled::Blocks*128;
+  n.controlled.members=4980;n.controlled.blocks=d::controlled::Blocks;n.controlled.workers=d::controlled::Blocks*128;
   for(unsigned i=0;i<d::controlled::Blocks;++i)n.controlled.worker_begin[i]=128*i;
   d::ArenaLayout layout;layout.bytes=77;
   EXPECT_FALSE(d::MakeLayout(n,c,layout));EXPECT_EQ(layout.bytes,77u);
   c.limits=s::SourceControlledBatchLimits();ASSERT_TRUE(d::MakeLayout(n,c,layout));
-  EXPECT_EQ(layout.bytes,152470008u+(d::controlled::Blocks-4)*(128*sizeof(d::controlled::Workspace)+sizeof(std::size_t)));EXPECT_EQ(layout.staging_bytes,19880688u);
+  EXPECT_EQ(layout.bytes,134475184u+sizeof(d::Storage)+n.controlled.workers*sizeof(d::controlled::Workspace));EXPECT_EQ(layout.staging_bytes,19880688u);
   EXPECT_EQ(layout.controlled.workspace.bytes,d::controlled::Blocks*128*sizeof(d::controlled::Workspace));
   RecordProperty("complete_count_shape_max_curve_device_bytes",layout.bytes);
   RecordProperty("complete_count_shape_host_staging_bytes",layout.staging_bytes);

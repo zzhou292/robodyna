@@ -4,7 +4,7 @@ namespace controlled_resident_test {
 bool Rig::Initialize() {
   auto& f=fixture.Mechanics();auto c=f.Config();c.fixed_dt=1e-8;const auto cin=f.Cin();
   if(!Good(owner.Initialize(c,f.Kinematics(),f.im.data(),f.Dofs(),fixture.binding,&cin)))return false;
-  config=fixture.Configuration();config.owner=owner.accepted();
+  config=fixture.Configuration();config.owner=owner.accepted();config.limits=limits;
   if(!Good(batch.InitializeJoined(config,fixture.model)))return false;
   if(!Good(Peer::PreflightAttach(batch,owner,fixture.ledger,fixture.binding,fixture.Witnesses(),fixture.model,config)))return false;
   Peer::Attach(batch);

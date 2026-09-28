@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OwnerFixture.h"
 namespace extended_resident_test {
-OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale units,bool collapsed,bool packet_pair):controlled(controls) {
+OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale units,bool collapsed,bool packet_pair,unsigned controlled_packet_pairs):controlled(controls) {
   auto& f=Mechanics();
   s::Input18Law44 rear;
   auto source=f.source.a;
@@ -54,7 +54,7 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
     if(packet_pair){auto p=legacy.input24;auto h=f.source.b;h.source_element_id=19102;
       h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
       EXPECT_EQ(fe::solid24::InitializeReference(h,p.reference),fe::solid24::Status::Success);h24.push_back(p);}
-    for(unsigned i=1;i<8;++i){
+    for(unsigned i=1;i<controlled_packet_pairs;++i){
       auto p=legacy.input24;auto h=f.source.b;h.source_element_id=19110+i;
       h.profile.working_length=units.length_m==1?fe::solid24::WorkingLengthUnit::Metre:fe::solid24::WorkingLengthUnit::Millimetre;
       EXPECT_EQ(fe::solid24::InitializeReference(h,p.reference),fe::solid24::Status::Success);h24.push_back(p);
@@ -66,7 +66,7 @@ OwnerFixture::OwnerFixture(bool analytic44,bool controls,s::control::UnitScale u
   std::vector<s::control::SourceParent> rows;
   std::vector<s::control::NativePacket> packets;
   std::vector<std::uint64_t> packet_members;
-  s::control::NativePartition partition{0,0,19,0,19+unsigned(packet_pair)};
+  s::control::NativePartition partition{0,0,2*controlled_packet_pairs+3,0,2*controlled_packet_pairs+3+unsigned(packet_pair)};
   if(controls) {
     auto row=[&](const auto& ref,unsigned ctl){const auto& a=ref.input();
       rows.push_back({a.source_element_id,a.source_part_id,a.source_section_id,a.source_material_id,a.source_section_id,ctl});

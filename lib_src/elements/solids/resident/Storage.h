@@ -6,11 +6,16 @@
 namespace tl::fea::solids::batch_detail {
 bool SameDiagnostics(const BatchDiagnostics&, const BatchDiagnostics&) noexcept;
 bool SameConfig(const BatchConfig&, const BatchConfig&) noexcept;
-void LaunchInitialize(Storage*, cudaStream_t, std::size_t native_packet_count = 0);
-void LaunchControlledInitialize(Storage*,cudaStream_t);
-void LaunchControlledCandidate(Storage*,unsigned,unsigned,NodalPreparedView);
+void LaunchInitialize(Storage*, cudaStream_t, std::size_t controlled_blocks = 0);
+struct ControlledKernelResources {
+  cudaFuncAttributes attributes{};
+  int active_blocks_per_multiprocessor=0,multiprocessors=0,maximum_threads_per_multiprocessor=0;
+};
+cudaError_t InspectControlledKernel(ControlledKernelResources&);
+void LaunchControlledInitialize(Storage*,cudaStream_t,unsigned);
+void LaunchControlledCandidate(Storage*,unsigned,unsigned,NodalPreparedView,unsigned);
 void LaunchCandidate(Storage*, unsigned accepted, unsigned trial,
-    NodalPreparedView, BatchDiagnostics, std::size_t native_packet_count = 0);
+    NodalPreparedView, BatchDiagnostics, std::size_t controlled_blocks = 0);
 void LaunchResultValidation(Storage*, unsigned trial, double time,
     std::uint64_t epoch, cudaStream_t);
 void LaunchMeasurementValidation(Storage*, unsigned accepted, unsigned trial,
@@ -19,6 +24,7 @@ cudaError_t LaunchAssembly(Storage*, unsigned accepted, NodalAssemblyView, Nodal
 } // namespace tl::fea::solids::batch_detail
 namespace tl::fea::solids {
 struct Batch::Impl {
+  static BatchReport Resolve(const BatchConfig&,const Model&,batch_detail::ArenaLayout&,BatchForecast&) noexcept;
   Impl(const BatchConfig& c, const Model& m) : config(c), model(m), accepted_stamp(c.owner) {}
   ~Impl();
   Impl(const Impl&) = delete;
