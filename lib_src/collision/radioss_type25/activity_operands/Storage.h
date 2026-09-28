@@ -18,11 +18,13 @@ struct Slot {
   double* main_stiffness_si = nullptr;
   double* secondary_stiffness_si = nullptr;
   std::int32_t* connected = nullptr;
+  std::uint8_t* main_node_activity = nullptr;
 };
 struct Layout {
   tl::util::ArenaRegion parents, node_offsets, node_parents, main_to_primary;
   tl::util::ArenaRegion containing_offsets, containing_parents, emitting_offsets, emitting_mains;
   tl::util::ArenaRegion secondary_nodes, secondary_coefficients[2], connected[2];
+  tl::util::ArenaRegion main_membership, main_node_activity[2];
   tl::util::ArenaRegion mains, normal_mains, normal_coefficients, free_mains, main_si, secondary_si;
   tl::util::ArenaRegion parent_active, parent_removed, node_active, events, removed;
   tl::util::ArenaRegion flags, offsets, control, scan;
@@ -30,6 +32,7 @@ struct Layout {
 };
 struct StartupLayout {
   tl::util::ArenaRegion secondary_nodes, secondary_coefficients, connected;
+  tl::util::ArenaRegion main_membership, main_node_activity;
   std::size_t bytes = 0;
 };
 bool MakeStartupLayout(Shape, std::size_t, StartupLayout&) noexcept;
@@ -47,6 +50,7 @@ struct Device {
   const std::uint32_t *main_to_primary = nullptr, *containing_offsets = nullptr, *containing_parents = nullptr;
   const std::uint32_t *emitting_offsets = nullptr, *emitting_mains = nullptr, *secondary_nodes = nullptr;
   Slot slots[2];
+  const std::uint8_t* main_membership = nullptr;
   std::uint8_t *parent_active = nullptr, *parent_removed = nullptr, *node_active = nullptr, *removed = nullptr;
   std::uint32_t *events = nullptr, *flags = nullptr, *offsets = nullptr;
   Control* control = nullptr;

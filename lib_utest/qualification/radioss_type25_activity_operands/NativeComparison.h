@@ -32,12 +32,14 @@ struct Saved {
   std::vector<n::startup::Main> normal;
   std::vector<double> secondary,main_si,secondary_si,normal_coefficients;
   std::vector<std::int32_t> connected;std::vector<std::uint32_t> free;
+  std::vector<std::uint8_t> main_activity;
 };
 inline Saved Read(GpuFixture& f,unsigned slot) {
   const auto v=f.operands.view(slot);EXPECT_EQ(v.main_count,f.source.selection.main_count);
   const auto stream=f.resources.stream;Saved result;
   result.mains=Read(v.mains,v.main_count,stream);result.secondary=Read(v.secondary_coefficients,v.secondary_count,stream);
   result.main_si=Read(v.main_stiffness_si,v.primary_count,stream);result.secondary_si=Read(v.secondary_stiffness_si,v.secondary_count,stream);
+  result.main_activity=Read(v.main_node_activity,v.node_count,stream);
   result.connected=Read(v.connected_elements,v.main_count,stream);result.free=Read(v.free_mains,v.free_count,stream);
   if(f.normals){result.normal=Read(v.normal_mains,v.main_count,stream);result.normal_coefficients=Read(v.normal_coefficients,v.main_count,stream);}
   return result;

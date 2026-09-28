@@ -11,6 +11,7 @@ void Exact(const Saved& left,const Saved& right) {
       EXPECT_EQ(left.mains[i].neighbors[k],right.mains[i].neighbors[k]);
       EXPECT_EQ(left.mains[i].normal_reference[k],right.mains[i].normal_reference[k]);}
   }
+  EXPECT_EQ(left.main_activity,right.main_activity);
   EXPECT_EQ(left.secondary,right.secondary);EXPECT_EQ(left.connected,right.connected);EXPECT_EQ(left.free,right.free);
   EXPECT_EQ(left.main_si,right.main_si);EXPECT_EQ(left.secondary_si,right.secondary_si);EXPECT_EQ(left.normal_coefficients,right.normal_coefficients);
   ASSERT_EQ(left.normal.size(),right.normal.size());

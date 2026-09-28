@@ -1,0 +1,9 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "path": "engine/source/interfaces/interf/chkstfn3.F",
+  "bytes": 147398,
+  "sha256": "c30b302d520cc9007329a1cb728c8ac798b9f2fd2093cb4138ed53e1cb07f37a",
+  "dispatcher_lines": "1363-1390: TYPE25 I_DEL1 calls CHKMSR3NB independently of IDELKEEP",
+  "consumed_prefix_lines": "2180-2196: partition bounds, original ITAG0 MSR retirement, barrier and original TYPE25 early return",
+  "scope": "Exact TYPE25-consumed prefix only; later non-TYPE25 element/surface logic is not compiled or claimed."
+}

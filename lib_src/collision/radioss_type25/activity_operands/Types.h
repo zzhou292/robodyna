@@ -37,6 +37,9 @@ struct Forecast {
   // Caller retains source Plan only through Initialize; its existing host
   // allocation is a simultaneous startup dependency, not a retained duplicate.
   std::size_t source_plan_host_bytes = 0;
+  // Included in owned_device/startup_host above, never additional charges.
+  std::size_t main_node_mask_device_bytes = 0, main_membership_device_bytes = 0;
+  std::size_t main_node_upload_host_bytes = 0;
 };
 struct View {
   const lifecycle::Main* mains = nullptr;
@@ -48,6 +51,11 @@ struct View {
   const double* main_stiffness_si = nullptr;
   const double* secondary_stiffness_si = nullptr;
   std::size_t main_count = 0, primary_count = 0, secondary_count = 0, free_count = 0;
+  // Published-slot native CHKMSR role activity, full physical-node indexing.
+  // Only genuine source MSR members consume physical support; all other bytes
+  // are neutral1. This never removes physical nodes, mass or secondary roles.
+  const std::uint8_t* main_node_activity = nullptr;
+  std::size_t node_count = 0;
 };
 struct StageReport {
   TransactionReport report;

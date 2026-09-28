@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "Values.h"
 #include <new>
 namespace tlfea::contact::radioss_type25::activity_operands {
 State::State() noexcept = default;
@@ -27,7 +28,9 @@ TransactionReport State::Initialize(const activity_source::Plan& plan, const Con
   auto* nodes = host.Construct<std::uint32_t>(host_layout.secondary_nodes);
   auto* coefficients = host.Construct<double>(host_layout.secondary_coefficients);
   auto* connected = host.Construct<std::int32_t>(host_layout.connected);
-  if (!nodes || !coefficients || !connected) return {S::ResourceLimit, "Contact operand upload layout failed"};
+  auto* main_membership = host.Construct<std::uint8_t>(host_layout.main_membership);
+  auto* main_activity = host.Construct<std::uint8_t>(host_layout.main_node_activity);
+  if (!nodes || !coefficients || !connected || !main_membership || !main_activity) return {S::ResourceLimit, "Contact operand upload layout failed"};
   const auto plan_view = plan.view();
   for (std::size_t i = 0; i < shape.secondaries; ++i) {
     nodes[i] = source.selection.secondary[i].node; coefficients[i] = source.selection.secondary[i].coefficient;
@@ -36,6 +39,13 @@ TransactionReport State::Initialize(const activity_source::Plan& plan, const Con
     connected[i] = plan_view.controls.solid_erosion == startup::SolidErosion::Enabled &&
         source.selection.mains[i].coefficient < 0 ?
         1 + (plan_view.mains[i].second != activity_source::NoParent) : 0;
+  // The full expanded main set is the genuine MSR union. Repeated opposite
+  // and triangle corner occurrences are idempotent membership, not node loss.
+  for (std::size_t i = 0; i < shape.mains; ++i)
+    for (auto node : source.selection.mains[i].nodes) main_membership[node] = 1;
+  for (std::size_t node = 0; node < shape.nodes; ++node)
+    main_activity[node] = detail::MainNodeActivity(main_membership[node] != 0,
+        plan_view.node_offsets[node] != plan_view.node_offsets[node+1], plan_view.controls);
   if (cudaMalloc(&next->arena, next->layout.bytes) != cudaSuccess)
     return {S::ResourceLimit, "Contact operand device allocation failed"};
   units_detail::Factors factors; units_detail::Make(units, factors);
@@ -55,6 +65,12 @@ TransactionReport State::Initialize(const activity_source::Plan& plan, const Con
   COPY(containing_offsets); COPY(containing_parents); COPY(emitting_offsets); COPY(emitting_mains);
 #undef COPY
   auto& d = next->device;
+  if (cudaMemcpyAsync(const_cast<std::uint8_t*>(d.main_membership), main_membership,
+          shape.nodes, cudaMemcpyHostToDevice, stream) != cudaSuccess ||
+      cudaMemcpyAsync(d.slots[0].main_node_activity, main_activity,
+          shape.nodes, cudaMemcpyHostToDevice, stream) != cudaSuccess ||
+      cudaMemcpyAsync(d.slots[1].main_node_activity, main_activity,
+          shape.nodes, cudaMemcpyHostToDevice, stream) != cudaSuccess) return fail();
   if (cudaMemcpyAsync(const_cast<std::uint32_t*>(d.secondary_nodes), nodes,
           shape.secondaries*sizeof(*nodes), cudaMemcpyHostToDevice, stream) != cudaSuccess ||
       cudaMemcpyAsync(d.slots[0].secondary_coefficients, coefficients,
@@ -83,7 +99,8 @@ View State::view(unsigned slot) const noexcept {
   v.connected_elements = d.connected; v.main_stiffness_si = d.main_stiffness_si;
   v.secondary_stiffness_si = d.secondary_stiffness_si;
   v.main_count = s.shape.mains; v.primary_count = s.shape.primaries;
-  v.secondary_count = s.shape.secondaries; v.free_count = s.free_count[slot]; return v;
+  v.secondary_count = s.shape.secondaries; v.free_count = s.free_count[slot];
+  v.main_node_activity = d.main_node_activity; v.node_count = s.shape.nodes; return v;
 }
 void State::DiscardStaged(unsigned accepted, unsigned alternate) noexcept {
   if (!impl_ || accepted > 1 || alternate > 1 || accepted == alternate) return;
