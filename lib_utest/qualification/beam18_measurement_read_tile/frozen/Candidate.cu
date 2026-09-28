@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "Measure.h"
-#include "measurement/Finalize.cuh"
 #include <cfloat>
 
 namespace tl::fea::beam18::batch_detail {
@@ -37,19 +36,29 @@ __global__ void Evaluate(Storage* s, unsigned accepted, unsigned trial, NodalPre
 }
 __global__ void Finalize(Storage* s, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity, bool initial) {
-  __shared__ measurement::Tile tile;
-  measurement::Finalize(*s,accepted,trial,view,identity,initial,tile);
+  s->control = {};
+  if (initial) {
+    identity.source_instance_id = s->source_instance_id;
+    identity.owner_id = s->config.owner.owner_id;
+    identity.configuration_id = s->config.configuration_id;
+    identity.qualification_id = s->config.qualification_id;
+    identity.phase = BatchPhase::Accepted;
+  }
+  identity.minimum_native_dt_s = DBL_MAX;
+  s->control.diagnostics = identity;
+  if (!Measure(*s, accepted, trial, initial ? nullptr : &view)) return;
+  s->control.diagnostics.valid = true;
 }
 } // namespace
 void LaunchInitialize(Storage* s, cudaStream_t stream) {
   Initialize<<<64, 64, 0, stream>>>(s);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Finalize<<<1, measurement::Threads, 0, stream>>>(s, 0, 0, {}, {}, true);
+  Finalize<<<1, 1, 0, stream>>>(s, 0, 0, {}, {}, true);
 }
 void LaunchCandidate(Storage* s, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity) {
   Evaluate<<<64, 64, 0, view.stream>>>(s, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Finalize<<<1, measurement::Threads, 0, view.stream>>>(s, accepted, trial, view, identity, false);
+  Finalize<<<1, 1, 0, view.stream>>>(s, accepted, trial, view, identity, false);
 }
 } // namespace tl::fea::beam18::batch_detail

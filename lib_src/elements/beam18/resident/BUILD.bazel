@@ -3,7 +3,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 cc_library(
     name = "values",
     srcs = ["Arena.cpp", "Plan.cpp", "Upload.cpp", "Forecast.cpp", "Identity.cpp"],
-    hdrs = glob(["*.h"]),
+    hdrs = glob(["*.h", "measurement/*.h", "measurement/*.cuh"]),
     deps = ["//lib_src/elements/beam18:model", "//lib_src/elements/beam18:force",
             "//lib_src/elements/beam_common:endpoint_values",
             "//lib_src/assembly:beam18_node_contributions", "//lib_src/assembly:nodal_coefficient_ledger",

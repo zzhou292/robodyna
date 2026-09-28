@@ -137,14 +137,7 @@
     },
     "lib_utest/qualification/extended_solid_coefficients/verify_sources.py": {
       "bytes": 1926,
-      "sha256": "b79a36ce9312d9d898a88ea3b3e4dbcf30a0e72bc3b277097748279ae8a98d6f",
-      "prior_receipts": [
-        {
-          "bytes": 1926,
-          "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d",
-          "reason": "Manifest hash only follows audited optional fixture arguments; all extended coefficient numerical/source assertions retained."
-        }
-      ]
+      "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d"
     },
     "lib_src/elements/beam18/Section.h": {
       "bytes": 1558,
