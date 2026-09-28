@@ -5,6 +5,7 @@
 #include <vector>
 #include <limits>
 #include <cstring>
+#include <cmath>
 #include <algorithm>
 namespace tl::fea::cin_mass_read_test {
 namespace gather=cin_advance::force_gather;

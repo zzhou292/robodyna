@@ -1,0 +1,192 @@
+{
+  "schema": "tl.cin_mass_read_tile_sources.v1",
+  "base": "1c8cf7e73a475075a3665c800779b8daf7a0be60",
+  "production_changes": [
+    "lib_src/solvers/cin_advance/ForceGather.cu",
+    "lib_src/solvers/cin_advance/ForceGatherValues.h",
+    "lib_src/solvers/cin_advance/NumericalMassRead.cuh"
+  ],
+  "files": {
+    "lib_src/constraints/tied_shell/runtime/CinForceStage.h": {
+      "bytes": 5295,
+      "sha256": "5f021966e6d6ca1316f1dd1f8099180db09523bc6b1d2c50a92474f2ee3dd1a3"
+    },
+    "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h": {
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    "lib_src/constraints/tied_shell/runtime/CinMotionRows.h": {
+      "bytes": 1976,
+      "sha256": "ad22e9ecac52b518e4137107e2ae6623ba7824b794044aa3bc97df456e8e3759"
+    },
+    "lib_src/constraints/tied_shell/runtime/CinMotionStage.h": {
+      "bytes": 790,
+      "sha256": "eaafc57c7ad81baf71024a5a4c6e576e9d01c2f46b74bac5dd744fc55fefbdb6"
+    },
+    "lib_src/constraints/tied_shell/runtime/CinStageTypes.h": {
+      "bytes": 2526,
+      "sha256": "6c061ebed4a6f8d3e0ed69c5ad4f6c7c1af623967ee3828c6cca777142eebaa4"
+    },
+    "lib_src/solvers/cin_advance/Capture.cu": {
+      "bytes": 905,
+      "sha256": "1a1e178ed2c9588f34b26b35755ffa92afa4f8fcff07889374ba9af0ccb2da98"
+    },
+    "lib_src/solvers/cin_advance/Capture.h": {
+      "bytes": 1242,
+      "sha256": "c3ed0b87f22b3f54403180b47c6b252234d4a000856359b5cfe0b2401eab272b"
+    },
+    "lib_src/solvers/cin_advance/Drift.cu": {
+      "bytes": 1792,
+      "sha256": "42e447058a1c775e3328984be7f2bb7c077e5ef33f0e48149e8ad8e9790dc2d3"
+    },
+    "lib_src/solvers/cin_advance/DriftTypes.h": {
+      "bytes": 654,
+      "sha256": "3ca2f18d9cdb4c4ac3b5ef9560ed8d71b5e1cec07ca337e753b500d25c39baf8"
+    },
+    "lib_src/solvers/cin_advance/DriftValues.h": {
+      "bytes": 2349,
+      "sha256": "cdf5baa9c72afd306255555b3ccff3ffccec34e3655c4a7f75eb43dd8bfdd554"
+    },
+    "lib_src/solvers/cin_advance/FailureKey.h": {
+      "bytes": 1112,
+      "sha256": "3f699a49461589d822830964f893075713aa63d710a346f5820f918d9cd07479"
+    },
+    "lib_src/solvers/cin_advance/ForceGather.cu": {
+      "bytes": 2922,
+      "sha256": "653de9ae1cac3be799d108d3a15641d067cb05628e81318ef4bdd45e5f9fc735"
+    },
+    "lib_src/solvers/cin_advance/ForceGather.h": {
+      "bytes": 1032,
+      "sha256": "f8253a7f0690a2194c31aaefd7f303f2b174dc32cebe9929817482b5f683945e"
+    },
+    "lib_src/solvers/cin_advance/ForceGatherIncidence.h": {
+      "bytes": 2248,
+      "sha256": "ebc2dcdebbb3b29d61b5f4560c6dd82d4f2ce1b5e51d4338631e40a46e038e21"
+    },
+    "lib_src/solvers/cin_advance/ForceGatherLayout.h": {
+      "bytes": 1749,
+      "sha256": "a65b85f6e6a35d79a065446ea4e04d9053f656e438432e9a574be6ab507e13cf"
+    },
+    "lib_src/solvers/cin_advance/ForceGatherTypes.h": {
+      "bytes": 1702,
+      "sha256": "8b2d7dcc30b9092563f1be0c6aa350538a6d9785b8b252cf97252a99a25136f5"
+    },
+    "lib_src/solvers/cin_advance/ForceGatherValues.h": {
+      "bytes": 5341,
+      "sha256": "8709764f1a976f7d5013210827933112264e6cafa5306de6e88fed2f40cb11c0"
+    },
+    "lib_src/solvers/cin_advance/ForceInputs.cu": {
+      "bytes": 3422,
+      "sha256": "4baa893a1fe1fefe0822e25925f650ea2ae7fb075bd4209f5f5038eb0ee4b7db"
+    },
+    "lib_src/solvers/cin_advance/ForceInputs.h": {
+      "bytes": 4166,
+      "sha256": "17ea91b81ed5e25e33dbe97466886b275c3c8d9ae6291669b1ce3316f0989443"
+    },
+    "lib_src/solvers/cin_advance/ForceTransfers.cu": {
+      "bytes": 1043,
+      "sha256": "61c33a276d8acc64f0f12c91225a080d579afd3ae254bd3169791752994d6da8"
+    },
+    "lib_src/solvers/cin_advance/ForceTransfers.h": {
+      "bytes": 942,
+      "sha256": "1651397ed04031e77d56ee2417c0adbdf2a89257d2b3a4b3ecf1b63991e41b26"
+    },
+    "lib_src/solvers/cin_advance/GroupReport.h": {
+      "bytes": 603,
+      "sha256": "14f1d5ed60f5b3d9a1893e185ddf6906cc1d82e9976371cef90fc53e170a9692"
+    },
+    "lib_src/solvers/cin_advance/GroupResponse.h": {
+      "bytes": 1953,
+      "sha256": "b85781632ff111e9889284f5566283bb9b9ad081be45c36420c0521fda6e8002"
+    },
+    "lib_src/solvers/cin_advance/GroupScreen.cuh": {
+      "bytes": 1558,
+      "sha256": "3d926a2a8d66787dd5181d3d231b89279331c89e54e65ac8b543ef14ccf1d147"
+    },
+    "lib_src/solvers/cin_advance/GroupScreenValues.h": {
+      "bytes": 4176,
+      "sha256": "63809336cadb7d4366f5c2a2daf4ba155f0c055e1eca49004b9fe396575618a1"
+    },
+    "lib_src/solvers/cin_advance/Groups.cu": {
+      "bytes": 1696,
+      "sha256": "bedba853108d9cd314a639b59f876469dae2b6272e534c8d8aa00edc7e29fd50"
+    },
+    "lib_src/solvers/cin_advance/Groups.h": {
+      "bytes": 2870,
+      "sha256": "16fbb5cef91be992aae4af136fb3dbc8099201dc3a109f20a75683305d8d9705"
+    },
+    "lib_src/solvers/cin_advance/Input.h": {
+      "bytes": 2564,
+      "sha256": "0219900650ceba5e2aeb461cc0145cd247538469d530a1f38edf89fa65dffe96"
+    },
+    "lib_src/solvers/cin_advance/Node.h": {
+      "bytes": 1515,
+      "sha256": "5cc379936e5165f5008b0bb0e17841031b0d986555a596efde833848bcbd5f6c"
+    },
+    "lib_src/solvers/cin_advance/NumericalMassRead.cuh": {
+      "bytes": 1345,
+      "sha256": "574f72f2709b1079df926b6e1d60d8605b5bb2a796f36565d158900d4e1d1a6e"
+    },
+    "lib_src/solvers/cin_advance/Recovery.cu": {
+      "bytes": 2335,
+      "sha256": "b164478daf11738b5370067d5fa2aa752e727431276dcfac6bfd3882e4a1cf6a"
+    },
+    "lib_src/solvers/cin_advance/Recovery.h": {
+      "bytes": 950,
+      "sha256": "84c57c9ebfb6867c66f0a3f69f2e7734ffee4294fe299460ad8803767d5b6243"
+    },
+    "lib_src/solvers/cin_advance/RecoveryDrift.h": {
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    "lib_src/solvers/cin_advance/RecoveryTypes.h": {
+      "bytes": 565,
+      "sha256": "bfd8c4ea37b1e7beb11757083e6a0676ed1e8c985add15cb26fffb4e62194793"
+    },
+    "lib_src/solvers/cin_advance/Screen.cu": {
+      "bytes": 4060,
+      "sha256": "af4b75cf0db341e813e3ba05178415fa53bac0eee5f7a345872e7b07f17f9f5c"
+    },
+    "lib_src/solvers/cin_advance/Screen.h": {
+      "bytes": 592,
+      "sha256": "1400f7108e066f2db74f7944cc657bacfdd7c9b1d9e43fc3d6bf975bb0551083"
+    },
+    "lib_src/solvers/cin_advance/ScreenSummary.h": {
+      "bytes": 2770,
+      "sha256": "91e7b83f25b4a75de9a70eb7e98c47a5804f00c2efd2db698371f008d9431a09"
+    },
+    "lib_utest/qualification/cin_mass_read_tile/CMakeLists.txt": {
+      "bytes": 1480,
+      "sha256": "68ca4763787ce17137c1c68d7f9490b03db6b825b3e3768e8e13063466959efb"
+    },
+    "lib_utest/qualification/cin_mass_read_tile/CudaTest.cu": {
+      "bytes": 4083,
+      "sha256": "69e1a6ac678d9fd9259ed2f15362f9a9b552dd5d5a887f474c7b80df230ba0cb"
+    },
+    "lib_utest/qualification/cin_master_gather/CallerTest.cu": {
+      "bytes": 5311,
+      "sha256": "132071e21683c3d1e03fd829d6a788cac68a2ac25700a1833df9948f066fb173"
+    },
+    "lib_utest/qualification/cin_master_gather/DeviceFixture.cuh": {
+      "bytes": 3743,
+      "sha256": "09083289cbd4c30ab9a2fb2cd309567d664375976b20850c2e5611899f3cb353"
+    },
+    "lib_utest/qualification/cin_master_gather/Fixture.h": {
+      "bytes": 3183,
+      "sha256": "eaa5d62d1b90f7f2fd3dc1351fab5cc0f60779e8c819466faba7738287a69688"
+    },
+    "lib_utest/qualification/cin_master_gather/OwnerTest.cu": {
+      "bytes": 4054,
+      "sha256": "5c60ecfd1d7f21852062808360573329d2d5be0177d4f434291e3f6812de951b"
+    },
+    "lib_utest/qualification/cin_master_gather/prepare_reference.py": {
+      "bytes": 983,
+      "sha256": "13774be72d7f8315df4cbe0a38e018a61b6b3b40170a3e1d486d67c65fa485dc"
+    },
+    "lib_utest/qualification/cin_master_gather/reference/ExplicitNodalCinStep.cu": {
+      "bytes": 10568,
+      "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f"
+    }
+  },
+  "scope": "Reviewed read scheduling delta only; numerical/failure/owner behavior requires executed tests. Historical source manifests unchanged."
+}
