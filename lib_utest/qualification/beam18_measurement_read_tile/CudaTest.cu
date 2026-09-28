@@ -13,6 +13,7 @@ __global__ void Probe(d::Storage*s,fe::NodalPreparedView v,int*out){
 }
 void Drain(){ASSERT_EQ(cudaGetLastError(),cudaSuccess);ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);}
 d::Control Compare(Device&x,b::BatchDiagnostics seed=Seed(),bool initial=false){
+  for(std::size_t p=0;p<x.count;++p)if(x.parents[p].material_index>=1){ADD_FAILURE()<<"Unbound synthetic material at parent "<<p;return Poison();}
   x.state->control=Poison();d::read_tile_reference::Finalize<<<1,1>>>(x.state,0,initial?0:1,x.view,seed,initial);Drain();const auto expected=x.state->control;
   x.state->control=Poison();Current<<<1,tile::Threads>>>(x.state,x.view,seed,initial);Drain();Same(x.state->control,expected);return x.state->control;
 }
