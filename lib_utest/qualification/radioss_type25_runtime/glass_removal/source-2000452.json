@@ -1,0 +1,326 @@
+{
+  "scope": "Original material/section evidence only; coupon geometry is synthetic, not a failed-state replay",
+  "source": {
+    "archive_sha256": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+    "canonical_manifest_sha256": "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
+    "member_bytes": 42846753,
+    "member_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+    "scope_bytes": 13212691,
+    "scope_sha256": "fdb51869dfd3f4de265bb4494a2d0f904c5c466bf9962b71ce19e9098a761ff0",
+    "tire_policy": "omit_original_tire_shells",
+    "vehicle_plan_bytes": 3648589,
+    "vehicle_plan_sha256": "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"
+  },
+  "policy": {
+    "FLD": false,
+    "NIP": 3,
+    "contact_projection": false,
+    "converter_IFAIL_SH": 2,
+    "failure": "Tab1AnyPoint",
+    "material_source": "convertmats.cxx:6170-6220,6390-6424",
+    "name": "original_mat123_numint1_native_tab1_placement_v1",
+    "nloc_to_ipos": [
+      [
+        -1,
+        4
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "placement_policy": "original_nloc_native_type1_reference_plane_v1",
+    "point_eps_max_cleared": true,
+    "rate_filter_hz": 10000,
+    "rate_policy": "FilteredZeroC",
+    "resolved_C": 0,
+    "resolved_IFAIL_SH": 1,
+    "resolved_P": 1,
+    "resolved_PTHKF": 1e-06,
+    "resolved_VP": 2,
+    "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+    "simulation_ready": false,
+    "source_NUMINT": 1,
+    "source_time_to_s": 1
+  },
+  "declaration": {
+    "material": {
+      "cards": [
+        {
+          "blank_field_mask": 128,
+          "names": [
+            "mid",
+            "ro",
+            "e",
+            "pr",
+            "sigy",
+            "etan",
+            "fail",
+            "tdel"
+          ],
+          "raw_data_text": "   2000452 2.5000E-9 70000.000  0.220000 30.000000 1000.0000  0.015000",
+          "source_line": 9077,
+          "values": [
+            2000452,
+            2.5e-09,
+            70000.0,
+            0.22,
+            30.0,
+            1000.0,
+            0.015,
+            null
+          ]
+        },
+        {
+          "blank_field_mask": 115,
+          "names": [
+            "c",
+            "p",
+            "lcss",
+            "lcsr",
+            "vp",
+            "epsthin",
+            "epsmaj",
+            "numint"
+          ],
+          "raw_data_text": "                             0         0                                1.000000",
+          "source_line": 9079,
+          "values": [
+            null,
+            null,
+            0.0,
+            0.0,
+            null,
+            null,
+            null,
+            1.0
+          ]
+        },
+        {
+          "blank_field_mask": 255,
+          "names": [
+            "eps1",
+            "eps2",
+            "eps3",
+            "eps4",
+            "eps5",
+            "eps6",
+            "eps7",
+            "eps8"
+          ],
+          "raw_data_text": "",
+          "source_line": 9081,
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "blank_field_mask": 255,
+          "names": [
+            "es1",
+            "es2",
+            "es3",
+            "es4",
+            "es5",
+            "es6",
+            "es7",
+            "es8"
+          ],
+          "raw_data_text": "",
+          "source_line": 9083,
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "density_kg_m3": 2499.9999999999995,
+      "failure_strain": 0.015,
+      "hardening_model": "law44_linear",
+      "material_id": 2000452,
+      "material_law": "layered_law44",
+      "poisson_ratio": 0.22,
+      "source": {
+        "cards": [
+          {
+            "source_line": 9077,
+            "text": "   2000452 2.5000E-9 70000.000  0.220000 30.000000 1000.0000  0.015000"
+          },
+          {
+            "source_line": 9079,
+            "text": "                             0         0                                1.000000"
+          },
+          {
+            "source_line": 9081,
+            "text": ""
+          },
+          {
+            "source_line": 9083,
+            "text": ""
+          }
+        ],
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 9075,
+        "keyword": "*MAT_MODIFIED_PIECEWISE_LINEAR_PLASTICITY",
+        "last_line": 9084,
+        "raw_text": "*MAT_MODIFIED_PIECEWISE_LINEAR_PLASTICITY\n$#     mid        ro         e        pr      sigy      etan      fail      tdel\n   2000452 2.5000E-9 70000.000  0.220000 30.000000 1000.0000  0.015000\n$#       c         p      lcss      lcsr        vp   epsthin    epsmaj    numint\n                             0         0                                1.000000\n$#    eps1      eps2      eps3      eps4      eps5      eps6      eps7      eps8\n\n$#     es1       es2       es3       es4       es5       es6       es7       es8\n\n$-------------------------------------------------------------------------------\n",
+        "sha256": "432c5d699d15274b3b71285d25d80f8c725145aba4e45092ae1b12d920b7eb71"
+      },
+      "source_numint": 1.0,
+      "supplied_etan_pa": 1000000000.0,
+      "supplied_sigy_pa": 30000000.0,
+      "young_pa": 70000000000.0
+    },
+    "part": {
+      "cards": [
+        {
+          "blank_field_mask": 248,
+          "names": [
+            "pid",
+            "secid",
+            "mid",
+            "eosid",
+            "hgid",
+            "grav",
+            "adpopt",
+            "tmid"
+          ],
+          "raw_data_text": "   2000452   2000452   2000452",
+          "source_line": 9069,
+          "values": [
+            2000452,
+            2000452,
+            2000452,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "material_id": 2000452,
+      "part_id": 2000452,
+      "section_id": 2000452,
+      "source": {
+        "cards": [
+          {
+            "source_line": 9067,
+            "text": "589_doorfrontwindow"
+          },
+          {
+            "source_line": 9069,
+            "text": "   2000452   2000452   2000452"
+          }
+        ],
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 9065,
+        "keyword": "*PART",
+        "last_line": 9069,
+        "raw_text": "*PART\n$# title\n589_doorfrontwindow\n$#     pid     secid       mid     eosid      hgid      grav    adpopt      tmid\n   2000452   2000452   2000452\n",
+        "sha256": "294edb3b1cc42c0b2b31c874af96ddd3a8991acaf4860c29f299120c7b89dd84"
+      },
+      "title": "589_doorfrontwindow"
+    },
+    "section": {
+      "cards": [
+        {
+          "blank_field_mask": 244,
+          "names": [
+            "secid",
+            "elform",
+            "shrf",
+            "nip",
+            "propt",
+            "qr_irid",
+            "icomp",
+            "setyp"
+          ],
+          "raw_data_text": "   2000452         2                   3",
+          "source_line": 9072,
+          "values": [
+            2000452,
+            2,
+            null,
+            3,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "blank_field_mask": 240,
+          "names": [
+            "t1",
+            "t2",
+            "t3",
+            "t4",
+            "nloc",
+            "marea",
+            "idof",
+            "edgset"
+          ],
+          "raw_data_text": "  3.390000  3.390000  3.390000  3.390000",
+          "source_line": 9074,
+          "values": [
+            3.39,
+            3.39,
+            3.39,
+            3.39,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "placement": "centered",
+      "section_id": 2000452,
+      "source": {
+        "cards": [
+          {
+            "source_line": 9072,
+            "text": "   2000452         2                   3"
+          },
+          {
+            "source_line": 9074,
+            "text": "  3.390000  3.390000  3.390000  3.390000"
+          }
+        ],
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 9070,
+        "keyword": "*SECTION_SHELL",
+        "last_line": 9074,
+        "raw_text": "*SECTION_SHELL\n$#   secid    elform      shrf       nip     propt   qr/irid     icomp     setyp\n   2000452         2                   3\n$#      t1        t2        t3        t4      nloc     marea      idof    edgset\n  3.390000  3.390000  3.390000  3.390000\n",
+        "sha256": "7b1d370239965979e5439eb8bdc16daf655d671aa0dd307fb5ce17f4591d188b"
+      },
+      "source_elform": 2,
+      "source_nloc": null,
+      "thickness_m": [
+        0.0033900000000000002,
+        0.0033900000000000002,
+        0.0033900000000000002,
+        0.0033900000000000002
+      ],
+      "through_thickness_points": 3
+    }
+  }
+}
