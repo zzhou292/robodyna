@@ -1,5 +1,6 @@
 #include "Storage.h"
 #include "output/ArtifactIO.h"
+#include <algorithm>
 namespace crash::cases::vehicle_native_contact {
 Forecast VehicleContactStartup::ForecastPreparation(const OwnerSource& owner, const SelfSource& self,
                                                       const WallSource& wall, const ControlsSource& controls,
@@ -16,7 +17,7 @@ VehicleContactStartup VehicleContactStartup::Prepare(const OwnerSource& owner, c
     const auto input = next->sources();
     if (next->config.activity == n::ContactActivityPolicy::ShellRemoval) {
         activity::Limits limits;
-        limits.source_host_cap = next->config.dynamics.startup.limits.host_bytes;
+        limits.source_host_cap = std::min(limits.source_host_cap, next->config.dynamics.startup.limits.host_bytes);
         next->activity_declaration.emplace(activity::Declaration::Prepare(input, limits));
         const auto observed = next->activity_declaration->forecast();
         output::Require(observed.owned_metadata_bytes <= next->forecast.activity_metadata_reservation &&
