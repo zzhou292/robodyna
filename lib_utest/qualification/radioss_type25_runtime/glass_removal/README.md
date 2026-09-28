@@ -35,3 +35,8 @@ by the vehicle. Cold empty-history initialization did not produce a nonzero
 saved wall stiffness in this initially overlapping INACTI5 fixture; its failed
 witness receipt remains evidence. The stronger wall-history witness is kept,
 and no history field is seeded by the test.
+
+The contact-response witness reads each interface's actual endpoint force and
+couple additions separately, excluding STI-only changes. Both must be nonzero
+before the removal commit. Retained glass and wall owners must also have real
+nonzero saved stiffness; candidate counts alone are not a force witness.

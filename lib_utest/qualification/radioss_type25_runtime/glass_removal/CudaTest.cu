@@ -48,12 +48,15 @@ void RemovalChecks(Rig& rig,const Attempt& a,const State& before) {
   // Release assertions below require a genuinely retained removed main and
   // an independently active fixed-wall ledger, not empty initial histories.
   bool retained_glass=false,active_wall_history=false;
-  for(const auto& row:before.contacts[0])retained_glass=retained_glass||GlassMain(rig,row.row.irtlm[0]);
+  for(const auto& row:before.contacts[0])retained_glass=retained_glass||
+      (GlassMain(rig,row.row.irtlm[0])&&(row.row.history.normal.previous_stiffness>0||row.row.history.normal.staged_stiffness>0));
   for(const auto& row:before.contacts[1])active_wall_history=active_wall_history||
       (row.row.irtlm[0]>0&&(row.row.history.normal.previous_stiffness>0||row.row.history.normal.staged_stiffness>0));
   EXPECT_TRUE(retained_glass);
   EXPECT_TRUE(active_wall_history)<<WallWitness(before);
   const auto self=rig.self.last_diagnostics(),wall=rig.wall.last_diagnostics();
+  EXPECT_TRUE(rig.self_response_nonzero);
+  EXPECT_TRUE(rig.wall_response_nonzero);
   EXPECT_GT(self.active_forces,0u);
   EXPECT_GT(wall.active_forces,0u);
   EXPECT_TRUE(self.activity_changed);

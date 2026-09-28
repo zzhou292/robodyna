@@ -19,8 +19,17 @@ void Rig::Begin(Attempt& a,bool bending) {
   Check(cudaGetLastError());
 }
 void Rig::Assemble(Attempt& a) {
+  const auto before=Force(a);
   Check(self.AssembleAccepted(owner,a.token,a.assembly));
+  const auto after_self=Force(a);
   Check(wall.AssembleAccepted(owner,a.token,a.assembly));
+  const auto after_wall=Force(a);
+  self_response_nonzero=wall_response_nonzero=false;
+  // Read actual endpoint force/couple additions, excluding STI-only changes.
+  for(unsigned i=0;i<6*11;++i){
+    self_response_nonzero=self_response_nonzero||after_self[i]!=before[i];
+    wall_response_nonzero=wall_response_nonzero||after_wall[i]!=after_self[i];
+  }
 }
 void Rig::Prepare(Attempt& a) {
   Check(owner.SealAssembly(a.token));

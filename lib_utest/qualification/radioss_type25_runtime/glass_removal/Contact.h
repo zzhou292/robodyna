@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Source.h"
+#include "lib_src/collision/RadiossType25InitialState.h"
 #include "../SourceAdmissionFixture.h"
 #include "lib_src/collision/radioss_type25/activity_source/Types.h"
 namespace glass_removal_test {

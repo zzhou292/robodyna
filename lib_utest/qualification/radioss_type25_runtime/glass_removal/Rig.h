@@ -37,6 +37,7 @@ struct Rig {
  fe::ShellBatchPublication publication;
  ContactSource self_source,wall_source;
  n::Transaction self,wall;
+ bool self_response_nonzero=false,wall_response_nonzero=false;
  fe::ShellPhysicalParticipants Participants(){return {&qeph,&triangle};}
  fe::ShellPhysicalPublicationIdentity Identity() const{return {Configuration,base.Qualification,base.startup};}
  void Initialize();
