@@ -49,3 +49,20 @@ coincident support, mixed origins/final supports, node incidence, excluded bare
 mass/orientation support, family indices, retry, and exact resource boundaries.
 Original native deletion equations and runtime owner publication are qualified
 in separate owning modules; this plan is not a native activity receipt.
+
+Deletion emission is a distinct relation. `emitting_offsets` indexes the complete
+physical parent table; `emitting_mains` stores ascending one-based registered
+expanded main IDs for each QEPH/T3 emitted face. Every registered main must
+contain all distinct emitted-face nodes. A T3 deletion can therefore affect a
+containing Q4 main, while a Q4 deletion does not necessarily affect a T3 subset.
+Opposite sides remain separate registered mains. Repeated triangle corner slots
+are idempotent, but different deleted physical owners retain separate events.
+The table is indexed by physical family order, not a claim about global native
+deletion scheduling. A consumer must preserve native event multiplicity and
+qualify its update order. QBAT, solids and other families remain non-emitting
+under the first profile's unchanged positive-activity guards.
+
+Emission allocation uses a conservative first-node registered-incidence bound;
+the published per-parent CSR is exact. Temporary expanded-main node incidence
+and its cursor are charged alongside retained output and existing construction
+scratch. No source event is truncated to fit a capacity.

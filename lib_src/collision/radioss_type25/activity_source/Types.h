@@ -43,11 +43,12 @@ struct PhysicalSources {
 };
 struct Limits {
   std::size_t nodes=1048576,parents=1048576,mains=2097152,origins=1572864;
-  std::size_t incidence=8388608,containing_parents=8388608;
+  std::size_t incidence=8388608,containing_parents=8388608,emitting_mains=8388608;
   std::size_t output_bytes=128u<<20,startup_bytes=256u<<20;
 };
 struct Counts {
   std::size_t nodes=0,parents=0,mains=0,primaries=0,origins=0,incidence=0;
+  std::size_t emitting_capacity=0; // Conservative registered-first-node bound.
   std::size_t containing_capacity=0; // Conservative first-corner incidence bound.
   std::array<std::size_t,FamilyCount> families{};
 };
@@ -63,6 +64,10 @@ struct View {
   // Every eligible bound source parent containing ALL distinct primary corners.
   // These are independent of the final IELEM support operands above.
   tl::util::ConstView<std::uint32_t> main_to_primary{nullptr,0},containing_offsets{nullptr,0},containing_parents{nullptr,0};
+  // QEPH/T3 deleted-face discovery: registered main contains ALL emitted nodes.
+  // Each parent row retains ascending ONE-based expanded main IDs. Repeated
+  // events across distinct deleted owners are deliberately preserved.
+  tl::util::ConstView<std::uint32_t> emitting_offsets{nullptr,0},emitting_mains{nullptr,0};
   tl::util::ConstView<Origin> origins{nullptr,0};
   Controls controls;
   std::uint64_t source_generation=0;

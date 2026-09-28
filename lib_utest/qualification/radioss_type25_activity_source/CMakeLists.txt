@@ -8,7 +8,7 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/RadiossType25ActivitySource.cmake")
 include("${TL_ROOT}/lib_src/collision/RadiossType25FixedMainStartup.cmake")
 include("${TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
-add_executable(type25_activity_source_host PlanTest.cpp Type45Test.cpp
+add_executable(type25_activity_source_host PlanTest.cpp Type45Test.cpp EmissionTest.cpp
   "${CMAKE_CURRENT_LIST_DIR}/../rigid_assembly_owner/Fixture.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_runtime/PhysicalMainTest.cpp")
 target_link_libraries(type25_activity_source_host PRIVATE tl_radioss_type25_activity_source
