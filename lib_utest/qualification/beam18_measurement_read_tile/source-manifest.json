@@ -15,6 +15,11 @@
       "name": "resident-source-manifest.json",
       "bytes": 8906,
       "sha256": "e222f31315580b0bac482653b50cec50cad7160aa5164670f818c0948cfd2d9f"
+    },
+    {
+      "name": "force-source-manifest.json",
+      "bytes": 16560,
+      "sha256": "dafdb46edbf8c278742ff674e2a8c599ae69b891ef7e4ab8192ec30387292a47"
     }
   ],
   "production": [
@@ -52,6 +57,11 @@
       "path": "lib_utest/qualification/beam18_resident/source-manifest.json",
       "bytes": 10187,
       "sha256": "ae02a203aad738318e44b110d63ec94e02b25a5ef8d4bc8d7e269cdc48c8c036"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_force/source-manifest.json",
+      "bytes": 16915,
+      "sha256": "d2e5a1e014bb792f414dcb934bc0728bfbf29d9481473e1c0f297ec14a4099a8"
     }
   ],
   "unchanged": [
@@ -96,6 +106,11 @@
       "bytes": 2781,
       "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f",
       "baseline_refresh_reason": "Baseline561026c2 and11370dc1: add CIN force-transfer/recovery qualification visibility only. No production effect."
+    },
+    {
+      "path": "lib_utest/qualification/beam18_reference/source-manifest.json",
+      "bytes": 7908,
+      "sha256": "7d208b0430e079fee422208f6f92de07e75e8945af185864ecb310a6eca1d6f2"
     }
   ]
 }

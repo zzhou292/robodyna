@@ -276,15 +276,8 @@
       "sha256": "db426cebcec13bfd1f1e7318d85efb850f47f1a35d4f94ff3cccc951b78b586c"
     },
     "lib_utest/qualification/beam18_reference/source-manifest.json": {
-      "bytes": 7908,
-      "sha256": "7d208b0430e079fee422208f6f92de07e75e8945af185864ecb310a6eca1d6f2",
-      "prior_receipts": [
-        {
-          "bytes": 7750,
-          "sha256": "c9abf394870bbd9ae545a1478a62ace8e782414760e9e7a7bc795c0faf7135ee",
-          "reason": "Baseline6cea356a updated Section.h/PropertyArea.h ownership; complete beam18_reference verifier passes. This repairs only the previously stale parent manifest link."
-        }
-      ]
+      "bytes": 7750,
+      "sha256": "c9abf394870bbd9ae545a1478a62ace8e782414760e9e7a7bc795c0faf7135ee"
     },
     "lib_utest/qualification/solid_law44_point/source-manifest.json": {
       "bytes": 3174,

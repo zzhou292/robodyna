@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse,hashlib,json,re
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2];SOURCE="lib_src/elements/beam18/resident/"
-MANIFEST="47046a18907f35261d9dba8dea43aa554e67b9aac6700c37c52df7fb19af3be2"
+MANIFEST="73bf8e02d0fa7a46590ec05f29118578cdf45556baec8b40d697c17a1b19968d"
 def pin(path,row):
     raw=path.read_bytes();assert len(raw)==row["bytes"] and hashlib.sha256(raw).hexdigest()==row["sha256"],str(path);return raw.decode()
 def checked():
