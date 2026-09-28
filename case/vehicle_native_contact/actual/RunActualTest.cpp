@@ -55,6 +55,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
             // Explicit full-preview archive allowance. The concrete complete
             // archive forecast is inspected before the owning launch.
             run_config.archive_bytes = records::FullRunByteCap;
+            run_config.artifact_file_bytes = preview_controls.artifact_file_bytes;
         }
         const auto input = selection.Prepare();
         const auto extras=selection.extra_retained_bytes();
@@ -104,6 +105,7 @@ void RunAcceptedQualification(bool execute, bool preview) {
         output::Integer(doc, "archive_peak_host_bytes", f.archive.peak_host_bytes);
         output::Integer(doc, "archive_forecast_bytes", f.archive.archive.archive.forecast_bytes);
         output::Integer(doc, "archive_cap_bytes", run_config.archive_bytes);
+        output::Integer(doc, "artifact_file_cap_bytes", run_config.artifact_file_bytes);
         output::Boolean(doc, "run_fits_runtime_limits", f.fits_runtime_limits);
         output::Require(f.complete_peak_host_bytes <= execution_host_cap,
                         "Complete native run/output exceeds the unchanged 18GiB qualification guard");

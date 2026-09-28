@@ -1,5 +1,6 @@
 #include "PreviewControls.h"
 #include <cmath>
+#include <charconv>
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
@@ -13,7 +14,7 @@ std::string BoundedValue(const char* value, const char* name) {
 }
 }
 PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* stop_file,
-                                    const char* stage_timing) {
+                                    const char* stage_timing, const char* artifact_file_bytes) {
     PreviewControls result;
     if (maximum_elapsed_s) {
         const auto text = BoundedValue(maximum_elapsed_s, "Preview elapsed limit");
@@ -29,12 +30,22 @@ PreviewControls ParsePreviewControls(const char* maximum_elapsed_s, const char* 
             throw std::invalid_argument("Preview stage timing must be exactly 0 or 1");
         result.stage_timing = value == "1";
     }
+    if (artifact_file_bytes) {
+        const auto text = BoundedValue(artifact_file_bytes, "Preview artifact byte limit");
+        std::size_t bytes = 0;
+        const auto parsed = std::from_chars(text.data(), text.data() + text.size(), bytes);
+        if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
+            !bytes || bytes > output::kArtifactFileCap)
+            throw std::invalid_argument("Preview artifact byte limit must be an unsigned decimal in 1..33554432");
+        result.artifact_file_bytes = bytes;
+    }
     return result;
 }
 PreviewControls ReadPreviewControls() {
     return ParsePreviewControls(std::getenv("ROBO_NATIVE_VEHICLE_MAXIMUM_ELAPSED_S"),
                                 std::getenv("ROBO_NATIVE_VEHICLE_STOP_FILE"),
-                                std::getenv("ROBO_NATIVE_VEHICLE_STAGE_TIMING"));
+                                std::getenv("ROBO_NATIVE_VEHICLE_STAGE_TIMING"),
+                                std::getenv("ROBO_NATIVE_VEHICLE_ARTIFACT_FILE_BYTES"));
 }
 vehicle_run::Control MakePreviewControl(const PreviewControls& options) {
     // Same option semantics as the existing vehicle-run CLI. The RunLoop checks

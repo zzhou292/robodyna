@@ -1,4 +1,5 @@
 #include "State.h"
+#include "ArchiveRequest.h"
 #include "case/vehicle_run/MechanicsSummary.h"
 #include "case/vehicle_run/SampledShellPlasticity.h"
 #include "case/vehicle_dynamics/native_contact/Group.h"
@@ -7,8 +8,8 @@ namespace crash::cases::vehicle_native_contact {
 PreparedRun::Session::Session(const Data& data, const std::filesystem::path& directory)
     : source(data), dynamics(data.source.Initialize()), capture(data.mapping, dynamics, data.config.identity, data.config.capture),
       archive(output::physical_run::RunArchive::PrepareWithEnvironment(directory, data.mapping, capture.frames().context(),
-          output::physical_run::MakeEnvironmentRequest(capture.frames().context(), data.horizon.intervals,
-              data.horizon.requested_duration_s, data.config.samples, data.config.archive_bytes), data.profile, data.config.archive)) {
+          run_detail::MakeArchiveRequest(capture.frames().context(), data.horizon, data.config.samples,
+              data.config.archive_bytes, data.config.artifact_file_bytes), data.profile, data.config.archive)) {
     const auto* group = dynamics.native_contact_group();
     output::Require(group && group->count() == native.size(), "Native run requires both actual source interfaces");
     for (std::size_t i = 0; i < native.size(); ++i) {

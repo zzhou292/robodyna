@@ -1,4 +1,5 @@
 #include "State.h"
+#include "ArchiveRequest.h"
 #include "output/physical_run/Replay.h"
 #include "output/full_shell/FixedStepHorizon.h"
 #include <algorithm>
@@ -56,8 +57,8 @@ PreparedRun PreparedRun::Prepare(const VehicleContactStartup& source, RunConfig 
     f.mapping_bytes = next->mapping.payload_bytes();
     f.preparation_peak_host_bytes = preparation;
     f.capture = output::physical_frames::PhysicalAcceptedFrames::Preflight(next->mapping, context, next->config.capture);
-    const auto request = output::physical_run::MakeEnvironmentRequest(context, horizon.intervals,
-        horizon.requested_duration_s, next->config.samples, next->config.archive_bytes);
+    const auto request = run_detail::MakeArchiveRequest(context, horizon, next->config.samples,
+        next->config.archive_bytes, next->config.artifact_file_bytes);
     f.archive = output::physical_run::RunArchive::PreflightWithEnvironment(next->mapping, context,
         request, next->profile, next->config.archive);
     // Admit the same normal reader before Execute can create a physical owner.

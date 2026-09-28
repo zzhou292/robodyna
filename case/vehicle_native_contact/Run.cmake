@@ -7,6 +7,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_frames/PhysicalFrames.c
 include("${CMAKE_CURRENT_LIST_DIR}/../vehicle_run/RunReports.cmake")
 add_library(robo_dyna_native_vehicle_run STATIC
   "${CMAKE_CURRENT_LIST_DIR}/run/Prepare.cpp" "${CMAKE_CURRENT_LIST_DIR}/run/Session.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/run/ArchiveRequest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/run/Retry.cpp" "${CMAKE_CURRENT_LIST_DIR}/run/Execute.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/run/Summary.cpp")
 target_link_libraries(robo_dyna_native_vehicle_run PUBLIC robo_dyna_vehicle_native_contact

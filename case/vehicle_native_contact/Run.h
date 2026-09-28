@@ -9,6 +9,8 @@ namespace records = output::full_shell;
 struct RunConfig {
     std::size_t samples = 31;
     std::size_t archive_bytes = records::TotalByteCap;
+    // Per-artifact bound also controls interval and original-source chunking.
+    std::size_t artifact_file_bytes = output::kArtifactFileCap;
     std::size_t mapping_bytes = 512u << 20;
     output::physical_frames::Limits capture;
     output::physical_run::Limits archive;
