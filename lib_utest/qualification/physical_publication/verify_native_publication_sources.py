@@ -27,7 +27,7 @@ consume=issuer.split('void ShellPhysicalScratchParticipation::Consume()',1)[1].s
 assert 'DiscardTrial' not in consume
 assert 'native_contact_->Ready(owner,authentic,issuer.generation_)' in issuer
 assert 'native_contact_->Discard()' in issuer
-print('Closed native contact publication source proof: PASS')
 
 assert 'ValidActivityPlan(accepted_,next)' in state
 assert 'next.reference_activity_generation==accepted_.reference_activity_generation' in state
+print('Closed native contact publication source proof: PASS')

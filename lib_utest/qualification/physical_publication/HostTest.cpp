@@ -100,8 +100,11 @@ TEST(PhysicalPublicationValues, ExactBudgetAndLateFailureRetry) {
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysical(source.physical,1,limits,forecast).status,
       fe::ShellPublicationStatus::Success);
   EXPECT_EQ(forecast.device_bytes,0u);
-  EXPECT_EQ(forecast.owned_host_bytes,6888u);
-  EXPECT_EQ(forecast.startup_host_bytes,8712u);
+  // These exact base-ledger bytes also come from the frozen f934 vehicle
+  // producer's byte-identical forecast object. Contact selectors are owned
+  // separately by the native transaction, not by this base publication ledger.
+  EXPECT_EQ(forecast.owned_host_bytes,7000u);
+  EXPECT_EQ(forecast.startup_host_bytes,8824u);
   EXPECT_GT(forecast.startup_host_bytes,forecast.owned_host_bytes);
   RecordProperty("owned_host_bytes",std::to_string(forecast.owned_host_bytes));
   RecordProperty("tiny_startup_host_bytes",std::to_string(forecast.startup_host_bytes));
