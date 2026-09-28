@@ -35,7 +35,7 @@ def generated():
     h=old["Measurement.h"].replace('#include "Measure.h"','#include "lib_src/elements/type13/resident/Measure.h"')
     h=h.replace("namespace tl::fea::type13::batch_detail {","namespace tl::fea::type13::batch_detail::read_tile_reference {")
     c=old["Candidate.cu"];a=c.index("__global__ void Finalize(");z=c.index("\n} // namespace",a)
-    finalizer='#pragma once\n#include "ReferenceMeasurement.h"\nnamespace tl::fea::type13::batch_detail::read_tile_reference {\n'+c[a:z]+"\n}\n"
+    finalizer='#pragma once\n#include "ReferenceMeasurement.h"\nnamespace tl::fea::type13::batch_detail::read_tile_reference {\n'+c[a:z].replace('!MeasurePrepared(', '!tl::fea::type13::batch_detail::read_tile_reference::MeasurePrepared(')+"\n}\n"
     return {"ReferenceMeasurement.h":h,"ReferenceFinalize.cuh":finalizer}
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--output",type=Path);args=p.parse_args();output=generated()
