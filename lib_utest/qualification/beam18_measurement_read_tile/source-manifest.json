@@ -1,0 +1,89 @@
+{
+  "baseline": "515e46ffd0425cf4c19f5f6a9fb2fce14175b7cd",
+  "frozen": [
+    {
+      "name": "Candidate.cu",
+      "bytes": 2836,
+      "sha256": "997fbdeaeb1a01118767381be42d99677fcd42f7665d4ff85d7248f90afc43e9"
+    },
+    {
+      "name": "Measure.h",
+      "bytes": 1957,
+      "sha256": "3c88471759e3c4600b95fe92960b965a14c1d4a0fe824802504f49433db5979d"
+    },
+    {
+      "name": "resident-source-manifest.json",
+      "bytes": 8906,
+      "sha256": "e222f31315580b0bac482653b50cec50cad7160aa5164670f818c0948cfd2d9f"
+    }
+  ],
+  "production": [
+    {
+      "path": "lib_src/elements/beam18/resident/Candidate.cu",
+      "bytes": 2518,
+      "sha256": "52e3a69846019732273cfe8194e64a50642cd6681b5f3012f9ae903b3e8f6064"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Measure.h",
+      "bytes": 2696,
+      "sha256": "7a3885060bbca0b80916b0581470774a6b05c320bd3686946582bd6fac8f4699"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/BUILD.bazel",
+      "bytes": 1586,
+      "sha256": "bc3536d60ee16da31e24da56e8cccd7e67fd72605f25ff33754bcbe268261276"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Tile.h",
+      "bytes": 478,
+      "sha256": "584df378719a386b89af044cbcd1eb8a6fbcaa09e6ae9b5cdbe73de63540c570"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Read.h",
+      "bytes": 1021,
+      "sha256": "e3d03aaf198e9e2498008da0bf7d27bf580f61ecae35a4ec913249a126dea576"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Finalize.cuh",
+      "bytes": 1893,
+      "sha256": "fffdf06986ec6c535ff89320047a6557c3f686ae98d2cfc1978a455cce96f484"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_resident/source-manifest.json",
+      "bytes": 9593,
+      "sha256": "fe033f87a48d52dfaef334cd69b93c5ec88d28f8c74d305013be06d03aa797f2"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/beam_common/EndpointFields.h",
+      "bytes": 2763,
+      "sha256": "4d7f7f44cce9eb504d231541c38a9bf9515f5de480113cdd1517e95b654a8eff"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/ResultChecks.h",
+      "bytes": 2626,
+      "sha256": "eeaea3ada8768d5d9bd48d6701ec77337229d9ece933c22e1d49008779ba1b62"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Arena.h",
+      "bytes": 1377,
+      "sha256": "6a53e750555b7919b0b01c32e9ddca4168c6c1302aeb5a39a7b52b03b4eb28f4"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Arena.cpp",
+      "bytes": 2418,
+      "sha256": "6ee114d357a800061e218a1b8a2593d3d1305071447efb6d013f848f9ffba061"
+    },
+    {
+      "path": "lib_src/elements/beam18/ForceChecks.h",
+      "bytes": 4331,
+      "sha256": "7cdcdf96cd9c137ecaea2670329206181f793f54abb6c5ca4d048ecc6eb30a83"
+    },
+    {
+      "path": "lib_src/elements/beam18/Force.h",
+      "bytes": 3119,
+      "sha256": "4241cdbd5efce8026345985a71b19843ec7b9b11c7c700cd9ecb4eb9916be884"
+    }
+  ]
+}
