@@ -35,7 +35,7 @@ __device__ inline void Finalize(batch_detail::Storage& state,const NodalPrepared
     }
     __syncthreads();
     if(!lane) {
-      if(serial)tile.proceed=ReplayTile(state.model,tile,first,count,next.diagnostics);
+      if(serial || !ChannelsFinite(tile))tile.proceed=ReplayTile(state.model,tile,first,count,next.diagnostics);
       else StoreChannels(tile,next.diagnostics);
     }
     __syncthreads();

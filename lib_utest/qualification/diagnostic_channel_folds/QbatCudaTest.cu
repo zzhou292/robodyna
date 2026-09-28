@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "OriginalQbatCases.cuh"
+#include "lib_utest/qualification/qbat_measurement_read_tile/CudaTest.cu"
 namespace qbat_read_tile_test {
 inline double& ChannelOperand(m::MeasurementParent& row,unsigned c) {
   if(c<2)return row.internal_work[c];if(c<4)return row.internal_increment[c-2];
@@ -31,7 +31,7 @@ TEST(QbatChannelsCuda, NonfinitePrefixReportsEachNumericField) {
   for(double poison:{std::numeric_limits<double>::max(),double(INFINITY),std::nan("47")}) {
     SCOPED_TRACE(::testing::Message()<<"poison bits="<<f::Bits(poison));
     rig.source.Reset();rig.source.Stage();rig.Restore();auto* rows=rig.storage->assembly.measurement;
-    rows[63].internal_work[0]=poison;rows[64].internal_work[0]=poison;rows[128].internal_work[0]=-poison;rows[128].valid=0;
+    rows[63].internal_work[0]=poison;rows[64].internal_work[0]=poison;rows[128].internal_work[0]=-poison;
     const auto view=rig.input->Prepared(2);const auto seed=Seed(false,0.);
     FrozenLeaf<<<1,1>>>(rig.storage,view,seed);Drain();const auto expected=rig.storage->control;
     CurrentLeaf<<<1,tile::Threads>>>(rig.storage,view,seed);Drain();const auto actual=rig.storage->control;
@@ -44,6 +44,15 @@ TEST(QbatChannelsCuda, NonfinitePrefixReportsEachNumericField) {
     equal("area",a.minimum_area_ratio,e.minimum_area_ratio);equal("thickness",a.minimum_thickness_ratio,e.minimum_thickness_ratio);
     equal("dt",a.minimum_native_dt,e.minimum_native_dt);equal("displacement",a.maximum_displacement,e.maximum_displacement);equal("strain",a.maximum_absolute_strain,e.maximum_absolute_strain);
     EXPECT_EQ(a.active_count,e.active_count);EXPECT_EQ(a.newly_removed_count,e.newly_removed_count);Same(actual,expected);
+  }
+}
+TEST(QbatChannelsCuda, SignedOpposedNaNPayloadsKeepTheSerialOperandSelection) {
+  f::DeviceFixture rig(129);ASSERT_FALSE(HasFailure());
+  for(unsigned c=0;c<10;++c)for(double first:{std::nan("47"),-std::nan("47"),double(INFINITY),double(-INFINITY)}) {
+    rig.source.Reset();rig.source.Stage();rig.Restore();auto* rows=rig.storage->assembly.measurement;
+    ChannelOperand(rows[63],c)=first;ChannelOperand(rows[64],c)=std::nan("53");ChannelOperand(rows[128],c)=-first;
+    Compare(rig,Seed(true,0.));ASSERT_FALSE(HasFailure());
+    rows[128].valid=0;Compare(rig,Seed(false,0.));ASSERT_FALSE(HasFailure());
   }
 }
 } // namespace qbat_read_tile_test

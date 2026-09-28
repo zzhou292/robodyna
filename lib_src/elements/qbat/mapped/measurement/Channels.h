@@ -49,6 +49,13 @@ TL_QBAT_HD inline void CountChannel(Tile& t,bool removed,unsigned count) noexcep
   for(unsigned p=0;p<count;++p)if(rows[p])++value;
   if(removed)t.removed_count=value;else t.active_count=value;
 }
+// This only chooses the literal serial arithmetic path; it does not reject an
+// overflow or move QBAT's delayed validity check. Replaying NaN arithmetic also
+// preserves the original operand selection for the sign/payload of NaN sums.
+TL_QBAT_HD inline bool ChannelsFinite(const Tile& t) noexcept {
+  for(double value:t.sum)if(!tl::math::Finite(value))return false;
+  return true;
+}
 TL_QBAT_HD inline void StoreChannels(const Tile& t,BatchDiagnostics& d) noexcept {
   for(unsigned c=0;c<2;++c) {d.internal_work_j[c]=t.sum[c];d.internal_work_increment_j[c]=t.sum[2+c];}
   d.plastic_work_j=t.sum[4];d.plastic_work_increment_j=t.sum[5];

@@ -5413,13 +5413,13 @@
     },
     {
       "path": "lib_src/elements/qbat/mapped/measurement/Channels.h",
-      "bytes": 3592,
-      "sha256": "682162a93f2d6b82a6ad68066b4bbee9ec77842b1f1b57a602dc2c12890a8004"
+      "bytes": 3978,
+      "sha256": "d8737e42c56f11cad14400676b5111001aa2bffa3b36a7d0323f5df11a896a78"
     },
     {
       "path": "lib_src/elements/qbat/mapped/measurement/Finalize.cuh",
-      "bytes": 2225,
-      "sha256": "97360e70d8cba9a1f41957cafd607471c7a90419e00cba3e54cd6b56ec85bef3"
+      "bytes": 2250,
+      "sha256": "4a8d67049ac6daf643fce3b33f33e1addd8d3fc02e4ca77c4b2d6b62f1c21053"
     },
     {
       "path": "lib_src/elements/qbat/mapped/measurement/Read.h",
