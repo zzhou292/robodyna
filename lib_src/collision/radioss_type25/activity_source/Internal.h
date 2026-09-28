@@ -26,8 +26,12 @@ struct Source {
 TransactionReport CheckSource(const tl::fea::ShellPhysicalBinding&,Source,Controls,std::size_t);
 TransactionReport WriteMains(const pm::Index&,Source,std::size_t shell_count,MainSupport*,Origin*);
 startup::MixedSidesSnapshot Mixed(const startup::Snapshot&);
+TransactionReport ForecastEmissions(PhysicalSources,Source,Counts&,Limits,std::size_t& scratch_bytes) noexcept;
+TransactionReport Emit(PhysicalSources,Source,const Counts&,Limits,std::uint32_t* offsets,
+    std::uint32_t* mains,std::size_t& used) noexcept;
 struct Layout {
   tl::util::ArenaRegion parents,offsets,incidence,mains,origins,main_to_primary,containing_offsets,containing_parents;
+  tl::util::ArenaRegion emitting_offsets,emitting_mains;
   std::size_t bytes=0;
 };
 struct Storage {

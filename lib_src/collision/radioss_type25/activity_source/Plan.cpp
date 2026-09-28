@@ -28,7 +28,7 @@ Forecast Preflight(PhysicalSources physical_sources,Source source,Controls contr
     Limits limits,Layout* output) noexcept try {
   const auto& physical=physical_sources.binding;
   Forecast result;auto reject=[&](S status,const char* message){result.report=Fail(status,message);return result;};
-  if((source.ordinary!=nullptr)==(source.mixed!=nullptr)||!limits.output_bytes||!limits.startup_bytes||limits.containing_parents>=UINT32_MAX)
+  if((source.ordinary!=nullptr)==(source.mixed!=nullptr)||!limits.output_bytes||!limits.startup_bytes||limits.containing_parents>=UINT32_MAX||limits.emitting_mains>=UINT32_MAX)
     return reject(S::InvalidInput,"Exactly one complete contact source is required");
   auto status=Parents(physical_sources,result.counts,nullptr,nullptr);if(status.status!=S::Ok){result.report=status;return result;}
   auto& count=result.counts;count.mains=source.mains();count.origins=source.origins();count.primaries=source.primaries();
@@ -54,6 +54,9 @@ Forecast Preflight(PhysicalSources physical_sources,Source source,Controls contr
       return reject(S::ResourceLimit,"Complete containing-parent capacity exceeds cap");
     count.containing_capacity+=additional;
   }
+  std::size_t emission_scratch=0;
+  status=ForecastEmissions(physical_sources,source,count,limits,emission_scratch);
+  if(status.status!=S::Ok){result.report=status;return result;}
   Layout layout;tl::util::BoundedArenaLayout storage(limits.output_bytes);
   if(!storage.Append<ParentIdentity>(count.parents,layout.parents)||
       !storage.Append<std::uint32_t>(count.nodes+1,layout.offsets)||
@@ -62,7 +65,9 @@ Forecast Preflight(PhysicalSources physical_sources,Source source,Controls contr
       !storage.Append<Origin>(count.origins,layout.origins)||
       !storage.Append<std::uint32_t>(count.mains,layout.main_to_primary)||
       !storage.Append<std::uint32_t>(count.primaries+1,layout.containing_offsets)||
-      !storage.Append<std::uint32_t>(count.containing_capacity,layout.containing_parents))
+      !storage.Append<std::uint32_t>(count.containing_capacity,layout.containing_parents)||
+      !storage.Append<std::uint32_t>(count.parents+1,layout.emitting_offsets)||
+      !storage.Append<std::uint32_t>(count.emitting_capacity,layout.emitting_mains))
     return reject(S::ResourceLimit,"Complete activity-source retained storage exceeds cap");
   layout.bytes=storage.bytes();
   tl::util::BoundedArenaLayout owned(limits.output_bytes);tl::util::ArenaRegion ignored;
@@ -76,7 +81,7 @@ Forecast Preflight(PhysicalSources physical_sources,Source source,Controls contr
       !peak.Append<std::uint32_t>(count.nodes,ignored)||
       !peak.Append<tl::util::SourceIdentityIndex<0>::Entry>(count.primaries,ignored)||
       !peak.Append<std::size_t>(count.primaries,ignored)||
-      !peak.Append<std::byte>(512,ignored))
+      !peak.Append<std::byte>(emission_scratch,ignored)||!peak.Append<std::byte>(512,ignored))
     return reject(S::ResourceLimit,"Complete activity-source startup peak exceeds cap");
   result.startup_bytes=peak.bytes();result.report=Ok();if(output)*output=layout;return result;
 } catch(const std::bad_alloc&) {Forecast result;result.report=Fail(S::ResourceLimit,"Activity-source preflight allocation failed");return result;}
@@ -121,9 +126,13 @@ TransactionReport Build(PhysicalSources physical_sources,Source source,Controls 
     if(containing_offsets[i]==used)return Fail(S::SourceMismatch,"Contact main has no actual containing source parent",i);
   }
   containing_offsets[count.primaries]=static_cast<std::uint32_t>(used);
+  auto* emitting_offsets=next->arena.Construct<std::uint32_t>(layout.emitting_offsets);
+  auto* emitting_mains=next->arena.Construct<std::uint32_t>(layout.emitting_mains);std::size_t emitted=0;
+  status=Emit(physical_sources,source,count,limits,emitting_offsets,emitting_mains,emitted);
+  if(status.status!=S::Ok)return status;
   next->view={{parents,count.parents},{offsets,count.nodes+1},{entries,count.incidence},
       {main_support,count.mains},{mapping,count.mains},{containing_offsets,count.primaries+1},
-      {containing,used},{origins,count.origins},controls,source.generation()};
+      {containing,used},{emitting_offsets,count.parents+1},{emitting_mains,emitted},{origins,count.origins},controls,source.generation()};
   output=std::move(next);return Ok();
 } catch(const std::bad_alloc&) {return Fail(S::ResourceLimit,"Activity-source allocation failed");}
 }
