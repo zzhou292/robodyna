@@ -47,7 +47,15 @@ SetupReport HostStorage::CheckActivitySectionSources(unsigned slab,std::size_t c
   const auto* catalog=Collection();
   if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
   if(one_point_)return {SetupStatus::InvalidInput,"One-point history is unavailable"};
-  return mixed_->CheckActivitySources(slab,count,*catalog);
+  if(!mixed_->HasReadShape(slab,count,*catalog))
+    return {SetupStatus::InvalidInput,"Mixed section readback shape is invalid"};
+  if(activity_source_catalog_==catalog&&activity_source_mixed_==mixed_.get())
+    return {SetupStatus::Success,"OK"};
+  const auto report=mixed_->CheckActivitySources(slab,count,*catalog);
+  if(report.status==SetupStatus::Success) {
+    activity_source_catalog_=catalog;activity_source_mixed_=mixed_.get();
+  }
+  return report;
 }
 SetupReport HostStorage::CheckActivityFailureSources(unsigned slab,std::size_t count) const noexcept {
   if(!failure_)return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
@@ -97,6 +105,7 @@ SetupReport HostStorage::InitializeSections(const ShellBatchPlasticityBinding& c
   if(!owned||!next)return {SetupStatus::ResourceLimit,"Mixed layered section host allocation failed"};
   const auto report=next->Initialize(*owned,family,count,layout);
   if(report.status!=SetupStatus::Success)return report;
+  InvalidateActivitySources();
   collection_=std::move(owned);mixed_=std::move(next);element_count_=count;
   return {SetupStatus::Success,"OK"};
 } catch(const std::bad_alloc&) { return {SetupStatus::ResourceLimit,"Mixed section host allocation failed"}; }
