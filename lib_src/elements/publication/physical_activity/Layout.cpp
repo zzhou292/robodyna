@@ -33,8 +33,8 @@ PhysicalActivityReport PhysicalActivitySnapshot::Preflight(const ShellPhysicalBi
   // Includes a conservative shared_ptr control block reservation. Source
   // backing is shared and remains charged by the composing physical model.
   next.owned_host_bytes = sizeof(PhysicalActivitySnapshot) + sizeof(physical_activity::State) + 64;
-  constexpr std::size_t PreparationBytes = 8192;
-  static_assert(sizeof(ShellPhysicalDiagnostics) + sizeof(physical_activity::QephInput) +
+  constexpr std::size_t PreparationBytes = 16384;
+  static_assert(4*sizeof(ShellPhysicalDiagnostics) + sizeof(physical_activity::QephInput) +
       sizeof(physical_activity::T3Input) + 2*sizeof(physical_activity::FamilyControl) +
       2*sizeof(PhysicalActivityReport) < PreparationBytes, "Activity preparation reservation is too small");
   next.preparation_host_bytes = PreparationBytes;

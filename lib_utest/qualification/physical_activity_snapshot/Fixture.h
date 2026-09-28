@@ -47,5 +47,13 @@ inline std::vector<std::uint8_t> Read(const std::uint8_t* values, std::size_t co
   EXPECT_EQ(cudaMemcpyAsync(out.data(), values, count, cudaMemcpyDeviceToHost, stream), cudaSuccess);
   EXPECT_EQ(cudaStreamSynchronize(stream), cudaSuccess); return out;
 }
+inline void ComparePreparedReadbacks(Fixture& f, const fe::PhysicalActivityDeviceView& v) {
+  std::vector<std::uint8_t> q(v.qeph.summary.count), t(v.t3.summary.count);
+  ASSERT_TRUE(p::Good(f.rig.qeph.CopyPreparedParentActivity(f.rig.owner, f.token, f.common.qeph, q.data(), q.size())));
+  ASSERT_TRUE(p::Good(f.rig.t3.CopyPreparedParentActivity(f.rig.owner, f.token, f.common.t3, t.data(), t.size())));
+  EXPECT_EQ(Read(v.qeph.current, q.size(), v.stream), q);
+  EXPECT_EQ(Read(v.t3.current, t.size(), v.stream), t);
+}
 void ArmCopyFailure();
+std::size_t ActivityReadbackCount();
 } // namespace physical_activity_test

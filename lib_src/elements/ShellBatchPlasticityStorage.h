@@ -59,6 +59,8 @@ class HostStorage {
   // Mapped QEPH compact query: no typed union staging and no one-point role.
   SetupReport CheckActivitySectionSources(unsigned slab,std::size_t count) const noexcept;
   SetupReport CheckActivityFailureSources(unsigned slab,std::size_t count) const noexcept;
+  // Allocation-free shape predicate shared by resident activity observers.
+  bool HasCompactActivityShape(unsigned slab,std::size_t count,ShellBindingFamily family) const noexcept;
   // Eligibility only. False retains the complete legacy readback/error order.
   bool SupportsCompactActivity(unsigned slab,std::size_t count,ShellBindingFamily family) const noexcept;
   FailureDeviceStorage* failure_device() const noexcept;

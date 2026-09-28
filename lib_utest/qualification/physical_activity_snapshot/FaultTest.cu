@@ -2,11 +2,13 @@
 #include "Fixture.h"
 #include "lib_src/elements/publication/physical_activity/Device.h"
 namespace physical_activity_test {
-namespace { bool armed = false; }
+namespace { bool armed = false; std::size_t activity_readbacks = 0; }
 void ArmCopyFailure() { armed = true; }
+std::size_t ActivityReadbackCount() { return activity_readbacks; }
 extern "C" cudaError_t __real_cudaMemcpyAsync(void*, const void*, std::size_t, cudaMemcpyKind, cudaStream_t);
 extern "C" cudaError_t __wrap_cudaMemcpyAsync(void* destination, const void* source,
     std::size_t bytes, cudaMemcpyKind kind, cudaStream_t stream) {
+  if (kind == cudaMemcpyDeviceToHost && bytes == 2*sizeof(fe::physical_activity::FamilyControl)) ++activity_readbacks;
   if (armed && kind == cudaMemcpyDeviceToHost && bytes == 2*sizeof(fe::physical_activity::FamilyControl)) {
     armed = false; return cudaErrorInvalidValue;
   }

@@ -42,6 +42,8 @@ PhysicalActivityReport State::Capture(const NodalTrialToken& trial, const NodalA
     const auto count = family ? forecast.t3_count : forecast.qeph_count;
     const auto& c = controls[family];
     if (c.active > count || c.removed > count ||
+        ((c.active == count) != (c.first_inactive == UINT32_MAX)) ||
+        ((c.removed == 0) != (c.first_removed == UINT32_MAX)) ||
         (c.first_inactive != UINT32_MAX && c.first_inactive >= count) ||
         (c.first_removed != UINT32_MAX && c.first_removed >= count))
       return {S::InvalidActivity, "Physical activity scalar packet is invalid"};

@@ -14,6 +14,7 @@ TEST(PhysicalActivityCuda, GenuineRemovalDiscardRetryCommitAndInactiveNextBase) 
     ASSERT_TRUE(f.PreparePhysical()); ASSERT_TRUE(f.CapturePrepared());
     fe::PhysicalActivityDeviceView v;
     ASSERT_TRUE(Good(f.snapshot.BorrowPrepared(f.rig.owner, f.token, f.common, f.prepared, f.candidate, &v)));
+    ComparePreparedReadbacks(f, v);
     EXPECT_EQ(Read(v.t3.base, 1, v.stream), (std::vector<std::uint8_t>{1}));
     EXPECT_EQ(Read(v.t3.current, 1, v.stream), (std::vector<std::uint8_t>{0}));
     EXPECT_EQ(v.t3.summary.active_count, 0u); EXPECT_EQ(v.t3.summary.first_inactive, 0u);

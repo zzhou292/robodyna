@@ -7,9 +7,11 @@ TEST(PhysicalActivityCuda, ExactSourceFreshBorrowAndOpaqueReceiptLifecycle) {
   EXPECT_NE(other.Initialize(f.rig.owner, f.rig.publication, f.rig.fixture.physical,
       roster, f.rig.fixture.Identity()).status, Status::Ok);
   ASSERT_TRUE(f.Begin()); ASSERT_TRUE(f.accepted.valid());
+  const auto captures = ActivityReadbackCount();
   fe::PhysicalActivityDeviceView a, b;
   ASSERT_TRUE(Good(f.snapshot.BorrowAccepted(f.rig.owner, f.token, f.assembly, f.accepted, &a)));
   ASSERT_TRUE(Good(f.snapshot.BorrowAccepted(f.rig.owner, f.token, f.assembly, f.accepted, &b)));
+  EXPECT_EQ(ActivityReadbackCount(), captures);
   EXPECT_EQ(a.generation, b.generation); EXPECT_EQ(a.qeph.base, b.qeph.base);
   EXPECT_EQ(Read(a.qeph.base, 2, a.stream), (std::vector<std::uint8_t>{1,1}));
   EXPECT_EQ(Read(a.t3.base, 1, a.stream), (std::vector<std::uint8_t>{1}));
@@ -21,6 +23,7 @@ TEST(PhysicalActivityCuda, ExactSourceFreshBorrowAndOpaqueReceiptLifecycle) {
   ASSERT_TRUE(f.PreparePhysical()); ASSERT_FALSE(f.accepted.valid());
   ASSERT_TRUE(f.CapturePrepared()); ASSERT_TRUE(f.candidate.valid());
   ASSERT_TRUE(Good(f.snapshot.BorrowPrepared(f.rig.owner, f.token, f.common, f.prepared, f.candidate, &b)));
+  ComparePreparedReadbacks(f, b);
   EXPECT_EQ(Read(b.qeph.current, 2, b.stream), Read(b.qeph.base, 2, b.stream));
   auto forged_diagnostics = f.common; forged_diagnostics.qbat.active_count = 0;
   EXPECT_NE(f.snapshot.BorrowPrepared(f.rig.owner, f.token, forged_diagnostics, f.prepared, f.candidate, &a).status, Status::Ok);

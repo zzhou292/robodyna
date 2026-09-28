@@ -7,6 +7,10 @@ TEST(PhysicalActivityHost, ExactForecastBoundsAndOverlappingSourceAreAtomic) {
   physical_publication_test::Fixture fixture;
   fe::PhysicalActivityForecast f;
   ASSERT_EQ(fe::PhysicalActivitySnapshot::Preflight(fixture.physical, {}, f).status, fe::PhysicalActivityStatus::Ok);
+  RecordProperty("owned_host_bytes", std::to_string(f.owned_host_bytes));
+  RecordProperty("startup_host_bytes", std::to_string(f.startup_host_bytes));
+  RecordProperty("preparation_host_bytes", std::to_string(f.preparation_host_bytes));
+  RecordProperty("device_bytes", std::to_string(f.device_bytes));
   EXPECT_EQ(f.qeph_count, 2u); EXPECT_EQ(f.t3_count, 1u); EXPECT_EQ(f.qbat_count, 1u);
   EXPECT_EQ(f.preparation_device_bytes, 0u);
   auto held = f; fe::PhysicalActivityLimits limits;

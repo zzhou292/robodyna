@@ -9,7 +9,7 @@ template<class State, class Diagnostics, class Input, class Same>
 PhysicalActivityReport BorrowFamily(State& s, FENodalState& owner,
     ShellBatchPublication& publication, const ShellPhysicalBinding& physical,
     const NodalTrialToken& token, const NodalAssemblyView* assembly,
-    const NodalPreparedView* prepared, const Diagnostics& expected, Input& output, Same same) {
+    const NodalPreparedView* prepared, const Diagnostics& expected, Input& output, Same same, ShellBindingFamily family) {
   using S = PhysicalActivityStatus;
   if (!s.usable || !s.bound || !s.physical || !s.physical->Matches(physical) ||
       s.publication_scope != &publication || !s.joined_binding || !s.plasticity ||
@@ -32,6 +32,8 @@ PhysicalActivityReport BorrowFamily(State& s, FENodalState& owner,
       s.stream != (prepared ? prepared->stream : assembly->stream))
     return {S::StaleReceipt, "Activity batch view, assembly or stream differs"};
   const auto slab = s.AcceptedSlabIndex() ^ (prepared ? 1u : 0u);
+  if (!s.plasticity->HasCompactActivityShape(slab, s.config.element_count, family))
+    return {S::SourceMismatch, "Activity section, point or failure storage shape differs"};
   const auto shape = s.plasticity->CheckActivityFailureSources(slab, s.config.element_count);
   if (shape.status != shell_batch_plasticity_detail::SetupStatus::Success)
     return {S::SourceMismatch, shape.message};
@@ -63,7 +65,7 @@ PhysicalActivityReport BatchAccess::Borrow(qeph::QephBatch& batch, FENodalState&
     const qeph::BatchDiagnostics& d, QephInput& output) {
   if (!batch.impl_) return {PhysicalActivityStatus::NotInitialized, "QEPH activity batch absent"};
   auto result = BorrowFamily(*batch.impl_, owner, pub, source, token, a, p, d, output,
-      qeph::batch_detail::SameDiagnostics);
+      qeph::batch_detail::SameDiagnostics, ShellBindingFamily::Qeph);
   result.family = PhysicalActivityFamily::Qeph;
   return result;
 }
@@ -73,7 +75,7 @@ PhysicalActivityReport BatchAccess::Borrow(t3::T3Batch& batch, FENodalState& own
     const t3::BatchDiagnostics& d, T3Input& output) {
   if (!batch.impl_) return {PhysicalActivityStatus::NotInitialized, "T3 activity batch absent"};
   auto result = BorrowFamily(*batch.impl_, owner, pub, source, token, a, p, d, output,
-      t3::batch_detail::SameDiagnostics);
+      t3::batch_detail::SameDiagnostics, ShellBindingFamily::T3);
   result.family = PhysicalActivityFamily::T3;
   return result;
 }
