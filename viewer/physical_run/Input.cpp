@@ -27,7 +27,7 @@ std::size_t CaptureForecast(std::size_t samples,std::size_t cap) {
     // One bounded PNG per actual sample, plus index/metadata. This conservative
     // output cap is separate from the immutable binary input archive's cap.
     constexpr std::size_t per_image=32u<<20,reserve=4u<<20;
-    output::Require(samples && (cap==2ull<<30 || cap==6ull<<30) && cap>=reserve &&
+    output::Require(samples && (cap==2ull<<30 || cap==6ull<<30 || cap==10ull<<30) && cap>=reserve &&
         samples<=(cap-reserve)/per_image,"Physical PNG capture forecast exceeds selected output cap");
     return reserve+samples*per_image;
 }
