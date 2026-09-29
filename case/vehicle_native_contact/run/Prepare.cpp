@@ -1,7 +1,7 @@
 #include "State.h"
 #include "ArchiveRequest.h"
 #include "output/physical_run/Replay.h"
-#include "output/full_shell/FixedStepHorizon.h"
+#include "Horizon.h"
 #include <algorithm>
 namespace crash::cases::vehicle_native_contact {
 namespace run_detail {
@@ -21,8 +21,8 @@ PreparedRun PreparedRun::Prepare(const VehicleContactStartup& source, RunConfig 
                         config.mapping_bytes <= (512u << 20) && config.archive_bytes &&
                         config.archive_bytes <= records::FullRunByteCap && config.identity.run && config.identity.topology &&
                         !config.identity.owner && !config.identity.source_instance && !config.identity.configuration &&
-                        !config.identity.qualification && horizon.requested_duration_s <= .05 &&
-                        records::PlanFixedStepHorizon(horizon.fixed_dt_s, horizon.requested_duration_s, horizon.intervals) &&
+                        !config.identity.qualification &&
+                        run_detail::PlanOutputHorizon(horizon.fixed_dt_s, horizon.requested_duration_s, horizon.intervals) &&
                         config.samples <= horizon.intervals + 1,
                     "Native run has invalid source horizon/output identity/resource limits");
     horizon.nominal_endpoint_s = static_cast<long double>(horizon.fixed_dt_s) * horizon.intervals;

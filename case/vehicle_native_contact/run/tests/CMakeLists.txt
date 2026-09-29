@@ -9,7 +9,7 @@ get_filename_component(APP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE
 include("${APP_ROOT}/output/physical_run/PhysicalRun.cmake")
 include("${APP_ROOT}/case/vehicle_native_contact/actual/controls/Controls.cmake")
 add_executable(native_archive_request_check
-  ArchiveRequestTest.cpp OriginalSourceChunkTest.cpp "${CMAKE_CURRENT_LIST_DIR}/../ArchiveRequest.cpp"
+  ArchiveRequestTest.cpp HorizonTest.cpp OriginalSourceChunkTest.cpp "${CMAKE_CURRENT_LIST_DIR}/../ArchiveRequest.cpp"
   "${APP_ROOT}/output/physical_run/tests/NativeGroupRecordsTest.cpp"
   "${APP_ROOT}/output/physical_run/tests/ReplayBudgetTest.cpp"
   "${APP_ROOT}/output/physical_run/tests/ReplayPreflightTest.cpp"

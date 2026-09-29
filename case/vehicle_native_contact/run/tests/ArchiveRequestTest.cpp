@@ -1,4 +1,5 @@
 #include "../ArchiveRequest.h"
+#include "../Horizon.h"
 #include "output/physical_run/tests/Support.h"
 #include "output/physical_run/ReplayBudget.h"
 #include "output/full_shell/FixedStepHorizon.h"
@@ -86,5 +87,47 @@ TEST(NativeArchiveRequest, VehicleThirtyMillisecondShapeUsesBoundedNormalReplay)
     EXPECT_EQ(decoded.request.intervals, horizon.intervals);
     EXPECT_EQ(output::Bits(decoded.request.fixed_dt), output::Bits(horizon.fixed_dt_s));
     EXPECT_TRUE(physical::SameProfile(decoded.profile, config.profile));
+}
+TEST(NativeArchiveRequest, HundredMillisecondVehicleFitsExistingArchiveAndReplayBounds) {
+    const auto context = VehicleRecordShape();
+    vehicle_run::Horizon horizon;
+    horizon.fixed_dt_s = 1.5e-7;
+    horizon.requested_duration_s = .1;
+    ASSERT_TRUE(run_detail::PlanOutputHorizon(horizon.fixed_dt_s,
+        horizon.requested_duration_s, horizon.intervals));
+    ASSERT_EQ(horizon.intervals, 666667u);
+    const auto request = run_detail::MakeArchiveRequest(context, horizon, 301,
+        records::FullRunByteCap, 24u << 20);
+    const auto config = Configuration(context, request);
+    const auto plan = records::activity::PlanWithActivity(context, request.archive, "parent-activity.json");
+    EXPECT_EQ(request.archive.total_byte_cap, UINT64_C(6442450944));
+    EXPECT_EQ(plan.archive.forecast_bytes, UINT64_C(5345729304));
+    EXPECT_LT(plan.archive.forecast_bytes, request.archive.total_byte_cap);
+    EXPECT_EQ(plan.archive.rows_per_chunk, 80659u);
+    EXPECT_EQ(plan.archive.interval_chunks, 9u);
+    EXPECT_EQ(plan.archive.frame_capacity, 302u); // One off-cadence accepted-prefix reserve.
+    ASSERT_EQ(plan.archive.frame_epochs.size(), 301u);
+    EXPECT_EQ(plan.archive.frame_epochs.front(), 0u);
+    EXPECT_EQ(plan.archive.frame_epochs.back(), horizon.intervals);
+    for (std::size_t i = 1; i < plan.archive.frame_epochs.size(); ++i) {
+        const auto gap = plan.archive.frame_epochs[i] - plan.archive.frame_epochs[i - 1];
+        EXPECT_TRUE(gap == 2222u || gap == 2223u);
+    }
+    const auto thirty = LongHorizon();
+    const auto thirty_request = run_detail::MakeArchiveRequest(context, thirty, 121,
+        records::FullRunByteCap, 24u << 20);
+    EXPECT_EQ(physical::IntervalReadStagingBytes(config.profile, horizon.intervals, 24u << 20), 69689376u);
+    EXPECT_EQ(physical::Replay::Preflight(context, config),
+        physical::Replay::Preflight(context, Configuration(context, thirty_request)));
+    EXPECT_LE(physical::Replay::Preflight(context, config), 512u << 20);
+    const auto decoded = physical::ReadConfiguration(physical::ConfigurationDocument(config));
+    EXPECT_EQ(decoded.request.intervals, horizon.intervals);
+    EXPECT_EQ(decoded.request.frames, 301u);
+    EXPECT_EQ(output::Bits(decoded.request.requested_duration), output::Bits(.1));
+    EXPECT_EQ(output::Bits(decoded.request.fixed_dt), output::Bits(horizon.fixed_dt_s));
+    EXPECT_TRUE(physical::SameProfile(decoded.profile, config.profile));
+    // Keeping the old 0.25ms visual cadence would exceed the unchanged 6GiB cap.
+    EXPECT_THROW(run_detail::MakeArchiveRequest(context, horizon, 401,
+        records::FullRunByteCap, 24u << 20), std::exception);
 }
 } // namespace crash::cases::vehicle_native_contact::test

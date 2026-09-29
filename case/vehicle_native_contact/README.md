@@ -118,6 +118,10 @@ capture/archive coexistence before owner creation, and selects the output
 the owning preview target explicitly selects `FullRunByteCap` and reports the
 concrete forecast before a launch. It never silently shortens the requested
 horizon or changes a contact/material policy.
+The native output horizon is bounded at 100ms by `run/Horizon.h`; the existing
+one-million-interval and authenticated contact-lifetime checks still run during
+source preparation. Longer previews must separately fit the existing archive,
+replay and process budgets. Increasing duration does not create physical restart.
 
 The optional initial retry probe is outside timed runtime. It checks unchanged
 accepted owner/group publication and exact frame/activity bits while a trial is
