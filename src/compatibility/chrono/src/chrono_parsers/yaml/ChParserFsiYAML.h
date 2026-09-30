@@ -1,0 +1,129 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2025 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Authors: Radu Serban
+// =============================================================================
+
+#ifndef CH_PARSER_FSI_YAML_H
+#define CH_PARSER_FSI_YAML_H
+
+#include <vector>
+
+#include "chrono_parsers/yaml/ChParserMbsYAML.h"
+#include "chrono_parsers/yaml/ChParserCfdYAML.h"
+
+#include "chrono_fsi/ChFsiSystem.h"
+
+namespace chrono {
+namespace parsers {
+
+/// @addtogroup parsers_module
+/// @{
+
+/// Parser for YAML specification file for a coupled FSI problem.
+class ChApiParsers ChParserFsiYAML : public ChParserYAML {
+  public:
+    /// Create a YAML parser and load the model from the specified input YAML file.
+    ChParserFsiYAML(const std::string& yaml_filename, bool verbose = false);
+    ~ChParserFsiYAML();
+
+    /// Load the specified input YAML file.
+    void LoadFile(const std::string& yaml_filename);
+
+    void LoadFsiData(const YAML::Node& yaml);
+
+    /// Load the simulation and visualization settings from the specified YAML node.
+    void LoadSimData(const YAML::Node& yaml) override;
+
+    /// Create and return a ChFsiSystem combining a Chrono MBS system and a fluid solver.
+    void CreateFsiSystem();
+
+    /// Return the multibody YAML parser.
+    ChParserMbsYAML& GetMbsParser() const { return *m_parserMBS; }
+
+    /// Return the fluid YAML parser.
+    ChParserCfdYAML& GetCfdParser() const { return *m_parserCFD; }
+
+    /// Return the FSI system.
+    std::shared_ptr<fsi::ChFsiSystem> GetFsiSystem() const { return m_sysFSI; }
+
+    /// Return fluid system type.
+    ChParserCfdYAML::FluidSystemType GetFluidSystemType() const { return m_parserCFD->GetType(); }
+
+    /// Return the fluid system.
+    std::shared_ptr<fsi::ChFsiFluidSystem> GetFluidSystem() const { return m_sysCFD; }
+
+    /// Return the MBS system.
+    std::shared_ptr<ChSystem> GetMultibodySystem() const { return m_sysMBS; }
+
+    /// Get meta-step (communication time step).
+    double GetTimestep() const { return m_sim.step; }
+
+    /// Get simulation end time.
+    /// A value of -1 indicates infinite end time.
+    double GetEndtime() const { return m_sim.end_time; }
+
+    /// Set root output directory (default: ".").
+    /// This function creates two additional subdirectories, `mbs` and `fluid`, respectively.
+    virtual void SetOutputDir(const std::string& out_dir) override;
+
+    /// Return true if generating output.
+    /// This function returns true only if output is enabled for at least one of the two phases (MBS or CFD). 
+    virtual bool OutputEnabled() const override;
+
+    /// Return true if visualization is enabled.
+    /// This function returns true only if visualization is enabled for at least one of the two phases (MBS or CFD).
+    virtual bool VisualizationEnabled() const override;
+
+    /// Generate output at the current frame.
+    /// This override generates output for any of the two phases (MBS or CFD) for which output was enabled.
+    /// This function ensures that output occurs at the specified frequency.
+    virtual void Output(double time) override;
+
+  private:
+    /// FSI rigid body definition.
+    struct FsiBody {
+        std::string name;                                 ///< body name
+        std::vector<std::shared_ptr<ChBodyAuxRef>> body;  ///< underlying Chrono bodies (one per instance)
+        std::shared_ptr<utils::ChBodyGeometry> geometry;  ///< FSI geometry
+    };
+
+    /// Co-simulation settings.
+    struct SimParams {
+        SimParams();
+        void PrintInfo() const;
+
+        double step;
+        double end_time;
+        ChVector3d gravity;
+    };
+
+    std::shared_ptr<ChParserMbsYAML> m_parserMBS;
+    std::shared_ptr<ChParserCfdYAML> m_parserCFD;
+
+    ChParserCfdYAML::FluidSystemType m_sysCFD_type;
+
+    //// TODO: do I need to cache these?
+    std::shared_ptr<fsi::ChFsiSystem> m_sysFSI;
+    std::shared_ptr<fsi::ChFsiFluidSystem> m_sysCFD;
+    std::shared_ptr<ChSystem> m_sysMBS;
+
+    std::vector<FsiBody> m_fsi_bodies;
+
+    SimParams m_sim;  ///< co-simulation settings
+};
+
+/// @} parsers_module
+
+}  // end namespace parsers
+}  // namespace chrono
+
+#endif

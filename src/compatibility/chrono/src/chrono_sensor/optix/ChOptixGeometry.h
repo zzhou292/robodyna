@@ -1,0 +1,278 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2019 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Authors: Asher Elmquist
+// =============================================================================
+//
+//
+// =============================================================================
+
+#ifndef CHOPTIXGEOMETRY_H
+#define CHOPTIXGEOMETRY_H
+
+#include <optix.h>
+#include "chrono_sensor/ChApiSensor.h"
+#include "chrono/core/ChFrame.h"
+#include "chrono/physics/ChBody.h"
+#include "chrono/assets/ChVisualShapeTriangleMesh.h"
+
+#ifdef CHRONO_FSI_SPH
+    #include "chrono_fsi/sph/ChFsiFluidSystemSPH.h"
+    #include "chrono_sensor/ChFsiSphRender.h"
+#endif
+
+#include <deque>
+
+namespace chrono {
+namespace sensor {
+
+/// @addtogroup sensor_optix
+/// @{
+
+/// Transform struct for packing a translation, rotation, and scale
+struct Transform {
+    float data[12];
+};
+
+/// Optix Geometry class that is responsible for managing all geometric information in the optix scene
+/// This handles the acceleration structure and transforms
+class CH_SENSOR_API ChOptixGeometry {
+  public:
+    /// Class constructor
+    /// @param context optix context for which the ChOptixGeometry maintains the scene
+    ChOptixGeometry(OptixDeviceContext context);
+
+    /// Class destructor
+    ~ChOptixGeometry();
+
+    /// Add a box geometry to the optix scene
+    /// @param body the Chrono Body that drives the box
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the box
+    /// @param mat_id the material id associated with the box
+    void AddBox(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id);
+
+#ifdef USE_SENSOR_NVDB
+    /// Add a NVDB volume to the optix scene
+    /// @param body the Chrono Body that drives the NVDB volume
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the NVDB volume
+    /// @param mat_id the material id associated with the NVDB volume
+    void AddNVDBVolume(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id);
+#endif
+
+    /// Add a sphere geometry to the optix scene
+    /// @param body the Chrono Body that drives the sphere
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the sphere
+    /// @param mat_id the material id associated with the sphere
+    void AddSphere(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id);
+
+    /// Add a cylinder geometry to the optix scene
+    /// @param body the Chrono Body that drives the cylinder
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the cylinder
+    /// @param mat_id the material id associated with the cylinder
+    void AddCylinder(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id);
+
+    /// Add a rigid mesh to the optix scene
+    /// @param d_vertices a device pointer to the vertices of the mesh
+    /// @param d_indices a device pointer to the indices of the mesh
+    /// @param mesh_shape the Chrono mesh shape that defines the mesh
+    /// @param body the Chrono body on which the mesh is attached
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the mesh
+    /// @param mat_id the material id associated with the mesh
+    unsigned int AddRigidMesh(CUdeviceptr d_vertices,
+                              CUdeviceptr d_indices,
+                              std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                              std::shared_ptr<ChBody> body,
+                              ChFrame<double> asset_frame,
+                              ChVector3d scale,
+                              unsigned int mat_id);
+
+    /// Add a deformable mesh to the optix scene
+    /// @param d_vertices a device pointer to the vertices of the mesh
+    /// @param d_indices a device pointer to the indices of the mesh
+    /// @param mesh_shape the Chrono mesh shape that defines the mesh
+    /// @param body the Chrono body on which the mesh is attached
+    /// @param asset_frame the Chrono frame that specifies how the asset is attached to the body
+    /// @param scale the scale of the mesh
+    /// @param mat_id the material id associated with the mesh
+    void AddDeformableMesh(CUdeviceptr d_vertices,
+                           CUdeviceptr d_indices,
+                           std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                           std::shared_ptr<ChBody> body,
+                           ChFrame<double> asset_frame,
+                           ChVector3d scale,
+                           unsigned int mat_id);
+
+    /// Create the root node and acceleration structure of the scene
+    ///@return A traversable handle to the root node
+    OptixTraversableHandle CreateRootStructure();
+
+    /// Rebuild the root acceleration structure for when the root changes
+    void RebuildRootStructure();
+
+    /// Update the list of transforms associated with the bodies and assets at the start time
+    void UpdateBodyTransformsStart(float t_start, float t_target_end);
+
+    /// Update the list of transforms associated with the bodies and assets at the end time
+    void UpdateBodyTransformsEnd(float t_end);
+
+    /// Update the deformable meshes based on how the meshes changed in Chrono
+    void UpdateDeformableMeshes();
+
+#ifdef CHRONO_FSI_SPH
+    /// Add a native FSI-SPH marker cloud rendered as visual shape sprite instances.
+    void AddFsiSphCloud(int source_id,
+                        size_t count,
+                        size_t source_count,
+                        const std::vector<CUdeviceptr>& d_vertices,
+                        const std::vector<CUdeviceptr>& d_indices,
+                        const std::vector<std::shared_ptr<ChVisualShape>>& shapes,
+                        const std::vector<unsigned int>& mat_ids,
+                        float render_particle_spacing,
+                        const ChVector3f& position_jitter);
+
+    /// Update a native FSI-SPH marker cloud from device-resident FSI marker positions.
+    void UpdateFsiSphCloud(int source_id, const chrono::fsi::sph::Real4* pos_rad, size_t marker_offset, size_t count);
+#endif
+
+    /// Cleanup the entire optix geometry manager, cleans and frees device pointers and root structure
+    void Cleanup();
+
+    /// Origin offset function for moving the origin to reduce large translations
+    void SetOriginOffset(ChVector3f origin_offset) { m_origin_offset = origin_offset; }
+
+  private:
+    /// Function to add an object to the scene given the handle
+    /// @param mat_id the material id for the object
+    /// @param body the chrono body associated with the object
+    /// @param asset_frame the frame associated with the asset relative to the body
+    /// @param scale the scale of the object
+    /// @param gas_handle the handle to the geometry acceleration structure
+    void AddGenericObject(unsigned int mat_id, std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, OptixTraversableHandle gas_handle);
+
+    /// Function to build a geometry acceleration structure for a triangle mesh
+    /// @param mesh_shape the chrono mesh representing this asset
+    /// @param d_vertices the device pointer to the vertices of the mesh
+    /// @param d_indices the device pointer to the indices of the mesh
+    /// @param compact_no_update if the GAS should be made without updating, and with compaction
+    /// @param rebuild whether this is a rebuild, or a first build
+    /// @param gas_id the id of the GAS is it has already been made (in case of rebuild)
+    unsigned int BuildTrianglesGAS(std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                                   CUdeviceptr d_vertices,
+                                   CUdeviceptr d_indices,
+                                   bool compact_no_update = true,
+                                   bool rebuild = false,
+                                   unsigned int gas_id = 0);
+
+    /// Reuse or build a GAS for a rigid triangle mesh.
+    unsigned int GetOrCreateRigidMeshGAS(CUdeviceptr d_vertices, CUdeviceptr d_indices, std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape);
+
+    /// Function ot convert scale, rotation, translation to top 3 rows of transform matrix
+    /// @param[in] s the scale vector
+    /// @param[in] a the rotation matrix
+    /// @param[in] b the translation vector
+    /// @param[out] t a pointer to where the inverse transform matrix should be placed
+    static void GetT3x4FromSRT(const ChVector3d& s, const ChMatrix33<double>& a, const ChVector3d& b, float* t);
+
+    /// Function to convert scale, rotation, translation to top 3 rows of inverse transform matrix
+    /// @param[in] s the scale vector
+    /// @param[in] a the rotation matrix
+    /// @param[in] b the translation vector
+    /// @param[out] t a pointer to where the inverse transform matrix should be placed
+    static void GetInvT3x4FromSRT(const ChVector3d& s, const ChMatrix33<double>& a, const ChVector3d& b, float* t);
+
+    OptixDeviceContext m_context;  ///< handle to the device context -> we do not own, so will not clean up
+
+    // primitive ids for instancing
+    unsigned int m_box_gas_id;     ///< id of the single box geometry acceleration structure
+    bool m_box_inst = false;       ///< whether a box has been created
+    unsigned int m_sphere_gas_id;  ///< id of the single sphere geometry acceleration structure
+    bool m_sphere_inst = false;    ///< whether a sphere has been created
+    unsigned int m_cyl_gas_id;     ///< id of the single cylinder geometry acceleration structure
+    bool m_cyl_inst = false;       ///< whether a cylinder has been created
+
+    unsigned int m_nvdb_gas_id;
+    bool m_nvdb_inst = false;
+
+    // instance and root buffers
+    std::vector<OptixInstance> m_instances;  ///< host vector of geometry instances
+    CUdeviceptr md_instances = {};           ///< device pointer to the instances on the device
+    CUdeviceptr md_root_temp_buffer = {};    ///< device pointer to the root acceleration temporary buffer
+    CUdeviceptr md_root_output_buffer = {};  ///< device pointer to the root acceleration buffer
+    size_t md_root_temp_buffer_size;         ///< size of the root temporary buffer on the device
+    size_t md_root_output_buffer_size;       ///< size of the root output buffer on the device
+    OptixTraversableHandle m_root;           ///< handle to the root acceleration structure
+
+    // GAS buffers, handles, and transforms
+    std::vector<CUdeviceptr> m_gas_buffers;                       ///< all the gas buffers
+    std::vector<OptixTraversableHandle> m_gas_handles;            ///< all the gas handles
+    std::vector<OptixMatrixMotionTransform> m_motion_transforms;  ///< vector of all the motion transforms
+    CUdeviceptr md_motion_transforms = {};                        ///< solid block of motion transforms on the device
+    std::vector<OptixTraversableHandle> m_motion_handles;         ///< vector of all the motion transforms
+
+    // index buffers for objects pointing to their materials and GAS
+    std::vector<unsigned int> m_obj_mat_ids;  ///< id of the material of the box
+
+    // vectors referencing data from Chrono
+    std::vector<std::shared_ptr<ChBody>> m_bodies;         ///< chrono bodies in the scene
+    std::vector<ChFrame<double>> m_obj_body_frames_start;  ///< frame at time=start used for the geometry
+    std::vector<ChFrame<double>> m_obj_body_frames_end;    ///< frame at time=end used for the geometry
+    std::vector<ChFrame<double>> m_obj_asset_frames;       ///< constant frame used for the geometry
+    std::vector<ChVector3d> m_obj_scales;                  ///< asset frame scales
+    ChVector3f m_origin_offset;                            ///< origin offset for the scene
+
+    /// need to potentially hold multiple starts and will move it to
+    /// start under lock when the corresponding end has been packed
+    std::vector<std::tuple<float, float, std::vector<ChFrame<double>>>> m_obj_body_frames_start_tmps;
+
+    /// keep track of chrono meshes and their corresponding mesh pool id for automatic instancing
+    std::vector<std::tuple<CUdeviceptr, unsigned int>> m_known_meshes;
+
+    /// deformable mesh list [mesh shape, d_vertices, d_indices, gas id]
+    std::vector<std::tuple<std::shared_ptr<ChVisualShapeTriangleMesh>, CUdeviceptr, CUdeviceptr, unsigned int>> m_deformable_meshes;
+
+#ifdef CHRONO_FSI_SPH
+    struct FsiSphSpriteTemplate {
+        unsigned int gas_id = 0;
+        unsigned int mat_id = 0;
+        ChVector3f scale = ChVector3f(1.f, 1.f, 1.f);
+    };
+
+    struct FsiSphCloud {
+        int source_id = -1;
+        size_t instance_offset = 0;
+        size_t count = 0;
+        size_t source_count = 0;
+        std::vector<FsiSphSpriteTemplate> sprite_templates;
+        CUdeviceptr d_sprite_gas_handles = {};
+        CUdeviceptr d_sprite_mat_ids = {};
+        CUdeviceptr d_sprite_scales = {};
+        float render_particle_spacing = 0.f;
+        ChVector3f sprite_position_jitter = ChVector3f(0.f, 0.f, 0.f);
+    };
+
+    std::vector<FsiSphCloud> m_fsi_sph_clouds;  ///< native FSI-SPH instance clouds
+#endif
+
+    float m_start_time;  ///< time corresponding to start frame
+    float m_end_time;    ///< time corresponding to end frame
+};
+
+/// @} sensor_optix
+
+}  // namespace sensor
+}  // namespace chrono
+
+#endif

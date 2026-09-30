@@ -1,0 +1,931 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2019 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Authors: Asher Elmquist
+// =============================================================================
+//
+//
+// =============================================================================
+
+#include "chrono/utils/ChUtils.h"
+#include "chrono_sensor/optix/ChOptixGeometry.h"
+#include "chrono_sensor/optix/ChOptixDefinitions.h"
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <optix_stubs.h>
+
+#include "chrono_sensor/optix/ChOptixUtils.h"
+#ifdef CHRONO_FSI_SPH
+    #include "chrono_sensor/cuda/fsi_sph_render.cuh"
+#endif
+
+#include <algorithm>
+#include <chrono>
+
+namespace chrono {
+namespace sensor {
+
+ChOptixGeometry::ChOptixGeometry(OptixDeviceContext context) : m_context(context), m_start_time(0.f), m_end_time(1.f) {}
+
+ChOptixGeometry::~ChOptixGeometry() {
+    Cleanup();
+}
+
+void ChOptixGeometry::Cleanup() {
+    // instance and root buffer cleanup
+    if (md_instances) {
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(md_instances)));
+        md_instances = {};
+    }
+    if (md_root_temp_buffer) {
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(md_root_temp_buffer)));
+        md_root_temp_buffer = {};
+    }
+    if (md_root_output_buffer) {
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(md_root_output_buffer)));
+        md_root_output_buffer = {};
+    }
+    m_instances.clear();
+
+    // GAS buffers, handles, and transform cleanup
+    if (md_motion_transforms) {
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(md_motion_transforms)));
+        md_motion_transforms = {};
+    }
+
+    for (int i = 0; i < m_gas_buffers.size(); i++) {
+        if (m_gas_buffers[i]) {
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(m_gas_buffers[i])));
+            m_gas_buffers[i] = {};
+        }
+    }
+    m_gas_buffers.clear();
+    m_gas_handles.clear();
+    m_motion_transforms.clear();
+    m_motion_handles.clear();
+
+    // Clean primitives ids and instantiation bools
+    m_box_inst = false;
+    m_box_gas_id = 0;
+    m_sphere_inst = false;
+    m_sphere_gas_id = 0;
+    m_cyl_inst = false;
+    m_cyl_gas_id = 0;
+    m_nvdb_inst = false;
+    m_nvdb_gas_id = 0;
+
+    // clear out chrono reference data
+    m_obj_scales.clear();
+    m_obj_asset_frames.clear();
+    m_obj_body_frames_start.clear();
+    m_obj_body_frames_end.clear();
+    m_bodies.clear();
+
+    // clear out our list of known meshes
+    m_known_meshes.clear();
+
+    // clear our deformable meshes
+    m_deformable_meshes.clear();
+
+#ifdef CHRONO_FSI_SPH
+    for (auto& cloud : m_fsi_sph_clouds) {
+        if (cloud.d_sprite_gas_handles) {
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(cloud.d_sprite_gas_handles)));
+            cloud.d_sprite_gas_handles = {};
+        }
+        if (cloud.d_sprite_mat_ids) {
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(cloud.d_sprite_mat_ids)));
+            cloud.d_sprite_mat_ids = {};
+        }
+        if (cloud.d_sprite_scales) {
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(cloud.d_sprite_scales)));
+            cloud.d_sprite_scales = {};
+        }
+    }
+    m_fsi_sph_clouds.clear();
+#endif
+
+    // clear out index buffers
+    m_obj_mat_ids.clear();
+}
+
+void ChOptixGeometry::AddGenericObject(unsigned int mat_id, std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, OptixTraversableHandle gas_handle) {
+    // add to list of box instances
+    m_obj_mat_ids.push_back(mat_id);
+    m_bodies.push_back(body);
+    m_obj_body_frames_start.push_back(body->GetFrameRefToAbs());
+    m_obj_body_frames_end.push_back(body->GetFrameRefToAbs());
+
+    // create the motion transform for this box
+    m_motion_transforms.emplace_back();
+    m_motion_handles.emplace_back();
+    auto i = m_motion_transforms.size() - 1;
+    m_obj_asset_frames.push_back(asset_frame);
+    m_obj_scales.push_back(scale);
+
+    m_motion_transforms[i].child = gas_handle;
+    m_motion_transforms[i].motionOptions.numKeys = 2;               // TODO: would we need more than this?
+    m_motion_transforms[i].motionOptions.timeBegin = m_start_time;  // default at start, will be updated
+    m_motion_transforms[i].motionOptions.timeEnd = m_end_time;      // default at start, will be updated
+    m_motion_transforms[i].motionOptions.flags = OPTIX_MOTION_FLAG_NONE;
+
+    const float t[12] = {1.f, 0.f, 0.f, 0.f,   // row 1
+                         0.f, 1.f, 0.f, 0.f,   // row 2
+                         0.f, 0.f, 1.f, 0.f};  // row 3
+    memcpy(m_motion_transforms[i].transform[0], t, 12 * sizeof(float));
+    memcpy(m_motion_transforms[i].transform[1], t, 12 * sizeof(float));
+}
+
+void ChOptixGeometry::AddBox(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id) {
+    if (!m_box_inst) {
+        // create first box instance
+        OptixAabb aabb[1];
+        *aabb = {-.5f, -.5f, -.5f, .5f, .5f, .5f};
+        CUdeviceptr d_aabb;
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_aabb), sizeof(OptixAabb)));
+        CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_aabb), &aabb, sizeof(OptixAabb), cudaMemcpyHostToDevice));
+        uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT};
+        // uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_NONE};
+        // const uint32_t sbt_index[] = {0};  // TODO: may need to check this when we have multiple types of objects
+        // CUdeviceptr d_sbt_index;
+        // CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_sbt_index), sizeof(sbt_index)));
+        // CUDA_ERROR_CHECK(
+        //     cudaMemcpy(reinterpret_cast<void*>(d_sbt_index), sbt_index, sizeof(sbt_index), cudaMemcpyHostToDevice));
+
+        OptixBuildInput aabb_input = {};
+        aabb_input.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+        aabb_input.customPrimitiveArray.aabbBuffers = &d_aabb;
+        aabb_input.customPrimitiveArray.flags = aabb_input_flags;
+        aabb_input.customPrimitiveArray.numSbtRecords = 1;
+        aabb_input.customPrimitiveArray.numPrimitives = 1;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetBuffer = 0;  // d_sbt_index;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetSizeInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.sbtIndexOffsetStrideInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.primitiveIndexOffset = 0;
+
+        OptixAccelBuildOptions accel_options = {};
+        accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;  // allow compaction to save memory
+        accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;         // build operation
+
+        // building box GAS
+        OptixAccelBufferSizes gas_buffer_sizes;
+        CUdeviceptr d_temp_buffer_gas;
+        OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &aabb_input, 1, &gas_buffer_sizes));
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas), gas_buffer_sizes.tempSizeInBytes));
+        CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+
+        size_t compactedSizeOffset = (size_t)((gas_buffer_sizes.outputSizeInBytes + 8ull - 1 / 8ull) * 8ull);
+
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size), compactedSizeOffset + 8));
+        OptixAccelEmitDesc emitProperty = {};
+        emitProperty.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+        emitProperty.result = (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset);
+
+        m_gas_handles.emplace_back();
+        m_gas_buffers.emplace_back();
+        m_box_gas_id = static_cast<unsigned int>(m_gas_handles.size() - 1);
+
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &aabb_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes,
+                                          d_buffer_temp_output_gas_and_compacted_size, gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[m_box_gas_id], &emitProperty, 1));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_gas)));
+
+        size_t compacted_gas_size;
+        CUDA_ERROR_CHECK(cudaMemcpy(&compacted_gas_size, reinterpret_cast<void*>(emitProperty.result), sizeof(size_t), cudaMemcpyDeviceToHost));
+
+        if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[m_box_gas_id]), compacted_gas_size));
+
+            // use handle as input and output
+            OPTIX_ERROR_CHECK(optixAccelCompact(m_context, 0, m_gas_handles[m_box_gas_id], m_gas_buffers[m_box_gas_id], compacted_gas_size, &m_gas_handles[m_box_gas_id]));
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_buffer_temp_output_gas_and_compacted_size)));
+        } else {
+            m_gas_buffers[m_box_gas_id] = d_buffer_temp_output_gas_and_compacted_size;
+        }
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_aabb)));
+        // CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_sbt_index)));
+        m_box_inst = true;
+    }
+
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[m_box_gas_id]);
+}
+
+#ifdef USE_SENSOR_NVDB
+void ChOptixGeometry::AddNVDBVolume(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id) {
+    if (!m_nvdb_inst) {
+        // create first box instance
+        OptixAabb aabb[1];
+
+        //*aabb = {-512.0f, -64.0f, 0.0f, 0.0f, 0.0f, 28.0f};
+        //*aabb = {-508.0f, -84.0f, 0.0f, 0.0f,  0.0f, 20.0f};
+        *aabb = {-.5f, -.5f, -.5f, .5f, .5f, .5f};
+        //*aabb = {-1500.0f, -1500.0f, -1500.0f, 1500.0f, 1500.0f, 1500.0f};
+        //*aabb = {-404.0f, -204.0f, 0.0f, 0.0f,  0.0f, 12.0f};
+        // *aabb = {-204.0f, -104.0f, 0.0f, 0.0f,  0.0f, 24.0f};
+
+        CUdeviceptr d_aabb;
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_aabb), sizeof(OptixAabb)));
+        CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_aabb), &aabb, sizeof(OptixAabb), cudaMemcpyHostToDevice));
+        uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT};
+        // uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_NONE};
+        // const uint32_t sbt_index[] = {0};  // TODO: may need to check this when we have multiple types of objects
+        // CUdeviceptr d_sbt_index;
+        // CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_sbt_index), sizeof(sbt_index)));
+        // CUDA_ERROR_CHECK(
+        //     cudaMemcpy(reinterpret_cast<void*>(d_sbt_index), sbt_index, sizeof(sbt_index), cudaMemcpyHostToDevice));
+
+        OptixBuildInput aabb_input = {};
+        aabb_input.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+        aabb_input.customPrimitiveArray.aabbBuffers = &d_aabb;
+        aabb_input.customPrimitiveArray.flags = aabb_input_flags;
+        aabb_input.customPrimitiveArray.numSbtRecords = 1;
+        aabb_input.customPrimitiveArray.numPrimitives = 1;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetBuffer = 0;  // d_sbt_index;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetSizeInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.sbtIndexOffsetStrideInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.primitiveIndexOffset = 0;
+
+        OptixAccelBuildOptions accel_options = {};
+        accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;  // allow compaction to save memory
+        accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;         // build operation
+
+        // building box GAS
+        OptixAccelBufferSizes gas_buffer_sizes;
+        CUdeviceptr d_temp_buffer_gas;
+        OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &aabb_input, 1, &gas_buffer_sizes));
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas), gas_buffer_sizes.tempSizeInBytes));
+        CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+
+        size_t compactedSizeOffset = (size_t)((gas_buffer_sizes.outputSizeInBytes + 8ull - 1 / 8ull) * 8ull);
+
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size), compactedSizeOffset + 8));
+        OptixAccelEmitDesc emitProperty = {};
+        emitProperty.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+        emitProperty.result = (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset);
+
+        m_gas_handles.emplace_back();
+        m_gas_buffers.emplace_back();
+        m_box_gas_id = static_cast<unsigned int>(m_gas_handles.size() - 1);
+
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &aabb_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes,
+                                          d_buffer_temp_output_gas_and_compacted_size, gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[m_box_gas_id], &emitProperty, 1));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_gas)));
+
+        size_t compacted_gas_size;
+        CUDA_ERROR_CHECK(cudaMemcpy(&compacted_gas_size, reinterpret_cast<void*>(emitProperty.result), sizeof(size_t), cudaMemcpyDeviceToHost));
+
+        if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[m_box_gas_id]), compacted_gas_size));
+
+            // use handle as input and output
+            OPTIX_ERROR_CHECK(optixAccelCompact(m_context, 0, m_gas_handles[m_box_gas_id], m_gas_buffers[m_box_gas_id], compacted_gas_size, &m_gas_handles[m_box_gas_id]));
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_buffer_temp_output_gas_and_compacted_size)));
+        } else {
+            m_gas_buffers[m_box_gas_id] = d_buffer_temp_output_gas_and_compacted_size;
+        }
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_aabb)));
+        // CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_sbt_index)));
+        m_nvdb_inst = true;
+    }
+
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[m_box_gas_id]);
+}
+#endif  // USE_SENSOR_NVDB
+
+void ChOptixGeometry::AddSphere(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id) {
+    if (!m_sphere_inst) {
+        // create first sphere instance
+        OptixAabb aabb[1];
+        *aabb = {-1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
+        CUdeviceptr d_aabb;
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_aabb), sizeof(OptixAabb)));
+        CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_aabb), &aabb, sizeof(OptixAabb), cudaMemcpyHostToDevice));
+        uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT};
+        // uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_NONE};
+        // const uint32_t sbt_index[] = {0};
+        OptixBuildInput aabb_input = {};
+        aabb_input.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+        aabb_input.customPrimitiveArray.aabbBuffers = &d_aabb;
+        aabb_input.customPrimitiveArray.flags = aabb_input_flags;
+        aabb_input.customPrimitiveArray.numSbtRecords = 1;
+        aabb_input.customPrimitiveArray.numPrimitives = 1;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetBuffer = 0;  // d_sbt_index;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetSizeInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.sbtIndexOffsetStrideInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.primitiveIndexOffset = 0;
+
+        OptixAccelBuildOptions accel_options = {};
+        accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;  // allow compaction to save memory
+        accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;         // build operation
+
+        // building sphere GAS
+        OptixAccelBufferSizes gas_buffer_sizes;
+        CUdeviceptr d_temp_buffer_gas;
+        OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &aabb_input, 1, &gas_buffer_sizes));
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas), gas_buffer_sizes.tempSizeInBytes));
+        CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+
+        size_t compactedSizeOffset = (size_t)((gas_buffer_sizes.outputSizeInBytes + 8ull - 1 / 8ull) * 8ull);
+
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size), compactedSizeOffset + 8));
+        OptixAccelEmitDesc emitProperty = {};
+        emitProperty.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+        emitProperty.result = (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset);
+
+        m_gas_handles.emplace_back();
+        m_gas_buffers.emplace_back();
+        m_sphere_gas_id = static_cast<unsigned int>(m_gas_handles.size() - 1);
+
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &aabb_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes,
+                                          d_buffer_temp_output_gas_and_compacted_size, gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[m_sphere_gas_id], &emitProperty, 1));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void**>(d_temp_buffer_gas)));
+
+        size_t compacted_gas_size;
+        CUDA_ERROR_CHECK(cudaMemcpy(&compacted_gas_size, reinterpret_cast<void*>(emitProperty.result), sizeof(size_t), cudaMemcpyDeviceToHost));
+
+        if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[m_sphere_gas_id]), compacted_gas_size));
+
+            // use handle as input and output
+            OPTIX_ERROR_CHECK(optixAccelCompact(m_context, 0, m_gas_handles[m_sphere_gas_id], m_gas_buffers[m_sphere_gas_id], compacted_gas_size, &m_gas_handles[m_sphere_gas_id]));
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_buffer_temp_output_gas_and_compacted_size)));
+        } else {
+            m_gas_buffers[m_sphere_gas_id] = d_buffer_temp_output_gas_and_compacted_size;
+        }
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_aabb)));
+        m_sphere_inst = true;
+    }
+
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[m_sphere_gas_id]);
+}
+
+#ifdef CHRONO_FSI_SPH
+void ChOptixGeometry::AddFsiSphCloud(int source_id,
+                                     size_t count,
+                                     size_t source_count,
+                                     const std::vector<CUdeviceptr>& d_vertices,
+                                     const std::vector<CUdeviceptr>& d_indices,
+                                     const std::vector<std::shared_ptr<ChVisualShape>>& shapes,
+                                     const std::vector<unsigned int>& mat_ids,
+                                     float render_particle_spacing,
+                                     const ChVector3f& position_jitter) {
+    if (count == 0 || source_count == 0 || shapes.empty())
+        return;
+    if (d_vertices.size() != shapes.size() || d_indices.size() != shapes.size() || mat_ids.size() != shapes.size())
+        return;
+
+    size_t instance_offset = m_obj_mat_ids.size();
+    for (const auto& cloud : m_fsi_sph_clouds)
+        instance_offset += cloud.count;
+
+    FsiSphCloud cloud;
+    cloud.source_id = source_id;
+    cloud.instance_offset = instance_offset;
+    cloud.count = count;
+    cloud.source_count = source_count;
+    cloud.render_particle_spacing = render_particle_spacing;
+    cloud.sprite_position_jitter = position_jitter;
+
+    std::vector<OptixTraversableHandle> gas_handles;
+    std::vector<unsigned int> template_mat_ids;
+    std::vector<float3> template_scales;
+    gas_handles.reserve(shapes.size());
+    template_mat_ids.reserve(shapes.size());
+    template_scales.reserve(shapes.size());
+
+    for (size_t i = 0; i < shapes.size(); ++i) {
+        if (!shapes[i])
+            continue;
+
+        unsigned int gas_id = 0;
+        ChVector3f shape_scale(1.f, 1.f, 1.f);
+
+        if (auto mesh_shape = std::dynamic_pointer_cast<ChVisualShapeTriangleMesh>(shapes[i])) {
+            gas_id = GetOrCreateRigidMeshGAS(d_vertices[i], d_indices[i], mesh_shape);
+            const ChVector3d mesh_scale = mesh_shape->GetScale();
+            shape_scale = ChVector3f(static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
+        } else {
+            continue;
+        }
+
+        FsiSphSpriteTemplate sprite_template;
+        sprite_template.gas_id = gas_id;
+        sprite_template.mat_id = mat_ids[i];
+        sprite_template.scale = shape_scale;
+        cloud.sprite_templates.push_back(sprite_template);
+
+        gas_handles.push_back(m_gas_handles[gas_id]);
+        template_mat_ids.push_back(mat_ids[i]);
+        template_scales.push_back(make_float3(sprite_template.scale.x(), sprite_template.scale.y(), sprite_template.scale.z()));
+    }
+
+    if (cloud.sprite_templates.empty())
+        return;
+
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&cloud.d_sprite_gas_handles), gas_handles.size() * sizeof(OptixTraversableHandle)));
+    CUDA_ERROR_CHECK(
+        cudaMemcpy(reinterpret_cast<void*>(cloud.d_sprite_gas_handles), gas_handles.data(), gas_handles.size() * sizeof(OptixTraversableHandle), cudaMemcpyHostToDevice));
+
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&cloud.d_sprite_mat_ids), template_mat_ids.size() * sizeof(unsigned int)));
+    CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(cloud.d_sprite_mat_ids), template_mat_ids.data(), template_mat_ids.size() * sizeof(unsigned int), cudaMemcpyHostToDevice));
+
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&cloud.d_sprite_scales), template_scales.size() * sizeof(float3)));
+    CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(cloud.d_sprite_scales), template_scales.data(), template_scales.size() * sizeof(float3), cudaMemcpyHostToDevice));
+
+    m_fsi_sph_clouds.push_back(cloud);
+}
+
+void ChOptixGeometry::UpdateFsiSphCloud(int source_id, const chrono::fsi::sph::Real4* pos_rad, size_t marker_offset, size_t count) {
+    if (!pos_rad || !md_instances || count == 0)
+        return;
+
+    for (const auto& cloud : m_fsi_sph_clouds) {
+        if (cloud.source_id != source_id)
+            continue;
+
+        cuda_update_fsi_sph_sprite_instances(pos_rad + marker_offset, count, cloud.count, reinterpret_cast<OptixInstance*>(md_instances) + cloud.instance_offset,
+                                             reinterpret_cast<const OptixTraversableHandle*>(cloud.d_sprite_gas_handles),
+                                             reinterpret_cast<const unsigned int*>(cloud.d_sprite_mat_ids), reinterpret_cast<const float3*>(cloud.d_sprite_scales),
+                                             static_cast<unsigned int>(cloud.sprite_templates.size()), cloud.render_particle_spacing, cloud.sprite_position_jitter,
+                                             m_origin_offset);
+        return;
+    }
+}
+#endif
+
+void ChOptixGeometry::AddCylinder(std::shared_ptr<ChBody> body, ChFrame<double> asset_frame, ChVector3d scale, unsigned int mat_id) {
+    if (!m_cyl_inst) {
+        // create first cylinder instance
+        OptixAabb aabb[1];
+        *aabb = {-1.f, -1.f, -.5f, 1.f, 1.f, .5f};
+        CUdeviceptr d_aabb;
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_aabb), sizeof(OptixAabb)));
+        CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_aabb), &aabb, sizeof(OptixAabb), cudaMemcpyHostToDevice));
+        uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT};
+        // uint32_t aabb_input_flags[] = {OPTIX_GEOMETRY_FLAG_NONE};
+        // const uint32_t sbt_index[] = {0};
+        OptixBuildInput aabb_input = {};
+        aabb_input.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+        aabb_input.customPrimitiveArray.aabbBuffers = &d_aabb;
+        aabb_input.customPrimitiveArray.flags = aabb_input_flags;
+        aabb_input.customPrimitiveArray.numSbtRecords = 1;
+        aabb_input.customPrimitiveArray.numPrimitives = 1;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetBuffer = 0;  // d_sbt_index;
+        aabb_input.customPrimitiveArray.sbtIndexOffsetSizeInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.sbtIndexOffsetStrideInBytes = sizeof(uint32_t);
+        aabb_input.customPrimitiveArray.primitiveIndexOffset = 0;
+
+        OptixAccelBuildOptions accel_options = {};
+        accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;  // allow compaction to save memory
+        accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;         // build operation
+
+        // building cylinder GAS
+        OptixAccelBufferSizes gas_buffer_sizes;
+        CUdeviceptr d_temp_buffer_gas;
+        OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &aabb_input, 1, &gas_buffer_sizes));
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas), gas_buffer_sizes.tempSizeInBytes));
+        CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+
+        size_t compactedSizeOffset = (size_t)((gas_buffer_sizes.outputSizeInBytes + 8ull - 1 / 8ull) * 8ull);
+
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size), compactedSizeOffset + 8));
+        OptixAccelEmitDesc emitProperty = {};
+        emitProperty.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+        emitProperty.result = (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset);
+
+        m_gas_handles.emplace_back();
+        m_gas_buffers.emplace_back();
+        m_cyl_gas_id = static_cast<unsigned int>(m_gas_handles.size() - 1);
+
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &aabb_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes,
+                                          d_buffer_temp_output_gas_and_compacted_size, gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[m_cyl_gas_id], &emitProperty, 1));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void**>(d_temp_buffer_gas)));
+
+        size_t compacted_gas_size;
+        CUDA_ERROR_CHECK(cudaMemcpy(&compacted_gas_size, reinterpret_cast<void*>(emitProperty.result), sizeof(size_t), cudaMemcpyDeviceToHost));
+
+        if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[m_cyl_gas_id]), compacted_gas_size));
+
+            // use handle as input and output
+            OPTIX_ERROR_CHECK(optixAccelCompact(m_context, 0, m_gas_handles[m_cyl_gas_id], m_gas_buffers[m_cyl_gas_id], compacted_gas_size, &m_gas_handles[m_cyl_gas_id]));
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_buffer_temp_output_gas_and_compacted_size)));
+        } else {
+            m_gas_buffers[m_cyl_gas_id] = d_buffer_temp_output_gas_and_compacted_size;
+        }
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_aabb)));
+        m_cyl_inst = true;
+    }
+
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[m_cyl_gas_id]);
+}
+
+unsigned int ChOptixGeometry::GetOrCreateRigidMeshGAS(CUdeviceptr d_vertices, CUdeviceptr d_indices, std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape) {
+    bool mesh_found = false;
+    unsigned int mesh_gas_id = 0;
+    for (int i = 0; i < m_known_meshes.size(); i++) {
+        if (d_vertices == std::get<0>(m_known_meshes[i])) {
+            mesh_found = true;
+            mesh_gas_id = std::get<1>(m_known_meshes[i]);
+
+            // std::cout << "Found an existing mesh we should use. Will use the following parameters:\n";
+            // std::cout << "mesh_gas_id: " << mesh_gas_id << std::endl;
+            // std::cout << "mat_id: " << mat_id << std::endl;
+            break;
+        }
+    }
+
+    if (!mesh_found) {
+        mesh_gas_id = BuildTrianglesGAS(mesh_shape, d_vertices, d_indices);
+        // push this mesh to our known meshes
+        m_known_meshes.push_back(std::make_tuple(d_vertices, mesh_gas_id));
+        // std::cout << "Created a mesh from scratch:\n";
+    }
+
+    return mesh_gas_id;
+}
+
+unsigned int ChOptixGeometry::AddRigidMesh(CUdeviceptr d_vertices,
+                                           CUdeviceptr d_indices,
+                                           std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                                           std::shared_ptr<ChBody> body,
+                                           ChFrame<double> asset_frame,
+                                           ChVector3d scale,
+                                           unsigned int mat_id) {
+    // std::cout << "Adding rigid mesh to optix!\n";
+    unsigned int mesh_gas_id = GetOrCreateRigidMeshGAS(d_vertices, d_indices, mesh_shape);
+
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[mesh_gas_id]);
+
+    return mesh_gas_id;
+}
+
+void ChOptixGeometry::AddDeformableMesh(CUdeviceptr d_vertices,
+                                        CUdeviceptr d_indices,
+                                        std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                                        std::shared_ptr<ChBody> body,
+                                        ChFrame<double> asset_frame,
+                                        ChVector3d scale,
+                                        unsigned int mat_id) {
+    unsigned int mesh_gas_id = BuildTrianglesGAS(mesh_shape, d_vertices, d_indices, false);
+    AddGenericObject(mat_id, body, asset_frame, scale, m_gas_handles[mesh_gas_id]);
+    m_deformable_meshes.push_back(std::make_tuple(mesh_shape, d_vertices, d_indices, mesh_gas_id));
+}
+
+void ChOptixGeometry::UpdateDeformableMeshes() {
+    for (int i = 0; i < m_deformable_meshes.size(); i++) {
+        std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape = std::get<0>(m_deformable_meshes[i]);
+        CUdeviceptr d_vertices = std::get<1>(m_deformable_meshes[i]);
+        CUdeviceptr d_indices = std::get<2>(m_deformable_meshes[i]);
+        unsigned int gas_id = std::get<3>(m_deformable_meshes[i]);
+
+        // perform a rebuild of the triage acceleration structure
+        BuildTrianglesGAS(mesh_shape, d_vertices, d_indices, false, true, gas_id);
+    }
+}
+
+unsigned int ChOptixGeometry::BuildTrianglesGAS(std::shared_ptr<ChVisualShapeTriangleMesh> mesh_shape,
+                                                CUdeviceptr d_vertices,
+                                                CUdeviceptr d_indices,
+                                                bool compact_no_update,
+                                                bool rebuild,
+                                                unsigned int gas_id) {
+    auto mesh = mesh_shape->GetMesh();
+
+    OptixAccelBuildOptions accel_options = {};
+    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;  // allow compaction to save memory
+    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;         // build operation
+
+    if (!compact_no_update) {
+        accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_UPDATE;
+        // accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
+    }
+
+    // uint32_t triangle_flags[] = {OPTIX_GEOMETRY_FLAG_NONE};
+    uint32_t triangle_flags[] = {OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT};
+    OptixBuildInput mesh_input = {};
+    mesh_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
+
+    // vertex data/params
+    mesh_input.triangleArray.vertexBuffers = &d_vertices;
+    mesh_input.triangleArray.numVertices = static_cast<unsigned int>(mesh->GetCoordsVertices().size());
+    mesh_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
+    // TODO: if vertices get padded to float4, this need to reflect that
+    mesh_input.triangleArray.vertexStrideInBytes = sizeof(float4);  // sizeof(float3);
+
+    // index data/params
+    mesh_input.triangleArray.indexBuffer = d_indices;
+    mesh_input.triangleArray.numIndexTriplets = static_cast<unsigned int>(mesh->GetIndicesVertices().size());
+    mesh_input.triangleArray.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
+    // TODO: if vertices get padded to uint4, this need to reflect that
+    mesh_input.triangleArray.indexStrideInBytes = sizeof(uint4);  // sizeof(uint3);
+
+    mesh_input.triangleArray.flags = triangle_flags;
+    mesh_input.triangleArray.numSbtRecords = 1;
+    mesh_input.triangleArray.sbtIndexOffsetBuffer = 0;
+
+    // build the triangle acceleration structure
+    OptixAccelBufferSizes gas_buffer_sizes;
+    OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &mesh_input,
+                                                   1,  // num_build_inputs
+                                                   &gas_buffer_sizes));
+    CUdeviceptr d_temp_buffer_gas;
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas), gas_buffer_sizes.tempSizeInBytes));
+
+    unsigned int mesh_gas_id = gas_id;
+    if (!rebuild) {
+        m_gas_handles.emplace_back();
+        m_gas_buffers.emplace_back();
+        mesh_gas_id = static_cast<unsigned int>(m_gas_handles.size() - 1);
+    }
+
+    if (compact_no_update) {
+        size_t compactedSizeOffset = (size_t)((gas_buffer_sizes.outputSizeInBytes + 8ull - 1 / 8ull) * 8ull);
+
+        CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+        CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size), compactedSizeOffset + 8));
+        OptixAccelEmitDesc emitProperty = {};
+        emitProperty.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+        emitProperty.result = (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset);
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &mesh_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes,
+                                          d_buffer_temp_output_gas_and_compacted_size, gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[mesh_gas_id], &emitProperty, 1));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void**>(d_temp_buffer_gas)));
+
+        size_t compacted_gas_size;
+        CUDA_ERROR_CHECK(cudaMemcpy(&compacted_gas_size, reinterpret_cast<void*>(emitProperty.result), sizeof(size_t), cudaMemcpyDeviceToHost));
+
+        if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
+            if (rebuild && m_gas_buffers[mesh_gas_id]) {
+                CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(m_gas_buffers[mesh_gas_id])));
+            }
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[mesh_gas_id]), compacted_gas_size));
+
+            // use handle as input and output
+            OPTIX_ERROR_CHECK(optixAccelCompact(m_context, 0, m_gas_handles[mesh_gas_id], m_gas_buffers[mesh_gas_id], compacted_gas_size, &m_gas_handles[mesh_gas_id]));
+            CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void*>(d_buffer_temp_output_gas_and_compacted_size)));
+        } else {
+            m_gas_buffers[mesh_gas_id] = d_buffer_temp_output_gas_and_compacted_size;
+        }
+
+    } else {
+        if (!rebuild) {
+            CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&m_gas_buffers[mesh_gas_id]), gas_buffer_sizes.outputSizeInBytes));
+        }
+        OPTIX_ERROR_CHECK(optixAccelBuild(m_context, 0, &accel_options, &mesh_input, 1, d_temp_buffer_gas, gas_buffer_sizes.tempSizeInBytes, m_gas_buffers[mesh_gas_id],
+                                          gas_buffer_sizes.outputSizeInBytes, &m_gas_handles[mesh_gas_id], nullptr, 0));
+        CUDA_ERROR_CHECK(cudaFree(reinterpret_cast<void**>(d_temp_buffer_gas)));
+    }
+
+    return mesh_gas_id;
+}
+
+OptixTraversableHandle ChOptixGeometry::CreateRootStructure() {
+    // std::cout << "Creating root structure with " << m_obj_mat_ids.size() << " objects\n";
+
+    // malloc the gpu memory for motion transform
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&md_motion_transforms), m_motion_transforms.size() * sizeof(OptixMatrixMotionTransform)));
+    CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(md_motion_transforms), m_motion_transforms.data(), m_motion_transforms.size() * sizeof(OptixMatrixMotionTransform),
+                                cudaMemcpyHostToDevice));
+
+    // loop through and make motion transforms into handles
+    // std::cout << "Creating motion handles: " << m_motion_transforms.size()
+    //           << " with size=" << sizeof(OptixMatrixMotionTransform) << std::endl;
+
+    for (int i = 0; i < m_motion_transforms.size(); i++) {
+        OPTIX_ERROR_CHECK(optixConvertPointerToTraversableHandle(m_context, md_motion_transforms + i * sizeof(OptixMatrixMotionTransform),
+                                                                 OPTIX_TRAVERSABLE_TYPE_MATRIX_MOTION_TRANSFORM, &m_motion_handles[i]));
+    }
+
+    size_t num_fsi_sph_instances = 0;
+#ifdef CHRONO_FSI_SPH
+    for (const auto& cloud : m_fsi_sph_clouds)
+        num_fsi_sph_instances += cloud.count;
+#endif
+
+    // update and build the instances
+    const size_t num_instances = m_obj_mat_ids.size() + num_fsi_sph_instances;
+    size_t instance_size_in_bytes = sizeof(OptixInstance) * num_instances;
+    m_instances = std::vector<OptixInstance>(num_instances);
+    memset(m_instances.data(), 0, instance_size_in_bytes);
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&md_instances), instance_size_in_bytes));
+
+    OptixBuildInput instance_input = {};
+    instance_input.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
+    // instance_input.type = OPTIX_BUILD_INPUT_TYPE_INSTANCE_POINTERS;
+    instance_input.instanceArray.instances = md_instances;
+    instance_input.instanceArray.numInstances = static_cast<unsigned int>(m_instances.size());
+    OptixAccelBuildOptions accel_options = {};
+    // accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
+    // accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_UPDATE;
+    // accel_options.buildFlags = OPTIX_BUILD_FLAG_PREFER_FAST_TRACE | OPTIX_BUILD_FLAG_ALLOW_UPDATE;
+    accel_options.buildFlags = OPTIX_BUILD_FLAG_PREFER_FAST_TRACE;  // | OPTIX_BUILD_FLAG_ALLOW_UPDATE;
+    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+    accel_options.motionOptions.numKeys = 2;               // m_start_time default at start
+    accel_options.motionOptions.timeBegin = m_start_time;  // default at start
+    accel_options.motionOptions.timeEnd = m_end_time;      // default at start
+    accel_options.motionOptions.flags = OPTIX_MOTION_FLAG_NONE;
+
+    OptixAccelBufferSizes ias_buffer_sizes;
+    OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &instance_input,
+                                                   1,  // num build inputs
+                                                   &ias_buffer_sizes));
+    md_root_temp_buffer_size = ias_buffer_sizes.tempSizeInBytes;
+    md_root_output_buffer_size = ias_buffer_sizes.outputSizeInBytes;
+
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&md_root_temp_buffer), ias_buffer_sizes.tempSizeInBytes));
+    CUDA_ERROR_CHECK(cudaMalloc(reinterpret_cast<void**>(&md_root_output_buffer), ias_buffer_sizes.outputSizeInBytes));
+
+    // pack the data for each instance
+    for (int i = 0; i < m_obj_mat_ids.size(); i++) {
+        const float t[12] = {1.f, 0.f, 0.f, 0.f,  //
+                             0.f, 1.f, 0.f, 0.f,  //
+                             0.f, 0.f, 1.f, 0.f};
+        m_instances[i].traversableHandle = m_motion_handles[i];
+        m_instances[i].flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT;  // | OPTIX_INSTANCE_FLAG_DISABLE_TRANSFORM |
+                                                                    // OPTIX_INSTANCE_FLAG_FLIP_TRIANGLE_FACING;
+        // m_instances[i].flags = OPTIX_INSTANCE_FLAG_NONE;
+        m_instances[i].instanceId = i;
+        m_instances[i].sbtOffset = m_obj_mat_ids[i];
+        m_instances[i].visibilityMask = 1;
+        memcpy(m_instances[i].transform, t, sizeof(float) * 12);
+    }
+
+#ifdef CHRONO_FSI_SPH
+    for (const auto& cloud : m_fsi_sph_clouds) {
+        for (size_t k = 0; k < cloud.count; ++k) {
+            const size_t i = cloud.instance_offset + k;
+            const auto& sprite_template = cloud.sprite_templates[k % cloud.sprite_templates.size()];
+            const OptixTraversableHandle gas_handle = m_gas_handles[sprite_template.gas_id];
+            const unsigned int mat_id = sprite_template.mat_id;
+            const ChVector3f scale = sprite_template.scale;
+
+            const float t[12] = {scale.x(), 0.f,       0.f,       0.f,  //
+                                 0.f,       scale.y(), 0.f,       0.f,  //
+                                 0.f,       0.f,       scale.z(), 0.f};
+            m_instances[i].traversableHandle = gas_handle;
+            m_instances[i].flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT;
+            m_instances[i].instanceId = static_cast<unsigned int>(i);
+            m_instances[i].sbtOffset = mat_id;
+            m_instances[i].visibilityMask = 1;
+            memcpy(m_instances[i].transform, t, sizeof(float) * 12);
+        }
+    }
+#endif
+
+    CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(md_instances), m_instances.data(), instance_size_in_bytes, cudaMemcpyHostToDevice));
+    OPTIX_ERROR_CHECK(optixAccelBuild(m_context,
+                                      0,  // CUDA stream
+                                      &accel_options, &instance_input,
+                                      1,  // num build inputs
+                                      md_root_temp_buffer, ias_buffer_sizes.tempSizeInBytes, md_root_output_buffer, ias_buffer_sizes.outputSizeInBytes, &m_root,
+                                      nullptr,  // emitted property list
+                                      0         // num emitted properties
+                                      ));
+
+    return m_root;
+}
+
+// rebuilding the structure without creating anything new
+void ChOptixGeometry::RebuildRootStructure() {
+    m_end_time = m_end_time > (m_start_time + 1e-2) ? m_end_time : m_end_time + 1e-2;  // need to ensure start time is at least slightly after end time
+
+    for (int i = 0; i < m_motion_transforms.size(); i++) {
+        // update the motion transforms
+        const ChFrame<double> f_start = m_obj_body_frames_start[i] * m_obj_asset_frames[i];
+        const ChVector3d pos_start = f_start.GetPos() - m_origin_offset;
+        const ChMatrix33<double> rot_mat_start = f_start.GetRotMat();
+
+        const ChFrame<double> f_end = m_obj_body_frames_end[i] * m_obj_asset_frames[i];
+        const ChVector3d pos_end = f_end.GetPos() - m_origin_offset;
+        const ChMatrix33<double> rot_mat_end = f_end.GetRotMat();
+
+        m_motion_transforms[i].motionOptions.timeBegin = m_start_time;  // default at start, will be updated
+        m_motion_transforms[i].motionOptions.timeEnd = m_end_time;      // default at start, will be updated
+        GetT3x4FromSRT(m_obj_scales[i], rot_mat_start, pos_start, m_motion_transforms[i].transform[0]);
+        GetT3x4FromSRT(m_obj_scales[i], rot_mat_end, pos_end, m_motion_transforms[i].transform[1]);
+    }
+
+    CUDA_ERROR_CHECK(cudaMemcpy(reinterpret_cast<void*>(md_motion_transforms), m_motion_transforms.data(), m_motion_transforms.size() * sizeof(OptixMatrixMotionTransform),
+                                cudaMemcpyHostToDevice));
+
+    OptixBuildInput instance_input = {};
+    instance_input.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
+    instance_input.instanceArray.instances = md_instances;
+    instance_input.instanceArray.numInstances = static_cast<unsigned int>(m_instances.size());
+    OptixAccelBuildOptions accel_options = {};
+    accel_options.buildFlags = OPTIX_BUILD_FLAG_PREFER_FAST_TRACE;  // | OPTIX_BUILD_FLAG_ALLOW_UPDATE;
+    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+
+    accel_options.motionOptions.numKeys = 2;
+    accel_options.motionOptions.timeBegin = m_start_time;
+    accel_options.motionOptions.timeEnd = m_end_time;
+    accel_options.motionOptions.flags = OPTIX_MOTION_FLAG_NONE;
+    // accel_options.operation = OPTIX_BUILD_OPERATION_UPDATE;
+
+    OptixAccelBufferSizes ias_buffer_sizes;
+    OPTIX_ERROR_CHECK(optixAccelComputeMemoryUsage(m_context, &accel_options, &instance_input,
+                                                   1,  // num build inputs
+                                                   &ias_buffer_sizes));
+    OPTIX_ERROR_CHECK(optixAccelBuild(m_context,
+                                      0,  // CUDA stream
+                                      &accel_options, &instance_input,
+                                      1,  // num build inputs
+                                      md_root_temp_buffer, ias_buffer_sizes.tempSizeInBytes, md_root_output_buffer, ias_buffer_sizes.outputSizeInBytes, &m_root,
+                                      nullptr,  // emitted property list
+                                      0         // num emitted properties
+                                      ));
+
+    cudaDeviceSynchronize();
+}
+
+void ChOptixGeometry::UpdateBodyTransformsStart(float t_start, float t_target_end) {
+    // std::cout << "Updating body transforms for start keyframe\n";
+    std::vector<ChFrame<double>> frames = std::vector<ChFrame<double>>(m_bodies.size());
+    for (int i = 0; i < frames.size(); i++) {
+        frames[i] = m_bodies[i]->GetFrameRefToAbs();
+    }
+    auto keyframe = std::make_tuple(t_start, t_target_end, std::move(frames));
+    m_obj_body_frames_start_tmps.push_back(keyframe);
+}
+
+void ChOptixGeometry::UpdateBodyTransformsEnd(float t_end) {
+    // std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
+    // pack the end frame
+    m_end_time = t_end;
+    for (int i = 0; i < m_bodies.size(); i++) {
+        m_obj_body_frames_end[i] = m_bodies[i]->GetFrameRefToAbs();
+    }
+
+    // need a default start time that will trigger first transform to always be valid
+    if (m_obj_body_frames_start_tmps.size() > 0) {
+        m_start_time = std::get<0>(m_obj_body_frames_start_tmps[0]) + 1.f;
+    }
+
+    for (int i = 0; i < m_obj_body_frames_start_tmps.size(); i++) {
+        float target_end = std::get<1>(m_obj_body_frames_start_tmps[i]);
+        float target_start = std::get<0>(m_obj_body_frames_start_tmps[i]);
+
+        if (target_end < (t_end + 1e-8) && target_start < m_start_time) {
+            m_start_time = std::get<0>(m_obj_body_frames_start_tmps[i]);
+            m_obj_body_frames_start = std::move(std::get<2>(m_obj_body_frames_start_tmps[i]));
+        }
+    }
+
+    // clear out and starts that have target end time <= this end time
+    int i = 0;
+    while (i < m_obj_body_frames_start_tmps.size()) {
+        float target_end = std::get<1>(m_obj_body_frames_start_tmps[i]);
+        if (target_end < (t_end + 1e-8)) {
+            m_obj_body_frames_start_tmps.erase(m_obj_body_frames_start_tmps.begin() + i);
+            i--;
+        }
+        i++;
+    }
+
+    m_start_time = ChClamp(m_start_time, 0.f, m_end_time);
+}
+
+void ChOptixGeometry::GetT3x4FromSRT(const ChVector3d& s, const ChMatrix33<double>& a, const ChVector3d& b, float* t) {
+    t[0] = (float)(s.x() * a(0));
+    t[1] = (float)(s.y() * a(1));
+    t[2] = (float)(s.z() * a(2));
+    t[3] = (float)b.x();
+
+    t[4] = (float)(s.x() * a(3));
+    t[5] = (float)(s.y() * a(4));
+    t[6] = (float)(s.z() * a(5));
+    t[7] = (float)b.y();
+
+    t[8] = (float)(s.x() * a(6));
+    t[9] = (float)(s.y() * a(7));
+    t[10] = (float)(s.z() * a(8));
+    t[11] = (float)b.z();
+}
+void ChOptixGeometry::GetInvT3x4FromSRT(const ChVector3d& s, const ChMatrix33<double>& a, const ChVector3d& b, float* t) {
+    t[0] = (float)(a(0) / s.x());
+    t[1] = (float)(a(3) / s.x());
+    t[2] = (float)(a(6) / s.x());
+    t[3] = (float)(-a(0) * b.x() - a(3) * b.y() - a(6) * b.z() / s.x());
+
+    t[4] = (float)(a(1) / s.y());
+    t[5] = (float)(a(4) / s.y());
+    t[6] = (float)(a(7) / s.y());
+    t[7] = (float)(-a(1) * b.x() - a(4) * b.y() - a(7) * b.z()) / s.y();
+
+    t[8] = (float)(a(2) / s.z());
+    t[9] = (float)(a(5) / s.z());
+    t[10] = (float)(a(8) / s.z());
+    t[11] = (float)(-a(2) * b.x() - a(5) * b.y() - a(8) * b.z()) / s.z();
+}
+
+}  // namespace sensor
+}  // namespace chrono

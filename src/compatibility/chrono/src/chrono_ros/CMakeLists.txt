@@ -1,0 +1,317 @@
+#=============================================================================
+# CMake configuration file for the Chrono::ROS module
+#
+# Cannot be used stand-alone (it is loaded by the parent CMake configuration)
+#
+# Schema-driven architecture:
+#   chrono_ros_core   internal STATIC lib - protocol, CDR codec, schema,
+#                     message codec, shm transport. Depends on NEITHER
+#                     Chrono NOR ROS.
+#   Chrono_ros        the simulation-side SHARED lib - public API (manager,
+#                     bridge, handlers). Links Chrono + chrono_ros_core.
+#                     Contains ZERO ROS symbols.
+#   chrono_ros_node   the bridge subprocess - generic rclcpp node. Links
+#                     ROS + chrono_ros_core. Contains ZERO Chrono symbols.
+#=============================================================================
+
+option(CH_ENABLE_MODULE_ROS "Enable the Chrono::ROS module" OFF)
+
+if(NOT CH_ENABLE_MODULE_ROS)
+  return()
+endif()
+
+message(STATUS "\n==== Chrono::ROS module ====\n")
+
+# C++17: required by rclcpp and used throughout the module
+set(CMAKE_CXX_STANDARD 17)
+
+#-----------------------------------------------------------------------------
+# Find ROS 2 (required to build chrono_ros_node; the Chrono_ros library
+# itself has no ROS dependency)
+#-----------------------------------------------------------------------------
+
+if(NOT DEFINED ENV{ROS_DISTRO} OR NOT DEFINED ENV{AMENT_PREFIX_PATH})
+  message("ERROR Chrono::ROS requires a sourced ROS 2 environment to build chrono_ros_node; disabling Chrono::ROS")
+  set(CH_ENABLE_MODULE_ROS OFF CACHE BOOL "Enable the Chrono::ROS module" FORCE)
+  return()
+endif()
+
+find_package(rclcpp QUIET)
+find_package(rcpputils QUIET)
+find_package(rosidl_typesupport_introspection_cpp QUIET)
+find_package(rosidl_runtime_cpp QUIET)
+
+if(rclcpp_FOUND AND rcpputils_FOUND AND rosidl_typesupport_introspection_cpp_FOUND AND rosidl_runtime_cpp_FOUND)
+  message(STATUS "Found ROS 2 ($ENV{ROS_DISTRO})")
+else()
+  message("ERROR Chrono::ROS requires ROS 2 (rclcpp, rcpputils, rosidl introspection), but it was not found; disabling Chrono::ROS")
+  set(CH_ENABLE_MODULE_ROS OFF CACHE BOOL "Enable the Chrono::ROS module" FORCE)
+  return()
+endif()
+
+# Message-type packages (std_msgs, sensor_msgs, custom packages, ...) are NOT
+# build dependencies: the node loads their typesupport at runtime by name.
+
+#-----------------------------------------------------------------------------
+# Generated configuration (path of the node executable)
+#-----------------------------------------------------------------------------
+
+if(WIN32)
+  # Executable next to the DLLs for PATH resolution
+  set(CH_ROS_NODE_DESTINATION bin)
+else()
+  # Internal helper process: keep bin/ clean, simplify RPATH (next to libs)
+  set(CH_ROS_NODE_DESTINATION lib)
+endif()
+
+set(CH_ROS_NODE_BUILD_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/chrono_ros_node")
+set(CH_ROS_NODE_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}/${CH_ROS_NODE_DESTINATION}/chrono_ros_node")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ChConfigROS.h.in ${PROJECT_BINARY_DIR}/chrono_ros/ChConfigROS.h)
+install(FILES "${PROJECT_BINARY_DIR}/chrono_ros/ChConfigROS.h" DESTINATION include/chrono_ros)
+
+#-----------------------------------------------------------------------------
+# chrono_ros_core: internal static library (no Chrono, no ROS)
+#-----------------------------------------------------------------------------
+
+set(CH_ROS_CORE_FILES
+  core/ChROSCdr.h
+  core/ChROSCdr.cpp
+  core/ChROSSchema.h
+  core/ChROSSchema.cpp
+  core/ChROSMessageCodec.h
+  core/ChROSMessageCodec.cpp
+  core/ChROSFrame.h
+  core/ChROSControl.h
+  core/ChROSControl.cpp
+  core/ChROSQoSSpec.h
+
+  core/transport/ChROSRingBuffer.h
+  core/transport/ChROSRingBuffer.cpp
+  core/transport/ChROSSharedMemory.h
+  core/transport/ChROSSharedMemory.cpp
+  core/transport/ChROSChannel.h
+  core/transport/ChROSChannel.cpp
+)
+source_group("core" FILES ${CH_ROS_CORE_FILES})
+
+add_library(chrono_ros_core STATIC ${CH_ROS_CORE_FILES})
+set_target_properties(chrono_ros_core PROPERTIES POSITION_INDEPENDENT_CODE ON LINKER_LANGUAGE CXX)
+target_include_directories(chrono_ros_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+if(MSVC)
+  set_target_properties(chrono_ros_core PROPERTIES MSVC_RUNTIME_LIBRARY ${CH_MSVC_RUNTIME_LIBRARY})
+endif()
+# shm_open lives in librt on older glibc
+if(UNIX AND NOT APPLE)
+  target_link_libraries(chrono_ros_core PUBLIC rt)
+endif()
+find_package(Threads REQUIRED)
+target_link_libraries(chrono_ros_core PUBLIC Threads::Threads)
+
+#-----------------------------------------------------------------------------
+# Chrono_ros: the simulation-side shared library (NO ROS dependency)
+#-----------------------------------------------------------------------------
+
+set(CH_ROS_API_FILES
+  ChApiROS.h
+
+  ChROSManager.h
+  ChROSManager.cpp
+  ChROSBridge.h
+  ChROSBridge.cpp
+  ChROSHandler.h
+  ChROSHandler.cpp
+  ChROSMessage.h
+  ChROSMessage.cpp
+  ChROSPublisher.h
+  ChROSSubscription.h
+  ChROSQoS.h
+  ChROSNodeProcess.h
+  ChROSNodeProcess.cpp
+)
+source_group("api" FILES ${CH_ROS_API_FILES})
+
+# Built-in handlers (exemplary uses of the public API). Dependency-free handlers
+# are always built; sensor/vehicle/robot handlers are appended below under their
+# module guards.
+set(CH_ROS_HANDLER_FILES
+  handlers/ChROSClockHandler.h
+  handlers/ChROSClockHandler.cpp
+  handlers/ChROSBodyHandler.h
+  handlers/ChROSBodyHandler.cpp
+  handlers/ChROSTFHandler.h
+  handlers/ChROSTFHandler.cpp
+  handlers/robot/ChROSRobotModelHandler.h
+  handlers/robot/ChROSRobotModelHandler.cpp
+)
+source_group("handlers" FILES ${CH_ROS_HANDLER_FILES})
+list(APPEND CH_ROS_API_FILES ${CH_ROS_HANDLER_FILES})
+
+# Sensor handlers: compiled only when the Chrono::Sensor module is enabled (they
+# accept a ChSensor and read its host buffers).
+set(CH_ROS_SENSOR_HANDLER_FILES "")
+if(CH_ENABLE_MODULE_SENSOR)
+  set(CH_ROS_SENSOR_HANDLER_FILES
+    handlers/sensor/ChROSSensorHandlerUtilities.h
+    handlers/sensor/ChROSAccelerometerHandler.h
+    handlers/sensor/ChROSAccelerometerHandler.cpp
+    handlers/sensor/ChROSGyroscopeHandler.h
+    handlers/sensor/ChROSGyroscopeHandler.cpp
+    handlers/sensor/ChROSMagnetometerHandler.h
+    handlers/sensor/ChROSMagnetometerHandler.cpp
+    handlers/sensor/ChROSGPSHandler.h
+    handlers/sensor/ChROSGPSHandler.cpp
+    handlers/sensor/ChROSIMUHandler.h
+    handlers/sensor/ChROSIMUHandler.cpp
+  )
+  # Camera and lidar are OptiX-only sensors: their headers include
+  # ChOptixSensor.h, which pulls in optix.h. Skip them when Chrono::Sensor is
+  # built without OptiX (no CUDA/OptiX found, or the HIP backend).
+  if(CH_USE_SENSOR_OPTIX)
+    list(APPEND CH_ROS_SENSOR_HANDLER_FILES
+      handlers/sensor/ChROSCameraHandler.h
+      handlers/sensor/ChROSCameraHandler.cpp
+      handlers/sensor/ChROSLidarHandler.h
+      handlers/sensor/ChROSLidarHandler.cpp
+    )
+  endif()
+  source_group("handlers\\sensor" FILES ${CH_ROS_SENSOR_HANDLER_FILES})
+  list(APPEND CH_ROS_API_FILES ${CH_ROS_SENSOR_HANDLER_FILES})
+endif()
+
+# Vehicle handlers: compiled only when the Chrono::Vehicle module is enabled
+# (they drive a ChDriver). DriverInputs also exercises the chrono_ros_interfaces
+# custom message package.
+set(CH_ROS_VEHICLE_HANDLER_FILES "")
+if(CH_ENABLE_MODULE_VEHICLE)
+  set(CH_ROS_VEHICLE_HANDLER_FILES
+    handlers/vehicle/ChROSDriverInputsHandler.h
+    handlers/vehicle/ChROSDriverInputsHandler.cpp
+  )
+  source_group("handlers\\vehicle" FILES ${CH_ROS_VEHICLE_HANDLER_FILES})
+  list(APPEND CH_ROS_API_FILES ${CH_ROS_VEHICLE_HANDLER_FILES})
+endif()
+
+# Robot-model handlers (Viper): need ChronoModels_robot for the ViperDCMotorControl
+# driver type. Gated on the target so a build without robot models still works.
+set(CH_ROS_ROBOT_MODEL_HANDLER_FILES "")
+if(CH_ENABLE_MODULE_ROBOT_MODELS)
+  set(CH_ROS_ROBOT_MODEL_HANDLER_FILES
+    handlers/robot/viper/ChROSViperDCMotorControlHandler.h
+    handlers/robot/viper/ChROSViperDCMotorControlHandler.cpp
+  )
+  source_group("handlers\\robot\\viper" FILES ${CH_ROS_ROBOT_MODEL_HANDLER_FILES})
+  list(APPEND CH_ROS_API_FILES ${CH_ROS_ROBOT_MODEL_HANDLER_FILES})
+endif()
+
+add_library(Chrono_ros SHARED ${CH_ROS_API_FILES})
+add_library(Chrono::ros ALIAS Chrono_ros)
+
+set_target_properties(Chrono_ros PROPERTIES DEBUG_POSTFIX ${CH_DEBUG_POSTFIX} LINKER_LANGUAGE CXX)
+if(CH_WHOLE_PROG_OPT)
+  set_target_properties(Chrono_ros PROPERTIES COMPILE_FLAGS "/GL" LINK_FLAGS "/LTCG")
+endif()
+if(CH_STATIC)
+  set_target_properties(Chrono_ros PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+if(MSVC)
+  set_target_properties(Chrono_ros PROPERTIES MSVC_RUNTIME_LIBRARY ${CH_MSVC_RUNTIME_LIBRARY})
+endif()
+
+target_compile_definitions(Chrono_ros PRIVATE "CH_API_COMPILE_ROS")
+
+target_link_libraries(Chrono_ros PUBLIC Chrono_core)
+target_link_libraries(Chrono_ros PRIVATE chrono_ros_core)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(Chrono_ros PRIVATE dl)  # dladdr in ChROSNodeProcess
+endif()
+
+# Sensor handlers link Chrono_sensor. PUBLIC: their public headers include
+# chrono_sensor headers, so consumers (demos, the PyChrono module) need its
+# include path. Chrono_sensor is sim-side and ROS-free, so this keeps the sim
+# process free of ROS symbols.
+if(CH_ENABLE_MODULE_SENSOR)
+  target_link_libraries(Chrono_ros PUBLIC Chrono_sensor)
+endif()
+
+# URDF support (RobotModel ChParserURDF ctor + TF AddURDF): link Chrono_parsers
+# when the parsers module is enabled with URDF. The CHRONO_HAS_URDF macro the
+# handlers guard on comes from ChConfigROS.h -> ChConfigParsers.h.
+if(CH_ENABLE_MODULE_PARSERS AND CH_USE_URDF)
+  target_link_libraries(Chrono_ros PUBLIC Chrono_parsers)
+endif()
+
+# Vehicle handlers (DriverInputs) link Chrono_vehicle.
+if(CH_ENABLE_MODULE_VEHICLE)
+  target_link_libraries(Chrono_ros PUBLIC Chrono_vehicle)
+endif()
+
+# Robot-model handlers (Viper) link ChronoModels_robot.
+if(CH_ENABLE_MODULE_ROBOT_MODELS)
+  target_link_libraries(Chrono_ros PUBLIC ChronoModels_robot)
+endif()
+
+# Module dependency bookkeeping for the parent build (module short-names).
+set(DEPENDENCIES_ROS "")
+if(CH_ENABLE_MODULE_SENSOR)
+  list(APPEND DEPENDENCIES_ROS "SENSOR")
+endif()
+if(CH_ENABLE_MODULE_PARSERS AND CH_USE_URDF)
+  list(APPEND DEPENDENCIES_ROS "PARSERS")
+endif()
+if(CH_ENABLE_MODULE_VEHICLE)
+  list(APPEND DEPENDENCIES_ROS "VEHICLE")
+endif()
+set(DEPENDENCIES_ROS ${DEPENDENCIES_ROS} PARENT_SCOPE)
+set(CH_ROS_HAS_INTERFACES FALSE PARENT_SCOPE)
+
+install(TARGETS Chrono_ros
+        EXPORT ChronoTargets
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include/chrono_ros)
+
+# Public headers (the core headers are included by public API headers and are
+# therefore installed as well; they remain dependency-free).
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION include/chrono_ros
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "node" EXCLUDE
+        PATTERN "tests_dev" EXCLUDE
+        PATTERN "ChROSCameraHandler.h" EXCLUDE
+        PATTERN "ChROSLidarHandler.h" EXCLUDE)
+
+# Installed only with OptiX, mirroring Chrono::Sensor: without OptiX it does not
+# install ChCameraSensor.h / ChLidarSensor.h, which these headers include.
+if(CH_USE_SENSOR_OPTIX)
+  install(FILES handlers/sensor/ChROSCameraHandler.h
+                handlers/sensor/ChROSLidarHandler.h
+          DESTINATION include/chrono_ros/handlers/sensor)
+endif()
+
+#-----------------------------------------------------------------------------
+# chrono_ros_node: the bridge subprocess (NO Chrono dependency)
+#-----------------------------------------------------------------------------
+
+add_executable(chrono_ros_node
+  node/chrono_ros_node.cpp
+  node/ChROSNodeTypeSupport.h
+  node/ChROSNodeTypeSupport.cpp
+)
+
+target_include_directories(chrono_ros_node PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(chrono_ros_node
+  chrono_ros_core
+  rclcpp::rclcpp
+  rcpputils::rcpputils
+  rosidl_typesupport_introspection_cpp::rosidl_typesupport_introspection_cpp
+  rosidl_runtime_cpp::rosidl_runtime_cpp
+)
+if(MSVC)
+  set_target_properties(chrono_ros_node PROPERTIES MSVC_RUNTIME_LIBRARY ${CH_MSVC_RUNTIME_LIBRARY})
+endif()
+
+install(TARGETS chrono_ros_node
+        EXPORT ChronoTargets
+        RUNTIME DESTINATION ${CH_ROS_NODE_DESTINATION})

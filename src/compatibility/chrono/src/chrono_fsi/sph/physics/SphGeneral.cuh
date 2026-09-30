@@ -1,0 +1,591 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2014 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Author: Arman Pazouki, Milad Rakhsha, Wei Hu, Radu Serban
+// =============================================================================
+//
+// SPH utility functions
+//
+// =============================================================================
+
+#ifndef CH_SPH_GENERAL_CUH
+#define CH_SPH_GENERAL_CUH
+
+#include <memory>
+
+#if defined(__CUDACC__)
+    #include <device_launch_parameters.h>
+#endif
+
+#include "chrono/gpu/ChGpuRuntime.h"
+
+#include "chrono_fsi/sph/ChFsiParamsSPH.h"
+#include "chrono_fsi/sph/math/SphCustomMath.cuh"
+
+#if defined(__CUDACC__) || defined(__HIPCC__) || defined(__HIP_DEVICE_COMPILE__)
+    #include "chrono_fsi/sph/physics/SphDataManager.cuh"
+#endif
+
+namespace chrono {
+namespace fsi {
+namespace sph {
+
+/// @addtogroup fsisph_physics
+/// @{
+
+struct Counters;
+
+// Declared as static device constants so each GPU translation unit gets the
+// symbol used by the kernels compiled in that translation unit.
+//
+// CUDA accepted this pattern in the original code. HIP needs each TU-local
+// symbol initialized explicitly; the CopyParametersToDevice_* functions below
+// do that without relying on cross-TU device symbols or RDC.
+__constant__ static ChFsiParamsSPH paramsD;
+#if defined(__CUDACC__) || defined(__HIPCC__) || defined(__HIP_DEVICE_COMPILE__)
+__constant__ static Counters countersD;
+#endif
+
+// Per-translation-unit parameter uploads: each of these writes the paramsD and
+// countersD copies belonging to the translation unit it is defined in, and
+// CopyParametersToDevice calls all of them. Required on every backend, since the
+// symbols above are translation-unit local.
+void CopyParametersToDevice_SphBceManager(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+void CopyParametersToDevice_SphCollisionSystem(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+void CopyParametersToDevice_SphFluidDynamics(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+void CopyParametersToDevice_SphForceWCSPH(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+void CopyParametersToDevice_SphForceISPH(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+
+void CopyParametersToDevice(std::shared_ptr<ChFsiParamsSPH> paramsH, std::shared_ptr<Counters> countersH);
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+#define INVPI Real(0.31830988618379)
+#define EPSILON Real(1e-8)
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// Cubic Spline SPH kernel function
+// d > 0 is the distance between 2 particles. h is the SPH kernel length
+
+inline __host__ __device__ Real W3h_CubicSpline(Real d, Real invh) {
+    Real q = fabs(d) * invh;
+
+    if (q < 1) {
+        Real alpha = INVPI * cube(invh) / 4;
+        return alpha * (cube(2 - q) - 4 * cube(1 - q));
+    }
+    if (q < 2) {
+        Real alpha = INVPI * cube(invh) / 4;
+        return alpha * cube(2 - q);
+    }
+    return 0;
+}
+
+inline __host__ __device__ Real3 GradW3h_CubicSpline(Real3 d, Real invh) {
+    Real q = length(d) * invh;
+    if (abs(q) < EPSILON)
+        return mR3(0);
+
+    // beta = 3 * alpha / h^2
+    if (q < 1) {
+        Real beta = 3 * INVPI * quintic(invh) / 4;
+        return (beta * (3 * q - 4)) * d;
+    }
+    if (q < 2) {
+        Real beta = 3 * INVPI * quintic(invh) / 4;
+        return (beta * (4 - q - 4 / q)) * d;
+    }
+    return mR3(0);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// Quadratic kernel (Johnson et al., 1996)
+// d > 0 is the distance between 2 particles. h is the SPH kernel length
+
+inline __host__ __device__ Real W3h_Quadratic(Real d, Real invh) {
+    Real q = fabs(d) * invh;
+    if (q < 2) {
+        Real alpha = (15 * INVPI * cube(invh)) / 16;
+        return alpha * (square(q) / 4 - q + 1);
+    }
+    return 0;
+}
+
+inline __host__ __device__ Real3 GradW3h_Quadratic(Real3 d, Real invh) {
+    Real q = length(d) * invh;
+    if (abs(q) < EPSILON)
+        return mR3(0);
+
+    if (q < 2) {
+        // beta = 1/2 * alpha / h^2
+        Real beta = (15 * INVPI * quintic(invh)) / 32;
+        return (beta * (1 - 2 / q)) * d;
+    }
+    return mR3(0);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// Quintic Spline SPH kernel function
+// d > 0 is the distance between 2 particles. h is the SPH kernel length
+
+inline __host__ __device__ Real W3h_QuinticSpline(Real d, Real invh) {
+    Real q = fabs(d) * invh;
+    Real alpha = INVPI * cube(invh) / 120;
+
+    if (q < 1) {
+        return alpha * (quintic(3 - q) - 6 * quintic(2 - q) + 15 * quintic(1 - q));
+    }
+    if (q < 2) {
+        return alpha * (quintic(3 - q) - 6 * quintic(2 - q));
+    }
+    if (q < 3) {
+        return alpha * (quintic(3 - q));
+    }
+    return 0;
+}
+
+inline __host__ __device__ Real3 GradW3h_QuinticSpline(Real3 d, Real invh) {
+    Real q = length(d) * invh;
+    if (fabs(q) < 1e-10)
+        return mR3(0);
+
+    // beta = -5 * alpha / h^2
+    Real beta = -5 * INVPI * quintic(invh) / 120;
+    if (q < 1) {
+        return ((beta / q) * (quartic(3 - q) - 6 * quartic(2 - q) + 15 * quartic(1 - q))) * d;
+    }
+    if (q < 2) {
+        return ((beta / q) * (quartic(3 - q) - 6 * quartic(2 - q))) * d;
+    }
+    if (q < 3) {
+        return ((beta / q) * (quartic(3 - q))) * d;
+    }
+    return mR3(0);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// Wendland Quintic SPH kernel function
+// d > 0 is the distance between 2 particles. h is the SPH kernel length
+
+inline __host__ __device__ Real W3h_Wendland(Real d, Real invh) {
+    Real q = fabs(d) * invh;
+
+    if (q < 2) {
+        Real alpha = 21 * INVPI * cube(invh) / 256;
+        return alpha * quartic(2 - q) * (2 * q + 1);
+    }
+    return 0;
+}
+
+inline __host__ __device__ Real3 GradW3h_Wendland(Real3 d, Real invh) {
+    Real q = length(d) * invh;
+    if (fabs(q) < 1e-10)
+        return mR3(0);
+
+    if (q < 2) {
+        // beta = -10 * alpha / h^2
+        Real beta = -210 * INVPI * quintic(invh) / 256;
+        return (beta * cube(2 - q)) * d;
+    }
+    return mR3(0);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+inline __host__ __device__ Real W3h(KernelType type, Real d, Real invh) {
+    switch (type) {
+        case KernelType::QUADRATIC:
+            return W3h_Quadratic(d, invh);
+        case KernelType::CUBIC_SPLINE:
+            return W3h_CubicSpline(d, invh);
+        case KernelType::QUINTIC_SPLINE:
+            return W3h_QuinticSpline(d, invh);
+        case KernelType::WENDLAND:
+            return W3h_Wendland(d, invh);
+    }
+
+    return -1;
+}
+
+inline __host__ __device__ Real3 GradW3h(KernelType type, Real3 d, Real invh) {
+    switch (type) {
+        case KernelType::QUADRATIC:
+            return GradW3h_Quadratic(d, invh);
+        case KernelType::CUBIC_SPLINE:
+            return GradW3h_CubicSpline(d, invh);
+        case KernelType::QUINTIC_SPLINE:
+            return GradW3h_QuinticSpline(d, invh);
+        case KernelType::WENDLAND:
+            return GradW3h_Wendland(d, invh);
+    }
+
+    return mR3(-1, -1, -1);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// Fluid equation of state
+
+inline __device__ Real Eos(Real rho, EosType eos_type) {
+    switch (eos_type) {
+        case EosType::TAIT: {
+            // Tait EOS with Hughes and Graham Correction
+            // See https://pysph.readthedocs.io/en/latest/reference/equations.html#basic-wcsph-equations
+            // if (rho < paramsD.rho0)
+            //      rho = paramsD.rho0;
+            Real gama = 7;
+            Real B = paramsD.rho0 * paramsD.Cs * paramsD.Cs / gama;
+            return B * (pow(rho / paramsD.rho0, gama) - 1) + paramsD.base_pressure;
+        }
+        case EosType::ISOTHERMAL: {
+            // Isothermal equation of state
+            return paramsD.Cs * paramsD.Cs * (rho - paramsD.rho0);
+        }
+    }
+    return -1;
+}
+
+// Inverse of equation of state
+inline __device__ Real InvEos(Real pw, EosType eos_type) {
+    switch (eos_type) {
+        case EosType::TAIT: {
+            Real gama = 7;
+            Real B = paramsD.rho0 * paramsD.Cs * paramsD.Cs / gama;
+            Real powerComp = (pw - paramsD.base_pressure) / B + 1.0;
+            Real rho = (powerComp > 0) ? paramsD.rho0 * pow(powerComp, 1.0 / gama) : -paramsD.rho0 * pow(fabs(powerComp), 1.0 / gama);
+            return rho;
+        }
+
+        case EosType::ISOTHERMAL: {
+            Real rho = pw / (paramsD.Cs * paramsD.Cs) + paramsD.rho0;
+            return rho;
+        }
+    }
+    return -1;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// FerrariCi
+
+__device__ inline Real FerrariCi(Real rho) {
+    int gama = 7;
+    Real B = 100 * paramsD.rho0 * paramsD.v_Max * paramsD.v_Max / gama;
+    return sqrt(gama * B / paramsD.rho0) * pow(rho / paramsD.rho0, 0.5 * (gama - 1));
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+// The attribute below has to be spelled per compiler, and this cannot be simplified away. This device
+// header is also compiled directly by the host compiler (ChFsiFluidSystemSPH.cpp includes it), and on
+// Windows that is MSVC, which rejects GNU attribute syntax with "error C2065: 'noinline': undeclared
+// identifier". An unrecognized compiler gets no attribute at all, which costs speed and not
+// correctness: the function is then free to be inlined, which is what the measurement below calls the
+// slower variant.
+#if defined(_MSC_VER)
+    #define CH_FSI_SPH_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+    #define CH_FSI_SPH_NOINLINE __attribute__((noinline))
+#else
+    #define CH_FSI_SPH_NOINLINE
+#endif
+
+__device__ inline CH_FSI_SPH_NOINLINE Real MinimumImageShiftMultiPeriod(Real dist, Real period) {
+    return period * rint(dist / period);
+}
+
+#undef CH_FSI_SPH_NOINLINE
+
+/// Shift that brings marker b onto the periodic image of b closest to a, along one axis.
+///
+/// \a period is the box length on an axis carrying periodic boundary conditions, and ZERO on a
+/// non-periodic one. A zero period disables the shift, which is the correct treatment and is the
+/// point of the first branch: on a non-periodic axis the separation between two markers is physical,
+/// so folding it by a box length does not select a nearer image, it fabricates an interaction
+/// between markers a box length apart. That is reachable, because calcGridHash reduces a marker
+/// lying outside a non-periodic axis into the edge bin of that axis, which makes it a neighbor
+/// candidate of the markers genuinely there.
+///
+/// The reduction is TOTAL: a marker any number of periods outside the domain is imaged correctly.
+/// That matters because the bin reduction in calcGridHash is also total, and the two must agree. A
+/// single-period shift would leave a marker two or more periods out binned as its own image yet
+/// measured a whole box away, so it would silently fail to interact. Rigid-body markers reach that
+/// state, because ApplyPeriodicBoundary*_D deliberately does not wrap them, so a body driving
+/// through a periodic channel accumulates unbounded offset.
+///
+/// Within one period the result is identical to a single-period shift, and exactly so: rint returns
+/// 0 or +/-1 there, and multiplying a length by those is exact in IEEE 754.
+///
+/// The division is deliberately in an out-of-line callee, and the ordering of this function is
+/// deliberate too. Measured on a 106k-particle non-periodic settling case, interleaved repeats
+/// against libraries differing by one thing each: inlining the division cost 4% even though that
+/// case never executes it, while this form runs 2.5% faster than the single-period version it
+/// supersedes and is at worst neutral against unpatched code, because a non-periodic axis now
+/// leaves after one comparison. Register counts, occupancy and spill counts are identical for all
+/// of those variants across every kernel of both translation units that include this header, so
+/// register pressure is NOT the explanation for the inline form's cost, and none is claimed.
+__device__ inline Real MinimumImageShift(Real dist, Real period) {
+    // A non-periodic axis exits first and must: it has period == 0, and falling through to the
+    // division would evaluate 0 * rint(dist / 0), which is 0 * inf, which is NaN, in the distance
+    // function every force kernel uses.
+    if (period <= 0)
+        return Real(0);
+    // The common case costs two comparisons and no call, which is what it cost before the fix.
+    Real half = Real(0.5) * period;
+    if (dist <= half && dist >= -half)
+        return Real(0);
+    return MinimumImageShiftMultiPeriod(dist, period);
+}
+
+__device__ inline Real3 Modify_Local_PosB(Real3& b, Real3 a) {
+    Real3 dist3 = a - b;
+    b.x += MinimumImageShift(dist3.x, paramsD.x_periodic ? paramsD.boxDims.x : Real(0));
+    b.y += MinimumImageShift(dist3.y, paramsD.y_periodic ? paramsD.boxDims.y : Real(0));
+    b.z += MinimumImageShift(dist3.z, paramsD.z_periodic ? paramsD.boxDims.z : Real(0));
+
+    dist3 = a - b;
+    // modifying the markers perfect overlap
+    Real dd = dist3.x * dist3.x + dist3.y * dist3.y + dist3.z * dist3.z;
+    Real MinD = paramsD.epsMinMarkersDis * paramsD.h;
+    Real sq_MinD = MinD * MinD;
+    if (dd < sq_MinD) {
+        dist3 = mR3(MinD, 0, 0);
+    }
+    b = a - dist3;
+    return (dist3);
+}
+
+__device__ inline Real3 Distance(Real3 a, Real3 b) {
+    return Modify_Local_PosB(b, a);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+// first comp of q is rotation, last 3 components are axis of rot
+
+__device__ inline void RotationMatrixFromQuaternion(Real3& AD1, Real3& AD2, Real3& AD3, const Real4& q) {
+    AD1 = 2 * mR3(0.5f - q.z * q.z - q.w * q.w, q.y * q.z - q.x * q.w, q.y * q.w + q.x * q.z);
+    AD2 = 2 * mR3(q.y * q.z + q.x * q.w, 0.5f - q.y * q.y - q.w * q.w, q.z * q.w - q.x * q.y);
+    AD3 = 2 * mR3(q.y * q.w - q.x * q.z, q.z * q.w + q.x * q.y, 0.5f - q.y * q.y - q.z * q.z);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+__device__ inline Real3 InverseRotate_By_RotationMatrix_DeviceHost(const Real3& A1, const Real3& A2, const Real3& A3, const Real3& r3) {
+    return mR3(A1.x * r3.x + A2.x * r3.y + A3.x * r3.z, A1.y * r3.x + A2.y * r3.y + A3.y * r3.z, A1.z * r3.x + A2.z * r3.y + A3.z * r3.z);
+}
+
+__device__ inline int3 calcGridPos(Real3 p) {
+    int3 gridPos;
+
+    gridPos.x = (int)floor((p.x - paramsD.worldOrigin.x) / (paramsD.cellSize.x));
+    gridPos.y = (int)floor((p.y - paramsD.worldOrigin.y) / (paramsD.cellSize.y));
+    gridPos.z = (int)floor((p.z - paramsD.worldOrigin.z) / (paramsD.cellSize.z));
+    return gridPos;
+}
+
+/// Reduce a bin index to the valid range [0, n).
+/// A periodic axis wraps, a non-periodic axis clamps to its edge bin. The reduction is total:
+/// no bin index, however far out, can produce a hash outside the cell arrays. For anything
+/// within one period of the domain this is identical to adjusting by a single period.
+__device__ inline int reduceGridIndex(int i, int n, bool periodic) {
+    if (periodic) {
+        i %= n;
+        return (i < 0) ? i + n : i;
+    }
+    return (i < 0) ? 0 : (i >= n) ? n - 1 : i;
+}
+
+__device__ inline uint calcGridHash(int3 gridPos) {
+    gridPos.x = reduceGridIndex(gridPos.x, paramsD.gridSize.x, paramsD.x_periodic);
+    gridPos.y = reduceGridIndex(gridPos.y, paramsD.gridSize.y, paramsD.y_periodic);
+    gridPos.z = reduceGridIndex(gridPos.z, paramsD.gridSize.z, paramsD.z_periodic);
+
+    return gridPos.z * paramsD.gridSize.y * paramsD.gridSize.x + gridPos.y * paramsD.gridSize.x + gridPos.x;
+}
+
+__device__ inline uint calcCellID(int3 cellPos) {
+    if (cellPos.x >= 0 && cellPos.x < paramsD.gridSize.x &&  //
+        cellPos.y >= 0 && cellPos.y < paramsD.gridSize.y &&  //
+        cellPos.z >= 0 && cellPos.z < paramsD.gridSize.z) {
+        return cellPos.z * paramsD.gridSize.x * paramsD.gridSize.y + cellPos.y * paramsD.gridSize.x + cellPos.x;
+    } else {
+        printf("shouldn't be here\n");
+        return paramsD.gridSize.x * paramsD.gridSize.y * paramsD.gridSize.z;
+    }
+}
+
+__device__ inline uint getCellPos(int trialCellPos, int ub) {
+    if (trialCellPos >= 0 && trialCellPos < ub) {
+        return (uint)trialCellPos;
+    } else if (trialCellPos < 0) {
+        return (uint)(trialCellPos + ub);
+    } else {
+        return (uint)(trialCellPos - ub);
+    }
+    return (uint)trialCellPos;
+}
+
+inline __device__ uint getCenterCellID(const uint* numPartsInCenterCells, const uint threadID) {
+    uint offsets[9] = {0};
+    for (int i = 0; i < 8; ++i) {
+        offsets[i + 1] = numPartsInCenterCells[i];
+    }
+    uint left = 0;
+    uint right = 8;
+    while (left < right) {
+        uint mid = (left + right) / 2;
+        if (offsets[mid] < threadID) {
+            left = mid + 1;
+        } else if (offsets[mid] > threadID) {
+            right = mid;
+        } else {
+            return mid;
+        }
+    }
+    return left - 1;
+}
+
+inline __device__ Real Strain_Rate(Real3 grad_ux, Real3 grad_uy, Real3 grad_uz) {
+    grad_ux.y = (grad_uy.x + grad_ux.y) * 0.5;
+    grad_ux.z = (grad_uz.x + grad_ux.z) * 0.5;
+
+    grad_uy.x = grad_ux.y;
+    grad_uy.z = (grad_uy.z + grad_uz.y) * 0.5;
+
+    grad_uz.x = grad_ux.z;
+    grad_uz.y = grad_uy.z;
+
+    return sqrt(                                    //
+        0.5 * (length(grad_ux) * length(grad_ux) +  //
+               length(grad_uy) * length(grad_uy) +  //
+               length(grad_uz) * length(grad_uz))   //
+    );
+}
+
+inline __device__ Real Tensor_Norm(Real* T) {
+    return sqrt(                                          //
+        0.5 * (T[0] * T[0] + T[1] * T[1] + T[2] * T[2] +  //
+               T[3] * T[3] + T[4] * T[4] + T[5] * T[5] +  //
+               T[6] * T[6] + T[7] * T[7] + T[8] * T[8])   //
+    );
+}
+
+inline __device__ Real Sym_Tensor_Norm(Real3 xx_yy_zz, Real3 xy_xz_yz) {
+    return sqrt(0.5 * (xx_yy_zz.x * xx_yy_zz.x + xx_yy_zz.y * xx_yy_zz.y + xx_yy_zz.z * xx_yy_zz.z + 2 * xy_xz_yz.x * xy_xz_yz.x + 2 * xy_xz_yz.y * xy_xz_yz.y +
+                       2 * xy_xz_yz.z * xy_xz_yz.z));
+}
+
+inline __device__ Real Inertia_num(Real Strain_rate, Real rho, Real p, Real diam) {
+    Real I = Strain_rate * diam * sqrt(rho / rmaxr(p, EPSILON));
+    return rminr(1e3, I);
+}
+
+inline __device__ Real mu_I(Real Strain_rate, Real I) {
+    Real mu = 0;
+    if (paramsD.mu_of_I == FrictionLaw::CONSTANT)
+        mu = paramsD.mu_fric_s;
+    else if (paramsD.mu_of_I == FrictionLaw::NONLINEAR)
+        mu = paramsD.mu_fric_s + paramsD.mu_I_b * I;
+    else
+        mu = paramsD.mu_fric_s + (paramsD.mu_fric_2 - paramsD.mu_fric_s) * (I / (paramsD.mu_I0 + I));
+
+    return mu;
+}
+
+inline __device__ Real mu_eff(Real Strain_rate, Real p, Real mu_I) {
+    return rmaxr(mu_I * rmaxr(p, 0.0) / Strain_rate, paramsD.mu_max);
+}
+
+inline __device__ Real Herschel_Bulkley_stress(Real Strain_rate, Real k, Real n, Real tau0) {
+    Real tau = tau0 + k * pow(Strain_rate, n);
+    return tau;
+}
+
+inline __device__ Real Herschel_Bulkley_mu_eff(Real Strain_rate, Real k, Real n, Real tau0) {
+    Real mu_eff = tau0 / Strain_rate + k * pow(Strain_rate, n - 1);
+    return rminr(mu_eff, paramsD.mu_max);
+}
+
+__global__ void
+calc_A_tensor(Real* A_tensor, Real* G_tensor, Real4* sortedPosRad, Real4* sortedRhoPreMu, Real* sumWij_inv, uint* cellStart, uint* cellEnd, volatile bool* error_flag);
+
+__global__ void calc_L_tensor(Real* A_tensor,
+                              Real* L_tensor,
+                              Real* G_tensor,
+                              Real4* sortedPosRad,
+                              Real4* sortedRhoPreMu,
+                              Real* sumWij_inv,
+                              uint* cellStart,
+                              uint* cellEnd,
+                              volatile bool* error_flag);
+
+__global__ void calcRho_kernel(Real4* sortedPosRad,  // input: sorted positions
+                               Real4* sortedRhoPreMu,
+                               Real* sumWij_inv,
+                               const uint* neighborList,
+                               const uint* mynumContacts,
+                               volatile bool* error_flag);
+
+__global__ void calcNormalizedRho_Gi_fillInMatrixIndices(Real4* sortedPosRad,  // input: sorted positions
+                                                         Real3* sortedVelMas,
+                                                         Real4* sortedRhoPreMu,
+                                                         Real* sumWij_inv,
+                                                         Real* G_i,
+                                                         Real3* normals,
+                                                         const uint* csrColInd,
+                                                         const uint* numContacts,
+                                                         volatile bool* error_flag);
+
+__global__ void Function_Gradient_Laplacian_Operator(Real4* sortedPosRad,  // input: sorted positions
+                                                     Real3* sortedVelMas,
+                                                     Real4* sortedRhoPreMu,
+                                                     Real* sumWij_inv,
+                                                     Real* G_tensor,
+                                                     Real* L_tensor,
+                                                     Real* A_L,   // velocity Laplacian matrix
+                                                     Real3* A_G,  // This is the matrix for which gradp = A*p
+                                                     Real* A_f,
+                                                     uint* csrColInd,
+                                                     uint* numContacts,
+                                                     volatile bool* error_flag);
+
+__global__ void Jacobi_SOR_Iter(Real4* sortedRhoPreMu,
+                                Real* A_Matrix,
+                                Real3* V_old,
+                                Real3* V_new,
+                                Real3* b3vec,
+                                Real* q_old,  // q=p^(n+1)-p^n
+                                Real* q_new,  // q=p^(n+1)-p^n
+                                Real* b1vec,
+                                const uint* csrColInd,
+                                const uint* numContacts,
+                                bool _3dvector,
+                                volatile bool* error_flag);
+
+__global__ void Update_AND_Calc_Res(Real4* sortedRhoPreMu, Real3* V_old, Real3* V_new, Real* q_old, Real* q_new, Real* Residuals, bool _3dvector, volatile bool* error_flag);
+
+__global__ void Initialize_Variables(Real4* sortedRhoPreMu, Real* p_old, Real3* sortedVelMas, Real3* V_new, volatile bool* error_flag);
+
+__global__ void UpdateDensity(Real3* vis_vel,
+                              Real3* XSPH_Vel,
+                              Real3* new_vel,       // Write
+                              Real4* sortedPosRad,  // Read
+                              Real4* sortedRhoPreMu,
+                              Real* sumWij_inv,
+                              uint* cellStart,
+                              uint* cellEnd,
+                              volatile bool* error_flag);
+
+/// @} fsisph_physics
+
+}  // namespace sph
+}  // namespace fsi
+}  // namespace chrono
+
+#endif

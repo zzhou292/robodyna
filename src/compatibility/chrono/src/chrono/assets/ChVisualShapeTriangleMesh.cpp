@@ -1,0 +1,184 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2014 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Authors: Alesandro Tasora, Radu Serban
+// =============================================================================
+
+#include <filesystem>
+#include <map>
+
+#include "chrono/assets/ChVisualShapeTriangleMesh.h"
+
+#include "chrono_thirdparty/tinyobjloader/tiny_obj_loader.h"
+
+namespace chrono {
+
+// Register into the object factory, to enable run-time dynamic creation and persistence
+CH_FACTORY_REGISTER(ChVisualShapeTriangleMesh)
+
+ChVisualShapeTriangleMesh::ChVisualShapeTriangleMesh()
+    : ChVisualShape(Type::TRIANGLEMESH), name(""), scale(ChVector3d(1)), wireframe(false), backface_cull(false), fixed_connectivity(false) {
+    trimesh = chrono_types::make_shared<ChTriangleMeshConnected>();
+}
+
+ChVisualShapeTriangleMesh::ChVisualShapeTriangleMesh(std::shared_ptr<ChTriangleMeshConnected> mesh, bool load_materials) : ChVisualShapeTriangleMesh() {
+    SetMesh(mesh, load_materials);
+}
+
+void ChVisualShapeTriangleMesh::SetMesh(std::shared_ptr<ChTriangleMeshConnected> mesh, bool load_materials) {
+    trimesh = mesh;
+
+    // Try to read material information form an MTL file
+    const auto& filename = mesh->GetFileName();
+    auto mtl_base = std::filesystem::path(std::filesystem::path(filename).parent_path()).string();
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    bool have_mtl_materials = false;
+
+    if (load_materials && !filename.empty()) {
+        tinyobj::attrib_t att;
+        std::string warn;
+        std::string err;
+
+        bool success = tinyobj::LoadObj(&att, &shapes, &materials, &warn, &err, filename.c_str(), mtl_base.c_str());
+        if (!success) {
+            std::cerr << "Error loading OBJ file " << filename << std::endl;
+            std::cerr << "   tiny_obj warning message: " << warn << std::endl;
+            std::cerr << "   tiny_obj error message:   " << err << std::endl;
+            std::cerr << "No materials loaded." << std::endl;
+            return;
+        }
+
+        if (!materials.empty())
+            have_mtl_materials = true;
+    }
+
+    if (have_mtl_materials) {
+        std::map<int, int> tiny2chrono;
+        int mat_id = 0;
+
+        // For each shape, assign a material index.
+        // Faces that reference an invalid material are assigned the first one.
+        // Keep track of materials that are used in a map (tinyobj mat_id -> chrono mat_id).
+        trimesh->m_face_mat_indices.clear();
+        for (int i = 0; i < shapes.size(); i++) {
+            for (int j = 0; j < shapes[i].mesh.indices.size() / 3; j++) {
+                int tiny_mat_id = shapes[i].mesh.material_ids[j];
+                if (tiny_mat_id <= 0 || tiny_mat_id >= materials.size())
+                    tiny_mat_id = 0;
+
+                if (tiny2chrono.find(tiny_mat_id) == tiny2chrono.end())
+                    tiny2chrono[tiny_mat_id] = mat_id++;
+
+                trimesh->m_face_mat_indices.push_back(tiny2chrono[tiny_mat_id]);
+            }
+        }
+
+        // Discard any existing materials in material_list
+        material_list.clear();
+        material_list.resize(tiny2chrono.size());
+
+        // Copy materials into material_list (ignore materials not in use)
+        for (int i = 0; i < materials.size(); i++) {
+            if (tiny2chrono.find(i) == tiny2chrono.end())
+                continue;
+
+            std::shared_ptr<ChVisualMaterial> mat = chrono_types::make_shared<ChVisualMaterial>();
+            mat->SetAmbientColor({materials[i].ambient[0], materials[i].ambient[1], materials[i].ambient[2]});
+            mat->SetDiffuseColor({materials[i].diffuse[0], materials[i].diffuse[1], materials[i].diffuse[2]});
+            mat->SetSpecularColor({materials[i].specular[0], materials[i].specular[1], materials[i].specular[2]});
+            mat->SetEmissiveColor({materials[i].emission[0], materials[i].emission[1], materials[i].emission[2]});
+            mat->SetMetallic(materials[i].metallic);
+            mat->SetOpacity(materials[i].dissolve);
+            mat->SetIllumination(materials[i].illum);
+            mat->SetRoughness(materials[i].roughness);
+            mat->SetSpecularExponent(materials[i].shininess);
+
+            // If metallic and roughness is set to default, use specular workflow
+            if (materials[i].metallic == 0 && materials[i].roughness == 0.5) {
+                mat->SetUseSpecularWorkflow(true);
+            } else {
+                mat->SetUseSpecularWorkflow(false);
+            }
+
+            if (materials[i].diffuse_texname != "") {
+                mat->SetKdTexture(mtl_base + "/" + materials[i].diffuse_texname);
+            }
+
+            if (materials[i].specular_texname != "") {
+                mat->SetKsTexture(mtl_base + "/" + materials[i].specular_texname);
+                mat->SetUseSpecularWorkflow(true);
+            }
+            // set normal map when called "bump_texname"
+            if (materials[i].bump_texname != "") {
+                mat->SetNormalMapTexture(mtl_base + "/" + materials[i].bump_texname);
+            }
+            // set normal map when called "normal_texname"
+            if (materials[i].normal_texname != "") {
+                mat->SetNormalMapTexture(mtl_base + "/" + materials[i].normal_texname);
+            }
+            // set roughness texture if it exists
+            if (materials[i].roughness_texname != "") {
+                mat->SetRoughnessTexture(mtl_base + "/" + materials[i].roughness_texname);
+                mat->SetUseSpecularWorkflow(false);
+            }
+            // set metallic texture if it exists
+            if (materials[i].metallic_texname != "") {
+                mat->SetMetallicTexture(mtl_base + "/" + materials[i].metallic_texname);
+            }
+            // set opacity texture if it exists
+            // NOTE: need to make sure alpha and diffuse names are different to prevent 4 channel opacity textures in
+            // Chrono::Sensor
+            if (materials[i].alpha_texname != "" && materials[i].alpha_texname != materials[i].diffuse_texname) {
+                mat->SetOpacityTexture(mtl_base + "/" + materials[i].alpha_texname);
+            }
+
+            material_list[tiny2chrono[i]] = mat;
+        }
+
+    } else if (!material_list.empty()) {
+        // Assign all faces to first material
+        auto nfaces = trimesh->m_face_v_indices.size();
+        trimesh->m_face_mat_indices.resize(nfaces, 0);
+    }
+}
+
+void ChVisualShapeTriangleMesh::ArchiveOut(ChArchiveOut& archive_out) {
+    // version number
+    archive_out.VersionWrite<ChVisualShapeTriangleMesh>();
+    // serialize parent class
+    ChVisualShape::ArchiveOut(archive_out);
+    // serialize all member data:
+    archive_out << CHNVP(trimesh);
+    archive_out << CHNVP(wireframe);
+    archive_out << CHNVP(backface_cull);
+    archive_out << CHNVP(name);
+    archive_out << CHNVP(scale);
+    archive_out << CHNVP(fixed_connectivity);
+    archive_out << CHNVP(modified_vertices);
+}
+
+void ChVisualShapeTriangleMesh::ArchiveIn(ChArchiveIn& archive_in) {
+    // version number
+    /*int version =*/archive_in.VersionRead<ChVisualShapeTriangleMesh>();
+    // deserialize parent class
+    ChVisualShape::ArchiveIn(archive_in);
+    // stream in all member data:
+    archive_in >> CHNVP(trimesh);
+    archive_in >> CHNVP(wireframe);
+    archive_in >> CHNVP(backface_cull);
+    archive_in >> CHNVP(name);
+    archive_in >> CHNVP(scale);
+    archive_in >> CHNVP(fixed_connectivity);
+    archive_in >> CHNVP(modified_vertices);
+}
+
+}  // end namespace chrono

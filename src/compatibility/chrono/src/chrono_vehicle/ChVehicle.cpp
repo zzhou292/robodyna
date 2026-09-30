@@ -1,0 +1,362 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2014 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+// Authors: Radu Serban, Davide Moricoli
+// =============================================================================
+//
+// Base class for a vehicle model.
+//
+// =============================================================================
+
+#include <algorithm>
+#include <cmath>
+
+#include "chrono/ChConfig.h"
+
+#include "chrono/physics/ChSystemNSC.h"
+#include "chrono/physics/ChSystemSMC.h"
+
+#include "chrono_vehicle/ChWorldFrame.h"
+#include "chrono_vehicle/ChVehicle.h"
+
+#include "chrono_vehicle/ChVehicleVisualSystem.h"
+
+#include "chrono/input_output/ChCheckpointASCII.h"
+
+namespace chrono {
+namespace vehicle {
+
+// -----------------------------------------------------------------------------
+
+// Constructor for a ChVehicle using a default Chrono system.
+// Specify default step size and solver parameters.
+ChVehicle::ChVehicle(const std::string& name, ChContactMethod contact_method)
+    : m_name(name),
+      m_ownsSystem(true),
+      m_output(false),
+      m_output_initialized(false),
+      m_out_format(ChOutput::Format::NONE),
+      m_out_mode(ChOutput::Mode::FRAMES),
+      m_out_step(0),
+      m_next_out_time(0),
+      m_out_frame(0),
+      m_mass(0),
+      m_inertia(0),
+      m_realtime_force(false),
+      m_RTF(0),
+      m_initialized(false) {
+    // Assign vehicle tag
+    SetVehicleTag();
+
+    // Create and set containing Chrono system
+    m_system = (contact_method == ChContactMethod::NSC) ? static_cast<ChSystem*>(new ChSystemNSC) : static_cast<ChSystem*>(new ChSystemSMC);
+    m_system->SetName(name + "_system");
+    m_system->SetGravitationalAcceleration(-9.81 * ChWorldFrame::Vertical());
+
+    // Set default solver for vehicle simulations
+    m_system->SetSolverType(ChSolver::Type::BARZILAIBORWEIN);
+    m_system->GetSolver()->AsIterative()->SetMaxIterations(150);
+}
+
+// Constructor for a ChVehicle using the specified Chrono ChSystem.
+ChVehicle::ChVehicle(const std::string& name, ChSystem* system)
+    : m_name(name),
+      m_system(system),
+      m_ownsSystem(false),
+      m_output(false),
+      m_output_initialized(false),
+      m_out_format(ChOutput::Format::NONE),
+      m_out_mode(ChOutput::Mode::FRAMES),
+      m_out_step(0),
+      m_next_out_time(0),
+      m_out_frame(0),
+      m_mass(0),
+      m_inertia(0),
+      m_realtime_force(false),
+      m_RTF(0),
+      m_initialized(false) {
+    // Set name of underlying system
+    if (system->GetName().empty())
+        system->SetName(name + "_system");
+
+    // Assign vehicle tag
+    SetVehicleTag();
+}
+
+ChVehicle::~ChVehicle() {
+    if (m_ownsSystem) {
+        // Release references to the chassis, connectors, and powertrain
+        m_powertrain_assembly = nullptr;
+        m_chassis = nullptr;
+        m_chassis_rear.clear();
+        m_chassis_connectors.clear();
+
+        // Delete underlying Chrono system (this removes references to all contained physics items)
+        delete m_system;
+    }
+}
+
+void ChVehicle::SetVehicleTag() {
+    static int vehicle_count = 0;
+    m_tag = vehicle_count;
+    vehicle_count++;
+}
+
+// -----------------------------------------------------------------------------
+
+void ChVehicle::SetCollisionSystemType(ChCollisionSystem::Type collsys_type) {
+    if (m_ownsSystem)
+        m_system->SetCollisionSystemType(collsys_type);
+}
+
+void ChVehicle::EnableRealtime(bool val) {
+    m_realtime_force = val;
+    m_realtime_timer.stop();
+    if (m_realtime_force) {
+        // ensure the embedded timer is restarted when this function is called
+        m_realtime_timer.reset();
+        m_realtime_timer.start();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Enable output for this vehicle system.
+// -----------------------------------------------------------------------------
+
+void ChVehicle::SetOutput(ChOutput::Format format, ChOutput::Mode mode, const std::string& out_dir, const std::string& out_name, double output_step) {
+    m_output = (format != ChOutput::Format::NONE);
+    m_out_format = format;
+    m_out_mode = mode;
+    m_out_dir = out_dir;
+    m_out_name = out_name;
+    m_out_step = output_step;
+}
+
+void ChVehicle::WriteCheckpoint(ChCheckpoint::Format format, const std::string& filename) const {
+    ChCheckpointASCII checkpoint_db(ChCheckpoint::Type::COMPONENT);
+
+    checkpoint_db.SetTime(m_system->GetChTime());
+
+    SaveCheckpoint(checkpoint_db);
+    checkpoint_db.WriteFile(filename);
+}
+
+void ChVehicle::ReadCheckpoint(ChCheckpoint::Format format, const std::string& filename) {
+    ChCheckpointASCII checkpoint_db(ChCheckpoint::Type::COMPONENT);
+
+    checkpoint_db.ReadFile(filename);
+    LoadCheckpoint(checkpoint_db);
+
+    GetSystem()->SetChTime(checkpoint_db.GetTime());
+}
+
+// -----------------------------------------------------------------------------
+
+void ChVehicle::Initialize(const ChCoordsys<>& chassisPos, double chassisFwdVel) {
+    // Calculate total vehicle mass and inertia properties at initial configuration
+    InitializeInertiaProperties();
+    UpdateInertiaProperties();
+    m_initialized = true;
+}
+
+void ChVehicle::InitializePowertrain(std::shared_ptr<ChPowertrainAssembly> powertrain) {
+    m_powertrain_assembly = powertrain;
+    m_powertrain_assembly->Initialize(m_chassis);
+}
+
+// -----------------------------------------------------------------------------
+
+void ChVehicle::Relocate(const ChVector2d& xy_pos, double yaw_angle) {
+    if (!ChWorldFrame::IsISO()) {
+        std::cerr << "ChVehicle::Relocate() can only be used with an ISO world reference frame" << std::endl;
+        throw std::runtime_error("Attempt to use ChVehicle::Relocate in a non-ISO world reference frame");
+    }
+
+    auto old_X_GV = GetRefFrame();
+    auto old_X_VG = old_X_GV.GetInverse();
+    auto old_veh_pos = old_X_GV.GetPos();
+    auto old_veh_rot = old_X_GV.GetRot();
+    auto old_veh_yaw = old_veh_rot.GetCardanAnglesZYX().z();
+
+    auto delta_rot = QuatFromAngleZ(yaw_angle - old_veh_yaw);
+    auto new_veh_pos = ChVector3d(xy_pos.x(), xy_pos.y(), old_veh_pos.z());
+    auto new_veh_rot = delta_rot * old_veh_rot;
+
+    auto new_X_GV = ChFrameMoving<>(new_veh_pos, new_veh_rot);
+
+    auto bodies = GetBodyList();
+    for (auto& body : bodies) {
+        auto old_X_GB = body->GetFrameCOMToAbs();          // (old) global -> body COM tranform
+        auto old_pos_dt = body->GetPosDt();                // (old) body linear velocity wrt global frame
+        auto old_ang_vel = body->GetAngVelParent();        // (old) body angular velocity wrt global frame
+        auto X_VB = old_X_VG * old_X_GB;                   // (constant) vehicle -> body COM transform
+        auto new_X_GB = new_X_GV * X_VB;                   // (new) global -> body COM transform
+        auto new_pos_dt = delta_rot.Rotate(old_pos_dt);    // (new) body linear velocity wrt global frame
+        auto new_ang_vel = delta_rot.Rotate(old_ang_vel);  // (new) body angular velocity wrt global frame
+
+        body->SetPos(new_X_GB.GetPos());
+        body->SetRot(new_X_GB.GetRot());
+
+        body->SetPosDt(new_pos_dt);
+        body->SetAngVelParent(new_ang_vel);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Advance the state of the system.
+// -----------------------------------------------------------------------------
+
+void ChVehicle::Advance(double step, bool do_collision) {
+    // Ensure the vehicle mass includes the mass of subsystems that may have been initialized after the vehicle
+    if (!m_initialized) {
+        InitializeInertiaProperties();
+        m_initialized = true;
+    }
+
+    // Initialize output first time it is needed
+    if (m_output && !m_output_initialized) {
+        InitializeOutput();
+        m_output_initialized = true;
+    }
+
+    if (m_output && m_system->GetChTime() >= m_next_out_time) {
+        WriteOutput(m_out_frame, m_system->GetChTime());
+        m_next_out_time += m_out_step;
+        m_out_frame++;
+    }
+
+    if (m_ownsSystem) {
+        m_system->DoStepDynamics(step, do_collision);
+    }
+
+    // Update inertia properties
+    UpdateInertiaProperties();
+
+    m_sim_timer.stop();
+    m_RTF = m_sim_timer() / step;
+    if (m_realtime_force) {
+        m_realtime_timer.Spin(step);
+    }
+    m_sim_timer.reset();
+    m_sim_timer.start();
+}
+
+// -----------------------------------------------------------------------------
+
+std::shared_ptr<ChEngine> ChVehicle::GetEngine() const {
+    return m_powertrain_assembly ? m_powertrain_assembly->GetEngine() : nullptr;
+}
+
+std::shared_ptr<ChTransmission> ChVehicle::GetTransmission() const {
+    return m_powertrain_assembly ? m_powertrain_assembly->GetTransmission() : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+
+void ChVehicle::SetChassisVisualizationType(VisualizationType vis) {
+    m_chassis->SetVisualizationType(vis);
+}
+
+void ChVehicle::SetChassisRearVisualizationType(VisualizationType vis) {
+    for (auto& c : m_chassis_rear)
+        c->SetVisualizationType(vis);
+}
+
+void ChVehicle::SetChassisCollide(bool state) {
+    m_chassis->EnableCollision(state);
+    for (auto& c : m_chassis_rear)
+        c->EnableCollision(state);
+}
+
+void ChVehicle::SetChassisOutput(bool state) {
+    m_chassis->SetOutput(state);
+    for (auto& c : m_chassis_rear)
+        c->SetOutput(state);
+}
+
+// -----------------------------------------------------------------------------
+
+double ChVehicle::GetRoll() const {
+    auto angles = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetCardanAnglesZYX();
+    return angles[1];
+}
+
+double ChVehicle::GetPitch() const {
+    auto angles = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetCardanAnglesZYX();
+    return angles[0];
+}
+
+double ChVehicle::GetRoll(const ChTerrain& terrain) const {
+    // Current vehicle position and orientation axes
+    auto vP = m_chassis->GetBody()->GetFrameRefToAbs().GetPos();
+    auto vX = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetAxisX();
+    auto vY = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetAxisY();
+
+    // Find terrain normal below vehicle position (single point)
+    double h;
+    float mu;
+    ChVector3d tP;
+    ChVector3d tZ;
+    terrain.GetProperties(vP, tP, h, tZ, mu);
+
+    // Calculate terrain Y direction in the vehicle transversal plane
+    ChVector3d tY = Vcross(tZ, vX);
+    tY.Normalize();
+
+    // Calculate roll angle as the signed angle between tY and vY
+    auto cross = Vcross(tY, vY);
+    auto sign = Vdot(cross, vX);
+    auto roll_magnitude = std::asin(cross.Length());
+    auto roll = (sign > 0) ? roll_magnitude : -roll_magnitude;
+
+    return roll;
+}
+
+double ChVehicle::GetPitch(const ChTerrain& terrain) const {
+    // Current vehicle position and orientation axes
+    auto vP = m_chassis->GetBody()->GetFrameRefToAbs().GetPos();
+    auto vX = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetAxisX();
+    auto vY = m_chassis->GetBody()->GetFrameRefToAbs().GetRot().GetAxisY();
+
+    // Find terrain normal below vehicle position (single point)
+    double h;
+    float mu;
+    ChVector3d tP;
+    ChVector3d tZ;
+    terrain.GetProperties(vP, tP, h, tZ, mu);
+
+    // Calculate terrain X direction in the vehicle longitudinal plane
+    ChVector3d tX = Vcross(vY, tZ);
+    tX.Normalize();
+
+    // Calculate pitch angle as the signed angle between tX and vX
+    auto cross = Vcross(tX, vX);
+    auto sign = Vdot(cross, vY);
+    auto pitch_magnitude = std::asin(cross.Length());
+    auto pitch = (sign > 0) ? pitch_magnitude : -pitch_magnitude;
+
+    return pitch;
+}
+
+double ChVehicle::GetSlipAngle() const {
+    auto V_abs = m_chassis->GetBody()->GetFrameRefToAbs().GetPosDt();           // chassis velocity (expressed in absolute frame)
+    auto V_loc = m_chassis->GetBody()->TransformDirectionParentToLocal(V_abs);  // chassis velocity in local frame
+
+    // slip angle (positive sign = left turn, negative sign = right turn)
+    double abs_Vx = std::abs(V_loc.x());
+    double zero_Vx = 1e-4;
+    double slip_angle = (abs_Vx > zero_Vx) ? std::atan(V_loc.y() / abs_Vx) : 0;
+
+    return slip_angle;
+}
+
+}  // end namespace vehicle
+}  // end namespace chrono

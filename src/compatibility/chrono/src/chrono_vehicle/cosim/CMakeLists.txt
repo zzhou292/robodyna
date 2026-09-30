@@ -1,0 +1,226 @@
+#=============================================================================
+# CMake configuration file for Chrono Vehicle co-simulation library
+#=============================================================================
+
+if(NOT CH_ENABLE_MODULE_VEHICLE)
+  return()
+endif()
+
+option(CH_ENABLE_MODULE_VEHICLE_COSIM "Build the Chrono vehicle co-simulation library" TRUE)
+
+if(NOT CH_ENABLE_MODULE_VEHICLE_COSIM)
+   return()
+endif()
+
+message(STATUS "\n==== Chrono Vehicle Co-simulation module ====\n")
+
+# Return now if MPI is not available
+if(NOT MPI_FOUND)
+	message(WARNING "Chrono::Vehicle co-simulation support requires MPI, but MPI not found")
+	message(STATUS "Co-simulation support disabled")
+	return()
+endif()
+
+# ------------------------------------------------------------------------------
+
+set(CV_COSIM_FILES
+    ChVehicleCosimBaseNode.h
+    ChVehicleCosimBaseNode.cpp
+    ChVehicleCosimWheeledMBSNode.h
+    ChVehicleCosimWheeledMBSNode.cpp
+    ChVehicleCosimTrackedMBSNode.h
+    ChVehicleCosimTrackedMBSNode.cpp
+    ChVehicleCosimTireNode.h
+    ChVehicleCosimTireNode.cpp
+    ChVehicleCosimTerrainNode.h
+    ChVehicleCosimTerrainNode.cpp
+    ChVehicleCosimOtherNode.h
+    ChVehicleCosimDBPRig.h
+    ChVehicleCosimDBPRig.cpp
+)
+
+set(CV_COSIM_MBS_FILES
+    mbs/ChVehicleCosimRigNode.h
+    mbs/ChVehicleCosimRigNode.cpp
+    mbs/ChVehicleCosimWheeledVehicleNode.h
+    mbs/ChVehicleCosimWheeledVehicleNode.cpp
+    mbs/ChVehicleCosimTrackedVehicleNode.h
+    mbs/ChVehicleCosimTrackedVehicleNode.cpp
+)
+
+if(CH_ENABLE_MODULE_ROBOT_MODELS)
+    set(CV_COSIM_MBS_FILES ${CV_COSIM_MBS_FILES}
+        mbs/ChVehicleCosimViperNode.h
+        mbs/ChVehicleCosimViperNode.cpp
+        mbs/ChVehicleCosimCuriosityNode.h
+        mbs/ChVehicleCosimCuriosityNode.cpp
+    )
+endif()
+
+set(CV_COSIM_TIRE_FILES
+    tire/ChVehicleCosimTireNodeRigid.h
+    tire/ChVehicleCosimTireNodeRigid.cpp
+    tire/ChVehicleCosimTireNodeBypass.h
+    tire/ChVehicleCosimTireNodeBypass.cpp
+)
+
+if(CH_ENABLE_MODULE_FEA)
+    set(CV_COSIM_TIRE_FILES ${CV_COSIM_TIRE_FILES}
+        tire/ChVehicleCosimTireNodeFlexible.h
+        tire/ChVehicleCosimTireNodeFlexible.cpp
+    )
+endif()
+
+set(CV_COSIM_TERRAIN_FILES
+    terrain/ChVehicleCosimTerrainNodeChrono.h
+    terrain/ChVehicleCosimTerrainNodeChrono.cpp
+    terrain/ChVehicleCosimTerrainNodeRigid.h
+    terrain/ChVehicleCosimTerrainNodeRigid.cpp
+    terrain/ChVehicleCosimTerrainNodeSCM.h
+    terrain/ChVehicleCosimTerrainNodeSCM.cpp
+)
+
+if(CH_ENABLE_MODULE_MULTICORE)
+  set(CV_COSIM_TERRAIN_FILES ${CV_COSIM_TERRAIN_FILES}
+      terrain/ChVehicleCosimTerrainNodeGranularOMP.h
+      terrain/ChVehicleCosimTerrainNodeGranularOMP.cpp)
+endif()
+
+if(CH_ENABLE_MODULE_FSI_SPH)
+  set(CV_COSIM_TERRAIN_FILES ${CV_COSIM_TERRAIN_FILES}
+      terrain/ChVehicleCosimTerrainNodeGranularSPH.h
+      terrain/ChVehicleCosimTerrainNodeGranularSPH.cpp)
+endif()
+
+if(CH_ENABLE_MODULE_DEM)
+  set(CV_COSIM_TERRAIN_FILES ${CV_COSIM_TERRAIN_FILES}
+      terrain/ChVehicleCosimTerrainNodeGranularDEM.h
+      terrain/ChVehicleCosimTerrainNodeGranularDEM.cpp)
+endif()
+
+# ------------------------------------------------------------------------------
+
+source_group("" FILES ${CV_COSIM_FILES})
+source_group("mbs" FILES ${CV_COSIM_MBS_FILES})
+source_group("tire" FILES ${CV_COSIM_TIRE_FILES})
+source_group("terrain" FILES ${CV_COSIM_TERRAIN_FILES})
+
+# ------------------------------------------------------------------------------
+# Set dependencies on other Chrono modules
+# ------------------------------------------------------------------------------
+
+set(DEPENDENCIES_VEHICLECOSIM "")
+if(CH_ENABLE_MODULE_VEHICLE)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "VEHICLE")
+endif()
+
+if(CH_ENABLE_MODULE_PARDISO_MKL)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "PARDISOMKL")
+endif()
+##if(CH_ENABLE_MODULE_MUMPS)
+##  list (APPEND DEPENDENCIES_VEHICLECOSIM "MUMPS")
+##endif()
+
+if(CH_ENABLE_MODULE_MULTICORE)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "MULTICORE")
+endif()
+if(CH_ENABLE_MODULE_FSI_SPH)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "FSI")
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "FSI_SPH")
+endif()
+if(CH_ENABLE_MODULE_DEM)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "DEM")
+endif()
+
+if(CH_ENABLE_MODULE_POSTPROCESS)
+  list (APPEND DEPENDENCIES_VEHICLECOSIM "POSTPROCESS")
+endif()
+
+set(DEPENDENCIES_VEHICLECOSIM ${DEPENDENCIES_VEHICLECOSIM} PARENT_SCOPE)
+
+# ------------------------------------------------------------------------------
+# Add the Chrono_vehicle_cosim library
+# ------------------------------------------------------------------------------
+
+message(STATUS "Add Chrono_vehicle_cosim library")
+
+add_library(Chrono_vehicle_cosim
+    ${CV_COSIM_FILES}
+    ${CV_COSIM_MBS_FILES}
+    ${CV_COSIM_TIRE_FILES}
+    ${CV_COSIM_TERRAIN_FILES}
+)
+add_library(Chrono::vehicle_cosim ALIAS Chrono_vehicle_cosim)
+
+set_target_properties(Chrono_vehicle_cosim PROPERTIES DEBUG_POSTFIX ${CH_DEBUG_POSTFIX})
+
+if(CH_WHOLE_PROG_OPT)
+  set_target_properties(Chrono_vehicle_cosim PROPERTIES COMPILE_FLAGS "/GL")
+  set_target_properties(Chrono_vehicle_cosim PROPERTIES LINK_FLAGS "/LTCG")
+endif()
+
+if (CH_STATIC)
+  set_target_properties(Chrono_vehicle_cosim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
+if(MSVC)
+  set_target_properties(Chrono_vehicle_cosim PROPERTIES MSVC_RUNTIME_LIBRARY ${CH_MSVC_RUNTIME_LIBRARY})
+endif()
+
+target_compile_definitions(Chrono_vehicle_cosim PRIVATE "CH_API_COMPILE_VEHICLE")
+
+target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_vehicle)
+target_link_libraries(Chrono_vehicle_cosim PUBLIC ChronoModels_robot)
+
+target_link_libraries(Chrono_vehicle_cosim PUBLIC MPI::MPI_CXX)
+
+if(CH_ENABLE_MODULE_MULTICORE)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_multicore)
+endif()
+if(CH_ENABLE_MODULE_FSI_SPH)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_fsi)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_fsisph)
+endif()
+if(CH_ENABLE_MODULE_DEM)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_dem)
+endif()
+
+if(CH_ENABLE_MODULE_PARDISO_MKL)
+  target_link_libraries(Chrono_vehicle_cosim PRIVATE Chrono_pardisomkl)
+endif()
+##if(CH_ENABLE_MODULE_MUMPS)
+##  target_link_libraries(Chrono_vehicle_cosim PRIVATE Chrono_mumps)
+##endif()
+
+if(CH_ENABLE_MODULE_POSTPROCESS)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_postprocess)
+endif()
+if(CH_ENABLE_MODULE_VSG)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_vsg)
+  target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_vehicle_vsg)
+  if(CH_ENABLE_MODULE_FSI_SPH)
+    target_link_libraries(Chrono_vehicle_cosim PUBLIC Chrono_fsisph_vsg)
+  endif()
+endif()
+
+install(TARGETS Chrono_vehicle_cosim
+        EXPORT ChronoTargets
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include/chrono_vehicle/cosim)
+
+# -------------------------------------------------------------------------------------------------
+# Install files
+# -------------------------------------------------------------------------------------------------
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/template_project_vehicle_cosim/ DESTINATION "template_project_vehicle_cosim")
+else()
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/template_project_vehicle_cosim/ DESTINATION "share/chrono/template_project_vehicle_cosim")
+endif()
+
+# Old way (install headers preserving directory structure)
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+#        DESTINATION include/chrono_vehicle/cosim
+#        FILES_MATCHING PATTERN "*.h")

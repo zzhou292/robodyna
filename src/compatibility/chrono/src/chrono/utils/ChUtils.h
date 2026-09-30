@@ -1,0 +1,119 @@
+// =============================================================================
+// PROJECT CHRONO - http://projectchrono.org
+//
+// Copyright (c) 2014 projectchrono.org
+// All rights reserved.
+//
+// Use of this source code is governed by a BSD-style license that can be found
+// in the LICENSE file at the top level of the distribution and at
+// http://projectchrono.org/license-chrono.txt.
+//
+// =============================================================================
+
+#ifndef CH_UTILS_H
+#define CH_UTILS_H
+
+#include <cstdio>
+#include <stdexcept>
+#include <algorithm>
+#include <cmath>
+#include <cctype>
+
+#include "chrono/ChConfig.h"
+#include "chrono/core/ChApiCE.h"
+#include "chrono/utils/ChConstants.h"
+
+namespace chrono {
+
+#ifndef SOURCE_PATH_SIZE
+    #define SOURCE_PATH_SIZE 0
+#endif
+
+// Array indexing rather than (__FILE__ + SOURCE_PATH_SIZE): adding an integer to a
+// string literal is pointer arithmetic, which clang reports as -Wstring-plus-int.
+// Hidden from SWIG, which tries to turn every object-like macro into a constant and
+// cannot parse this one (Warning 305). Nothing wrapped uses it: it serves ChDebugLog
+// below, and the C# bindings call ChUtils_GetFilename() instead.
+#ifndef SWIG
+    #define __FILENAME__ (&(__FILE__)[SOURCE_PATH_SIZE])
+#endif
+
+#ifdef DEBUG_LOG
+    #define ChDebugLog(x)                                                                       \
+        do {                                                                                    \
+            std::cerr << "[DBG " << __FILENAME__ << "::" << __func__ << "] " << x << std::endl; \
+        } while (0)
+#else
+    #define ChDebugLog(x)
+#endif
+
+#define ChAssertAlways(exp)                                                                                    \
+    {                                                                                                          \
+        if (!(exp)) {                                                                                          \
+            char msg[300];                                                                                     \
+            std::sprintf(msg, "Expression '%s' returned false - file %s, line %d.", #exp, __FILE__, __LINE__); \
+            std::cerr << msg << std::endl;                                                                     \
+            throw std::runtime_error(msg);                                                                     \
+        }                                                                                                      \
+    }
+
+/// Convert a string to upper case.
+inline std::string ChToUpper(std::string in) {
+    std::transform(in.begin(), in.end(), in.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    return in;
+}
+
+/// Convert a string to lower case.
+inline std::string ChToLower(std::string in) {
+    std::transform(in.begin(), in.end(), in.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return in;
+}
+
+/// Clamp and modify the specified value to lie within the given limits.
+template <typename T>
+void ChClampValue(T& value, T limitMin, T limitMax) {
+    if (value < limitMin)
+        value = limitMin;
+    else if (value > limitMax)
+        value = limitMax;
+}
+
+/// Clamp the specified value to lie within the given limits.
+template <typename T>
+T ChClamp(T value, T limitMin, T limitMax) {
+    if (value < limitMin)
+        return limitMin;
+    if (value > limitMax)
+        return limitMax;
+
+    return value;
+}
+
+/// Signum function.
+template <typename T>
+int ChSignum(T x) {
+    return (x > T(0)) - (x < T(0));
+}
+
+/// Wrap angle in range.
+/// If symmetric, wrap in [-PI; PI).
+/// If not symmetric, wrap in [0; 2PI).
+template <typename T>
+T ChWrapAngle(T angle, bool symmetric = true) {
+    T wangle = angle;
+    if (symmetric) {  // [-PI; +PI)
+        wangle = std::fmod(wangle + CH_PI, CH_2PI);
+        wangle < 0 ? wangle += CH_PI : wangle -= CH_PI;
+    } else {  // [0; 2PI)
+        wangle = std::fmod(wangle, CH_2PI);
+        if (wangle < 0)
+            wangle += CH_2PI;
+    }
+    return wangle;
+}
+
+}  // end namespace chrono
+
+#endif
