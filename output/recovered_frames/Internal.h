@@ -10,6 +10,7 @@ struct Description {
     std::string mapping_sha256,reason;
     records::RecordFile configuration,source_bundle,activity_declaration;
     std::optional<run::WallReceipt> wall;
+    std::optional<run::EnvironmentReceipt> environment;
     std::vector<run::FrameFiles> frames;
     std::vector<records::RecordFile> files;
 };

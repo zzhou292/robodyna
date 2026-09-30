@@ -50,7 +50,15 @@ robo_dyna_physical_replay RUN_DIR --capture NEW_OUTPUT --color plastic-strain
 ```
 
 Optional flags: `--view incident-side|wall-side`, `--fps 1..60`, `--wireframe`,
-`--require-frames N`, `--receipt-sha256 SHA`, `--capture-cap-gib 2|6`.
+`--require-frames N`, `--receipt-sha256 SHA`, `--capture-cap-gib 2|6|10`.
+
+The capture cap bounds PNG output on disk, separately from the simulation archive
+and process RAM/GPU limits. The default remains 2 GiB. Explicit 2, 6 and 10 GiB
+choices reserve 32 MiB per actual archived image plus 4 MiB for metadata, admitting
+at most 63, 191 and 319 images respectively. A 301-state recording needs the
+explicit 10 GiB choice (10,104,078,336 forecast bytes); image size, ordering,
+immutable-input checks and full-sample completion checks remain enforced.
+
 To frame a detail, supply both `--camera-eye X,Y,Z` and `--camera-target X,Y,Z`
 in the archive's world coordinates in metres. For example:
 

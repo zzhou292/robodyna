@@ -32,6 +32,9 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
             data->source.context,&data->composition);
         run::CheckWallBeamObservation(data->source.configuration.profile.beam18,data->composition);
     }
+    if(data->description.environment)
+        data->wall_mesh=run::ReadEnvironmentArtifacts(root,*data->description.environment,
+            data->source.mapping.source().data(),data->source.context);
     return Replay(std::move(data));
 }
 const records::source::PreparedSourceMapping& Replay::mapping() const noexcept {return data_->source.mapping;}
@@ -46,6 +49,7 @@ run::Sample Replay::ReadSample(std::size_t i) const {
         records::activity::ReadActivity(data_->root,context(),frame.activity,frame.stamp)};
 }
 const run::WallReceipt* Replay::wall() const noexcept {return data_->description.wall?&*data_->description.wall:nullptr;}
+const run::EnvironmentReceipt* Replay::environment() const noexcept {return data_->description.environment?&*data_->description.environment:nullptr;}
 const run::WallComposition* Replay::wall_composition() const noexcept {return data_->composition?&*data_->composition:nullptr;}
 std::shared_ptr<const chrono::ChTriangleMeshConnected> Replay::wall_mesh() const noexcept {return data_->wall_mesh;}
 const std::string& Replay::stop_reason() const noexcept {return data_->description.reason;}

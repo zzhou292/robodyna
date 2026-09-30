@@ -1,4 +1,4 @@
-#include "Internal.h"
+#include "Environment.h"
 
 namespace crash::output::recovered_frames {
 LoadedSource LoadSource(const std::filesystem::path& root,const Description& description,Limits limits) {
@@ -6,9 +6,9 @@ LoadedSource LoadSource(const std::filesystem::path& root,const Description& des
         (128u<<20)<=limits.host_bytes-limits.source.host_bytes,"Recovery source/record workspace exceeds host cap");
     auto config=run::ReadConfiguration(array_json::Parse(
         run::ReadFile(root,description.configuration,run::MetadataCap),run::MetadataCap));
-    Require(!config.environment,"Declared environment recovery requires a separately qualified descriptor");
-    Require(config.identity.source_mapping_sha256==description.mapping_sha256 &&
-        config.wall==bool(description.wall),"Recovered configuration/source/wall profile differs");
+    CheckStaticProfiles(config,description);
+    Require(config.identity.source_mapping_sha256==description.mapping_sha256,
+        "Recovered configuration/source mapping differs");
     auto mapping=records::source::ReadSourceBundle(root,description.source_bundle,description.source,
         description.mapping_sha256,limits.source);
     auto context=mapping.MakeFrameContext(config.identity,config.request.fixed_dt,limits.records);

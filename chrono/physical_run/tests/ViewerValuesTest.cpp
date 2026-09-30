@@ -17,6 +17,35 @@ TEST(PhysicalViewerValues, OneReceiptInputStrictControlsAndDefaultPhysicalScale)
     const char* future[]{"viewer","run","--require-frames","18446744073709551615"};
     EXPECT_THROW(Parse(4,const_cast<char**>(future)),std::exception);
 }
+TEST(PhysicalViewerValues, ExplicitCaptureDiskBudgetsPreserveStrictAdmission) {
+    const char* values[]{"2", "6", "10"};
+    const std::size_t budgets[]{2ull<<30, 6ull<<30, 10ull<<30};
+    for (std::size_t i=0; i<3; ++i) {
+        const char* args[]{"viewer", "run", "--capture-cap-gib", values[i]};
+        EXPECT_EQ(Parse(4,const_cast<char**>(args)).capture_bytes,budgets[i]);
+    }
+    const char* invalid[]{"0", "1", "4", "8", "12", "-10", "+10", "010", "10.0", "10x"};
+    for (const auto* value : invalid) {
+        const char* args[]{"viewer", "run", "--capture-cap-gib", value};
+        EXPECT_THROW(Parse(4,const_cast<char**>(args)),std::exception);
+    }
+}
+TEST(PhysicalViewerValues, TenGiBDiskBudgetFits301ImagesWithoutWeakeningImageBound) {
+    constexpr std::size_t per_image=32ull<<20;
+    constexpr std::size_t reserve=4ull<<20;
+    EXPECT_EQ(CaptureForecast(301,10ull<<30),301*per_image+reserve);
+    EXPECT_THROW(CaptureForecast(301,6ull<<30),std::exception);
+    EXPECT_EQ(CaptureForecast(319,10ull<<30),319*per_image+reserve);
+    EXPECT_THROW(CaptureForecast(320,10ull<<30),std::exception);
+    EXPECT_EQ(CaptureForecast(63,2ull<<30),63*per_image+reserve);
+    EXPECT_THROW(CaptureForecast(64,2ull<<30),std::exception);
+    EXPECT_EQ(CaptureForecast(191,6ull<<30),191*per_image+reserve);
+    EXPECT_THROW(CaptureForecast(192,6ull<<30),std::exception);
+    EXPECT_THROW(CaptureForecast(0,10ull<<30),std::exception);
+    EXPECT_THROW(CaptureForecast(SIZE_MAX,10ull<<30),std::exception);
+    EXPECT_THROW(CaptureForecast(1,8ull<<30),std::exception);
+    EXPECT_THROW(CaptureForecast(1,SIZE_MAX),std::exception);
+}
 TEST(PhysicalViewerValues, ControllerDirectoryAndReceiptResolveTheSameExactAuthority) {
     output::full_shell::test::Directory directory;
     output::physical_run::ViewerInput input;

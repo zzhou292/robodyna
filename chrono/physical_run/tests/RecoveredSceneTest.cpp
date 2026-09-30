@@ -9,6 +9,7 @@ TEST(RecoveredSceneArchive, SavedGeometryStampsAndHonestCaptureMetadata) {
     const auto* path=std::getenv("ROBO_DYNA_RECOVERED_REPLAY_INPUT");
     ASSERT_NE(path,nullptr);
     viewer::physical_run::Options options;options.input=path;options.recovered=true;
+    if(const auto* hash=std::getenv("ROBO_DYNA_RECOVERED_REPLAY_SHA256"))options.expected_receipt_sha256=hash;
     const auto input=viewer::physical_run::ReadInput(options);
     const auto source=viewer::physical_run::OpenSamples(input);
     ASSERT_NE(source.recovered(),nullptr);EXPECT_EQ(source.normal(),nullptr);
@@ -16,8 +17,8 @@ TEST(RecoveredSceneArchive, SavedGeometryStampsAndHonestCaptureMetadata) {
     Scene scene;
     ASSERT_EQ(scene.Initialize(source).status,ReplaySceneStatus::Ok);
     EXPECT_EQ(scene.replay(),nullptr);ASSERT_NE(scene.samples(),nullptr);
-    EXPECT_EQ(scene.system().GetBodies().size(),source.wall()?2u:1u);
-    for (const auto i:{std::size_t(0),source.frames().size()-1}) {
+    EXPECT_EQ(scene.system().GetBodies().size(),(source.wall()||source.environment())?2u:1u);
+    for (std::size_t i=0;i<source.frames().size();++i) {
         ASSERT_EQ(scene.Publish(i).status,ReplaySceneStatus::Ok);
         const auto sample=source.ReadSample(i);
         const auto mesh=scene.geometry()->mesh();
