@@ -40,6 +40,9 @@ def closed_run(launch):
         raise ValueError('Simulation did not close normally; inspect its guard report')
     run = Path(launch['output'])
     if not (run / 'run-summary.json').exists():
+        from .native_vehicle_run import SCHEMA as VEHICLE_SCHEMA, closed_native_vehicle_run
+        if read_json(run / 'summary.json').get('schema') == VEHICLE_SCHEMA:
+            return closed_native_vehicle_run(run, report)
         from .native_run import closed_native_run
         return closed_native_run(run, report)
     # Existing vehicle closure validation remains unchanged below.
