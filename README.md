@@ -33,23 +33,17 @@ the application does not advance a second Chrono dynamics clock.
 
 ## Current delivery boundary
 
-The preserved 10,000-step / approximately 2 ms Yaris result demonstrates
-wall-only impact and local plastic deformation. Its
-[overview](../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4)
-and [impact detail](../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
-remain the existing vehicle videos.
+The qualified native V6 Yaris run completed **100 ms with wall and self-contact**:
+666,667 accepted intervals at 150 ns, 301 recorded states and two reviewed
+60.2-second videos. Native TYPE25 friction/history and source-declared shell
+removal are active in this profile. The [delivery checkpoint](docs/YARIS_DELIVERY_PLAN.md)
+records source pins, preserved evidence, claim boundaries and remaining work.
 
-The historical first-profile self-only gate prepared, sealed, and discarded
-one attempt; the combined wall+self gate committed one 200 ns interval.
-Wall+self controller composition is implemented; the pending acceptance
-checkpoint is two consecutive genuine 200 ns commits, a closed authenticated
-archive, and exact Chrono replay. That checkpoint and a longer wall+self crash
-are not yet accepted. GPU/heavy execution is currently paused at the user's
-request; the workspace plan records how to resume.
-
-The contact path is hybrid: CUDA mechanics/broadphase/force operations and host
-feature/continuous-geometry certification. Visualization archives are saved
-results, not physical restart checkpoints.
+The local consolidation combines the qualified simulation, rendering and
+postprocessing histories. It does not qualify a new binary by itself. Physical
+restart and complete balance ledgers remain future work; visualization archives
+are saved results. A valid long-impact OpenRadioss CPU speed comparison remains
+to be established.
 
 ## Development entry points
 
