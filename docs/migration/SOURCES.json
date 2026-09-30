@@ -1,0 +1,38 @@
+{
+  "schema": "robodyna.source_migration.v1",
+  "status": "imports_pending",
+  "created_utc": "2026-09-30T22:32:58.291458+00:00",
+  "sources": [
+    {
+      "component": "fea",
+      "path": "src/fea/legacy",
+      "source_commit": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
+      "imported": false
+    },
+    {
+      "component": "chrono_capabilities",
+      "path": "src/compatibility/chrono",
+      "source_commit": "a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38",
+      "imported": false
+    },
+    {
+      "component": "application",
+      "path": "src/compatibility/app",
+      "source_commit": null,
+      "imported": false,
+      "consolidation_parents": [
+        "3b6ef1c566061246679d56b4ffd538315dde74dc",
+        "7260743c19a6082fa3a717b2b9c88881a120bc56",
+        "41774b5b267e59c79a8b41ec1db4df5b15c0e8f8",
+        "32bc6d9"
+      ]
+    }
+  ],
+  "preservation": "Original worktrees and all accepted/failed simulation/media artifacts remain outside and unchanged.",
+  "baseline": {
+    "duration_s": 0.10000005000066203,
+    "accepted_intervals": 666667,
+    "fixed_dt_s": 1.5e-07,
+    "video_receipt_sha256": "57267c8ce4c6f70885d232b4f7bd792ee26251514d684181a0dd125a2f8554cf"
+  }
+}

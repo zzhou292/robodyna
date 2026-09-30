@@ -1,0 +1,8 @@
+/bazel-*/
+/build/
+/install/
+/runs/
+/renders/
+.cache/
+__pycache__/
+*.pyc
