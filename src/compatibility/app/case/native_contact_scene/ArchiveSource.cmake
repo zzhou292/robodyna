@@ -1,0 +1,10 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/PhysicalSource.cmake")
+if(NOT TARGET robo_dyna_full_shell_source_mapping)
+  add_subdirectory("${robo_scene_case_root}/output/full_shell" "${CMAKE_CURRENT_BINARY_DIR}/declared-scene-records")
+endif()
+include("${robo_scene_case_root}/output/physical_frames/NativeFrames.cmake")
+add_library(robo_dyna_native_scene_archive_source STATIC "${CMAKE_CURRENT_LIST_DIR}/ArchiveSource.cpp")
+target_link_libraries(robo_dyna_native_scene_archive_source PUBLIC robo_dyna_native_scene_physical_source
+  robo_dyna_full_shell_source_mapping robo_dyna_full_shell_source_bundle robo_dyna_native_capture_values)
+target_compile_options(robo_dyna_native_scene_archive_source PRIVATE -fno-fast-math -ffp-contract=off)

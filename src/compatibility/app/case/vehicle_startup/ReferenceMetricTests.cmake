@@ -1,0 +1,32 @@
+include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/ShellBatchBinding.cmake")
+add_executable(robo_dyna_vehicle_reference_metric_check "${CMAKE_CURRENT_LIST_DIR}/tests/ReferenceMetricTest.cpp")
+target_link_libraries(robo_dyna_vehicle_reference_metric_check PRIVATE robo_dyna_vehicle_shell_references tl_shell_batch_binding GTest::gtest_main)
+target_compile_options(robo_dyna_vehicle_reference_metric_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME vehicle_reference_metric_values COMMAND robo_dyna_vehicle_reference_metric_check)
+set_tests_properties(vehicle_reference_metric_values PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+option(ROBO_DYNA_VEHICLE_REFERENCE_METRIC_SOURCE_TESTS "Complete authenticated mixed source/reference metric gate" OFF)
+if(ROBO_DYNA_VEHICLE_REFERENCE_METRIC_SOURCE_TESTS)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  foreach(name CANONICAL SCOPE DECLARATIONS GLASS_RESOLUTION MIXED)
+    set(ROBO_DYNA_VEHICLE_${name} "" CACHE PATH "Explicit authenticated vehicle ${name} fixture")
+    if(NOT EXISTS "${ROBO_DYNA_VEHICLE_${name}}")
+      message(FATAL_ERROR "Metric source gate requires ${name}")
+    endif()
+  endforeach()
+  set(ROBO_DYNA_VEHICLE_GLASS_SHA256 "" CACHE STRING "Pinned glass declaration SHA256")
+  string(LENGTH "${ROBO_DYNA_VEHICLE_GLASS_SHA256}" hash_length)
+  if(NOT hash_length EQUAL 64)
+    message(FATAL_ERROR "Metric source gate requires the explicit glass SHA256")
+  endif()
+  include("${CMAKE_CURRENT_LIST_DIR}/../../modelio/source_assembly/SourceAssembly.cmake")
+  add_executable(robo_dyna_vehicle_reference_metric_source_check "${CMAKE_CURRENT_LIST_DIR}/tests/ReferenceMetricSourceTest.cpp")
+  target_link_libraries(robo_dyna_vehicle_reference_metric_source_check PRIVATE robo_dyna_vehicle_shell_references
+    robo_dyna_source_assembly_shell_input GTest::gtest_main)
+  target_compile_options(robo_dyna_vehicle_reference_metric_source_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME vehicle_reference_metric_source COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_vehicle_reference_metric_source_check>" "VehicleReferenceMetricSource.*")
+  set_tests_properties(vehicle_reference_metric_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_SOURCE_SECTION_MIXED_INVENTORY=${ROBO_DYNA_VEHICLE_MIXED}")
+endif()

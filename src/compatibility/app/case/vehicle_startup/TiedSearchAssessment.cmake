@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchAssessmentValues.cmake")
+include("${ROBO_DYNA_TL_ROOT}/lib_src/constraints/tied_shell/search/TiedSearchDriver.cmake")
+add_library(robo_dyna_tied_search_assessment STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedSearchAssessment.cpp")
+target_link_libraries(robo_dyna_tied_search_assessment PUBLIC robo_dyna_tied_assessment_values tl_tied_search_driver)
+target_compile_features(robo_dyna_tied_search_assessment PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_tied_search_assessment PRIVATE -fno-fast-math -ffp-contract=off)

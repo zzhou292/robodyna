@@ -1,0 +1,487 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Source rules only; no captured control/identity arrays initialize product",
+  "files": [
+    {
+      "path": "crash-work/deps/openradioss-gap-source-1/starter/source/elements/reader/hm_read_sh3n.F",
+      "bytes": 12982,
+      "sha256": "8b3b15b90e8637f417aa95b46ba69eb21d936aabc913538dfcd18514b40ee1de",
+      "git_blob": "5645c3ca90e177d7f16550375919bb5323daecd6"
+    },
+    {
+      "path": "crash-work/deps/openradioss-glass-placement-1/original/starter/source/elements/shell/shell_offset/shell_offsetp.F90",
+      "bytes": 12272,
+      "sha256": "cd1cb9e4194282b0f24f947b1dc40a1d6850981b8b7df0f3403495042432f4b7",
+      "git_blob": "7e5cc7c9b7293ce49ea3fb8058f8961e9846d970"
+    },
+    {
+      "path": "crash-work/deps/openradioss-initial-interface-controls-1/starter/source/interfaces/reader/hm_read_interfaces.F",
+      "bytes": 12801,
+      "sha256": "7d79d9d5227224c4ebf348290fdf71c614f39989404f488647f432354d399fa9",
+      "git_blob": "08e5f1529ff6e39e86f08def3d10f2c00ccfa3ff"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/Keyword971_R11.1/CONTACT/contact_automatic_single_surface.cfg",
+      "bytes": 92033,
+      "sha256": "ac3907e4d585345e8d069eb3f9d6366e92e05635d83321f7efa60be998009442",
+      "git_blob": "1bf6d77f2670bab88721e60b7d9597354b27853b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/radioss2026/data_hierarchy.cfg",
+      "bytes": 208942,
+      "sha256": "452f52e8b382ef496d808e5154eb7bfa2ace6c02f3b44b07e751ed9c4c4e0337",
+      "git_blob": "3010a673aa03280452e1865c079f197a788f7524"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgio/MODEL_IO/hw_cfg_reader.cpp",
+      "bytes": 93834,
+      "sha256": "1d94d9ff54f311df5afd5b5b0b113069d4752f4c87c93f72f4878f32c0fde690",
+      "git_blob": "0f90ddf64cece171dc7c25b0ed27ab64176a19b3"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgio/MODEL_IO/meci_read_model_base.cpp",
+      "bytes": 62295,
+      "sha256": "7462c0a76ebaea1a2cf70c1d2412436e002fd1794bab37de6137a3b909bddfb6",
+      "git_blob": "b4cd03c84d8aa1ffedcf812d5613804e3f1b54f9"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgio/MODEL_IO/mv_header_positions.cpp",
+      "bytes": 5339,
+      "sha256": "eea98c5a8219946c43e9d39b0b8136f1b22522bd81f22b404df6bdaced84c4b1",
+      "git_blob": "b2f765ff2c25596bed4376e7fe18339ed531d4f1"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgio/MODEL_IO/mv_model_factory.cpp",
+      "bytes": 15404,
+      "sha256": "78030502fcd548e3b42ba02ec44d45dea94e95b1f5248b7610236fbb2423e4c0",
+      "git_blob": "5b5b440f4fbe9738802a11c6c3498bf229b806be"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgio/MODEL_IO/mv_solver_input_infos.cpp",
+      "bytes": 35004,
+      "sha256": "f9f6ce7b043572ad013f448c88771f250ad74f404b806f6798a4df4b3bbb0b86",
+      "git_blob": "a70566bfcf91995bc92908a660a3beab42cfc9b4"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgkernel/sdi/sdiCFGTypeMapper.h",
+      "bytes": 9042,
+      "sha256": "c58bab39100ab34ab1e2214661fb207fa01b2ea84faaa12d2d49c5ce6309c73a",
+      "git_blob": "fbcffa6d3b976c52d8822911e6572a919fa238a3"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgkernel/sdi/sdiModelViewPO.h",
+      "bytes": 173611,
+      "sha256": "d59b8ba4fd997a7a6fa3927d14654277d52da09056cca8e1fb12f550dc12683a",
+      "git_blob": "af666e0ba8405424f3c776ca04c86b18ca8e1ba6"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertbcs.cxx",
+      "bytes": 41876,
+      "sha256": "526366c0fbd03e745d2b1f187994a5c4c54ef6db6eaf3b3112ed977de533deb1",
+      "git_blob": "34a3e3143e94b7f42d89f30c9494287865434d45"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertboxes.cxx",
+      "bytes": 6342,
+      "sha256": "59bc1f405c4f5a02bd9f6afa7c44a68c0a63be95662156368ee877b0ffe59b02",
+      "git_blob": "f0efe7d5f0baab000fa2cedc6a29ed43aca99dad"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcards.cxx",
+      "bytes": 56728,
+      "sha256": "3a66aa62264a33b2e3b7005e180f64fcd85f7a79d20605e578d4c59106956c1c",
+      "git_blob": "819d2ef445810c57051de35b37372aa499baa30e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedinterpolations.cxx",
+      "bytes": 8139,
+      "sha256": "21a5216f3e8e6404280126d3dbe4b12f1355a12e50809a30595df04ece1ae407",
+      "git_blob": "23086b0a3abfd5ce0478416ddb2309ad26db890e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedjoints.cxx",
+      "bytes": 122115,
+      "sha256": "970cd203a3b75dedff654b8e954fc7078ddd9f3b5570e750768a87bf60709fb8",
+      "git_blob": "735bd1bba478eecb46089f13e0eb870f27771b1a"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainednode.cxx",
+      "bytes": 6265,
+      "sha256": "a8c4ef991a59f4586f55509ab457355b27a7dad508def7da636b3796e60974a2",
+      "git_blob": "693bbc1c1817eae42db99882df9129bb7e5d44a6"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedspotwelds.cxx",
+      "bytes": 6881,
+      "sha256": "640522d9c50289d18bf6ef9add866fd2c9e88179c007cca58dcf4c01ec6b47c8",
+      "git_blob": "a8c35c1d76419de53873f532b3bbf22bdcdd46e0"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontacts.cxx",
+      "bytes": 51410,
+      "sha256": "e2c1e1644d0678ce128ac84fbdf96c7d6800c9a291b0a7212b4a0db522be538a",
+      "git_blob": "c33307f2b25e81206516e95664b51c16b6cdda2f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontrolvols.cxx",
+      "bytes": 173924,
+      "sha256": "71c6b6ed561faa92b05da653ae9e09d50e695470d78955cf6d9220eca1afebf1",
+      "git_blob": "e4a8d63d22ca62f8d77c660a50f4e3490a0206be"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcrosssections.cxx",
+      "bytes": 19496,
+      "sha256": "e0b80011f4f8aacf919cfe967f56de2767c98a8fe85dd51bdc461e651c4c8530",
+      "git_blob": "3e50910f0f9ea5b063cfeaeeef541c957748841e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcurves.cxx",
+      "bytes": 15938,
+      "sha256": "f3a2a36b8368627141b054f95cde8f3b5c06f6f6db8d4167dafb145fd535c32f",
+      "git_blob": "8e5b9a50ecb890ee0b13c0dc285f67c9e1159298"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdampings.cxx",
+      "bytes": 17503,
+      "sha256": "b15756c74c472b927e40b63cabd8b7ed7394b526e68362b288e3f3d14d34862c",
+      "git_blob": "bb09357ef84d752754e6518222cfa1ab5477a501"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefineelementdeath.cxx",
+      "bytes": 15468,
+      "sha256": "a4890ad74349a1501d5b4f81e2b1e6d85916ebde9cc5bc1ab760005518f40c8f",
+      "git_blob": "f1a8e67832c50c1d53088dcb066a936b517cc9db"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefinehexspotweldassembly.cxx",
+      "bytes": 16079,
+      "sha256": "7acd3dadff740eb945ec202cbc36c3d72dbf463d77590d565211a55055ddd40c",
+      "git_blob": "9b422e7293b1ab3602477bdbed872923537ef0af"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefinetransform.cxx",
+      "bytes": 24627,
+      "sha256": "14b405e25dd5501c9cdfcd0646248eee6562fce26b2b11fbfb8758bd32bb6a67",
+      "git_blob": "4fb60ad51df467148741b85477f6e1868414db06"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertelementmasses.cxx",
+      "bytes": 7848,
+      "sha256": "6918406ee3a57f239488fd75c84a05160aa4ab696911308d65a1286bf07eb2fe",
+      "git_blob": "8360308680588b092bdd4649f076e968a54ca16e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertelements.cxx",
+      "bytes": 49115,
+      "sha256": "9f64dff040c0b0765f04d2bc068599fc8dceebd11f4e8b3be20a59b0cc993756",
+      "git_blob": "51145a745d0b7d167d4ddd50360933efff04092e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertfrictions.cxx",
+      "bytes": 7087,
+      "sha256": "ddaa3b499901dc2dc54a198ccf18f69a8cacab09d0223e1b005530f22d86a7f7",
+      "git_blob": "187958a8dc1423994675f9ab1bb4b0abb784c1ed"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertincludes.cxx",
+      "bytes": 8481,
+      "sha256": "2bcc697887769ad3bfc8e0178baeee02c67f5c946a326706ae357b3b1f08d3d4",
+      "git_blob": "85fe5415e9d0dfa96bbda746f8a9c35f4c4a08ea"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialaxialforces.cxx",
+      "bytes": 6602,
+      "sha256": "592657d5fabd8b2ab5c00a43eb1d0dc0be412e6df293a6d279f02013d5ce5941",
+      "git_blob": "1f66842cb04091f2fb81b44d5c3945fa5b4c7e47"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialstrains.cxx",
+      "bytes": 37687,
+      "sha256": "593d38693fbd2ca0279d74ab33694f036aef0531d407df376a9fe58b1a453102",
+      "git_blob": "ccc0aacc34e3d845b5c11e5665325681cba425ea"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialstresses.cxx",
+      "bytes": 44541,
+      "sha256": "d057ad6ea43487bf0d687e48385c3af3ce1a0ebbee81543ee77e2acf24b5be6d",
+      "git_blob": "ff9fb8ebfad7fc6e417f0fe2c26893aa33d8cb7d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinivels.cxx",
+      "bytes": 61462,
+      "sha256": "b30d4a59dc98c7dd528201619f033280be8082157350951ff58d74260d5cb1f3",
+      "git_blob": "d9d49abf38d2fb4f574e45d5156b6db90e6bfe38"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertloads.cxx",
+      "bytes": 58502,
+      "sha256": "2509fa94f6ea6e17e37e2aa9ca1615de6283ee675204c191ec45c4a2d85fbaab",
+      "git_blob": "89dec3e1e5f88058a38e450020644ab2b280b783"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx",
+      "bytes": 579108,
+      "sha256": "a2d54503fb38039f88b76d26950853ef39a0207dc368cc1f9deb390ced177b0f",
+      "git_blob": "df933c97ba326cd12af9cf3569db436f624d1be1"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertnodes.cxx",
+      "bytes": 2006,
+      "sha256": "05e1b66c0d74c517c2ebaed53c20983c4befb521bf302961d15aecc710b9e23b",
+      "git_blob": "0697a21627818f7c27b5aa2636292462a75e6652"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertnodetransforms.cxx",
+      "bytes": 2860,
+      "sha256": "d6c353319b2fb0dbc13f0379076339c3f80e6478c48c547a8ad568e6d353ef30",
+      "git_blob": "2a90de1caf97b4c2cc638dfedd8fd4b6bf236a78"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertparameters.cxx",
+      "bytes": 6249,
+      "sha256": "5c96256d2f3505b62a6f147037dd81994e5af4c189cfd249ea122e7d82c25f7d",
+      "git_blob": "70d97a06add1c4adb0a51c04574aa8a0c5b6cb99"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertparts.cxx",
+      "bytes": 6539,
+      "sha256": "7a2dd769d915e75f399fa7238d3b4097548fcfad803cbeb7e12eaee6ef462a7c",
+      "git_blob": "3473e1df2a57771364b8c717fdcd2e1eaff69299"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertperturbations.cxx",
+      "bytes": 5113,
+      "sha256": "3e4e7cbb9b64adfed29d18b6b893dcafa2fc16502080fabf57faefe9eccb833a",
+      "git_blob": "07050dfc6539e4d351e72d41beeff8c7549d93bc"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "bytes": 199888,
+      "sha256": "87ce68f7e6d9d9186bb2ed5bbc74d1ca97226b8ebaffd48408e2becaae46852d",
+      "git_blob": "e6ddfb2465fce574d5836822f96979af0f0d659c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertrigids.cxx",
+      "bytes": 40976,
+      "sha256": "72183d17e253284c402fbdc2bc545cc6c4ba11bf8b0227b0f909004dd9595d26",
+      "git_blob": "fb2e1f03e9ca4ce099ab6cb1a6ba94ead341d5d0"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertrwalls.cxx",
+      "bytes": 27932,
+      "sha256": "ca466a778e0566f039a5078e032e9ccceec02a435ece047bd0c2fd6a708bb345",
+      "git_blob": "c39a337acb5ce39b2dca71b1d766b2879f4562ec"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertsets.cxx",
+      "bytes": 73279,
+      "sha256": "3419fadaee410abb70d7588a321f584d7aefd4086118220637c52df0357645b2",
+      "git_blob": "44096ab002256028c374ae3509023d126f86a15c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertsystems.cxx",
+      "bytes": 22208,
+      "sha256": "01e743f0999b83feb2c16ac17da59665f0f54e25f991215e10127f980b780e4b",
+      "git_blob": "f4884559ba6950e3380c5c1c806738477237576f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/converttimehistory.cxx",
+      "bytes": 23193,
+      "sha256": "06f5c606f98e71f47de63888e86b2abcda4156a79f2b5c26ebe567c792562531",
+      "git_blob": "a2758df24d5e8a23398470557338341e771758b8"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertutils.cxx",
+      "bytes": 43605,
+      "sha256": "140587d71a3672e178372242aa7843fd63ec136442b1283b8208c1d1ab6c7675",
+      "git_blob": "c276e8cebc945d2899927f5fa92ab8ccf47b3173"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/dyna2rad.cxx",
+      "bytes": 29033,
+      "sha256": "0c24f869a3f808b35bf146742ee23104d6cbac3c906249ae0b954cdbcce1da1e",
+      "git_blob": "5f28c5a5ba7c568739d39e7238b79892d3a717ab"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/propertymaterialrelation.cxx",
+      "bytes": 5509,
+      "sha256": "20c9201243dfa21876e733a685643914ade943e0070349764fe11628fd94a712",
+      "git_blob": "89ac156efcee1998513ecbc48f8d87d5663ff5fa"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/unitsystemdefaults.cxx",
+      "bytes": 7839,
+      "sha256": "612380d550ed47c5f0971c7a857f08033baa6e42e5a350d91059e4a209095577",
+      "git_blob": "b74afa3b3124acd850b812319f0937cb44dcba1f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/convertcontacts.h",
+      "bytes": 2440,
+      "sha256": "a0672bb1e78eeef9110995d7e19ce58d3fbfdf35e3e50913f33183b3f4f3c009",
+      "git_blob": "1724af7c368a77c9ad06bb38cbd4059ff7423de2"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/io/model_readers/ls-dyna/keyword/dynamain.cxx",
+      "bytes": 3566,
+      "sha256": "79df8bc1a6684a2a2897cc29004f0c8dba56623630082577e81e01f3eca2252d",
+      "git_blob": "d2f2021a99cc48010b3e37792036dbb9c9bc05b5"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/io/model_readers/radioss/radiossblk/radiossblk.cxx",
+      "bytes": 40310,
+      "sha256": "232c2c8a20c53c0c43a992c5aae24c777c3153b598988232446b6f4f82fc06f7",
+      "git_blob": "d7987ca01589c6a0bce833fc4a6ed769785382f0"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/sdi/converter/_private/convert.cxx",
+      "bytes": 4113,
+      "sha256": "e9cf1a9611c060b1e1dd218eb51ac94b9e22d4867c9db97650f7c44223299599",
+      "git_blob": "ba188633e92b401b4a5683a582dcf77ffb9cc7f4"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/sdi/tools/sdiIdManager.h",
+      "bytes": 13995,
+      "sha256": "1171a5c5c02c8166010929ea1f066e90abd8498512a7d3f7662d8bc4fc5d1cb4",
+      "git_blob": "a10c260b00218e013fb7ea5e1e59b7cc8e529a77"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/sdi/tools/sdiTypeMapper.h",
+      "bytes": 33444,
+      "sha256": "c4e9a058e82ec8984acebcc62000ab971a458bac7bdd9be822a1a4edbcd56d16",
+      "git_blob": "473c1569ba5bd21b7678a1d13cbaa94436f45340"
+    },
+    {
+      "path": "crash-work/deps/openradioss-search-defaults-3/contrl.F",
+      "bytes": 88353,
+      "sha256": "087905ea2f6d143182c9254da8161c7b8e5cfdfefbea7496ed8c4b722240d5d2",
+      "git_blob": "87f43945d400978cf6525c77cfa606b69bed147b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-shell-execution-trace/starter/source/properties/shell/hm_read_prop01.F",
+      "bytes": 16609,
+      "sha256": "13d216d324eafee9085522d19c597754a5ad51aad02a294316a6c459b89c37d4",
+      "git_blob": "5a7af926ee09df65436592aee9140a24c1058943"
+    },
+    {
+      "path": "crash-work/deps/openradioss-structural-beam-1/original/starter/source/properties/beam/hm_read_prop18.F",
+      "bytes": 45108,
+      "sha256": "7f7b2b3aca2922fe885571a2bb9710721b9f7923f4d2737daf70e42b54b3a040",
+      "git_blob": "71224a2201206db515f7e57c10d712c6ae42add2"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/reader/source/solver_interface/source/cfg_reading/GlobalModelSdi.cpp",
+      "bytes": 123029,
+      "sha256": "69b44ddc38288a983dbd18acdc68cfd80b67020618dc390991cebb91ce2ff024",
+      "git_blob": "f7835f333f9f4e45695e5912e47e84127dcdf1f3"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/elements/reader/hm_read_shell.F",
+      "bytes": 12660,
+      "sha256": "48610e2da12ff1fb0cf7a179151b5d364323635cb578b73d06677c634fcc1a43",
+      "git_blob": "a47ab98c82692a4cfc84895f98e93b7e46013375"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/interfaces/interf1/definter.F",
+      "bytes": 10875,
+      "sha256": "be655a12555d1dd4e9d4871d9babed8a0a025d0bc2105a2010b9e094381eded0",
+      "git_blob": "47cb7dd19df15031d7365a93bb4ed7adab37aa8d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/model/assembling/hm_read_part.F",
+      "bytes": 24601,
+      "sha256": "ab6f37fc0b66ad746d03b8493e46f27c3146227df23e6622ff18997e2d5964e0",
+      "git_blob": "189f4aa3450206d4a1e1e45d1d1b77c47f4d64b7"
+    },
+    {
+      "path": "crash-work/deps/openradioss-type45-joints-1/original/reader/source/solver_interface/source/cfg_reading/cpp_get_floatv.cpp",
+      "bytes": 11737,
+      "sha256": "b47818b53bbf8a3587130b23601431065b078f5737fb6eac34cd597e6a4234be",
+      "git_blob": "931658d8e1efe39eb1ead7b195372349bfea216b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-type45-joints-1/original/starter/source/devtools/hm_reader/hm_get_floatv.F",
+      "bytes": 42634,
+      "sha256": "a46e7d5432a1cfdd6d3d6836e25acd73b1b1f04c990fa6c5dac864cb4a026a28",
+      "git_blob": "b9fa32ed6c159eaefb368e1d1e7101b9faddfbce"
+    },
+    {
+      "path": "crash-work/worktrees/robo-native-tl-delivery-13/lib_utest/qualification/radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "crash-work/worktrees/robo-native-tl-delivery-5/lib_utest/qualification/radioss_type25_coefficients/native/original/i25sti3.F",
+      "bytes": 47033,
+      "sha256": "98ce3a1610b733dec229ad367da1f3cd81ef87f4a752d3e1a4b4e1006d0923ce",
+      "git_blob": "6c94936fef735f9495b1b0f6a6b2a403c161648c"
+    },
+    {
+      "path": "crash-work/worktrees/robo-native-tl-delivery-5/lib_utest/qualification/radioss_type25_fixed_main_startup/native/original/i25neigh.F",
+      "bytes": 68494,
+      "sha256": "60371d61970cc9da0dab430a533048423b0ce20a12d21404b1b4b0871e484097",
+      "git_blob": "140cc479c1405d1078f178ff747fbee58a525e53"
+    },
+    {
+      "path": "crash-work/worktrees/type25-initial-state-producer/lib_utest/qualification/radioss_type25_initial_source/native/original/machine.inc",
+      "bytes": 3407,
+      "sha256": "ca53f3eab9d609df8da2b8930bc3cc524ce0aee35508d7fd5d28e1860c24dfc7",
+      "git_blob": "11fdb05097da3900aa4472878b796ac4c654e518"
+    },
+    {
+      "path": "crash-work/worktrees/type25-initial-state-producer/lib_utest/qualification/radioss_type25_initial_source/native/original/tri7box.F",
+      "bytes": 3556,
+      "sha256": "47a90e5ff4b107e5be2eeb826189cdb8e2fa4ce3cbe9887588574c21914fe4a0",
+      "git_blob": "8b1deec9bff45114d2d01c99d80cd55a3bd331fc"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/starter/source/interfaces/int25/hm_read_inter_type25.F",
+      "bytes": 45794,
+      "sha256": "826b36999df24b969079a2350a2e8f79ae5bb88be5dec01084a4d0241b20178e",
+      "git_blob": "ddcf2bcc0cf6086243b80caa0b26375268c603f5"
+    },
+    {
+      "path": "crash-work/deps/openradioss-initial-interface-controls-1/starter/source/interfaces/reader/hm_read_inter_struct.F",
+      "bytes": 13893,
+      "sha256": "63d6224e652dc6c9ed6aebeba62ccf3a2bf5fe297042a28d0ca40a889bfe04ce",
+      "git_blob": "3df61ce789a4b436e7efcb9dde5761a14a1dd01e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-search-defaults-4/archloops.inc",
+      "bytes": 3899,
+      "sha256": "f06f0fb15c264ac0064cdbbd860bc7ee59672394c0a0538d561d0b3222f210b2",
+      "git_blob": "4d769a8768ec9357143b5facf30cb2925b29e1f5"
+    },
+    {
+      "path": "crash-work/deps/openradioss-nodal-rigid-phase-1/starter/source/starter/contrl.F",
+      "bytes": 88353,
+      "sha256": "087905ea2f6d143182c9254da8161c7b8e5cfdfefbea7496ed8c4b722240d5d2",
+      "git_blob": "87f43945d400978cf6525c77cfa606b69bed147b"
+    },
+    {
+      "path": "crash-work/worktrees/robo-native-tl-delivery-13/lib_utest/qualification/radioss_type25_search_startup/native/original/machine.inc",
+      "bytes": 3407,
+      "sha256": "ca53f3eab9d609df8da2b8930bc3cc524ce0aee35508d7fd5d28e1860c24dfc7",
+      "git_blob": "11fdb05097da3900aa4472878b796ac4c654e518"
+    },
+    {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/intsort/i25main_tri.F",
+      "bytes": 25177,
+      "sha256": "357ebb95398b4b0cac6a4eaa4a0bf67c299b3663935efdfa2d1b99c916ed1c16",
+      "git_blob": "39265ccd97332cf17b7bf0d6fc0df4b8956e9363"
+    },
+    {
+      "path": "crash-work/worktrees/robo-native-tl-delivery-13/lib_utest/qualification/radioss_type25_search_startup/native/original/i25xsave.F90",
+      "bytes": 10380,
+      "sha256": "a1f8d577954a3121a77327ba53a12cbf70adb7e3b39c7dca3ca1cf3d276f9fb2",
+      "git_blob": "10c751163678c09b20a68c8d82b643d42d646020"
+    },
+    {
+      "path": "crash-work/deps/openradioss-nodal-rigid-contract-1/starter/source/devtools/hm_reader/hm_rbodies_add_main_node.F90",
+      "bytes": 7282,
+      "sha256": "38c26a78cd2318eaa69153857337fbc2429577847843a5e6d365d338920bc84a",
+      "git_blob": "f60f57d66386c338199a913bdef6a3a825300b99"
+    }
+  ],
+  "population": "Complete explicit NODE line bound plus bounded creator families; exact count unavailable; selected multiplier tier only"
+}

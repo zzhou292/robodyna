@@ -1,0 +1,139 @@
+{
+  "app_base": "97647e8bf5901e9a55e3b436c22d61f8fb66becc",
+  "qualified_value_pin": "b80ec828bdc1055863cd9bc83a41a482c69313ab",
+  "scope": "Initial I25SURFI consumed node/role order certificate; all origins retained, native ELEM origin order unavailable",
+  "default_proof_sha256": "8b476743ac3bb6f185645888c7a5d43d7ed98119727f7273678b68ab54086527",
+  "app_files": [
+    {
+      "path": "case/vehicle_self_contact/native/CorrectedNodalSource.h",
+      "bytes": 4733,
+      "sha256": "1572043b997216d74ce71846894ec3122c74289a35a0083a1b3a98e99e587d93"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cmake",
+      "bytes": 1018,
+      "sha256": "0285190f6894eb30c9fe71cc0e86c245b72f78d857989e2980aa26d5255eccb5"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
+      "bytes": 9139,
+      "sha256": "b3c61769c540d696377d27711914d217f01fff6e21cb79cc7caf42769a5eca65"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/InitialSurfaceSource.h",
+      "bytes": 5185,
+      "sha256": "3b43e9c6a239e94e97328f9a4b8c20be1e197c2b819fc7d368613bb6257c9c2f"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Inputs.cpp",
+      "bytes": 15270,
+      "sha256": "409541757eb42bbcb3e687c37897db08715d0eb66b4be5408f16415708d52e7c"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Reader.cpp",
+      "bytes": 2219,
+      "sha256": "039443e06f0025796d3c58717522e3f161964d4373aa42bcf7f1a7dce1f0f2c2"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/coated/Types.h",
+      "bytes": 2469,
+      "sha256": "2e5f2930a6197e63f46da04688c676245e440588140f51bf11f80d4a5aed4b68"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/nodal_correction/Context.cpp",
+      "bytes": 8238,
+      "sha256": "ef4baad1864591b776220aacc209fa23a73a86e61c4948ad307c39af892b419e"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Budget.cpp",
+      "bytes": 5074,
+      "sha256": "0388b591a57f9752c996278034e8e090f3db75a8a6843b0fb632d5d8ad4d346b"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/CMakeLists.txt",
+      "bytes": 2502,
+      "sha256": "7e106b80ea36a35cbd5e0657e2712b67d91719f3963fba16ce89fdb5629008c1"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Certificate.cpp",
+      "bytes": 5137,
+      "sha256": "dcaae0ded7f48833a6149033277624a0ee7ee17d3a5d038cfe81fbefd600a0c6"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Context.cpp",
+      "bytes": 3847,
+      "sha256": "70a13a8d0fdb6fccefcf2612dac066369f93a53890e534cfbdcbddb5307534cf"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Digest.cpp",
+      "bytes": 3120,
+      "sha256": "eb67dce35e2c9ed239f71d7b8597fd81cfddc8b6159e245b0f91e43a6d8e7e21",
+      "prior_uint8_encoding": {
+        "bytes": 3078,
+        "sha256": "70b99327cbf728980be04acbcafce0a78a6ae9598fda192f89d8ce0574a8f865"
+      },
+      "review": "Supported uint32 digest encoding of retained uint8 Boolean values; no source/math change."
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
+      "bytes": 7599,
+      "sha256": "388a36eeaed5c51c65074200024d0063f642ad9efa5890b68846090eea1b9c05"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Internal.h",
+      "bytes": 2242,
+      "sha256": "63e4d19437b2d1c1e4d55332536cebc9e4217bb0c956baf4630ff4e629aac8c2"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
+      "bytes": 6646,
+      "sha256": "d8b2c7be451789305af3b44e0f3298823fd3aa43869b28bc6c87c730c6720f22"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/README.md",
+      "bytes": 3977,
+      "sha256": "d555dc41167ae0f9718d23bfb2f70460817d0011956eb1ecc7b585186503c447"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/SOURCE_PROOF.md",
+      "bytes": 5179,
+      "sha256": "70c8347678e7d5708042638a18a09243941c2870e9e056eceb21218208a41be2"
+    },
+    {
+      "path": "modelio/native_spring_ids/ImportContext.h",
+      "bytes": 1337,
+      "sha256": "e9a6260c84067298ce43cbcea68833ccebb9f7d10451748bffdec1607d4bee95"
+    },
+    {
+      "path": "modelio/self_contact/Cards.cpp",
+      "bytes": 4896,
+      "sha256": "e34eada9a6a2931bece1d7930ede8cf939df47043314fc654bd5d1254b72d218"
+    },
+    {
+      "path": "modelio/self_contact/OriginalSelection.h",
+      "bytes": 3379,
+      "sha256": "c6f403d765fe54364c252f3b496e9c471f4f80203dd64777422ab259b820750f"
+    },
+    {
+      "path": "modelio/self_contact/PartSets.cpp",
+      "bytes": 3307,
+      "sha256": "01a26b187c7f3e33a91e01f8c1722d97055ed0d4ce5eb6a77bab41d49e2c5b46"
+    },
+    {
+      "path": "modelio/self_contact/PartSets.h",
+      "bytes": 821,
+      "sha256": "bf8710b3ac351d784cf3681bfa9cc63d7609c11644106cb70f7c8d07e998f75d"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/ORIGIN_ORDER_PROOF.md",
+      "bytes": 3271,
+      "sha256": "0b4c3f8d41928d2b7c62017f7105112849032802d792aad3ee7e73267289867a"
+    },
+    {
+      "path": "case/vehicle_self_contact/native/solid_surfaces/origin-order-sources.json",
+      "bytes": 1653,
+      "sha256": "93f1238849434152a37aa0fab59d3648559c3e771d06d9527d322cb04f7ff395"
+    }
+  ],
+  "raw8_value_candidate": "b4d4678dad292251d6b624bf8768547f31c95f14"
+}

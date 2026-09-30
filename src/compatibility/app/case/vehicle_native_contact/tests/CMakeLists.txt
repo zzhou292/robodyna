@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaNativeVehicleFieldPacking LANGUAGES CXX)
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+enable_testing()
+set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Explicit qualified TL source")
+include("${CMAKE_CURRENT_LIST_DIR}/../FieldPacking.cmake")
+add_executable(native_vehicle_field_packing_test FieldPackingTest.cpp)
+target_link_libraries(native_vehicle_field_packing_test PRIVATE
+  robo_dyna_native_vehicle_field_packing GTest::gtest_main)
+target_compile_options(native_vehicle_field_packing_test PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME native_vehicle_field_packing COMMAND native_vehicle_field_packing_test)
+set_tests_properties(native_vehicle_field_packing PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

@@ -1,0 +1,60 @@
+# Native shell-impact physical source
+
+PhysicalSource consumes the single hash-authenticated declared-scene export and calls the existing TL QEPH/T3 reference, material, failure, domain, map, physical coefficient ledger and execution binders. Source coordinates convert from mm to SI once; original IDs and dense order are retained. The complete physical census is Q4 then T3; this does not reorder the source display or native primary wall roster.
+
+The source is explicit LAW44/NIP3/centered/no-failure with the checked native H→ETAN bridge. Every actual catalog prepared H must match that bridge record. Fixed wall nodes remain physical constitutive shells with real mass/inertia; they are not fake PART skins. Empty rigid and CIN scopes are deliberate immutable declarations. Startup carries only declared constrained-uniform motion and fixed masks; actual current kinematics, material history, owner time and publication are outside this source factory.
+
+The factory has bounded small-scene node/parent limits and each existing native binder retains its own byte/shape admission. It does not yet claim an aggregate runtime/archive forecast. Native contact-source readiness is separate: main topology/normals, all-shell coefficient/gap producers, and genuine margin/removal/initial-contact producers must all qualify before runtime admission. No captured coefficients, gaps, normals, CSR or initial contact arrays enter this source module.
+
+Owning host tests check complete physical ledger and independent total mass, empty scope identities, actual catalog H, all-None failure, original order/units, fixed versus free motion, and count/identity rejection. These source tests are not a completed GPU trajectory or vehicle video.
+
+ArchiveSource writes a distinct declared-shell canonical source and reuses the existing static bundle, mapping digest, frame, plastic-point and activity codecs. Its original source member is the scene JSON; native ISHELL24 is explicitly identified by its own formulation scheme. Keyword line/code/blank columns are declared unavailable and remain zero. Optional solid/beam arrays have their genuine zero dimensions, zero bytes and empty-file hash. Their one-byte file reservations are upper bounds, not payload.
+
+NativeAcceptedFrames reads the actual common publication and native accepted metadata from the sole TL owner. It verifies every source reference-coordinate bit and ordered parent node against the physical binding, then stages nodal positions, material history, activity and native history before swapping the capture selector. A failed read leaves the previous capture selected. The caller must serialize capture with simulation/publication. Native history and ICONT are available as typed readback; they are not restart state and are not yet a durable per-row history sidecar. The ordinary frame archive stores positions/plasticity/activity, with accepted source and force-base metadata in a distinct native observation profile.
+
+The native interval profile requires a fresh owner: publication generation equals accepted epoch, reference generation lies between one and publication generation, and grows by at most one per accepted interval. Epoch-zero capture has zero generations and no force observation. Contact forces, work, energies and structural bound are explicitly unavailable in this archive profile; failed-attempt diagnostics never become accepted values. Existing vehicle observation profiles remain separate.
+
+The source and pure archive/phase tests are owning host checks. `ROBO_DYNA_NATIVE_CAPTURE_RUNTIME=ON` adds the actual production adapter and a no-GTest/no-oracle link consumer, without running a simulation. Actual owner capture, closed archive and exact Chrono replay remain coupled-run gates; neither a source test nor a rendered coupon qualifies vehicle delivery.
+
+## Genuine native contact startup
+
+ContactSource composes the qualified host producers in source order: complete Q4-then-T3 physical material/thickness census; coefficient and nodal-gap production; primary wall topology and generated opposite sides; separate fixed-main-ready float32 normals/boundary counts; initial margin, removal CSR and ICONT. The only inputs are the immutable PhysicalSource and explicit source identity/resource limits. No generated value is loaded from a captured reference array.
+
+The supported source compiler has one contact profile: ordinary exterior fixed wall, ILEV1, normalized IGAP1, INACTI5, IGSTI4, IEDGE0, neighbor removal2, no thermal/radiation/gap-load contributors, no tied/CIN/rigid/other families, explicit analytic LAW44 and the resolved normal/friction/assembly branch. Runtime native workers1 and force packet128 are explicit profile operands, not CUDA launch sizes. Contact scalar coefficients remain in mm/tonne/s; the one physical owner remains SI. QEPH's immutable projection working-length is the source unit length .001m; this new field requires the corresponding qualified TL adapter. T3 is unchanged. Old app d7b3 stays a separate pre-adapter source checkpoint.
+
+Secondary membership is the unique primary wall-node union plus the additional patch-node group, sorted by positive external NID. It is not copied from observation order or assumed equal to physical-domain storage. The source path is I25SURFI546–589 (union), ININT3:1857 (I25SORS call), I25SORS71–100 (external-ID sort) and MY_ORDERS mode0. Positive signed-native NID bounds are explicit. Whole-shell source rows preserve the required ascending IDs within each Q4/T3 family; the existing producer rejects inconsistent ordering.
+
+Active secondary stiffness starts at +1 from I25STI3:494–498 before I25STSECND replaces it with the source-computed value. The global /BCS system0 is native identity skew slot1: HM_READ_SKW111–120 initializes that entry, HM_READ_BCS166–170 resolves it and200–207 assigns it. HM_READ_BCS111 starts free nodes at−1 and PRINTBCS83 converts remaining−1 to0. Those source statements, not sampled flags, bind fixed skew1/free skew0. Root's immutable donor manifests are under crash-work/deps/openradioss-bcs-startup-{1,2} and openradioss-search-defaults-3. Other scalar controls are the resolved interpretation of modelio/native_contact_scene/native.py's one declared card profile and the pinned engine/assembly scalar-control evidence; they are not a general card parser.
+
+Preprocessing is either explicit SerialNative or InvariantNoExpansion, which the real search producer must prove from source gap/minimum-edge geometry. There is no generic multiworker-removal equivalence claim. All initial ICONT values come from that producer and are copied only at startup; the runtime owns their subsequent accepted/trial changes.
+
+Forecasts cover incremental contact-source owned arenas plus the maximum reused startup scratch, checked before producer allocation. Existing shared PhysicalSource storage and later GPU/runtime allocations have separate owners/forecasts. All output/source views retain their arenas through a shared immutable handle. A failed preparation publishes no handle. Tests cover analytic whole-model contributions, ID-order permutation, exact caps, source identity rejection and separately enabled immutable-field comparison to a pinned native observed header plus an independent all-active native ready-normal oracle. The recorded cycle216 ready normals are a different phase (including three signed-zero differences) and are never silently normalized or used as all-active expectations. Neither reference is a library dependency. Physical coupled parity, accepted capture and actual Chrono replay remain distinct gates.
+
+The exported TYPE25 row `reals(1.,.4,...)` declares Gap_scale1 and mesh percentage.4. The latter is not the gap scale. Source gap production therefore uses1, independently confirmed by Starter4 lines311/315; uniform1mm shells yield .5mm main/eligible secondary half-gaps. Dynamic ready-normal phase evidence is kept separate from immutable coefficient/gap/topology evidence.
+
+The fixed-ready normal producer is called once with the complete strictly positive generated main coefficients, and that all-active phase is the admitted runtime source. A later native normal-update phase may differ even by signed zero; it is not substituted here. Runtime admission is one native worker with NVSIZ128 force cohorts (I25MAINF588–589), distinct from MVSIZ129 storage and from CUDA launch geometry. The primary curvature/extent pointer comes directly from the genuine search-startup producer, including its ICURV0 result; no zero array is fabricated in the adapter.
+
+## Fixed and moving contact sources
+
+`ContactSource` admits the fixed-wall declaration. `MovingContactSource` admits
+only the explicit v2 all-shell surface and retains the genuine Starter cache.
+Both factories use `ContactStorage`, `PlanContact` and `BuildContact`: one bounded
+row layout, physical contributor census, coefficient/gap producer, topology
+producer and initial search producer. The moving factory does not allocate or
+invoke an all-active fixed-ready cache. Its exact surface order is wall triangles
+followed by patch quads, matching the emitted SURF/SEG records. The selected
+primary roster, rather than a hard-coded wall assumption, controls nodal gap
+ownership. No source nodes are welded or physical shells omitted.
+
+Only TL's explicit moving transaction can advance this source. The fixed scene
+runner remains unchanged until the moving runtime is qualified. `evidence/`
+contains independent qualification-only Engine observations: topology and static
+coefficients/gaps may be compared, while cycle301 normal fields are not initial
+Starter values. The independent Fortran producer tests the correct initial phase.
+No observation file or reference library is a production factory dependency.
+
+Archive canonical `source_format` is copied from the exact authenticated member
+schema retained by DeclaredSource. The static-source reader compares that label
+with the hashed member's bounded JSON envelope, for both v1 and v2. Relabeling a
+v2 member as v1 (even with rehashed outer metadata) rejects; no archived source
+is migrated or edited in place. This envelope check does not reparse mechanics.

@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/SourcePartMaterial.cmake")
+add_executable(robo_dyna_source_part_material_check "${CMAKE_CURRENT_LIST_DIR}/source_part_material_check.cpp")
+target_link_libraries(robo_dyna_source_part_material_check PRIVATE robo_dyna_source_part_material GTest::gtest)
+target_compile_options(robo_dyna_source_part_material_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME source_part_material COMMAND robo_dyna_source_part_material_check "${ROBO_DYNA_SOURCE_PART_READINESS}")
+set_tests_properties(source_part_material PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)

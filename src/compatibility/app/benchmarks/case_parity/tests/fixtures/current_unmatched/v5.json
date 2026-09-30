@@ -1,0 +1,170 @@
+{
+  "schema": "robo_dyna.resolved_case_contract.v1",
+  "numerical_protocol": null,
+  "case_id": "selected_v5_strict_wall_225ns_prefix",
+  "scope": "selected_vehicle",
+  "domains": {
+    "topology_geometry": {
+      "status": "unknown",
+      "definition": {
+        "source_archive": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+        "selection": "explicit V5 subset",
+        "resolved_geometry_digest": "not yet exported"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "population": {
+      "status": "resolved",
+      "definition": {
+        "physical_nodes": 376930,
+        "shells": 349645,
+        "solids": 4980,
+        "beam18": 142,
+        "type13": 4442,
+        "type25_welds": 2828,
+        "mass_cards": 154,
+        "auxiliary_operators_included": false
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "formulations_materials_units": {
+      "status": "unknown",
+      "definition": {
+        "profile": "bounded native-derived ports",
+        "working_units": "source-aware SI",
+        "rubber": "HEPH24/S6Z repair",
+        "airbag_solid": "Isolid18",
+        "glass": "AnyPoint plus explicit reference placement",
+        "complete_resolved_catalog": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "mass_inertia": {
+      "status": "unknown",
+      "definition": {
+        "total_mass_kg": 704.3519606517553,
+        "per_body_ledger": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "constraints": {
+      "status": "unknown",
+      "definition": {
+        "main_plain_rigid_groups": 759,
+        "restricted_groups": 4,
+        "auxiliary_groups": 0,
+        "discrete_operators": "not assembled",
+        "complete_resolved_ledger": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "initial_loads_wall": {
+      "status": "resolved",
+      "definition": {
+        "speed_m_s": 15.6464,
+        "wheel_spin": 0,
+        "gravity_m_s2": 0,
+        "wall": "finite mesh penalty",
+        "wall_stiffness_n_m3": 10000000000.0,
+        "penetration_limit_m": 0.002,
+        "gap_m": 1e-06,
+        "ground_walls": 0
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "contact_history": {
+      "status": "resolved",
+      "definition": {
+        "algorithm": "centered_level0_exact_certified_fixed_facets",
+        "stiffness_n_m3": 2000000000.0,
+        "friction": 0,
+        "persistent_tangential_history": false,
+        "solid_surfaces": false
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "timestep_mass_control": {
+      "status": "resolved",
+      "definition": {
+        "policy": "fixed_staggered_halfkick",
+        "fixed_dt_s": 2.25e-07,
+        "target_mass_scaling": false
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "recorded_time_grid": {
+      "status": "unknown",
+      "definition": {
+        "planned_steps": 6000,
+        "completed_steps": 2,
+        "actual_end_time_s": 4.5e-07,
+        "completion": "diagnostic prefix"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "output_work_precision": {
+      "status": "unknown",
+      "definition": {
+        "shell_display_nodes": 359785,
+        "plastic_slots": 956346,
+        "frames": [
+          0,
+          2
+        ],
+        "format": "physical archive",
+        "complete_matched_output_contract": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    }
+  }
+}

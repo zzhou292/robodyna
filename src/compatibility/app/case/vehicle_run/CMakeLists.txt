@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaVehicleRun LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+include("Values.cmake")
+add_executable(robo_dyna_vehicle_run_values_check tests/LoopTest.cpp tests/OptionsTest.cpp tests/ExactStepsTest.cpp tests/TimingWindowTest.cpp)
+target_link_libraries(robo_dyna_vehicle_run_values_check PRIVATE robo_dyna_vehicle_run_values GTest::gtest_main)
+add_test(NAME vehicle_run_values COMMAND robo_dyna_vehicle_run_values_check)
+option(ROBO_DYNA_VEHICLE_RUN_LIVE "Build actual loaded run controller" OFF)
+if(ROBO_DYNA_VEHICLE_RUN_LIVE)
+  enable_language(CUDA)
+  find_package(Chrono REQUIRED CONFIG)
+  find_package(CUDAToolkit REQUIRED)
+  set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Qualified TL source checkout")
+  include("VehicleRun.cmake")
+  include("diagnostics/tests/Tests.cmake")
+endif()
+
+option(ROBO_DYNA_VEHICLE_RUN_REPORT_VALUES "Build host report/summary checks" OFF)
+if(ROBO_DYNA_VEHICLE_RUN_REPORT_VALUES OR ROBO_DYNA_VEHICLE_RUN_LIVE)
+  find_package(Chrono REQUIRED CONFIG)
+  find_package(CUDAToolkit REQUIRED)
+  include("RunReports.cmake")
+  add_executable(robo_dyna_vehicle_run_reports_check tests/ContactSummaryTest.cpp tests/SummaryTest.cpp
+    tests/ExactStepsArchiveTest.cpp tests/PhysicalSelectionTest.cpp tests/MechanicsSummaryTest.cpp tests/MechanicsDocumentTest.cpp
+    tests/SelfContactSummaryTest.cpp tests/SelfContactErrorGeometryTest.cpp
+    contact_diagnostics/tests/ValuesTest.cpp
+    ../vehicle_self_contact/tests/SelfContactStageErrorTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_run_reports_check PRIVATE robo_dyna_vehicle_run_reports GTest::gtest_main)
+  add_test(NAME vehicle_run_reports COMMAND robo_dyna_vehicle_run_reports_check)
+  include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_frames/PhysicalFrames.cmake")
+  add_executable(robo_dyna_vehicle_run_sampled_shell_check tests/SampledShellPlasticityTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_run_sampled_shell_check PRIVATE
+    robo_dyna_vehicle_run_reports robo_dyna_physical_frame_values GTest::gtest_main)
+  add_test(NAME vehicle_run_sampled_shell COMMAND robo_dyna_vehicle_run_sampled_shell_check)
+endif()
+
+option(ROBO_DYNA_VEHICLE_RUN_ORIGINAL "Build complete original forecast and short loaded-prefix gates" OFF)
+if(ROBO_DYNA_VEHICLE_RUN_ORIGINAL)
+  include("tests/Original.cmake")
+endif()

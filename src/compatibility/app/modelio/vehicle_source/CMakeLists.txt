@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaVehicleSource LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/VehicleSourcePlan.cmake")
+option(ROBO_DYNA_VEHICLE_SOURCE_TESTS "Build immutable source plan host checks" ON)
+if(ROBO_DYNA_VEHICLE_SOURCE_TESTS)
+  find_package(GTest REQUIRED)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_executable(robo_dyna_vehicle_source_check tests/VehicleSourcePlanTest.cpp tests/VehicleSourceRejectionTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_source_check PRIVATE robo_dyna_vehicle_source GTest::gtest_main)
+  target_compile_options(robo_dyna_vehicle_source_check PRIVATE -fno-fast-math -ffp-contract=off)
+  foreach(name CANONICAL SCOPE DECLARATIONS ELASTIC MIXED)
+    set(ROBO_DYNA_VEHICLE_${name} "" CACHE PATH "Explicit original vehicle ${name} fixture")
+    if(NOT EXISTS "${ROBO_DYNA_VEHICLE_${name}}")
+      message(FATAL_ERROR "Vehicle source checks require explicit ${name} fixture")
+    endif()
+  endforeach()
+  add_test(NAME vehicle_source_plan COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_vehicle_source_check>" "VehicleSourcePlan.*")
+  set_tests_properties(vehicle_source_plan PROPERTIES PROCESSORS 1 RUN_SERIAL TRUE TIMEOUT 90
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_ELASTIC=${ROBO_DYNA_VEHICLE_ELASTIC};ROBO_VEHICLE_MIXED=${ROBO_DYNA_VEHICLE_MIXED}")
+endif()

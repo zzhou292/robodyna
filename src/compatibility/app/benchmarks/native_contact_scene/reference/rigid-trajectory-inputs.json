@@ -1,0 +1,35 @@
+{
+  "schema": "robo_dyna.rigid_trajectory_inputs.v1",
+  "files": {
+    "sequence": {
+      "path": "crash-work/investigations/native-coupled-scene-engine-4/native-sequence.jsonl",
+      "bytes": 39072291,
+      "sha256": "98aa0c74ab48b288af631750a9e0e3d08ed77db7be4e09f2dc316e9e8e64f471"
+    },
+    "summary": {
+      "path": "crash-work/investigations/native-coupled-scene-engine-4/native-sequence-summary.json",
+      "bytes": 509,
+      "sha256": "f626cf897f02f95de1fca8c6af2b0c3610bcca52da150caf21efd1669748883e"
+    },
+    "coupled_summary": {
+      "path": "crash-work/investigations/native-coupled-scene-engine-4/native-coupled-engine-summary.json",
+      "bytes": 629,
+      "sha256": "656884baef43addf78339c0d2fcd86b6d8f1eeccfdb92570de7f97fbb2592e4d"
+    },
+    "engine_seal": {
+      "path": "crash-work/reports/native-coupled-scene-engine-qualified-4.json",
+      "bytes": 3417,
+      "sha256": "2eef29bc78e9aeda2f4e1d2063c682db6560eea7e4825b544b505928ea9a3dee"
+    },
+    "startup_seal": {
+      "path": "crash-work/reports/native-coupled-scene-startup-qualified-1.json",
+      "bytes": 4687,
+      "sha256": "adc087a02c9f2d3976356508a3d1bd71a84ea8ce4ea5b634e3631f0f9f952285"
+    },
+    "declaration": {
+      "path": "crash-work/investigations/native-coupled-scene-engine-4/declared-scene.json",
+      "bytes": 6428,
+      "sha256": "81da2ebacb17f4ad11cd991be83004ca095bfc0d00bef60e49bba27b81b9bf2d"
+    }
+  }
+}

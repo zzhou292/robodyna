@@ -1,0 +1,221 @@
+{
+  "schema": "robo_dyna.native_trajectory_inputs.v1",
+  "scope": "Qualification expected data for the declared single-interface single-worker moving scene; no production source values",
+  "files": {
+    "declaration": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/declared-scene.json",
+      "bytes": 5437,
+      "sha256": "37c28174902e5c3d5305d5e7bf0472d6e576f11b98123543328ea39f74c58dc6"
+    },
+    "startup_declaration": {
+      "path": "crash-work/investigations/native-moving-contact-scene-startup-1/declared-scene.json",
+      "bytes": 5437,
+      "sha256": "37c28174902e5c3d5305d5e7bf0472d6e576f11b98123543328ea39f74c58dc6"
+    },
+    "observation_declaration": {
+      "path": "crash-work/investigations/native-moving-contact-scene-observation-1/declared-scene.json",
+      "bytes": 5437,
+      "sha256": "37c28174902e5c3d5305d5e7bf0472d6e576f11b98123543328ea39f74c58dc6"
+    },
+    "scene": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/scene.json",
+      "bytes": 931,
+      "sha256": "894f50410116167c71fea08c3e984b753aae699f685b324cbfc4621963ef75e8"
+    },
+    "starter_deck": {
+      "path": "crash-work/investigations/native-moving-contact-scene-startup-1/contact_scene_0000.rad",
+      "bytes": 4791,
+      "sha256": "ecbfd8395b4c32508b617f01868d8d54c321e690584047c0357516ffa2990528"
+    },
+    "engine_deck": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/contact_scene_0001.rad",
+      "bytes": 354,
+      "sha256": "19b1e604a8599541d3584392078ce2817e2296d498402c94b48d3180f73fe3db"
+    },
+    "startup_summary": {
+      "path": "crash-work/investigations/native-moving-contact-scene-startup-1/native-startup-summary.json",
+      "bytes": 259,
+      "sha256": "6344eebceb3ff7a5161896421f2723b8cb7da69a9bacc82ab7f89133953d9add"
+    },
+    "sequence_summary": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/native-sequence-summary.json",
+      "bytes": 507,
+      "sha256": "b3c68d76926c36a066af5319db740278aabcc3e6956bf8248d72fa8c8b6a2825"
+    },
+    "observation_summary": {
+      "path": "crash-work/investigations/native-moving-contact-scene-observation-1/native-observation-summary.json",
+      "bytes": 429,
+      "sha256": "ee30bf0aa65ed10f11ec4a3b17ca2a60f4d6b01cf2892ce6e2caba65e7c60a45"
+    },
+    "startup": {
+      "path": "crash-work/investigations/native-moving-contact-scene-startup-1/native-startup.jsonl",
+      "bytes": 3197,
+      "sha256": "f1b56447ed57388a389290830debf69addf6d46c2b14677ed0aa684c14c613f1"
+    },
+    "observation": {
+      "path": "crash-work/investigations/native-moving-contact-scene-observation-1/native-observations.jsonl",
+      "bytes": 18483,
+      "sha256": "6eae8597e3d481d1724f548329b0077d1e13fe7904afca6076fce16c66885b1f"
+    },
+    "sequence": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/native-sequence.jsonl",
+      "bytes": 5093616,
+      "sha256": "1c31afba234c8064ff6b693f3258764a886640d547bc3a3f169563d306a2d591"
+    },
+    "startup_abi": {
+      "path": "crash-work/investigations/native-moving-contact-scene-startup-1/startup-abi.json",
+      "bytes": 6575,
+      "sha256": "f20b6ab47c9a06f57cf2d715073c5b12cb69d6ed64cddafa8b05fd80287275c2"
+    },
+    "observation_abi": {
+      "path": "crash-work/investigations/native-moving-contact-scene-observation-1/probe-abi.json",
+      "bytes": 16464,
+      "sha256": "f43de576c4e2d70fef80b89d9f8c5148da45ad0d8e1098315006e5d97c073997"
+    },
+    "sequence_abi": {
+      "path": "crash-work/investigations/native-moving-contact-scene-sequence-1/probe-abi.json",
+      "bytes": 16464,
+      "sha256": "f43de576c4e2d70fef80b89d9f8c5148da45ad0d8e1098315006e5d97c073997"
+    },
+    "native_source_01": {
+      "path": "crash-work/deps/openradioss-shell-execution-trace/starter/source/elements/initia/initia.F",
+      "bytes": 157433,
+      "sha256": "9fefea57c7913ae1d9c2cb89255822d6615074d88a609e28815921eb566000c0"
+    },
+    "native_source_02": {
+      "path": "crash-work/deps/openradioss-shell-execution-trace/starter/source/elements/initia/spmd_msin.F",
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8"
+    },
+    "native_source_03": {
+      "path": "crash-work/deps/openradioss-shell-execution-trace/starter/share/includes/com04_c.inc",
+      "bytes": 5015,
+      "sha256": "fc44553835fe7a2d224ded939f5b69f9bda7b7765b39c1c9a08ea0ca955a9349"
+    },
+    "native_source_04": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25optcd.F",
+      "bytes": 15064,
+      "sha256": "1a210e5206ec3bfa61bcd5178036d3e52ccb934587a4a7a06b795e567637b7c4"
+    },
+    "native_source_05": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25cor3.F",
+      "bytes": 37861,
+      "sha256": "054ab489b4528241f7a98b04c8e65cba05df73eb09cc2a0887bb5a23397043a2"
+    },
+    "native_source_06": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25dst3_3.F",
+      "bytes": 34913,
+      "sha256": "24edfd9896c87bdcbd637d0cec1ffb51ed555744b3338b7c03995f43ca940fa8"
+    },
+    "native_source_07": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25mainf.F",
+      "bytes": 55358,
+      "sha256": "020ee881f4f16c6fa1006f641e4017285f364902635a0b005193f987febfc945"
+    },
+    "native_source_08": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25comp_2.F",
+      "bytes": 14026,
+      "sha256": "49b4656d294120131e729e620004c3e34866e07d9d2f04f1de565fe90eeae1e3"
+    },
+    "native_source_09": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/intsort/i25main_tri.F",
+      "bytes": 25177,
+      "sha256": "357ebb95398b4b0cac6a4eaa4a0bf67c299b3663935efdfa2d1b99c916ed1c16"
+    },
+    "native_source_10": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/intsort/i25trivox.F",
+      "bytes": 23886,
+      "sha256": "642acb42c584fb441e7547f862a8ec64933405e6b3973af83b05333b6634fbb1"
+    },
+    "native_source_11": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25dst3_22.F",
+      "bytes": 102182,
+      "sha256": "d57eebd18dccb809b0036c76a6811bce8f36694fefc362061c4b33a8ac1a93ff"
+    },
+    "native_source_12": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25for3.F",
+      "bytes": 132646,
+      "sha256": "c601423a4ab8561230c0b86fec7cc277003cd8e9ba78cece91c11156bf2ca986"
+    },
+    "native_source_13": {
+      "path": "planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25slid.F",
+      "bytes": 48398,
+      "sha256": "1745175e22fdbff44f3f05dea095566dd5e7506aa568d9964e1a6ac7c2bec878"
+    },
+    "native_source_14": {
+      "path": "crash-work/worktrees/openradioss-gpu-integration/lib_utest/qualification/native/qeph/original/engine/share/includes/com01_c.inc",
+      "bytes": 3697,
+      "sha256": "fe4d4bab0f0138427f7a16dc6ad46bfecac2543423787ee11d63b0a0456090df"
+    },
+    "native_source_15": {
+      "path": "crash-work/worktrees/openradioss-gpu-integration/lib_utest/qualification/native/qeph/original/engine/share/includes/com04_c.inc",
+      "bytes": 4073,
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525"
+    },
+    "native_source_16": {
+      "path": "crash-work/worktrees/openradioss-gpu-integration/lib_utest/qualification/native/qeph/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496"
+    },
+    "native_source_17": {
+      "path": "crash-work/worktrees/openradioss-gpu-integration/lib_utest/qualification/native/qeph/original/engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045"
+    },
+    "native_source_18": {
+      "path": "crash-work/worktrees/openradioss-gpu-integration/lib_utest/qualification/native/qeph/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b"
+    },
+    "observer_sequence.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/sequence.py",
+      "bytes": 9470,
+      "sha256": "85609a0ad6ac322da5769521f5f1771b38003935b962a1f20159c44c3399648b"
+    },
+    "observer_row_history.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/row_history.py",
+      "bytes": 2861,
+      "sha256": "b353b0eb52c533c601b2ab5b3941e5ad92599e6050536ab62bc053cf68befc95"
+    },
+    "observer_clocks.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/clocks.py",
+      "bytes": 1040,
+      "sha256": "5ea2b52151ffb72e9ceb28476b778dd2edf959481bb457644a09bc0dcf3d6e00"
+    },
+    "observer_gdb_access.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/gdb_access.py",
+      "bytes": 1741,
+      "sha256": "4617c47d0d0fa8f81e4906eeb9a1df0c8e3afe05997630f983eb14fabe878761"
+    },
+    "observer_startup.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/startup.py",
+      "bytes": 4981,
+      "sha256": "9e22453975f395c3c9546fe5767141237ea14f67c494f638664d8f4b623029b1"
+    },
+    "observer_observe.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/observe.py",
+      "bytes": 9903,
+      "sha256": "150d4641590dd16160b0f1131b848bf730325b85a788a25757e1302dfc9b7e2a"
+    },
+    "observer_abi.py": {
+      "path": "crash-work/worktrees/native-moving-scene-dynamics/benchmarks/native_contact_scene/reference/abi.py",
+      "bytes": 2001,
+      "sha256": "6c7600b8720454dae71a3535beddec4b32d9e1d8eef6e0a29288c676c9427d6a"
+    },
+    "legacy_serializer": {
+      "path": "crash-work/worktrees/radioss-type25-runtime/lib_utest/qualification/radioss_type25_runtime/prepare_fixture.py",
+      "bytes": 10046,
+      "sha256": "832bdddcc0caab677e5e6bd0c03fd3134b5f01ae64d518643c254e608daef9e0"
+    },
+    "reference_reader": {
+      "path": "crash-work/worktrees/radioss-type25-runtime/lib_utest/qualification/radioss_type25_runtime/Reference.h",
+      "bytes": 3669,
+      "sha256": "ad0f08e6df367a733b6ae1aba57946868b27480396efc4ee85d9de8964a1e787"
+    },
+    "legacy_fixture_manifest": {
+      "path": "crash-work/worktrees/radioss-type25-runtime/lib_utest/qualification/radioss_type25_runtime/fixture/manifest.json",
+      "bytes": 2333,
+      "sha256": "6fab89e19d14e5a0126b1cff5c52f1c4a3d0368657dad68d9259d693ff8ea072"
+    }
+  }
+}

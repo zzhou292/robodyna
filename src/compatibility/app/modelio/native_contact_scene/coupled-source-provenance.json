@@ -1,0 +1,55 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Source controls and reference-deck initialization only; not observed resolved state",
+  "files": [
+    {
+      "upstream": "reader/source/dyna2rad/dyna2rad/_private/convertrigids.cxx",
+      "local": "crash-work/deps/openradioss-nodal-rigid-contract-1/reader/source/dyna2rad/dyna2rad/_private/convertrigids.cxx",
+      "bytes": 40976,
+      "sha256": "72183d17e253284c402fbdc2bc545cc6c4ba11bf8b0227b0f909004dd9595d26",
+      "git_blob": "fb2e1f03e9ca4ce099ab6cb1a6ba94ead341d5d0"
+    },
+    {
+      "upstream": "reader/source/dyna2rad/dyna2rad/_private/convertutils.cxx",
+      "local": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertutils.cxx",
+      "bytes": 43605,
+      "sha256": "140587d71a3672e178372242aa7843fd63ec136442b1283b8208c1d1ab6c7675",
+      "git_blob": "c276e8cebc945d2899927f5fa92ab8ccf47b3173"
+    },
+    {
+      "upstream": "starter/source/constraints/general/rbody/hm_read_rbody.F",
+      "local": "crash-work/deps/openradioss-nodal-rigid-contract-1/starter/source/constraints/general/rbody/hm_read_rbody.F",
+      "bytes": 39708,
+      "sha256": "b0df6ffdd9066c96a175b0c9dae0e6bbbc8ba45d3d74103d895dfa0875ba08e8",
+      "git_blob": "7d8de282354b084b66d2aba9a60846f88da10ba0"
+    },
+    {
+      "upstream": "starter/source/constraints/general/rbody/inirby.F",
+      "local": "crash-work/deps/openradioss-nodal-rigid-contract-1/starter/source/constraints/general/rbody/inirby.F",
+      "bytes": 61171,
+      "sha256": "ea24961874d4080536176d6117e1cd8518dfe1e8b785db3c43edc04815cfe440",
+      "git_blob": "1ab28f4cae34612be63c3dd4cd16d2c380062125"
+    },
+    {
+      "upstream": "hm_cfg_files/config/CFG/radioss2021/RBODY/rbody.cfg",
+      "local": "crash-work/deps/openradioss-nodal-rigid-contract-1/hm_cfg_files/config/CFG/radioss2021/RBODY/rbody.cfg",
+      "bytes": 12135,
+      "sha256": "21b1b87a518c34403a091f5e50b9c1f386fec30e65fc1734613429ee51aad20e",
+      "git_blob": "cfd221b2e258dd0fbbdc7cfc090f269ed54a3688"
+    },
+    {
+      "upstream": "hm_cfg_files/config/CFG/radioss2023/INTER/inter_type25.cfg",
+      "local": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/radioss2023/INTER/inter_type25.cfg",
+      "bytes": 33103,
+      "sha256": "86ca4388eefb37be406578b79cbfab0a538cb8f781359d7cbf121c60008f9d94",
+      "git_blob": "7e7fd5cf55d10b1a2f50e0306afc4318d9dace7d"
+    },
+    {
+      "upstream": "starter/source/interfaces/int25/hm_read_inter_type25.F",
+      "local": "crash-work/worktrees/type25-accepted-owner-mass/lib_utest/qualification/radioss_type25_search_startup/native/original/hm_read_inter_type25.F",
+      "bytes": 45794,
+      "sha256": "826b36999df24b969079a2350a2e8f79ae5bb88be5dec01084a4d0241b20178e",
+      "git_blob": "ddcf2bcc0cf6086243b80caa0b26375268c603f5"
+    }
+  ]
+}

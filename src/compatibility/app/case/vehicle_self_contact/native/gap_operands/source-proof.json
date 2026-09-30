@@ -1,0 +1,25 @@
+{
+  "scope": "Native whole retained-model gap operands; no final topology/roster/gap or runtime authority",
+  "files": {
+    "planning/openradioss-alignment-2026-09-24/V5_GAP_SOURCE_EVIDENCE.json": {
+      "bytes": 25980,
+      "sha256": "1b6b89e24e7898866df3ef6a332439b14161b721fa1e7a9652c1068cc5a178f6"
+    },
+    "planning/openradioss-alignment-2026-09-24/V5_GAP_OPERANDS_SOURCE_PINS.json": {
+      "bytes": 1700,
+      "sha256": "5e9762723c3c5f9f6d484818fc3bf6c01d990c6f7301c45a83a864cac22bdfa1"
+    },
+    "crash-work/reports/beam18-contact-area-qualified-1.json": {
+      "bytes": 4528,
+      "sha256": "08fc47d797cdb944e6c50cc2764e19bea93b80f01bcf4210ae0e8b4e86fa8641"
+    },
+    "crash-work/reports/vehicle-contact-material-view-qualified-1.json": {
+      "bytes": 6315,
+      "sha256": "2b6659ea8507f85a2547882fcae2ca211cef5b8843e2842ef6358361178e9ebf"
+    },
+    "crash-work/reports/type25-gap-source-qualified-1.json": {
+      "bytes": 3217,
+      "sha256": "24e1a06e76440211379d7fd955bba4f4e8741ac453d04f692903a139ec3e958a"
+    }
+  }
+}

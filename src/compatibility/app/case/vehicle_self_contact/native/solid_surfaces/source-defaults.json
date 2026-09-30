@@ -1,0 +1,322 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Source-only single-list PART/EXT1 default and copy certificate",
+  "files": [
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertsets.cxx",
+      "source_path": "reader/source/dyna2rad/dyna2rad/_private/convertsets.cxx",
+      "bytes": 73279,
+      "sha256": "3419fadaee410abb70d7588a321f584d7aefd4086118220637c52df0357645b2",
+      "git_blob": "44096ab002256028c374ae3509023d126f86a15c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontacts.cxx",
+      "source_path": "reader/source/dyna2rad/dyna2rad/_private/convertcontacts.cxx",
+      "bytes": 51410,
+      "sha256": "e2c1e1644d0678ce128ac84fbdf96c7d6800c9a291b0a7212b4a0db522be538a",
+      "git_blob": "c33307f2b25e81206516e95664b51c16b6cdda2f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertelements.cxx",
+      "source_path": "reader/source/dyna2rad/dyna2rad/_private/convertelements.cxx",
+      "bytes": 49115,
+      "sha256": "9f64dff040c0b0765f04d2bc068599fc8dceebd11f4e8b3be20a59b0cc993756",
+      "git_blob": "51145a745d0b7d167d4ddd50360933efff04092e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/convertsets.h",
+      "source_path": "reader/source/dyna2rad/dyna2rad/convertsets.h",
+      "bytes": 6612,
+      "sha256": "dfba6a2e67f468c1c4a5efc58bbf29bfc17352ae8d830caadc5d090291896d3e",
+      "git_blob": "7f6c82ca5dce24766a6f28df4b2e73bdf2527db9"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/solver_interface/source/cfg_reading/cpp_get_intv.cpp",
+      "source_path": "reader/source/solver_interface/source/cfg_reading/cpp_get_intv.cpp",
+      "bytes": 8864,
+      "sha256": "c55749898742064269c0551f36a14932d5bf7573f38a6c2f02c929713fe9b586",
+      "git_blob": "274864360f804e51a0cff6a218182a7a155801ed"
+    },
+    {
+      "path": "crash-work/deps/openradioss-search-defaults-3/contrl.F",
+      "source_path": "starter/source/starter/contrl.F",
+      "bytes": 88353,
+      "sha256": "087905ea2f6d143182c9254da8161c7b8e5cfdfefbea7496ed8c4b722240d5d2",
+      "git_blob": "87f43945d400978cf6525c77cfa606b69bed147b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/model/sets/hm_set.F",
+      "source_path": "starter/source/model/sets/hm_set.F",
+      "bytes": 45940,
+      "sha256": "bf3720a14eff060a8eb8b7ba97eb41b0e6d56e1bc83cee16f8ed0f852b50bf6c",
+      "git_blob": "e67b47c5a35b2104c7672d61fd51e1c9fb4987e7"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/model/sets/create_surface_from_element.F",
+      "source_path": "starter/source/model/sets/create_surface_from_element.F",
+      "bytes": 8446,
+      "sha256": "c9c28d6dada8ce2ee8135737c80dea28e2d81727ff993f95371ccc9fdb815fe1",
+      "git_blob": "641a6c31c5d4455f0e57d82293af86f404de55fc"
+    },
+    {
+      "path": "crash-work/deps/openradioss-tied-interface-1/original/starter/source/model/sets/insert_clause_in_set.F",
+      "source_path": "starter/source/model/sets/insert_clause_in_set.F",
+      "bytes": 39672,
+      "sha256": "0bb188797e10ba18448898678cabc485d9b030dec63a744b934b2d049af24240",
+      "git_blob": "f4aa141f08277bb0c3cb7d05d35d3978e629d997"
+    },
+    {
+      "path": "crash-work/deps/openradioss-set-defaults-1/starter/source/devtools/hm_reader/hm_get_int_array_index.F",
+      "source_path": "starter/source/devtools/hm_reader/hm_get_int_array_index.F",
+      "bytes": 18953,
+      "sha256": "1710138e5521dd7499598c66962925f7e3a48c17214aabd01a1e077397741e87",
+      "git_blob": "cb127a0da77dac8fc8f6d62d83a737909f326be4"
+    },
+    {
+      "path": "crash-work/deps/openradioss-set-defaults-1/hm_cfg_files/config/CFG/radioss2024/SETS/set_support.cfg",
+      "source_path": "hm_cfg_files/config/CFG/radioss2024/SETS/set_support.cfg",
+      "bytes": 26966,
+      "sha256": "bae4d69a2841e7b54729616937641371ebb28604b87cd19da37f1beecb728355",
+      "git_blob": "07feefa992d2314815ec97a468c85572d167ebde"
+    },
+    {
+      "path": "crash-work/deps/openradioss-set-defaults-1/starter/source/model/sets/create_set_clause.F",
+      "source_path": "starter/source/model/sets/create_set_clause.F",
+      "bytes": 19323,
+      "sha256": "69436f2338c7c4de5073a3ab4aebe65d960e9743208c9986c75dcd172d5d72bc",
+      "git_blob": "022497fd29d29d7fd5d52b2b304ed2c83734c3e0"
+    },
+    {
+      "path": "crash-work/deps/openradioss-set-defaults-1/starter/source/model/sets/set_operator.F",
+      "source_path": "starter/source/model/sets/set_operator.F",
+      "bytes": 3676,
+      "sha256": "338acfe559d5c00012fd927e3984e077a4e83dd1f50d62f2944b19fc0e4622e0",
+      "git_blob": "95a9dfabd5f63b5639d4b3ecd13ceb4f54e519e3"
+    },
+    {
+      "path": "crash-work/deps/openradioss-set-defaults-1/starter/source/model/sets/set_init.F",
+      "source_path": "starter/source/model/sets/set_init.F",
+      "bytes": 6836,
+      "sha256": "ef86f870063ec30f2c446663cf20f65748bfcf9d911b9c40f912c8305ec81a8f",
+      "git_blob": "836f12e77edd9a65dc2f370946339e96439f6ead"
+    }
+  ],
+  "converter_admesh_absence": [
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertutils.cxx",
+      "bytes": 43605,
+      "sha256": "140587d71a3672e178372242aa7843fd63ec136442b1283b8208c1d1ab6c7675"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertparts.cxx",
+      "bytes": 6539,
+      "sha256": "7a2dd769d915e75f399fa7238d3b4097548fcfad803cbeb7e12eaee6ef462a7c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertperturbations.cxx",
+      "bytes": 5113,
+      "sha256": "3e4e7cbb9b64adfed29d18b6b893dcafa2fc16502080fabf57faefe9eccb833a"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertnodes.cxx",
+      "bytes": 2006,
+      "sha256": "05e1b66c0d74c517c2ebaed53c20983c4befb521bf302961d15aecc710b9e23b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefinehexspotweldassembly.cxx",
+      "bytes": 16079,
+      "sha256": "7acd3dadff740eb945ec202cbc36c3d72dbf463d77590d565211a55055ddd40c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcards.cxx",
+      "bytes": 56728,
+      "sha256": "3a66aa62264a33b2e3b7005e180f64fcd85f7a79d20605e578d4c59106956c1c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontrolvols.cxx",
+      "bytes": 173924,
+      "sha256": "71c6b6ed561faa92b05da653ae9e09d50e695470d78955cf6d9220eca1afebf1"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertrigids.cxx",
+      "bytes": 40976,
+      "sha256": "72183d17e253284c402fbdc2bc545cc6c4ba11bf8b0227b0f909004dd9595d26"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertsets.cxx",
+      "bytes": 73279,
+      "sha256": "3419fadaee410abb70d7588a321f584d7aefd4086118220637c52df0357645b2"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcontacts.cxx",
+      "bytes": 51410,
+      "sha256": "e2c1e1644d0678ce128ac84fbdf96c7d6800c9a291b0a7212b4a0db522be538a"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedspotwelds.cxx",
+      "bytes": 6881,
+      "sha256": "640522d9c50289d18bf6ef9add866fd2c9e88179c007cca58dcf4c01ec6b47c8"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertbcs.cxx",
+      "bytes": 41876,
+      "sha256": "526366c0fbd03e745d2b1f187994a5c4c54ef6db6eaf3b3112ed977de533deb1"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertfrictions.cxx",
+      "bytes": 7087,
+      "sha256": "ddaa3b499901dc2dc54a198ccf18f69a8cacab09d0223e1b005530f22d86a7f7"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertrwalls.cxx",
+      "bytes": 27932,
+      "sha256": "ca466a778e0566f039a5078e032e9ccceec02a435ece047bd0c2fd6a708bb345"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertelements.cxx",
+      "bytes": 49115,
+      "sha256": "9f64dff040c0b0765f04d2bc068599fc8dceebd11f4e8b3be20a59b0cc993756"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/dyna2rad.cxx",
+      "bytes": 29033,
+      "sha256": "0c24f869a3f808b35bf146742ee23104d6cbac3c906249ae0b954cdbcce1da1e"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedjoints.cxx",
+      "bytes": 122115,
+      "sha256": "970cd203a3b75dedff654b8e954fc7078ddd9f3b5570e750768a87bf60709fb8"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcurves.cxx",
+      "bytes": 15938,
+      "sha256": "f3a2a36b8368627141b054f95cde8f3b5c06f6f6db8d4167dafb145fd535c32f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertboxes.cxx",
+      "bytes": 6342,
+      "sha256": "59bc1f405c4f5a02bd9f6afa7c44a68c0a63be95662156368ee877b0ffe59b02"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdampings.cxx",
+      "bytes": 17503,
+      "sha256": "b15756c74c472b927e40b63cabd8b7ed7394b526e68362b288e3f3d14d34862c"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefineelementdeath.cxx",
+      "bytes": 15468,
+      "sha256": "a4890ad74349a1501d5b4f81e2b1e6d85916ebde9cc5bc1ab760005518f40c8f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertparameters.cxx",
+      "bytes": 6249,
+      "sha256": "5c96256d2f3505b62a6f147037dd81994e5af4c189cfd249ea122e7d82c25f7d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertincludes.cxx",
+      "bytes": 8481,
+      "sha256": "2bcc697887769ad3bfc8e0178baeee02c67f5c946a326706ae357b3b1f08d3d4"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/converttimehistory.cxx",
+      "bytes": 23193,
+      "sha256": "06f5c606f98e71f47de63888e86b2abcda4156a79f2b5c26ebe567c792562531"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertcrosssections.cxx",
+      "bytes": 19496,
+      "sha256": "e0b80011f4f8aacf919cfe967f56de2767c98a8fe85dd51bdc461e651c4c8530"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/unitsystemdefaults.cxx",
+      "bytes": 7839,
+      "sha256": "612380d550ed47c5f0971c7a857f08033baa6e42e5a350d91059e4a209095577"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainednode.cxx",
+      "bytes": 6265,
+      "sha256": "a8c4ef991a59f4586f55509ab457355b27a7dad508def7da636b3796e60974a2"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialstresses.cxx",
+      "bytes": 44541,
+      "sha256": "d057ad6ea43487bf0d687e48385c3af3ce1a0ebbee81543ee77e2acf24b5be6d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertconstrainedinterpolations.cxx",
+      "bytes": 8139,
+      "sha256": "21a5216f3e8e6404280126d3dbe4b12f1355a12e50809a30595df04ece1ae407"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertelementmasses.cxx",
+      "bytes": 7848,
+      "sha256": "6918406ee3a57f239488fd75c84a05160aa4ab696911308d65a1286bf07eb2fe"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx",
+      "bytes": 579108,
+      "sha256": "a2d54503fb38039f88b76d26950853ef39a0207dc368cc1f9deb390ced177b0f"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialstrains.cxx",
+      "bytes": 37687,
+      "sha256": "593d38693fbd2ca0279d74ab33694f036aef0531d407df376a9fe58b1a453102"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinitialaxialforces.cxx",
+      "bytes": 6602,
+      "sha256": "592657d5fabd8b2ab5c00a43eb1d0dc0be412e6df293a6d279f02013d5ce5941"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "bytes": 199888,
+      "sha256": "87ce68f7e6d9d9186bb2ed5bbc74d1ca97226b8ebaffd48408e2becaae46852d"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/propertymaterialrelation.cxx",
+      "bytes": 5509,
+      "sha256": "20c9201243dfa21876e733a685643914ade943e0070349764fe11628fd94a712"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertnodetransforms.cxx",
+      "bytes": 2860,
+      "sha256": "d6c353319b2fb0dbc13f0379076339c3f80e6478c48c547a8ad568e6d353ef30"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertinivels.cxx",
+      "bytes": 61462,
+      "sha256": "b30d4a59dc98c7dd528201619f033280be8082157350951ff58d74260d5cb1f3"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertloads.cxx",
+      "bytes": 58502,
+      "sha256": "2509fa94f6ea6e17e37e2aa9ca1615de6283ee675204c191ec45c4a2d85fbaab"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertsystems.cxx",
+      "bytes": 22208,
+      "sha256": "01e743f0999b83feb2c16ac17da59665f0f54e25f991215e10127f980b780e4b"
+    },
+    {
+      "path": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/convertdefinetransform.cxx",
+      "bytes": 24627,
+      "sha256": "14b405e25dd5501c9cdfcd0646248eee6562fce26b2b11fbfb8758bd32bb6a67"
+    }
+  ],
+  "actual_chain": {
+    "root": 1000002,
+    "single_child": 5000002,
+    "selected_parts": 861,
+    "evidence_blocks": 3
+  },
+  "members": {
+    "combine.key": {
+      "bytes": 10577,
+      "sha256": "3e0137cd8c569a71a4281cc307549dc2f20772bc67eac0658ae73682dbe242a2"
+    },
+    "set-yaris-coarse-v1l.key": {
+      "bytes": 44991,
+      "sha256": "b93d5370a899f6f70299ea61cd55142c1f8b765b8ab7f9ac979d078486028929"
+    }
+  }
+}

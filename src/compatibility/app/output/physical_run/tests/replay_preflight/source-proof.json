@@ -1,0 +1,136 @@
+{
+  "schema": "robo_dyna.replay_preflight_source_proof.v1",
+  "baseline": "1ea39473365a3853c346d80df10c6efd9317e706",
+  "reversals": [
+    {
+      "path": "case/vehicle_native_contact/run/Prepare.cpp",
+      "baseline_sha256": "7737e6b2f39fddf4720b7a1203b2dcd71de270ca67aa44f648a74ebb0dfde5fa",
+      "candidate_sha256": "b7729dccaa24c1c6e87edad7cecc9da390d4fb6b038e6a28d21856c5da18ee37",
+      "edits": [
+        {
+          "candidate": "#include \"State.h\"\n#include \"output/physical_run/Replay.h\"\n#include \"output/full_shell/FixedStepHorizon.h\"\n#include <algorithm>\nnamespace crash::cases::vehicle_native_contact {\n",
+          "baseline": "#include \"State.h\"\n#include \"output/full_shell/FixedStepHorizon.h\"\n#include <algorithm>\nnamespace crash::cases::vehicle_native_contact {\n"
+        },
+        {
+          "candidate": "    f.mapping_bytes = next->mapping.payload_bytes();\n    f.preparation_peak_host_bytes = preparation;\n    f.capture = output::physical_frames::PhysicalAcceptedFrames::Preflight(next->mapping, context, next->config.capture);\n    const auto request = output::physical_run::MakeEnvironmentRequest(context, horizon.intervals,\n        horizon.requested_duration_s, next->config.samples, next->config.archive_bytes);\n    f.archive = output::physical_run::RunArchive::PreflightWithEnvironment(next->mapping, context,\n        request, next->profile, next->config.archive);\n    // Admit the same normal reader before Execute can create a physical owner.\n    // Its existing outer 512MiB reservation and all reader checks stay unchanged.\n    (void)output::physical_run::Replay::Preflight(context,\n        {context.identity(), next->profile, request.archive, context.point_layout_sha256(), false, true});\n    const auto owner_phase = Add(base.peak_host_bytes, Add(f.mapping_bytes, controller));\n    // Capture's published bound already contains the same mapping payload.\n    // Archive and capture peaks are conservatively allowed to coexist.\n",
+          "baseline": "    f.mapping_bytes = next->mapping.payload_bytes();\n    f.preparation_peak_host_bytes = preparation;\n    f.capture = output::physical_frames::PhysicalAcceptedFrames::Preflight(next->mapping, context, next->config.capture);\n    f.archive = output::physical_run::RunArchive::PreflightWithEnvironment(next->mapping, context,\n        output::physical_run::MakeEnvironmentRequest(context, horizon.intervals, horizon.requested_duration_s,\n            next->config.samples, next->config.archive_bytes), next->profile, next->config.archive);\n    const auto owner_phase = Add(base.peak_host_bytes, Add(f.mapping_bytes, controller));\n    // Capture's published bound already contains the same mapping payload.\n    // Archive and capture peaks are conservatively allowed to coexist.\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/IntervalIO.h",
+      "baseline_sha256": "58e0bec709f9185304cee5770011947d20cec54cd2f5cfd122f855565f2f65f0",
+      "candidate_sha256": "f6f62f03492a85f5bb77dd8a079ed3d6da1a1c679f361784895a3785f8c72c3a",
+      "edits": [
+        {
+          "candidate": "// declared chunk/planned horizon and observation column shape, even for a short\n// accepted prefix. It excludes retained source/frame replay storage.\nstd::size_t IntervalReadStagingBytes(Profile,std::uint64_t planned,std::size_t file_cap);\n// Shares the reader's exact workspace admission; callers may reuse a staging\n// byte count already computed by IntervalReadStagingBytes.\nvoid CheckIntervalReadWorkspace(std::size_t staging_bytes,std::size_t host_cap);\nSequence ReadIntervals(const std::filesystem::path&,const records::Context&,Profile,\n    std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>&,\n    std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>&);\n",
+          "baseline": "// declared chunk/planned horizon and observation column shape, even for a short\n// accepted prefix. It excludes retained source/frame replay storage.\nstd::size_t IntervalReadStagingBytes(Profile,std::uint64_t planned,std::size_t file_cap);\nSequence ReadIntervals(const std::filesystem::path&,const records::Context&,Profile,\n    std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>&,\n    std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>&);\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/IntervalReader.cpp",
+      "baseline_sha256": "a3bbe3b166bcb9b8c679a2c72735a785f2a73272b025ad5df2cbd11576c6e61e",
+      "candidate_sha256": "73e64c2f8c19a0ebe872fbcb2eab3ce865727fa8c7b74d50562d81c9c90d9148",
+      "edits": [
+        {
+          "candidate": "    return StagingBytes(profile,interval::PlanChunks(\n        planned,file_cap,kArtifactMaximumTotalCap,ExtraIntervalBytes(profile)));\n}\nvoid CheckIntervalReadWorkspace(std::size_t staging_bytes,std::size_t host_cap) {\n    Require(host_cap && host_cap<=256u<<20 && staging_bytes<=host_cap,\n        \"Physical interval read staging exceeds host cap\");\n}\nSequence ReadIntervals(const std::filesystem::path& root,const records::Context& c,Profile p,\n    std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>& segments,\n    std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>& visit) {\n",
+          "baseline": "    return StagingBytes(profile,interval::PlanChunks(\n        planned,file_cap,kArtifactMaximumTotalCap,ExtraIntervalBytes(profile)));\n}\nSequence ReadIntervals(const std::filesystem::path& root,const records::Context& c,Profile p,\n    std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>& segments,\n    std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>& visit) {\n"
+        },
+        {
+          "candidate": "        \"Incomplete physical interval segment coverage\");\n    const auto cols=RealFields(p).size();\n    const auto ints=IntegerFields(p).size();\n    // Keep cap rejection before staging arithmetic, after the original segment\n    // coverage check. Planning and staging are each computed only once here.\n    Require(host_cap && host_cap<=256u<<20,\"Physical interval read staging exceeds host cap\");\n    CheckIntervalReadWorkspace(StagingBytes(p,plan),host_cap);\n    const arrays::Limits limits{file_cap,UINT32_MAX,64};\n    Sequence sequence;\n    for(std::size_t k=0;k<segments.size();++k) {\n",
+          "baseline": "        \"Incomplete physical interval segment coverage\");\n    const auto cols=RealFields(p).size();\n    const auto ints=IntegerFields(p).size();\n    Require(host_cap && host_cap<=256u<<20 && StagingBytes(p,plan)<=host_cap,\n        \"Physical interval read staging exceeds host cap\");\n    const arrays::Limits limits{file_cap,UINT32_MAX,64};\n    Sequence sequence;\n    for(std::size_t k=0;k<segments.size();++k) {\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/PhysicalRun.cmake",
+      "baseline_sha256": "6f29a54b55c227ffcc66787a5539f3e4bdf9734de76703858fd3947edacba06f",
+      "candidate_sha256": "7f1320f3fa366f86514f676acde43992137311672edf4912a55187e1a26d4e9c",
+      "edits": [
+        {
+          "candidate": "  \"${CMAKE_CURRENT_LIST_DIR}/WallFields.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/WallRead.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/EnvironmentFields.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/EnvironmentRead.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/RunPrepare.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/RunWrite.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/ReplayBudget.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/ReplayPreflight.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/Replay.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/ReplayRecords.cpp\")\ntarget_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive robo_dyna_wall_composition)\ntarget_include_directories(robo_dyna_physical_run_records PRIVATE \"${ROBO_DYNA_TL_ROOT}\")\ntarget_compile_features(robo_dyna_physical_run_records PUBLIC cxx_std_17)\n",
+          "baseline": "  \"${CMAKE_CURRENT_LIST_DIR}/WallFields.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/WallRead.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/EnvironmentFields.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/EnvironmentRead.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/RunPrepare.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/RunWrite.cpp\"\n  \"${CMAKE_CURRENT_LIST_DIR}/ReplayBudget.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/Replay.cpp\" \"${CMAKE_CURRENT_LIST_DIR}/ReplayRecords.cpp\")\ntarget_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive robo_dyna_wall_composition)\ntarget_include_directories(robo_dyna_physical_run_records PRIVATE \"${ROBO_DYNA_TL_ROOT}\")\ntarget_compile_features(robo_dyna_physical_run_records PUBLIC cxx_std_17)\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/Replay.cpp",
+      "baseline_sha256": "ea61b53a3fc65782a12dc53b2fafcf3300397ef96cfb5a7cb2ee1064cbafd87d",
+      "candidate_sha256": "c452236101094c4ed677c6fce80e551424f422efa4a41031fbf4afec24fbe11a",
+      "edits": [
+        {
+          "candidate": "};\nReplay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,\n    const records::source::SourceInputs& source,const std::string& digest,ReplayLimits limits) {\n    replay_detail::CheckLimits(limits);\n    const auto manifest=ReadManifest(array_json::Parse(ReadFile(root,file,MetadataCap),MetadataCap));\n    Require(manifest.identity.source_mapping_sha256==digest,\"Physical run mapping differs from caller authority\");\n    auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));\n",
+          "baseline": "};\nReplay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,\n    const records::source::SourceInputs& source,const std::string& digest,ReplayLimits limits) {\n    Require(limits.host_bytes && limits.host_bytes<=512u<<20 &&\n        limits.source.host_bytes<=limits.host_bytes && (128u<<20)<=limits.host_bytes-limits.source.host_bytes,\n        \"Physical replay source and record workspace exceed host cap\");\n    const auto manifest=ReadManifest(array_json::Parse(ReadFile(root,file,MetadataCap),MetadataCap));\n    Require(manifest.identity.source_mapping_sha256==digest,\"Physical run mapping differs from caller authority\");\n    auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/Replay.h",
+      "baseline_sha256": "d26e99c4cdd1c286f445b440e7b76386b3f98315ced4d9e11534e85634ba14d3",
+      "candidate_sha256": "6e960da48a9d8177d106e83ca2d89a0270da654d7dd180652594c5df462620dc",
+      "edits": [
+        {
+          "candidate": "// before this immutable result is returned; seek revalidates payload hashes.\nclass Replay {\n  public:\n    // Allocation admission only: no files, source authority or accepted state.\n    // The context/configuration must be the writer's actual prepared values.\n    // Does not replace Open's source, record, inventory or content validation.\n    static std::size_t Preflight(const records::Context&,const Configuration&,ReplayLimits={});\n    static Replay Open(const std::filesystem::path&,const records::RecordFile& expected_manifest,\n        const records::source::SourceInputs&,const std::string& expected_mapping_sha256,ReplayLimits={});\n    const records::source::PreparedSourceMapping& mapping() const noexcept;\n",
+          "baseline": "// before this immutable result is returned; seek revalidates payload hashes.\nclass Replay {\n  public:\n    static Replay Open(const std::filesystem::path&,const records::RecordFile& expected_manifest,\n        const records::source::SourceInputs&,const std::string& expected_mapping_sha256,ReplayLimits={});\n    const records::source::PreparedSourceMapping& mapping() const noexcept;\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/ReplayBudget.cpp",
+      "baseline_sha256": "f46a9cc2fd3a51ae2a3278b2f6e10537c856ebdd273bf9639c48ecd5dca521f8",
+      "candidate_sha256": "9a33d30b0ae18edd30d68894445387cfc55346d69fde4a7d17ebf601cb4c7e54",
+      "edits": [
+        {
+          "candidate": "#include \"lib_utils/BoundedArena.h\"\n#include <algorithm>\nnamespace crash::output::physical_run::replay_detail {\nvoid CheckLimits(ReplayLimits limits) {\n    Require(limits.host_bytes && limits.host_bytes<=512u<<20 &&\n        limits.source.host_bytes<=limits.host_bytes && (128u<<20)<=limits.host_bytes-limits.source.host_bytes,\n        \"Physical replay source and record workspace exceed host cap\");\n}\nMemory Budget(const records::Context& context,const Configuration& config,\n              std::size_t source_bytes,std::size_t host_cap) {\n    Require(host_cap && host_cap<=512u<<20 && source_bytes<=host_cap &&\n",
+          "baseline": "#include \"lib_utils/BoundedArena.h\"\n#include <algorithm>\nnamespace crash::output::physical_run::replay_detail {\nMemory Budget(const records::Context& context,const Configuration& config,\n              std::size_t source_bytes,std::size_t host_cap) {\n    Require(host_cap && host_cap<=512u<<20 && source_bytes<=host_cap &&\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/ReplayBudget.h",
+      "baseline_sha256": "6c658592ddb7b0dffb70eb249f6f00de5237a2081a77ea61f7f7380b523379ef",
+      "candidate_sha256": "14374f46c6eea9a926ab95db51fd65d25210bb1121cb6e33106e69352b0cd6af",
+      "edits": [
+        {
+          "candidate": "#pragma once\n#include \"Replay.h\"\nnamespace crash::output::physical_run::replay_detail {\n// Same early envelope used by Open before any I/O and by allocation preflight.\nvoid CheckLimits(ReplayLimits);\nstruct Memory {\n    std::size_t interval_workspace=0,frame_workspace=0,environment_workspace=0;\n    std::size_t sequential_workspace=0,peak_host_bytes=0;\n",
+          "baseline": "#pragma once\n#include \"Replay.h\"\nnamespace crash::output::physical_run::replay_detail {\nstruct Memory {\n    std::size_t interval_workspace=0,frame_workspace=0,environment_workspace=0;\n    std::size_t sequential_workspace=0,peak_host_bytes=0;\n"
+        }
+      ]
+    },
+    {
+      "path": "output/physical_run/CMakeLists.txt",
+      "baseline_sha256": "4b31ad4e3286f84579f0ff694f084269cb1ccd4c9038b3e7d2a06ebc8f1ed371",
+      "candidate_sha256": "cd1c429e12a189f9c5e0101856388f12e163277bb8f429e90e1095c3ec75b85e",
+      "edits": [
+        {
+          "candidate": "  message(FATAL_ERROR \"Physical run needs the explicit qualified TL root\")\nendif()\ninclude(PhysicalRun.cmake)\nadd_executable(robo_dyna_physical_run_check tests/ValuesTest.cpp tests/ReplayBudgetTest.cpp tests/ReplayPreflightTest.cpp tests/RecordsTest.cpp tests/FailureTest.cpp tests/WallTest.cpp tests/ViewerInputTest.cpp\n  tests/SelfContactRecordsTest.cpp tests/NativeContactRecordsTest.cpp tests/NativeGroupRecordsTest.cpp tests/EnvironmentRecordsTest.cpp tests/EnvironmentMeshTest.cpp)\ntarget_link_libraries(robo_dyna_physical_run_check PRIVATE robo_dyna_physical_run_records GTest::gtest_main)\ntarget_compile_options(robo_dyna_physical_run_check PRIVATE -fno-fast-math -ffp-contract=off)\n",
+          "baseline": "  message(FATAL_ERROR \"Physical run needs the explicit qualified TL root\")\nendif()\ninclude(PhysicalRun.cmake)\nadd_executable(robo_dyna_physical_run_check tests/ValuesTest.cpp tests/ReplayBudgetTest.cpp tests/RecordsTest.cpp tests/FailureTest.cpp tests/WallTest.cpp tests/ViewerInputTest.cpp\n  tests/SelfContactRecordsTest.cpp tests/NativeContactRecordsTest.cpp tests/NativeGroupRecordsTest.cpp tests/EnvironmentRecordsTest.cpp tests/EnvironmentMeshTest.cpp)\ntarget_link_libraries(robo_dyna_physical_run_check PRIVATE robo_dyna_physical_run_records GTest::gtest_main)\ntarget_compile_options(robo_dyna_physical_run_check PRIVATE -fno-fast-math -ffp-contract=off)\n"
+        },
+        {
+          "candidate": "if(ROBO_DYNA_PHYSICAL_RUN_ORIGINAL)\n  include(Original.cmake)\nendif()\n\nadd_test(NAME physical_replay_preflight COMMAND robo_dyna_physical_run_check\n  --gtest_filter=PhysicalReplayPreflight.*:PhysicalReplayBudget.*)\nset_tests_properties(physical_replay_preflight PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)\nfind_package(Python3 REQUIRED COMPONENTS Interpreter)\nadd_test(NAME physical_replay_preflight_source COMMAND \"${Python3_EXECUTABLE}\" -B\n  \"${CMAKE_CURRENT_SOURCE_DIR}/tests/replay_preflight/verify_sources.py\")\nset_tests_properties(physical_replay_preflight_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)\n",
+          "baseline": "if(ROBO_DYNA_PHYSICAL_RUN_ORIGINAL)\n  include(Original.cmake)\nendif()\n"
+        }
+      ]
+    }
+  ],
+  "unchanged": {
+    "case/vehicle_native_contact/Run.h": "5b275bde4782ebe6be323691d860b0c649bd5c8586d595b7440b64ea64713b90",
+    "case/vehicle_native_contact/run/Execute.cpp": "a1e23dbd1721dbae44acfc4230411a82646d7f912218b493fdbfa44c3659a0ae",
+    "case/vehicle_native_contact/run/Session.cpp": "febc30a0a20ca8d5817523e5fa6dccc51703ac6c16711ddb6958e497a83ccbd2",
+    "case/vehicle_native_contact/actual/RunActualTest.cpp": "31ee9150260306ef9bf8e06ec832a86d2f63f4e072732aff67b6682e3bcb66a2",
+    "case/vehicle_run/Loop.cpp": "5093778beb9fbdce3b52d4e64ceb3c7b239831e317163087eac92fef1bbeaddc",
+    "output/physical_run/ReplayRecords.cpp": "bc505874d8e0324c4646f28982e6d5c59f0a389f73b3dd66262a80045aae7b7f",
+    "output/physical_run/IndexChecks.cpp": "279d43e9d646869a42efa96a1bcdd59bbc0499ae589f88f6a9ba15245d19b709",
+    "output/physical_run/Configuration.cpp": "e37ea3d1f94cbb194dc67704dce09e5bb1383cb55afdf7f0abb505f00de1c630",
+    "output/physical_run/RunPrepare.cpp": "52696b4b92028121bb0ccbb21fa1866a53873342776633aea9af7076a109e80b",
+    "output/physical_run/EnvironmentPrepare.cpp": "155799b61a90fa379e29e24404eb93bc0c65f14597aab8aec2dd51ec604d7262",
+    "output/full_shell/IntervalChunkPlan.cpp": "e63da359972d613e9959c19172483b29b2e7a9a8001166eb88805eb74f8002e8",
+    "output/full_shell/FullShellVisualizationSchema.cpp": "23d1dc3186033da76897d20de7d4819b5ab6c02005da362fc4beb4439719c1f0",
+    "output/physical_run/tests/ReplayBudgetTest.cpp": "e699be33872b5e4f08a491c9d9585ad893a4e2a66c25204fd031e585700c42ac",
+    "output/physical_run/Sequence.cpp": "1cba957429984fb762e692ba87d70565d7fe352ac8d42adb60ab4f80803e7183"
+  },
+  "new_production": {
+    "output/physical_run/ReplayPreflight.cpp": "1a65456977d7f72c951fb2118b7e943ac5f22363f133f65034a28b56d65a2d86"
+  }
+}

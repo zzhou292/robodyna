@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+add_library(robo_dyna_source_part_material STATIC "${CMAKE_CURRENT_LIST_DIR}/SourcePartMaterial.cpp")
+target_include_directories(robo_dyna_source_part_material PUBLIC "${CRASH_TL_FEA_SOURCE_DIR}")
+target_include_directories(robo_dyna_source_part_material PRIVATE "${CRASH_TL_FEA_SOURCE_DIR}/lib_src")
+target_link_libraries(robo_dyna_source_part_material PUBLIC robo_dyna_artifact_io)
+target_compile_features(robo_dyna_source_part_material PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_source_part_material PRIVATE -fno-fast-math -ffp-contract=off)

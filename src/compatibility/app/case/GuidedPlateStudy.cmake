@@ -1,0 +1,28 @@
+add_library(robo_dyna_guided_plate_study STATIC
+  GuidedPlateStudy.cpp GuidedPlateStudyRecorder.cpp GuidedPlateStudyComparison.cpp)
+target_link_libraries(robo_dyna_guided_plate_study PUBLIC robo_dyna_guided_plate_case PRIVATE
+  robo_dyna_shell_patch_fields robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_study PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_library(robo_dyna_guided_plate_study_io STATIC GuidedPlateStudyWrite.cpp GuidedPlateStudyRead.cpp)
+target_link_libraries(robo_dyna_guided_plate_study_io PUBLIC robo_dyna_guided_plate_study PRIVATE robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_study_io PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_executable(robo_dyna_guided_plate_study_check guided_plate_study_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_study_check PRIVATE robo_dyna_guided_plate_study GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_study_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_study COMMAND robo_dyna_guided_plate_study_check)
+set_tests_properties(guided_plate_study PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
+
+add_executable(robo_dyna_guided_plate_study_io_check guided_plate_study_io_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_study_io_check PRIVATE robo_dyna_guided_plate_study_io
+  robo_dyna_artifact_io GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_study_io_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_study_io COMMAND robo_dyna_guided_plate_study_io_check)
+set_tests_properties(guided_plate_study_io PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
+
+add_executable(robo_dyna_guided_plate_wall_study_check guided_plate_wall_study_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_wall_study_check PRIVATE robo_dyna_guided_plate_study GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_wall_study_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_wall_study COMMAND robo_dyna_guided_plate_wall_study_check)
+set_tests_properties(guided_plate_wall_study PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)

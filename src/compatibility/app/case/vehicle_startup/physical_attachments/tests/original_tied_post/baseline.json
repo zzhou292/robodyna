@@ -1,0 +1,76 @@
+{
+  "commit": "2776bee3e4e7f5662c5f00ea522d70b33f9998b8",
+  "files": [
+    {
+      "path": "case/vehicle_run/source/OriginalYaris.cpp",
+      "fixture": "frozen/OriginalYaris.cpp",
+      "bytes": 5049,
+      "sha256": "af5246e035c93512675901c785e61330537c306afc9a40f969bd217b82da7021"
+    },
+    {
+      "path": "case/vehicle_startup/physical_attachments/tests/PreparePost.h",
+      "fixture": "frozen/PreparePost.h",
+      "bytes": 1431,
+      "sha256": "78408193e9a5c9e8cd50c61f287ee244d0942ae319349e2c4ac76d820bad8ded"
+    },
+    {
+      "path": "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.cmake",
+      "fixture": "frozen/VehiclePhysicalAttachments.cmake",
+      "bytes": 613,
+      "sha256": "5f88db1379e8d3f63ad0f2eab9b1857e901f705193b2ada306250dde8588717d"
+    },
+    {
+      "path": "case/vehicle_startup/TiedSearchPostKinChk.cmake",
+      "fixture": "frozen/TiedSearchPostKinChk.cmake",
+      "bytes": 481,
+      "sha256": "c5c60d13ea09ef4b075ad45c60513898ed0022b8781dc6d716903fbcd4df5e8f"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "case/vehicle_startup/TiedSearchAssessment.cpp",
+      "bytes": 2975,
+      "sha256": "9e99f4711bbef34c5d98106382276276d9cf8631b9e007a4e4ed822f1e48f140"
+    },
+    {
+      "path": "case/vehicle_startup/TiedSearchFinalized.cpp",
+      "bytes": 2936,
+      "sha256": "9b67ae298dd0a9bee068602a268b79af2d25ee42d63f601617b494a335558f8f"
+    },
+    {
+      "path": "case/vehicle_startup/TiedSearchClassification.cpp",
+      "bytes": 2150,
+      "sha256": "a2f78e63c75390b1196b57210728ef6a13ccf955ef3402d3735fd63a779e2045"
+    },
+    {
+      "path": "case/vehicle_startup/TiedSearchPostKinChk.cpp",
+      "bytes": 2708,
+      "sha256": "3585cccbb3876110a930998010a79dc54e72b1aaf274f867fe0a55de88d4854e"
+    },
+    {
+      "path": "modelio/tied_shell/TiedClassificationContext.cpp",
+      "bytes": 4096,
+      "sha256": "997d43a53ad255d7b5f506d8d44c7743f6d0d2b28673e539f3cf369b2e9e0518"
+    },
+    {
+      "path": "case/vehicle_run/source/OriginalSources.cpp",
+      "bytes": 1450,
+      "sha256": "cfaaf17d535afc295b0c109941e5a3ff0761340b23dda848d967337577633a4b"
+    },
+    {
+      "path": "case/vehicle_startup/tied_classification/tests/ValueTest.cpp",
+      "bytes": 3435,
+      "sha256": "ee419ec29b7c7442e3f98303b6ad4add6f8112f3830e8a884f64a9026f071197"
+    },
+    {
+      "path": "case/vehicle_startup/tied_post_kinchk/tests/ValueTest.cpp",
+      "bytes": 3225,
+      "sha256": "a0780593c74d3ae3ca58b2f051dba5efd3bbf9bc820168474c80697528910b05"
+    },
+    {
+      "path": "case/vehicle_startup/physical_attachments/tests/RejectionTest.cpp",
+      "bytes": 1487,
+      "sha256": "08b7e23a5d5eaec0bc80a806a6322f4d8c590f2e70ade32479f59a749a865e8e"
+    }
+  ]
+}

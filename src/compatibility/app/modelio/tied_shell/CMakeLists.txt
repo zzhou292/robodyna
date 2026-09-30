@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaTiedShellDeclaration LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/TiedShellDeclaration.cmake")
+option(ROBO_DYNA_TIED_DECLARATION_TESTS "Build source-only tied declaration checks" ON)
+if(ROBO_DYNA_TIED_DECLARATION_TESTS)
+  find_package(GTest REQUIRED)
+  add_executable(robo_dyna_tied_declaration_check
+    tests/TinyFixture.cpp tests/DeclarationValueTest.cpp tests/ActualSourceTest.cpp)
+  target_link_libraries(robo_dyna_tied_declaration_check PRIVATE robo_dyna_tied_shell_declaration GTest::gtest_main)
+  target_compile_options(robo_dyna_tied_declaration_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME tied_declaration_values COMMAND robo_dyna_tied_declaration_check --gtest_filter=TiedDeclarationValues.*)
+  set(ROBO_DYNA_TIED_CANONICAL "" CACHE PATH "Explicit original canonical directory")
+  set(ROBO_DYNA_TIED_SCOPE "" CACHE FILEPATH "Explicit original scope10")
+  if(ROBO_DYNA_TIED_CANONICAL AND ROBO_DYNA_TIED_SCOPE)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME tied_declaration_actual COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+      "${ROBO_DYNA_TIED_CANONICAL}" "${ROBO_DYNA_TIED_SCOPE}"
+      "$<TARGET_FILE:robo_dyna_tied_declaration_check>" "TiedDeclarationActual.*")
+    set_tests_properties(tied_declaration_actual PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+  endif()
+endif()

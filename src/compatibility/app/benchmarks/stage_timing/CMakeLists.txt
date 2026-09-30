@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaStageTiming LANGUAGES CXX)
+include("${CMAKE_CURRENT_LIST_DIR}/StageTiming.cmake")
+enable_testing()
+find_package(GTest REQUIRED)
+add_executable(robo_dyna_stage_timing_check tests/StageTimerTest.cpp tests/StepTimingReportTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../../case/source_assembly_wall/StepTimingReport.cpp")
+target_link_libraries(robo_dyna_stage_timing_check PRIVATE robo_dyna_stage_timing GTest::gtest_main)
+target_compile_options(robo_dyna_stage_timing_check PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME stage_timing_host COMMAND robo_dyna_stage_timing_check)
+set_tests_properties(stage_timing_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)

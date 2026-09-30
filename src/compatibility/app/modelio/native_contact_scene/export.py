@@ -1,0 +1,64 @@
+"""Create-only source and native reference deck export; does not run a solver."""
+import argparse
+from dataclasses import asdict
+import hashlib
+import json
+from pathlib import Path
+
+from viewer.file_integrity import sha256_file
+from .definition import load
+from .mesh import build
+from .native import starter, engine
+from .coupling import reference_rigid_body
+from .tied import reference_tied_interface
+
+
+def export(source, destination):
+    source = Path(source).resolve()
+    with source.open('rb') as input_file:
+        source_bytes = input_file.read((128 << 10)+1)
+    if len(source_bytes) > 128 << 10:
+        raise ValueError('Scene declaration exceeds128KiB')
+    scene = load(source)
+    mesh = build(scene)
+    decks = {'contact_scene_0000.rad':starter(scene,mesh), 'contact_scene_0001.rad':engine(scene)}
+    # Evaluate/validate every representation before creating the destination.
+    exported_scene = asdict(scene)
+    exported_scene.pop('definition_version')
+    if scene.definition_version < 3:
+        exported_scene.pop('coupling')
+    if scene.definition_version == 1:
+        exported_scene.pop('contact_surface')  # Exact historical v1 representation.
+    record = {'schema':f'robo_dyna.native_contact_scene_export.v{scene.definition_version}',
+              'scope':'declared source only; runtime controls and physical trajectory unqualified',
+              'source_sha256':hashlib.sha256(source_bytes).hexdigest(), 'scene':exported_scene, 'mesh':asdict(mesh)}
+    if scene.definition_version == 3:
+        record['reference_rigid_body'] = reference_rigid_body(scene, mesh)
+    if scene.definition_version == 4:
+        record['reference_tied_interface'] = reference_tied_interface(scene, mesh)
+    if source.read_bytes() != source_bytes:
+        raise ValueError('Scene declaration changed during export')
+    destination = Path(destination)
+    destination.mkdir(parents=False,exist_ok=False)
+    (destination/'scene.json').write_bytes(source_bytes)
+    for name, value in decks.items():
+        with (destination/name).open('x',encoding='ascii') as output:
+            output.write(value)
+    record['files'] = [dict(path=name,bytes=(destination/name).stat().st_size,
+                            sha256=sha256_file(destination/name)) for name in ('scene.json',*decks)]
+    with (destination/'declared-scene.json').open('x',encoding='utf-8') as output:
+        json.dump(record,output,indent=2,allow_nan=False)
+        output.write('\n')
+    return record
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source',type=Path)
+    parser.add_argument('destination',type=Path)
+    args = parser.parse_args()
+    record = export(args.source,args.destination)
+    print(f"Exported {len(record['mesh']['nodes'])} physical nodes; numerical admission remains pending")
+
+if __name__ == '__main__':
+    main()

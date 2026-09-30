@@ -1,0 +1,20 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+      SUBROUTINE RD_COATED_ORDER(COUNT,NODES,ROLES,RESULT)
+     . BIND(C)
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      INTEGER(C_INT),VALUE::COUNT
+      INTEGER(C_INT),INTENT(IN)::NODES(4,*),ROLES(*)
+      INTEGER(C_INT),INTENT(OUT)::RESULT(*)
+      INTEGER IRECTMP(6,256),IRECTMP_SAV(6,256),
+     . INDEX(512),WORK(70000),NRTM,MODE,I,J,K,IMIN,IJ
+      IF(COUNT<1.OR.COUNT>256)ERROR STOP 'Surface order cap'
+      NRTM=COUNT
+      IRECTMP=0
+      IRECTMP(1:4,1:COUNT)=NODES(:,1:COUNT)
+      IRECTMP(5,1:COUNT)=ROLES(1:COUNT)
+! Literal supplied directed connectivity and single-surface membership zero.
+! Original I25SURFI key normalization/sort follows unchanged.
+@SURFACE_ORDER@
+      RESULT(1:COUNT)=INDEX(1:COUNT)-1
+      END

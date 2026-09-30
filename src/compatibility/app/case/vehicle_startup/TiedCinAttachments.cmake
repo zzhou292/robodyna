@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchPostKinChk.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/TiedCinAttachmentValues.cmake")
+add_library(robo_dyna_tied_cin_attachments STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedCinAttachments.cpp")
+target_link_libraries(robo_dyna_tied_cin_attachments PUBLIC robo_dyna_tied_search_post_kinchk robo_dyna_tied_cin_values)
+target_compile_features(robo_dyna_tied_cin_attachments PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_tied_cin_attachments PRIVATE -fno-fast-math -ffp-contract=off)

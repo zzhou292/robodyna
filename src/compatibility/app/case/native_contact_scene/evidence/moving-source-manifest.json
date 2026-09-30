@@ -1,0 +1,9 @@
+{
+  "schema": "robo_dyna.native_moving_source_evidence.v1",
+  "sha256": "6eae8597e3d481d1724f548329b0077d1e13fe7904afca6076fce16c66885b1f",
+  "bytes": 18483,
+  "file": "moving-source-observation.jsonl",
+  "source_commit": "6c91e5da2fcb22774bb63585fa6bd94f599a0823",
+  "receipt": "crash-work/reports/native-moving-contact-scene-observation-1.json",
+  "scope": "Independent native topology and immutable source operands only; dynamic normal cache at cycle301 is not Starter state"
+}

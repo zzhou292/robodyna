@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/AcceptedSurface.cmake")
+if(NOT TARGET tl_explicit_nodal_state)
+  message(FATAL_ERROR "Accepted nodal output requires the composing build's TL nodal owner target")
+endif()
+add_library(crash_nodal_mesh_output STATIC "${CMAKE_CURRENT_LIST_DIR}/NodalMeshOutput.cpp")
+target_link_libraries(crash_nodal_mesh_output PUBLIC crash_accepted_surface tl_explicit_nodal_state)

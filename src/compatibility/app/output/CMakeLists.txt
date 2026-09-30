@@ -1,0 +1,117 @@
+include("${CMAKE_CURRENT_LIST_DIR}/ArtifactIO.cmake")
+
+include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWall.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWallArtifacts.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../modelio/source_assembly/Reader.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/source_assembly/SourceAssemblyWallForecast.cmake")
+add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIndex.cpp AcceptedReplayMesh.cpp
+  AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp AcceptedReplaySourcePart.cpp
+  AcceptedReplaySourcePartWall.cpp AcceptedReplaySourcePartWallContact.cpp
+  AcceptedReplaySourcePartWallIntervals.cpp AcceptedReplayPlacedWall.cpp AcceptedReplaySourcePartPlastic.cpp
+  AcceptedReplaySourceAssembly.cpp AcceptedReplaySourceAssemblyDeclarations.cpp
+  AcceptedReplaySourceAssemblyGroups.cpp AcceptedReplaySourceAssemblyWall.cpp AcceptedReplaySourceAssemblyIntervals.cpp
+  AcceptedReplaySourceAssemblySections.cpp AcceptedReplaySourceAssemblyFields.cpp
+  AcceptedReplaySourceAssemblyKineticChannels.cpp AcceptedReplaySourceAssemblyForceStage.cpp
+  AcceptedReplaySourceAssemblyKinetic.cpp AcceptedReplaySourceAssemblyDiagnostics.cpp AcceptedReplaySourceAssemblyContact.cpp)
+target_sources(robo_dyna_accepted_replay PRIVATE AcceptedReplaySourceAssemblyRotation.cpp
+  AcceptedReplaySourceAssemblyConnectorPolicy.cpp AcceptedReplaySourceAssemblyConnectors.cpp
+  AcceptedReplaySourceAssemblyConnectorElements.cpp AcceptedReplaySourceAssemblyConnectorFrames.cpp)
+target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts robo_dyna_source_assembly robo_dyna_source_assembly_wall_forecast)
+target_compile_options(robo_dyna_accepted_replay PRIVATE -fno-fast-math -ffp-contract=off)
+if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  find_package(GTest REQUIRED)
+  add_executable(robo_dyna_accepted_replay_source_assembly_check accepted_replay_source_assembly_check.cpp
+    accepted_replay_source_assembly_force_stage_check.cpp accepted_replay_source_assembly_rotation_check.cpp
+    accepted_replay_source_assembly_connector_check.cpp accepted_replay_source_assembly_connector_fixture.cpp)
+  target_link_libraries(robo_dyna_accepted_replay_source_assembly_check PRIVATE
+    robo_dyna_accepted_replay robo_dyna_source_assembly GTest::gtest_main)
+  set(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY "" CACHE FILEPATH "Authenticated seven-part source for connector replay contracts")
+  set(ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE "" CACHE PATH "Completed actual seven-part connector archive")
+  set(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE "" CACHE PATH "Completed actual grouped source-assembly wall archive")
+  set(ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE "" CACHE PATH "Completed assembly archive with force-stage observations enabled")
+  if(ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE AND NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE}/manifest.json")
+    message(FATAL_ERROR "Declared force-stage replay fixture requires a completed manifest")
+  endif()
+  if(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE AND NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE}/manifest.json")
+    message(FATAL_ERROR "Declared assembly replay fixture requires a completed manifest")
+  endif()
+  if(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE OR ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE)
+    set(assembly_replay_filter "*-AcceptedReplayConnectors.*:AcceptedReplaySevenPart.*")
+    if(NOT ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE)
+      set(assembly_replay_filter "AcceptedReplayForceStage.*")
+    endif()
+    add_test(NAME accepted_replay_source_assembly COMMAND robo_dyna_accepted_replay_source_assembly_check
+      "--gtest_filter=${assembly_replay_filter}")
+    set_tests_properties(accepted_replay_source_assembly PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE};ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE};ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY=${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}")
+  endif()
+  if(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY OR ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE)
+    if(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY AND NOT EXISTS "${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY}")
+      message(FATAL_ERROR "Declared seven-part connector source fixture is absent")
+    endif()
+    if(ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE AND NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}/manifest.json")
+      message(FATAL_ERROR "Declared seven-part replay requires a completed manifest")
+    endif()
+    add_test(NAME accepted_replay_source_assembly_connectors COMMAND robo_dyna_accepted_replay_source_assembly_check
+      "--gtest_filter=AcceptedReplayConnectors.*:AcceptedReplaySevenPart.*")
+    set_tests_properties(accepted_replay_source_assembly_connectors PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY=${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}")
+  endif()
+  add_executable(robo_dyna_accepted_replay_source_part_check accepted_replay_source_part_check.cpp)
+  target_link_libraries(robo_dyna_accepted_replay_source_part_check PRIVATE
+    robo_dyna_accepted_replay GTest::gtest_main)
+  set(ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE "" CACHE PATH "Completed original source-part elastic archive")
+  if(ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE)
+    add_test(NAME accepted_replay_source_part COMMAND robo_dyna_accepted_replay_source_part_check)
+    set_tests_properties(accepted_replay_source_part PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE}")
+  endif()
+  add_executable(robo_dyna_csv_ledger_segments_check csv_ledger_segments_check.cpp)
+  target_link_libraries(robo_dyna_csv_ledger_segments_check PRIVATE robo_dyna_artifact_io GTest::gtest_main)
+  add_test(NAME csv_ledger_segments COMMAND robo_dyna_csv_ledger_segments_check)
+  set_tests_properties(csv_ledger_segments PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
+  add_executable(robo_dyna_accepted_replay_check accepted_replay_check.cpp)
+  target_link_libraries(robo_dyna_accepted_replay_check PRIVATE robo_dyna_accepted_replay GTest::gtest_main)
+  add_test(NAME accepted_replay COMMAND robo_dyna_accepted_replay_check
+    --gtest_filter=-AcceptedReplay.ExplicitRetainedBundlePassesTheSameValidation)
+  set_tests_properties(accepted_replay PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+  set(CRASH_CANONICAL_WALL "" CACHE FILEPATH "Prepared canonical Yaris wall manifest")
+  if(CRASH_CANONICAL_WALL)
+    if(NOT EXISTS "${CRASH_CANONICAL_WALL}")
+      message(FATAL_ERROR "Declared canonical wall for guided replay checks must exist")
+    endif()
+    add_executable(robo_dyna_accepted_replay_guided_check accepted_replay_guided_check.cpp)
+    target_link_libraries(robo_dyna_accepted_replay_guided_check PRIVATE
+      robo_dyna_accepted_replay robo_dyna_canonical_wall_artifacts GTest::gtest_main)
+    add_test(NAME accepted_replay_guided COMMAND robo_dyna_accepted_replay_guided_check
+      --gtest_filter=-AcceptedReplayGuided.ExplicitRetainedGuidedBundleUsesTheSameStrictValidation)
+    set_tests_properties(accepted_replay_guided PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_CANONICAL_WALL=${CRASH_CANONICAL_WALL}")
+  endif()
+  foreach(kind NORMAL COUPON)
+    set(ROBO_DYNA_REPLAY_FIXTURE_${kind} "" CACHE PATH "Optional retained ${kind} accepted-result bundle")
+    if(ROBO_DYNA_REPLAY_FIXTURE_${kind})
+      if(NOT EXISTS "${ROBO_DYNA_REPLAY_FIXTURE_${kind}}/manifest.json")
+        message(FATAL_ERROR "Declared ${kind} replay fixture must have a completed manifest")
+      endif()
+      add_test(NAME accepted_replay_${kind} COMMAND robo_dyna_accepted_replay_check
+        --gtest_filter=AcceptedReplay.ExplicitRetainedBundlePassesTheSameValidation)
+      set_tests_properties(accepted_replay_${kind} PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+        ENVIRONMENT "ROBO_DYNA_REPLAY_FIXTURE=${ROBO_DYNA_REPLAY_FIXTURE_${kind}}")
+    endif()
+  endforeach()
+  set(ROBO_DYNA_GUIDED_REPLAY_FIXTURE "" CACHE PATH "Optional retained guided accepted-result bundle")
+  if(ROBO_DYNA_GUIDED_REPLAY_FIXTURE)
+    if(NOT TARGET robo_dyna_accepted_replay_guided_check OR
+       NOT EXISTS "${ROBO_DYNA_GUIDED_REPLAY_FIXTURE}/manifest.json")
+      message(FATAL_ERROR "Declared guided replay fixture requires the canonical wall and completed manifest")
+    endif()
+    add_test(NAME accepted_replay_guided_retained COMMAND robo_dyna_accepted_replay_guided_check
+      --gtest_filter=AcceptedReplayGuided.ExplicitRetainedGuidedBundleUsesTheSameStrictValidation)
+    set_tests_properties(accepted_replay_guided_retained PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_GUIDED_REPLAY_FIXTURE=${ROBO_DYNA_GUIDED_REPLAY_FIXTURE}")
+  endif()
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/SourcePartWallComparison.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/SourcePartPlasticComparison.cmake")

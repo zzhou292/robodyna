@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboNativeSceneSource LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+include("${CMAKE_CURRENT_LIST_DIR}/MaterialBridge.cmake")
+add_executable(native_scene_material_test MaterialBridgeTest.cpp)
+target_link_libraries(native_scene_material_test PRIVATE robo_dyna_native_scene_material GTest::gtest_main)
+target_compile_options(native_scene_material_test PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME native_scene_material COMMAND native_scene_material_test)
+add_test(NAME native_scene_export COMMAND "${Python3_EXECUTABLE}" -B -m unittest
+  benchmarks.native_contact_scene.test_scene benchmarks.native_contact_scene.reference.test_abi modelio.native_contact_scene.test_surface
+  modelio.native_contact_scene.test_coupling modelio.native_contact_scene.test_tied)
+add_test(NAME native_scene_json_compat COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+  -s benchmarks/accepted_payloads -p "test_*.py")
+set_tests_properties(native_scene_material native_scene_export native_scene_json_compat PROPERTIES
+  WORKING_DIRECTORY "${robo_scene_root}" RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+option(ROBO_DYNA_NATIVE_SCENE_READER "Build authenticated declared-source reader tests" OFF)
+if(ROBO_DYNA_NATIVE_SCENE_READER)
+  find_package(Chrono REQUIRED CONFIG)
+  include("${CMAKE_CURRENT_LIST_DIR}/DeclaredSource.cmake")
+  set(ROBO_DYNA_NATIVE_SCENE_EXPORT "" CACHE FILEPATH "Pinned capped scene declared-scene.json export")
+  if(NOT EXISTS "${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+    message(FATAL_ERROR "Scene reader qualification requires the explicit source export")
+  endif()
+  add_executable(native_scene_source_test DeclaredSourceTest.cpp)
+  target_link_libraries(native_scene_source_test PRIVATE robo_dyna_native_scene_declared GTest::gtest_main)
+  add_test(NAME native_scene_source COMMAND native_scene_source_test)
+  set_tests_properties(native_scene_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
+    ENVIRONMENT "ROBO_DYNA_NATIVE_SCENE_EXPORT=${ROBO_DYNA_NATIVE_SCENE_EXPORT}")
+endif()
+
+if(ROBO_DYNA_NATIVE_SCENE_READER)
+  set(ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT "" CACHE FILEPATH "Explicit version2 all-shell source fixture")
+  if(ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT)
+    if(NOT EXISTS "${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+      message(FATAL_ERROR "Moving declaration fixture is absent")
+    endif()
+    add_executable(native_scene_moving_source_test MovingSourceTest.cpp)
+    target_link_libraries(native_scene_moving_source_test PRIVATE robo_dyna_native_scene_declared GTest::gtest_main)
+    add_test(NAME native_scene_moving_source COMMAND native_scene_moving_source_test)
+    set_tests_properties(native_scene_moving_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
+      ENVIRONMENT "ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT=${ROBO_DYNA_NATIVE_MOVING_SCENE_EXPORT}")
+  endif()
+endif()

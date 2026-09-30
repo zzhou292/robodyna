@@ -1,0 +1,190 @@
+cmake_minimum_required(VERSION 3.18)
+project(RoboDyna LANGUAGES NONE)
+option(ROBO_DYNA_ENABLE_FULL_SHELL_RECORD_CHECKS "Build bounded binary full-shell visualization record checks without CUDA" OFF)
+option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS "Build authenticated assembly declaration and TL startup-input checks without dynamics" OFF)
+option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS "Build complete source assembly shell/material/rigid startup without dynamics" OFF)
+option(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE
+  "Register full canonical V5 self-contact runtime acceptance tests" OFF)
+find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
+enable_testing()
+add_test(NAME yaris_wall_import
+  COMMAND "${Python3_EXECUTABLE}" -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_wall.py" -v)
+set_tests_properties(yaris_wall_import PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+option(CRASH_ENABLE_CHRONO_CHECK "Build the external Chrono wall integration check" OFF)
+option(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK "Build the TL host-view to Chrono accepted-surface check" OFF)
+option(CRASH_ENABLE_TL_CHRONO_CHECK "Build the CUDA shell qualification to Chrono accepted-state test" OFF)
+option(CRASH_ENABLE_CHRONO_REISSNER_CHECK "Build the prescribed-configuration Reissner reference tests (requires FEA-enabled Chrono core)" OFF)
+option(CRASH_ENABLE_TL_NODAL_CHECK "Build the force-driven TL physical-node state to Chrono output tests" OFF)
+option(CRASH_ENABLE_NORMAL_IMPACT "Build the bounded CUDA normal-impact case and required integration tests" OFF)
+option(CRASH_ENABLE_CANONICAL_WALL_CHECK "Build the full-precision canonical fixed-wall reader tests" OFF)
+option(CRASH_ENABLE_REISSNER_FRAME_CHECK "Build focused tests of the owning Chrono Reissner frame source without a full FEA rebuild" OFF)
+option(CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK "Build all-direction force tests requiring the opt-in consistent-frame Chrono reference core" OFF)
+option(CRASH_ENABLE_TL_REISSNER_FRAME_CHECK "Build CUDA frame operation checks against the owning Chrono reference" OFF)
+option(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS "Build complete prescribed CUDA Q4 force, setup and rotation checks" OFF)
+option(ROBO_DYNA_ENABLE_ELASTIC_COUPON "Build the bounded force-driven elastic CUDA coupon" OFF)
+option(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS "Build guided plate reference, admission and coupled CUDA checks" OFF)
+option(ROBO_DYNA_ENABLE_THIN_SHELL_SCREEN "Build the host thin-shell formulation screen and reference utility checks" OFF)
+if(ROBO_DYNA_ENABLE_THIN_SHELL_SCREEN AND NOT ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  message(FATAL_ERROR "The thin-shell screen requires the existing elastic coupon reference foundations")
+endif()
+if(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS AND NOT ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  message(FATAL_ERROR "Guided plate checks currently require the existing elastic coupon foundations")
+endif()
+option(ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS "Build bounded resident prescribed Q4 batch qualification and timing" OFF)
+option(ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS "Build isolated ANS-row parity and batch measurements" OFF)
+option(ROBO_DYNA_ENABLE_GAUSS_CONTRACTION_CHECKS "Build isolated Gauss contraction parity and measurements" OFF)
+if(ROBO_DYNA_ENABLE_GAUSS_CONTRACTION_CHECKS AND NOT ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS)
+  message(FATAL_ERROR "Gauss contraction checks require the preceding ANS-row qualification targets")
+endif()
+option(ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS "Qualify actual Chrono surface quadrature and export rules" OFF)
+option(ROBO_DYNA_ENABLE_COUPON_PROFILE "Build the bounded elastic coupon profiling executable" OFF)
+option(ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS "Build Q4 midsurface mapping checks against actual Chrono FEA interpolation" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY "Build the optional accepted-result Chrono VSG viewer" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY_CHECKS "Build the bounded accepted-result reader tests without CUDA/VSG" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS "Build the accepted replay scene tests without CUDA/VSG" OFF)
+option(ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS "Build host contact-geometry checks on the authenticated source part" OFF)
+option(ROBO_DYNA_SOURCE_T3_STARTUP "Qualify native T3 startup on the six authenticated source triangles" OFF)
+option(ROBO_DYNA_SOURCE_T3_RATES "Qualify native T3 rates on the six authenticated source triangles" OFF)
+option(ROBO_DYNA_SOURCE_T3_FORCE "Qualify native T3 force/history on the six authenticated source triangles" OFF)
+option(ROBO_DYNA_SOURCE_QEPH_GEOMETRY "Qualify QEPH startup and rates on the 88 authenticated source quads" OFF)
+option(ROBO_DYNA_SOURCE_SHELL_COLLECTION "Bind all original source shells with native structural mass" OFF)
+option(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC "Run and archive the original mixed-shell elastic part experiment" OFF)
+option(ROBO_DYNA_ENABLE_PLASTIC_SHELL_CHECKS "Build tabulated plastic material and layered shell qualification" OFF)
+if(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC AND
+   (NOT ROBO_DYNA_SOURCE_SHELL_COLLECTION OR NOT CRASH_ENABLE_TL_NODAL_CHECK))
+  message(FATAL_ERROR "Source-part elastic dynamics requires source shell collection and TL nodal output")
+endif()
+if((ROBO_DYNA_SOURCE_T3_STARTUP OR ROBO_DYNA_SOURCE_T3_RATES OR ROBO_DYNA_SOURCE_T3_FORCE) AND NOT ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  message(FATAL_ERROR "Native source T3 qualification requires ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS")
+endif()
+if(ROBO_DYNA_SOURCE_QEPH_GEOMETRY AND NOT ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  message(FATAL_ERROR "Source QEPH geometry requires ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS")
+endif()
+if(ROBO_DYNA_SOURCE_SHELL_COLLECTION AND NOT ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  message(FATAL_ERROR "Source shell collection requires ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS")
+endif()
+if(ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  enable_language(CXX)
+  # Request optional components on the first discovery, before Chrono's
+  # exported targets are reused by its application subdirectories.
+  if(ROBO_DYNA_ENABLE_REPLAY)
+    find_package(Chrono REQUIRED CONFIG COMPONENTS VSG)
+  else()
+    find_package(Chrono REQUIRED CONFIG)
+  endif()
+endif()
+if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK OR CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR CRASH_ENABLE_REISSNER_FRAME_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK OR CRASH_ENABLE_TL_REISSNER_FRAME_CHECK OR ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS OR ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS OR ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS OR ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC)
+    enable_language(CUDA)
+  endif()
+  add_subdirectory(chrono)
+endif()
+if(ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS)
+  enable_language(CXX)
+  if(ROBO_DYNA_ENABLE_REPLAY)
+    find_package(Chrono REQUIRED CONFIG COMPONENTS VSG)
+  else()
+    find_package(Chrono REQUIRED CONFIG)
+  endif()
+endif()
+if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS OR ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  add_subdirectory(output)
+endif()
+if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  add_subdirectory(case)
+endif()
+if(ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS)
+  add_subdirectory(viewer)
+endif()
+if(ROBO_DYNA_ENABLE_COUPON_PROFILE)
+  add_subdirectory(benchmarks)
+endif()
+if(ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
+  add_subdirectory(qualification/source_contact)
+endif()
+if(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC)
+  add_subdirectory(case/source_part_elastic)
+endif()
+if(ROBO_DYNA_ENABLE_PLASTIC_SHELL_CHECKS)
+  add_subdirectory(qualification/plastic_shell)
+endif()
+
+add_test(NAME vehicle_geometry_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_vehicle_geometry.py" -v)
+set_tests_properties(vehicle_geometry_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+add_test(NAME source_part_declarations_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_part_declarations.py" -v)
+set_tests_properties(source_part_declarations_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+add_test(NAME canonical_part_geometry_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_canonical_part_geometry.py" -v)
+set_tests_properties(canonical_part_geometry_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+add_test(NAME source_assembly_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_assembly.py" -v)
+set_tests_properties(source_assembly_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+foreach(source_gate IN ITEMS law44_declarations full_shell_scope assembly_law44)
+  add_test(NAME ${source_gate}_unit
+    COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_${source_gate}.py" -v)
+  set_tests_properties(${source_gate}_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+endforeach()
+
+set(ROBO_DYNA_SURFACE_QUADRATURE "" CACHE FILEPATH "Qualified offline 4/8/16 shell-surface quadrature artifact")
+if(ROBO_DYNA_SURFACE_QUADRATURE)
+  if(NOT EXISTS "${ROBO_DYNA_SURFACE_QUADRATURE}")
+    message(FATAL_ERROR "Declared shell-surface quadrature artifact must exist")
+  endif()
+  add_test(NAME shell_surface_mass_unit
+    COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_shell_surface_mass.py"
+      --quadrature "${ROBO_DYNA_SURFACE_QUADRATURE}" -v)
+  set_tests_properties(shell_surface_mass_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+  add_test(NAME source_attachments_unit
+    COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_source_attachments.py"
+      --quadrature "${ROBO_DYNA_SURFACE_QUADRATURE}" -v)
+  set_tests_properties(source_attachments_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+endif()
+
+# Full-model data stays outside git. Supplying its prepared path registers an
+# explicit integration gate; missing assets fail rather than produce a skip.
+set(CRASH_YARIS_VEHICLE_ASSETS "" CACHE PATH "Prepared SHA-pinned Yaris vehicle geometry")
+if(CRASH_YARIS_VEHICLE_ASSETS)
+  add_test(NAME yaris_vehicle_artifacts
+    COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_vehicle_model.py" -v)
+  set_tests_properties(yaris_vehicle_artifacts PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
+    ENVIRONMENT "YARIS_VEHICLE_ASSET_DIR=${CRASH_YARIS_VEHICLE_ASSETS}")
+  add_test(NAME yaris_assembly_inventory
+    COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_assembly_model.py" -v)
+  set_tests_properties(yaris_assembly_inventory PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
+    ENVIRONMENT "YARIS_VEHICLE_ASSET_DIR=${CRASH_YARIS_VEHICLE_ASSETS}")
+endif()
+
+if(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  add_subdirectory(modelio/source_assembly)
+endif()
+
+if(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  add_subdirectory(case/source_assembly)
+endif()
+
+if(ROBO_DYNA_ENABLE_FULL_SHELL_RECORD_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  add_subdirectory(output/full_shell)
+endif()

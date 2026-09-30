@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaSourceAssemblyStartup LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyBindings.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../shell_collection/ShellCollectionContactGeometry.cmake")
+find_package(GTest REQUIRED)
+set(ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY "" CACHE FILEPATH "Frozen authenticated six-part Yaris inventory")
+if(NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+  message(FATAL_ERROR "Assembly startup checks require the explicit frozen inventory")
+endif()
+add_executable(robo_dyna_source_assembly_bindings_check
+  tests/SourceAssemblyBindingTest.cpp tests/SourceAssemblyRigidLedgerTest.cpp
+  tests/SourceAssemblyContactGeometryTest.cpp)
+target_link_libraries(robo_dyna_source_assembly_bindings_check PRIVATE robo_dyna_source_assembly_bindings
+  robo_dyna_shell_collection_contact_geometry GTest::gtest_main)
+target_compile_options(robo_dyna_source_assembly_bindings_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME source_assembly_bindings COMMAND robo_dyna_source_assembly_bindings_check)
+set_tests_properties(source_assembly_bindings PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+  ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallChecks.cmake")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Frozen authenticated seven-part Yaris inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "The explicit bracket inventory is missing")
+  endif()
+  include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyInitialKinetic.cmake")
+  add_executable(robo_dyna_source_bracket_binding_check tests/SourceBracketBindingTest.cpp
+    tests/SourceBracketCompositionTest.cpp)
+  target_link_libraries(robo_dyna_source_bracket_binding_check PRIVATE
+    robo_dyna_source_assembly_bindings robo_dyna_source_assembly_initial_kinetic GTest::gtest_main)
+  target_compile_options(robo_dyna_source_bracket_binding_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_bracket_binding COMMAND robo_dyna_source_bracket_binding_check)
+  set_tests_properties(source_bracket_binding PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+endif()

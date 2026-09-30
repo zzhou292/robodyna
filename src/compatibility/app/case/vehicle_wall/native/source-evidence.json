@@ -1,0 +1,65 @@
+{
+  "schema": "robo_dyna.native_envelope_wall_source_evidence.v1",
+  "native_source_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Declared-input namespace only; generated NODE count/order/overflow readiness remains separate",
+  "donors": [
+    {
+      "path_from_workspace": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/dyna2rad/dyna2rad/_private/dyna2rad.cxx",
+      "bytes": 29033,
+      "sha256": "0c24f869a3f808b35bf146742ee23104d6cbac3c906249ae0b954cdbcce1da1e",
+      "git_blob_sha1": "5f28c5a5ba7c568739d39e7238b79892d3a717ab",
+      "lines": [
+        218,
+        222,
+        281,
+        282
+      ],
+      "rule": "Direct unmapped conversion copies explicit nodes before rigid conversion"
+    },
+    {
+      "path_from_workspace": "crash-work/deps/openradioss-nodal-rigid-contract-1/reader/source/dyna2rad/dyna2rad/_private/convertrigids.cxx",
+      "bytes": 40976,
+      "sha256": "72183d17e253284c402fbdc2bc545cc6c4ba11bf8b0227b0f909004dd9595d26",
+      "git_blob_sha1": "fb2e1f03e9ca4ce099ab6cb1a6ba94ead341d5d0",
+      "lines": [
+        208,
+        212
+      ],
+      "rule": "Rigid PART creates its primary with omitted/default node ID"
+    },
+    {
+      "path_from_workspace": "crash-work/deps/openradioss-law90-sdi-1/original/reader/source/cfgkernel/sdi/sdiModelViewPO.h",
+      "bytes": 173611,
+      "sha256": "d59b8ba4fd997a7a6fa3927d14654277d52da09056cca8e1fb12f550dc12683a",
+      "git_blob_sha1": "af666e0ba8405424f3c776ca04c86b18ca8e1ba6",
+      "lines": [
+        1573,
+        1582,
+        1789,
+        1807
+      ],
+      "rule": "Fresh PO CreateNode obtains max existing node ID plus one"
+    },
+    {
+      "path_from_workspace": "crash-work/deps/openradioss-law90-sdi-1/original/hm_cfg_files/config/CFG/Keyword971/ACCELEROMETER/element_seatbelt_accelerometer.cfg",
+      "bytes": 3830,
+      "sha256": "65ec52d99b796f2e9a88d8e5a22071040bc76dd20cb1f2d846f8f93e77e0c7a1",
+      "git_blob_sha1": "1c3233469b431f3c78e8228b64da4c67ef31e251",
+      "lines": [
+        84,
+        93
+      ],
+      "rule": "SBACID is an explicit10-column definition; do not parse it as an8-column raw element ID"
+    }
+  ],
+  "upstream_authorities": [
+    "modelio/native_spring_ids/ImportContext.h: immutable authenticated closed members and explicit direct Keyword971_R14 fresh PO profile",
+    "case/CanonicalWallArtifacts.h: pinned original display manifest and source hashes",
+    "modelio/physical_domain/VehiclePhysicalDomain.h: complete named V5 retained physical node domain"
+  ],
+  "excluded_claims": [
+    "No generated native rigid primary IDs or generic generated-node census",
+    "No final contact topology/NSV or whole-model K/gaps",
+    "No common physical model, owner, execution catalog or runtime admission"
+  ]
+}

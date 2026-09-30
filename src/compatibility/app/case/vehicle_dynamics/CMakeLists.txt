@@ -1,0 +1,60 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaPhysicalDynamics LANGUAGES CXX CUDA)
+enable_testing()
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(CUDAToolkit REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/VehiclePhysicalDynamics.cmake")
+# Reuse the complete original startup fixture configuration and its provenance.
+add_subdirectory("../vehicle_runtime" "startup")
+add_executable(robo_dyna_physical_motion_values tests/MotionSummaryTest.cpp
+  "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/rigid_assembly_owner/Fixture.cpp")
+target_link_libraries(robo_dyna_physical_motion_values PRIVATE robo_dyna_vehicle_physical_dynamics
+  tl_tied_cin_attachment GTest::gtest_main)
+target_compile_options(robo_dyna_physical_motion_values PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME vehicle_physical_motion_values COMMAND robo_dyna_physical_motion_values)
+add_executable(robo_dyna_physical_dynamics_original tests/OriginalTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../vehicle_startup/physical_attachments/tests/Source.cpp")
+target_link_libraries(robo_dyna_physical_dynamics_original PRIVATE robo_dyna_vehicle_physical_dynamics GTest::gtest_main)
+target_compile_options(robo_dyna_physical_dynamics_original PRIVATE -fno-fast-math -ffp-contract=off)
+foreach(gate forecast free_flight structural_screen initial_reference)
+  if(gate STREQUAL forecast)
+    set(filter "VehiclePhysicalDynamicsOriginal.ForecastCompleteHostWorkspaceBeforeAnyAllocation")
+  elseif(gate STREQUAL free_flight)
+    set(filter "VehiclePhysicalDynamicsOriginal.CompleteFreeFlightDiscardRetryAndSinglePublication")
+  elseif(gate STREQUAL initial_reference)
+    set(filter "VehiclePhysicalDynamicsOriginal.InitialObserverReferenceUsesExactCompleteSourceDomainCoordinates")
+  else()
+    set(filter "VehiclePhysicalDynamicsOriginal.CompletePostCinStructuralStepAdmission")
+  endif()
+  add_test(NAME vehicle_physical_dynamics_${gate} COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../vehicle_startup/tied_classification/tests/actual_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}" "${ROBO_DYNA_VEHICLE_DECLARATIONS}"
+    "$<TARGET_FILE:robo_dyna_physical_dynamics_original>" "${filter}")
+  set_tests_properties(vehicle_physical_dynamics_${gate} PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
+endforeach()
+option(ROBO_DYNA_PHYSICAL_DYNAMICS_CAPTURE "Build accepted-only advancing-model capture gate" OFF)
+if(ROBO_DYNA_PHYSICAL_DYNAMICS_CAPTURE)
+  add_subdirectory(output capture)
+endif()
+
+add_executable(robo_dyna_motion_observation_test tests/ObservationTest.cpp tests/ObservationTransfer.cpp)
+target_link_options(robo_dyna_motion_observation_test PRIVATE -Wl,--wrap=cudaMemcpyAsync -Wl,--wrap=cudaMalloc)
+target_link_libraries(robo_dyna_motion_observation_test PRIVATE robo_dyna_vehicle_physical_dynamics GTest::gtest_main)
+target_compile_options(robo_dyna_motion_observation_test PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME vehicle_motion_observation COMMAND robo_dyna_motion_observation_test)
+set_tests_properties(vehicle_motion_observation PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+add_executable(robo_dyna_motion_observation_benchmark tests/ObservationBenchmark.cpp tests/ObservationTransfer.cpp)
+target_link_options(robo_dyna_motion_observation_benchmark PRIVATE -Wl,--wrap=cudaMemcpyAsync -Wl,--wrap=cudaMalloc)
+target_link_libraries(robo_dyna_motion_observation_benchmark PRIVATE robo_dyna_vehicle_physical_dynamics)
+target_compile_options(robo_dyna_motion_observation_benchmark PRIVATE -fno-fast-math -ffp-contract=off)
+
+option(ROBO_DYNA_MOTION_COMPOSITION_REGRESSIONS "Build affected optional wall/self-contact composition checks" ON)
+if(ROBO_DYNA_MOTION_COMPOSITION_REGRESSIONS)
+  add_subdirectory("../vehicle_wall" wall-regression)
+  add_subdirectory("../vehicle_self_contact" self-contact-regression)
+endif()
+add_test(NAME vehicle_motion_limiter_source_proof COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/limiter/verify_sources.py")

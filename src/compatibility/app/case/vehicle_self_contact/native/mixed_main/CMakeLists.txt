@@ -1,0 +1,53 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaPostGapmMainSource LANGUAGES CXX Fortran)
+enable_testing()
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Explicit coherent qualified TL source")
+set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
+include("${CMAKE_CURRENT_LIST_DIR}/../PostGapmMainSource.cmake")
+set(TYPE25_COEFFICIENTS_CUDA OFF)
+add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/radioss_type25_reader_solid_coefficients" native-coefficients)
+add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/radioss_type25_gap_source" native-gaps)
+include("${CMAKE_CURRENT_LIST_DIR}/../main_coefficients/tests/native/Native.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../main_coefficients/tests/solid_native/Native.cmake")
+set(native "${CMAKE_CURRENT_BINARY_DIR}/post-gapm-native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/tests/native/prepare.py"
+ --tl-root "${ROBO_DYNA_TL_ROOT}" --output "${native}" COMMAND_ERROR_IS_FATAL ANY)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS tests/native/prepare.py
+ "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/radioss_type25_coated_coefficients/native/prepare.py"
+ "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/radioss_type25_coated_coefficients/native/Coating.F.in")
+add_library(post_gapm_value_native STATIC tests/NativeValues.cpp "${native}/Overlay.F")
+target_link_libraries(post_gapm_value_native PUBLIC robo_dyna_post_gapm_main_source reader_solid_oracle)
+target_compile_options(post_gapm_value_native PRIVATE
+ "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
+add_executable(post_gapm_main_values tests/CoefficientTest.cpp tests/RosterTest.cpp tests/GapTest.cpp)
+target_link_libraries(post_gapm_main_values PRIVATE post_gapm_value_native type25_gap_source_oracle GTest::gtest_main)
+target_compile_options(post_gapm_main_values PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME post_gapm_main_values COMMAND post_gapm_main_values)
+add_executable(post_gapm_main_consumer tests/Consumer.cpp)
+target_link_libraries(post_gapm_main_consumer PRIVATE robo_dyna_post_gapm_main_source)
+add_test(NAME post_gapm_main_consumer COMMAND post_gapm_main_consumer)
+if(NOT EXISTS "${ROBO_DYNA_REFERENCE_WORKSPACE}/crash-work/deps")
+ message(FATAL_ERROR "Post-GAPM source qualification requires pinned native evidence workspace")
+endif()
+add_test(NAME post_gapm_main_controls_source COMMAND "${Python3_EXECUTABLE}" -B
+ "${CMAKE_CURRENT_LIST_DIR}/tests/verify_controls.py" --workspace "${ROBO_DYNA_REFERENCE_WORKSPACE}")
+add_test(NAME post_gapm_main_native_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/tests/native/prepare.py"
+ --tl-root "${ROBO_DYNA_TL_ROOT}" --output "${native}" --check)
+add_executable(post_gapm_support_regression
+ ../main_coefficients/tests/SupportTest.cpp ../main_coefficients/tests/SupportQueryTest.cpp ../main_coefficients/tests/SolidSupportTest.cpp)
+target_link_libraries(post_gapm_support_regression PRIVATE selected_main_support_native mixed_solid_support_native coated_coefficient_oracle GTest::gtest_main)
+target_compile_options(post_gapm_support_regression PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME post_gapm_support_regression COMMAND post_gapm_support_regression)
+set_tests_properties(post_gapm_main_values post_gapm_main_consumer post_gapm_main_native_source post_gapm_support_regression
+ PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+option(ROBO_DYNA_POST_GAPM_ACTUAL "Build explicit complete retained post-GAPM source gates" OFF)
+if(ROBO_DYNA_POST_GAPM_ACTUAL)
+ get_filename_component(app "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
+ add_executable(post_gapm_main_actual tests/ActualTest.cpp "${app}/case/vehicle_startup/physical_model/tests/supports/Source.cpp")
+ target_link_libraries(post_gapm_main_actual PRIVATE robo_dyna_post_gapm_main_source GTest::gtest_main)
+ target_compile_options(post_gapm_main_actual PRIVATE -fno-fast-math -ffp-contract=off)
+ # Actual full source calls are explicit guarded invocations, never CTest.
+endif()

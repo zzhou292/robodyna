@@ -1,0 +1,13 @@
+add_library(robo_dyna_guided_plate_artifacts STATIC
+  GuidedPlateFields.cpp GuidedPlateIntervals.cpp GuidedPlateArtifacts.cpp)
+target_link_libraries(robo_dyna_guided_plate_artifacts PUBLIC robo_dyna_guided_plate_case PRIVATE
+  robo_dyna_shell_patch_fields robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_artifacts PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_executable(robo_dyna_guided_plate_artifacts_check guided_plate_artifacts_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_artifacts_check PRIVATE
+  robo_dyna_guided_plate_artifacts robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io GTest::gtest)
+target_compile_options(robo_dyna_guided_plate_artifacts_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_artifacts COMMAND robo_dyna_guided_plate_artifacts_check "${CRASH_CANONICAL_WALL}")
+set_tests_properties(guided_plate_artifacts PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

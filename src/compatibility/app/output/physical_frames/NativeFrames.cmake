@@ -1,0 +1,18 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/PhysicalFrames.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../physical_run/PhysicalRun.cmake")
+include("${ROBO_DYNA_TL_ROOT}/lib_src/assembly/ShellPhysicalBinding.cmake")
+add_library(robo_dyna_native_capture_values STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/NativeSourceMapping.cpp" "${CMAKE_CURRENT_LIST_DIR}/NativeCaptureChecks.cpp")
+target_link_libraries(robo_dyna_native_capture_values PUBLIC robo_dyna_physical_frame_values
+  robo_dyna_physical_run_records tl_shell_physical_binding)
+target_compile_options(robo_dyna_native_capture_values PRIVATE -fno-fast-math -ffp-contract=off)
+option(ROBO_DYNA_NATIVE_CAPTURE_RUNTIME "Build actual native TYPE25 accepted capture" OFF)
+if(ROBO_DYNA_NATIVE_CAPTURE_RUNTIME)
+  if(NOT TARGET tl_radioss_type25_transaction)
+    message(FATAL_ERROR "Native accepted capture requires the qualified physical owner/TYPE25 runtime target")
+  endif()
+  add_library(robo_dyna_native_accepted_frames STATIC "${CMAKE_CURRENT_LIST_DIR}/NativeAcceptedFrames.cpp")
+  target_link_libraries(robo_dyna_native_accepted_frames PUBLIC robo_dyna_native_capture_values tl_radioss_type25_transaction)
+  target_compile_options(robo_dyna_native_accepted_frames PRIVATE -fno-fast-math -ffp-contract=off)
+endif()

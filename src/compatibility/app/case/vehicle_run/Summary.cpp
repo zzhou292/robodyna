@@ -1,0 +1,151 @@
+#include "RunState.h"
+#include "StageTimingDocument.h"
+#include "MechanicsDocument.h"
+#include "SampledShellPlasticity.h"
+#include "SelfContactDocument.h"
+#include "contact_diagnostics/Document.h"
+#include "output/BoundedArrayJson.h"
+#include "output/ArtifactIO.h"
+namespace crash::cases::vehicle_run::detail {
+namespace {
+const char* Name(StopKind kind) {
+    switch(kind) {
+        case StopKind::Completed:return "completed_planned_horizon";
+        case StopKind::Requested:return "cooperative_stop";
+        case StopKind::IntervalLimit:return "diagnostic_interval_limit";
+        case StopKind::TimeLimit:return "elapsed_time_limit";
+        case StopKind::StartupFailure:return "startup_session_failure";
+        case StopKind::PhysicsRejected:return "physics_rejected";
+        case StopKind::ArchiveFailure:return "archive_failure";
+        case StopKind::CaptureFailure:return "accepted_capture_failure";
+        case StopKind::ObserverFailure:return "observer_failure";
+    }
+    throw std::invalid_argument("Unknown run stop kind");
+}
+const char* FilterInitializationName(tlfea::contact::SelfContactFacetFilterInitialization mode) {
+    using Mode = tlfea::contact::SelfContactFacetFilterInitialization;
+    switch (mode) {
+        case Mode::NotInitialized:return "not_initialized";
+        case Mode::Disabled:return "disabled";
+        case Mode::Cuda:return "cuda";
+        case Mode::UnsupportedHostArithmetic:return "unsupported_host_arithmetic";
+    }
+    return "unknown";
+}
+}
+records::RecordFile WriteSummary(const std::filesystem::path& root,const Config& config,const Horizon& horizon,
+    const Forecast& forecast,const Result& result) {
+    using namespace output;
+    Document document;
+    document.SetObject();
+    const bool self_contact=config.contact_profile==ContactProfile::WallSelfContactV1;
+    String(document,"schema",self_contact?"robo_dyna.vehicle_run_summary.v2":"robo_dyna.vehicle_run_summary.v1");
+    if(self_contact) {
+        String(document,"contact_profile",ContactProfileName(config.contact_profile));
+        Integer(document,"complete_device_bytes",forecast.contact.device_bytes);
+    }
+    if (config.self_contact_cuda_native_crossing) {
+        Boolean(document,"self_contact_cuda_native_crossing_requested",true);
+        Integer(document,"self_contact_native_device_workers",NativeCrossingDeviceWorkers);
+        Integer(document,"self_contact_native_numeric_cohort_pairs",NativeCrossingNumericCohortPairs);
+        String(document,"self_contact_native_execution_scope",
+            "requested numerical backend; actual device/host routing is in performance diagnostics");
+    }
+    if (config.self_contact_cuda_facet_filters) {
+        Boolean(document,"self_contact_cuda_facet_filters_requested",true);
+        String(document,"self_contact_facet_filter_initialization",
+            FilterInitializationName(result.filter_initialization));
+        String(document,"self_contact_facet_filter_initialization_scope",
+            "initialization route only; not proof of CUDA query execution or exclusive runtime use");
+    }
+    String(document,"status",Name(result.loop.kind));
+    String(document,"physical_profile",PhysicalProfileName(config.physical_profile));
+    if(forecast.joint_count) Integer(document,"selected_joints",forecast.joint_count);
+    String(document,"reason",result.loop.reason);
+    String(document,"scope","observed accepted endpoints and host call timings; no restart or total-energy claim");
+    Boolean(document,"session_initialized",result.session_initialized);
+    Boolean(document,"valid_archive_manifest",result.loop.valid_manifest);
+    Number(document,"startup_wall_s",result.startup_wall_s);
+    Number(document,"requested_duration_s",horizon.requested_duration_s);
+    Number(document,"fixed_dt_s",config.fixed_dt_s);
+    Integer(document,"planned_intervals",horizon.intervals);
+    if(config.exact_steps) Integer(document,"requested_steps",config.exact_steps);
+    Integer(document,"planned_samples",config.samples);
+    Integer(document,"complete_host_upper_bound",forecast.complete_host_bytes);
+    Integer(document,"complete_archive_upper_bound",forecast.complete_archive_bytes);
+    Integer(document,"host_cap",forecast.caps.host_bytes);
+    Integer(document,"archive_cap",forecast.caps.archive_bytes);
+    Boolean(document,"conditional_allowance_used",forecast.caps.expanded);
+    if(result.session_initialized) {
+        const auto& progress=result.loop.progress;
+        Integer(document,"accepted_intervals",progress.accepted.epoch);
+        Number(document,"actual_completed_time_s",progress.accepted.time_s);
+        Number(document,"elapsed_after_startup_s",progress.elapsed_s);
+        Number(document,"accepted_intervals_per_second",progress.accepted_intervals_per_second);
+        Number(document,"successful_prepare_wall_s",progress.timing.step_s);
+        Number(document,"successful_commit_wall_s",progress.timing.commit_s);
+        Number(document,"successful_archive_wall_s",progress.timing.archive_s);
+        Number(document,"successful_accepted_capture_wall_s",progress.timing.capture_s);
+        const auto& contact=progress.contact;
+        auto mechanics = MechanicsDocument(progress.mechanics);
+        Value mechanics_value;
+        mechanics_value.CopyFrom(mechanics,document.GetAllocator());
+        document.AddMember("accepted_mechanics",mechanics_value,document.GetAllocator());
+        auto sampled = SampledShellPlasticityDocument(progress.sampled_shell_plasticity);
+        Value sampled_value;
+        sampled_value.CopyFrom(sampled,document.GetAllocator());
+        document.AddMember("sampled_shell_plasticity",sampled_value,document.GetAllocator());
+        if(self_contact) {
+            auto self_document=SelfContactDocument(progress.self_contact);
+            Value self_value;
+            self_value.CopyFrom(self_document,document.GetAllocator());
+            document.AddMember("accepted_self_contact",self_value,document.GetAllocator());
+        }
+        Boolean(document,"contact_observations_available",contact.available);
+        if(contact.available) {
+            Number(document,"peak_observed_force_n",contact.peak_observed_force_n);
+            Number(document,"peak_observed_penetration_m",contact.peak_observed_penetration_m);
+            Number(document,"peak_observed_same_mask_potential_j",contact.peak_observed_potential_j);
+            Number(document,"reported_signed_drift_work_sum_j",contact.reported_drift_work_sum_j);
+            Number(document,"last_same_mask_potential_j",contact.last_same_mask_potential_j);
+            Number(document,"last_removed_potential_j",contact.last_removed_potential_j);
+            Integer(document,"last_accepted_active_parents",contact.accepted_active_parents);
+            Integer(document,"last_proposed_active_parents",contact.proposed_active_parents);
+        }
+    }
+    if(result.rejected_step_limit_s) {
+        Number(document,"rejected_step_limit_s",*result.rejected_step_limit_s);
+        String(document,"recovery",config.contact_profile==ContactProfile::WallSelfContactV1 ?
+            "stop and qualify a revised contact/timestep profile before starting a new run" :
+            "new run from original source with an explicitly selected smaller fixed timestep");
+    }
+    if(result.rejected_contact_status) Integer(document,"rejected_contact_status",static_cast<unsigned>(*result.rejected_contact_status));
+    if(result.rejected_self_contact) {
+        auto error=SelfContactErrorDocument(*result.rejected_self_contact);
+        Value error_value;
+        error_value.CopyFrom(error,document.GetAllocator());
+        document.AddMember("rejected_self_contact",error_value,document.GetAllocator());
+    }
+    if(result.rejected_node!=UINT32_MAX) Integer(document,"rejected_physical_node",result.rejected_node);
+    if(result.rejected_parent!=UINT32_MAX) Integer(document,"rejected_contact_parent",result.rejected_parent);
+    if(result.archive_manifest) {
+        String(document,"archive_manifest_file","archive/"+result.archive_manifest->file);
+        String(document,"archive_manifest_sha256",result.archive_manifest->sha256);
+    }
+    if(result.viewer_input) {
+        String(document,"viewer_input_file",result.viewer_input->file);
+        String(document,"viewer_input_sha256",result.viewer_input->sha256);
+    }
+    if(!result.viewer_input_error.empty()) String(document,"viewer_input_error",result.viewer_input_error);
+    if(config.self_contact_diagnostics) {
+        Boolean(document,"self_contact_diagnostics_requested",true);
+        array_json::Child(document,"last_self_contact_attempt_diagnostics",
+            contact_diagnostics::Document(result.last_contact_attempt));
+    }
+    auto timing=StageTimingDocument(result.mechanics_timing);
+    Value value;
+    value.CopyFrom(timing,document.GetAllocator());
+    document.AddMember("mechanics_stage_timing",value,document.GetAllocator());
+    return physical_run::WriteDocument(root,"run-summary.json",document,SummaryByteCap);
+}
+} // namespace crash::cases::vehicle_run::detail

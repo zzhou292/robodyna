@@ -1,0 +1,41 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Independent selected LAW42 contact slots, no production linkage",
+  "files": [
+    {
+      "path": "original/hm_read_mat42.F",
+      "original_path": "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      "bytes": 14856,
+      "sha256": "e25f3df9ff55666f59f6c3225430a857bef835ad946c866aa6fbd35281363682",
+      "git_blob_sha1": "da6adc30e3e6e69666b0754f37d2d718225cef77"
+    },
+    {
+      "path": "original/law42_upd.F",
+      "original_path": "starter/source/materials/mat/mat042/law42_upd.F",
+      "bytes": 11091,
+      "sha256": "93a6e2b5f9198a4b08f515367aa7b2505f69a49803d406408df580ca43a2a7df",
+      "git_blob_sha1": "84d185aa6a08c8259bab9a510bb9419b25d0e908"
+    },
+    {
+      "path": "original/hm_read_mat.F90",
+      "original_path": "starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b",
+      "git_blob_sha1": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a"
+    },
+    {
+      "path": "original/updmat.F",
+      "original_path": "starter/source/materials/updmat.F",
+      "bytes": 19705,
+      "sha256": "bb0b3c57e70877dc50f980b9eaf948871d1df2ee0dfe8c709c09318d380ebc4b",
+      "git_blob_sha1": "167ba409cf051d12fc5d3b71e00e34ae0f9ba31d"
+    },
+    {
+      "path": "original/constant_mod.F",
+      "original_path": "common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    }
+  ]
+}

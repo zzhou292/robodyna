@@ -1,0 +1,82 @@
+{
+  "schema": "robo_dyna.solid_control_source_extraction.v1",
+  "baseline": "f56e9cec9bdbf5ee3745b06c8fbf450836f48a45",
+  "status": "source_proof_passed_compile_and_runtime_pending",
+  "moved_regions": [
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_correction/Sharing.cpp",
+      "baseline_sha256": "edfac853e2c0be62232b2443286690c46f540c11a2e9a1624789dca4207ee359",
+      "moved_file": "modelio/solid_control/Sharing.cpp",
+      "equivalence": "exact except namespace"
+    },
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_correction/SourceIds.h",
+      "baseline_sha256": "9bcaa69eda50e2aa7d5ec03b431ece4d7fb300fb7fa21d380d56c49e25b2a0ee",
+      "moved_file": "modelio/solid_control/SourceIds.h",
+      "equivalence": "exact except namespace"
+    },
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_correction/InterfaceProfile.h",
+      "baseline_sha256": "9f264b13e7e756883fdbac5826404568912e3956bc8a5a1fd809f5f6fd4e6949",
+      "moved_file": "modelio/solid_control/InterfaceProfile.h",
+      "equivalence": "exact except namespace"
+    },
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_correction/Context.cpp",
+      "region": "Digest",
+      "sha256": "fc84493851f618617b5e16bbb86ed27af2b74a44d2989c9ee94538752a8050c2",
+      "equivalence": "unchanged case digest function bytes"
+    },
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_seed/Context.cpp",
+      "region": "    const auto part_sets =",
+      "sha256": "c2a46dbff9fa97573016cce105edd3af7532cd2034500e9eaff6e7de8e813317",
+      "equivalence": "exact declaration/set parser block"
+    },
+    {
+      "baseline_file": "case/vehicle_self_contact/native/nodal_seed/Context.cpp",
+      "region": "void ReadFile(",
+      "sha256": "3ae82c2803699f6a65cfddff8577a1fd0bd02d977baffe487add3c50d2810e83",
+      "equivalence": "exact declaration/set parser block"
+    }
+  ],
+  "unchanged_numerical_and_digest_sources": [
+    {
+      "file": "case/vehicle_self_contact/native/nodal_correction/Inputs.cpp",
+      "sha256": "8389ffc34c98079b47911b658e67cfcd0e49e9028910ed5c2108399efd2e5813"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_correction/MaterialSlots.h",
+      "sha256": "78b7674719fad288d7a16086df8ec57020764dac502ce1b2fd6e5ee762f0de3f"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_correction/Digest.cpp",
+      "sha256": "00daad460c461e10802220785b34f09e6a4b4ba3b8b7c0282754b370871cf446"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_seed/SolidValues.cpp",
+      "sha256": "eb877bea715d1e736e63943212b30c29659a1d408290d08cee6c2c699a8efbef"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_seed/DirectValues.cpp",
+      "sha256": "3ecd830330a8a8837999101a184d00c52b3dd1872d5d967850dcebbde6c749f7"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_seed/ShellValues.cpp",
+      "sha256": "c7a4f600dbeff0623c9f52e8b4edd911a649fa9b0f50ea0e5c564622903b7a0d"
+    },
+    {
+      "file": "case/vehicle_self_contact/native/nodal_seed/Digest.cpp",
+      "sha256": "1f77bc5de6ac8a642531fff1b3c6d5d138435ab09610935d3f5df1a32b5806c7"
+    }
+  ],
+  "consumer_order": "legacy SOFT1 preflight before shared direct parser; sharing remains later correction stage",
+  "dependency_boundary": "modelio has no case/PhysicalModel/CorrectedNodalSource/clock dependency",
+  "new_retained_reservations": {
+    "direct_bytes": 4194304,
+    "effective_result_bytes": 8388608,
+    "effective_extraction_overlap_bytes": 8388608
+  },
+  "caps_unchanged": true,
+  "forecasts_unchanged": false
+}

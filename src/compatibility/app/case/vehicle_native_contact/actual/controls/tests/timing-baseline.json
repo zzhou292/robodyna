@@ -1,0 +1,23 @@
+{
+  "head": "354260d12e9688ef0cfc7930eafac3fdf5c1d389",
+  "files": [
+    {
+      "path": "case/vehicle_run/Summary.cpp",
+      "fixture": "timing_frozen/LegacySummary.cpp",
+      "bytes": 10333,
+      "sha256": "1ca686345779c4c4475a155515268d3127822b3d3dcbe86559fdd562a29798a2"
+    },
+    {
+      "path": "case/vehicle_native_contact/run/Summary.cpp",
+      "fixture": "timing_frozen/NativeSummary.cpp",
+      "bytes": 9319,
+      "sha256": "c499e323dfedb067e2d9a598cc4cc586efff1230fc23557fb5b222d54d6fcfa8"
+    },
+    {
+      "path": "benchmarks/stage_timing/StageTimer.h",
+      "fixture": "timing_frozen/StageTimer.h",
+      "bytes": 3176,
+      "sha256": "45aae05858567cbed8e3732d0873793f1bb6898cf75ca49758348c6379691852"
+    }
+  ]
+}

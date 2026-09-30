@@ -1,0 +1,16 @@
+"""Streaming file identity shared by offline replay and video tools.
+
+This module hashes bytes only. Archive and capture owners retain their own
+schema, size, completion, and provenance checks.
+"""
+
+import hashlib
+from pathlib import Path
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()

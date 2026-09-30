@@ -1,0 +1,186 @@
+{
+  "schema": "robo_dyna.resolved_case_contract.v1",
+  "numerical_protocol": null,
+  "case_id": "original_full_yaris_native_unscaled_nodal08",
+  "scope": "full_vehicle",
+  "domains": {
+    "topology_geometry": {
+      "status": "unknown",
+      "definition": {
+        "source_archive": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+        "selection": "complete original includes",
+        "resolved_geometry_digest": "not yet exported"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "population": {
+      "status": "unknown",
+      "definition": {
+        "original_main": {
+          "beams": 4685,
+          "nodes": 393165,
+          "parts": 919,
+          "shells": 358457,
+          "solids": 15234
+        },
+        "auxiliary_operators_included": true
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "formulations_materials_units": {
+      "status": "unknown",
+      "definition": {
+        "profile": "original native conversion",
+        "working_units": [
+          "tonne",
+          "mm",
+          "s"
+        ],
+        "complete_resolved_catalog": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "mass_inertia": {
+      "status": "unknown",
+      "definition": {
+        "total_mass_kg": 1256.151893209,
+        "per_body_ledger": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "constraints": {
+      "status": "unknown",
+      "definition": {
+        "main_plain_rigid_groups": 759,
+        "auxiliary_groups": 11,
+        "discrete_operators": "original included",
+        "complete_resolved_ledger": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "initial_loads_wall": {
+      "status": "resolved",
+      "definition": {
+        "speed_m_s": 15.6464,
+        "wheel_spin": "original velocity generation",
+        "gravity_m_s2": 9.806,
+        "wall": "original finite rigid wall with friction .6",
+        "ground_walls": 4
+      },
+      "evidence": [
+        {
+          "path": "model-evidence.json",
+          "sha256": "8f02590f4199f7c2383f6374e8943f6b77dff244d9bafad3fd5b2e5808e16e71"
+        }
+      ]
+    },
+    "contact_history": {
+      "status": "unknown",
+      "definition": {
+        "algorithm": "OpenRadioss_INTER_TYPE25",
+        "starter_resolved": {
+          "interface_number": 2,
+          "type": 25,
+          "stiffness_formulation": 4,
+          "stiffness_factor": 1.0,
+          "contact_type": 1,
+          "edge_flag": 1000,
+          "gap_flag": 2,
+          "gap_factor": 1.0,
+          "free_edge_zero_gap_flag": 1000,
+          "gap_shape": 1,
+          "remove_type2_conflicts": 1,
+          "initial_penetration_mode": 5,
+          "normal_damping_factor": 0.05,
+          "quadratic_damping_flag": 1,
+          "neighbor_removal_flag": 2,
+          "failure_removal_flag": 1,
+          "friction_filtering_flag": 0,
+          "friction_model": 2,
+          "mu0": 0.1,
+          "C1": 0.0,
+          "C2": 0.0,
+          "C3": 0.0,
+          "C4": 0.0,
+          "C5": 0.1,
+          "C6": -0.001
+        },
+        "complete_runtime_binding": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "native-contact-inspection.json",
+          "sha256": "c29cbf56ac03d1fa9503de1a600c28550d44666e4bd4f62f5cd6817925c6b861"
+        }
+      ]
+    },
+    "timestep_mass_control": {
+      "status": "resolved",
+      "definition": {
+        "policy": "native adaptive NODA",
+        "factor": 0.8,
+        "target_mass_scaling": false,
+        "initial_logged_dt_s": 1.7196e-07,
+        "cycle100_logged_dt_s": 1.5798e-07
+      },
+      "evidence": [
+        {
+          "path": "benchmark-evidence.json",
+          "sha256": "71f2bc6049291f98454f4679f76dc49244cd795aac83fc0fc7c07ac93226859b"
+        }
+      ]
+    },
+    "recorded_time_grid": {
+      "status": "unknown",
+      "definition": {
+        "requested_end_time_s": 2e-05,
+        "reported_cycles": 127,
+        "actual_all_step_times": "not recorded by100cycle logging"
+      },
+      "evidence": [
+        {
+          "path": "benchmark-evidence.json",
+          "sha256": "71f2bc6049291f98454f4679f76dc49244cd795aac83fc0fc7c07ac93226859b"
+        }
+      ]
+    },
+    "output_work_precision": {
+      "status": "unknown",
+      "definition": {
+        "native_animations": "native controls",
+        "complete_matched_output_contract": "unavailable"
+      },
+      "evidence": [
+        {
+          "path": "benchmark-evidence.json",
+          "sha256": "71f2bc6049291f98454f4679f76dc49244cd795aac83fc0fc7c07ac93226859b"
+        }
+      ]
+    }
+  }
+}

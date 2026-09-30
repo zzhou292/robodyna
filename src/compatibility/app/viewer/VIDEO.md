@@ -1,0 +1,89 @@
+# Accepted replay video evidence
+
+## Complete Yaris contact onset
+
+The complete selected V5 assembly has an actual Chrono
+[overview clip](../../crash-work/renders/yaris-supports512-overview-video-1/yaris-contact-onset.mp4)
+and [front-detail clip](../../crash-work/renders/yaris-supports512-front-detail-video-1/yaris-contact-onset.mp4).
+Both show the same four accepted states through 512 steps /102.4 microseconds,
+with original PID colors and physical deformation scale 1. These are early
+elastic-contact observations; all archived shell plastic strains are zero.
+The close view shows the local bumper response; the overview retains the
+whole selected assembly and finite mesh wall.
+
+Each saved state is held for one second: four seconds, 120 encoded frames at
+30 FPS, 1280×720 H.264/yuv420p, no audio. The saved physical times are uneven,
+so no single physical playback factor is asserted and no states are interpolated.
+Each video's adjacent `manifest.json` binds the PNG/capture hashes and physical
+timestamps. FFprobe and complete FFmpeg `-xerror` decode pass in
+`supports512-video-encode-1`. The larger 0.5 ms trajectory remains a separate
+in-progress run; these clips do not depict that future result.
+
+## Elastic coupon R1
+
+The [elastic coupon MP4](../../crash-work/renders/elastic-coupon-video-r1-20260909/elastic-coupon.mp4)
+is a presentation of the accepted B2 trajectory: **81 frames, 10 FPS, 8.1 s,
+1280×720, H.264/yuv420p, 67,833 bytes and no audio**. Its SHA-256 is
+`8611b74d19091412c444528bd5fc9c630408d89e94a8320900d16f16323037f0`.
+The [video manifest](../../crash-work/renders/elastic-coupon-video-r1-20260909/manifest.json)
+is a separate completed checkpoint. Older PNG/runtime manifests remain unchanged.
+
+Every encoded frame maps to one previously checked
+[R1 PNG row](../../crash-work/renders/elastic-coupon-r1-20260909/frames.csv)
+and the original B2 `accepted-frames.csv`. Fresh checks matched all 81 PNG hashes,
+owners, epochs and recorded times. Video timestamps use a fixed presentation
+cadence; simulation time still comes from each accepted row and the overlay.
+The last saved interval is shorter than the others, so the video does not assert
+uniform physical-time sampling or a single exact playback scale. There is no
+interpolation, deformation magnification, wall or new mechanics execution.
+
+The [probe output](../../crash-work/renders/elastic-coupon-video-r1-20260909/ffprobe.json)
+records one video stream, 81 container frames and 81 demuxed packets. The
+[full decode](../../crash-work/reports/replay-coupon-video-decode-1.json)
+used FFmpeg `-xerror` through the complete video and exited successfully.
+[Representative decoding](../../crash-work/reports/replay-coupon-video-frames-1.json)
+produced frames 0/40/80. Two reviewers inspected those decoded images: overlays
+read 0 / 94.179263 / 187.859696 ms and epochs 0 / 9440 / 18830, with the same
+fixed camera, visible blue coupon, changing physical-scale silhouette and no
+clipping. Lossy encoded pixels remain presentation data, not a restart state.
+
+The [encoding guard](../../crash-work/reports/replay-coupon-video-encode-1.json)
+records the exact command: libx264, CRF 18, medium preset, yuv420p and fast-start
+MP4, with no overwrite, input/filter/encoder worker limits of one, two affinity
+CPUs, 2 GiB RSS cap and 60 s timeout. It completed in 0.754 s with 220.52 MiB
+peak sampled RSS. Full decode completed in 0.252 s. Neither requested a GPU.
+
+The executable package is Ubuntu amd64 FFmpeg **7:4.4.2-0ubuntu0.22.04.1**,
+downloaded from its [official Ubuntu archive location](https://archive.ubuntu.com/ubuntu/pool/universe/f/ffmpeg/ffmpeg_4.4.2-0ubuntu0.22.04.1_amd64.deb).
+The 1,695,740-byte package has SHA-256
+`96beb71a9c3904c69a03c500caf9135370beb499e8599d6a544644cd9b909462`, independently
+matched against local APT package metadata. It was extracted under
+`crash-work/install/ffmpeg-r1`; system tools and drivers were not replaced.
+Existing host shared libraries supply its runtime dependencies. The manifest
+records both executable hashes, version/build-configuration output and the
+package's copyright notice. The package identifies its normal binary build as
+GPL v2 or later; this external encoder is not linked into the CAE application.
+
+This completes the small coupon's R1 video evidence. It does not qualify
+headless rendering, plate-wall contact, source-part rendering or the final
+deforming vehicle crash. Those remain separate gates in
+[RENDERING_ARCHITECTURE.md](../docs/RENDERING_ARCHITECTURE.md).
+
+## Guided plate R2
+
+The selected `penalty-margin-v1` h/2 archive now has a physical-scale Chrono
+[replay video](../../crash-work/renders/guided-plate-video-r2-20260909/guided-plate.mp4).
+It contains all 201 accepted images through 200 ms;
+25 presentation frames/s yields 8.04 s of playback. The simulation clock is
+shown in the overlay. Deformation is never scaled and the viewer executes no
+mechanics. This is a small elastic guided plate against a finite mesh wall.
+
+The [R2 checkpoint](../../crash-work/reports/replay-guided-r2-checkpoint-1.json) binds the input archive,
+exactly reproduced h/2 Study, passing h/2–h/4 and wall studies, failed coarse
+comparison, actual RTX 5090 capture, PNG hashes/CRCs/stamps, encode/probe/full
+decode, and root's decoded initial/peak/final visual review. The video is
+101,852 bytes, SHA-256
+`8ca0b6feba87abbb716608581fee3281bb0572ca1014af29545df186988aa73b`.
+The first complete capture had poor surface visibility; the first oblique
+capture received external SIGTERM after 143 frames. Both remain separate.
+A persistent-terminal retry completed at unchanged workstation limits.

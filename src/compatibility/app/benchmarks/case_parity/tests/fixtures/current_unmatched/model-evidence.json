@@ -1,0 +1,349 @@
+{
+  "schema": "robo_dyna.openradioss_model_audit.v1",
+  "created_utc": "2026-09-25T05:19:06.899392+00:00",
+  "scope": "Read-only existing source/artifact inventory; no solver or numerical qualification executed by this author.",
+  "source_heads": {
+    "tl": "6bb1cee16daecb90dcf9808c594bc43bc0ad5cbd",
+    "app": "8530c917a03efe797fd889ac56d4c708ab211a7d"
+  },
+  "canonical_main_counts": {
+    "beams": 4685,
+    "nodes": 393165,
+    "parts": 919,
+    "shells": 358457,
+    "solids": 15234
+  },
+  "canonical_arrays_bytes": 45415582,
+  "original_material_family_counts": {
+    "*MAT_PIECEWISE_LINEAR_PLASTICITY": 839,
+    "*MAT_ELASTIC": 26,
+    "*MAT_MODIFIED_PIECEWISE_LINEAR_PLASTICITY": 9,
+    "*MAT_BLATZ-KO_RUBBER": 13,
+    "*MAT_RIGID": 22,
+    "*MAT_LOW_DENSITY_FOAM": 1,
+    "*MAT_SPOTWELD": 1,
+    "*MAT_SPRING_ELASTIC": 3,
+    "*MAT_DAMPER_VISCOUS": 3,
+    "*MAT_SPRING_NONLINEAR_ELASTIC": 2
+  },
+  "runtime_counts": {
+    "nodes": 376930,
+    "relations": 374179,
+    "ordered_slots": 1500271,
+    "element_components": 8395,
+    "potential_transfer_components": 1,
+    "rigid_skin_parents": 5102,
+    "mass_without_element_incidence": 148,
+    "joint_edges": 44,
+    "by_kind": [
+      324094,
+      21301,
+      4250,
+      908,
+      1991,
+      350,
+      4442,
+      2828,
+      20,
+      759,
+      11165,
+      154,
+      386,
+      1345,
+      142,
+      17,
+      22,
+      5
+    ]
+  },
+  "actual_v5_test_properties": {
+    "ExactCanonicalDomainAndCompleteAffectedGroupsKeepAllSourceEvidence": {
+      "domain_nodes": "376930",
+      "complete_groups": "755",
+      "restricted_groups": "4",
+      "omitted_groups": "0",
+      "plain_members": "7509",
+      "retained_point_masses": "154",
+      "domain_owned_bytes": "18092872",
+      "source_forecast": "489821616",
+      "solid_source_forecast": "366131829"
+    },
+    "EveryOriginalSolidSlotAndAnalyticAirbagMaterialReachesTheTypedModel": {},
+    "All4980SolidsAnd142BeamsRetainSourceOrderAndOwnedCurves": {
+      "beam_model_owned_bytes": "18182280",
+      "beam_model_startup_bytes": "18187152",
+      "physical_forecast": "5831971868"
+    },
+    "ExactBeamSnapshotAndRigidCoefficientsUseOneCompleteLedger": {
+      "beam_mass_kg": "1.5537032763072669",
+      "total_mass_kg": "704.35196065175535",
+      "rigid_groups": "779",
+      "rigid_members": "12961"
+    },
+    "All44OriginalJointsHaveBothActualBodiesAndRequiredAxes": {
+      "required_joints": "44",
+      "joint_boundaries": "0",
+      "joint_forecast": "7395547132"
+    },
+    "BeamEidEvidenceIsCompleteAndN3CreatesNoEndpointRole": {},
+    "CompleteAuthorityAndLateBeamBudgetFailurePreservePriorModelAndRetry": {}
+  },
+  "omitted_solids": [
+    {
+      "pid": 2000006,
+      "cells": 60,
+      "title": "395_enginemountrightblock",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000027,
+      "cells": 1618,
+      "title": "190_alternator",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000034,
+      "cells": 1169,
+      "title": "296_starter",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000046,
+      "cells": 162,
+      "title": "416_enginemountleftrubber",
+      "material_keyword": "*MAT_BLATZ-KO_RUBBER"
+    },
+    {
+      "pid": 2000382,
+      "cells": 3852,
+      "title": "195_enginetransmission",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000383,
+      "cells": 2168,
+      "title": "190_alternator",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000384,
+      "cells": 212,
+      "title": "542_beltwheel2",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000385,
+      "cells": 125,
+      "title": "432_enginemountrightmain",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000485,
+      "cells": 432,
+      "title": "637_battery",
+      "material_keyword": "*MAT_ELASTIC"
+    },
+    {
+      "pid": 2000808,
+      "cells": 114,
+      "title": "839_seatfrontdisks",
+      "material_keyword": "*MAT_PIECEWISE_LINEAR_PLASTICITY"
+    },
+    {
+      "pid": 2000809,
+      "cells": 114,
+      "title": "839_seatfrontdisks",
+      "material_keyword": "*MAT_PIECEWISE_LINEAR_PLASTICITY"
+    },
+    {
+      "pid": 2000810,
+      "cells": 114,
+      "title": "839_seatfrontdisks",
+      "material_keyword": "*MAT_PIECEWISE_LINEAR_PLASTICITY"
+    },
+    {
+      "pid": 2000811,
+      "cells": 114,
+      "title": "839_seatfrontdisks",
+      "material_keyword": "*MAT_PIECEWISE_LINEAR_PLASTICITY"
+    }
+  ],
+  "omitted_solid_cells": 10254,
+  "omitted_beams": {
+    "pid": 2000641,
+    "count": 101,
+    "title": "837_seatrearbasebarbrkt"
+  },
+  "mass": {
+    "selected_v5_kg": 704.3519606517553,
+    "original_native_complete_case_kg": 1256.151893209,
+    "difference_kg": 551.7999325572447,
+    "decomposition": "Not fully reconciled; do not attribute entire difference to occupants/tires."
+  },
+  "rendering_projection": {
+    "nodes": 359785,
+    "parents": 349645,
+    "native_plastic_slots": 956346,
+    "physical_restart": false
+  },
+  "native_primary_mapping": {
+    "10001885": {
+      "rigid_body": 5000596,
+      "source_rigid_part": 2000471
+    },
+    "10001881": {
+      "rigid_body": 5000592,
+      "source_rigid_part": 2000464
+    },
+    "10001224": {
+      "rigid_body": 2200182,
+      "tl_original_count": 41,
+      "tl_retained_count": 41,
+      "tl_missing_members": [],
+      "tl_ordered_source_members": [
+        2346438,
+        2256725,
+        2256740,
+        2256741,
+        2256742,
+        2256750,
+        2256751,
+        2256752,
+        2257856,
+        2257868,
+        2257899,
+        2257905,
+        2257906,
+        2257907,
+        2257911,
+        2257912,
+        2257913,
+        2257914,
+        2257915,
+        2257916,
+        2257917,
+        2257918,
+        2257919,
+        2257925,
+        2257951,
+        2257952,
+        2257953,
+        2257955,
+        2257989,
+        2258004,
+        2258005,
+        2258006,
+        2258008,
+        2258009,
+        2258016,
+        2258067,
+        2258088,
+        2258089,
+        2256723,
+        2406572,
+        2406592
+      ],
+      "tl_source_row": 148,
+      "tl_joint_incidence": [
+        {
+          "source_id": 2200536,
+          "kind": 17,
+          "nodes": [
+            2406572,
+            2406575
+          ],
+          "extra": [
+            9
+          ]
+        }
+      ],
+      "omitted_discrete_operator": {
+        "eid": 2409334,
+        "pid": 2000495,
+        "nodes": [
+          2346438,
+          2346439
+        ],
+        "material": "MAT_DAMPER_VISCOUS"
+      },
+      "native_body_mass_tonnes": 0.0007148684,
+      "tl_body_mass_inertia_stiffness": "Not yet measured in a paired per-body receipt"
+    }
+  },
+  "wall_source_nodes": {
+    "minimum": 1001,
+    "maximum": 1062,
+    "count": 62,
+    "id_offset": 10000000,
+    "min_transformed": 10001001,
+    "max_transformed": 10001062,
+    "not_small_timestep_primaries": true
+  },
+  "pins": [
+    {
+      "path": "crash-work/assets/yaris-vehicle/manifest.json",
+      "bytes": 2632394,
+      "sha256": "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8"
+    },
+    {
+      "path": "crash-work/reports/vehicle-supports-measured-1/robo_dyna_vehicle_supports_model_check.xml",
+      "bytes": 2961,
+      "sha256": "5415d8a787fec0ca33b5c7e3b652f801580a1acc93a54b0c5b4c637119d5fff4"
+    },
+    {
+      "path": "crash-work/reports/yaris-physical-source-coverage-1.json",
+      "bytes": 4687730,
+      "sha256": "48bde62fe118531fa6f32f988bb25255b411f51f581de21256483017a74af90c"
+    },
+    {
+      "path": "crash-work/reports/vehicle-connectivity-v5-full-1.json",
+      "bytes": 32051585,
+      "sha256": "42b215324c4d8583e9ea7b89dafc5a33290fab5eeef42b0ad1c88496b506becd"
+    },
+    {
+      "path": "crash-work/reports/yaris-vehicle-declarations-1.json",
+      "bytes": 3648589,
+      "sha256": "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"
+    },
+    {
+      "path": "crash-work/reports/yaris-vehicle-section-resolution-glass-1.json",
+      "bytes": 190529,
+      "sha256": "ea40b817b66c73e961c502e5ff0d4dffd5d354b65e1339e6a093164adeb32158"
+    },
+    {
+      "path": "crash-work/assets/yaris-wall/source/combine.key",
+      "bytes": 10577,
+      "sha256": "3e0137cd8c569a71a4281cc307549dc2f20772bc67eac0658ae73682dbe242a2"
+    },
+    {
+      "path": "crash-work/assets/yaris-cli-source-1/yaris-coarse-v1l.key",
+      "bytes": 42846753,
+      "sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301"
+    },
+    {
+      "path": "crash-work/assets/yaris-cli-source-1/set-yaris-coarse-v1l.key",
+      "bytes": 44991,
+      "sha256": "b93d5370a899f6f70299ea61cd55142c1f8b765b8ab7f9ac979d078486028929"
+    },
+    {
+      "path": "crash-work/assets/yaris-cli-source-1/wall.key",
+      "bytes": 10604,
+      "sha256": "ef02a4701b37d27cec81b1f9a02ab555f55ac61f68b070e8b0c18dc23b1d5155"
+    },
+    {
+      "path": "planning/probe/starter-listing.out.gz",
+      "bytes": 2577857,
+      "sha256": "c877d20c589ba28078415ff207b7e9fa62b721bc849af6746dcd9a77ebab7a4d"
+    },
+    {
+      "path": "crash-work/runs/yaris-wall-self-225ns-strict-prefix-1/archive/frame-0.frame.json",
+      "bytes": 1273,
+      "sha256": "0c0841066201a7c22083705f4ff6616f28417daabf4651b92992ac899091a764"
+    },
+    {
+      "path": "crash-work/reports/yaris-wall-self-225ns-strict-prefix-1.qualified.json",
+      "bytes": 3124,
+      "sha256": "406ec7e7266372c0d5d7f1ee1eb1eb449405cbfa0e362b60e525861882deddd0"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaNativeMaterialContinuation LANGUAGES CXX)
+enable_testing()
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+get_filename_component(APP_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
+set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Qualified unchanged TL continuation operators")
+add_subdirectory("${APP_ROOT}/modelio/source_assembly" source-assembly)
+add_subdirectory("${APP_ROOT}/modelio/vehicle_sections" vehicle-sections)
+include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/ShellBatchPlasticity.cmake")
+add_executable(native_material_continuation_check PolicyTest.cpp)
+target_link_libraries(native_material_continuation_check PRIVATE robo_dyna_source_assembly_material_input
+  tl_shell_batch_failure_binding GTest::gtest_main)
+target_compile_options(native_material_continuation_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME native_material_continuation_host COMMAND native_material_continuation_check)
+set_tests_properties(native_material_continuation_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+add_executable(native_material_continuation_resident_check ResidentTest.cpp)
+target_link_libraries(native_material_continuation_resident_check PRIVATE robo_dyna_source_assembly_material_input
+  tl_shell_batch_plasticity GTest::gtest_main CUDA::cudart)
+target_compile_options(native_material_continuation_resident_check PRIVATE -fno-fast-math -ffp-contract=off)
+# Actual device allocation is always invoked explicitly under the GPU guard.

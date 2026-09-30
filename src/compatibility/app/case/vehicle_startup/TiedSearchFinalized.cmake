@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchFinalizedValues.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/TiedSearchAssessment.cmake")
+add_library(robo_dyna_tied_search_finalized STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedSearchFinalized.cpp")
+target_link_libraries(robo_dyna_tied_search_finalized PUBLIC robo_dyna_tied_finalization_values robo_dyna_tied_search_assessment)
+target_compile_features(robo_dyna_tied_search_finalized PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_tied_search_finalized PRIVATE -fno-fast-math -ffp-contract=off)

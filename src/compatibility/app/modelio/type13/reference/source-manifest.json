@@ -1,0 +1,43 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Source adapter conversion/default/unit authority only; no native recurrence or source ties admitted",
+  "sources": [
+    {
+      "path": "original/reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "size": 199888,
+      "git_blob_sha1": "e6ddfb2465fce574d5836822f96979af0f0d659c",
+      "sha256": "87ce68f7e6d9d9186bb2ed5bbc74d1ca97226b8ebaffd48408e2becaae46852d"
+    },
+    {
+      "path": "original/reader/source/dyna2rad/dyna2rad/convertutils.h",
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/convertutils.h",
+      "size": 11048,
+      "git_blob_sha1": "40ea2594fc41177cecbaaca41338fe6a76852e88",
+      "sha256": "fa684fff5af9fbaaf89eef6966579e689ac2447aa4b1b1b192c51d348ace477d"
+    },
+    {
+      "path": "original/hm_cfg_files/config/CFG/radioss2018/PROP/prop_p13_spr_beam.cfg",
+      "upstream_path": "hm_cfg_files/config/CFG/radioss2018/PROP/prop_p13_spr_beam.cfg",
+      "size": 89754,
+      "git_blob_sha1": "2c33ee527b6a61213ef8301aa32764568e7832dc",
+      "sha256": "91165479e4ec3c9b200b7fff7cf3def353cdd03c7232e0262c28eb7cafe6e7c4"
+    },
+    {
+      "path": "original/hm_cfg_files/config/CFG/Keyword971_R7.1/PROPERTY/sect_beam.cfg",
+      "upstream_path": "hm_cfg_files/config/CFG/Keyword971_R7.1/PROPERTY/sect_beam.cfg",
+      "size": 32338,
+      "git_blob_sha1": "be4f16db459728883e62bdffa2185668606ea0e8",
+      "sha256": "3ddaf86cadd40eb129d7806c81d8a24acf3d94bcc3065ef9ad9f16b20c838b8c"
+    },
+    {
+      "path": "original/reader/source/dyna2rad/dyna2rad/_private/dyna2rad.cxx",
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/_private/dyna2rad.cxx",
+      "size": 29033,
+      "git_blob_sha1": "5f28c5a5ba7c568739d39e7238b79892d3a717ab",
+      "sha256": "0c24f869a3f808b35bf146742ee23104d6cbac3c906249ae0b954cdbcce1da1e"
+    }
+  ],
+  "fragments": []
+}

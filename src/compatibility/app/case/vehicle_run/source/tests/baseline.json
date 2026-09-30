@@ -1,0 +1,29 @@
+{
+  "commit": "178366385e807bc268f485d6ce0962fa516f60a0",
+  "files": [
+    {
+      "path": "case/vehicle_run/source/OriginalSources.cpp",
+      "fixture": "frozen/OriginalSources.cpp",
+      "bytes": 3482,
+      "sha256": "847a3a54b5018e4122ee52a731d95b4a4cadd9c9df306cc1b326c14d194ef124"
+    },
+    {
+      "path": "case/vehicle_run/source/OriginalSources.h",
+      "fixture": "frozen/OriginalSources.h",
+      "bytes": 944,
+      "sha256": "8c510c7be7c0fc02ca06834a970ab4458a86166338f6e4824fb0aa20b3ea0584"
+    },
+    {
+      "path": "case/vehicle_run/source/OriginalYaris.cpp",
+      "fixture": "frozen/OriginalYaris.cpp",
+      "bytes": 5022,
+      "sha256": "81788a929249b2a27e240abc76e3838b7748c5568b4b363cfd6bc060c941b2fa"
+    },
+    {
+      "path": "case/vehicle_run/VehicleRun.cmake",
+      "fixture": "frozen/VehicleRun.cmake",
+      "bytes": 1783,
+      "sha256": "832df7c102bdd5a375416542c1333e892d9d14eac109893ed7dd183b8faeb0b6"
+    }
+  ]
+}

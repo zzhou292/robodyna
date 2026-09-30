@@ -1,0 +1,66 @@
+{
+  "schema": "robo_dyna.tied_search_geometry.native.v1",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "origin": "https://github.com/OpenRadioss/OpenRadioss",
+  "scope": "Complete INCOQ3 with supplied ordinary NTY2 context; exact shell-only I2BUC1/I2COR3 master thickness branches. No original registration order, solid contact, or mechanics admission.",
+  "sources": [
+    {
+      "path": "original/starter/source/interfaces/inter3d1/incoq3.F",
+      "source": "starter/source/interfaces/inter3d1/incoq3.F",
+      "size": 6580,
+      "sha256": "c03cb81a0e258e34984c61f12ccf6a906c14ac57e33291c0111b749f4ff7b85e",
+      "git_blob_sha1": "496ec42aa52efd3da903c0af64af948222755edc"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "source": "starter/source/interfaces/inter3d1/i2buc1.F",
+      "size": 15225,
+      "sha256": "68c4d5e0b7c006272e606a06cecc70d5b1ff60fd2477ade225ffc782b9847d82",
+      "git_blob_sha1": "d94df868cb35f4897bfb912b6ca1917b1c363469"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "source": "starter/source/interfaces/inter3d1/i2cor3.F",
+      "size": 9055,
+      "sha256": "93d93f7b6dfe07f393dbcb7a76b99edd14ba89f0a77f761bcf110925dfbe7037",
+      "git_blob_sha1": "1e50ec301b7cbb8e9ea3e7f69a17f316ad198889"
+    },
+    {
+      "path": "original/common_source/modules/constant_mod.F",
+      "source": "common_source/modules/constant_mod.F",
+      "size": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "original/engine/share/r8/my_real.inc",
+      "source": "engine/share/r8/my_real.inc",
+      "size": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "path": "LICENSE.md",
+      "source": "LICENSE.md",
+      "size": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090"
+    }
+  ],
+  "fragments": [
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "first_line": 214,
+      "last_line": 234,
+      "path": "BoundMasterThickness.inc",
+      "sha256": "b409de1052e09ace5e8554382339e761e51992bc905dac582a55620968a4cbc5"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "first_line": 152,
+      "last_line": 171,
+      "path": "ProjectionMasterThickness.inc",
+      "sha256": "9e8b8056e8bfb69c3d29bebae3ee77153e2159ea70b683edaf8c30107df99458"
+    }
+  ]
+}

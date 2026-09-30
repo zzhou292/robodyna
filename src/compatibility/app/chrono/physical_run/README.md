@@ -1,0 +1,149 @@
+# Physical accepted replay
+
+For workspace builds, obtain the current explicit `ROBO_DYNA_TL_ROOT`, qualified
+binary and dependency pins from the
+[execution plan](../../../planning/CURRENT_EXECUTION_PLAN.md). Commands below
+retain their historical example paths; the root `Total-Lagrangian-FEA/` checkout
+is not necessarily the current qualified TL worktree. GPU/heavy execution is
+currently paused; these examples are reference instructions, not a launch request.
+
+`Scene` consumes the immutable physical-run reader, keeps physical scale, and
+publishes only exact archived samples. It reuses the source shell mapping,
+0/1/3/4-point native plasticity applicability, stable original PID colors, and
+actual activity. Its wall is the authenticated selected finite mesh. No physics
+is advanced and no positions or plasticity are interpolated.
+
+The application forecast includes the retained reader, presentation geometry and
+sample workspace; VSG/Vulkan buffers and PNG encoder/decoder memory remain
+separate measured render obligations. The scene default is one GiB, with a named
+host cap up to two GiB. Failure to initialize or seek preserves prior publication.
+A whole-archive scan fixes camera bounds and the plastic scale across samples.
+An all-zero native plastic field uses a display maximum of one; it remains an
+actual zero field. Missing applicability is never converted to a numeric zero.
+
+Build the standalone CXX-only project here with the qualified TL helper root,
+Chrono install and existing VSG packages. It does not enable CUDA or link the
+vehicle dynamics factory. The owning targets are:
+
+- `robo_dyna_physical_replay_scene`
+- `robo_dyna_physical_scene_check` (`physical_scene_values`, optional `physical_scene_archive`)
+- `robo_dyna_physical_scene_legacy_check` (`physical_scene_legacy`)
+- `robo_dyna_physical_viewer_values_check` (`physical_viewer_values`)
+- `robo_dyna_physical_replay` when `ROBO_DYNA_PHYSICAL_REPLAY_VIEWER=ON`
+
+Use `Chrono_DIR=crash-work/install/chrono-vsg-r1/lib/cmake/Chrono` and
+`CMAKE_PREFIX_PATH=crash-work/install/vsg-r0`, as absolute paths. The preserved
+Vulkan/XCB development sysroot is under
+`crash-work/dependencies/vsg-r0/ubuntu-dev/sysroot`; supply its Vulkan include /
+library and pkg-config lib/share directories exactly as in the retained
+`chrono-vsg-configure-1.json` root environment. Core-only checks do not need VSG.
+Set `ROBO_DYNA_PHYSICAL_REPLAY_TESTS=OFF` for a viewer build without GTest.
+The standalone root finds VSG dependencies before importing Chrono's VSG target
+so the complete link interface is visible in the same CMake scope.
+
+The CLI accepts one controller result directory or its `viewer-input.json`:
+
+```
+robo_dyna_physical_replay RUN_DIR
+robo_dyna_physical_replay RUN_DIR --capture NEW_OUTPUT --color part-id
+robo_dyna_physical_replay RUN_DIR --capture NEW_OUTPUT --color plastic-strain
+```
+
+Optional flags: `--view incident-side|wall-side`, `--fps 1..60`, `--wireframe`,
+`--require-frames N`, `--receipt-sha256 SHA`, `--capture-cap-gib 2|6|10`.
+
+The capture cap bounds PNG output on disk, separately from the simulation archive
+and process RAM/GPU limits. The default remains 2 GiB. Explicit 2, 6 and 10 GiB
+choices reserve 32 MiB per actual archived image plus 4 MiB for metadata, admitting
+at most 63, 191 and 319 images respectively. A 301-state recording needs the
+explicit 10 GiB choice (10,104,078,336 forecast bytes); image size, ordering,
+immutable-input checks and full-sample completion checks remain enforced.
+
+To frame a detail, supply both `--camera-eye X,Y,Z` and `--camera-target X,Y,Z`
+in the archive's world coordinates in metres. For example:
+
+```
+robo_dyna_physical_replay RUN_DIR --camera-eye -1.2,-1.8,1.0 --camera-target 0.2,0,0.5 --capture NEW_OUTPUT
+```
+
+The optional `--camera-up y|z` uses Chrono's existing axis-up camera; Z is the
+default. It requires the complete eye/target pair. Explicit cameras cannot be
+combined with `--view`. Nonfinite coordinates, coincident eye/target, an
+up-parallel or unrepresentable camera basis are rejected. The fixed camera and
+40-degree field of view change only presentation; archive geometry is unchanged.
+The capture's existing position/target/FOV fields record the actual camera, with
+`camera_view: explicit-fixed` and its actual Y/Z vertical. Default captures keep
+their existing camera fields and values. No input receipt schema changes.
+
+Playback fps selects how quickly stored samples are displayed; accepted times
+remain their actual archive times. Initial-only and stopped accepted prefixes
+are labeled as such. No deformation scaling or interpolation flag exists.
+
+Capture uses the existing paired-render rule, one loading worker and a fixed
+camera. All decoded PNGs, exact sample epochs/times, PID palette, selected wall
+receipt, explicit channel availability, source receipt and completion/prefix
+status are recorded in the capture manifest. A capture I/O failure leaves
+incomplete evidence and no success manifest. The immutable binary input archive
+is never modified. PNGs have a separate conservative 32-MiB/sample plus four-MiB
+metadata forecast, default two GiB; six GiB is explicitly selected only if needed.
+
+Root gates: set `ROBO_DYNA_PHYSICAL_REPLAY_INPUT` to a preserved controller receipt
+for `physical_scene_archive`; then capture every sample using installed Chrono
+mutable-face support, inspect resulting PNGs, and run the existing legacy replay
+scene and PNG smoke. Author checks do not establish actual GPU rendering.
+
+## Interrupted saved-sample review
+
+The viewer also accepts an explicit recovery descriptor:
+
+```sh
+robo_dyna_physical_replay --recovered /path/archive/recovered-samples.json \
+  --receipt-sha256 EXPECTED_SHA256 --require-frames 100 \
+  --capture /new/outside-input/capture --capture-cap-gib 6 --fps 20 --color part-id
+```
+
+This uses `output/recovered_frames::Replay` through the display-only `SampleSource`
+facade. Its recorded positions, activity, plastic values, source wall and sample
+stamps feed the same geometry and capture loop. There is no scaling, interpolation,
+physics advancement or fabricated normal run Index. The overlay says “Recovered
+interrupted saved samples” and “Interval ledger unavailable | completion unknown”.
+`Scene::Initialize(normal Replay)` and its normal `replay()` accessor remain
+compatible; `samples()` supplies the common interface and `replay()` is null for
+recovered input.
+
+Recovered capture metadata uses `robo_dyna.recovered_sample_capture.v1`, the exact
+recovery descriptor, final **saved** epoch/time, unavailable interval/continuous
+history and unknown horizon completion. `complete_capture` means every retained
+sample was rendered. It does not certify the requested simulation duration.
+Normal capture schema/fields and normal input receipts are unchanged.
+
+Root's existing physical-scene configuration may be updated with:
+
+```sh
+cmake -S chrono/physical_run -B ../crash-work/build/physical-scene-root-1 \
+  -DChrono_DIR=/home/jsonzhou/Desktop/chrono-work/crash-work/install/chrono-vsg-r1/lib/cmake/Chrono \
+  -DROBO_DYNA_TL_ROOT=/home/jsonzhou/Desktop/chrono-work/Total-Lagrangian-FEA \
+  -DROBO_DYNA_PHYSICAL_REPLAY_VIEWER=ON \
+  -DROBO_DYNA_RECOVERED_REPLAY_INPUT=/path/archive/recovered-samples.json
+cmake --build ../crash-work/build/physical-scene-root-1 --target \
+  robo_dyna_physical_replay robo_dyna_physical_viewer_values_check \
+  robo_dyna_physical_scene_check robo_dyna_recovered_scene_check -j1
+ctest --test-dir ../crash-work/build/physical-scene-root-1 --output-on-failure
+```
+
+Keep the existing configured VSG package paths and normal archive input. The new
+recovered-scene gate verifies first/last saved geometry bits/stamps, failed seek,
+wall carrier reuse and nonfabricated metadata; viewer values include explicit
+recovery selection/hash and malformed descriptor rejection. Author performed
+seven production and one viewer-test syntax check under one CPU/512 MiB.
+The three VSG units and recovered-scene test exceed that author header-memory
+allowance and remain root compile gates. Root owns linking, actual archive and
+VSG capture gates.
+
+The optional `--part-palette-seed UINT64` changes only the deterministic original-PID
+color mapping. Default seed 1 retains the existing palette bits. All 64-bit seeds
+use the same versioned algorithm; colors remain stable across frames, source
+order and subsets. No stress/material meaning is implied. The capture manifest
+records the seed actually held by the initialized geometry and its complete RGB
+legend. Use this option only with part-ID colors; source geometry and archive
+fields are unchanged.

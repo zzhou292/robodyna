@@ -1,0 +1,132 @@
+{
+  "schema": "robo_dyna.cin_limiter_source.v1",
+  "baseline_commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+  "tl_dependency": "994658e",
+  "files": [
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.cmake",
+      "bytes": 525,
+      "sha256": "6bfcab3c00c2fba69076b5946a902d93d5a4b125997bfeddf5b96f3f70f67253"
+    },
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.cpp",
+      "bytes": 7866,
+      "sha256": "6005bbd2ec160d75dd77ac528ee9368263575f64645b2fb5ff39d6a03090c51d",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 7861,
+        "sha256": "4259e14839914efb9090da233ebe76600ad7a0d2af033cdf782279ad87d62c64"
+      },
+      "change_reason": "Index the actual CIN counted view through data; preserve complete source row order."
+    },
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.h",
+      "bytes": 615,
+      "sha256": "87ca49a4051e41f284ca48dcdf6ddb0493b61f8ad3774f3d10d07642c8219a42"
+    },
+    {
+      "path": "case/vehicle_dynamics/Trial.cpp",
+      "bytes": 7157,
+      "sha256": "2968d255cd392ad0da02bb8241389880c23d37dab64ff6c0c41c47d110b293db",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 6172,
+        "sha256": "5de933a8dfc8e2e532283cb95f56d46dbe3aab567e9d4ce90d07318a3468eefe"
+      },
+      "motion_change_reason": "Optional bounded GPU observer replaces private full-field host motion scan; preserved limiter/force/material/publication stages"
+    },
+    {
+      "path": "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+      "bytes": 5112,
+      "sha256": "89bce585ce4cb2f7d285a7ce0fa07b6aabb4540d579dfe50ff4bc5facc669d10",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 3629,
+        "sha256": "b8e3d3c60a37f089323bf4a8a532980f74e6f65555b8b1ac0053962033bab6b8"
+      },
+      "motion_change_reason": "Optional bounded GPU observer replaces private full-field host motion scan; preserved limiter/force/material/publication stages"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/HANDOFF.md",
+      "bytes": 2903,
+      "sha256": "24cfd83b02e42e6e772a77f582e1bd2486fbd2fc530cd3583bddd376996d7bf3"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/Identity.h",
+      "bytes": 845,
+      "sha256": "6030fedb4b2ec76dc9bfcc9334082d87e8450b9a15226d55163fdbaa9bdb18ad"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/SourceNodes.h",
+      "bytes": 3603,
+      "sha256": "c95f6c645fddc439c3fc3b98576ae8a43bc068fdeae3e91f5e8ea57417b5fd96",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 3548,
+        "sha256": "609aca71f0feb553d7412d0d382111f86c5c95fc3cab73e979ced0d26db1c6a6"
+      },
+      "change_reason": "Use the actual CIN counted view count/data API; preserve source row order."
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/SourceRows.h",
+      "bytes": 3888,
+      "sha256": "46a19d19b047637f75435b24f037a15ad25e7916a26e4239a456f45b19c1f3ff",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 3817,
+        "sha256": "b720883df7424cbc2b3a208a3f3ad7f28e08bbc930d2c2e9abb67965ea9779fa"
+      },
+      "change_reason": "Use the TYPE25 model connection_count with its pointer accessor; preserve complete connection order."
+    },
+    {
+      "path": "case/vehicle_run/tests/LimiterTest.cpp",
+      "bytes": 4441,
+      "sha256": "7997692ae8d474f6332e59dfd4958d94f489d933f49c357e17a670f69163c972",
+      "prior": {
+        "commit": "b65d52234d0cf9d1faf3915e7aef0cadfb9c1a91",
+        "bytes": 4393,
+        "sha256": "c3ce64c67531c60a4323a1e48a99a3caa76c9575c1781046e722d4afa869f493"
+      },
+      "change_reason": "Use existing RapidJSON full-precision parsing for exact native double roundtrip; keep exact EXPECT_EQ unchanged."
+    },
+    {
+      "path": "case/vehicle_run/tests/Original.cmake",
+      "bytes": 11171,
+      "sha256": "49c2877d340c28037c571ab50f263b8551b50ea8ce87b392e5a6310cae2424f3",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 2735,
+        "sha256": "4a3d7e819c20c688c62ae7328919f5fc3a3689b265ac0847c4a8cc4a42056a1e"
+      },
+      "reviewed_inherited_update": {
+        "commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+        "reason": "Reviewed inherited explicit wall/self fixture settings and added owning qualification targets. All original limiter test registration, source checks and defaults remain."
+      }
+    },
+    {
+      "path": "case/vehicle_run/tests/OriginalFixture.h",
+      "bytes": 1646,
+      "sha256": "66700ea29b7dc0b14d9496e438d765ebaf39693a0af7ccd72e63ea68e929e213",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 1264,
+        "sha256": "3b2178f81d8b7549e8c1a9ae2b4f0dfc16879c6e349fd81e5d59e90ed6ee5ed4"
+      },
+      "reviewed_inherited_update": {
+        "commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+        "reason": "Reviewed inherited explicit wall/self fixture settings and added owning qualification targets. All original limiter test registration, source checks and defaults remain."
+      }
+    }
+  ],
+  "reviewed_motion_observation": {
+    "baseline_commit": "a52c3a7b798f927623bf8b153cb07b53db649257",
+    "unchanged_physics_prefix_bytes": 5914,
+    "unchanged_physics_prefix_sha256": "8402517cefa5a92f0b6e55d47e4a14f949901f39b66e98a1d8f3ea91fd4e4a3d",
+    "scope": "Only Capture replaced by authenticated complete-slab GPU observation; Prepare/Evaluate including limiter unchanged. Original whole-file priors remain historical evidence.",
+    "qualified_parent_prefix_bytes": 6118,
+    "qualified_parent_prefix_sha256": "028245de749b199a1c7c65a04c5c20042c63138d8b0dbbf4bf030c13667d32bc",
+    "original_ancestor_prefix_bytes": 5414,
+    "original_ancestor_prefix_sha256": "91607f7690842a502f38303753d9f36eaaef9c9c10dc719aec9b07b525b1432e",
+    "inherited_self_contact_additions": "Reviewed complete optional AssembleSelfContact and EvaluateSelfContact blocks from qualified a52; preserve exact blocks, remove only for older cf3073 proof comparison."
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "schema": "robo_dyna.openradioss_alignment_measurements.v1",
+  "scope": "Investigation, not a matched CPU/GPU speedup claim. Different model/contact/control scopes, output cadence and timing denominators. Full actual reference dt sequence and endpoint not recorded by 100cycle logging.",
+  "release_archive": {
+    "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/OpenRadioss_linux64.zip",
+    "bytes": 82648350,
+    "sha256": "598ed7b2905a7bacc8d1781470c250ac79d7558c39ba962768edf3644644fe33"
+  },
+  "runtime_pins": [
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/starter_linux64_gf",
+      "bytes": 20281800,
+      "sha256": "65f1bd91c1b1dcad18234aca7797fa9e2c53a1a2cf1a4b3f5d6be4154c62c8e4"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/engine_linux64_gf",
+      "bytes": 31117192,
+      "sha256": "7fdedddbcf5753a53d7c8d8872aa6ead3b4e9983237997f6dd3b8cdd8375e3ed"
+    }
+  ],
+  "reference_runs": [
+    {
+      "case": "original-control",
+      "requested_duration_s": 0.0002,
+      "reported_cycles": 202,
+      "engine_elapsed_s": 45.74,
+      "guard_elapsed_s": 45.982,
+      "inclusive_s_per_reported_cycle": 0.22643564356435644,
+      "logged_states": [
+        {
+          "cycle": 0,
+          "time_s": 0.0,
+          "dt_s": 9.9578e-07,
+          "energy_error_percent": 0.0,
+          "added_mass_ratio": 0.002315
+        },
+        {
+          "cycle": 100,
+          "time_s": 9.9578e-05,
+          "dt_s": 9.9578e-07,
+          "energy_error_percent": 0.0,
+          "added_mass_ratio": 0.0023572
+        },
+        {
+          "cycle": 200,
+          "time_s": 0.00019916,
+          "dt_s": 9.9578e-07,
+          "energy_error_percent": 0.0,
+          "added_mass_ratio": 0.002359
+        }
+      ],
+      "peak_sampled_rss_bytes": 1709309952,
+      "affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "threads": 4,
+      "gpu_used": false,
+      "case_logical_bytes": 1707760194,
+      "pins": [
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/openradioss-alignment-original-control-engine-1.json",
+          "bytes": 41433,
+          "sha256": "b4f1070ecd0d5ccc66714b82355af6cbb2c30625f15b859a2a3f096a90ceed7b"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/openradioss-alignment-original-control-engine-1.log",
+          "bytes": 4401,
+          "sha256": "b9eddb9f1a26ae4ed361e618b1b1b554f65d08f645eb6491da9b4b807f854092"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/case_0001.rad",
+          "bytes": 445,
+          "sha256": "6d851c49efdb49c3e7331cba8b6fd2a78e057c147df636637c9bb3f4fe3b6489"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/case_0001.out",
+          "bytes": 14232,
+          "sha256": "db46febca1f403569f52980acfabc30f5d3847cead3060dd28738cde668a6541"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/case_0000.out",
+          "bytes": 18127606,
+          "sha256": "9d99dd0323f46899699262dbd7497767bddb0bbdc823034c0ef10ca13275a733"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/starter-proposal.json",
+          "bytes": 3897,
+          "sha256": "dcbe24bd3728ec6ee1727c8f84632da03bc2cf9175d65a03bdc900904af6c1c6"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/original-control/engine-proposal.json",
+          "bytes": 4391,
+          "sha256": "f54dc677742038a037599adda6fc873acbbfbfd572b6f58958d8207c90473126"
+        }
+      ],
+      "reported_cycle100_to200_wall_seconds": 9.549999999999997,
+      "reported_cycle100_to200_seconds_per_cycle": 0.09549999999999997
+    },
+    {
+      "case": "unscaled-nodal-08",
+      "requested_duration_s": 2e-05,
+      "reported_cycles": 127,
+      "engine_elapsed_s": 13.55,
+      "guard_elapsed_s": 13.889,
+      "inclusive_s_per_reported_cycle": 0.10669291338582677,
+      "logged_states": [
+        {
+          "cycle": 0,
+          "time_s": 0.0,
+          "dt_s": 1.7196e-07,
+          "energy_error_percent": 0.0,
+          "added_mass_ratio": 0.0
+        },
+        {
+          "cycle": 100,
+          "time_s": 1.5812e-05,
+          "dt_s": 1.5798e-07,
+          "energy_error_percent": -0.0,
+          "added_mass_ratio": 1.7677e-16
+        }
+      ],
+      "peak_sampled_rss_bytes": 1708183552,
+      "affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "threads": 4,
+      "gpu_used": false,
+      "case_logical_bytes": 1638271238,
+      "pins": [
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/openradioss-alignment-unscaled-nodal-08-engine-1.json",
+          "bytes": 14872,
+          "sha256": "a968f8bb55b7e08bdde9e2d40129eea8cac00bf687052b24ea502d556c14decb"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/openradioss-alignment-unscaled-nodal-08-engine-1.log",
+          "bytes": 4229,
+          "sha256": "3498376257ec73c6665af1d9355fddc7f43a48f6afded470ccc241833b23e2fa"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/unscaled-nodal-08/case_0001.rad",
+          "bytes": 447,
+          "sha256": "1dc55f86433cdf3396ce67c9044d38ec0f343cb23eb3fa686323f5ec647b379f"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/unscaled-nodal-08/case_0001.out",
+          "bytes": 14053,
+          "sha256": "3f691936183e83130b055f74775a182350b8ae0ce523c5c9486339402386557a"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/unscaled-nodal-08/case_0000.out",
+          "bytes": 18127601,
+          "sha256": "f92517687e6753aeb71e072f1a22f25b9d1bd62f4913fca975d74411d0bd1f63"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/unscaled-nodal-08/starter-proposal.json",
+          "bytes": 3906,
+          "sha256": "2473efe78ae3315064f3e681eb15230d45c39b23efccd9961aff5116ead7493d"
+        },
+        {
+          "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/unscaled-nodal-08/engine-proposal.json",
+          "bytes": 4414,
+          "sha256": "54bc119db32b0ed3884a63bcf4897bb378b32ebf9dce2cd1e3e12107bf5463f7"
+        }
+      ]
+    }
+  ],
+  "robo_dyna": {
+    "source_tl": "6bb1cee16daecb90dcf9808c594bc43bc0ad5cbd",
+    "source_app": "8530c917a03efe797fd889ac56d4c708ab211a7d",
+    "accepted_intervals": 2,
+    "dt_s": 2.25e-07,
+    "actual_time_s": 4.5e-07,
+    "prepare_total_s": 455.211527818,
+    "prepare_mean_s": 227.605763909,
+    "self_contact_total_s": 453.945569633,
+    "self_contact_percent": 99.72189672105445,
+    "wall_contact_mean_s": 0.194135395,
+    "other_prepare_mean_s": 0.4388436974999941,
+    "summary": {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/runs/yaris-wall-self-225ns-strict-prefix-1/run-summary.json",
+      "bytes": 29013,
+      "sha256": "e395a42d822f988742cf58545d254894ca403501901c6a21133bb81d77605f60"
+    },
+    "qualification": {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/yaris-wall-self-225ns-strict-prefix-1.qualified.json",
+      "bytes": 3124,
+      "sha256": "406ec7e7266372c0d5d7f1ee1eb1eb449405cbfa0e362b60e525861882deddd0"
+    }
+  },
+  "comparison_rules": [
+    "No extrapolated full-crash runtime from early reference samples.",
+    "CPU accounting percentages are not GPU-event or host-wall timing percentages.",
+    "Native reported cycle count is not silently equated with TL committed intervals.",
+    "No claim of matched speedup until physical masses, formulations, contacts, constraints, controls and output match.",
+    "No mass scaling enabled in the production TL run by this investigation."
+  ]
+}
