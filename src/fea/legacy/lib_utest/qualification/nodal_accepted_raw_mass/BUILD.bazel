@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer",
+    size = "small",
+    srcs = ["Consumer.cpp"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_src/solvers:explicit_nodal_state"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)

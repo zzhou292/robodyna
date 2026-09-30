@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLConnectorMeasurementOperands LANGUAGES CXX)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(CUDAToolkit REQUIRED)
+set(oracle "${CMAKE_CURRENT_BINARY_DIR}/oracle")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_LIST_DIR}/local-control-baseline.json"
+  "${CMAKE_CURRENT_LIST_DIR}/local_control_proof.py"
+  "${CMAKE_CURRENT_LIST_DIR}/source-manifest.json"
+  "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py"
+  "${CMAKE_CURRENT_LIST_DIR}/generate_oracle.py"
+  "${TL_ROOT}/lib_src/elements/type13/resident/Candidate.cu"
+  "${TL_ROOT}/lib_src/elements/type25/Type25BatchKernels.cu")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py"
+  COMMAND_ERROR_IS_FATAL ANY)
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/generate_oracle.py"
+  --output "${oracle}" COMMAND_ERROR_IS_FATAL ANY)
+include("${TL_ROOT}/lib_src/elements/type13/resident/Values.cmake")
+add_library(connector_operand_layouts STATIC
+  "${TL_ROOT}/lib_src/elements/type25/Type25BatchArena.cpp"
+  "${oracle}/FrozenType13Arena.cpp" "${oracle}/FrozenType25Arena.cpp")
+target_include_directories(connector_operand_layouts PUBLIC "${oracle}" "${TL_ROOT}" ${CUDAToolkit_INCLUDE_DIRS})
+target_link_libraries(connector_operand_layouts PUBLIC tl_type13_batch_values)
+target_compile_features(connector_operand_layouts PUBLIC cxx_std_17)
+target_compile_options(connector_operand_layouts PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(connector_measurement_host HostTest.cpp BudgetTest.cpp)
+target_link_libraries(connector_measurement_host PRIVATE connector_operand_layouts GTest::gtest_main)
+target_compile_options(connector_measurement_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME connector_measurement_host COMMAND connector_measurement_host)
+add_test(NAME connector_measurement_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+option(TL_CONNECTOR_MEASUREMENT_CUDA "Root-only device operand and frozen finalizer checks" OFF)
+if(TL_CONNECTOR_MEASUREMENT_CUDA)
+  enable_language(CUDA)
+  add_executable(connector_measurement_cuda CudaTest.cu)
+  target_link_libraries(connector_measurement_cuda PRIVATE connector_operand_layouts GTest::gtest_main CUDA::cudart)
+  set_target_properties(connector_measurement_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(connector_measurement_cuda PRIVATE
+    $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>)
+  add_test(NAME connector_measurement_cuda COMMAND connector_measurement_cuda)
+endif()
+get_property(tests DIRECTORY PROPERTY TESTS)
+set_tests_properties(${tests} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

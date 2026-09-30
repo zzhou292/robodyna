@@ -1,0 +1,241 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#include "NodalCinStorage.h"
+#include "cin_advance/ForceGatherIncidence.h"
+#include "../constraints/NodalRigidGroupModel.h"
+#include "../constraints/NodalRigidAssemblyBinding.h"
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+
+namespace tl::fea::nodal_detail {
+namespace {
+namespace cin = constraints::tied_shell::cin;
+bool SameBits(double a, double b) noexcept { return std::memcmp(&a, &b, sizeof(a)) == 0; }
+bool Contains(const cin::ActiveWitness& witness, std::uint32_t node) noexcept {
+  for (const auto candidate : witness.nodes) if (candidate == node) return true;
+  return false;
+}
+bool ValidWitness(const cin::ActiveWitness& witness, const cin::StageRow& row, std::size_t n) noexcept {
+  if (!witness.source_element_id) return false;
+  const bool triangle = witness.family == cin::WitnessFamily::ShellTriangle;
+  if (!triangle && witness.family != cin::WitnessFamily::ShellQuad) return false;
+  if (triangle && witness.nodes[2] != witness.nodes[3]) return false;
+  const unsigned distinct = triangle ? 3 : 4;
+  for (const auto node : witness.nodes) if (node >= n) return false;
+  for (unsigned i = 0; i < distinct; ++i) {
+    for (unsigned j = i+1; j < distinct; ++j) {
+      if (witness.nodes[i] == witness.nodes[j]) return false;
+    }
+  }
+  // Native CHK2MSR3NB tests physical-node containment, not EID equality,
+  // orientation or INCOQ material selection. Positive exact shell witnesses
+  // also establish positive incidence at every selected master node.
+  for (const auto node : row.masters) if (!Contains(witness, node)) return false;
+  return true;
+}
+}
+
+NodalReport ForecastCinStorage(const NodalCinStartup& input, const NodalStateConfig& config,
+    CinLayout& output, std::size_t group_count) noexcept {
+  if (!input.model || !input.model->prepared() || !input.model->domain() ||
+      input.model->domain()->node_count() != config.node_count || !input.qualification_id) {
+    return {NodalStatus::InvalidInput, "CIN needs a complete immutable domain and named qualification"};
+  }
+  if (config.temporal_scheme != NodalTemporalScheme::StaggeredHalfKickStart) {
+    return {NodalStatus::UnsupportedTemporalScheme, "CIN requires the existing staggered owner"};
+  }
+  CinLayout next;
+  if (!next.Initialize(config.node_count, input.model->rows().count, input.witness_count,
+      input.limits, sizeof(CinStorage), group_count, input.model->explicitly_empty())) {
+    return {NodalStatus::ResourceLimit, "CIN count or complete optional payload exceeds limits"};
+  }
+  const auto source = input.model->forecast();
+  for (const auto bytes : {source.model_payload_bytes, source.domain_payload_bytes, source.post_kinchk_payload_bytes}) {
+    if (bytes > input.limits.max_host_bytes-next.host_bytes) {
+      return {NodalStatus::ResourceLimit, "Retained CIN source backing exceeds host limits"};
+    }
+    next.host_bytes += bytes;
+  }
+  output = next;
+  return {NodalStatus::Ok, "CIN storage forecast prepared"};
+}
+
+NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConfig& config,
+    HostNodalKinematicsView kinematics, const double* inverse_mass, const NodalDofConfig& dofs,
+    const NodalRigidGroupModel* groups, const CinLayout& layout, std::unique_ptr<CinStorage>& output,
+    const NodalRigidAssemblyBinding* binding) {
+  const bool empty=input.model->explicitly_empty();
+  if (!input.mass || !input.inertia ||
+      (empty ? (input.witness_ranges || input.witnesses || input.witness_count) :
+               (!input.witness_ranges || !input.witnesses || !input.witness_count))) {
+    return {NodalStatus::InvalidInput, "CIN coefficient and complete witness inputs are mandatory"};
+  }
+  if (binding && (!binding->prepared() || !binding->domain()->Matches(*input.model->domain()))) {
+    return {NodalStatus::InvalidInput, "CIN and rigid assembly require the same complete source domain"};
+  }
+  // All finite raw values/reciprocal/source-bit checks precede optional arrays.
+  const auto domain = input.model->domain()->nodes();
+  for (std::size_t i = 0; i < config.node_count; ++i) {
+    if (!std::isfinite(input.mass[i]) || input.mass[i] < 0 ||
+        !std::isfinite(input.inertia[i]) || input.inertia[i] < 0) {
+      return {NodalStatus::InvalidInput, "CIN current M/J must be finite and nonnegative", std::uint32_t(i)};
+    }
+    if (binding) {
+      const auto& expected = binding->coefficients()->nodes()[i].coefficients;
+      if (!SameBits(input.mass[i],expected.mass) || !SameBits(input.inertia[i],expected.isotropic_inertia))
+        return {NodalStatus::InvalidInput,"CIN raw coefficients differ from the complete rigid ledger",std::uint32_t(i)};
+    }
+    const double xyz[] = {domain[i].position.x, domain[i].position.y, domain[i].position.z};
+    for (unsigned a = 0; a < 3; ++a) {
+      if (!SameBits(xyz[a], kinematics.position_xyz[3*i+a])) {
+        return {NodalStatus::InvalidInput, "CIN owner coordinates differ from exact domain source bits", std::uint32_t(i)};
+      }
+    }
+  }
+  const auto source_rows = input.model->rows();
+  std::size_t next_offset = 0;
+  for (std::size_t r = 0; r < source_rows.count; ++r) {
+    const auto& source = source_rows.data[r];
+    cin::StageRow row;
+    row.secondary = source.secondary_domain_node;
+    std::copy(source.master_domain_nodes.begin(), source.master_domain_nodes.end(), row.masters);
+    row.witnesses = input.witness_ranges[r];
+    if (row.witnesses.offset != next_offset || !row.witnesses.count || row.witnesses.count > 4 ||
+        row.witnesses.count > input.witness_count-next_offset) {
+      return {NodalStatus::InvalidInput, "CIN witness ranges must cover the complete source-ordered input", row.secondary};
+    }
+    if (dofs.translation_fixed_bits[row.secondary] || dofs.rotation_fixed[row.secondary]) {
+      return {NodalStatus::InvalidInput, "CIN dependent DOFs must be free", row.secondary};
+    }
+    for (const auto node : row.masters) {
+      if (dofs.translation_fixed_bits[node] || dofs.rotation_fixed[node]) {
+        return {NodalStatus::InvalidInput, "First CIN profile requires free ordinary masters", node};
+      }
+    }
+    for (std::size_t w = next_offset; w < next_offset+row.witnesses.count; ++w) {
+      if (!ValidWitness(input.witnesses[w], row, config.node_count)) {
+        return {NodalStatus::InvalidInput, "CIN activity witness does not contain the native four slots", row.secondary};
+      }
+    }
+    next_offset += row.witnesses.count;
+  }
+  if (next_offset != input.witness_count) return {NodalStatus::InvalidInput, "CIN has trailing witness declarations"};
+  auto next = std::make_unique<CinStorage>();
+  next->source = *input.model;
+  next->layout = layout;
+  next->qualification_id = input.qualification_id;
+  next->rows.resize(source_rows.count);
+  next->dependent.resize(config.node_count, 0);
+  if (input.witness_count) next->witnesses.assign(input.witnesses, input.witnesses+input.witness_count);
+  next->first_witness.resize(input.witness_count);
+  // Fresh vectors normally reserve exactly the requested count. Charge their
+  // actual backing capacities as well, before any device allocation.
+  auto actual_host_bytes = layout.host_bytes;
+  const auto extra = [&](std::size_t capacity, std::size_t size, std::size_t width) {
+    if (capacity < size || (capacity-size) > (input.limits.max_host_bytes-actual_host_bytes)/width) return false;
+    actual_host_bytes += (capacity-size)*width;
+    return true;
+  };
+  if (!extra(next->rows.capacity(), next->rows.size(), sizeof(cin::StageRow)) ||
+      !extra(next->dependent.capacity(), next->dependent.size(), sizeof(std::uint8_t)) ||
+      !extra(next->witnesses.capacity(), next->witnesses.size(), sizeof(cin::ActiveWitness)) ||
+      !extra(next->first_witness.capacity(), next->first_witness.size(), sizeof(std::uint32_t))) {
+    return {NodalStatus::ResourceLimit, "Actual CIN host capacities exceed the declared payload limit"};
+  }
+  next->layout.host_bytes = actual_host_bytes;
+  util::SourceIdentityIndex<16> witness_index;
+  if (input.witness_count) witness_index.Prepare(input.witness_count, [&](std::size_t i) { return input.witnesses[i].source_element_id; });
+  for (std::size_t i = 0; i < input.witness_count; ++i) {
+    const auto first = witness_index.First(input.witnesses[i].source_element_id);
+    next->first_witness[i] = std::uint32_t(first);
+    const auto& a = input.witnesses[first];
+    const auto& b = input.witnesses[i];
+    if (a.native_parent_index != b.native_parent_index || a.family != b.family ||
+        !std::equal(a.nodes, a.nodes+4, b.nodes)) {
+      return {NodalStatus::InvalidInput, "Repeated CIN source witness has conflicting native association"};
+    }
+  }
+  for (std::size_t r = 0; r < source_rows.count; ++r) {
+    const auto& source = source_rows.data[r];
+    auto& row = next->rows[r];
+    row.secondary = source.secondary_domain_node;
+    std::copy(source.master_domain_nodes.begin(), source.master_domain_nodes.end(), row.masters);
+    row.witnesses = input.witness_ranges[r];
+    if (next->dependent[row.secondary]) return {NodalStatus::InvalidInput, "Duplicate CIN dependent", row.secondary};
+    next->dependent[row.secondary] = 1;
+  }
+  for (const auto& row : next->rows) {
+    if (dofs.rotation_present && !dofs.rotation_present[row.secondary])
+      return {NodalStatus::InvalidInput, "CIN dependent rotation is kinematically present", row.secondary};
+    for (const auto node : row.masters) {
+      if (dofs.rotation_present && !dofs.rotation_present[node])
+        return {NodalStatus::InvalidInput, "CIN master must carry a rotational DOF", node};
+      if (next->dependent[node]) return {NodalStatus::InvalidInput, "CIN hierarchy/secondary-master overlap is not admitted", node};
+    }
+  }
+  for (std::size_t i = 0; i < config.node_count; ++i) {
+    if (next->dependent[i]) {
+      if (inverse_mass[i] != 0 || dofs.inverse_inertia[i] != 0) {
+        return {NodalStatus::InvalidInput, "CIN dependents have no conventional inverse or kick", std::uint32_t(i)};
+      }
+    } else if (binding && binding->FindMember(i)) {
+      // Prepared binding owns the source coefficient authority. Free PART
+      // members may have zero M/J; they still carry primary-driven rotation.
+      const auto& member = *binding->FindMember(i);
+      const double expected_mass = member.mass_kg == 0 ? 0 : 1/member.mass_kg;
+      const double expected_inertia = member.isotropic_inertia_kg_m2 == 0
+          ? 0 : 1/member.isotropic_inertia_kg_m2;
+      if (!SameBits(input.mass[i], member.mass_kg) ||
+          !SameBits(input.inertia[i], member.isotropic_inertia_kg_m2) ||
+          inverse_mass[i] != expected_mass || dofs.inverse_inertia[i] != expected_inertia) {
+        return {NodalStatus::InvalidInput, "CIN raw rigid coefficients differ from the prepared source", std::uint32_t(i)};
+      }
+    } else if ((dofs.translation_fixed_bits[i] != 7 &&
+          (!input.mass[i] || inverse_mass[i] != 1/input.mass[i])) ||
+        (!dofs.rotation_fixed[i] && (!dofs.rotation_present || dofs.rotation_present[i]) &&
+          (!input.inertia[i] || dofs.inverse_inertia[i] != 1/input.inertia[i])) ||
+        (dofs.rotation_present && !dofs.rotation_present[i] &&
+          (input.inertia[i] != 0 || dofs.inverse_inertia[i] != 0))) {
+      return {NodalStatus::InvalidInput, "Independent raw M/J and supplied inverse association differ", std::uint32_t(i)};
+    }
+  }
+  if (groups || binding) {
+    // Reuse the already budgeted membership array as a temporary role index.
+    // Bit zero always means dependent; bit one is removed before publication.
+    for (const auto& row : next->rows) {
+      for (const auto node : row.masters) next->dependent[node] |= 2;
+    }
+    const auto count = binding ? binding->members().size() : groups->member_count();
+    for (std::size_t i = 0; i < count; ++i) {
+      const auto node = binding ? binding->members()[i].domain_node : groups->members()[i].global_node;
+      if (node >= config.node_count || next->dependent[node]) {
+        return {NodalStatus::InvalidInput, "CIN master/dependent intersects an actual rigid member", std::uint32_t(node)};
+      }
+    }
+    for (auto& role : next->dependent) role &= 1;
+  }
+  if (layout.gather.device_bytes) {
+    const auto& gathered = layout.gather;
+    util::HostArena temporary;
+    if (!next->gather_host.Initialize(gathered.host_bytes) || !temporary.Initialize(gathered.temporary_bytes))
+      return {NodalStatus::ResourceLimit, "CIN master incidence startup allocation failed"};
+    auto* nodes = next->gather_host.Construct<std::uint32_t>(gathered.host_nodes);
+    auto* offsets = next->gather_host.Construct<std::uint32_t>(gathered.host_offsets);
+    auto* incidence = next->gather_host.Construct<std::uint32_t>(gathered.host_incidence);
+    auto* dense = temporary.Construct<std::uint32_t>(gathered.dense_offsets);
+    const cin::StageView source_view{next->rows.data(), next->dependent.data(),
+        std::uint32_t(layout.nodes), std::uint32_t(layout.attachments),
+        std::uint32_t(layout.witnesses), next->first_witness.data()};
+    std::uint32_t masters = 0;
+    if (!cin_advance::force_gather::BuildIncidence(source_view, dense, nodes, offsets,
+        incidence, gathered.capacity, masters))
+      return {NodalStatus::InvalidInput, "CIN immutable master incidence is inconsistent"};
+    next->force_gather.node_count = source_view.node_count;
+    next->force_gather.row_count = source_view.row_count;
+    next->force_gather.master_count = masters;
+    next->force_gather.capacity = std::uint32_t(gathered.capacity);
+  }
+  output = std::move(next);
+  return {NodalStatus::Ok, "CIN startup source, witness and coefficient association prepared"};
+}
+} // namespace tl::fea::nodal_detail

@@ -1,0 +1,75 @@
+# TYPE13 startup qualification
+
+## Root qualification, 2026-09-10
+
+Frozen author `ab28803` passes all 14 numeric functions: 8 host values, 3 native
+comparisons, 1 complete original-source comparison and 2 actual CUDA functions.
+The original-source function checks every one of the 4,442 beam-weld frames and
+endpoint coefficients. Both source/hash gates also pass; zero skips/failures.
+Evidence: workspace `crash-work/reports/type13-startup-root-{configure,build,tests}-1`
+and `type13-startup-root-functions-1/`. Build: 4.772 s / 444,362,752 B sampled peak
+RSS; 8 affinity CPUs / 4 workers / 18 GiB guard. Native/CUDA execution used
+2 CPUs / 2 GiB / GPU0 and took 0.594 s. Short sampled gates under-report peak RSS.
+Both owning Bazel targets build in `vehicle-material-connection-bazel-build-1`.
+The subsequent `74108a9` provenance-only increment retains the native precision
+include chain; it changes no arithmetic or fixtures. Startup does not implement
+beam recurrence, hysteresis/failure, the tied attachment or common-owner admission.
+
+This target checks only resolved property normalization, explicit-N3 frame
+startup, and endpoint mass/inertia coefficients. Native recurrence, hysteresis
+history, failure, stability timestep, scatter, tied interfaces and owner
+admission are outside the target. No TYPE25 substitution is used.
+
+`type13_startup_test` has eight small host functions: original four-curve/six-
+channel ownership, last-segment maximum slope, late invalid output preservation
+and retry, count/scope/overflow rejection, separate source inertia floor, both
+native skew fallbacks, the dimensional N3 condition and coefficient failure.
+Padding bytes are inspected only to show the same failed destination was not
+written; successful object representations are not a serialization contract.
+
+`type13_native_test` compiles exact authenticated RKINI3, R4BUF3 and RMASS
+fragments with initialized wrapper inputs. It compares native slope/frame/M/J
+results and an independent long-double dimensional M/J calculation. Only warning
+I/O is omitted from the selected nondegenerate source branch. The R4BUF3 wrapper
+retains both source alignment conditions and all three selected-frame arithmetic
+paths; it does not claim the complete engine or degenerate warning-path behavior.
+
+`type13_source_native_test` compares all 4,442 original PID2000486 beam frames and
+coefficient outputs against the native oracle. The original 7,494-node fixture
+(7,493 physical endpoints plus N3) is authenticated separately. Its original
+coordinate doubles are hex literals; each native-to-SI multiplication must match
+the existing canonical SI bytes. First/final, minimum/maximum length and closest
+N3 alignment identities are asserted. Source membership is not tied contact
+pairing and this test does not connect these endpoints to the shell owner.
+
+`type13_startup_cuda_test` has two optional actual-device functions for original
+property/reference/M/J parity and late rejection followed by exact retry. Root
+schedules native compilation and CUDA execution. Author evidence is only eight
+host tests PASS plus native C++ syntax and both fixture/source hash verifiers;
+the initial host build used one CPU, 179,980 KiB peak RSS and a 512 MiB cap.
+
+Owning root gate (choose the guarded build path externally):
+
+```sh
+cmake -S lib_utest/qualification/type13 -B BUILD_PATH \
+  -DTYPE13_NATIVE_CHECKS=ON -DTYPE13_CUDA_CHECKS=ON \
+  -DCMAKE_Fortran_COMPILER=FORTRAN_PATH -DCMAKE_CUDA_ARCHITECTURES=120
+cmake --build BUILD_PATH --parallel 1
+ctest --test-dir BUILD_PATH --output-on-failure
+```
+
+Existing workstation Fortran/CUDA environment and resource guard apply. Owning
+Bazel targets are `//lib_utest/qualification/type13:type13_startup_check` and
+`//lib_utest/qualification/type13:type13_startup_cuda_check`. Complete donors and
+exact extracts are verified by `native/verify_sources.py`; original fixture
+bytes by `source_fixture/verify_fixture.py`.
+
+The native precision chain is retained too: starter `implicit_f.inc:24` uses
+`CONSTANT_MOD`, and the starter r8 `my_real.inc:25` defines `DOUBLE PRECISION`.
+`constant_mod.F:568,571,580,604,617-635,647,657,662,994` constructs the powers
+of ten from exact small integers in `my_real`, then divides `ONE/EPxx`.
+Consequently EM5, EM15 and EM20 have exactly the wrapper/C++ binary64 literal
+values (`0x1.4f8b588e368f1p-17`, `0x1.203af9ee75616p-50`,
+`0x1.79ca10c924223p-67`). They do not use the separate `INFINITY=1E20`
+single-literal promotion at source line569. No threshold/floor adjustment is
+needed. The complete includes/module and blob hashes are in the native manifest.

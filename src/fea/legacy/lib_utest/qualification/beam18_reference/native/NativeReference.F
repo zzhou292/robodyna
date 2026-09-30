@@ -1,0 +1,86 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+      SUBROUTINE BEAM18_REFERENCE_NATIVE(X,RADIUS,RHO,E,NU,
+     . N3,VALUES,NODE_STI,NODE_STIR,PART_MASS,STATUS)
+     . BIND(C,NAME="beam18_reference_native")
+      USE ISO_C_BINDING,ONLY:C_DOUBLE,C_INT
+      USE BEAM18_REF_ELEMENT_MOD,ONLY:NIXP
+      USE BEAM18_REF_MESSAGE_MOD,ONLY:ERRORS,WARNINGS
+#include "implicit_f.inc"
+#include "mvsiz_p.inc"
+#include "param_c.inc"
+#include "vect01_c.inc"
+#include "scr12_c.inc"
+#include "com04_c.inc"
+      REAL(C_DOUBLE),INTENT(IN)::X(3,3),RADIUS,RHO,E,NU
+      INTEGER(C_INT),INTENT(IN)::N3
+      REAL(C_DOUBLE),INTENT(OUT)::VALUES(27),NODE_STI(3),NODE_STIR(3),PART_MASS
+      INTEGER(C_INT),INTENT(OUT)::STATUS
+      INTEGER NC(NIXP,1),MXT(1),MXG(1),NC1(1),NC2(1),NC3(1)
+      INTEGER IVECT(1),IBEAM(1),IGEO(NPROPGI,1),IPART(1),NIP,I,K
+      REAL(C_DOUBLE) X1(1),X2(1),X3(1),Y1(1),Y2(1),Y3(1),Z1(1),Z2(1),Z3(1)
+      REAL(C_DOUBLE) LENGTH(1),RBEAM(3,1),VECT(3,1),RLOC(3,1)
+      REAL(C_DOUBLE) GEO(NPROPG,1),PM(NPROPM,1),V(3,3),PARTSAV(20,1)
+      REAL(C_DOUBLE) MSP(1),INP(1),STP(1),STRP(1),AREA(1),MCPP(1),TEMP(3),L(6)
+      REAL(C_DOUBLE) G,BULK,A1,DR
+      CHARACTER(100) TITLE
+      STATUS=1
+      VALUES=ZERO
+      NODE_STI=ZERO
+      NODE_STIR=ZERO
+      PART_MASS=ZERO
+      ERRORS=0
+      WARNINGS=0
+      LFT=1
+      LLT=1
+      I7STIFS=1
+      JTHE=0
+      NC(:,1)=(/1,1,2,N3,1,101/)
+      IBEAM=0
+      RBEAM=ZERO
+      GEO=ZERO
+      PM=ZERO
+      IGEO=0
+      V=ZERO
+      PARTSAV=ZERO
+      MSP=ZERO
+      INP=ZERO
+      STP=ZERO
+      STRP=ZERO
+      MCPP=ZERO
+      TEMP=ZERO
+      IPART=1
+      L=ZERO
+      L(1)=RADIUS
+      TITLE='Selected original circular beam'
+      CALL BEAM18_REF_DEFBEAM_SECT(GEO,2,2,NIP,AREA(1),L,1,TITLE)
+      IF(NIP/=4.OR.ERRORS/=0)RETURN
+      DR=ZERO
+#include "damping_default.inc"
+      GEO(12,1)=18
+      GEO(16,1)=ZERO
+      GEO(17,1)=DR
+      IGEO(3,1)=NIP
+#include "material_shear.inc"
+      PM(20,1)=E
+      PM(22,1)=G
+      PM(89,1)=RHO
+      CALL BEAM18_REF_PCOORI(X,NC,MXT,MXG,NC1,NC2,NC3,LENGTH,
+     . X1,X2,X3,Y1,Y2,Y3,Z1,Z2,Z3,IBEAM,RBEAM,IVECT,VECT)
+      IF(ERRORS/=0)RETURN
+      CALL BEAM18_REF_PEVECI(RLOC,X1,X3,Y1,Y3,Z1,Z3,X2,Y2,Z2,NC2,NC3,IVECT,VECT)
+      CALL BEAM18_REF_PMASS(GEO,PM,NODE_STI,NODE_STIR,PARTSAV,V,IPART,
+     . MSP,INP,IGEO,STP,X1,X2,Y1,Y2,Z1,Z2,NC1,NC2,1,MXG,AREA,LENGTH,STRP,MCPP,TEMP,0)
+      K=0
+      DO I=1,4
+        VALUES(K+1)=GEO(200+I,1)
+        VALUES(K+2)=GEO(300+I,1)
+        VALUES(K+3)=GEO(400+I,1)
+        K=K+3
+      ENDDO
+      VALUES(13:16)=(/GEO(1,1),GEO(2,1),GEO(18,1),GEO(4,1)/)
+      VALUES(17)=LENGTH(1)
+      VALUES(18:20)=RLOC(:,1)
+      VALUES(21:27)=(/MSP(1),INP(1),NODE_STI(1),NODE_STIR(1),STP(1),GEO(16,1),GEO(17,1)/)
+      PART_MASS=PARTSAV(1,1)
+      STATUS=0
+      END SUBROUTINE

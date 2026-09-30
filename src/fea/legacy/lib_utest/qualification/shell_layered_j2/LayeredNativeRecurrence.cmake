@@ -1,0 +1,70 @@
+# Optional independent native force/history qualification. No production linkage.
+option(TL_SHELL_LAYERED_NATIVE_RECURRENCE "Build native layered recurrence oracle" ON)
+if(NOT TL_SHELL_LAYERED_NATIVE_RECURRENCE)
+  return()
+endif()
+if(NOT TARGET qeph_q1_native)
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/qeph" native-qeph)
+endif()
+if(NOT TARGET t3_r3_native)
+  if(TARGET t3_r1_native)
+    message(FATAL_ERROR "Native layered recurrence requires T3_R2_BUILD and T3_R3_BUILD at T3 owner creation")
+  endif()
+  set(T3_R2_BUILD ON)
+  set(T3_R3_BUILD ON)
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/t3" native-t3)
+endif()
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(lr_source "${CMAKE_CURRENT_SOURCE_DIR}/native_recurrence")
+set(lr_prepared "${CMAKE_CURRENT_BINARY_DIR}/layered-native-prepared")
+set(lr_modules "${CMAKE_CURRENT_BINARY_DIR}/layered-native-modules")
+file(MAKE_DIRECTORY "${lr_modules}")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${lr_source}/prepare_sources.py"
+  --output "${lr_prepared}" RESULT_VARIABLE lr_status ERROR_VARIABLE lr_error)
+if(NOT lr_status EQUAL 0)
+  message(FATAL_ERROR "Layered native source verification failed: ${lr_error}")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${lr_source}/prepare_sources.py" "${lr_source}/source-manifest.json")
+add_custom_target(layered_native_verify_sources
+  COMMAND "${Python3_EXECUTABLE}" -B "${lr_source}/prepare_sources.py"
+    --output "${lr_prepared}" --check VERBATIM)
+add_library(layered_native_section STATIC "${lr_source}/NativeLayeredSection.F90")
+add_dependencies(layered_native_section layered_native_verify_sources)
+get_target_property(lr_law_modules law44_point_native Fortran_MODULE_DIRECTORY)
+set_target_properties(layered_native_section PROPERTIES Fortran_MODULE_DIRECTORY "${lr_modules}")
+target_include_directories(layered_native_section PRIVATE "${lr_law_modules}" "${lr_prepared}" "${lr_modules}")
+target_compile_options(layered_native_section PRIVATE -cpp -ffree-line-length-none -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
+target_link_libraries(layered_native_section PUBLIC law44_point_native)
+
+# Reuse the owning native target's exact private include/module/symbol context.
+# The new leaves call the existing native library, without second copies of it.
+function(lr_family target native)
+  add_library(${target} STATIC ${ARGN})
+  foreach(property INCLUDE_DIRECTORIES COMPILE_DEFINITIONS COMPILE_OPTIONS)
+    get_target_property(value ${native} ${property})
+    set_property(TARGET ${target} PROPERTY ${property} "${value}")
+  endforeach()
+  get_target_property(native_modules ${native} Fortran_MODULE_DIRECTORY)
+  target_include_directories(${target} PRIVATE "${native_modules}" "${lr_modules}")
+  set_target_properties(${target} PROPERTIES Fortran_MODULE_DIRECTORY "${lr_modules}")
+  target_compile_features(${target} PUBLIC cxx_std_17)
+  target_link_libraries(${target} PUBLIC ${native} layered_native_section)
+endfunction()
+lr_family(layered_native_qeph qeph_q1_native
+  "${lr_source}/NativeLayeredQephSection.F" "${lr_source}/NativeLayeredQephForce.F")
+lr_family(layered_native_t3 t3_r3_native
+  "${lr_source}/NativeLayeredT3Section.F" "${lr_source}/NativeLayeredT3Force.F")
+add_library(shell_layered_native_reference STATIC
+  "${lr_source}/NativeLayeredContext.cpp" "${lr_source}/NativeLayeredQeph.cpp" "${lr_source}/NativeLayeredT3.cpp")
+target_link_libraries(shell_layered_native_reference PUBLIC layered_native_qeph layered_native_t3)
+target_include_directories(shell_layered_native_reference PUBLIC "${TL_ROOT}" "${lr_source}")
+target_compile_features(shell_layered_native_reference PUBLIC cxx_std_17)
+target_compile_options(shell_layered_native_reference PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(shell_layered_native_recurrence_check
+  "${lr_source}/LayeredNativeRecurrenceTest.cpp" "${lr_source}/LayeredNativeControlTest.cpp" "${lr_source}/YarisLocalizedSpinTest.cpp")
+target_link_libraries(shell_layered_native_recurrence_check PRIVATE shell_layered_native_reference GTest::gtest_main)
+target_compile_options(shell_layered_native_recurrence_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME shell_layered_native_recurrence_check COMMAND shell_layered_native_recurrence_check)
+set_tests_properties(shell_layered_native_recurrence_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "tied_post_kinchk_values_check",
+    srcs = ["Fixture.h", "ValueTest.cpp"],
+    deps = ["//lib_src/constraints/tied_shell:tied_post_kinchk", "@googletest//:gtest_main"],
+    copts = ["-std=c++17"],
+)

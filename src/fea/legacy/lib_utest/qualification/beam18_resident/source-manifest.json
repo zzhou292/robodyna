@@ -1,0 +1,231 @@
+{
+  "scope": "Bounded mapped beam18 resident and two-endpoint RHS/assembly values. No common publisher or full-case execution admission.",
+  "value_dependency": "939e5d6 plus root native conditioning ed65154; model fe89838; plain native-total attribution 180f65f. Root integration with analytic LAW44 also requires its tabulated-only beam guard 9b55a48.",
+  "native_reuse": "No donor copies or new Fortran: beam18_force native oracle and original142 fixture generator are linked by their owning CMake targets.",
+  "files": {
+    "lib_src/elements/beam18/resident/Arena.cpp": {
+      "bytes": 2418,
+      "sha256": "6ee114d357a800061e218a1b8a2593d3d1305071447efb6d013f848f9ffba061"
+    },
+    "lib_src/elements/beam18/resident/Arena.h": {
+      "bytes": 1377,
+      "sha256": "6a53e750555b7919b0b01c32e9ddca4168c6c1302aeb5a39a7b52b03b4eb28f4"
+    },
+    "lib_src/elements/beam18/resident/AssembleOperation.cu": {
+      "bytes": 2197,
+      "sha256": "b4f93adeb4a4248c42b14f6f8cda0edf1846437cad60c00ee3d340501f1ebe11"
+    },
+    "lib_src/elements/beam18/resident/Assembly.cu": {
+      "bytes": 3027,
+      "sha256": "db97a5ab0def9092a53268ae19fcecd53c9415f50d390445b6c2dc14f23c5387"
+    },
+    "lib_src/elements/beam18/resident/BUILD.bazel": {
+      "bytes": 1586,
+      "sha256": "bc3536d60ee16da31e24da56e8cccd7e67fd72605f25ff33754bcbe268261276"
+    },
+    "lib_src/elements/beam18/resident/Batch.cmake": {
+      "bytes": 1178,
+      "sha256": "961ddfdb4bef7939c764b46cb8807c94ac58fe3983b3eae6a078c236857c43c8"
+    },
+    "lib_src/elements/beam18/resident/Batch.cu": {
+      "bytes": 3928,
+      "sha256": "68ef92da3943ea70e21289d799353f215983f203dcbeebc5a1c2244a0d56c79a"
+    },
+    "lib_src/elements/beam18/resident/Batch.h": {
+      "bytes": 4012,
+      "sha256": "50568824eebc1445b0f84d73f8425f6502b5813ff163080b27644e8491192d52"
+    },
+    "lib_src/elements/beam18/resident/CMakeLists.txt": {
+      "bytes": 774,
+      "sha256": "181da4e56276a0c31767e08626f6f8b1226f59bff47119902c122593a7a3a661"
+    },
+    "lib_src/elements/beam18/resident/Candidate.cu": {
+      "bytes": 2518,
+      "sha256": "52e3a69846019732273cfe8194e64a50642cd6681b5f3012f9ae903b3e8f6064"
+    },
+    "lib_src/elements/beam18/resident/EvaluateOperation.cu": {
+      "bytes": 2934,
+      "sha256": "509dc89d90e85a34fea219ef081638638149b87e998eb673bfb684138347ca2d"
+    },
+    "lib_src/elements/beam18/resident/Forecast.cpp": {
+      "bytes": 1142,
+      "sha256": "ff3ba3f6090a8fafb5a3a5257b9abfe3045bec7e5e5d63fffce4dc676fda1f1d"
+    },
+    "lib_src/elements/beam18/resident/Identity.cpp": {
+      "bytes": 2189,
+      "sha256": "6bc31cce7e8940c873dbed2a085dc1a027a1a5c2a6d926973be0eee5cb25a1f6"
+    },
+    "lib_src/elements/beam18/resident/Measure.h": {
+      "bytes": 2696,
+      "sha256": "7a3885060bbca0b80916b0581470774a6b05c320bd3686946582bd6fac8f4699"
+    },
+    "lib_src/elements/beam18/resident/OperationChecks.h": {
+      "bytes": 2003,
+      "sha256": "0fe756e1571481377a116296e14d59378fe5a268519c357a1243d7b4cb531f20"
+    },
+    "lib_src/elements/beam18/resident/OutputRanges.cpp": {
+      "bytes": 1791,
+      "sha256": "64123eb743f2d4a92e6a5014a1b97e510c5f3a26dc25b5812068025c6589b9ed"
+    },
+    "lib_src/elements/beam18/resident/Plan.cpp": {
+      "bytes": 3037,
+      "sha256": "7e6c71b4bfc36cac20661b15c326db18987b9528be4abd03c7ca9a9b27fd6175",
+      "prior_receipts": [
+        {
+          "bytes": 3031,
+          "sha256": "e36484b328e884ab387cbdc5f6e0871c22e165f527e2e11778043e3097791b8c",
+          "reason": "Baseline50e1c2df; constrained-startup qualified801d467: add ValidStartup third true argument only. No change in this tile candidate."
+        }
+      ]
+    },
+    "lib_src/elements/beam18/resident/Publication.cpp": {
+      "bytes": 2587,
+      "sha256": "16b724a11146c56c479da3ba5700122d9cd04914fe8031054fb391009c59b237"
+    },
+    "lib_src/elements/beam18/resident/PublicationScope.cpp": {
+      "bytes": 3127,
+      "sha256": "eb0d90c4b5979b63fade64943a0507da50c54b8d9ad59973927998c2001da845"
+    },
+    "lib_src/elements/beam18/resident/README.md": {
+      "bytes": 4959,
+      "sha256": "4385dc2fe740a064390ea778204cc9371587f1a33d4ed076b573b2a9c04dbf75"
+    },
+    "lib_src/elements/beam18/resident/Readback.cu": {
+      "bytes": 3649,
+      "sha256": "3bd08a10dc76746b5174c5c590b3600e91b9c9d14fcdf5b44b7d388f0d80799a"
+    },
+    "lib_src/elements/beam18/resident/ResultChecks.h": {
+      "bytes": 2626,
+      "sha256": "eeaea3ada8768d5d9bd48d6701ec77337229d9ece933c22e1d49008779ba1b62"
+    },
+    "lib_src/elements/beam18/resident/Results.h": {
+      "bytes": 589,
+      "sha256": "3960a72af2d13041a0e084c1012f6c40e8534658016da4f6f28f11b3588d22d9"
+    },
+    "lib_src/elements/beam18/resident/State.h": {
+      "bytes": 714,
+      "sha256": "8ba1611402328088f2ebe767d97f6ecb8a592c92a490545fa76ce822483382c8"
+    },
+    "lib_src/elements/beam18/resident/Storage.h": {
+      "bytes": 2189,
+      "sha256": "371608b16df29227b99de7758a9f5d5462b04d500ecb15df93904d58cdfab9c8"
+    },
+    "lib_src/elements/beam18/resident/Upload.cpp": {
+      "bytes": 2201,
+      "sha256": "88b4d83043b001b87cc5a9a6b5ed50629bc60ab6f7f159fb79b8ff8bf913456d"
+    },
+    "lib_src/elements/beam_common/BUILD.bazel": {
+      "bytes": 323,
+      "sha256": "58ffbf0ed78d85d8511f3c8dc2f1eb1c86680a9930aec609048d16e86926c774"
+    },
+    "lib_src/elements/beam_common/EndpointAssembly.h": {
+      "bytes": 1780,
+      "sha256": "6364d0fb91373a9aca5ba87d87f8c4cc7e90424e54498cd91b40192e5f11df1c"
+    },
+    "lib_src/elements/beam_common/EndpointFields.h": {
+      "bytes": 2763,
+      "sha256": "4d7f7f44cce9eb504d231541c38a9bf9515f5de480113cdd1517e95b654a8eff"
+    },
+    "lib_utest/qualification/beam18_force/BUILD.bazel": {
+      "bytes": 956,
+      "sha256": "6b20c250854f62ae859596002fd4ff83952396ff2be682515753dc5b98c43e60"
+    },
+    "lib_utest/qualification/beam18_resident/AssemblyChecks.cu": {
+      "bytes": 1726,
+      "sha256": "ce427aac998338955786c69c94e35fdca6a0baa07fb3e9999f8a3a8430d9bed0"
+    },
+    "lib_utest/qualification/beam18_resident/BUILD.bazel": {
+      "bytes": 836,
+      "sha256": "1edc3cf49450c4e3c778ccd507b8d82d450cb478309cb388566a5ac17459e5ec"
+    },
+    "lib_utest/qualification/beam18_resident/CMakeLists.txt": {
+      "bytes": 2994,
+      "sha256": "84a69f729621e67161b993742c6cfcc9301a5eb7974cada7cdc609033aa34879"
+    },
+    "lib_utest/qualification/beam18_resident/CudaFixture.cu": {
+      "bytes": 5470,
+      "sha256": "24e44142066f96f1362cbf0d5512f501affad57e6b9490f14ef2298b703b7648"
+    },
+    "lib_utest/qualification/beam18_resident/CudaFixture.h": {
+      "bytes": 1448,
+      "sha256": "6a170923f63cc04a7d51216b57099eed59db6ed8209db51b6f06607ab330a337"
+    },
+    "lib_utest/qualification/beam18_resident/EndpointTest.cpp": {
+      "bytes": 4287,
+      "sha256": "a63bed9fdc687cd5ec28556204d3d5ea46fef43c7fd02e8e06c7336f80738f0d"
+    },
+    "lib_utest/qualification/beam18_resident/NativeChecks.cpp": {
+      "bytes": 2950,
+      "sha256": "aca9461f304dd21cb3d7bbfcc2427a8b1aae343dda22750159e80237389b6584"
+    },
+    "lib_utest/qualification/beam18_resident/OriginalTest.cpp": {
+      "bytes": 3569,
+      "sha256": "bebd0a578c7657d8e36da1887f5b2e208399a0b5c92b90c7424bf9c91de407e8"
+    },
+    "lib_utest/qualification/beam18_resident/OwnerFixture.cpp": {
+      "bytes": 3187,
+      "sha256": "b8aad3e0a714a7ab7862d60791d1bbd173fd9a9dbc61e88aae207fc01ee797bf"
+    },
+    "lib_utest/qualification/beam18_resident/OwnerFixture.h": {
+      "bytes": 984,
+      "sha256": "ffecdd173e1f775e82ea608d411f0f4d46d8f86c18be9cdc6024c67d608584f2"
+    },
+    "lib_utest/qualification/beam18_resident/OwnerTest.cu": {
+      "bytes": 5170,
+      "sha256": "fdf34e857ced736b0e27158d1b64e8522cee822ba2ca7f5b67a4544b48312a40"
+    },
+    "lib_utest/qualification/beam18_resident/PublicationPeer.h": {
+      "bytes": 2868,
+      "sha256": "1da6dd6633c5572ee700b6b1741db9df4b8335a1921d77e0e708e79e33445330"
+    },
+    "lib_utest/qualification/beam18_resident/README.md": {
+      "bytes": 2800,
+      "sha256": "5f4cf394ed154a8ac59a86d577ca88f0e97575978d451ee1dfefb647051bfef9"
+    },
+    "lib_utest/qualification/beam18_resident/ValueTest.cpp": {
+      "bytes": 5773,
+      "sha256": "b40ddaf2fb679a0548a0f1778a7bb9f72563c1abba7a976754c68da57a6eea10"
+    },
+    "lib_utest/qualification/beam18_resident/verify_source.py": {
+      "bytes": 936,
+      "sha256": "04e99db58cb2d9e867ccf582a687db517ed24da7d9a5a4168c1517c4f21da6ca"
+    },
+    "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel": {
+      "bytes": 2781,
+      "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f",
+      "prior_receipts": [
+        {
+          "bytes": 2554,
+          "sha256": "7fd0e3057c5a858c6343bd1b02341717c493a22851794b1cfc9d722d57aa4ae5",
+          "reason": "Add CIN group qualifier fixture visibility only"
+        },
+        {
+          "bytes": 2629,
+          "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+          "reason": "Baseline561026c2 and11370dc1: add CIN force-transfer/recovery qualification visibility only. No production effect."
+        }
+      ]
+    },
+    "lib_src/elements/beam18/resident/measurement/Tile.h": {
+      "bytes": 478,
+      "sha256": "584df378719a386b89af044cbcd1eb8a6fbcaa09e6ae9b5cdbe73de63540c570"
+    },
+    "lib_src/elements/beam18/resident/measurement/Read.h": {
+      "bytes": 1021,
+      "sha256": "e3d03aaf198e9e2498008da0bf7d27bf580f61ecae35a4ec913249a126dea576"
+    },
+    "lib_src/elements/beam18/resident/measurement/Finalize.cuh": {
+      "bytes": 1893,
+      "sha256": "fffdf06986ec6c535ff89320047a6557c3f686ae98d2cfc1978a455cce96f484"
+    }
+  },
+  "common_publication_test_visibility": {
+    "scope": "Add only beam18_publication access to existing test_values; native and production arithmetic unchanged.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
+    }
+  },
+  "read_staging": "Qualified separately by beam18_measurement_read_tile: ordered leader arithmetic and unchanged endpoint helper; original identities frozen there."
+}

@@ -1,0 +1,186 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "source": "starter/source/elements/solid/solide/checksvolume.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/checksvolume.F",
+      "bytes": 9561,
+      "sha256": "fa7abeb360c050bbe137ce201d71004149548a95ab539770a444b4b364cdd148",
+      "git_blob_sha1": "29a38da32ca8da0a1594acca9c782b1624f87373"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/srepiso3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/srepiso3.F",
+      "bytes": 4828,
+      "sha256": "bc0f854989f60eb1be8a195f4be2b2d4f295592dae713ee3434b5492e219cd0a",
+      "git_blob_sha1": "b42699888a63c31e0af727628f82596b2d4f0a6f"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/sortho3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/sortho3.F",
+      "bytes": 6235,
+      "sha256": "2a333f4e669265e01d8076d34033ac5eb70d590eea1298e61f3af298764d150a",
+      "git_blob_sha1": "a53601d047627407bfb415c80e7b0e7067149de3"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/srcoor3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/srcoor3.F",
+      "bytes": 15513,
+      "sha256": "7a40767ea2a1516844841224c17ef35ff84098bf17d6f934df853a4be1a45fa8",
+      "git_blob_sha1": "be22cbb77e0eacdd33510c03c8ce2ac2cc82e01f"
+    },
+    {
+      "source": "starter/share/includes/com01_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/com01_c.inc",
+      "bytes": 4354,
+      "sha256": "6fa339e13e36c1e40ed644eb028378dce93b697493c8f082d815e16295234879",
+      "git_blob_sha1": "9f612a7ed25ca3ad7a3396f5aa2f227f608692ce"
+    },
+    {
+      "source": "starter/share/includes/scr05_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/scr05_c.inc",
+      "bytes": 1973,
+      "sha256": "3889a8c9f1c09a5d9d318f070163bbbefcc039542fe69b89a2092e2bde06e5b9",
+      "git_blob_sha1": "f9c2c79c1d1b0db7857455f0f4e80fb80c929948"
+    },
+    {
+      "source": "starter/share/includes/param_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/param_c.inc",
+      "bytes": 3582,
+      "sha256": "2f9eda3bdf12ee25f44ea0d4d2351ef04656a77ca3b9a3f2936b2750bba4b938",
+      "git_blob_sha1": "71aaf57fb9da3072dca9ae5ccb256cf814383d9f"
+    },
+    {
+      "source": "starter/share/includes/vect01_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/vect01_c.inc",
+      "bytes": 1832,
+      "sha256": "f6905cba281493e5040dd43642509e41d8d652c5e27fcdec15fae81f42c4c4d3",
+      "git_blob_sha1": "2d10ca9c5ee440633c023a9c035938eb18d5fa55"
+    },
+    {
+      "source": "starter/share/spe_inc/implicit_f.inc",
+      "path": "../../solid18_reference/native/original/starter/share/spe_inc/implicit_f.inc",
+      "bytes": 1597,
+      "sha256": "9431871663a79d913a40ab9b433aa70d3ed4dc5cc5c345c1f25798b7451eff73",
+      "git_blob_sha1": "80a0c9ad24913bb2c60c9c49663bf15ad6fd5d04"
+    },
+    {
+      "source": "starter/share/spe_inc/mvsiz_p.inc",
+      "path": "../../solid18_reference/native/original/starter/share/spe_inc/mvsiz_p.inc",
+      "bytes": 1622,
+      "sha256": "8498e1f3be7d3872f79594a09b18fa97f57875b25ca893cf853b28109293857e",
+      "git_blob_sha1": "274ad22011292c0f56994a526638fee5a2b265e8"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf"
+    },
+    {
+      "source": "common_source/modules/elements/element_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/elements/element_mod.F90",
+      "bytes": 105714,
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2"
+    },
+    {
+      "source": "starter/source/elements/solid/solidez/szderi3.F",
+      "path": "original/starter/source/elements/solid/solidez/szderi3.F",
+      "bytes": 8295,
+      "sha256": "f19ea92bb15c85f2320793798407f494330c4a2c13a741528f3b4912098f48d1",
+      "git_blob_sha1": "4adc3ae3559351758cb94612d5f255dc9337bcd0"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/sdlen3.F",
+      "path": "original/starter/source/elements/solid/solide/sdlen3.F",
+      "bytes": 4612,
+      "sha256": "92f4d837f99aad1aef6b547f8f49756927750ef8de0cb39ec72f41f7678d1fec",
+      "git_blob_sha1": "2954d2f77db772cd5d97edb4a80d8cdc8c20e041"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/slen.F",
+      "path": "original/starter/source/elements/solid/solide/slen.F",
+      "bytes": 3979,
+      "sha256": "c4cebd8a7e27a7b23e4494271ae0433367f583af3073e121023f5bb3079693ad",
+      "git_blob_sha1": "361b886b6e437fd72507d515fe5ae60ecf6e74e4"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/smass3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/smass3.F",
+      "bytes": 10614,
+      "sha256": "fe5e0754c71580eaf4c16ffaddd8ddc9bf47310401e9ac16bfd433a4e72c5dd3",
+      "git_blob_sha1": "f0ae35fb8ce4a418d5fea362f3b2bc8776083d1e"
+    },
+    {
+      "source": "starter/share/includes/pt8_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/pt8_c.inc",
+      "bytes": 1723,
+      "sha256": "37109ad57baa9fb7da1786edae887beb0e89c35bfc30dcb915124d5c2e135e57",
+      "git_blob_sha1": "36b17c2e2861a73d1c1c0e53094edf5b680582eb"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../native/qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/scoor3.F",
+      "path": "original/starter/source/elements/solid/solide/scoor3.F",
+      "bytes": 18003,
+      "sha256": "e1360a4086a968f08e25d89925c225623b286ba68f2ec3c79c61dead67f90d8b",
+      "git_blob_sha1": "b909012dd09faba51f886cae5d1f75b67bdd4e88"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/sjacidp.F",
+      "path": "original/starter/source/elements/solid/solide/sjacidp.F",
+      "bytes": 5568,
+      "sha256": "453f446638ee96e93cd3601ce82930020655ed087b1e4dcb7c927c146133f6be",
+      "git_blob_sha1": "134c564e0f39b7cbbcaa7fb7a9771f10df2a6d9a"
+    },
+    {
+      "source": "starter/share/includes/com04_c.inc",
+      "path": "original/starter/share/includes/com04_c.inc",
+      "bytes": 5015,
+      "sha256": "fc44553835fe7a2d224ded939f5b69f9bda7b7765b39c1c9a08ea0ca955a9349",
+      "git_blob_sha1": "5445249dd4f0e7ec6da549651601eec481f97e9f"
+    },
+    {
+      "source": "starter/share/includes/scr03_c.inc",
+      "path": "original/starter/share/includes/scr03_c.inc",
+      "bytes": 3058,
+      "sha256": "a646fc010c9a9749bbc225a98f96eda965eb08dbd8bed951f8fdf77ce7eaaa78",
+      "git_blob_sha1": "571f55bb2e4fc5fab63f2838ec6c40ddd0d1b6ad"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/sinit3.F",
+      "path": "original/starter/source/elements/solid/solide/sinit3.F",
+      "bytes": 26008,
+      "sha256": "0943185b651299955461b875ec4d24609fd9201cef2e39b6a068d020d73caa58",
+      "git_blob_sha1": "8405978a897fb4d2fcf86d02a2239e18cba38b0a",
+      "role": "caller-order authority; not compiled"
+    }
+  ],
+  "license": {
+    "path": "../../solid18_reference/native/LICENSE.md",
+    "bytes": 34283,
+    "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+  }
+}

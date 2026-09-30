@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType25NodalCorrection LANGUAGES CXX C Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_nodal_seed" seed-regression)
+set(native "${CMAKE_CURRENT_BINARY_DIR}/native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
+  --output "${native}" RESULT_VARIABLE result)
+if(NOT result EQUAL 0)
+  message(FATAL_ERROR "Native correction source extraction failed")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS native/prepare.py
+  native/source-manifest.json native/Correction.F90.in native/original/stifint_icontrol.F90)
+add_library(nodal_correction_oracle STATIC NativeOracle.cpp "${native}/Correction.F90")
+target_link_libraries(nodal_correction_oracle PUBLIC tl_radioss_type25_nodal_seed)
+target_compile_options(nodal_correction_oracle PRIVATE
+  "$<$<COMPILE_LANGUAGE:Fortran>:-ffree-line-length-none;-fcheck=bounds;-fbacktrace;-fno-fast-math;-ffp-contract=off>")
+add_executable(nodal_correction_host HostTest.cpp OrderTest.cpp)
+target_link_libraries(nodal_correction_host PRIVATE nodal_correction_oracle GTest::gtest_main)
+target_compile_options(nodal_correction_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME nodal_correction_host COMMAND nodal_correction_host)
+add_executable(nodal_correction_consumer Consumer.cpp)
+target_link_libraries(nodal_correction_consumer PRIVATE tl_radioss_type25_nodal_seed)
+add_test(NAME nodal_correction_consumer COMMAND nodal_correction_consumer)
+add_test(NAME nodal_correction_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${native}" --check)

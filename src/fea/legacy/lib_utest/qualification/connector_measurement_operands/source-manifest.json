@@ -1,0 +1,227 @@
+{
+  "schema": "connector-measurement-operands-source-v1",
+  "baseline_commit": "90a4a8060966358714049a775e4f9f7e7838481e",
+  "scope": "Independent per-parent operand preparation and original ordered diagnostic reduction; no force/material equation change. Terminal local-Control storage preserves exact final fields and all ordered arithmetic.",
+  "files": [
+    {
+      "path": "lib_src/elements/BUILD.bazel",
+      "bytes": 13903,
+      "sha256": "eb8dee4d6b24cb21a93c2d3b5a853318655cd7eb1efbb65ac95e4a93f7898263"
+    },
+    {
+      "path": "lib_src/elements/ConnectorMeasurement.h",
+      "bytes": 2056,
+      "sha256": "b54583bdd1f1e2f172905c2e241191a3fe56d994c18eced6cda93b27982deb6b"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.cpp",
+      "bytes": 2235,
+      "sha256": "54439fdc5cf4cb126340182960f5005afff0f40d0ceda47777b1c2ac8413535c"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.h",
+      "bytes": 1656,
+      "sha256": "559d7c27bf3dd2f26409c40f82338d08485e1863d12881c020ed3f8d8bb7e19c"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/BUILD.bazel",
+      "bytes": 1886,
+      "sha256": "f33345eb5f2b74fcd9fae1363b9a1b4c4b7c2a89f449dc9e6aa6cb791a272895"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Batch.cmake",
+      "bytes": 1373,
+      "sha256": "c28f2ef28b05e7f3b28968a97ba020bbd78d7afa6506405ab27f83ab587b0e64"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Candidate.cu",
+      "bytes": 2906,
+      "sha256": "6a3d7190b3a159ba267f20db479577d0fed725a0acd3b7bdd9a5e94af862c546"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.cu",
+      "bytes": 888,
+      "sha256": "724a50404b4764c36bf4c20fe03ca758c91e52a4a8332a36d91105a9be2da78c"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.h",
+      "bytes": 2451,
+      "sha256": "ecce9e2eb5193e7215d7a59e6637fe1bd36d53a28d19f43709be444c73c832fd"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Startup.cpp",
+      "bytes": 6477,
+      "sha256": "63039c26a7e7a604a015616a06f3e8466db86d9c0fa28fc41a925a622bb05b45"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Storage.h",
+      "bytes": 3158,
+      "sha256": "08d7e42d84691dbeb5729afaba218d10052064df3a43bd19652c54ecf380dd67"
+    },
+    {
+      "path": "lib_src/elements/type25/BUILD.bazel",
+      "bytes": 2516,
+      "sha256": "3a2112d87e99ed381d00e7bfac3dd69679c95ae7fe1a3545c0e3154876e84e9d"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25Batch.cmake",
+      "bytes": 1660,
+      "sha256": "61a39761f6f07e295d9c5bb9472e0162e28be4fa10f837e39d336499453f06e5"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.cpp",
+      "bytes": 1817,
+      "sha256": "77a5a1357cea979271f26fc69cc27457e6f2e5305475a94741b6b5038fad7262"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchArena.h",
+      "bytes": 1842,
+      "sha256": "49a20b24ced81d2923cc38001f749eb2850735e4c8cacc6ebdc8822348379862"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchKernels.cu",
+      "bytes": 5601,
+      "sha256": "4550cf839ff6f75e714f4de0e538c5eb6180a8feefd4b5f02c9d83bfbfb8ceec"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasurement.cu",
+      "bytes": 905,
+      "sha256": "fdcd6735183ff03b41e66713ae08a608534d055e3ef984e6d1141c0684545d88"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchMeasurement.h",
+      "bytes": 2163,
+      "sha256": "22a864997b030552703376831d601f5ac8886b652826c7dadd40bf2bd8a90ff4"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchStartup.cpp",
+      "bytes": 5288,
+      "sha256": "6dc236770fe50138e0fcb992be5c32f80dcccb12af18184e889e9230cde7e128"
+    },
+    {
+      "path": "lib_src/elements/type25/Type25BatchStorage.h",
+      "bytes": 2861,
+      "sha256": "2e82d322d8bf358898862395d51059bb052fae29282c9671adea046e34e99d61"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/BudgetTest.cpp",
+      "bytes": 2633,
+      "sha256": "a55446c8c011c578cab22d0256ef508cfbbc2e316dd33426c23763ff18077a5f"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/CMakeLists.txt",
+      "bytes": 2984,
+      "sha256": "379f4b65f15ea5c0d9e41374b8a2bbd5c893458422a056c8f54677b34948c634"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/CudaTest.cu",
+      "bytes": 6951,
+      "sha256": "a08d923b2f8cc13ec612d0ceb67990d5173ddb53a3984f72b87e152562576d55"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/HostTest.cpp",
+      "bytes": 4197,
+      "sha256": "410c1181687030daf5796fb20cf96e22acb11c605529721ddc603bbbc3553acd"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/README.md",
+      "bytes": 3851,
+      "sha256": "685c735820354cacde7d314ded03515b531a5fa97220ed27f1d01ad3cef3afb7"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/TestSupport.h",
+      "bytes": 8470,
+      "sha256": "4e3a12f2f87096027d99f10c26b15a716d65e742ae2e10388554c47153f7a0ad"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/baseline.json",
+      "bytes": 1846,
+      "sha256": "82f8d6a78321482cac8da57f6239a9fbaad480233c4612ec99bb98bfe6f65803"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Arena.cpp",
+      "bytes": 1846,
+      "sha256": "720670ffad583e69c26e240457f250d977035b4fef567b1ad23429509acbbd0d"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Arena.h",
+      "bytes": 1344,
+      "sha256": "fbcd94c93d3cf17023412c26fd366b77c78e5f307fc474a4af6fb4ed5d81de70"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Candidate.cu",
+      "bytes": 2811,
+      "sha256": "c6ed9a146af04dfaaecf4944254e7f4e07c68528ec103be2c34887712ce718ce"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type13Measure.h",
+      "bytes": 3067,
+      "sha256": "a9a1b0269bf63f8b2967dd69461e764d231089fc335fd2a613d829a89a3fee37"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Arena.cpp",
+      "bytes": 1539,
+      "sha256": "7313bb179ee80e55e8c1c6692d31ceb5acb2f964ff51ab022427b98f503071c4"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Arena.h",
+      "bytes": 1568,
+      "sha256": "eae0b47fdb8bfdbde8243db87c322c11ddf932411e6cfb89794612028ddcc8f9"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Candidate.cu",
+      "bytes": 5439,
+      "sha256": "7e1a0b84a3f6a125ad318fea22f7efdd6f72366d16b263e1c2630f351d37cf25"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/frozen/Type25Measure.h",
+      "bytes": 2473,
+      "sha256": "9f6c5e4c2d4ab3d2a639f86ae0c42183cbe6a61ef8a6df3433d45237582bc814"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/generate_oracle.py",
+      "bytes": 3818,
+      "sha256": "c0cf34b5c5ffc8303a650ceb25c9d95b5638de5f169ffe0bc8c6ab98c8c92667"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local-control-baseline.json",
+      "bytes": 2019,
+      "sha256": "429ddd424a1088d2c5d90bddbf3495e3efbd232f7866be95ee7c79cf44c17ddd"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_proof.py",
+      "bytes": 3980,
+      "sha256": "fdd3978df82aae9170c77acd836ab50d36742c9b199720c99badc0b28eda8481"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_frozen/Type13Candidate.cu",
+      "bytes": 2892,
+      "sha256": "427ecaa01e8962327199b85d968a51d69a88e291f00cb8c9008118f786f37f10"
+    },
+    {
+      "path": "lib_utest/qualification/connector_measurement_operands/local_control_frozen/Type25Candidate.cu",
+      "bytes": 5573,
+      "sha256": "0e70381da2a27f98c10b2f0238ff42cfe349f075cc34b8bf730ecd8e90b1900a"
+    }
+  ],
+  "integration_provenance": {
+    "base": "95664290ccf60c486174944f7399c8a9afe3b760",
+    "qualified_donor": "95790324247784623c7209d034ac438c5754a8af",
+    "reviewed_merge": "4d71b2d1838133c98a8558bd70be7005dde61234",
+    "scope": "Only reviewed additive arena/build/startup composition is rebound. Original90a donor bodies and all numerical/failure reversal checks remain unchanged.",
+    "rebound_files": [
+      "lib_src/elements/type13/resident/Arena.cpp",
+      "lib_src/elements/type13/resident/Arena.h",
+      "lib_src/elements/type13/resident/BUILD.bazel",
+      "lib_src/elements/type13/resident/Startup.cpp",
+      "lib_src/elements/type25/BUILD.bazel",
+      "lib_src/elements/type25/Type25BatchArena.cpp",
+      "lib_src/elements/type25/Type25BatchArena.h",
+      "lib_src/elements/type25/Type25BatchStartup.cpp"
+    ]
+  },
+  "local_control_provenance": {
+    "base": "759e486a0e1a8c072bca48423be833b9c04e9b21",
+    "scope": "Only terminal Control storage changes in the two full finalizers; unchanged arithmetic, layout, owner and readback pins are authenticated separately."
+  }
+}

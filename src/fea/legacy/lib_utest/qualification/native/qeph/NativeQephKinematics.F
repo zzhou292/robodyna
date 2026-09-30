@@ -1,0 +1,16 @@
+! Q1 C binding to the shared fixed native geometry/rate context.
+! Native arithmetic: OpenRadioss (C) 2026 Siemens, AGPL-3.0-or-later.
+! See original/LICENSE.md and source-manifest.json.
+      SUBROUTINE QE_Q1_KINEMATICS(X,V,VR,THICKNESS,STEP,
+     . OUTPUT,IS_PLANAR,STATUS) BIND(C,NAME="qeph_q1_kinematics")
+      USE ISO_C_BINDING, ONLY: C_DOUBLE,C_INT
+      USE QE_Q1_GEOMETRY_MOD, ONLY: QE_GEOMETRY_,QE_PREPARE_GEOMETRY,QE_PACK_GEOMETRY
+      IMPLICIT NONE
+      REAL(C_DOUBLE), INTENT(IN) :: X(3,4),V(3,4),VR(3,4),THICKNESS,STEP
+      REAL(C_DOUBLE), INTENT(OUT) :: OUTPUT(80)
+      INTEGER(C_INT), INTENT(OUT) :: IS_PLANAR,STATUS
+      TYPE(QE_GEOMETRY_) G
+      CALL QE_PREPARE_GEOMETRY(X,V,VR,THICKNESS,STEP,G,STATUS)
+      IF(STATUS/=0) RETURN
+      CALL QE_PACK_GEOMETRY(X,G,OUTPUT,IS_PLANAR)
+      END

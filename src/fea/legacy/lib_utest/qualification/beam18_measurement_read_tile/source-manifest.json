@@ -1,0 +1,151 @@
+{
+  "baseline": "515e46ffd0425cf4c19f5f6a9fb2fce14175b7cd",
+  "frozen": [
+    {
+      "name": "Candidate.cu",
+      "bytes": 2836,
+      "sha256": "997fbdeaeb1a01118767381be42d99677fcd42f7665d4ff85d7248f90afc43e9"
+    },
+    {
+      "name": "Measure.h",
+      "bytes": 1957,
+      "sha256": "3c88471759e3c4600b95fe92960b965a14c1d4a0fe824802504f49433db5979d"
+    },
+    {
+      "name": "resident-source-manifest.json",
+      "bytes": 8906,
+      "sha256": "e222f31315580b0bac482653b50cec50cad7160aa5164670f818c0948cfd2d9f"
+    },
+    {
+      "name": "force-source-manifest.json",
+      "bytes": 16560,
+      "sha256": "dafdb46edbf8c278742ff674e2a8c599ae69b891ef7e4ab8192ec30387292a47"
+    },
+    {
+      "name": "extended-source-manifest.json",
+      "bytes": 7303,
+      "sha256": "5fa8d5286783b65cffc680c48d2aa43ff93068acb22eaa619ca40d22dcaafce1"
+    },
+    {
+      "name": "extended-verify_sources.py",
+      "bytes": 1926,
+      "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d"
+    },
+    {
+      "name": "model-source-manifest.json",
+      "bytes": 6862,
+      "sha256": "4d22e4e8cc78917a96f8223decc6942047c2031bba3ef68c7a536eab4f66ca9c"
+    }
+  ],
+  "production": [
+    {
+      "path": "lib_src/elements/beam18/resident/Candidate.cu",
+      "bytes": 2518,
+      "sha256": "52e3a69846019732273cfe8194e64a50642cd6681b5f3012f9ae903b3e8f6064"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Measure.h",
+      "bytes": 2696,
+      "sha256": "7a3885060bbca0b80916b0581470774a6b05c320bd3686946582bd6fac8f4699"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/BUILD.bazel",
+      "bytes": 1586,
+      "sha256": "bc3536d60ee16da31e24da56e8cccd7e67fd72605f25ff33754bcbe268261276"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Tile.h",
+      "bytes": 478,
+      "sha256": "584df378719a386b89af044cbcd1eb8a6fbcaa09e6ae9b5cdbe73de63540c570"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Read.h",
+      "bytes": 1021,
+      "sha256": "e3d03aaf198e9e2498008da0bf7d27bf580f61ecae35a4ec913249a126dea576"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/measurement/Finalize.cuh",
+      "bytes": 1893,
+      "sha256": "fffdf06986ec6c535ff89320047a6557c3f686ae98d2cfc1978a455cce96f484"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_resident/source-manifest.json",
+      "bytes": 10187,
+      "sha256": "ae02a203aad738318e44b110d63ec94e02b25a5ef8d4bc8d7e269cdc48c8c036"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_force/source-manifest.json",
+      "bytes": 16915,
+      "sha256": "d2e5a1e014bb792f414dcb934bc0728bfbf29d9481473e1c0f297ec14a4099a8"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/source-manifest.json",
+      "bytes": 7738,
+      "sha256": "bcc6b5c45c72a5929147d30c788d913272cf599397c0bc1228aaab6fcb93a93b"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/verify_sources.py",
+      "bytes": 1926,
+      "sha256": "b79a36ce9312d9d898a88ea3b3e4dbcf30a0e72bc3b277097748279ae8a98d6f"
+    },
+    {
+      "path": "lib_utest/qualification/beam18_model/source-manifest.json",
+      "bytes": 7178,
+      "sha256": "d140bade9c53a6661ec7307c48dab567b203294c45f53abf14106219e02b1da5"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/beam_common/EndpointFields.h",
+      "bytes": 2763,
+      "sha256": "4d7f7f44cce9eb504d231541c38a9bf9515f5de480113cdd1517e95b654a8eff"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/ResultChecks.h",
+      "bytes": 2626,
+      "sha256": "eeaea3ada8768d5d9bd48d6701ec77337229d9ece933c22e1d49008779ba1b62"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Arena.h",
+      "bytes": 1377,
+      "sha256": "6a53e750555b7919b0b01c32e9ddca4168c6c1302aeb5a39a7b52b03b4eb28f4"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Arena.cpp",
+      "bytes": 2418,
+      "sha256": "6ee114d357a800061e218a1b8a2593d3d1305071447efb6d013f848f9ffba061"
+    },
+    {
+      "path": "lib_src/elements/beam18/ForceChecks.h",
+      "bytes": 4331,
+      "sha256": "7cdcdf96cd9c137ecaea2670329206181f793f54abb6c5ca4d048ecc6eb30a83"
+    },
+    {
+      "path": "lib_src/elements/beam18/Force.h",
+      "bytes": 3119,
+      "sha256": "4241cdbd5efce8026345985a71b19843ec7b9b11c7c700cd9ecb4eb9916be884"
+    },
+    {
+      "path": "lib_src/elements/beam18/resident/Plan.cpp",
+      "bytes": 3037,
+      "sha256": "7e6c71b4bfc36cac20661b15c326db18987b9528be4abd03c7ca9a9b27fd6175",
+      "baseline_refresh_reason": "Baseline50e1c2df; constrained-startup qualified801d467: add ValidStartup third true argument only. No change in this tile candidate."
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
+      "bytes": 2781,
+      "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f",
+      "baseline_refresh_reason": "Baseline561026c2 and11370dc1: add CIN force-transfer/recovery qualification visibility only. No production effect."
+    },
+    {
+      "path": "lib_utest/qualification/beam18_reference/source-manifest.json",
+      "bytes": 7908,
+      "sha256": "7d208b0430e079fee422208f6f92de07e75e8945af185864ecb310a6eca1d6f2"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/SolidFixture.h",
+      "bytes": 2648,
+      "sha256": "46ebd7680b71c7cfca31fdba0c6b9df7984686fddc5dd4c8c93ed64809d717d1"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+include_guard(GLOBAL)
+add_library(tl_surface_jacobian_majorant INTERFACE)
+get_filename_component(TL_SURFACE_MAJORANT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+target_include_directories(tl_surface_jacobian_majorant INTERFACE "${TL_SURFACE_MAJORANT_ROOT}")
+target_compile_features(tl_surface_jacobian_majorant INTERFACE cxx_std_17)

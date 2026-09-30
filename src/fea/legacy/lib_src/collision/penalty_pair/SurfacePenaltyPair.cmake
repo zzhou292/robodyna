@@ -1,0 +1,5 @@
+if(NOT TARGET tl_surface_penalty_pair)
+  add_library(tl_surface_penalty_pair INTERFACE)
+  include("${CMAKE_CURRENT_LIST_DIR}/../weighted_surface/WeightedSurface.cmake")
+  target_link_libraries(tl_surface_penalty_pair INTERFACE tl_weighted_surface)
+endif()

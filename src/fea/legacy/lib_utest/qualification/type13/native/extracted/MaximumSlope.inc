@@ -1,0 +1,10 @@
+      IF(IFUNCT==0) RETURN
+        NPOINT=(NPC(IFUNCT+1)-NPC(IFUNCT))/2
+        DO 50 J=2,NPOINT
+        J1=2*(J-2)
+        A1=PLD(NPC(IFUNCT)+J1)
+        B1=PLD(NPC(IFUNCT)+J1+1)
+        A2=PLD(NPC(IFUNCT)+J1+2)
+        B2=PLD(NPC(IFUNCT)+J1+3)
+        XK= MAX(XK,LSCALE*(B2-B1)/(A2-A1))
+  50    CONTINUE

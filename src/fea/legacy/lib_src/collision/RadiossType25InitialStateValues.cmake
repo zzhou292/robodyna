@@ -1,0 +1,4 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/RadiossType25Lifecycle.cmake")
+add_library(tl_radioss_type25_initial_state_values INTERFACE)
+target_link_libraries(tl_radioss_type25_initial_state_values INTERFACE tl_radioss_type25_lifecycle)

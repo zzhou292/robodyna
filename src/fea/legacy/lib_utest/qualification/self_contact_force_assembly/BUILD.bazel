@@ -1,0 +1,41 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    tags = ["m2-self-contact-source-shape", "symmetric-edge-area"],
+    srcs = ["ValueTest.cpp", "SourceTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:self_contact_force_values",
+        "//lib_utest/qualification/self_contact_active_uses:fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "source_check",
+    size = "small",
+    tags = ["m2-rigid-cin-response", "symmetric-edge-area"],
+    srcs = ["SourceProofTest.cpp"],
+    data = [
+        "verify_sources.py",
+        "CMakeLists.txt",
+        ":root_cuda_sources",
+        "//lib_src/collision:self_contact_force_assembly_source_proof",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
+
+filegroup(
+    name = "root_cuda_sources",
+    tags = ["m2-rigid-cin-response"],
+    srcs = [
+        "CMakeLists.txt",
+        "CudaTest.cu",
+        "ActivityValidationCudaCases.h",
+        "SourceTest.cpp",
+        "README.md",
+        "check_syntax.py",
+    ],
+)

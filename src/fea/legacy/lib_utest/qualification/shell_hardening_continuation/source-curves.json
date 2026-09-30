@@ -1,0 +1,32 @@
+{
+  "schema": "tl.original-yaris-continuation-fixtures.v1",
+  "source_key_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+  "source_key_bytes": 42846753,
+  "source_key_zip_member": "2010-toyota-yaris-coarse-v1l/yaris-coarse-v1l.key",
+  "curves": [
+    {
+      "id": 2100180,
+      "source_line": 18227,
+      "path": "fixtures/source-curve-2100180.key-fragment",
+      "bytes": 864,
+      "sha256": "4776dc28d2402a0d786d08b690af65d864fe4927d7d26d7d73554fdb6d741215",
+      "count": 17
+    },
+    {
+      "id": 2100220,
+      "source_line": 18248,
+      "path": "fixtures/source-curve-2100220.key-fragment",
+      "bytes": 782,
+      "sha256": "f1746d16a53a08e0300f01ef3efc81d6ee90cd6365d1e8ef728d05232c721dee",
+      "count": 15
+    },
+    {
+      "id": 2100271,
+      "source_line": 18332,
+      "path": "fixtures/source-curve-2100271.key-fragment",
+      "bytes": 618,
+      "sha256": "20d99eb3bba4c68ceec966185a5f25e48888cde226508b6a079b7f9aa4d9f672",
+      "count": 11
+    }
+  ]
+}

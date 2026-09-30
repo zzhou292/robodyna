@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "BoundsTest.cpp", "LifetimeTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_src/elements/solid18/law44:reference",
+            "//lib_src/elements/solid18/total_strain:reference_kinematics",
+            "//lib_utest/qualification/solid18_reference:source_fixture",
+            "//lib_utest/qualification/solid18_law44_reference:test_values",
+            "//lib_utest/qualification/law90_solid18_reference:test_values",
+            "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/solid18_law44_reference:test_values",
+            "//lib_utest/qualification/law90_solid18_reference:test_values"],
+)

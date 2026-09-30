@@ -1,0 +1,234 @@
+{
+  "baseline_commit": "14ab5248217d225cfefc992f2c3d8b7915b151ca",
+  "baseline_path": "lib_src/elements/qeph/mapped/Readback.cpp",
+  "baseline_bytes": 3181,
+  "baseline_sha256": "3df1c6717653c0c999315932ff72682651e9e0eb33452b0f2febc275a35d4e98",
+  "scope": "Mapped activity only: unchanged fresh sections/failure plus compact full-force validation; complete baseline validation bodies, no native-equation change",
+  "files": [
+    {
+      "path": "lib_src/elements/ShellMixedSectionReadback.cpp",
+      "bytes": 2627,
+      "sha256": "fd802c50b2e4a2ae6143bf42ae3414a3af3dd9c4409a79354a2e0d7d18d69ede"
+    },
+    {
+      "path": "lib_src/elements/ShellMixedSectionStorage.cpp",
+      "bytes": 7720,
+      "sha256": "84b3bf92203316e4224a2ff1d8a1b167e6ab31125a506b718aef0737e035d9fd"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureReadback.h",
+      "bytes": 1842,
+      "sha256": "ca881dae778df1664f748b4edebf87223f0f48bba2fc25b001cc6612a823f3e0"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureStorage.cpp",
+      "bytes": 6639,
+      "sha256": "befe697db99f07947fab65aa42ec78126276b692e953c9db95693e49100d2775"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureValues.h",
+      "bytes": 4667,
+      "sha256": "6e69833f55e72e3f8490fdc865b9b0ec6cc9be51a650a9631e09d47f3bd6a560"
+    },
+    {
+      "path": "lib_src/elements/qeph/BUILD.bazel",
+      "bytes": 5203,
+      "sha256": "38483774b4ca3e8fdd90969082443d82d1dc8ad94c8c06161064911bd6ab7122"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatch.cmake",
+      "bytes": 2318,
+      "sha256": "b5023669990d30d749c8ee1c39783e111678f2bb8b4dbebf792fa694f2987e3a"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatch.cu",
+      "bytes": 11410,
+      "sha256": "91ed10083b6238dfc0d03dee286d368aa0dcf62c5b3732189015e85dd66cd023"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchFailureReadback.cpp",
+      "bytes": 6828,
+      "sha256": "b9a0f1023bd6613411d372e327bbf2162ece50784db26321e5c1338543154703"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchPublication.cpp",
+      "bytes": 5907,
+      "sha256": "3d47cfceb6f85371be6bb755fb0bd33c42cdd591189872bdb154a49b6586b0c5"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchStorage.h",
+      "bytes": 6937,
+      "sha256": "61794d85cf58b1122e6a98cd1adbec8f9b464ee6d1a176d641271e4cf4572c91"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistory.h",
+      "bytes": 3493,
+      "sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistoryData.h",
+      "bytes": 2262,
+      "sha256": "17a5dfe9697e6d985cd54fdb888c9222f25c0f893f9e6389bccb44fb9b9ed17a"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ActivityKernels.cu",
+      "bytes": 1634,
+      "sha256": "8f2f05dc8946c2034db3d6581937f5388011693f7fba87b53317f1d0f23f5bb2"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ActivityLayout.h",
+      "bytes": 1679,
+      "sha256": "a3e796be3518774b7866346755fbfc04d4009822a323db3342fc6d36ba445519"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ActivityReadback.cu",
+      "bytes": 2236,
+      "sha256": "6945294a458fc6aaba885df153a208254e41f9b228ffc242a74fa707dadc290f"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ActivityValues.h",
+      "bytes": 2173,
+      "sha256": "79691cdf9c8636c2a3ea800aa3ade82ab5173a656ef8230af25ac9f8390a7121"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/AssemblyLayout.h",
+      "bytes": 2401,
+      "sha256": "9b49b8be173c8eb26412cc85b7494396fe7deb2075efd486636354bad062750c"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/AssemblyTypes.h",
+      "bytes": 1058,
+      "sha256": "5a39729e00705709e6bb7ff4f0a8d40d61f1f4b16c520adf879b5d21e0a45872"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Initialize.cu",
+      "bytes": 4137,
+      "sha256": "a99d91ac05ae88d706313e969462a2d333c8cadbdea51eeab535d57e18bbe982"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Readback.cpp",
+      "bytes": 2483,
+      "sha256": "df00d9234609480a5b7a1652b20c35e5c19f7c210091c8f5695d465b79fcf97f"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Result.h",
+      "bytes": 4608,
+      "sha256": "93bde1836116c1b1f55e5dafd850fd40e9a77bf671164883a4b8e8327cc5209e"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Startup.cpp",
+      "bytes": 6163,
+      "sha256": "478e72af9ff9acf3b2ce4fde3ae75920d9daf4bf1fef99695324a589da30a67f"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Constraints.cpp",
+      "bytes": 4174,
+      "sha256": "7309d518e2c216e08a345fa4c0a5f683d41c5ac85dd67d546f6f1bf778d41a70"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Fixture.h",
+      "bytes": 2549,
+      "sha256": "e3df2b6727988a4d397d32577668786a71a8850db4b1ca743fa44e75271545b3"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerAttempt.cu",
+      "bytes": 3584,
+      "sha256": "9689c0ae3ddafa262fd885640bd9c940be36e13fcf690f68360261cbd1b7ffb1"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerFixture.h",
+      "bytes": 2191,
+      "sha256": "32b2a171adf5f1189d4c40db65274ebc03bc7eab78ca043485f8af93e5b9bb55"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerStartup.cu",
+      "bytes": 3515,
+      "sha256": "29d968547d6a5740d37ddfdeb59d83c9315c71d1dbc765e3ab67b4d33fcfd972"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Sources.cpp",
+      "bytes": 4315,
+      "sha256": "31d537470f986b77a73773d92870d6a324b09f81cb98fc2a591bad868a3f93bc"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/BUILD.bazel",
+      "bytes": 526,
+      "sha256": "ca8f87a9302ef4d9387a8e074b23ba8369d5ffa36fb672595c5a7604aa0ec2c9"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/CMakeLists.txt",
+      "bytes": 1503,
+      "sha256": "cfa3aa19b54d4b95884fb464c0b0aadcff562a3c05a6b8dc9488b398c53d364f"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/Cuda.cmake",
+      "bytes": 1135,
+      "sha256": "629fb858e17f9b8d34fe084f5ab6351eb4876d84cfd1b940acc061a710983c11"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/FailureTest.cu",
+      "bytes": 2756,
+      "sha256": "9f7d0ab1c39016511c2157bb7e7093414c0a727f34e18a5783c133ff72affafd"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/FrozenReadback.cpp.txt",
+      "bytes": 3181,
+      "sha256": "3df1c6717653c0c999315932ff72682651e9e0eb33452b0f2febc275a35d4e98"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/HostTest.cpp",
+      "bytes": 6370,
+      "sha256": "23924151cbc45161c412d2beee9f9b92666f22f2749073947069ba7070f430e0"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/KernelTest.cu",
+      "bytes": 2575,
+      "sha256": "ff77d4d83280a973875deb188069995698188a1e28ef1793bd4122f1f853511f"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/Oracle.h",
+      "bytes": 2663,
+      "sha256": "e6ef394e1933c5ab71143b120d7d27262b7eda458be3734ec4db3b0080a3357d"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/OwnerSupport.h",
+      "bytes": 2805,
+      "sha256": "91cc855daa8827920f94aa60bbe7f38e48ed29e72ed97d470828886fcd198463"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/OwnerTest.cu",
+      "bytes": 4189,
+      "sha256": "99e20a2bef53d4d2cc52ccb7c0e1a413272aaab704e6d624e07455f672c3814d"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/README.md",
+      "bytes": 4920,
+      "sha256": "85067f8934d9312df42ed0639ff051a4c4817df927c40bd77a2ae28c3268d4f1"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/SerialValidation.h",
+      "bytes": 2534,
+      "sha256": "71b66ea5d482e3551ca9bf10f24ceac05e9a7fdfef4886e8d7b28574716808ea"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/Transfers.cpp",
+      "bytes": 1113,
+      "sha256": "c55734b7e942694e20be7f45ae1062bf828777ca3e8829db80a55b240560247d"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_activity/Transfers.h",
+      "bytes": 585,
+      "sha256": "491d2f9c1975d0522ff8a8b949eddc7339433990f1b5b436d092f1b2a887274a"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_gather/Fixture.h",
+      "bytes": 5484,
+      "sha256": "6e1fdef6395d1bb9c77083223321f8e9c9e7ba7f33c4f48c5efd188f822c4f32"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/BUILD.bazel",
+      "bytes": 1930,
+      "sha256": "c390e60ee4101353ecc812c94f0008bf269dec0f38f58a00e76a74904c701134"
+    }
+  ]
+}

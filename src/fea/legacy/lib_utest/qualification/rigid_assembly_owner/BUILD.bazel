@@ -1,0 +1,53 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["Fixture.cpp"],
+    hdrs = ["Fixture.h", "OwnerFixture.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support", "@googletest//:gtest"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//lib_utest/qualification/cin_parallel_recovery:__pkg__",
+                  "//lib_utest/qualification/cin_force_transfers:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_groups:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_capture:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_ordinary:__pkg__",
+                  "//lib_utest/qualification/cin_physical_timestep:__pkg__",
+                  "//lib_utest/qualification/cin_physical_main_summary:__pkg__",
+                  "//lib_utest/qualification/physical_owner_forecast:__pkg__",
+                  "//lib_utest/qualification/type45_model:__pkg__",
+                  "//lib_utest/qualification/type45_resident:__pkg__",
+                  "//lib_utest/qualification/solid_resident:__pkg__",
+                  "//lib_utest/qualification/qbat_mapped:__pkg__",
+                  "//lib_utest/qualification/beam18_resident:__pkg__"],
+)
+
+cc_test(
+    name = "rigid_assembly_owner_host",
+    size = "small",
+    srcs = ["Fixture.cpp", "Fixture.h", "HostTest.cpp", "PhysicalMemberTest.cpp"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:nodal_native_physical_coefficients",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_test(
+    name = "rigid_assembly_owner_cuda",
+    size = "small",
+    srcs = ["Fixture.cpp", "Fixture.h", "OwnerFixture.h", "OwnerTest.cu", "IdentityTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

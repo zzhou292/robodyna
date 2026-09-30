@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "Corpus.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:self_contact_filter_batch_values", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "source_check",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    data = ["verify_extraction.py", "//lib_src/collision:self_contact_filter_batch_sources"],
+    deps = ["@googletest//:gtest_main"],
+)
+filegroup(
+    name = "root_cuda_sources",
+    srcs = ["CudaTest.cu", "Corpus.h", "CMakeLists.txt", "README.md"],
+)

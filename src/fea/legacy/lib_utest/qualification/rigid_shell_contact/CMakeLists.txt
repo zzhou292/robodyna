@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLRigidShellContact LANGUAGES CXX CUDA)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+add_subdirectory("${TL_ROOT}/lib_src/solvers" "tl-nodal-owner")
+include("${TL_ROOT}/lib_src/elements/qeph/QephBatch.cmake")
+include("${TL_ROOT}/lib_src/elements/t3/T3Batch.cmake")
+include("${TL_ROOT}/lib_src/elements/ShellBatchPublication.cmake")
+include("${TL_ROOT}/lib_src/collision/NodalWallContactDevice.cmake")
+add_executable(native_coefficient_admission_check NativeCoefficientAdmissionTest.cpp)
+target_link_libraries(native_coefficient_admission_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+add_test(NAME native_coefficient_admission_check COMMAND native_coefficient_admission_check)
+add_executable(rigid_shell_contact_check RigidShellContactFixture.cu
+  RigidContributorAdmissionTest.cu RigidContributorCouplingTest.cu)
+target_link_libraries(rigid_shell_contact_check PRIVATE tl_shell_batch_publication tl_nodal_wall_contact_device GTest::gtest_main)
+set_target_properties(rigid_shell_contact_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+target_compile_options(rigid_shell_contact_check PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+add_test(NAME rigid_shell_contact_check COMMAND rigid_shell_contact_check)
+set_tests_properties(native_coefficient_admission_check rigid_shell_contact_check
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)

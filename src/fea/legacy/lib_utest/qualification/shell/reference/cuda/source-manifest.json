@@ -1,0 +1,79 @@
+{
+  "origin": "https://github.com/OpenRadioss/OpenRadioss",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Selected original shell kernel files; no production adoption implied",
+  "files": [
+    {
+      "original_path": "LICENSE.md",
+      "file": "LICENSE.md",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090",
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "bytes": 34283,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/LICENSE.md",
+      "retrieval": "existing pinned local source"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/real_type.h",
+      "file": "real_type.h",
+      "git_blob_sha1": "b31b273fbc5ee363486470f98b4e58c5d04828b1",
+      "sha256": "057c418c48ad7e771f9dd125f2461104628631d6e6f80aa73f1ff910bdc01796",
+      "bytes": 1569,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/real_type.h",
+      "retrieval": "pinned official raw HTTPS"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_geometry_kernel.h",
+      "file": "shell_geometry_kernel.h",
+      "git_blob_sha1": "96f4f61d22b1be4cbb1aacbc084153b404ef5d8c",
+      "sha256": "b429eb23b52f98d0cb347592f7cfb3ab936deb029b5cbe1d7cb7cab5cd96adf2",
+      "bytes": 4173,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_geometry_kernel.h",
+      "retrieval": "pinned official raw HTTPS"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_force_assembly_kernel.h",
+      "file": "shell_force_assembly_kernel.h",
+      "git_blob_sha1": "187256eeaaa21ae35abdb1871dd4a8a0d22cd5e3",
+      "sha256": "06f474d1c859391eef88013c914886a1da5d889fca8dcbe5d9fca7c10ef4a10c",
+      "bytes": 5804,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_force_assembly_kernel.h",
+      "retrieval": "pinned official raw HTTPS"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_strain_material_kernel.h",
+      "file": "shell_strain_material_kernel.h",
+      "git_blob_sha1": "824fafefc459bcc281189e1fd23bc53b3087c9c2",
+      "sha256": "c599a32b33c10bbf597565d26998713dc88716fe6b52757b148b1273a98bf830",
+      "bytes": 6168,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_strain_material_kernel.h",
+      "retrieval": "pinned official raw HTTPS"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_geometry_kernel.cu",
+      "file": "shell_geometry_kernel.cu",
+      "git_blob_sha1": "c4522770b98283121373672d6a116d7f4ab178b3",
+      "sha256": "e5c8a9609aff7f42854062b30204645f9ba3d918b31d2aeb5cb40beab0d52430",
+      "bytes": 23472,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_geometry_kernel.cu",
+      "retrieval": "existing pinned local source"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_force_assembly_kernel.cu",
+      "file": "shell_force_assembly_kernel.cu",
+      "git_blob_sha1": "76b055f2c7cca7a2ea95a6e5c9c73974dc8bc40e",
+      "sha256": "411db646e3070ade11ad217e68e6326f5e6604e3ede4e0402ebb4b03b0004ea8",
+      "bytes": 30581,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_force_assembly_kernel.cu",
+      "retrieval": "existing pinned local source"
+    },
+    {
+      "original_path": "engine/source/elements/shell/coque/shell_strain_material_kernel.cu",
+      "file": "shell_strain_material_kernel.cu",
+      "git_blob_sha1": "204fd7130f32d513f751153d5f1fd2533fdf5e78",
+      "sha256": "13ebd98348f91919f5bf81f6d3932f5a19039504611608bc0e6d2194080fd0ba",
+      "bytes": 41647,
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/shell_strain_material_kernel.cu",
+      "retrieval": "existing pinned local source"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "reference",
+    hdrs = ["Solid24Types.h", "Solid24Geometry.h", "Solid24Reference.h", "Solid24ReferenceJacobian.h", "Solid24Topology.h"],
+    deps = ["//lib_src/elements/solid_common:brick_frame", "//lib_src/elements/solid6z:reference", "//lib_src/math:scalar_bits"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "Solid24Force.h",
+        "Solid24ForceDerivatives.h",
+        "Solid24ForceHistory.h",
+        "Solid24ForceKinematics.h",
+        "Solid24ForceMaterial.h",
+        "Solid24ForceResultants.h",
+        "Solid24ForceTypes.h",
+        "Solid24Stabilization.h",
+    ],
+    deps = [
+        ":reference",
+        "//lib_src/elements/solid_common:brick_frame",
+        "//lib_src/materials/law42:caller",
+    ],
+    visibility = ["//visibility:public"],
+)

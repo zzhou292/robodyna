@@ -1,0 +1,7 @@
+{
+  "file": "observed-primary-source.json",
+  "bytes": 16706,
+  "sha256": "8be0fb79936ac6f952be67374d22202044d6a0cdb8d29497c4625c537b635eda",
+  "origin_observation_sha256": "64d429bbfae3bc90de99249bb76e64b2f37a0c5791bf11692452647bc65bcbac",
+  "scope": "Qualification-only initial source fixture; no runtime factory"
+}

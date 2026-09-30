@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "brick_frame",
+    hdrs = ["BrickFrame.h", "BrickStartup.h", "FrameTensor.h", "SolidCharacteristicLength.h", "PhysicalHourglassModes.h"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+    visibility = ["//visibility:public"],
+)

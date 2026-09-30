@@ -1,0 +1,69 @@
+{
+  "schema": "robo_dyna.type25_friction_control_observation.v1",
+  "status": "observed_at_first_actual_i25for3_entry",
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "argument_values": {
+    "JLT": 128.0,
+    "MFROT": 2.0,
+    "IFQ": 10.0,
+    "IORTHFRIC": 0.0,
+    "INTTH": 0.0,
+    "ILEV": 1.0,
+    "INTEREFRIC": 0.0,
+    "ALPHA0": 1.0,
+    "VISC": 0.05,
+    "VISCF": 0.0,
+    "VISCFFRIC": 0.0,
+    "FRICC": 0.1
+  },
+  "common_inconv": 1,
+  "method": "Pinned x86_64 SysV reference ABI;164 pointer dummy arguments, source COMMON integer ordering and binary symbol sizes. Read-only GDB at entry; inferior intentionally stopped.",
+  "scope": "One first actual contact call in fresh no-target-scaling case. Array values VISCFFRIC/FRICC are first-row observations, not complete population claims. Printed TT/DT1/DT12 have6digit precision; DT2 is an in-progress estimator and must NOT be treated as an accepted physical step. No physical acceptance/performance claim.",
+  "pins": [
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-friction-mode-inspection-1.log",
+      "bytes": 3244,
+      "sha256": "6555de553daf2270f5a5dd5a8d7d0e559d557dde74179cb5f5a36eb445fcc975"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/reports/radioss-type25-friction-mode-inspection-1.json",
+      "bytes": 5190,
+      "sha256": "08cc6c4cbd2325ac3e4ff84800279ee5102cf2e85d2a474158c081796a8e1e6e"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/tangential-mode-probe-1/inspect.gdb",
+      "bytes": 999,
+      "sha256": "ed7015cd692c7fe12c0d2ef2e4fb07f9c1fbd8f2cf6e5c5d6b2c8e696cd427cb"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/tangential-mode-probe-1/abi-layout.json",
+      "bytes": 3831,
+      "sha256": "d7da185af780901f800e74eeb753cf40295d20bde4f46005cce3f6d3e343b9dd"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/tangential-mode-probe-1/case_0001.rad",
+      "bytes": 447,
+      "sha256": "1dc55f86433cdf3396ce67c9044d38ec0f343cb23eb3fa686323f5ec647b379f"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/engine_linux64_gf",
+      "bytes": 31117192,
+      "sha256": "7fdedddbcf5753a53d7c8d8872aa6ead3b4e9983237997f6dd3b8cdd8375e3ed"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/planning/openradioss-alignment-2026-09-24/contact-reference/engine/source/interfaces/int25/i25for3.F",
+      "bytes": 132646,
+      "sha256": "c601423a4ab8561230c0b86fec7cc277003cd8e9ba78cece91c11156bf2ca986"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/deps/openradioss-qeph-law1-closure-1/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112"
+    },
+    {
+      "path": "/home/jsonzhou/Desktop/chrono-work/crash-work/deps/openradioss-qeph-law1-closure-1/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496"
+    }
+  ]
+}

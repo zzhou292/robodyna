@@ -1,0 +1,63 @@
+{
+  "scope": "Test-only actual common publisher integration with three structural beams appended to the unchanged mixed physical fixture. Production and shared fixture regression gates are root owned.",
+  "reused_fixture_owner": "lib_utest/qualification/physical_publication",
+  "files": {
+    "lib_utest/qualification/beam18_publication/Attempt.cu": {
+      "bytes": 1461,
+      "sha256": "2cde76ea5447adae5ac8280df8b44a48507d35c6f3b10d6006a70eedd50449ba"
+    },
+    "lib_utest/qualification/beam18_publication/BUILD.bazel": {
+      "bytes": 708,
+      "sha256": "8613d13d745607cab5c562e4e91a44487681a77719d288d862f98d1262d7cf8a"
+    },
+    "lib_utest/qualification/beam18_publication/CMakeLists.txt": {
+      "bytes": 2257,
+      "sha256": "bfd5785c2c73c30d72b8e77cd8acec12662320e571f277afe790464b9d1f5335"
+    },
+    "lib_utest/qualification/beam18_publication/Fixture.h": {
+      "bytes": 1698,
+      "sha256": "4f30097c1a8ad5dfb550b20471be86a9867575fc1679f43162d328857265e597"
+    },
+    "lib_utest/qualification/beam18_publication/HostTest.cpp": {
+      "bytes": 2220,
+      "sha256": "f1af6f6d43b8c6ef51f19b478a9db82df6847a988f1d7ddb7176be5bed9b4cac"
+    },
+    "lib_utest/qualification/beam18_publication/LoadedTest.cu": {
+      "bytes": 2359,
+      "sha256": "abf8949c1e61fa9d9c9ab08970e76b7351c07888d40fb3fdb142278fbdc1d91e"
+    },
+    "lib_utest/qualification/beam18_publication/OwnershipTest.cu": {
+      "bytes": 3273,
+      "sha256": "108b4706a6c2f3978ba89d2b02f5f12baf5c4c3d1f76422b8fa8248ef1e358a5"
+    },
+    "lib_utest/qualification/beam18_publication/README.md": {
+      "bytes": 3000,
+      "sha256": "60c63f353d19e49a39ab45fc3d0d2e3bffb59557dda9f40e2c8a8fd4e80f8d5f"
+    },
+    "lib_utest/qualification/beam18_publication/RejectionTest.cu": {
+      "bytes": 4224,
+      "sha256": "b3c7485a52dc52a548a0f1eb49325417f1f4c87a48b92d9ea997b61237d358f1"
+    },
+    "lib_utest/qualification/beam18_publication/Source.cpp": {
+      "bytes": 3050,
+      "sha256": "02710d6434d70b00b54610e354a0c123805e555a871469173bdb1c9379b0ed01"
+    },
+    "lib_utest/qualification/beam18_publication/Source.h": {
+      "bytes": 821,
+      "sha256": "dc6c2f9d51019915037cfe845f793b59b006d9580cc065cb83d681d2e8b4b4dc"
+    },
+    "lib_utest/qualification/beam18_publication/Startup.cu": {
+      "bytes": 4044,
+      "sha256": "8f2a93c7ded7ad4509c79ea9e609e1adddeda6b0b91bceab3abb9aff2d90000e"
+    },
+    "lib_utest/qualification/beam18_publication/Values.cpp": {
+      "bytes": 1885,
+      "sha256": "7829d010a338bb44d4d530064aca6dcecd48b73e71424664dd705b8b1a173dbe"
+    },
+    "lib_utest/qualification/beam18_publication/verify_source.py": {
+      "bytes": 787,
+      "sha256": "cc5664a17e1d06015ea814205afe9dc060dc5291a2022d62e86c0bfa67edb04f"
+    }
+  },
+  "startup_admission_extension": "ReferenceConstrainedUniformTranslation on free moving supports plus independent fixed shell nodes; native force/cache bodies unchanged."
+}

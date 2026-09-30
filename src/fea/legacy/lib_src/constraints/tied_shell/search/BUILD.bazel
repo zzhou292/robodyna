@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "values",
+    srcs = ["Checks.cpp", "Budget.cpp", "Projection.cpp"],
+    hdrs = ["TiedSearchDriver.h", "Internal.h"],
+    deps = ["//lib_src/constraints/tied_shell:tied_shell_search", "//lib_src/collision:hydroelastic_broadphase"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "driver",
+    srcs = ["TiedSearchDriver.cu"],
+    deps = [":values", "//lib_src/collision:hydroelastic_broadphase"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+)
+cc_library(
+    name = "finalization",
+    srcs = ["TiedSearchFinalization.cpp", "FinalizationChecks.cpp", "FinalizationMaps.cpp"],
+    hdrs = ["TiedSearchFinalization.h", "FinalizationInternal.h"],
+    deps = ["//lib_src/constraints/tied_shell:tied_shell_search"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

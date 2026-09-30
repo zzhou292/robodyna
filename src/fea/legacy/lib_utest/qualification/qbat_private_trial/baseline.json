@@ -1,0 +1,26 @@
+{
+  "base": "69a1d05c182797c1788cb81adbf89efee74dce83",
+  "scope": "Exact prior C++ storage wrapper and force body, not a replacement native oracle",
+  "files": [
+    {
+      "path": "QbatForce.h.baseline",
+      "bytes": 5385,
+      "sha256": "c6bda24a0fd1b55727c150c68917f79530dda97c8d1430459b61aca04f8b8880"
+    },
+    {
+      "path": "QbatHistory.h.baseline",
+      "bytes": 1232,
+      "sha256": "73f06b0b0704a119ad323d7ab8b4048a490231e9eb186ef193433d3ad3f7098a"
+    },
+    {
+      "path": "QbatBatchAdvance.h.baseline",
+      "bytes": 1880,
+      "sha256": "e981390ed6eaea1d28ca19d8e51b98b981c55b695b1b9059315ba53a98482c2b"
+    },
+    {
+      "path": "QbatBatchKernels.cu.baseline",
+      "bytes": 6129,
+      "sha256": "755bfffbf597f3192d96a2867a05aef759a7e2f6760f0ceddc36cac186d62f77"
+    }
+  ]
+}

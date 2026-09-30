@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "fixture",
+    hdrs = ["TestSupport.h", "source_fixture/OriginalMaterial.h", "source_fixture/NativeSdiOriginal.h"],
+    deps = ["//lib_src/materials/law90:preparation"],
+    visibility = ["//visibility:public"],
+)
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h", "source_fixture/OriginalMaterial.h", "source_fixture/NativeSdiOriginal.h"],
+    deps = ["//lib_src/materials/law90:preparation", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

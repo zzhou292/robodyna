@@ -1,0 +1,119 @@
+{
+  "schema": "tl.tab1-glass-native.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "complete TAB1, complete table interpolation operations and exact starter default/packing extracts; shared LAW44 and NIP3 caller donors remain separately authenticated",
+  "sources": [
+    {
+      "path": "original/fail_tab_c.F",
+      "upstream_path": "engine/source/materials/fail/tabulated/fail_tab_c.F",
+      "bytes": 19374,
+      "sha256": "fe56f7cd763bac43be9837e4820a1c514c69ae8bc383426910d9b29c8a37966c",
+      "git_blob_sha1": "362691c527a29b2a35df1220b3d3e33bd0633918"
+    },
+    {
+      "path": "original/table_mod.F",
+      "upstream_path": "engine/share/modules/table_mod.F",
+      "bytes": 20241,
+      "sha256": "0564b544b5faf61b557e0c433b539c69b17f89ec2de2a55d320c79b89ca09603",
+      "git_blob_sha1": "6d8d99af7eb88ae76957a08ac4c33ef859a42fa2"
+    },
+    {
+      "path": "original/table_tools.F",
+      "upstream_path": "engine/source/tools/curve/table_tools.F",
+      "bytes": 39566,
+      "sha256": "6f5077fa4ab3eef63d1e872e155ebcdc3ad2af64079cb1afbd411e1a79afb8c3",
+      "git_blob_sha1": "6f4ef40807b1a56ea00b39422975474c89d46697"
+    },
+    {
+      "path": "original/hm_read_fail_tab1.F",
+      "upstream_path": "starter/source/materials/fail/tabulated/hm_read_fail_tab1.F",
+      "bytes": 16745,
+      "sha256": "c18d657143a17e0f0d0a9b26cebdcae05f6f1100056181cf48e557799c78cf46",
+      "git_blob_sha1": "26cbe7b27fe087aaa80258438634f6b67baf0ef1"
+    },
+    {
+      "path": "original/fail_tab1.cfg",
+      "upstream_path": "hm_cfg_files/config/CFG/radioss2018/FAIL/fail_tab1.cfg",
+      "bytes": 10802,
+      "sha256": "3ef8929b55b8b7db470d85db19b556f1995d27483b67956e12a3176905454b64",
+      "git_blob_sha1": "bb79566169383c6d1f29d3c74994e11bb8666167"
+    },
+    {
+      "path": "original/LICENSE.md",
+      "upstream_path": "LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090"
+    }
+  ],
+  "fragments": [
+    {
+      "file": "TableInterp.F",
+      "source": "original/table_tools.F",
+      "ranges": [
+        [
+          274,
+          405
+        ]
+      ],
+      "bytes": 4271,
+      "sha256": "31e350091f2e37570d9936d4709b4b7a3e245d74bfa4a8f785282c2e6159e31a"
+    },
+    {
+      "file": "TableVinterp.F",
+      "source": "original/table_tools.F",
+      "ranges": [
+        [
+          621,
+          877
+        ]
+      ],
+      "bytes": 9508,
+      "sha256": "5c614caf44d0c293e86dce769faf262f0ac5babf7092205b8c106057bb140eda"
+    },
+    {
+      "file": "Defaults.inc",
+      "source": "original/hm_read_fail_tab1.F",
+      "ranges": [
+        [
+          154,
+          196
+        ]
+      ],
+      "bytes": 1410,
+      "sha256": "2865d959e77981a1fd0bf9085ce8109db1b69079225cf7316afe1a871889343c"
+    },
+    {
+      "file": "DefaultUnits.inc",
+      "source": "original/hm_read_fail_tab1.F",
+      "ranges": [
+        [
+          199,
+          199
+        ],
+        [
+          202,
+          202
+        ],
+        [
+          205,
+          205
+        ]
+      ],
+      "bytes": 154,
+      "sha256": "025d030818542ab6576c95778daedcd45fdf53fad7f64d6aa4e1bc24c34a03bf"
+    },
+    {
+      "file": "Packing.inc",
+      "source": "original/hm_read_fail_tab1.F",
+      "ranges": [
+        [
+          223,
+          244
+        ]
+      ],
+      "bytes": 715,
+      "sha256": "37ac6789c49d62cb54246c83242ab3452f455471da4394c213e78bf4e2b37759"
+    }
+  ]
+}

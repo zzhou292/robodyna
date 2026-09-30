@@ -1,0 +1,29 @@
+{
+  "schema": "robo_dyna.native_scene_assembly_controls.v1",
+  "complete": true,
+  "observation": {
+    "clock": {
+      "TT": 0.00014039999999999927,
+      "DT1": 3e-07,
+      "DT2_estimator": 1000000.0,
+      "DT12": 3e-07,
+      "DT2OLD": 3e-07,
+      "TSTOP": 0.0003,
+      "NCYCLE": 468,
+      "NSPMD": 1,
+      "IRESP": 0
+    },
+    "controls": {
+      "JLT": 3,
+      "NIN": 1,
+      "JTASK": 1,
+      "INTTH": 0,
+      "IFORM": 0,
+      "NODADT_THERM": 0,
+      "IPARIT": 0,
+      "NPINCH": 0
+    }
+  },
+  "failure": null,
+  "scope": "Actual first I25ASS3 control entry; child intentionally stopped; no timing claim"
+}

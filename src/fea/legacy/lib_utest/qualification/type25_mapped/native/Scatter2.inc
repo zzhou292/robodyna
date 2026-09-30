@@ -1,0 +1,1 @@
+        STIFR(NC1(I))=STIFR(NC1(I))+STIR(1,I)

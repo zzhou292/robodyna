@@ -1,0 +1,18 @@
+# Reusable owning native caller; composing qualification supplies its exact dependencies.
+if(NOT TARGET t3_one_point_native)
+  set(one_native "${CMAKE_CURRENT_LIST_DIR}/native")
+  set(one_modules "${CMAKE_CURRENT_BINARY_DIR}/one-point-modules")
+  file(MAKE_DIRECTORY "${one_modules}")
+  add_library(t3_one_point_native STATIC "${one_native}/NativeGeometry.F" "${one_native}/NativeCoefficients.F"
+    "${one_native}/NativeStiffness.F" "${one_native}/NativeParent.F" "${one_native}/NativeProjection.F" "${one_native}/NativeForce.F")
+  add_dependencies(t3_one_point_native t3_r3_native law44_one_point_native)
+  target_link_libraries(t3_one_point_native PUBLIC t3_r3_native law44_one_point_native)
+  foreach(property INCLUDE_DIRECTORIES COMPILE_DEFINITIONS COMPILE_OPTIONS)
+    get_target_property(value t3_r3_native ${property})
+    set_property(TARGET t3_one_point_native PROPERTY ${property} "${value}")
+  endforeach()
+  get_target_property(t3_modules t3_r3_native Fortran_MODULE_DIRECTORY)
+  get_target_property(point_modules law44_one_point_native Fortran_MODULE_DIRECTORY)
+  target_include_directories(t3_one_point_native PRIVATE "${one_native}" "${one_modules}" "${t3_modules}" "${point_modules}")
+  set_target_properties(t3_one_point_native PROPERTIES Fortran_MODULE_DIRECTORY "${one_modules}")
+endif()

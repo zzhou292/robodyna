@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+add_library(tl_cpu_utils STATIC "${CMAKE_CURRENT_LIST_DIR}/cpu_utils.cc")
+get_filename_component(tl_cpu_utils_root "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+target_include_directories(tl_cpu_utils PUBLIC "${tl_cpu_utils_root}")
+target_link_libraries(tl_cpu_utils PUBLIC Eigen3::Eigen)
+target_compile_features(tl_cpu_utils PUBLIC cxx_std_17)

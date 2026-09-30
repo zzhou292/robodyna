@@ -1,0 +1,157 @@
+{
+  "schema": "tl.layered-native-recurrence-sources.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "license": "AGPL-3.0-or-later",
+  "sources": [
+    {
+      "path": "original/mulawc.F90",
+      "upstream_path": "engine/source/materials/mat_share/mulawc.F90",
+      "bytes": 165437,
+      "sha256": "778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526"
+    },
+    {
+      "path": "original/layini.F",
+      "upstream_path": "engine/source/elements/shell/coque/layini.F",
+      "bytes": 41570,
+      "sha256": "744be8fb1910479bd5d29c3e0f6e421195a09b24c3e19991969a1516000da7c3"
+    }
+  ],
+  "fragments": [
+    {
+      "file": "WorkBefore.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          543,
+          547
+        ]
+      ],
+      "bytes": 332,
+      "sha256": "86097d64ea6599234f2a0671fb443684f0049e60e9fa80d3a1cf377ec94a9040"
+    },
+    {
+      "file": "SectionBegin.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          566,
+          582
+        ]
+      ],
+      "bytes": 650,
+      "sha256": "2c36b057d3a5214b150c0bcbc803d94c4cecef262fc47041ceeb7dcea51dfc9d"
+    },
+    {
+      "file": "Transverse.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          682,
+          683
+        ]
+      ],
+      "bytes": 74,
+      "sha256": "9347480da11f073e967ce25426d5537f174dd3eb9c6a1e3acb48ab93af77658d"
+    },
+    {
+      "file": "LayerThickness.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          767,
+          767
+        ]
+      ],
+      "bytes": 65,
+      "sha256": "ff5731ba5e433b308dec25b78144438a085a9a1c8ae04aa6634f8a7cdb9e45f3"
+    },
+    {
+      "file": "LayerStrain.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          850,
+          855
+        ]
+      ],
+      "bytes": 239,
+      "sha256": "dcd8b764ebe1fe7082773bc9e4716bb197763e265a2e48b31c1c677c617cae64"
+    },
+    {
+      "file": "PointPlasticWork.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2010,
+          2018
+        ]
+      ],
+      "bytes": 565,
+      "sha256": "478b32bf85b3aef4eac7892b0c54ee3ec7d996fdcd1b9ef7afb63acd457f954a"
+    },
+    {
+      "file": "LayerResultants.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2657,
+          2664
+        ]
+      ],
+      "bytes": 663,
+      "sha256": "a07f60da2259a018e59f85cfadf602a6a28f1220591ac45936588653edae9562"
+    },
+    {
+      "file": "LayerFactors.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2825,
+          2826
+        ],
+        [
+          2828,
+          2828
+        ]
+      ],
+      "bytes": 233,
+      "sha256": "718e0118ef6ee805b8cf876ff2ff01e45324599b6447b820b56010d4c8a3ec0a"
+    },
+    {
+      "file": "WorkAfter.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3046,
+          3048
+        ]
+      ],
+      "bytes": 285,
+      "sha256": "b0966f0f77b4c5ccf14deb1cd54861ce4130f005057d6592f5974710812f5329"
+    },
+    {
+      "file": "WorkAccumulate.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3089,
+          3094
+        ]
+      ],
+      "bytes": 223,
+      "sha256": "156daf26648ca10ce00dd794593c95953348611dad1299c84b00cc13063d5fe8"
+    },
+    {
+      "file": "ThicknessViscosity.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3016,
+          3032
+        ]
+      ],
+      "bytes": 927,
+      "sha256": "dd6994c9975c3a754f375ff84283a305798a5e9d74cca15ec72250cfebd60e68"
+    }
+  ]
+}

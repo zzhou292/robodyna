@@ -1,0 +1,61 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "source": "engine/source/elements/solid/solide/degenes8.F",
+      "path": "original/engine/source/elements/solid/solide/degenes8.F",
+      "bytes": 3815,
+      "git_blob_sha1": "4f98812205d09b05720250064eca9e4b734910bf",
+      "sha256": "55efb53806f990d0b9dd4f7f53b06407d549ae6359766acb6825aefc84f885ad"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8z/s8zfintp3.F",
+      "path": "original/engine/source/elements/solid/solide8z/s8zfintp3.F",
+      "bytes": 4655,
+      "git_blob_sha1": "43f95b33abd297a2e307f53f43094f38ae1c4cd1",
+      "sha256": "4438e472862ea85cce43b6f2432665284ee215b3dfb8122280b1d590c9915034"
+    },
+    {
+      "source": "engine/source/implicit/ind_glob_k.F",
+      "path": "original/engine/source/implicit/ind_glob_k.F",
+      "bytes": 269040,
+      "git_blob_sha1": "7e6703b03a6b69a905ab82a5cb9fe292f8ba7420",
+      "sha256": "22118686d6690b2e0b7be7e2bc9dd4b55a7450b52f7ec29f4a13000f7a675e81"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8edefoc3.F",
+      "path": "original/engine/source/elements/solid/solide8e/s8edefoc3.F",
+      "bytes": 3789,
+      "git_blob_sha1": "4ccd6aa635aab97273f67582a1c16ede76cf65f4",
+      "sha256": "d5282ddd2e0f63739770e93db6646e67da695b8f1d7c16f974b99766e7651c54"
+    },
+    {
+      "source": "starter/source/elements/elbuf_init/initvars_auto.F",
+      "path": "original/starter/source/elements/elbuf_init/initvars_auto.F",
+      "bytes": 26951,
+      "git_blob_sha1": "3f54428a68b3fef049692054dc47e9938bebe2ea",
+      "sha256": "8d44724e7e8abb4b26004140fccd242daa4697dd50d046052f7629eb7dec9dab"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mulaw.F90",
+      "path": "../../solid_law44_point/native/original/engine/source/materials/mat_share/mulaw.F90",
+      "bytes": 142562,
+      "git_blob_sha1": "b9794e1db2d4f7809f510788fc069366532ed7b4",
+      "sha256": "1d3e7c01bef5d22a702682c2b860027902a46eaf657900034b7d4e534f809bc3"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8eforc3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide8e/s8eforc3.F",
+      "bytes": 93331,
+      "git_blob_sha1": "b1c361190f7d6033a6049b40ff3f1429ec562a23",
+      "sha256": "ce07f95c8710a539be0784c0de0816bf2d795c370e06a9fb6a799bd406cbe373"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/scumu3.F",
+      "path": "original/engine/source/elements/solid/solide/scumu3.F",
+      "bytes": 23756,
+      "git_blob_sha1": "4e4605b3101a4d1219fda1b9e0caba514a0ed9b9",
+      "sha256": "10128c69d2793bb73ef17b114ccd1642efcc251d305d7cd143325e2a66974d8b"
+    }
+  ]
+}

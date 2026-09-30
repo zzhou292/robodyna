@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["Source.h", "Source.cpp", "HostTest.cpp"],
+    deps = ["//lib_utest/qualification/physical_publication:fixture",
+            "//lib_utest/qualification/beam18_force:test_values",
+            "//lib_src/elements/beam18/resident:values",
+            "//lib_src/assembly:beam18_node_contributions",
+            "//lib_src/elements:shell_batch_publication", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# The actual common-publisher CUDA gate is owned by the adjacent CMake target;
+# it links existing complete snapshot helpers and contains no native peer.

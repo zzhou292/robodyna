@@ -1,0 +1,22 @@
+enable_language(CUDA)
+if(NOT TARGET tl_explicit_nodal_state)
+  add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
+endif()
+if(NOT TARGET tl_qeph_batch)
+  include("${tl_root}/lib_src/elements/qeph/QephBatch.cmake")
+endif()
+if(NOT TARGET tl_t3_batch)
+  include("${tl_root}/lib_src/elements/t3/T3Batch.cmake")
+endif()
+include("${tl_root}/lib_src/elements/ShellBatchPublication.cmake")
+add_executable(resident_shell_tab1_cuda_check CudaStartup.cu CudaStep.cu CudaFrames.cu
+  CudaNativeTest.cu CudaRejectionTest.cu CudaFaults.cu)
+target_link_libraries(resident_shell_tab1_cuda_check PRIVATE tl_shell_batch_publication
+  shell_placement_force_test_support CUDA::cudart GTest::gtest_main)
+target_include_directories(resident_shell_tab1_cuda_check PRIVATE "${tl_root}")
+target_compile_features(resident_shell_tab1_cuda_check PRIVATE cxx_std_17 cuda_std_17)
+target_compile_options(resident_shell_tab1_cuda_check PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+target_link_options(resident_shell_tab1_cuda_check PRIVATE "-Wl,--wrap=cudaMemcpyAsync")
+add_test(NAME resident_shell_tab1_cuda COMMAND resident_shell_tab1_cuda_check)
+set_tests_properties(resident_shell_tab1_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

@@ -1,0 +1,35 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+genrule(
+    name = "frozen_headers",
+    srcs = ["prepare_frozen.py", "frozen/ExplicitStepStability.h", "frozen/Validation.cuh"],
+    outs = ["FrozenStability.h", "FrozenValidation.cuh"],
+    cmd = "python3 $(location prepare_frozen.py) $(@D)",
+)
+cc_library(
+    name = "host_fixture",
+    testonly = True,
+    hdrs = ["Compare.h", ":frozen_headers"],
+    includes = ["."],
+    deps = ["//lib_src/solvers:nodal_seal_row_values", "//lib_src/solvers:nodal_state_layout",
+            "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = [":host_fixture"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = ["CallerTest.cu", "OwnerTest.cu", "Frozen.cu", "FrozenTypes.h",
+            "//lib_utest/qualification/nodal_vehicle:VehicleOwnerFixture.h",
+            "//lib_utest/qualification/nodal_vehicle:VehicleOwnerFixture.cu"],
+    deps = [":host_fixture", "//lib_src/solvers:explicit_nodal_state"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true",
+             "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

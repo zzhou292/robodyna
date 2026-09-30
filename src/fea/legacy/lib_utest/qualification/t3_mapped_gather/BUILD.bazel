@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture",
+    visibility = ["//lib_utest/qualification/t3_observer_reduction:__pkg__"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements/t3:batch_values", "@googletest//:gtest"],
+)
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = [":fixture", "//lib_src/elements/t3:batch_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["CudaTest.cu", "SerialAssembly.cuh"],
+    deps = [":fixture", "//lib_src/elements/t3:batch", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

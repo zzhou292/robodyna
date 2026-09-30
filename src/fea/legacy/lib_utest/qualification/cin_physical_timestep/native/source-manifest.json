@@ -1,0 +1,77 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "origin": "https://github.com/OpenRadioss/OpenRadioss",
+  "scope": "Native ordinary positive kernels and per-member plain rigid stiffness producer only; body trace analytical, no RBYM repair or parity",
+  "wrapper_sha256": "97d433b13198940a0f94340975cd2063ab49c46b498c3d9deb8857462c5009ac",
+  "files": [
+    {
+      "path": "openradioss-shell-execution-trace/engine/source/time_step/dtnoda.F",
+      "bytes": 29524,
+      "sha256": "447e00437a6aa81130ff77565d11eb85a506fafc80588d63214f181c7983ae49",
+      "git_blob_sha1": "b399370d2823f514c2357eabf668bbeab258f80b",
+      "fragments": [
+        {
+          "first_line": 256,
+          "last_line": 260,
+          "name": "TRANSLATION",
+          "sha256": "3d88002737f42d758a588c63e7e6f0bbc0d07530bab662b3d697ef4d22bb302c"
+        },
+        {
+          "first_line": 468,
+          "last_line": 472,
+          "name": "ROTATION",
+          "sha256": "136add71c7d5ff9ff4805f66c711b339e584cb8449552bc996e64dd8c6af1411"
+        }
+      ],
+      "original_path": "engine/source/time_step/dtnoda.F"
+    },
+    {
+      "path": "openradioss-nodal-rigid-contract-1/engine/source/constraints/general/rbody/rgbodfp.F",
+      "bytes": 27758,
+      "sha256": "d351e3e23ea03aa1b2e2c3621442ea063382da75f86f6f1657fe56f480423af8",
+      "git_blob_sha1": "d23daa5ba6976764b7d2bf399ea8f730d8e1b2a8",
+      "fragments": [
+        {
+          "first_line": 119,
+          "last_line": 121,
+          "name": "RIGID_TERMS",
+          "sha256": "9f0e618537058992e0e8f88d01b4eee119b736833db8dc82cdaeedbe63d49f2a"
+        }
+      ],
+      "original_path": "engine/source/constraints/general/rbody/rgbodfp.F"
+    },
+    {
+      "path": "openradioss-nodal-rigid-contract-1/starter/source/constraints/general/rbody/inirby.F",
+      "bytes": 61171,
+      "sha256": "ea24961874d4080536176d6117e1cd8518dfe1e8b785db3c43edc04815cfe440",
+      "git_blob_sha1": "1ab28f4cae34612be63c3dd4cd16d2c380062125",
+      "fragments": [],
+      "original_path": "starter/source/constraints/general/rbody/inirby.F"
+    },
+    {
+      "path": "openradioss-cin-timestep-1/original/engine/source/materials/mat/mat013/rmatforp.F",
+      "bytes": 4938,
+      "sha256": "183d0e894b2c3ae73318c62b19110c3e3fae496566da5617eccab79356cfc60a",
+      "git_blob_sha1": "51bb544b6dbaa5efe9b48229a9f73eec6041a7a0",
+      "fragments": [],
+      "original_path": "engine/source/materials/mat/mat013/rmatforp.F"
+    },
+    {
+      "path": "openradioss-cin-timestep-1/original/engine/source/materials/mat/mat013/rmatpon.F",
+      "bytes": 15579,
+      "sha256": "8eb9268faac3933f1af9eac833359ecdf7c6916023023080079f371f689f2f9f",
+      "git_blob_sha1": "d1887040596808073232a4fe094dad11d1127f20",
+      "fragments": [],
+      "original_path": "engine/source/materials/mat/mat013/rmatpon.F"
+    },
+    {
+      "path": "openradioss-cin-timestep-1/original/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090",
+      "fragments": [],
+      "original_path": "LICENSE.md"
+    }
+  ],
+  "pinned_tree_sha256": "8fb86006ab938d902953ef328a66a0658827cf6dfb99bd756da446e56f215735"
+}

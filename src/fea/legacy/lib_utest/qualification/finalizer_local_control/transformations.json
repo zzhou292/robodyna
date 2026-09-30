@@ -1,0 +1,54 @@
+[
+  {
+    "path": "lib_src/elements/qbat/mapped/Measurement.h",
+    "changes": [
+      {
+        "before": "}\nTL_QBAT_HD inline void FinalizeMeasurement(batch_detail::Storage& state,\n    const NodalPreparedView& view,BatchDiagnostics identity,unsigned blocks) noexcept {\n  state.control={};\n  state.control.diagnostics=identity;\n  // Complete element-failure priority precedes every measurement failure,\n  // including an invalid result at a lower source ordinal.\n  for (std::size_t parent=0; parent<state.model.config.element_count; ++parent) {\n    if (state.candidate_status[parent]==Status::kSuccess) continue;\n    state.control.status=BatchStatus::ElementFailure;\n    state.control.element=static_cast<std::uint32_t>(parent);\n    state.control.element_status=state.candidate_status[parent];\n    return;\n  }\n  if (!MeasureStaged(state,view,state.control.diagnostics,blocks)) {\n    state.control.status=BatchStatus::NonfiniteResult;\n    return;\n  }\n  state.control.diagnostics.valid=true;\n}\n} // namespace tl::fea::qbat::mapped\n",
+        "after": "}\nTL_QBAT_HD inline void FinalizeMeasurement(batch_detail::Storage& state,\n    const NodalPreparedView& view,BatchDiagnostics identity,unsigned blocks) noexcept {\n  batch_detail::Control next{};\n  next.diagnostics=identity;\n  // Complete element-failure priority precedes every measurement failure,\n  // including an invalid result at a lower source ordinal.\n  for (std::size_t parent=0; parent<state.model.config.element_count; ++parent) {\n    if (state.candidate_status[parent]==Status::kSuccess) continue;\n    next.status=BatchStatus::ElementFailure;\n    next.element=static_cast<std::uint32_t>(parent);\n    next.element_status=state.candidate_status[parent];\n    break;\n  }\n  if (next.status==BatchStatus::Success) {\n    if (!MeasureStaged(state,view,next.diagnostics,blocks)) {\n      next.status=BatchStatus::NonfiniteResult;\n    } else {\n      next.diagnostics.valid=true;\n    }\n  }\n  state.control=next;\n}\n} // namespace tl::fea::qbat::mapped\n"
+      }
+    ]
+  },
+  {
+    "path": "lib_src/elements/solids/resident/Measure.h",
+    "changes": [
+      {
+        "before": "TL_BRICK_HD inline double PlasticWork(const Cache18Law44& c) noexcept { return c.diagnostics.plastic_work_increment_j; }\nTL_BRICK_HD inline double PlasticWork(const Cache18Law90&) noexcept { return 0; }\ntemplate<class Traits, class Check>\nTL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view, Check check) noexcept {\n  auto& family = FamilyStorage<Traits>(state);\n  auto& control = state.control;\n  auto& diagnostics = control.diagnostics;\n  diagnostics.parent_count[family_index] = family.count;\n  for (std::size_t p = 0; p < family.count; ++p) {\n",
+        "after": "TL_BRICK_HD inline double PlasticWork(const Cache18Law44& c) noexcept { return c.diagnostics.plastic_work_increment_j; }\nTL_BRICK_HD inline double PlasticWork(const Cache18Law90&) noexcept { return 0; }\ntemplate<class Traits, class Check>\nTL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, Control& control,\n    unsigned accepted, unsigned trial, unsigned family_index,\n    const NodalPreparedView* view, Check check) noexcept {\n  auto& family = FamilyStorage<Traits>(state);\n  auto& diagnostics = control.diagnostics;\n  diagnostics.parent_count[family_index] = family.count;\n  for (std::size_t p = 0; p < family.count; ++p) {\n"
+      },
+      {
+        "before": "  }\n  return true;\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view) noexcept {\n",
+        "after": "  }\n  return true;\n}\n// Retained callers keep their original destination and ordered fold.\ntemplate<class Traits, class Check>\nTL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view, Check check) noexcept {\n  return MeasureFamilyWithCheck<Traits>(state, state.control, accepted, trial,\n      family_index, view, check);\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view) noexcept {\n"
+      },
+      {
+        "before": "      DirectResultCheck<Traits>{state, trial});\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureValidatedFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view) noexcept {\n  return MeasureFamilyWithCheck<Traits>(state, accepted, trial, family_index, view,\n      StagedResultCheck{FamilyStorage<Traits>(state).result_valid});\n}\n} // namespace tl::fea::solids::batch_detail\n",
+        "after": "      DirectResultCheck<Traits>{state, trial});\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureValidatedFamily(Storage& state, Control& control,\n    unsigned accepted, unsigned trial, unsigned family_index,\n    const NodalPreparedView* view) noexcept {\n  return MeasureFamilyWithCheck<Traits>(state, control, accepted, trial, family_index, view,\n      StagedResultCheck{FamilyStorage<Traits>(state).result_valid});\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureValidatedFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view) noexcept {\n  return MeasureValidatedFamily<Traits>(state, state.control, accepted, trial,\n      family_index, view);\n}\n} // namespace tl::fea::solids::batch_detail\n"
+      }
+    ]
+  },
+  {
+    "path": "lib_src/elements/solids/resident/MeasurementValues.h",
+    "changes": [
+      {
+        "before": "}\n\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, unsigned family_index,\n    const NodalPreparedView* view) noexcept {\n  auto& family = FamilyStorage<Traits>(state);\n  auto& control = state.control;\n  auto& diagnostics = control.diagnostics;\n  diagnostics.parent_count[family_index] = family.count;\n  for (std::size_t p = 0; p < family.count; ++p) {\n",
+        "after": "}\n\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, Control& control,\n    unsigned family_index, const NodalPreparedView* view) noexcept {\n  auto& family = FamilyStorage<Traits>(state);\n  auto& diagnostics = control.diagnostics;\n  diagnostics.parent_count[family_index] = family.count;\n  for (std::size_t p = 0; p < family.count; ++p) {\n"
+      },
+      {
+        "before": "  return true;\n}\n\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureFinalFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view, bool operands_prepared) noexcept {\n  return operands_prepared ? MeasureOperandFamily<Traits>(state, family_index, view)\n      : MeasureValidatedFamily<Traits>(state, accepted, trial, family_index, view);\n}\n} // namespace tl::fea::solids::batch_detail\n",
+        "after": "  return true;\n}\n\n// Retained callers keep the existing state.control result location.\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureOperandFamily(Storage& state, unsigned family_index,\n    const NodalPreparedView* view) noexcept {\n  return MeasureOperandFamily<Traits>(state, state.control, family_index, view);\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureFinalFamily(Storage& state, Control& control,\n    unsigned accepted, unsigned trial, unsigned family_index,\n    const NodalPreparedView* view, bool operands_prepared) noexcept {\n  return operands_prepared ? MeasureOperandFamily<Traits>(state, control, family_index, view)\n      : MeasureValidatedFamily<Traits>(state, control, accepted, trial, family_index, view);\n}\ntemplate<class Traits>\nTL_BRICK_HD inline bool MeasureFinalFamily(Storage& state, unsigned accepted, unsigned trial,\n    unsigned family_index, const NodalPreparedView* view, bool operands_prepared) noexcept {\n  return MeasureFinalFamily<Traits>(state, state.control, accepted, trial,\n      family_index, view, operands_prepared);\n}\n} // namespace tl::fea::solids::batch_detail\n"
+      }
+    ]
+  },
+  {
+    "path": "lib_src/elements/solids/resident/Candidate.cu",
+    "changes": [
+      {
+        "before": "__global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity, bool initial, bool operands_prepared = false) {\n  auto& state = *storage;\n  state.control = {};\n  if (initial) {\n    identity.source_instance_id = state.source_instance_id;\n    identity.owner_id = state.config.owner.owner_id;\n",
+        "after": "__global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity, bool initial, bool operands_prepared = false) {\n  auto& state = *storage;\n  Control next{};\n  if (initial) {\n    identity.source_instance_id = state.source_instance_id;\n    identity.owner_id = state.config.owner.owner_id;\n"
+      },
+      {
+        "before": "    identity.phase = BatchPhase::Accepted;\n  }\n  identity.minimum_native_dt_s = DBL_MAX;\n  state.control.diagnostics = identity;\n  const auto* prepared = initial ? nullptr : &view;\n  if (!MeasureFinalFamily<Traits18>(state, accepted, trial, 0, prepared, operands_prepared) ||\n      !MeasureFinalFamily<Traits24>(state, accepted, trial, 1, prepared, operands_prepared) ||\n      !MeasureFinalFamily<Traits6z>(state, accepted, trial, 2, prepared, operands_prepared) ||\n      !MeasureFinalFamily<Traits18Law44>(state, accepted, trial, 3, prepared, operands_prepared) ||\n      !MeasureFinalFamily<Traits18Law90>(state, accepted, trial, 4, prepared, operands_prepared)) return;\n  state.control.diagnostics.valid = true;\n}\n} // namespace\nvoid LaunchInitialize(Storage* storage, cudaStream_t stream) {\n",
+        "after": "    identity.phase = BatchPhase::Accepted;\n  }\n  identity.minimum_native_dt_s = DBL_MAX;\n  next.diagnostics = identity;\n  const auto* prepared = initial ? nullptr : &view;\n  if (MeasureFinalFamily<Traits18>(state, next, accepted, trial, 0, prepared, operands_prepared) &&\n      MeasureFinalFamily<Traits24>(state, next, accepted, trial, 1, prepared, operands_prepared) &&\n      MeasureFinalFamily<Traits6z>(state, next, accepted, trial, 2, prepared, operands_prepared) &&\n      MeasureFinalFamily<Traits18Law44>(state, next, accepted, trial, 3, prepared, operands_prepared) &&\n      MeasureFinalFamily<Traits18Law90>(state, next, accepted, trial, 4, prepared, operands_prepared)) {\n    next.diagnostics.valid = true;\n  }\n  state.control = next;\n}\n} // namespace\nvoid LaunchInitialize(Storage* storage, cudaStream_t stream) {\n"
+      }
+    ]
+  }
+]

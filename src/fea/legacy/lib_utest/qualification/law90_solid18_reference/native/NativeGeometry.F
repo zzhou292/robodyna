@@ -1,0 +1,201 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Concrete ABI/storage adapter around complete native geometry leaves.
+      SUBROUTINE LAW90_ENGINE_GEOMETRY(X,V,SAVED,G,STATUS)
+      USE LAW90_ENGINE_PACKETS
+      USE LAW90_ENGINE_MESSAGE_MOD,ONLY:GEOMETRY_ERRORS
+#include "implicit_f.inc"
+#include "impl1_c.inc"
+#include "scr07_c.inc"
+#include "scr17_c.inc"
+      REAL(KIND=8),INTENT(IN) :: X(3,8),V(3,8),SAVED(21)
+      TYPE(NATIVE_GEOMETRY),INTENT(OUT) :: G
+      INTEGER,INTENT(OUT) :: STATUS
+      INTEGER,PARAMETER :: NEL=1
+      INTEGER I,N,K,IP,IR,IS,IT,NNEGA,INDEX(MVSIZ),NGL(1)
+      REAL(KIND=8) :: OFF(MVSIZ),OFFG(MVSIZ),SAV(1,21)
+      REAL(KIND=8) :: DIRECTIONS(MVSIZ,9),PH(MVSIZ,4,4),JUNUSED(MVSIZ,3)
+      REAL(KIND=8) :: PR(8,8),PS(8,8),PT(8,8),AV(MVSIZ,2,8,6)
+      REAL(KIND=8) :: NU(MVSIZ),NU1(MVSIZ)
+      G%X=ZERO
+      G%V=ZERO
+      G%FRAME=ZERO
+      G%CENTER_J=ZERO
+      G%HIGHER=ZERO
+      G%JACOBIAN=ZERO
+      G%INVERSE=ZERO
+      G%P=ZERO
+      G%SHEAR=ZERO
+      G%CROSS=ZERO
+      G%CENTER_P=ZERO
+      G%VOLUME=ZERO
+      G%CENTER_VOLUME=ZERO
+      G%SMAX=ZERO
+      PH=ZERO
+      JUNUSED=ZERO
+      AV=ZERO
+      OFF=ONE
+      OFFG=ONE
+      NGL=1
+      SAV(1,:)=SAVED
+      NNEGA=0
+      INDEX=0
+      MSTOP=0
+      INCONV=1
+      IMCONV=1
+      IMPL_S=0
+      INEG_V=0
+      GEOMETRY_ERRORS=0
+      STATUS=0
+      DO N=1,8
+       G%X(1,N,:)=X(:,N)
+       G%V(1,N,:)=V(:,N)
+      END DO
+      CALL LAW90_ENGINE_SREPISO3(
+     . G%X(1,1,1),G%X(1,2,1),G%X(1,3,1),G%X(1,4,1),
+     . G%X(1,5,1),G%X(1,6,1),G%X(1,7,1),G%X(1,8,1),
+     . G%X(1,1,2),G%X(1,2,2),G%X(1,3,2),G%X(1,4,2),
+     . G%X(1,5,2),G%X(1,6,2),G%X(1,7,2),G%X(1,8,2),
+     . G%X(1,1,3),G%X(1,2,3),G%X(1,3,3),G%X(1,4,3),
+     . G%X(1,5,3),G%X(1,6,3),G%X(1,7,3),G%X(1,8,3),
+     . DIRECTIONS(1,1),DIRECTIONS(1,2),DIRECTIONS(1,3),DIRECTIONS(1,4),
+     . DIRECTIONS(1,5),DIRECTIONS(1,6),DIRECTIONS(1,7),DIRECTIONS(1,8),
+     . DIRECTIONS(1,9),NEL)
+      CALL LAW90_ENGINE_SORTHO3(
+     . DIRECTIONS(1,1),DIRECTIONS(1,2),DIRECTIONS(1,3),DIRECTIONS(1,4),
+     . DIRECTIONS(1,5),DIRECTIONS(1,6),DIRECTIONS(1,7),DIRECTIONS(1,8),
+     . DIRECTIONS(1,9),G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),
+     . G%FRAME(1,4),G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),
+     . G%FRAME(1,8),G%FRAME(1,9),NEL)
+      CALL LAW90_ENGINE_SRROTA3(
+     . G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),
+     . G%FRAME(1,9),G%X(1,1,1),G%X(1,2,1),G%X(1,3,1),
+     . G%X(1,4,1),G%X(1,5,1),G%X(1,6,1),G%X(1,7,1),
+     . G%X(1,8,1),G%X(1,1,2),G%X(1,2,2),G%X(1,3,2),
+     . G%X(1,4,2),G%X(1,5,2),G%X(1,6,2),G%X(1,7,2),
+     . G%X(1,8,2),G%X(1,1,3),G%X(1,2,3),G%X(1,3,3),
+     . G%X(1,4,3),G%X(1,5,3),G%X(1,6,3),G%X(1,7,3),
+     . G%X(1,8,3),NEL)
+      CALL LAW90_ENGINE_SRROTA3(
+     . G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),
+     . G%FRAME(1,9),G%V(1,1,1),G%V(1,2,1),G%V(1,3,1),
+     . G%V(1,4,1),G%V(1,5,1),G%V(1,6,1),G%V(1,7,1),
+     . G%V(1,8,1),G%V(1,1,2),G%V(1,2,2),G%V(1,3,2),
+     . G%V(1,4,2),G%V(1,5,2),G%V(1,6,2),G%V(1,7,2),
+     . G%V(1,8,2),G%V(1,1,3),G%V(1,2,3),G%V(1,3,3),
+     . G%V(1,4,3),G%V(1,5,3),G%V(1,6,3),G%V(1,7,3),
+     . G%V(1,8,3),NEL)
+      CALL LAW90_ENGINE_S8EDERIC3(
+     . OFF,G%CENTER_VOLUME,NGL,G%X(1,1,1),
+     . G%X(1,2,1),G%X(1,3,1),G%X(1,4,1),G%X(1,5,1),
+     . G%X(1,6,1),G%X(1,7,1),G%X(1,8,1),G%X(1,1,2),
+     . G%X(1,2,2),G%X(1,3,2),G%X(1,4,2),G%X(1,5,2),
+     . G%X(1,6,2),G%X(1,7,2),G%X(1,8,2),G%X(1,1,3),
+     . G%X(1,2,3),G%X(1,3,3),G%X(1,4,3),G%X(1,5,3),
+     . G%X(1,6,3),G%X(1,7,3),G%X(1,8,3),G%CENTER_P(1,1,1),
+     . G%CENTER_P(1,2,1),G%CENTER_P(1,3,1),G%CENTER_P(1,4,1),G%CENTER_P(1,1,2),
+     . G%CENTER_P(1,2,2),G%CENTER_P(1,3,2),G%CENTER_P(1,4,2),G%CENTER_P(1,1,3),
+     . G%CENTER_P(1,2,3),G%CENTER_P(1,3,3),G%CENTER_P(1,4,3),PH(1,1,1),
+     . PH(1,1,2),PH(1,1,3),PH(1,1,4),PH(1,2,1),
+     . PH(1,2,2),PH(1,2,3),PH(1,2,4),PH(1,3,1),
+     . PH(1,3,2),PH(1,3,3),PH(1,3,4),PH(1,4,1),
+     . PH(1,4,2),PH(1,4,3),PH(1,4,4),G%HIGHER(1,1,1),
+     . G%HIGHER(1,1,2),G%HIGHER(1,1,3),JUNUSED(1,1),JUNUSED(1,2),
+     . JUNUSED(1,3),G%CENTER_J(1,1),G%CENTER_J(1,2),G%CENTER_J(1,3),
+     . G%CENTER_J(1,4),G%CENTER_J(1,5),G%CENTER_J(1,6),G%CENTER_J(1,7),
+     . G%CENTER_J(1,8),G%CENTER_J(1,9),G%SMAX,SAV,
+     . OFFG,NEL,10,1)
+      IF(GEOMETRY_ERRORS/=0.OR.G%CENTER_VOLUME(1)<=ZERO) THEN
+       STATUS=1
+       RETURN
+      END IF
+      CALL LAW90_ENGINE_S8EJACIP3(
+     . G%HIGHER(1,1,1),G%HIGHER(1,1,2),G%HIGHER(1,1,3),G%CENTER_J(1,1),
+     . G%CENTER_J(1,2),G%CENTER_J(1,3),G%CENTER_J(1,4),G%CENTER_J(1,5),
+     . G%CENTER_J(1,6),G%CENTER_J(1,7),G%CENTER_J(1,8),G%CENTER_J(1,9),
+     . G%JACOBIAN(1,1,1),G%JACOBIAN(1,1,2),G%JACOBIAN(1,1,3),G%JACOBIAN(1,1,4),
+     . G%JACOBIAN(1,1,5),G%JACOBIAN(1,1,6),G%JACOBIAN(1,1,7),G%JACOBIAN(1,1,8),
+     . G%JACOBIAN(1,1,9),NEL)
+      CALL LAW90_ENGINE_S8EPRST_INI(PR,PS,PT)
+      DO IP=1,8
+      CALL LAW90_ENGINE_S8EDERIPR3(
+     . OFFG,G%VOLUME(1,IP),NGL,ONE,
+     . G%JACOBIAN(1,IP,1),G%JACOBIAN(1,IP,2),G%JACOBIAN(1,IP,3),G%JACOBIAN(1,IP,4),
+     . G%JACOBIAN(1,IP,5),G%JACOBIAN(1,IP,6),G%JACOBIAN(1,IP,7),G%JACOBIAN(1,IP,8),
+     . G%JACOBIAN(1,IP,9),G%INVERSE(1,IP,1),G%INVERSE(1,IP,2),G%INVERSE(1,IP,3),
+     . G%INVERSE(1,IP,4),G%INVERSE(1,IP,5),G%INVERSE(1,IP,6),G%INVERSE(1,IP,7),
+     . G%INVERSE(1,IP,8),G%INVERSE(1,IP,9),NNEGA,INDEX,
+     . IP,NEL,MSTOP)
+       IF(GEOMETRY_ERRORS/=0.OR.NNEGA/=0.OR.MSTOP/=0.OR.
+     . G%VOLUME(1,IP)<=ZERO) THEN
+        STATUS=2
+        RETURN
+       END IF
+      CALL LAW90_ENGINE_S8EDERIG3(
+     . G%P(1,IP,1,1),G%P(1,IP,2,1),G%P(1,IP,3,1),G%P(1,IP,4,1),
+     . G%P(1,IP,5,1),G%P(1,IP,6,1),G%P(1,IP,7,1),G%P(1,IP,8,1),
+     . G%P(1,IP,1,2),G%P(1,IP,2,2),G%P(1,IP,3,2),G%P(1,IP,4,2),
+     . G%P(1,IP,5,2),G%P(1,IP,6,2),G%P(1,IP,7,2),G%P(1,IP,8,2),
+     . G%P(1,IP,1,3),G%P(1,IP,2,3),G%P(1,IP,3,3),G%P(1,IP,4,3),
+     . G%P(1,IP,5,3),G%P(1,IP,6,3),G%P(1,IP,7,3),G%P(1,IP,8,3),
+     . G%INVERSE(1,IP,1),G%INVERSE(1,IP,2),G%INVERSE(1,IP,3),G%INVERSE(1,IP,4),
+     . G%INVERSE(1,IP,5),G%INVERSE(1,IP,6),G%INVERSE(1,IP,7),G%INVERSE(1,IP,8),
+     . G%INVERSE(1,IP,9),PR(1,IP),PS(1,IP),PT(1,IP),
+     . NEL)
+      END DO
+      CALL LAW90_ENGINE_S8ESELECSH(
+     . 2,2,2,8,
+     . G%P(1,1,1,1),G%P(1,1,2,1),G%P(1,1,3,1),G%P(1,1,4,1),
+     . G%P(1,1,5,1),G%P(1,1,6,1),G%P(1,1,7,1),G%P(1,1,8,1),
+     . G%P(1,1,1,2),G%P(1,1,2,2),G%P(1,1,3,2),G%P(1,1,4,2),
+     . G%P(1,1,5,2),G%P(1,1,6,2),G%P(1,1,7,2),G%P(1,1,8,2),
+     . G%P(1,1,1,3),G%P(1,1,2,3),G%P(1,1,3,3),G%P(1,1,4,3),
+     . G%P(1,1,5,3),G%P(1,1,6,3),G%P(1,1,7,3),G%P(1,1,8,3),
+     . AV(1,1,1,1),AV(1,1,2,1),AV(1,1,3,1),AV(1,1,4,1),
+     . AV(1,1,5,1),AV(1,1,6,1),AV(1,1,7,1),AV(1,1,8,1),
+     . AV(1,1,1,2),AV(1,1,2,2),AV(1,1,3,2),AV(1,1,4,2),
+     . AV(1,1,5,2),AV(1,1,6,2),AV(1,1,7,2),AV(1,1,8,2),
+     . AV(1,1,1,3),AV(1,1,2,3),AV(1,1,3,3),AV(1,1,4,3),
+     . AV(1,1,5,3),AV(1,1,6,3),AV(1,1,7,3),AV(1,1,8,3),
+     . AV(1,1,1,4),AV(1,1,2,4),AV(1,1,3,4),AV(1,1,4,4),
+     . AV(1,1,5,4),AV(1,1,6,4),AV(1,1,7,4),AV(1,1,8,4),
+     . AV(1,1,1,5),AV(1,1,2,5),AV(1,1,3,5),AV(1,1,4,5),
+     . AV(1,1,5,5),AV(1,1,6,5),AV(1,1,7,5),AV(1,1,8,5),
+     . AV(1,1,1,6),AV(1,1,2,6),AV(1,1,3,6),AV(1,1,4,6),
+     . AV(1,1,5,6),AV(1,1,6,6),AV(1,1,7,6),AV(1,1,8,6),
+     . NEL)
+      DO IR=1,2
+       DO IS=1,2
+        DO IT=1,2
+         IP=IR+((IS-1)+(IT-1)*2)*2
+      CALL LAW90_ENGINE_S8EDERISH2(
+     . G%SHEAR(1,IP,1,1),G%SHEAR(1,IP,2,1),G%SHEAR(1,IP,3,1),G%SHEAR(1,IP,4,1),
+     . G%SHEAR(1,IP,5,1),G%SHEAR(1,IP,6,1),G%SHEAR(1,IP,7,1),G%SHEAR(1,IP,8,1),
+     . G%SHEAR(1,IP,1,2),G%SHEAR(1,IP,2,2),G%SHEAR(1,IP,3,2),G%SHEAR(1,IP,4,2),
+     . G%SHEAR(1,IP,5,2),G%SHEAR(1,IP,6,2),G%SHEAR(1,IP,7,2),G%SHEAR(1,IP,8,2),
+     . G%SHEAR(1,IP,1,3),G%SHEAR(1,IP,2,3),G%SHEAR(1,IP,3,3),G%SHEAR(1,IP,4,3),
+     . G%SHEAR(1,IP,5,3),G%SHEAR(1,IP,6,3),G%SHEAR(1,IP,7,3),G%SHEAR(1,IP,8,3),
+     . G%SHEAR(1,IP,1,4),G%SHEAR(1,IP,2,4),G%SHEAR(1,IP,3,4),G%SHEAR(1,IP,4,4),
+     . G%SHEAR(1,IP,5,4),G%SHEAR(1,IP,6,4),G%SHEAR(1,IP,7,4),G%SHEAR(1,IP,8,4),
+     . G%SHEAR(1,IP,1,5),G%SHEAR(1,IP,2,5),G%SHEAR(1,IP,3,5),G%SHEAR(1,IP,4,5),
+     . G%SHEAR(1,IP,5,5),G%SHEAR(1,IP,6,5),G%SHEAR(1,IP,7,5),G%SHEAR(1,IP,8,5),
+     . G%SHEAR(1,IP,1,6),G%SHEAR(1,IP,2,6),G%SHEAR(1,IP,3,6),G%SHEAR(1,IP,4,6),
+     . G%SHEAR(1,IP,5,6),G%SHEAR(1,IP,6,6),G%SHEAR(1,IP,7,6),G%SHEAR(1,IP,8,6),
+     . AV(1,IR,1,1),AV(1,IR,2,1),AV(1,IR,3,1),AV(1,IR,4,1),
+     . AV(1,IR,5,1),AV(1,IR,6,1),AV(1,IR,7,1),AV(1,IR,8,1),
+     . AV(1,IR,1,2),AV(1,IR,2,2),AV(1,IR,3,2),AV(1,IR,4,2),
+     . AV(1,IR,5,2),AV(1,IR,6,2),AV(1,IR,7,2),AV(1,IR,8,2),
+     . AV(1,IT,1,3),AV(1,IT,2,3),AV(1,IT,3,3),AV(1,IT,4,3),
+     . AV(1,IT,5,3),AV(1,IT,6,3),AV(1,IT,7,3),AV(1,IT,8,3),
+     . AV(1,IT,1,4),AV(1,IT,2,4),AV(1,IT,3,4),AV(1,IT,4,4),
+     . AV(1,IT,5,4),AV(1,IT,6,4),AV(1,IT,7,4),AV(1,IT,8,4),
+     . AV(1,IS,1,5),AV(1,IS,2,5),AV(1,IS,3,5),AV(1,IS,4,5),
+     . AV(1,IS,5,5),AV(1,IS,6,5),AV(1,IS,7,5),AV(1,IS,8,5),
+     . AV(1,IS,1,6),AV(1,IS,2,6),AV(1,IS,3,6),AV(1,IS,4,6),
+     . AV(1,IS,5,6),AV(1,IS,6,6),AV(1,IS,7,6),AV(1,IS,8,6),
+     . NEL)
+        END DO
+       END DO
+      END DO
+      END

@@ -1,0 +1,38 @@
+{
+  "scope": "Exact selected density, viscosity and no-EOS internal work extraction",
+  "baseline": "f79e2ab",
+  "files": {
+    "lib_src/elements/solid18/Solid18PointResponse.h": {
+      "bytes": 3281,
+      "sha256": "b489199eaeb7c8d7791da09e3077b34aa839caa83a4c5f76bd5e44aa21a2f488"
+    },
+    "lib_src/materials/detail/SolidCallerValues.h": {
+      "bytes": 3548,
+      "sha256": "e1394bf404582ae5bb2ec7dfcbf5f815a508352f158aa7344d1a16db956f160c"
+    },
+    "lib_src/materials/law36/Caller.h": {
+      "bytes": 4040,
+      "sha256": "ff9b123013a0da9e38e6b92096e7b50dd0cb05847c515e8c63483d98df00b17c"
+    },
+    "lib_utest/qualification/solid_caller_values/BUILD.bazel": {
+      "bytes": 244,
+      "sha256": "53ab529f064ba263a27f3cc3b4691c1595671b2e753f53beb1148311397d8e62"
+    },
+    "lib_utest/qualification/solid_caller_values/CMakeLists.txt": {
+      "bytes": 998,
+      "sha256": "1d5a4a39667940fe2c7d1896e9f95f639ba26930a9d1ac83f4e61ecac050498b"
+    },
+    "lib_utest/qualification/solid_caller_values/HostTest.cpp": {
+      "bytes": 1112,
+      "sha256": "6e1d1e2472e6adeeb7733555b5a4c5f0018722053de6002fcf58ed9baabe04e2"
+    },
+    "lib_utest/qualification/solid_caller_values/README.md": {
+      "bytes": 1152,
+      "sha256": "35c6c82e77349f7ebc71a993a6b8298abb5a88c878c24598f2e36cc75c1b6bc1"
+    },
+    "lib_utest/qualification/solid_caller_values/verify_source.py": {
+      "bytes": 497,
+      "sha256": "84bdd1ff665b5ed074b3506f11fb54cd73718c8691dac08ff4d56c37218822f8"
+    }
+  }
+}

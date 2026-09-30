@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+filegroup(
+    name = "publication_participation_source_files",
+    srcs = ["BUILD.bazel", "CMakeLists.txt", "ParticipationTest.cu"],
+    visibility = ["//lib_utest/qualification/physical_publication:__pkg__"],
+)
+
+cc_test(
+    name = "value_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "HostPreparationTest.cpp", "GeometryFixture.h"],
+    deps = ["//lib_src/collision:nodal_wall_mapped", "//lib_src/assembly:shell_node_map",
+            "//lib_utest/qualification/qbat_binding:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Actual all-family owner integration is owned by this directory's CMake CUDA target.

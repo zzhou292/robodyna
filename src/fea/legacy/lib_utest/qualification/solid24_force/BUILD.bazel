@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h", "PrescribedPath.h"],
+    deps = [
+        "//lib_src/elements/solid24:force",
+        "//lib_utest/qualification/solid24_reference:test_values",
+        "//lib_utest/qualification/solid_law42_caller:test_values",
+        "@googletest//:gtest_main",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h", "NativeComparison.h"],
+    deps = ["//lib_src/elements/solid24:force",
+            "//lib_utest/qualification/solid24_reference:test_values",
+            "//lib_utest/qualification/solid_law42_caller:test_values"],
+    visibility = ["//lib_utest/qualification/solid_force_startup:__pkg__",
+                  "//lib_utest/qualification/solid_resident:__pkg__"],
+)

@@ -1,0 +1,23 @@
+      DO EP=JFT,JLT
+        LXYZ0(1)=FOURTH*(XL2(EP)+XL3(EP)+XL4(EP))
+        LXYZ0(2)=FOURTH*(YL2(EP)+YL3(EP)+YL4(EP))
+        VCORE(EP,1,1)=-LXYZ0(1)
+        VCORE(EP,1,2)=XL2(EP)-LXYZ0(1)
+        VCORE(EP,1,3)=XL3(EP)-LXYZ0(1)
+        VCORE(EP,1,4)=XL4(EP)-LXYZ0(1)
+        VCORE(EP,2,1)=-LXYZ0(2)
+        VCORE(EP,2,2)=YL2(EP)-LXYZ0(2)
+        VCORE(EP,2,3)=YL3(EP)-LXYZ0(2)
+        VCORE(EP,2,4)=YL4(EP)-LXYZ0(2)
+C
+        X13_T(EP) =(VCORE(EP,1,1)-VCORE(EP,1,3))*HALF
+        X24_T(EP) =(VCORE(EP,1,2)-VCORE(EP,1,4))*HALF
+        Y13_T(EP) =(VCORE(EP,2,1)-VCORE(EP,2,3))*HALF
+        Y24_T(EP) =(VCORE(EP,2,2)-VCORE(EP,2,4))*HALF
+        L13(EP)=X13_T(EP)*X13_T(EP)+Y13_T(EP)*Y13_T(EP)
+        L24(EP)=X24_T(EP)*X24_T(EP)+Y24_T(EP)*Y24_T(EP)
+        LL(EP)=MAX(L13(EP),L24(EP))
+        C1 =VCORE(EP,1,2)*VCORE(EP,2,4)-VCORE(EP,2,2)*VCORE(EP,1,4)
+        C2 =VCORE(EP,1,1)*VCORE(EP,2,3)-VCORE(EP,2,1)*VCORE(EP,1,3)
+        LM(EP) =MAX(ABS(C1),ABS(C2))
+      ENDDO 

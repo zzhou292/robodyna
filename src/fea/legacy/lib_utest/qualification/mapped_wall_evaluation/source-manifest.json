@@ -1,0 +1,33 @@
+{
+  "revision": "b939d76",
+  "source": "lib_src/collision/NodalWallContactKernels.cuh",
+  "sha256": "7ba64af873ca16acf55a0a803064289542b209a41100a8e70ae03831782fc1fb",
+  "frozen_sha256": "8d88ee2063600b98539e8b298a3cd5ab14e264a4019f3202b5376d126584ca5a",
+  "files": [
+    {
+      "path": "lib_utest/qualification/mapped_wall_evaluation/FrozenEvaluation.cuh",
+      "bytes": 11803,
+      "sha256": "8d88ee2063600b98539e8b298a3cd5ab14e264a4019f3202b5376d126584ca5a"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactPoint.h",
+      "bytes": 6474,
+      "sha256": "012b732db406ead3f735a4a36a091ccc7b01dee5753792fb5d50fc8d1168c8b5"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactReduction.h",
+      "bytes": 1613,
+      "sha256": "8be6f84bc4ef8ba8f079a10e532b904e04bd1a15631d55ca5c4ab22b52d4027d"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/solvers/NodalForceAssembly.h",
+      "bytes": 3219,
+      "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
+    }
+  ]
+}

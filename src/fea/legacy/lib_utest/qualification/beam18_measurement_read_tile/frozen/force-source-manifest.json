@@ -1,0 +1,358 @@
+{
+  "scope": "Circular4 TYPE18 stored-ISMSTR0 active LAW44 force recurrence; SI values and complete independent native callers; no full-case admission",
+  "original_fixture_sha256": "5d85548343e4190db4f6ebc5f0975f6e05921140c7403a87ba389c6445dd1644",
+  "shared_changes": "Only additive Bazel force/test ownership and narrow test-value visibility; reference and shared LAW44 numerical files remain unchanged. Existing raw curve/reader and reference native owners are reused.",
+  "files": {
+    "lib_src/elements/beam18/BUILD.bazel": {
+      "bytes": 1068,
+      "sha256": "08b66c7d78f30f9b84dd28d1797d25e06e62c78b50e00b25abcb8d8138226e45"
+    },
+    "lib_src/elements/beam18/FORCE.md": {
+      "bytes": 3050,
+      "sha256": "a1d1c95d3814b0c2ddcb6b5429cc38129e83fa4f2392c08d6f394bcaf3cbbfd3"
+    },
+    "lib_src/elements/beam18/Force.h": {
+      "bytes": 3119,
+      "sha256": "4241cdbd5efce8026345985a71b19843ec7b9b11c7c700cd9ecb4eb9916be884"
+    },
+    "lib_src/elements/beam18/ForceAssembly.h": {
+      "bytes": 2249,
+      "sha256": "f2ee4168bc65aefd4fcc2e9ede8bf0d5db1171363422b53b04d71cbb4febd742"
+    },
+    "lib_src/elements/beam18/ForceChecks.h": {
+      "bytes": 4331,
+      "sha256": "7cdcdf96cd9c137ecaea2670329206181f793f54abb6c5ca4d048ecc6eb30a83"
+    },
+    "lib_src/elements/beam18/ForceDamping.h": {
+      "bytes": 1583,
+      "sha256": "fb8b5bb2c3de580a2bc77671312d44da9139222a14f026f9452396f34977cf74"
+    },
+    "lib_src/elements/beam18/ForceKinematics.h": {
+      "bytes": 3527,
+      "sha256": "3b4a39d5f8123691a059ca9f0a31e480d4e1ba797b172c121cba4f5431664731"
+    },
+    "lib_src/elements/beam18/ForceSection.h": {
+      "bytes": 3731,
+      "sha256": "a80141225db175243e4ee3fb32bfa0963c89167915c7ff6a7a1912817da7020e"
+    },
+    "lib_src/elements/beam18/ForceStiffness.h": {
+      "bytes": 1913,
+      "sha256": "a72e2301b2f15f1126e885017f95b079d1bd6ba491e1a9cda68b9669d26ab827"
+    },
+    "lib_src/elements/beam18/ForceTypes.h": {
+      "bytes": 2291,
+      "sha256": "4282d6fcf85a2b2d47d22fa717bd8b8738db1914aeec1704e7a069ce48fd8dcc"
+    },
+    "lib_src/elements/beam18/Geometry.h": {
+      "bytes": 2545,
+      "sha256": "38bb3b5261e5e8959ca13af614f1a709286ac53b14c1c96f53801c8d86096008"
+    },
+    "lib_src/elements/beam18/Mass.h": {
+      "bytes": 3194,
+      "sha256": "1bafc11dc624f2868e554bd43282d2b2d6a18fe1f84258147bdd4f71674210a0"
+    },
+    "lib_src/elements/beam18/REFERENCE.md": {
+      "bytes": 2357,
+      "sha256": "77a7168ffa82454d8f478fbf182638353f5b45f306e0d61767f5a35d5ebd3a34"
+    },
+    "lib_src/elements/beam18/Reference.h": {
+      "bytes": 1912,
+      "sha256": "1d4238237e5f30004f399c93d66e8a11c99a02c8122952eeb06b961b0cbd533b"
+    },
+    "lib_src/elements/beam18/Section.h": {
+      "bytes": 1558,
+      "sha256": "e4709eec3f22db60eb85c516fba9eeeb2619c9a6ce8ecddbe5287d35a6c09956"
+    },
+    "lib_src/elements/beam18/Types.h": {
+      "bytes": 2903,
+      "sha256": "fb1ea1123a69b83fad00fd612c7e455a4b1bf40cbda7f6bb26d7830dba41fa0b"
+    },
+    "lib_src/elements/beam18/Units.h": {
+      "bytes": 1002,
+      "sha256": "2b855aefd3e69b468209f70c0a1fbd7e8064a0238ceb37cd18e1d549c329fb2f"
+    },
+    "lib_src/materials/law44/beam/BUILD.bazel": {
+      "bytes": 211,
+      "sha256": "8895c3ab3045623f4ea82cc29be817a4ec7fb5aed4155931c939d7ed131de931"
+    },
+    "lib_src/materials/law44/beam/Types.h": {
+      "bytes": 1464,
+      "sha256": "8fbdef325a602ce4275a79fa60d96cbffca49e749390f2e440eea55ccb545759"
+    },
+    "lib_src/materials/law44/beam/Update.h": {
+      "bytes": 3432,
+      "sha256": "45ed3464f759837a2c8a9135b9f8ca0f2c9df5315b77d19c876eb5ff5e873fd2"
+    },
+    "lib_src/math/Fixed3Operations.h": {
+      "bytes": 2064,
+      "sha256": "45dd85c1f95f6588cd719c35c54d2f063662dd9c47ff8de833162460048f922c"
+    },
+    "lib_src/solvers/NodalForceAssembly.h": {
+      "bytes": 3219,
+      "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
+    },
+    "lib_utest/qualification/beam18_force/BUILD.bazel": {
+      "bytes": 956,
+      "sha256": "6b20c250854f62ae859596002fd4ff83952396ff2be682515753dc5b98c43e60"
+    },
+    "lib_utest/qualification/beam18_force/CMakeLists.txt": {
+      "bytes": 3273,
+      "sha256": "80128f7276053d68107109ec30fd22f274ff50cdc4eddea8046f12afd877abeb"
+    },
+    "lib_utest/qualification/beam18_force/CudaTest.cu": {
+      "bytes": 4039,
+      "sha256": "72732cbf73fb8749db0c3eac9294b129448d29805907cd576dc3d3963d610e1e"
+    },
+    "lib_utest/qualification/beam18_force/HostTest.cpp": {
+      "bytes": 10896,
+      "sha256": "1b0c626fff93d905a94954ae8eb713ca6dcfa308c6df48aa1c819972e785ae47"
+    },
+    "lib_utest/qualification/beam18_force/NativeOracle.cpp": {
+      "bytes": 5750,
+      "sha256": "8ef7bcc18db5eff643319b2f3b14a04f3c2704daacf67436e53c5fc842ad5e69"
+    },
+    "lib_utest/qualification/beam18_force/NativeOracle.h": {
+      "bytes": 724,
+      "sha256": "55bb6d32e95742c71e1314c2e0ffa0ee63696d9101a2704e3cade3a2a4992962"
+    },
+    "lib_utest/qualification/beam18_force/NativeTest.cpp": {
+      "bytes": 4486,
+      "sha256": "d1e5282d4bc6bdc0bb761cdb3e31aada658dc365adf29aebf7ac49189481e3ca"
+    },
+    "lib_utest/qualification/beam18_force/README.md": {
+      "bytes": 3345,
+      "sha256": "1fb98b830dd1a5125d7f94adde70c59b5ce95417efed454278a80f3975f762f6"
+    },
+    "lib_utest/qualification/beam18_force/TestSupport.h": {
+      "bytes": 1952,
+      "sha256": "ec021fc67d960051eaae1559276beea9e41069518faabb24cb094c0aca7b6e9c"
+    },
+    "lib_utest/qualification/beam18_force/native/CMakeLists.txt": {
+      "bytes": 1767,
+      "sha256": "a36cb21c5f4b57643316d004662013c6c34ff3b15104b7782049adb0c439f1d5"
+    },
+    "lib_utest/qualification/beam18_force/native/Context.F90": {
+      "bytes": 1634,
+      "sha256": "46be6bddfdcc1b0fe5d72cadcb9a53348abdee29c2f618dff06d090d7eb81d6c"
+    },
+    "lib_utest/qualification/beam18_force/native/Excluded.F90": {
+      "bytes": 621,
+      "sha256": "16f80219125ebb2afd1b2e870e919358a9b1cdb788634d956bd31c1af60a36bd"
+    },
+    "lib_utest/qualification/beam18_force/native/NativeCaller.F": {
+      "bytes": 7750,
+      "sha256": "a35fc10fd78c4ebc06877bcea834a615f6a05fe442993603e87bedd292e0be3d"
+    },
+    "lib_utest/qualification/beam18_force/native/context/com04_c.inc": {
+      "bytes": 45,
+      "sha256": "97abc6054d12899c6215e6f29f6891024974fb3168cddddaa0e17bca0a2134c0"
+    },
+    "lib_utest/qualification/beam18_force/native/context/com08_c.inc": {
+      "bytes": 61,
+      "sha256": "174bbc6322757ba745dc13c0c6acd6189357af674f8cdf33108d093444abea0d"
+    },
+    "lib_utest/qualification/beam18_force/native/context/comlock.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/impl1_c.inc": {
+      "bytes": 69,
+      "sha256": "849ab0e8024fcaa6820b065227eb71eae32c6b03715d44e2a0a122494928e64c"
+    },
+    "lib_utest/qualification/beam18_force/native/context/implicit_f.inc": {
+      "bytes": 81,
+      "sha256": "8e458ddd2a8dd69f48d231f18abb90930de82e9672000afd54a558c826befd26"
+    },
+    "lib_utest/qualification/beam18_force/native/context/lockoff.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/lockon.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/mvsiz_p.inc": {
+      "bytes": 35,
+      "sha256": "5c1fd58e202d06d6ff067a1f321f49382000ca26b20053b4971999d7aa9dd70c"
+    },
+    "lib_utest/qualification/beam18_force/native/context/param_c.inc": {
+      "bytes": 60,
+      "sha256": "6f9714dd1df9aa847e5263e8c0bbe8b2797db4296ac62794fa1cbfda9ed0bea5"
+    },
+    "lib_utest/qualification/beam18_force/native/context/scr02_c.inc": {
+      "bytes": 240,
+      "sha256": "2d19698b3c55a8386c76c35e16b2ef7138e241e0a03f66e071e34cbd70bb7f1e"
+    },
+    "lib_utest/qualification/beam18_force/native/context/scr07_c.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/scr17_c.inc": {
+      "bytes": 62,
+      "sha256": "471d6a3e2a2699f88c706bb543d6fd6f73f57c3c9a8dff9179c0b5ff64b2963d"
+    },
+    "lib_utest/qualification/beam18_force/native/context/scr18_c.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/sms_c.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/units_c.inc": {
+      "bytes": 48,
+      "sha256": "7fecaadaf27c7eb8fa746bbba1948ff027f08fc2f2b54806fd0d3142f3e8b41a"
+    },
+    "lib_utest/qualification/beam18_force/native/context/vect01_c.inc": {
+      "bytes": 57,
+      "sha256": "df1af2f247a63e23236285245f4457dcee36ba74ca00abfbf43aab2104291978"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/main_beam18.F": {
+      "bytes": 14606,
+      "sha256": "4d42989e0f7773c76c240020bf563ebdd748a2c6c110e7742c8834d2a810c305"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/mulaw_ib.F": {
+      "bytes": 10509,
+      "sha256": "dcdacdf8a58e93fdb3aca73e87e887547b4100fdc48e72dc9a09e6dab8e1c52e"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pcurv3.F": {
+      "bytes": 6957,
+      "sha256": "5ba58081df8b904de7b42997fb4354cd46c7dcb66d6e084590a1a1b83101d832"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pdamp3.F": {
+      "bytes": 4471,
+      "sha256": "832f326d3b2cff3e53475836dd4932b13a574287115e489b6bee441208c59d7c"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pdefo3.F": {
+      "bytes": 4012,
+      "sha256": "8ef847d9d753ccdf3b41ae985aa45b7a1b794457e0d5fa7f961fcef20b5697eb"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pdlen3.F": {
+      "bytes": 9077,
+      "sha256": "5b202bcc784a6bfa2416985a22009f1865fa582fd115fe0fccd416ebf2251f19"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pevec3.F": {
+      "bytes": 5756,
+      "sha256": "3ede65e19fefc5e9cf924c55245263ca9cbb5e4050be46e0c3de3210b31a67d7"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pfcum3.F": {
+      "bytes": 5365,
+      "sha256": "bd05a335ae87fc0e1f5ea294522de5a5247324fe5f83a12e935626b97339c822"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pfint3.F": {
+      "bytes": 4947,
+      "sha256": "e9a63d663930a13dd7329571afdae3fa1391b58d999673efe33429691e105ddd"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pforc3.F": {
+      "bytes": 19033,
+      "sha256": "f30fefa03d52b4cafc84817f1fcbd4e979f0b1e63278d0ad3da72b223d02c547"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/elements/beam/pmcum3.F": {
+      "bytes": 4508,
+      "sha256": "1f627a1a20bcac6286ffbaea3644142072b3dffd6dfea222d567f5c351a55567"
+    },
+    "lib_utest/qualification/beam18_force/native/original/engine/source/materials/mat/mat044/sigeps44pi.F": {
+      "bytes": 9150,
+      "sha256": "fb15b9c9bd2770ba3aba4aaccfb6c969256f23a7b33fa60d3e92f6c67db59d02"
+    },
+    "lib_utest/qualification/beam18_force/native/original/starter/source/elements/beam/pibuf3.F": {
+      "bytes": 2922,
+      "sha256": "0a1bfff6677faa2f35b1682fee69622ef69d84e00f0a380f33e0ed0b1e96a6e5"
+    },
+    "lib_utest/qualification/beam18_force/native/prepare_sources.py": {
+      "bytes": 1960,
+      "sha256": "153c9afdea1927b1735897599f7ca5ff489308f66d199fb2893843b585f91d43"
+    },
+    "lib_utest/qualification/beam18_force/native/source-manifest.json": {
+      "bytes": 4300,
+      "sha256": "8714aab3fc5ac41e4880a9a938486d9904dca47ac73c168b98121b2e54cc5279"
+    },
+    "lib_utest/qualification/beam18_force/prepare_fixture.py": {
+      "bytes": 1385,
+      "sha256": "6ba09ee1c13b376c49c4b9b909f7a05209c3959089c7f630299f38399dc0ab2a"
+    },
+    "lib_utest/qualification/beam18_force/verify_source.py": {
+      "bytes": 1099,
+      "sha256": "db426cebcec13bfd1f1e7318d85efb850f47f1a35d4f94ff3cccc951b78b586c"
+    },
+    "lib_utest/qualification/beam18_reference/source-manifest.json": {
+      "bytes": 7750,
+      "sha256": "c9abf394870bbd9ae545a1478a62ace8e782414760e9e7a7bc795c0faf7135ee"
+    },
+    "lib_utest/qualification/solid_law44_point/source-manifest.json": {
+      "bytes": 3174,
+      "sha256": "e8199f1af5a2e2cec7010e6f0b8b75a52486373b8cf1b6465a3a3791a6ed0a95"
+    },
+    "lib_utest/qualification/solid_law44_point/source_fixture/OriginalCurve.h": {
+      "bytes": 1334,
+      "sha256": "fbb5a3438398898d2ae479cec55f12abf4249d41277f788bbf535623e64092ae"
+    },
+    "lib_utest/qualification/solid_law44_point/source_fixture/source-receipt.json": {
+      "bytes": 14374,
+      "sha256": "045a5d85cf6700e3950e2248d0c8e337c1ce64311651b0c1470a96915b7c14b3"
+    },
+    "lib_utest/qualification/beam18_force/NativeConditioning.h": {
+      "bytes": 1767,
+      "sha256": "30aebb9db11933412622d811ccd61e8484bf330f0e88e845cc8a319a8773fb6e"
+    },
+    "lib_src/elements/beam18/PropertyArea.h": {
+      "bytes": 991,
+      "sha256": "53f5835ca0f4e5db86a2fcd1457aa773ffbebee5669c0a50125e3b806f1e89e8"
+    }
+  },
+  "beam18_model_ledger_followup": {
+    "scope": "Additive immutable beam Model, endpoint snapshot, V5 ledger and build ownership. Existing reference/force/material formulas unchanged; V1-V4 source restrictions retained.",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/beam18/BUILD.bazel",
+        "bytes": 699,
+        "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
+      },
+      {
+        "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+        "bytes": 424,
+        "sha256": "e0fdff1136a444167e0543233e15d79c1cfb6f26b9e5236c15d2f5d85c995563"
+      }
+    ],
+    "dependency_receipt_prior_records": [
+      {
+        "path": "lib_utest/qualification/beam18_reference/source-manifest.json",
+        "bytes": 7314,
+        "sha256": "154461f85dfb5e084b960c0c836f6270e9f366694b1a8355b9cf1454152fba77"
+      }
+    ],
+    "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
+  },
+  "resident_fixture_visibility_followup": {
+    "scope": "Add only beam18_resident visibility to the existing beam force test_values library; no source, native or numerical changes.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 811,
+      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
+    }
+  },
+  "analytic_dependency_receipt": {
+    "scope": "Shared LAW44 owner adds explicit analytic solid hardening; beam caller remains explicitly tabulated. Root analytic-beam-root-tests-1 passes beam host/native/CUDA numerical gates and the LAW44 owning native identity. Preserve the previous whole-owner receipt.",
+    "prior_record": {
+      "path": "lib_utest/qualification/solid_law44_point/source-manifest.json",
+      "bytes": 3174,
+      "sha256": "7df2bede5679ffefa1d8130d15a91ddf675393f1476bd84da2f3f944f7b15fdb"
+    }
+  },
+  "analytic_preparation_portability": {
+    "scope": "Prepared analytic EPSGM uses an immutable exact receipt across host/libdevice. Beam caller remains tabulated. Root law44-portability-root-tests-1 passes all12 native/CUDA/original/legacy CTests; follow-up strengthens model/history receipt identity with no arithmetic changes.",
+    "prior_record": {
+      "path": "lib_utest/qualification/solid_law44_point/source-manifest.json",
+      "bytes": 3174,
+      "sha256": "fc8ab378b3b0dca6b5873d231696734ba5700176838c29c1197307a642320cc2"
+    }
+  },
+  "common_publication_test_visibility": {
+    "scope": "Add only beam18_publication access to existing test_values; native and production arithmetic unchanged.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema": "law90-preparation-identity-v1",
+  "files": [
+    {
+      "path": "lib_src/materials/detail/Vinter2Value.h",
+      "bytes": 2247,
+      "sha256": "5cef4012507a752c7f14a15846dec1ff986ab3a54e373747dd471f002181d70f"
+    },
+    {
+      "path": "lib_src/materials/law90/Curve.h",
+      "bytes": 1038,
+      "sha256": "f11604c824f51ef5fb74a7f46674c52cd89361b126e870cee4920d10d58d6a37"
+    },
+    {
+      "path": "lib_src/materials/law90/Prepare.h",
+      "bytes": 7296,
+      "sha256": "85f2bdd3734575053fddc117ad83d8c572bf4f14c24352827cbbbeb5b7f80e63"
+    },
+    {
+      "path": "lib_src/materials/law90/Types.h",
+      "bytes": 3916,
+      "sha256": "8c943dcba93771dad58a3b3fb8496a317f22d2b331dc6de25c7198efd76e68d5"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/BUILD.bazel",
+      "bytes": 599,
+      "sha256": "2680f1b63af7eb27709be8363690dd7b7371bc7d2619f13ee24828259d7ccd7e"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/CMakeLists.txt",
+      "bytes": 2182,
+      "sha256": "8f9209fa635c910547e504518229f11b37b78bbb8d511495085bade0b2041298"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/CudaTest.cu",
+      "bytes": 3835,
+      "sha256": "d565024beaafdc4f6235266517e6a51006627a222fabd9924a389c2a1cb00281"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/HostTest.cpp",
+      "bytes": 6285,
+      "sha256": "87ae00cd9fdf4f5006c1a8318272bccee1570d30311886fbe0c89735d42c0de6"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/NativeTest.cpp",
+      "bytes": 5734,
+      "sha256": "a79692baba235ad73c2a6dd5159b6e35289213ac6b517b2a896a65e8579d2714"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/TestSupport.h",
+      "bytes": 3262,
+      "sha256": "e8a6da468ceead73a14a34f3452383b9426a6a9dc0ec2302fb14498bcfdac148"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/CMakeLists.txt",
+      "bytes": 1352,
+      "sha256": "cd7d071572103e900b33ca694401e602822a4ceaad7a5f0d4a28b4196bb5b467"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeContext.F90",
+      "bytes": 818,
+      "sha256": "bb252e317c8ddeef7b176408d01f6e608c7fb5e8b45d7783eee657f2478f1895"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeOracle.h",
+      "bytes": 416,
+      "sha256": "053c0212cafdc1a48ea7824070473a3183ade80a30edd7573aa5b30b7a743604"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeSetup.F",
+      "bytes": 3546,
+      "sha256": "c820841e4641a8538af1ecc39f72295cbc6e32937863dd4d91c925140b901e70"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/prepare_sources.py",
+      "bytes": 2451,
+      "sha256": "05940f8c19558feba075440fb82073b3ff8659fa60ca8e8fce2fea8a31e16113"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/source-manifest.json",
+      "bytes": 3280,
+      "sha256": "c28b12ded3ec1f961bfadb582a0cf55dd552696b94f06a9f9a1eb95a39f4c66a"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/NativeSdiOriginal.h",
+      "bytes": 948,
+      "sha256": "85ebd16d2d23f747f9650397018cc2c7115e91a8486d5a722e598a214d49a845"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/NativeSdiOriginal.json",
+      "bytes": 9129,
+      "sha256": "662fba9b45aceba5da1563574f80669adca99b114f3fe918d41e1a82fd06dd88"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/OriginalMaterial.h",
+      "bytes": 2392,
+      "sha256": "1e4c0ae0ea5afadd4625a2534023944ede8dc7e449765d056ad2fb6cf06c08ba"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/source-receipt.json",
+      "bytes": 6196,
+      "sha256": "ef8916038bf11753bce3b95975ba25a7bdf477cc8ac2baef07d0e61d1748bd62"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/verify_source.py",
+      "bytes": 3945,
+      "sha256": "6cc2acb8b64566a4381e545aabf35991f9c38afa2d3cad58bb13ebffd633ed24"
+    },
+    {
+      "path": "lib_src/materials/law90/Relocate.h",
+      "bytes": 2260,
+      "sha256": "b5d2096bcf7ac9f9834ee2953aaa113836d06b27b4c981c948d79e773c63fb0e"
+    }
+  ],
+  "previous_records": [
+    {
+      "reason": "Explicit immutable resident curve relocation; no scalar or equation change",
+      "record": {
+        "path": "lib_src/materials/law90/Types.h",
+        "bytes": 3794,
+        "sha256": "c6228bcd40c6de63b02f52da83984bc7ca3b52f3a7294b5ada0f6c2acb9c22e5"
+      }
+    }
+  ]
+}

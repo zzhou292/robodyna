@@ -1,0 +1,5 @@
+include_guard(GLOBAL)
+add_library(tl_type13_startup INTERFACE)
+get_filename_component(tl_type13_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+target_include_directories(tl_type13_startup INTERFACE "${tl_type13_root}")
+target_compile_features(tl_type13_startup INTERFACE cxx_std_17)

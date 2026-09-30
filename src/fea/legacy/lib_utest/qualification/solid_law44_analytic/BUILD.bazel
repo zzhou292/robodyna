@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h"],
+    deps = ["//lib_utest/qualification/solid_law44_point:test_values", "@googletest//:gtest"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "ModelTest.cpp", "OwnerFixtureTest.cpp"],
+    deps = [":test_values", "//lib_utest/qualification/extended_solid_model:fixture",
+            "//lib_utest/qualification/extended_solid_resident:fixture",
+            "//lib_src/elements/solids/resident:values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# The owning CMake target provides native/CUDA and the root-authenticated80-cell gate.

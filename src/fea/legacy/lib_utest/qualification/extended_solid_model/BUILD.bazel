@@ -1,0 +1,30 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h", "ResidentConfig.h"],
+    visibility = ["//lib_utest/qualification/extended_solid_resident:__pkg__",
+                  "//lib_utest/qualification/solid_law44_analytic:__pkg__"],
+    deps = ["//lib_utest/qualification/solid_model:fixture",
+            "//lib_src/elements/solids:model", "//lib_src/elements/solids/resident:values",
+            "//lib_src/elements/solid18/law44:reference",
+            "//lib_src/elements/solid18/total_strain:reference_kinematics",
+            "//lib_src/materials/law44/solid:point", "//lib_src/materials/law90:preparation",
+            "@googletest//:gtest"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["ValueTest.cpp", "IdentityTest.cpp", "BudgetTest.cpp", "ResidentGuardTest.cpp"],
+    deps = [":fixture", "//lib_src/elements/solids/resident:values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "resident_guard",
+    size = "small",
+    srcs = ["ResidentGuardTest.cu"],
+    deps = [":fixture", "//lib_src/elements/solids/resident:batch", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)

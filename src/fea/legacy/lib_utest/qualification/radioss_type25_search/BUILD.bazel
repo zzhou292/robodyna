@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "header", size = "small", srcs = ["HeaderTest.cpp"],
+    copts = ["-std=c++17", "-O0", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_search_values", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
+    data = ["native/prepare.py", "native/source-manifest.json", "native/Budget.F.in", "native/Gap.F.in", "native/Boundary.F90", "native/Reference.F90"] + glob(["native/original/*"]),
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)
+# The complete Fortran and hardware oracle gates belong to the adjacent CMake project.

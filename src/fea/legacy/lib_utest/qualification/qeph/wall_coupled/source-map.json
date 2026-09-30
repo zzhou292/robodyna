@@ -1,0 +1,1036 @@
+{
+  "schema": "tl.qeph-wall-coupled-source-map.v1",
+  "stage": "source-and-independent-review-frozen-before-first-execution",
+  "scope": "CW0 short preloaded contact/history transaction; direct local include/build inputs and delegated pinned native closure, not a hermetic compiler dependency closure",
+  "production_mechanics_changed": false,
+  "cuda_execution_qualified": false,
+  "impact_qualified": false,
+  "long_response_stability_qualified": false,
+  "qualification_id": "0x4357305052454631",
+  "test_functions": 4,
+  "prerequisites": [
+    {
+      "path": "crash-work/checkpoints/nodal-wall-owner-1/manifest.json",
+      "bytes": 12097,
+      "sha256": "f1f5530940c4b2b25792d2d04ed83bcc6dce64e1e7f445dbccf7fe1f469b45e0"
+    },
+    {
+      "path": "crash-work/checkpoints/qeph-shared-helpers-1/manifest.json",
+      "bytes": 96568,
+      "sha256": "ec531b82a9f8be352ebd2fa86e839a65bbd9adc4bd4e1aeccc84abcb9328f5f0"
+    },
+    {
+      "path": "crash-work/checkpoints/qeph-bq4-response-1/manifest.json",
+      "bytes": 95480,
+      "sha256": "e79d193372bc126cd455d0db49c6d1476880b2f5562087434d9a3796f76e02ea"
+    }
+  ],
+  "delegated_native_closure": {
+    "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+    "bytes": 19722,
+    "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+  },
+  "source_port_manifest": {
+    "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/source-manifest.json",
+    "bytes": 29410,
+    "sha256": "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31"
+  },
+  "input_count": 199,
+  "inputs": [
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/BUILD.bazel",
+      "bytes": 8338,
+      "sha256": "1b6c00cf77cecfe2fa5b7d5f733bef6a011b5b2693ae50a3d12c3d0dc43dd38e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.cmake",
+      "bytes": 583,
+      "sha256": "635de44380ce069da4840bbba48620ee8e220bcfd0c684786e96f49adc7900f8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.cpp",
+      "bytes": 4327,
+      "sha256": "b775a8ab6add0d5ce3f876237186380cce8300268b7c38c6dcc73e1e124bc503"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.h",
+      "bytes": 5782,
+      "sha256": "68ceb81d9bcce45be00172229107a4a7474974a463af7fc60cfcbaf52c60fb62"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactDevice.cmake",
+      "bytes": 1073,
+      "sha256": "72c523a49f7d0f2d9209d9280f218d3d5f614dbfd6ec1be51a5a4989577e43e6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactDevice.cu",
+      "bytes": 12901,
+      "sha256": "9d93183da5586c8cf1e9f41dd4b7273935cf353689a23be0670ef1f405c99b30"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactDevice.h",
+      "bytes": 4723,
+      "sha256": "77d838dfeb550a0e426daa4c335d78d922e9397b190803ab25f590a32b7eb5cf"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactEvaluation.cpp",
+      "bytes": 4144,
+      "sha256": "5adfe931dc1154ccf286174f8fd933d3188344e2435732f5c8336c4cdfc6a5e7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 7844,
+      "sha256": "f50281b23600ab5cf05a9736a47bbaefa7f7963fa499fea3a1e7d73bd98df41e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactModel.cpp",
+      "bytes": 6880,
+      "sha256": "5aff41650c838aa3272f97e8ac2cd8c76924bf3f8b866809f3d022f6a16fe73b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactPoint.h",
+      "bytes": 5097,
+      "sha256": "8d18f959a71e595b33c49387fd5c61387cdb8c2cbf590b28aa779a71415488a0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactReduction.h",
+      "bytes": 1267,
+      "sha256": "02b341c8fb7d43cfcd7d2e1d14e24595f65bb11c7e2238777603f09b133a0acc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactStorage.h",
+      "bytes": 3566,
+      "sha256": "e6477dac231dbd1b5d58590525efde8b3e56c5a81c272e9112efb05a97c5cb0a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarContactTypes.h",
+      "bytes": 1276,
+      "sha256": "4adec3ba35b39dc13f65baed5464a743982f1820421e2040c1e35ef87a01df1e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallBox.cpp",
+      "bytes": 4619,
+      "sha256": "e1ab3be153942b9d679f6581aa492fcc5e1dc548e29821c5db46aa7deb56443b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallBox.h",
+      "bytes": 1350,
+      "sha256": "e166d0171434b56cb94a93f7fc14f18b5623bd121592ed7befc80bd0a6857626"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.cmake",
+      "bytes": 502,
+      "sha256": "3fa10817e9150984fbc9146487e22745eb928d54078a67a06552342e14d54bc8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.cpp",
+      "bytes": 10536,
+      "sha256": "f3cf0d1b47a4ce099cd3484d674a36b6799068e822a0df7b0ee4e246ea005e70"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.h",
+      "bytes": 2338,
+      "sha256": "b817475488594d29191adbb4a7bf343ca10e2ed2e37946fcf8daea89ecd525ca"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PreparedPlanarWallQuery.cmake",
+      "bytes": 444,
+      "sha256": "58604c578be096b8456943e9339c17f21023dfea59c3bde3d94a0ff4d3faf647"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PreparedPlanarWallQuery.cpp",
+      "bytes": 3913,
+      "sha256": "81bbee63d0c4436b45dd688346d4247f994109949ba6c6e903e65294a95227e6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PreparedPlanarWallQuery.h",
+      "bytes": 3524,
+      "sha256": "29acdddeeab062c2d197abe917f919eebbd62ceb341ec362c8f3bff59f6742ff"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.cmake",
+      "bytes": 670,
+      "sha256": "79ac0f25857e77942a07230e5271fc57bbb92777b8717459553d9984e824b5ed"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.cpp",
+      "bytes": 10063,
+      "sha256": "093a8ca03d2da87b37bfe8621d8da1cfba0a3f4766a39bcfe7872345745adb5f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.h",
+      "bytes": 3682,
+      "sha256": "2b0e7903b328c133b8ce6f725237549ad8c8bcb802bd1a0451d9264e116daae9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceInterval.h",
+      "bytes": 5577,
+      "sha256": "985351651e3cf94471623d4cac8c05f5dde1e1c9ca38431845cd1ad54f151a1c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactIntegration.h",
+      "bytes": 16615,
+      "sha256": "40e8e66332eebb4a07eaba1747902a12d605d63447800fc49c60b200aa325282"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactIntegrationTypes.h",
+      "bytes": 4358,
+      "sha256": "d36edf2ec31bc627424474362b75666e4df10dd712ea977845f2cfb324d2bcf0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4IntegralMeasure.h",
+      "bytes": 2598,
+      "sha256": "f0dd75882683e39a4f76b99e50c44090900f081889da7384b4082200e2077b1d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.cmake",
+      "bytes": 681,
+      "sha256": "f9235fca695965baff8011012df0dc55c2071a7a4eed98f13c225d5ee9e0734f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.cpp",
+      "bytes": 5542,
+      "sha256": "f4b5222d3b569917536a7b58dd9c30255bbc9fc7b20ff9931310a8ba5671c32b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.h",
+      "bytes": 4134,
+      "sha256": "482ef3d40c01ce16676100ff262ee2d793ffb32e73d63cf71b51b34ceb114def"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4PlanarGeometry.h",
+      "bytes": 7310,
+      "sha256": "aaf13c0aac823fb8bfa3e42a717f20868d20380623c83c0e08218771d1566eb2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4RectangularIntegration.h",
+      "bytes": 16556,
+      "sha256": "5d44891ed3c71f2e23b88152f33539d33fc6f70e3365e17996aaaf06756dc892"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4RectangularIntegrationTypes.h",
+      "bytes": 1598,
+      "sha256": "e75a3f9b37a1c70ea4e09b3c941595c0e1590845468412b1130ea4e9e741d48a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4SurfaceMapping.h",
+      "bytes": 8231,
+      "sha256": "ce0aa55c38e35e134c72d0708e79c4e3a4edb795a1525db2e6bf0e4b3c6b7c97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4SurfaceMass.h",
+      "bytes": 4584,
+      "sha256": "ae4c7a6575e35f781e15a01e03f54f9f0bc3a3d01d6dbd92b870abe32b16b152"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactGeometry.h",
+      "bytes": 17523,
+      "sha256": "2d98ff5f406555cf60936c5e5fff665b25e5c7aebb6642cc1077a6b241f90442"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactLaw.h",
+      "bytes": 6902,
+      "sha256": "bc42ccb77db470c47d485374e2ffe938594c661191022bc4a12bcb8186480df5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactMass.h",
+      "bytes": 8476,
+      "sha256": "f7c6e09529c86f41a4581311e6deacd3fce35c4b05dff6f1d210304710e2fb28"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactTypes.h",
+      "bytes": 7384,
+      "sha256": "ee19965627faacc6d68314a9b24a0fac817117b2be5be22e077349ccbdd14568"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialBounds.h",
+      "bytes": 6857,
+      "sha256": "29b2e210a171a21ab9907205d9c2355d1d3234bb732466d702e1b309b7c914b8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.cmake",
+      "bytes": 555,
+      "sha256": "964de2e29aaff68e83769ddd689f2235b173a66c433e9f4fb38268c1e07e87d2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.cpp",
+      "bytes": 4694,
+      "sha256": "43a8656fab2fdfa1a35a7e75f54e3fe06757302e837a3bb486b37afa16cc34f2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.h",
+      "bytes": 4120,
+      "sha256": "cb208d9ed716f851aa38e99b44e4dbb2c2647dfd6c599b063a5302cb1d8750fe"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/T3ContactIntegration.h",
+      "bytes": 14950,
+      "sha256": "3656de85392af64d4662738e078058f5577e006118d7aeb2f4c80f6c1c403d25"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/T3ContactIntegrationTypes.h",
+      "bytes": 2360,
+      "sha256": "fb1c3a3cf0f1901aa9e604b7deb5de4c0bb594f6e88db1ecd4478b53342abee7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/constraints/FEAT10ConstraintManager.h",
+      "bytes": 16341,
+      "sha256": "116da0222e7212533fc6b6aed03c041f45840f15a238917baf62374967b56bd7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ANCF3243Data.cuh",
+      "bytes": 42197,
+      "sha256": "58f638c8c163ba2eae378ea71656d841433ec17ac6fbce25fa01be5d30dd2673"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ANCF3243DataFunc.cuh",
+      "bytes": 34818,
+      "sha256": "dbe806e4f117cac21d2fc83adb8cc0e9774edefe24d0d8ccf7cf13986c839062"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ANCF3443Data.cuh",
+      "bytes": 44941,
+      "sha256": "08d3cd165ad473753860ac1df4be7919b7dcf4971d6a2beccb00e0e64b1d4f45"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ANCF3443DataFunc.cuh",
+      "bytes": 37399,
+      "sha256": "9d40a83aff112feb2365f95f8e094ca5b2d6b6bf073ea6f26eaa43d66ca4a952"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/BUILD.bazel",
+      "bytes": 3037,
+      "sha256": "9e0e99e25710764aeafbea77e124ecbeaf0c5d53a4ccc8b9e62229b2c0cebca5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ElementBase.h",
+      "bytes": 2157,
+      "sha256": "465398f28c4e04c0b19ee85de98f77a71aa95cd10c37589061800c5ab2f3ba53"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/FEAT10Data.cuh",
+      "bytes": 49512,
+      "sha256": "3a6ba11d352a6a960a2831abe82c88bc5c9cf379ccd7b5c63552bad149c78e32"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/FEAT10DataFunc.cuh",
+      "bytes": 31503,
+      "sha256": "bcc34f5c79c7006c33411344a2ee47697c16508b19c696d03352faa8447ef39a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ReissnerFrame.h",
+      "bytes": 10621,
+      "sha256": "764090dab48e12b3deb732251867c51616ec2f90a222f2a53b79b315a74c0180"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ReissnerRotation.h",
+      "bytes": 13406,
+      "sha256": "e09dc8c971a22e0dda9ad3a84aff1f34cf4558ef802350f6af1951d229c081f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ShellBatchFields.h",
+      "bytes": 2542,
+      "sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/BUILD.bazel",
+      "bytes": 1612,
+      "sha256": "492acddd558fbed986d2877d4c91a01959146373525b519220410635a1a51180"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/CMakeLists.txt",
+      "bytes": 295,
+      "sha256": "79ca63799de009ff4e3945d381b38ba3e8b609c4973ac6a181a7654eeb738084"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatch.cmake",
+      "bytes": 904,
+      "sha256": "57293334729734def7d2a6fbcc4a85787e63c438f9ff17a1481491d0563cb88c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatch.cu",
+      "bytes": 3306,
+      "sha256": "d13e9a541896415d7d8fa680743883c02204fd6fd6f3731eb3f0ebf3a92229c4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatch.h",
+      "bytes": 4986,
+      "sha256": "420393dc3547536350acf8226636e55fad281dd41018a08bcd66090370541aa7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchDiagnostics.h",
+      "bytes": 3469,
+      "sha256": "4118317bf74313c4e2d8d0112dec9e796a12531daf8f82f7d061c3ae33f6f552"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchIdentity.cpp",
+      "bytes": 1464,
+      "sha256": "38146250420d389698ce884fdf1b1c518b4544f6db746b0a6ac405d06b7f272d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchKernels.cu",
+      "bytes": 4369,
+      "sha256": "7841cc4d857e85c12f95bb3c74d51902deebf5fd914782b58ade0e2dd2c91405"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchModel.cpp",
+      "bytes": 4401,
+      "sha256": "3250159aa525eb4762c23f5b4d06e79d494eb5f1b6875ef2771e03614cfb4fbf"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchOperations.cu",
+      "bytes": 4833,
+      "sha256": "654a98603a74324fac6ad1bb3d6227837dbedd0fa8e307bfaefbbb7c68ce2674"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchPublication.cpp",
+      "bytes": 4673,
+      "sha256": "a4f59a5eb6fa5f2aafb1516ebd47fbd2f4239b33af613d9ea8823e73987ffab4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephBatchStorage.h",
+      "bytes": 2372,
+      "sha256": "ef33c5912b04d350d16455959ed83989147e1b3d77fbcac3d41c5e7e42025f33"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephCurrentFrame.h",
+      "bytes": 4630,
+      "sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephData.h",
+      "bytes": 1599,
+      "sha256": "49af97612d8b6fb58f8649401d9a454aa845250d2715fded9adbca9579dd9a5d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephElasticForces.h",
+      "bytes": 1717,
+      "sha256": "1a840c6af8c623d3c6f5e5766254de97a166788bbb8b38aadc0feb5008e66037"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephForce.h",
+      "bytes": 3031,
+      "sha256": "7140ecfa7bf1a356910c99f340d5c44c6ace236be25656fce9589f9ddaf8f522"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephForceData.h",
+      "bytes": 1072,
+      "sha256": "a1ecf7bf9f57044597bff04988fb62f2dc93a299b6bc700c7d3ba552fd6e74f4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephForceProjection.h",
+      "bytes": 3196,
+      "sha256": "482263ba09996dafd20bca44232bcf8130afbfb2cd5e0bbec49bfa0dccc3ff61"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephGeometryWork.h",
+      "bytes": 1648,
+      "sha256": "ad56e80b373c608465db8c82fc5f4c8298f876b6db9eb4658f441a0d8cef83cf"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephHistory.h",
+      "bytes": 2874,
+      "sha256": "5ee6fa1b44b588c17350b6095d2a3c40c5bbbb94fb20aff9e1a3e88a1c648ef2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephHistoryData.h",
+      "bytes": 2000,
+      "sha256": "848c87e948e5abe1efabbf84b77912f4672e214fe9a8c4d00341b32841954820"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephKinematics.h",
+      "bytes": 5216,
+      "sha256": "3ebb15d7a38dbdf1bc327f1d2a4ed3c37d83b50fc0521c0bd7a94c14f1cced13"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephKinematicsData.h",
+      "bytes": 1679,
+      "sha256": "7e36d747e1f799c65a80804863e7de4ebb9b1ed8e5d063860952c8561beaf015"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephLaw1.h",
+      "bytes": 2661,
+      "sha256": "dc3fd8bf528c87445790e1a5b4c2b754d8370852689029e4c818a75902b2c149"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephMaterial.h",
+      "bytes": 2587,
+      "sha256": "3acc296ab32d9a678f3de49ac1b5bf15c2ecd39653ab10a01a04f3b920fde20f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephProjection.h",
+      "bytes": 4675,
+      "sha256": "568878aa2fa3cf406fcf3ec9284728024873e19b1d53d3306e9693fec71443e5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephProjectionInverse.h",
+      "bytes": 1095,
+      "sha256": "608a5890d52ccb79ae6196bfdab6b939b7d0124f2c3b3df8d398b2641acf34b5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephRates.h",
+      "bytes": 2228,
+      "sha256": "a36f7af8c4bb42095085e8894a5ce8bb56e38475d0e12f01c02ff12d0b5fa068"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStabilizationForces.h",
+      "bytes": 3550,
+      "sha256": "ded0128a521c7a906efa222edb96eab2872e64c1f110c2005ed47e0f2111de4d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStabilizationState.h",
+      "bytes": 2255,
+      "sha256": "1513d23b608abe5c606b9605cacbc22a7c9988e8aced25079e9870b0fc815732"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStartup.h",
+      "bytes": 3914,
+      "sha256": "04b3d00f8b4ef8347d563aa07712d077ad35ca27307d928a041d99eb1ddea7bf"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStartupFrame.h",
+      "bytes": 4208,
+      "sha256": "794cee31915a4bdc4a1a33f6cd6e52df3af96346c043a06708549dfd394d437a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStiffnessDiagnostics.h",
+      "bytes": 1678,
+      "sha256": "7c62acd02b1d3c3f6209c1a3d162a1ccea564c33632fe9a97596216dae44b6e1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephVelocityCorrection.h",
+      "bytes": 2242,
+      "sha256": "f09752adf0b4086fa67a5c6fd4bc2ef481632a5d5eb7db79d1fc2b8a35166eef"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/materials/MaterialModel.cuh",
+      "bytes": 615,
+      "sha256": "66eec10eff8184627a20f2172b1a34efedd299aa3d6a27c68c64a124d63ae1b1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/materials/MooneyRivlin.cuh",
+      "bytes": 6405,
+      "sha256": "7c1860a1dffb45c63ebf4d7fcc6b25e2067c836c969d5a1e868189533db2e10e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/materials/SVK.cuh",
+      "bytes": 3051,
+      "sha256": "fc609b7fb63178fe80da6f2bd78ea28a6db551a3445270377106a2374f8de293"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/materials/ShellElasticLaw1.h",
+      "bytes": 3424,
+      "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/materials/SolidMaterialProperties.h",
+      "bytes": 3723,
+      "sha256": "338d439961510843ce638f1594fa86d7f6a6926f2dd7685211a665c4bd132b6b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/BUILD.bazel",
+      "bytes": 4953,
+      "sha256": "d1b9871734bf6290e93d80534e5676e4dc8a1e9d0255035fcded5a407c15fa68"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/CMakeLists.txt",
+      "bytes": 911,
+      "sha256": "0cbf5f3c0114feb2cb25195491ebe9847e415d1055073b9665c8e62ca5a2ecdd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitNodalStep.cu",
+      "bytes": 10247,
+      "sha256": "4b7835dc9544a4d8fb88716b80f9ee5879bf884da28dd0d9f7e8dc7742246cd6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitNodalStep.h",
+      "bytes": 4446,
+      "sha256": "e5781880db84d2c01d34c4609552ab923560feba43b5a60c708574a016d4c084"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitStepStability.h",
+      "bytes": 10391,
+      "sha256": "555e53b8f8396720ebaab009ae2454bbaf1e8691202775bd75e269bc73a760f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitTranslationStep.cu",
+      "bytes": 2496,
+      "sha256": "18f314d46b7844fc0223d7adde4c42374cd0cfb2dc2f40ac08b0be0755964c08"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitTranslationStep.h",
+      "bytes": 805,
+      "sha256": "880c25e2c414134f34e99b6f6c5c0f9ed7798b05e2c4859e5613da2ee5650e70"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FEAT10ConstraintManager.h",
+      "bytes": 479,
+      "sha256": "646c6165d149382ddc041552e6e93ccc24afeceeafc6031e4eb2a0fd8001a811"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FEMultiElementProblem.cu",
+      "bytes": 17455,
+      "sha256": "2d1a25b2664a252654ed2b4b89d23ea54fdf6adb75687bc0a1bc563059a96325"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FEMultiElementProblem.h",
+      "bytes": 5415,
+      "sha256": "50e034d0916dac232960f582bd62bd157e61f444cbef0db552a461e75dab6785"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FENodalState.cu",
+      "bytes": 23268,
+      "sha256": "23e40c566b6b5b5f7f6c7b66876ec7f46c01e33292f4c8b68c755f0fbbe78ab0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FENodalState.h",
+      "bytes": 11656,
+      "sha256": "240a9cd668ffd990037e2d2be9f03b90ba4e6dea76b4b0cd97a015e0eddad74c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FENodalStateStorage.h",
+      "bytes": 3477,
+      "sha256": "0d8d822e12aaf0265e2cacaee2f13b81d86dab0a18e36d46ab282ee1586ea09d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FENodalStateView.h",
+      "bytes": 1913,
+      "sha256": "bf1fdfc735bab0bf943489722d9cf3303a65d58b02707450e35e53e2bb5667b9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/FEStateBuffer.h",
+      "bytes": 2976,
+      "sha256": "2475f530799c85a8c8e475208ee93ce51a9d74d59f74d8f90f82b723e504ff6e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/MultiElementNewton.cu",
+      "bytes": 7353,
+      "sha256": "e7265cf13e01b09ec81181a4a9835573bd1272fbf09635705fe6d582c23895df"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/MultiElementNewton.cuh",
+      "bytes": 4362,
+      "sha256": "b8dfbcb4e6268d24d8310ef7f1c9b8ff9b55589edcf8061932d7ebf4c6154de8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/NodalForceAssembly.h",
+      "bytes": 2178,
+      "sha256": "2fa1ba5b47a7bc2d07c2cb9596cc45b9d0f0a8ed836f069f3522b745742ed4b8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/NodalRotation.h",
+      "bytes": 1035,
+      "sha256": "8fac333008b464aba896101b3c2ba29063ba766bcb7bbaf997f9aecf324b51b3"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/NodalTrialIdentity.h",
+      "bytes": 2242,
+      "sha256": "243e92fe2aec65bd1ef094bbff3613f9d8bd05b309bfcf6de5a1ca55d4ea08e6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SolverBase.h",
+      "bytes": 847,
+      "sha256": "bf68482d2bb0b0bc3596dd11ac5e8070bc9d1f91bd179820ea08e1178b940380"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedAdamW.cu",
+      "bytes": 17170,
+      "sha256": "075e1bc199715dbcca9633ff6647f024b2d90816684b15a59fc4895b12680a3f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedAdamW.cuh",
+      "bytes": 10822,
+      "sha256": "4fb7f05ef88e4dfa4e96ed9da1006a2bdaca08b8bcd67793765ba99c2f9bd5b1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedAdamWNocoop.cu",
+      "bytes": 19080,
+      "sha256": "dfed5a9aaf5bb705eeb860dc1451e5629149c4f4b922120019051554e0ba4daa"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedAdamWNocoop.cuh",
+      "bytes": 11773,
+      "sha256": "fca146d61739abbe00d232430bbda604736d746b779f49e39fc6e8e586c59e98"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedNesterov.cu",
+      "bytes": 15881,
+      "sha256": "1e167c1741f3a66b6bda4482f7a90b17950e47b4fa3a71df0a786b22883478a1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedNesterov.cuh",
+      "bytes": 9047,
+      "sha256": "ab158af0d7e4efd88082b2ee1c7e7a74b10cde4ecc5f3a6f795966a5f4b81eb1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedNewton.cu",
+      "bytes": 61535,
+      "sha256": "49b666e4f8a2b2df0cb436db3ac109c44a98dd14c93bf665b79faa7f4803f928"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedNewton.cuh",
+      "bytes": 15063,
+      "sha256": "d7e07e6649e4141db6b227afaf8d6d9a155148f1e6e2904ce25d0d0afa14a246"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedVBD.cu",
+      "bytes": 58986,
+      "sha256": "d7ac456602088cc105a05c33c19913b19f127cc36ef7819e19576b6348afdeb8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/SyncedVBD.cuh",
+      "bytes": 16263,
+      "sha256": "2b6a87d69278752f0f9c06e8c4db21642c6dddd9f17041af52cdfc4aa43ae1fd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/q4_contact_integration_fixture.h",
+      "bytes": 1992,
+      "sha256": "9f7100cd24553aebc51449d6ddb0227f3a24ad5c998e2bbc54414d599dc9e296"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/q4_planar_geometry_fixture.h",
+      "bytes": 3201,
+      "sha256": "369e4aab4cbc05155180d99d2ac055b4f14213dcd127f2a55b9f651474d5d9e4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/CMakeLists.txt",
+      "bytes": 5728,
+      "sha256": "bb97f870f9ba678739d0663585a6ebf5ca1ff703f34c5c0ddc6afccea251a7e1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephBridge.h",
+      "bytes": 1298,
+      "sha256": "1a33971d22771f02b8fb04d2256f20fee8d9689dc980e70c780db78dd3975374"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephForce.F",
+      "bytes": 3996,
+      "sha256": "026378bc21260d26209ca972de1b196edbf7976455825622b34aa45d17564ed7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephKinematics.F",
+      "bytes": 814,
+      "sha256": "9d36ab6a6d6eef99ee0ba38edc21c0d6e91d47fd4be43b1afcbcab08fe6d6283"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephScatter.F",
+      "bytes": 2124,
+      "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephStartup.F",
+      "bytes": 2343,
+      "sha256": "554528ff1eae15807a354db4cf01f168e69b88b70b20e91d2547c11e12fb908a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceHistoryTest.cpp",
+      "bytes": 12386,
+      "sha256": "bdcfa616d7b4dc793eabc8c0fabefaac9f6f924f577572133b154675779a426c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.cpp",
+      "bytes": 4505,
+      "sha256": "4535964f160dd514fdd7592bc1a1adcc25265728a2a5cb7fa371e0115e239b4d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.h",
+      "bytes": 1733,
+      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceTest.cpp",
+      "bytes": 9779,
+      "sha256": "e86b9dc63ab44e3441afcbde38d55c6b82ff7140ae436f1d57890d033179ea5d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceTestFixture.h",
+      "bytes": 6469,
+      "sha256": "f1c77fda26eeadf27d3107be75157a3725c7fe08834348ee7900e4720e0948f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephGeometry.cpp",
+      "bytes": 2293,
+      "sha256": "9e7152b1be1b381139246398c4b2e59a2755f6bcad1289e5ce1a47b7fd34df45"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephGeometry.h",
+      "bytes": 300,
+      "sha256": "02862d454fb5c233c2bcea868c9d1d63b0ec70e54f7c1f735676ffcc8cb6bfca"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.cpp",
+      "bytes": 2448,
+      "sha256": "e3d5c542d85e4d5b9c44223b101fb88e908f71800c88afecaa1cee0fe3be5616"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.h",
+      "bytes": 2008,
+      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephKinematicsTest.cpp",
+      "bytes": 24313,
+      "sha256": "bccfd3a5a4614c12bf4a553a3220b56d6c2a45d07613962c9260618c8e7d9fd6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeGeometry.F",
+      "bytes": 6563,
+      "sha256": "6adfaa4d938d8099c56326f2b6984632d8240375d4c783fbced2d89252f634b0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeHistory.F",
+      "bytes": 1466,
+      "sha256": "5faf3fb45ea763fe7c1d375c7d49d5a805bd4d68b543505be0cd83c08e55b5c6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeLaw1.F",
+      "bytes": 3733,
+      "sha256": "cddd8bbea6ebcbd6ed1e701bb153f928090f926eca64a91ca86d0d9e8de0e931"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeMaterial.F",
+      "bytes": 2999,
+      "sha256": "c8184b50d34abce5785b9392a0907c328bc92b25364ed32700f3857ec53df2c2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeStiffness.F",
+      "bytes": 1681,
+      "sha256": "60651474e891231e588115c3a1d97348ab9dddeb5131450630353ec760123c9d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.cpp",
+      "bytes": 5207,
+      "sha256": "d09678dc65879a54cb6db1d0372c3446f2e653cf6fb41676133614dbdd67325f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.h",
+      "bytes": 1241,
+      "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/README.md",
+      "bytes": 9418,
+      "sha256": "d1ad35c7301ee810e34343676f3b7cf481e8fe11ec8022c516b32040c7aa2090"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/prepare_sources.py",
+      "bytes": 3150,
+      "sha256": "682fec32145e28930b45520bf399b46d64fe88ad9f1bfed6244b3096f9a429e6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/verify_sources.py",
+      "bytes": 4059,
+      "sha256": "ae984db3b29d21bfbb3997d6827bea7045472575c1006e6510ef5262c3fbdf87"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/nodal/NodalTemporalFixture.h",
+      "bytes": 5340,
+      "sha256": "86159743b6af7beb2ab2bf1f7c9242c1f171be53294c2a03c359d4e6c14508ae"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/CMakeLists.txt",
+      "bytes": 6413,
+      "sha256": "9236f7cf55ee37dd022bbec153ef875395115fd26de5bb6d2b1a3a52a6c29154"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephForceCudaTest.cu",
+      "bytes": 8151,
+      "sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephForceFixture.h",
+      "bytes": 7860,
+      "sha256": "5f408c4473e3741c93c0563d8975cf0cf74ca2c0917a7766910608ccb5f78958"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephForceTest.cpp",
+      "bytes": 16394,
+      "sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephKinematicsCudaTest.cu",
+      "bytes": 6945,
+      "sha256": "d34e10b74ccabfe20f05dbafdc16c2de7181eb49576d22582c779825750d7d96"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephKinematicsFixture.h",
+      "bytes": 11457,
+      "sha256": "8ae458bf57887f91faecf9bc67d933faecfb4ee5b6d9cce6b9ff6a5156fefb22"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephKinematicsTest.cpp",
+      "bytes": 8200,
+      "sha256": "faff66a16b5c1f00f51be96c873633afacc78baa92871e13f0dc629cf9bfdfad"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephStartupCudaTest.cu",
+      "bytes": 4690,
+      "sha256": "de3511aa77d8dc9ce196e524edb8d62d31aab69932ee42510908ea7c2b6bc4f4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephStartupFixture.h",
+      "bytes": 7419,
+      "sha256": "9bc4ebcdc1321d131d4091009f0fce2ee7a11d1c79fd0135db9e02edb5467a65"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/QephStartupTest.cpp",
+      "bytes": 7146,
+      "sha256": "ab7ae02724d297cce78d62c2b080237f623ae0b668ce50b5043ecc9eec22a485"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/batch/QephBatchFixture.h",
+      "bytes": 7737,
+      "sha256": "77fdbba2f5132ac390745a816422838c6c01e56b13db461e321d0bdf5ab6b24e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/CMakeLists.txt",
+      "bytes": 966,
+      "sha256": "f9367aa39228d2d9164a14daef71b10252bf291e31f37afddd83855fd5fab740"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledFixture.cu",
+      "bytes": 5174,
+      "sha256": "48ada5f119dbf252ea650b7228e482a7f0306ec090daf0cd850022aeac623656"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledFixture.h",
+      "bytes": 2285,
+      "sha256": "5a8156c310fa300803bd31fefbadbd21d7bc4707991b64db6ee1d7da5fc1b2dc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledLedger.cu",
+      "bytes": 9176,
+      "sha256": "66685fd1df3e9711d614d5eafabeb6a08903f255113565c9906d0ed619ef1c4a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledLedger.h",
+      "bytes": 1062,
+      "sha256": "603978ffe11a35734c0869f6b9e67ba889bf062f8f602e3fce725f3190dcd07a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledNative.cu",
+      "bytes": 2922,
+      "sha256": "8f2201aa0b8fb45277a4ba9026b4144431e4329166ba09db710083cdd4d1123a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/coupled/QephCoupledTest.cu",
+      "bytes": 9852,
+      "sha256": "2fb87962a9d3bfcedb07251a08713a231fdd935fbe50b8cb7f10912168fae1c6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/source-manifest.json",
+      "bytes": 29410,
+      "sha256": "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/verify_sources.py",
+      "bytes": 2584,
+      "sha256": "26729fca3d4ba7eaaeb4e3667ae72fdb0443deaca581cb5ea9e5626b1a29eee6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/CMakeLists.txt",
+      "bytes": 1108,
+      "sha256": "f3eb9fe310d2f7f674de7bf730406a5e711e23d1bd23c08dff4a449ea209ddc2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/README.md",
+      "bytes": 5360,
+      "sha256": "39b4c2ff9d49f534125046bda206cdde2aee006df3a9ef937209cfe32c177418"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledFailureTest.cu",
+      "bytes": 9555,
+      "sha256": "a4bfd6de016063ca7b385d9909fc440181fefaf9512fde0cc661cccd3b838875"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledFixture.cu",
+      "bytes": 4234,
+      "sha256": "fe812a93f9b08e075e9a38adc9d44df8c90e26c3c3c8f8c96842ec8ea9c0267b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledFixture.h",
+      "bytes": 2682,
+      "sha256": "a0ec676cec6f2b5fd4bfff007407991a9518af4c24e447ec300ef0db0b069d04"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledLedger.cu",
+      "bytes": 8161,
+      "sha256": "022cea57a15f0bbc9c3d004f11ddb47031831ef6e0708f0f5d339a173c16cbb1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledPrefix.cu",
+      "bytes": 5772,
+      "sha256": "c201378110bfc8c335279628042459e8050dbced85abbef4365e7ab4713ff047"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledTest.cu",
+      "bytes": 3156,
+      "sha256": "aa88e32e576f4aefd65b47af4785f5c771d1028bdabc43fea3fe3cacfb107b50"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_coupled/WallCoupledTransaction.cu",
+      "bytes": 6776,
+      "sha256": "e1db803e2d98084e171d6d4235975d60e06975ab4c6fd23f3899d0ef5ddb3ce7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/surface_contact/NodalWallOwnerFixture.h",
+      "bytes": 8006,
+      "sha256": "1eae452e650b2d0daf8f0a69d483944effb31ef944edbfff4b541103eaef0a12"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utils/cpu_utils.h",
+      "bytes": 7603,
+      "sha256": "3f5186262490bec80ed9322297efd8ebfccd1e2d85ec6b8728343865fc0c1729"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utils/cuda_runtime_utils.h",
+      "bytes": 568,
+      "sha256": "cedd1e5e1a5ffe2a84e16696aee3941967525eba95e4a83c6543f6fc8e91b89b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utils/cuda_utils.h",
+      "bytes": 1440,
+      "sha256": "f8c3337db0dcf38e8716bd62f6caf9d20a168322046cf5080fd39e3a2e17c664"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utils/mesh_manager.h",
+      "bytes": 8320,
+      "sha256": "afc21052ffa5c256489f3ea1d72db292960342d00a477cd2a27c9f0404c2a30c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utils/quadrature_utils.h",
+      "bytes": 6134,
+      "sha256": "1bb073cfc14ff2fe9a4c2bcc48b7c1a875133f4ed8242276d39ba929ce690f51"
+    }
+  ]
+}

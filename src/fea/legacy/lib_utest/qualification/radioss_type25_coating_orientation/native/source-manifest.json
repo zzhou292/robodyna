@@ -1,0 +1,18 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Original complete SEG_INS with two observation-only insertions exposing its existing VOL; unchanged numerical body",
+  "files": [
+    {
+      "path": "native/original/i24surfi.F",
+      "bytes": 74037,
+      "sha256": "aa55e679ceb96b8d83ed7611bc6486c011ff9ef1a5bd86e1d5764b3363cd55f3",
+      "git_blob": "910e8b87fb058708efc9290e5ac1b6eee7d827c0"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    }
+  ]
+}

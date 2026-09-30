@@ -1,0 +1,556 @@
+{
+  "applied_rigid_transform": null,
+  "arrays": {
+    "node_blank_mask_u32": {
+      "bytes": 11616,
+      "dtype": "<u4",
+      "fields": [
+        "blank_mask"
+      ],
+      "file": "node_blank_mask_u32.bin",
+      "sha256": "c752c796cea2507e0e57acfc88924062dc6559356452e4c627fb641175094fa0",
+      "shape": [
+        2904,
+        1
+      ]
+    },
+    "node_canonical_index_u32": {
+      "bytes": 11616,
+      "dtype": "<u4",
+      "fields": [
+        "canonical_index"
+      ],
+      "file": "node_canonical_index_u32.bin",
+      "sha256": "9bb8acd3ef03a64eb9e2ceeb69b02865980a9225c12123162b7e6c2f88bb2ca6",
+      "shape": [
+        2904,
+        1
+      ]
+    },
+    "node_codes_i64": {
+      "bytes": 46464,
+      "dtype": "<i8",
+      "fields": [
+        "TC",
+        "RC"
+      ],
+      "file": "node_codes_i64.bin",
+      "sha256": "7a47aac7b3c45ce4fdaca28bb716662f1303ab1eec6d7ffcd90f60dadcecb402",
+      "shape": [
+        2904,
+        2
+      ]
+    },
+    "node_ids_u64": {
+      "bytes": 23232,
+      "dtype": "<u8",
+      "fields": [
+        "NID"
+      ],
+      "file": "node_ids_u64.bin",
+      "sha256": "ce8a41b3940baddd7740294f83e0982c1ca0e8fb0f8fbf5d63567ed227c84756",
+      "shape": [
+        2904,
+        1
+      ]
+    },
+    "node_position_m_f64": {
+      "bytes": 69696,
+      "dtype": "<f8",
+      "fields": [
+        "x_m",
+        "y_m",
+        "z_m"
+      ],
+      "file": "node_position_m_f64.bin",
+      "sha256": "0fdfd4f270753eb8d33b750eafd83b144944a8d49fa5b7667f693c2193c0c758",
+      "shape": [
+        2904,
+        3
+      ]
+    },
+    "node_position_mm_f64": {
+      "bytes": 69696,
+      "dtype": "<f8",
+      "fields": [
+        "x_mm",
+        "y_mm",
+        "z_mm"
+      ],
+      "file": "node_position_mm_f64.bin",
+      "sha256": "442c70705feab97a2e4135407bcecbf66da60e35150472f2f47a19d0290c404c",
+      "shape": [
+        2904,
+        3
+      ]
+    },
+    "node_source_line_u64": {
+      "bytes": 23232,
+      "dtype": "<u8",
+      "fields": [
+        "source_line"
+      ],
+      "file": "node_source_line_u64.bin",
+      "sha256": "9b9b6804037579d51e38165e92ba5130fa12c26d38f2993d3b763ffd1bdf4baa",
+      "shape": [
+        2904,
+        1
+      ]
+    },
+    "solid_blank_mask_u32": {
+      "bytes": 5380,
+      "dtype": "<u4",
+      "fields": [
+        "blank_mask"
+      ],
+      "file": "solid_blank_mask_u32.bin",
+      "sha256": "67b222a6ba7bff3ef40753005f944613f5b40a1ac0cb0f9e7d752fdab18d5f08",
+      "shape": [
+        1345,
+        1
+      ]
+    },
+    "solid_canonical_index_u32": {
+      "bytes": 5380,
+      "dtype": "<u4",
+      "fields": [
+        "canonical_index"
+      ],
+      "file": "solid_canonical_index_u32.bin",
+      "sha256": "1809e10bf610e673dfee0df475925033f703e386c540fc1e628ec00ef80c32f7",
+      "shape": [
+        1345,
+        1
+      ]
+    },
+    "solid_nodes_local_u32": {
+      "bytes": 43040,
+      "dtype": "<u4",
+      "fields": [
+        "local1",
+        "local2",
+        "local3",
+        "local4",
+        "local5",
+        "local6",
+        "local7",
+        "local8"
+      ],
+      "file": "solid_nodes_local_u32.bin",
+      "sha256": "b6255aaacbe8a1a7e4bb63c312193db85027148f1551128355a3f4d8e72be689",
+      "shape": [
+        1345,
+        8
+      ]
+    },
+    "solid_records_u64": {
+      "bytes": 107600,
+      "dtype": "<u8",
+      "fields": [
+        "EID",
+        "PID",
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "N6",
+        "N7",
+        "N8"
+      ],
+      "file": "solid_records_u64.bin",
+      "sha256": "8f886de71ba9eb98a55bfabc3fade3fa6ebdc90bfaa66cfee068ad3342f510a7",
+      "shape": [
+        1345,
+        10
+      ]
+    },
+    "solid_source_line_u64": {
+      "bytes": 10760,
+      "dtype": "<u8",
+      "fields": [
+        "source_line"
+      ],
+      "file": "solid_source_line_u64.bin",
+      "sha256": "5bad138d148d95a5372de8899607f750b4d9c51a4b93f06839a5f18b538c803a",
+      "shape": [
+        1345,
+        1
+      ]
+    }
+  },
+  "canonical_arrays": {
+    "node_blank_masks": {
+      "bytes": 786330,
+      "dtype": "<u2",
+      "fields": [
+        "blank_field_mask"
+      ],
+      "file": "arrays/node_blank_masks.bin",
+      "sha256": "883dd1d9da7eb174f5d13f51ce18958fcfa9b61e9778637709647498ebdf8dfa",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "node_codes": {
+      "bytes": 3145320,
+      "dtype": "<i4",
+      "fields": [
+        "tc_raw",
+        "rc_raw"
+      ],
+      "file": "arrays/node_codes.bin",
+      "sha256": "4e799f5e8856cab88a731199e51687a609ba335430ceb20bdd2a29ad2ff193f1",
+      "shape": [
+        393165,
+        2
+      ]
+    },
+    "node_ids": {
+      "bytes": 3145320,
+      "dtype": "<u8",
+      "fields": [
+        "source_node_id"
+      ],
+      "file": "arrays/node_ids.bin",
+      "sha256": "14e5f078598e832836317394913e276a066cac121cf652335762168bb2b0d940",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "node_positions": {
+      "bytes": 9435960,
+      "dtype": "<f8",
+      "fields": [
+        "x_m",
+        "y_m",
+        "z_m"
+      ],
+      "file": "arrays/node_positions.bin",
+      "sha256": "b15188d013bcae29435a583c42adb2ecf5941369fb72c2304b5e986674a164f1",
+      "shape": [
+        393165,
+        3
+      ]
+    },
+    "node_source_lines": {
+      "bytes": 1572660,
+      "dtype": "<u4",
+      "fields": [
+        "source_line"
+      ],
+      "file": "arrays/node_source_lines.bin",
+      "sha256": "fdb91194914d3c609bb285ce6c2bb136d49d818f6088f5067677c618a5f621c1",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "solids_blank_masks": {
+      "bytes": 30468,
+      "dtype": "<u2",
+      "fields": [
+        "blank_field_mask"
+      ],
+      "file": "arrays/solids_blank_masks.bin",
+      "sha256": "2b925073dbad07f704716e8a4ba63fce3378765d39889b89f26f57ee96a7fae0",
+      "shape": [
+        15234,
+        1
+      ]
+    },
+    "solids_node_indices": {
+      "bytes": 487488,
+      "dtype": "<u4",
+      "fields": null,
+      "file": "arrays/solids_node_indices.bin",
+      "sha256": "ac15785c169a11a60817d127a43dd09f82d402c8e4a7b7d52dbde0842e394718",
+      "shape": [
+        15234,
+        8
+      ]
+    },
+    "solids_records": {
+      "bytes": 1218720,
+      "dtype": "<u8",
+      "fields": [
+        "element_id",
+        "part_id",
+        "n1",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6",
+        "n7",
+        "n8"
+      ],
+      "file": "arrays/solids_records.bin",
+      "sha256": "efdc8209e57eb2914cb27c276b2c271ae6a8020b502eb37e1df797afaeec4b4f",
+      "shape": [
+        15234,
+        10
+      ]
+    },
+    "solids_source_lines": {
+      "bytes": 60936,
+      "dtype": "<u4",
+      "fields": [
+        "source_line"
+      ],
+      "file": "arrays/solids_source_lines.bin",
+      "sha256": "45c9df2164a505c0d9fd6152e962d2ae7253f39ae06c5cb0c2f5da0bc06b3e88",
+      "shape": [
+        15234,
+        1
+      ]
+    }
+  },
+  "declarations": {
+    "blocks": [
+      {
+        "cards": [
+          {
+            "source_line": 18197,
+            "text": "   2100015         0  1.000000  1.000000"
+          },
+          {
+            "source_line": 18199,
+            "text": "               0.000               0.000"
+          },
+          {
+            "source_line": 18200,
+            "text": "           0.1002000           3.4449999"
+          },
+          {
+            "source_line": 18201,
+            "text": "           0.2003000          13.1400003"
+          },
+          {
+            "source_line": 18202,
+            "text": "           0.2522000          24.7299995"
+          },
+          {
+            "source_line": 18203,
+            "text": "           0.3005000          44.2700005"
+          },
+          {
+            "source_line": 18204,
+            "text": "           0.3510000          74.7900009"
+          },
+          {
+            "source_line": 18205,
+            "text": "           0.3995000         122.4000015"
+          },
+          {
+            "source_line": 18206,
+            "text": "           0.4316000         157.4000092"
+          },
+          {
+            "source_line": 18207,
+            "text": "           0.4510000         183.4000092"
+          },
+          {
+            "source_line": 18208,
+            "text": "           0.4781000         223.1999969"
+          },
+          {
+            "source_line": 18209,
+            "text": "           0.4997000         256.9000244"
+          },
+          {
+            "source_line": 18210,
+            "text": "           0.5212000         283.7000122"
+          },
+          {
+            "source_line": 18211,
+            "text": "           0.5502000         305.5000000"
+          },
+          {
+            "source_line": 18212,
+            "text": "           0.5812000         317.0999756"
+          },
+          {
+            "source_line": 18213,
+            "text": "           0.5990000         322.0000000"
+          },
+          {
+            "source_line": 18214,
+            "text": "           0.6267000         336.0000000"
+          },
+          {
+            "source_line": 18215,
+            "text": "           0.6492000         350.0000000"
+          },
+          {
+            "source_line": 18216,
+            "text": "           0.6656000         364.6000061"
+          },
+          {
+            "source_line": 18217,
+            "text": "           0.6819000         383.2000122"
+          },
+          {
+            "source_line": 18218,
+            "text": "           0.7001000         405.2000122"
+          },
+          {
+            "source_line": 18219,
+            "text": "           0.7265000         447.0000000"
+          },
+          {
+            "source_line": 18220,
+            "text": "           0.7447000         488.3999939"
+          },
+          {
+            "source_line": 18221,
+            "text": "           0.7592000         524.4000244"
+          },
+          {
+            "source_line": 18222,
+            "text": "           0.7689000         545.4000244"
+          },
+          {
+            "source_line": 18223,
+            "text": "           0.7862000         578.5999756"
+          },
+          {
+            "source_line": 18224,
+            "text": "           0.8001000         597.5999756"
+          },
+          {
+            "source_line": 18225,
+            "text": "           0.9000000        4000.0000000"
+          },
+          {
+            "source_line": 18226,
+            "text": "           0.9200000        20000.000000"
+          }
+        ],
+        "family": "curve",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 18195,
+        "identity": 2100015,
+        "keyword": "*DEFINE_CURVE",
+        "last_line": 18226,
+        "raw_text": "*DEFINE_CURVE\n$#    lcid      sidr       sfa       sfo      offa      offo    dattyp\n   2100015         0  1.000000  1.000000\n$#                a1                  o1\n               0.000               0.000\n           0.1002000           3.4449999\n           0.2003000          13.1400003\n           0.2522000          24.7299995\n           0.3005000          44.2700005\n           0.3510000          74.7900009\n           0.3995000         122.4000015\n           0.4316000         157.4000092\n           0.4510000         183.4000092\n           0.4781000         223.1999969\n           0.4997000         256.9000244\n           0.5212000         283.7000122\n           0.5502000         305.5000000\n           0.5812000         317.0999756\n           0.5990000         322.0000000\n           0.6267000         336.0000000\n           0.6492000         350.0000000\n           0.6656000         364.6000061\n           0.6819000         383.2000122\n           0.7001000         405.2000122\n           0.7265000         447.0000000\n           0.7447000         488.3999939\n           0.7592000         524.4000244\n           0.7689000         545.4000244\n           0.7862000         578.5999756\n           0.8001000         597.5999756\n           0.9000000        4000.0000000\n           0.9200000        20000.000000\n",
+        "sha256": "43a6811e5b179844681473bfecc374aad382e5ec007f394e627fdaf48a91b810"
+      },
+      {
+        "cards": [
+          {
+            "source_line": 1385,
+            "text": "   20000637.7200E-10 21.000000   2100015 15.000000"
+          },
+          {
+            "source_line": 1387,
+            "text": "                                                   20000.000"
+          }
+        ],
+        "family": "material",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 1383,
+        "identity": 2000063,
+        "keyword": "*MAT_LOW_DENSITY_FOAM",
+        "last_line": 1388,
+        "raw_text": "*MAT_LOW_DENSITY_FOAM\n$#     mid        ro         e      lcid        tc        hu      beta      damp\n   20000637.7200E-10 21.000000   2100015 15.000000\n$#   shape      fail    bvflag        ed     beta1      kcon       ref\n                                                   20000.000\n$-------------------------------------------------------------------------------\n",
+        "sha256": "2dc84e804fd3d4263979b6872152d86024049c1bfe9f349e9b27f92f233b1415"
+      },
+      {
+        "cards": [
+          {
+            "source_line": 1377,
+            "text": "447_radiator"
+          },
+          {
+            "source_line": 1379,
+            "text": "   2000063   2000063   2000063"
+          }
+        ],
+        "family": "part",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 1375,
+        "identity": 2000063,
+        "keyword": "*PART",
+        "last_line": 1379,
+        "raw_text": "*PART\n$# title\n447_radiator\n$#     pid     secid       mid     eosid      hgid      grav    adpopt      tmid\n   2000063   2000063   2000063\n",
+        "sha256": "64c15c71885f29de2b16341a980fd139aa675bfdc7c36142cf87557f1143a6a1"
+      },
+      {
+        "cards": [
+          {
+            "source_line": 1382,
+            "text": "   2000063         2"
+          }
+        ],
+        "family": "section",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 1380,
+        "identity": 2000063,
+        "keyword": "*SECTION_SOLID",
+        "last_line": 1382,
+        "raw_text": "*SECTION_SOLID\n$#   secid    elform       aet\n   2000063         2\n",
+        "sha256": "b2f2a16f31e4496fdf31ce381d0f3128df56917a69fa99cb0800330451085f58"
+      }
+    ],
+    "interpretation": "Original declarations and density units only; no material or element admission",
+    "parts": [
+      {
+        "curve_id": 2100015,
+        "density_kg_per_m3": {
+          "binary64_le": "0000000000208840",
+          "value": 772.0
+        },
+        "density_source_field": "7.7200E-10",
+        "density_source_line": 1385,
+        "density_tonne_per_mm3": {
+          "binary64_le": "ee3ac77495860a3e",
+          "value": 7.72e-10
+        },
+        "material_id": 2000063,
+        "part_id": 2000063,
+        "section_id": 2000063
+      }
+    ]
+  },
+  "density_to_si": 1000000000000.0,
+  "generator_sources": {
+    "modelio/_legacy.py": "01b51d92e1a6517f256e0e32be63fcbacca83a2d6923d83a0b5d02ab508b203c",
+    "modelio/canonical_geometry.py": "43bcf0fbfade26f03dea69b24ee7ae4018695436540b7eb9b83053e2fddb8e77",
+    "modelio/canonical_incidence.py": "5724e8b3854f589738cd25d2b3e581f402b0aea96b998e851e5037ac0824b846",
+    "modelio/keyword_cards.py": "aea221c962ce77ef3555742fced2dcca9a0213a689d037b915d34839f69f5b2f",
+    "modelio/solid_geometry_evidence.py": "091a9bf348c0fe034f678a0df6e4701430b94c1d49cad7117b2433c6437fc469",
+    "modelio/solid_geometry_export.py": "d552415ad9f6d56ed17e7253ae6f545fbe8b5bfc14290cbea225337a595dc094",
+    "modelio/solid_working_geometry.py": "cd930f221f987fa6c6ac832a494af0644ca6a3e6bc90fc81abf13ea943ef8024",
+    "modelio/source_blocks.py": "90801d9c7b1a9ed650d7abe6034f972327396c56db98083386093705905ae061",
+    "tools/export_solid_working_geometry.py": "b0ad70f6d3620e7b203d61b801e5760b61e6882545e0aa98f7abd94851a96bdc",
+    "tools/import_yaris_vehicle.py": "d812c4281d4d941ea1494db4192673db3085f4938a33ad84e6c16b97cff36747",
+    "tools/import_yaris_wall.py": "acb8790426f291410e5568c9ae8aacfe5a534b8f38f9fad598d38974f7f93f86"
+  },
+  "geometry_modified": false,
+  "length_scale": 0.001,
+  "node_count": 2904,
+  "node_order": "ascending original canonical node index",
+  "output_length_unit": "m",
+  "part_ids": [
+    2000063
+  ],
+  "schema": "robo-dyna.selected-solid-working-geometry.v1",
+  "simulation_ready": false,
+  "solid_count": 1345,
+  "solid_order": "ascending original source line; all eight original slots retained",
+  "source": {
+    "archive_container_verified_by_exporter": false,
+    "archive_member": "2010-toyota-yaris-coarse-v1l/yaris-coarse-v1l.key",
+    "canonical_manifest_sha256": "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
+    "member_bytes": 42846753,
+    "member_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+    "original_archive_sha256": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+    "reference_sha256": "83783f21eeed7f1dc6abca3c25ec14947156634eddef50704df673505a64e8d5"
+  },
+  "source_geometry_validated": true,
+  "source_length_unit": "mm",
+  "source_mass_unit": "t"
+}

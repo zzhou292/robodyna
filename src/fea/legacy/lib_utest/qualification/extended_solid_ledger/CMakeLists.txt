@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLExtendedSolidLedger LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+add_subdirectory(../extended_solid_coefficients coefficients)
+add_executable(extended_solid_ledger_host HostTest.cpp)
+target_include_directories(extended_solid_ledger_host PRIVATE "${TL_ROOT}")
+target_compile_features(extended_solid_ledger_host PRIVATE cxx_std_17)
+target_compile_options(extended_solid_ledger_host PRIVATE -fno-fast-math -ffp-contract=off)
+target_link_libraries(extended_solid_ledger_host PRIVATE tl_nodal_coefficient_ledger
+  tl_nodal_mass_binding GTest::gtest_main)
+add_test(NAME extended_solid_ledger_host COMMAND extended_solid_ledger_host)

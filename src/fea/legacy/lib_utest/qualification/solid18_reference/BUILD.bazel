@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "source_fixture",
+    testonly = True,
+    hdrs = ["TestSupport.h", "SourceFixture.h", "source_fixture/YarisSolid18SourceFixture.h"],
+    deps = ["//lib_src/elements/solid18:reference"],
+    visibility = ["//visibility:public"],
+)
+cc_test(
+    name = "solid18_reference_host",
+    srcs = ["HostTest.cpp", "TestSupport.h"],
+    deps = ["//lib_src/elements/solid18:reference", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

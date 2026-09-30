@@ -1,0 +1,106 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "owner_test_support",
+    testonly = True,
+    hdrs = ["GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+    visibility = ["//visibility:public"],
+)
+exports_files(["PreparedSnapshotCudaProbe.h", "PreparedSnapshotCudaProbe.cpp"], visibility = ["//visibility:public"])
+
+cc_test(
+    name = "nodal_force_stage_capture_packet_check",
+    size = "small",
+    srcs = ["ForceStageCapturePacketTest.cpp", "ForceStageCapturePacketFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_force_stage_capture_check",
+    size = "small",
+    srcs = ["ForceStageCaptureCudaTest.cu", "ForceStageCaptureRejectionTest.cu", "ForceStageCaptureCapacityTest.cu",
+            "ForceStageCaptureFaultTest.cu", "ForceStageCaptureCudaProbe.cpp", "ForceStageCaptureCudaProbe.h",
+            "PreparedSnapshotCudaProbe.cpp", "PreparedSnapshotCudaProbe.h", "ForceStageCaptureFixture.h",
+            "GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync", "-Wl,--wrap=cudaMalloc"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_rigid_group_check",
+    srcs = ["GroupModelTest.cpp", "GroupMathTest.cpp", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_group", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_rigid_step_check",
+    srcs = ["GroupStepMathTest.cpp", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_prepared_snapshot_check",
+    size = "small",
+    srcs = ["PreparedSnapshotTest.cu", "PreparedSnapshotRejectionTest.cu", "PreparedSnapshotCapacityTest.cu",
+            "PreparedSnapshotFaultTest.cu", "PreparedSnapshotCudaProbe.cpp", "PreparedSnapshotCudaProbe.h",
+            "PreparedSnapshotFixture.h", "GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_rigid_owner_check",
+    size = "small",
+    srcs = ["GroupOwnerStartupTest.cu", "GroupOwnerRollbackTest.cu", "GroupOwnerCapacityTest.cu", "NonRigidNodeQueryTest.cu", "GroupOwnerFixture.h",
+            "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_rigid_observation_check",
+    srcs = ["GroupKineticObservationTest.cpp", "GroupKickObservationTest.cpp", "GroupObservationFixture.h",
+            "GroupObservationOracle.h", "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_rigid_observation_cuda_check",
+    size = "small",
+    srcs = ["GroupObservationCudaTest.cu", "GroupObservationFixture.h", "GroupObservationOracle.h",
+            "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_rigid_force_stage_check",
+    size = "small",
+    srcs = ["GroupForceStageKineticTest.cpp", "GroupForceStageFixture.h", "GroupObservationFixture.h",
+            "GroupObservationOracle.h", "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_rigid_force_stage_cuda_check",
+    size = "small",
+    srcs = ["GroupForceStageCudaTest.cu", "GroupForceStageFixture.h", "GroupObservationFixture.h",
+            "GroupObservationOracle.h", "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)

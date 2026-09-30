@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLBeam18PropertyArea LANGUAGES CXX Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25GapSource.cmake")
+set(BEAM18_NATIVE ON)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../beam18_reference" reference-regression)
+set(area_generated "${CMAKE_CURRENT_BINARY_DIR}/native")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py"
+  --output "${area_generated}" COMMAND_ERROR_IS_FATAL ANY)
+get_target_property(beam_modules beam18_native Fortran_MODULE_DIRECTORY)
+add_library(beam18_property_native STATIC "${area_generated}/PropertyArea.F")
+target_include_directories(beam18_property_native PRIVATE "${beam_modules}")
+target_link_libraries(beam18_property_native PUBLIC beam18_native)
+target_compile_options(beam18_property_native PRIVATE -ffixed-line-length-none -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS native/prepare.py native/source-manifest.json native/PropertyArea.F.in
+  "${TL_ROOT}/lib_utest/qualification/beam18_reference/native/original/starter/source/properties/beam/hm_read_prop18.F"
+  "${TL_ROOT}/lib_utest/qualification/radioss_type25_coefficients/native/original/i25sti3.F")
+add_executable(beam18_property_area_host HostTest.cpp)
+target_link_libraries(beam18_property_area_host PRIVATE beam18_property_native tl_radioss_type25_gap_source GTest::gtest_main)
+target_compile_features(beam18_property_area_host PRIVATE cxx_std_17)
+target_compile_options(beam18_property_area_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME beam18_property_area_host COMMAND beam18_property_area_host)
+add_test(NAME beam18_property_area_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/native/prepare.py" --output "${area_generated}" --check)
+set_tests_properties(beam18_property_area_host beam18_property_area_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(beam18_property_area_consumer Consumer.cpp)
+target_link_libraries(beam18_property_area_consumer PRIVATE tl_radioss_type25_gap_source)
+add_test(NAME beam18_property_area_consumer COMMAND beam18_property_area_consumer)

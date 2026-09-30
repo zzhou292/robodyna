@@ -1,0 +1,54 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "geometry",
+    hdrs = ["QbatTypes.h", "QbatChecks.h", "QbatReferenceCoefficients.h",
+            "QbatReference.h", "QbatPointDerivatives.h", "QbatGeometry.h"],
+    deps = ["//lib_src/elements/qeph:startup", "//lib_src/elements/qeph:kinematics",
+            "//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "force",
+    hdrs = ["QbatForceTypes.h", "QbatForceChecks.h", "QbatHistory.h", "QbatVelocityCorrection.h",
+            "QbatStrain.h", "QbatForceCoefficients.h", "QbatMaterialPoint.h", "QbatViscosity.h",
+            "QbatForceAssembly.h", "QbatForceBody.h", "QbatForce.h"],
+    deps = [":geometry", "//lib_src/elements/qeph:kinematics", "//lib_src/elements/qeph:force",
+            "//lib_src/elements/sections:shell_layered_j2", "//lib_src/elements/sections:shell_law44_membrane_point",
+            "//lib_src/materials:law44_membrane", "//lib_src/materials:law44_scope", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+)
+
+# Pointer-free cache, bounded host startup, and concrete owner participant.
+cc_library(
+    name = "batch_values",
+    srcs = ["QbatBatchArena.cpp", "QbatBatchStartup.cpp", "QbatBatchElements.cpp", "mapped/Startup.cpp", "QbatBatchIdentity.cpp"],
+    hdrs = ["QbatBatch.h", "QbatBatchStorage.h", "QbatBatchTypes.h", "QbatBatchArena.h", "QbatBatchStartup.h",
+            "QbatBatchIdentity.h", "QbatBatchAdvance.h", "QbatBatchResultChecks.h", "mapped/Startup.h", "mapped/Stiffness.h", "mapped/AssemblyTypes.h",
+            "mapped/AssemblyLayout.h", "mapped/AssemblyValues.h", "mapped/Measurement.h",
+            "mapped/MeasurementTypes.h", "mapped/MeasurementValues.h", "mapped/measurement/Tile.h", "mapped/measurement/Read.h", "mapped/measurement/Channels.h", "QbatBatchMeasure.h", "activity/Values.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_utils:bounded_startup_array", "//lib_src/elements/mapped_shell:activity_layout", "//lib_src/elements/mapped_shell:values", "//lib_src/elements/mapped_shell:observer_values",
+            "//lib_src/elements:shell_mapped_startup", "//lib_src/elements:shell_batch_fields", "//lib_src/assembly:nodal_mass_binding", "//lib_src/elements:shell_mapped_footprint", "//lib_src/elements:shell_nodal_stiffness", "//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_src/elements:shell_physical_owner_values", ":force", "//lib_src/elements:shell_formulation_scope", "//lib_src/elements:shell_batch_startup",
+            "//lib_src/elements:shell_batch_joined_model", "//lib_src/elements:shell_resident_storage",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",
+            "//lib_src/solvers:nodal_native_physical_coefficients"],
+)
+cuda_library(
+    name = "batch",
+    hdrs = ["mapped/measurement/Finalize.cuh"],
+    srcs = ["QbatBatch.cu", "QbatBatchOperations.cu", "QbatBatchReadback.cu",
+            "activity/Kernels.cu", "activity/Readback.cu",
+            "QbatBatchKernels.cu", "QbatBatchPublication.cpp", "mapped/Initialize.cu",
+            "mapped/Assemble.cu", "mapped/Kernels.cu", "mapped/Measurement.cu", "mapped/Publication.cpp"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = ["//lib_src/elements/mapped_shell:kernels", "//lib_src/elements:shell_prepared_activity_readback", "//lib_src/elements:shell_physical_owner", ":batch_values", "//lib_src/elements:shell_batch_fields",
+            "//lib_src/elements:shell_formulation_output_ranges",
+            "//lib_src/elements:shell_resident_host_accounting",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/assembly:nodal_mass_binding", "//lib_src/solvers:nodal_force_assembly",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity"],
+)

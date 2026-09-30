@@ -1,0 +1,17 @@
+{
+  "revision": "original-yaris-v1l",
+  "archive_sha256": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+  "member_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+  "files": [
+    {
+      "path": "OriginalMaterial.h",
+      "bytes": 702,
+      "sha256": "d39e89a941d852a0b9e3e4730d1034afe3c155d7ccb7fe8bf7d687f721d928ee"
+    },
+    {
+      "path": "source-receipt.json",
+      "bytes": 7856,
+      "sha256": "646736ae08906c1c8faec6ab56b111c03a67fd1f615675dbd8e8d13f89e31c11"
+    }
+  ]
+}

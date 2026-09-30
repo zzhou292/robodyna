@@ -1,0 +1,6 @@
+if(NOT TARGET tl_tied_post_kinchk)
+  add_library(tl_tied_post_kinchk STATIC "${CMAKE_CURRENT_LIST_DIR}/TiedPostKinChk.cpp")
+  get_filename_component(tl_kinchk_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+  target_include_directories(tl_tied_post_kinchk PUBLIC "${tl_kinchk_root}")
+  target_compile_features(tl_tied_post_kinchk PUBLIC cxx_std_17)
+endif()

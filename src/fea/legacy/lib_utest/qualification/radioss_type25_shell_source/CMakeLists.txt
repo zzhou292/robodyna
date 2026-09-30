@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLRadiossType25ShellSource LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/collision/RadiossType25ShellSource.cmake")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/prepare.py"
+  --output "${CMAKE_CURRENT_BINARY_DIR}/ObservedScene.h" RESULT_VARIABLE prepared)
+if(NOT prepared EQUAL 0)
+  message(FATAL_ERROR "Pinned actual reference fixture preparation failed")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS prepare.py evidence/manifest.json
+  evidence/declared-scene.json evidence/native-startup.jsonl evidence/native-observations.jsonl)
+add_executable(type25_shell_source_host HostTest.cpp)
+target_include_directories(type25_shell_source_host PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+target_link_libraries(type25_shell_source_host PRIVATE tl_radioss_type25_shell_source GTest::gtest_main)
+add_test(NAME type25_shell_source_host COMMAND type25_shell_source_host)
+add_test(NAME type25_shell_source_source COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/prepare.py" --output "${CMAKE_CURRENT_BINARY_DIR}/ObservedScene.h" --check)
+set_tests_properties(type25_shell_source_host type25_shell_source_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

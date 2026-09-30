@@ -1,0 +1,87 @@
+#include "NodalWallContact.h"
+#include "Q4ParametricContact.h"
+#include "NodalWallWeightStartup.h"
+#include <algorithm>
+#include <new>
+
+namespace tlfea::contact {
+namespace {
+bool Less(const NodalWallParentWeight& a,const NodalWallParentWeight& b) {
+  if (a.parent_element_id!=b.parent_element_id) return a.parent_element_id<b.parent_element_id;
+  if (a.parent_face_id!=b.parent_face_id) return a.parent_face_id<b.parent_face_id;
+  return a.feature_id<b.feature_id;
+}
+using nodal_wall_detail::AccumulateWeight;
+} // namespace
+
+NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
+    const NodalWallParentInput* input,std::uint32_t count) {
+  return Initialize(global_nodes,input,count,{MaxNodalWallParents,MaxNodalWallNodes,4*1024*1024});
+}
+NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
+    const NodalWallParentInput* input,std::uint32_t count,const NodalWallWeightLimits& limits) {
+  using Code=NodalWallStatus;
+  if (!global_nodes || !input || !count) return {};
+  const bool vehicle=limits.profile==NodalWallWeightProfile::Vehicle;
+  if(!vehicle&&limits.profile!=NodalWallWeightProfile::Legacy)return {};
+  if (!limits.max_nodes || !limits.max_parents || !limits.max_owned_bytes ||
+      limits.max_nodes>(vehicle?MaxVehicleWallWeightNodes:MaxNodalWallWeightNodes) ||
+      limits.max_parents>(vehicle?MaxVehicleWallWeightParents:MaxNodalWallWeightParents))
+    return {};
+  if(vehicle&&(!limits.max_startup_bytes||limits.max_startup_bytes>MaxVehicleWallWeightScratchBytes||
+      limits.max_owned_bytes>MaxVehicleWallWeightOwnedBytes))return {};
+  if (global_nodes>limits.max_nodes || count>limits.max_parents)
+    return nodal_wall_detail::Report(Code::Capacity);
+  // Hard count bounds above make every product/sum below representable. Check
+  // the full owned payload before allocation or reading any borrowed parent.
+  const auto bytes=sizeof(*this)+decltype(parents_)::ExtraBytes(count)+decltype(nodes_)::ExtraBytes(global_nodes);
+  if (bytes>limits.max_owned_bytes) return nodal_wall_detail::Report(Code::Capacity);
+  if(vehicle&&nodal_wall_detail::WeightStartupBytes(count,global_nodes)>limits.max_startup_bytes)
+    return nodal_wall_detail::Report(Code::Capacity);
+  try {
+  NodalWallWeights next; next.global_node_count_=global_nodes; next.parent_count_=count;
+  next.parents_.Resize(count); next.nodes_.Resize(global_nodes);
+  for (unsigned p=0;p<count;++p) {
+    auto failure=nodal_wall_detail::Report(Code::InvalidReference); failure.parent=p;
+    const auto& in=input[p]; auto& out=next.parents_[p];
+    failure=nodal_wall_detail::PrepareParentWeight(global_nodes,in,&out);
+    if(failure.status!=Code::Ok) { failure.parent=p; return failure; }
+  }
+  std::sort(next.parents_.data(),next.parents_.data()+count,Less);
+  if(vehicle) {
+    const auto report=nodal_wall_detail::BuildIndexedWeights(next.parents_.data(),count,
+      next.nodes_.data(),global_nodes,next.node_count_,next.total_area_);
+    if(report.status!=Code::Ok)return report;
+    next.prepared_=true;*this=next;return report;
+  }
+  for (unsigned p=0;p<count;++p) {
+    const auto& parent=next.parents_[p];
+    for (unsigned j=0;j<p;++j) {
+      const auto& other=next.parents_[j];
+      if ((parent.parent_element_id==other.parent_element_id && parent.parent_face_id==other.parent_face_id) ||
+          parent.feature_id==other.feature_id) {
+        auto failure=nodal_wall_detail::Report(Code::DuplicateParent); failure.parent=p; return failure;
+      }
+    }
+    if (!AccumulateWeight(next.total_area_,parent.area)) return nodal_wall_detail::Report(Code::NonFiniteArithmetic);
+  }
+  for (unsigned node=0;node<global_nodes;++node) {
+    NodalWallNodeWeight weight; weight.node=node; bool present=false;
+    for (unsigned p=0;p<count;++p) for (unsigned n=0;n<next.parents_[p].arity;++n)
+      if (next.parents_[p].nodes[n]==node) {
+        present=true;
+        if (!AccumulateWeight(weight.area,next.parents_[p].share))
+          return nodal_wall_detail::Report(Code::NonFiniteArithmetic,Status::kNonFiniteResult,node);
+      }
+    if (present) {
+      if (!nodal_wall_detail::Certificate(weight.area,true)) return nodal_wall_detail::Report(Code::NonFiniteArithmetic);
+      next.nodes_[next.node_count_++]=weight;
+    }
+  }
+  next.prepared_=true; *this=next;
+  return nodal_wall_detail::Report(Code::Ok,Status::kOk);
+  } catch (const std::bad_alloc&) {
+    return nodal_wall_detail::Report(Code::Capacity);
+  }
+}
+} // namespace tlfea::contact

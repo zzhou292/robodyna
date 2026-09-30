@@ -1,0 +1,220 @@
+{
+  "scope": "Active positive-duration LAW44 rear H8 eight-point recurrence; no owner/TT0 admission",
+  "native_pin": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "original_fixture_manifest_sha256": "e799eee2fb93e7189fb1bbc84a7d100c6e1f98e50d381dd71ce5d2c2d354fd4b",
+  "native_profile": {
+    "JHBE": 17,
+    "ICP": 1,
+    "ISELECT": 0,
+    "ISMSTR": 2,
+    "JCVT": 1,
+    "IDTS6": 0,
+    "points": [
+      2,
+      2,
+      2
+    ],
+    "G_PLA": 1,
+    "G_EPSD": 1,
+    "G_WPLA": 1
+  },
+  "caller_slices": {
+    "degeneracy": "S8EFORC3:1091",
+    "plastic_work": "MULAW:2205-2217",
+    "native_INTAB": "ind_glob_k.F:4515-4538"
+  },
+  "scatter_evidence": "S8EFORC3:2034 passes STIN; SCUMU3 scales FOURTH then visits NC1..NC8 with repeated occurrences retained",
+  "files": {
+    "lib_src/elements/solid18/Solid18CurrentGeometry.h": {
+      "bytes": 4625,
+      "sha256": "11897daf7c6a015e1da99f4df7987003ab4f2155d471ef3346d31d7e9c15253b"
+    },
+    "lib_src/elements/solid18/Solid18ForceValues.h": {
+      "bytes": 1740,
+      "sha256": "c91bdc13441bd75f393e4ee63d12b933b150a1237ccc603648f6021bf210d1e2"
+    },
+    "lib_src/elements/solid18/Solid18RateValues.h": {
+      "bytes": 1252,
+      "sha256": "fdc2975bc7ec91e5da0457db4ebc565aa13bffb45c731502876a1e6691773aec"
+    },
+    "lib_src/elements/solid18/law44/BUILD.bazel": {
+      "bytes": 590,
+      "sha256": "b6728abbab833c8082adf92021d884a62685889134a8a7f9d1b66cd8fe98b20d"
+    },
+    "lib_src/elements/solid18/law44/FORCE.md": {
+      "bytes": 3600,
+      "sha256": "8b432f359bc5758820a6b4617f4c24ec015cc4de310dc65a2f5e10ad0e0aa96e"
+    },
+    "lib_src/elements/solid18/law44/Force.h": {
+      "bytes": 5640,
+      "sha256": "dfcab2fc25a21b457b75708ef18ddc8d87c301895e83d663e803391e7614b975"
+    },
+    "lib_src/elements/solid18/law44/ForceAssembly.h": {
+      "bytes": 3902,
+      "sha256": "47928002b8de902d615efeb8dd07a3cd4a7030b377be0778d66b5f9cef71f51e"
+    },
+    "lib_src/elements/solid18/law44/ForceChecks.h": {
+      "bytes": 4865,
+      "sha256": "312497a22fe533e40b17ff2839b42ba260f98f46c1fe9b40f758e72287729b6f"
+    },
+    "lib_src/elements/solid18/law44/ForceTypes.h": {
+      "bytes": 2873,
+      "sha256": "b317b1143a894b35dc14ad3eb9e02dded78c27bd95309c62267dc01e82b14428"
+    },
+    "lib_src/elements/solid18/law44/History.h": {
+      "bytes": 2228,
+      "sha256": "eaa6f0359d0e8532a338bcd0e54174f436d19b91a1a073ab7ccbf0d8058572ac"
+    },
+    "lib_src/elements/solid18/law44/Kinematics.h": {
+      "bytes": 3633,
+      "sha256": "9db1f548f06a6bc2c90978e19394bc7752d24a4cc02554ccac38de6b36562f12"
+    },
+    "lib_src/elements/solid18/law44/PointResponse.h": {
+      "bytes": 4465,
+      "sha256": "e8723ec22532e7697f9d9d6154c93389647988f8060a1aa087e47033ff07e71a"
+    },
+    "lib_src/elements/solid18/law44/README.md": {
+      "bytes": 1446,
+      "sha256": "62d6a0a09dc0ffe9b58a973de77d1a43f803ca79c5071218cbc4e28af65cdf01"
+    },
+    "lib_src/elements/solid18/law44/Reference.h": {
+      "bytes": 1004,
+      "sha256": "d6ba6944d98ede9659dfb4984679bb4fbf1665fa27f6b62a4a881f0bebefdab1"
+    },
+    "lib_src/elements/solid18/law44/Topology.h": {
+      "bytes": 2004,
+      "sha256": "9cfffbefa82eeb6f6f256968bc381ac999b0e58dce54cb69596bb4192624d4fe"
+    },
+    "lib_src/elements/solid18/law44/Types.h": {
+      "bytes": 1363,
+      "sha256": "5e25e961d8cf93eb924545e9ead904cf681205b15c8a780d7d61f90663b09557"
+    },
+    "lib_src/materials/detail/SolidCallerValues.h": {
+      "bytes": 3548,
+      "sha256": "e1394bf404582ae5bb2ec7dfcbf5f815a508352f158aa7344d1a16db956f160c"
+    },
+    "lib_utest/qualification/solid18_law44_force/BUILD.bazel": {
+      "bytes": 965,
+      "sha256": "30e379ba2d6d8626318975c03618894f40518d0e62e3aa94ddd8afbb0ad9ad00"
+    },
+    "lib_utest/qualification/solid18_law44_force/CMakeLists.txt": {
+      "bytes": 4620,
+      "sha256": "3e4cbce52e77d17d8d4bcf0981a7fdf95e189bcbc3b35dbde013f79a457c44b5"
+    },
+    "lib_utest/qualification/solid18_law44_force/CudaTest.cu": {
+      "bytes": 9167,
+      "sha256": "32ce9de4def7353dad68d669da35d185a3f0b8c893d01758351fc8afd2da0210"
+    },
+    "lib_utest/qualification/solid18_law44_force/HostTest.cpp": {
+      "bytes": 8302,
+      "sha256": "3ad43180e7286eb8389187483865490da07802539f08c8d306bc42a3bcb8105e"
+    },
+    "lib_utest/qualification/solid18_law44_force/NativeOracle.cpp": {
+      "bytes": 3659,
+      "sha256": "1e446c63eac70b3951ec2480215f47add7ff0c91e96087018325672c53181729"
+    },
+    "lib_utest/qualification/solid18_law44_force/NativeOracle.h": {
+      "bytes": 818,
+      "sha256": "8ac3192533cf279e913e5f1974904ef009eb63e7f9c34c7daeacf2d7fc4358ae"
+    },
+    "lib_utest/qualification/solid18_law44_force/NativeTest.cpp": {
+      "bytes": 3579,
+      "sha256": "7a19e00a096df8e733f8dd2b8a8cbed15a677ae5da20b7bd967f0a42b0ad96e2"
+    },
+    "lib_utest/qualification/solid18_law44_force/PacketChecks.cpp": {
+      "bytes": 5062,
+      "sha256": "0db6b0cd4bc71b2e7d44013f5ae32a1a077825cf25bb92b1d99326da6b325203"
+    },
+    "lib_utest/qualification/solid18_law44_force/PacketValues.cpp": {
+      "bytes": 3935,
+      "sha256": "198eb437e0c78065c7875da22d3583f34b4bac8599f194b7845b2ac2d204e916"
+    },
+    "lib_utest/qualification/solid18_law44_force/README.md": {
+      "bytes": 3755,
+      "sha256": "0d16daf9baf915947f2268098b647ff452ec74be6744f2ad63c1fee381d59255"
+    },
+    "lib_utest/qualification/solid18_law44_force/SourceNativeTest.cpp": {
+      "bytes": 1390,
+      "sha256": "7fdfe830e023bad9601458aff9b5734262136978f9372bfbffd15ff7cafda310"
+    },
+    "lib_utest/qualification/solid18_law44_force/TestSupport.h": {
+      "bytes": 2278,
+      "sha256": "68b01251ec973e15826f38dae4a229216f8c10256fb89f451aa71d29e682bbf5"
+    },
+    "lib_utest/qualification/solid18_law44_force/Trajectory.h": {
+      "bytes": 1617,
+      "sha256": "2a83a76a1d5a750def47ba87fefdaabb8bd8729db38b7fd4d8253a4cf292902e"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/CMakeLists.txt": {
+      "bytes": 1859,
+      "sha256": "56be5c7e7353fdba32ffe61ace780a6939c587006860dc777a4c9fadd4e165c6"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeCaller.F": {
+      "bytes": 4091,
+      "sha256": "7e72460fb7a7bbec3b10c7f9b3a57143c2aca15de33b811bd659ec3ff8d2a1de"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeControl.F": {
+      "bytes": 2168,
+      "sha256": "45f3941d6e977cefd36fd0b24a8eb723e8cdad708fefc314cd286c084a53525a"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeGeometry.F": {
+      "bytes": 6280,
+      "sha256": "0ffcaff6474b19673e7370a80a8fed3a39a2cc9bf4b7f2cfdb533f2c868993e1"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeInterfaces.F90": {
+      "bytes": 1806,
+      "sha256": "12b9fec3025a7b45fe8439ebaf1d0c300b0a832014aa94e8bc6716385936511b"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeMaterial.F90": {
+      "bytes": 4758,
+      "sha256": "61d02c22f88387c399f5c430915881809a77e514084fb631668a2b202a32f4df"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativePoint.F": {
+      "bytes": 9724,
+      "sha256": "2302c4fdef6502958fd55c62da037399dbfcf4407b4ec0d1376c4d49542a2de6"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeReduce.F": {
+      "bytes": 1025,
+      "sha256": "3bb8d0582a3f527a82d5f83849a7dbe83e50904e37de99866bf4278945c3f3c9"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/donor-manifest.json": {
+      "bytes": 2721,
+      "sha256": "f0ed3b849b43d3bb31d8985e3110677c767052a14e231a3a52f423a03afdfc50"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/prepare_sources.py": {
+      "bytes": 2838,
+      "sha256": "a7bc466a0d3486620d20d848e4c454f9a31787f3c036e0354500ce82598a1776"
+    },
+    "lib_utest/qualification/solid18_law44_force/verify_source.py": {
+      "bytes": 1231,
+      "sha256": "6846793b8e6f03153dd20f5a35b8b7b0428fa85b7d9bc1c60a8eb729b6793705"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeEntries.F": {
+      "bytes": 2853,
+      "sha256": "91a56b722032484067846ba76339d5a63719f746e66872abfb0dde76811d9d32"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeEntryInterface.F90": {
+      "bytes": 884,
+      "sha256": "cea8cea1455360b396174513969794cc84e38eb54f9bf3dcbf4973ee1fd02f46"
+    }
+  },
+  "pressure_coefficient": "S8EFINT3:154 and S8EFMOY3:120 use ZEP3 = THREE/TEN, CONSTANT_MOD:667; distinct from THIRD",
+  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved",
+  "source_material_association_correction": {
+    "scope": "Qualification only; original rear PID/MID mapping; no mechanics or tolerance changes",
+    "2000016": {
+      "name": "431_enginemountrearbar",
+      "source_line": 478,
+      "young_mpa": 50000,
+      "young_pa": 50000000000,
+      "block_sha256": "a4c4fea7533940357f39eea88c2ede417d4a2aca20f858de1a0676c5b7f31fcf"
+    },
+    "2000392": {
+      "name": "424_enginemountreartube",
+      "source_line": 7895,
+      "young_mpa": 200000,
+      "young_pa": 200000000000,
+      "block_sha256": "1ec87633dc4bab03ab37f25ded0fc19573b9ae7fea6b5717f09c76692d0dd635"
+    }
+  }
+}

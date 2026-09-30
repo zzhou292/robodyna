@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_test(
+    name = "roundoff_check",
+    srcs = ["HephRoundoffTest.cpp", "HephRoundoff.h", "HephCapturedPacket.h"],
+    deps = ["//lib_utest/qualification/solid24_force:test_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "FixtureTest.cpp", "TestSupport.h", "Fixture.h"],
+    deps = ["//lib_src/elements/solids/resident:values", "//lib_src/solvers:nodal_force_assembly",
+            "//lib_utest/qualification/solid_model:fixture",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["Fixture.h", "TestSupport.h", "PublicationPeer.h"],
+    deps = ["//lib_src/elements/solids/resident:values",
+            "//lib_utest/qualification/solid_model:fixture",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/extended_solid_resident:__pkg__"],
+)

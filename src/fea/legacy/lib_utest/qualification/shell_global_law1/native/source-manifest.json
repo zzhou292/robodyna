@@ -1,0 +1,82 @@
+{
+  "schema": "tl.shell-global-law1-native-adapters.v1",
+  "source_root": "same owning TL checkout",
+  "transformation": "Private module/C symbol renames and explicit ITHK0/1 forwarding only; inherited native leaves unchanged. C++ decoding/admission reused mechanically; T3 effective-thickness assertion follows selected input.",
+  "files": [
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeMaterial.F",
+      "bytes": 2999,
+      "sha256": "c8184b50d34abce5785b9392a0907c328bc92b25364ed32700f3857ec53df2c2"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeLaw1.F",
+      "bytes": 3733,
+      "sha256": "cddd8bbea6ebcbd6ed1e701bb153f928090f926eca64a91ca86d0d9e8de0e931"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeStiffness.F",
+      "bytes": 1681,
+      "sha256": "60651474e891231e588115c3a1d97348ab9dddeb5131450630353ec760123c9d"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephForce.F",
+      "bytes": 3996,
+      "sha256": "026378bc21260d26209ca972de1b196edbf7976455825622b34aa45d17564ed7"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephForceReference.cpp",
+      "bytes": 4505,
+      "sha256": "4535964f160dd514fdd7592bc1a1adcc25265728a2a5cb7fa371e0115e239b4d"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeMaterial.F",
+      "bytes": 2324,
+      "sha256": "63734c54a238451653c0808659acc34faafddee283d34e603d568c2c36576270"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeLaw1.F",
+      "bytes": 3871,
+      "sha256": "a73e53b43f81a0e2849b3a90e1618f1cf6e821ccfac62dfaa7bca53f604515e3"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeStiffness.F",
+      "bytes": 1472,
+      "sha256": "7a7721d9a865c8d6a32d599fdcff30480d5d3291d695a371f0e2ac80f6fb8e18"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Force.F",
+      "bytes": 3174,
+      "sha256": "f863f4fbaefea6dce1f676f5cfde30f1628987f86e93f8eafb200ec9951b4312"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3ForceReference.cpp",
+      "bytes": 3055,
+      "sha256": "20eababc9662ef93e72a05a11a0fb1217be83cd81089d38d11c789b009d8aedc"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/extracted/Cncoef3B.F",
+      "bytes": 11065,
+      "sha256": "ef7d328f0487c4daa5784a329e7a4adfb4e6616188e984a86e7729c94555e70f"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Coef3.F",
+      "bytes": 6260,
+      "sha256": "ea3ce469ebfc44a1272c3f7eeec1fe3baf2c9eb0ec106f9e884b0cd5933283d2"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/extracted/Sigeps01G.F",
+      "bytes": 9207,
+      "sha256": "a7e84632a387fd2cddbb83aed66ccfbf8ea48f27172b2b3fc11161f440070f41"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/extracted/Czfintn1.F",
+      "bytes": 18301,
+      "sha256": "5680ef239b3eeee05421d8940b3322f4407f3bb486f68c5ef54b4662ed2cdd74"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ]
+}

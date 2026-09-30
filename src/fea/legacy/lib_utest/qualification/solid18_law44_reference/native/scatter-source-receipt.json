@@ -1,0 +1,27 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "purpose": "One-element selected INITIA -> SPMD_MSIN nodal scatter after complete SMASS3; ITHERM_FE0, INDEX(1)=1; no global ordering claim",
+  "sources": [
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/native/original/starter/source/elements/initia/spmd_msin.F",
+      "bytes": 19111,
+      "git_blob_sha1": "026190303b0ea69cda76a475d7a28c35dcc727b1",
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8",
+      "selected_lines": [
+        120,
+        127
+      ],
+      "selected_sha256": "4993f04dca4e73e7a2d2f39225b4480f335f7b90e44c669c4833d3c9536606b7"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_reference/native/original/starter/source/elements/initia/initia.F",
+      "bytes": 157433,
+      "git_blob_sha1": "59860e2a962daeacda8e33a8eb40c8f1eb58775e",
+      "sha256": "9fefea57c7913ae1d9c2cb89255822d6615074d88a609e28815921eb566000c0",
+      "caller_lines": [
+        1757,
+        1773
+      ]
+    }
+  ]
+}

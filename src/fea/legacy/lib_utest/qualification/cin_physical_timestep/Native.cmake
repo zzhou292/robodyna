@@ -1,0 +1,20 @@
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(TL_CIN_TIMESTEP_SOURCE_CACHE "" CACHE PATH "Existing crash-work/deps complete authenticated source caches")
+if(NOT TL_CIN_TIMESTEP_SOURCE_CACHE)
+  message(FATAL_ERROR "TL_CIN_TIMESTEP_SOURCE_CACHE must name the existing crash-work/deps directory")
+endif()
+set(native "${CMAKE_CURRENT_LIST_DIR}/native")
+set(generated "${CMAKE_CURRENT_BINARY_DIR}/native-generated")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${native}/stage_sources.py"
+  "${TL_CIN_TIMESTEP_SOURCE_CACHE}" "${generated}" COMMAND_ERROR_IS_FATAL ANY)
+add_library(cin_timestep_native STATIC "${generated}/Native.F90")
+target_compile_options(cin_timestep_native PRIVATE -ffree-line-length-none -fcheck=all
+  -finit-real=snan -fno-fast-math -ffp-contract=off)
+add_executable(cin_physical_timestep_native NativeTest.cpp)
+target_include_directories(cin_physical_timestep_native PRIVATE "${TL_ROOT}")
+target_link_libraries(cin_physical_timestep_native PRIVATE cin_timestep_native GTest::gtest_main CUDA::cudart)
+target_compile_features(cin_physical_timestep_native PRIVATE cxx_std_17)
+target_compile_options(cin_physical_timestep_native PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME cin_physical_timestep_native COMMAND cin_physical_timestep_native)
+add_test(NAME cin_physical_timestep_source_identity COMMAND "${Python3_EXECUTABLE}" -B
+  "${native}/stage_sources.py" "${TL_CIN_TIMESTEP_SOURCE_CACHE}" "${generated}")

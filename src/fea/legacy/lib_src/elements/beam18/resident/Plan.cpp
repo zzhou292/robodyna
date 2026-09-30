@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#include "Arena.h"
+#include "../../../solvers/NodalNativePhysicalCoefficients.h"
+
+namespace tl::fea::beam18::batch_detail {
+namespace {
+bool DeclaredRigidScope(NodalRigidGroupInfo group, std::size_t nodes) noexcept {
+  if (native_physical_coefficients::Empty(group)) return true;
+  // Metadata bounds only. The actual complete PART/plain source association is
+  // checked by ValidateRigidAssemblyBinding before this participant is claimed.
+  return group.source_instance_id && group.group_count && group.member_count &&
+      group.group_count <= 1024 && group.group_count <= group.member_count &&
+      group.member_count <= nodes && group.part_group_count <= group.group_count &&
+      (!group.part_group_count || (group.group_count == group.part_group_count
+          ? group.plain_source_instance_id == 0 : group.plain_source_instance_id != 0));
+}
+}
+BatchReport Plan(const BatchConfig& config, const Model& model,
+    ArenaLayout& output) noexcept {
+  const auto& owner = config.owner;
+  if (!model.prepared() || config.profile != BatchProfile::PhysicalCinCircularFourPointLaw44V1 ||
+      model.profile() != ModelProfile::CircularFourPointLaw44V1 || !model.domain() ||
+      !owner.owner_id || owner.epoch || owner.time != 0 || owner.velocity_time != 0 ||
+      !owner.has_rotations || owner.reactions_valid || owner.reaction_base_epoch ||
+      owner.reaction_time != 0 || owner.reaction_kick_dt != 0 ||
+      owner.temporal_scheme != NodalTemporalScheme::StaggeredHalfKickStart ||
+      owner.velocity_phase != NodalVelocityPhase::Collocated ||
+      !tl::math::Finite(owner.fixed_dt) || owner.fixed_dt <= 0 ||
+      !config.configuration_id || !config.qualification_id ||
+      !shell_startup_detail::ValidStartup(config.startup, true, true) ||
+      !config.cin_witness_count || config.cin_witness_count > NodalCinLimits{}.max_witnesses ||
+      !DeclaredRigidScope(owner.rigid_groups, owner.node_count) ||
+      owner.node_count != model.domain()->node_count()) {
+    return {BatchStatus::InvalidInput, "Beam participant requires a fresh complete physical CIN profile"};
+  }
+  if (model.owned_payload_bytes() > config.limits.max_host_bytes)
+    return {BatchStatus::ResourceLimit, "Retained beam model exceeds host budget"};
+  Counts count{model.parents().size(), model.materials().size(), 0};
+  if (count.materials > config.limits.max_materials)
+    return {BatchStatus::ResourceLimit, "Beam material count exceeds admitted scope"};
+  for (const auto& material : model.materials()) {
+    const auto points = material.value.curve.count;
+    if (count.curve_points > config.limits.max_curve_points ||
+        points > config.limits.max_curve_points - count.curve_points)
+      return {BatchStatus::ResourceLimit, "Beam owned curve pool exceeds admitted scope"};
+    count.curve_points += points;
+  }
+  if (!MakeLayout(count, config, output))
+    return {BatchStatus::ResourceLimit, "Beam complete arena exceeds limits"};
+  return {};
+}
+} // namespace tl::fea::beam18::batch_detail

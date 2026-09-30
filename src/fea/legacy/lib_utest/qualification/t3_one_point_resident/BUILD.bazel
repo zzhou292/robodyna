@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "t3_one_point_resident_host_check",
+    srcs = ["HostTest.cpp", "ResidentSource.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_failure_binding",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements:shell_batch_one_point",
+        "//lib_src/elements/t3:batch",
+        "//lib_utest/qualification/t3_one_point:one_point_fixture",
+        "//lib_utest/qualification/plasticity_binding:plasticity_binding_fixture",
+        "//lib_utest/qualification/resident_shell_failure:failure_source_fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+# Actual native/owner CUDA gates remain in the owning CMake project, using its
+# authenticated Fortran targets. No mirrored native implementation in Bazel.

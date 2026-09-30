@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "identity",
+    srcs = ["IdentityTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/qeph:force", "//lib_src/elements/qbat:geometry",
+            "//lib_src/elements:shell_batch_binding", "@googletest//:gtest_main"],
+)

@@ -1,0 +1,40 @@
+{
+  "baseline": "92dd532ea815cedbea3942144147f1b2a8c27414",
+  "frozen": {
+    "path": "lib_src/elements/failure/ShellFailureStorage.cpp",
+    "bytes": 7363,
+    "sha256": "d3691577aa6ad911558358ab312c553582b54ec42c2ab38f7808de22cd7c88d1"
+  },
+  "unchanged": [
+    {
+      "path": "lib_src/elements/failure/ShellFailureBinding.cpp",
+      "bytes": 9095,
+      "sha256": "2a0fed0ee7f0b2ce4f4a1440defd9931997f38145549d6b780f8f4ce199aa56d"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFailureBinding.h",
+      "bytes": 2038,
+      "sha256": "44cea1d85e15ebc92d056f561e7a927f9823d4343897f8d4e558740493ad7aea"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureStorage.h",
+      "bytes": 1694,
+      "sha256": "d7c57c338e118651c922cfc4ae076497cc3ad77b91ffab580ad2b1e07118604c"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureArenaLayout.h",
+      "bytes": 2441,
+      "sha256": "5f283ccebfa66678f581d65d4152fcafc5684bfac760334b9eb2f7aba0cfa726"
+    },
+    {
+      "path": "lib_utest/qualification/shell_output_ranges/Fixture.h",
+      "bytes": 3281,
+      "sha256": "81ef09766569eb8102059b39d6aead85743162f521c03393bc6912deb5922f93"
+    },
+    {
+      "path": "lib_utest/qualification/resident_shell_failure/FailureResidentSource.h",
+      "bytes": 2807,
+      "sha256": "57d90098f9578e876258a2e855d9c0d786b52f79900683f238f22d4beeb8a0d9"
+    }
+  ]
+}

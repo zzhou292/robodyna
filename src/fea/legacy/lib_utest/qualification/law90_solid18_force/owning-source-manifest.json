@@ -1,0 +1,233 @@
+{
+  "schema": "law90-solid18-force-owning-v1",
+  "files": [
+    {
+      "path": "lib_src/elements/solid18/Solid18ForceValues.h",
+      "bytes": 1740,
+      "sha256": "c91bdc13441bd75f393e4ee63d12b933b150a1237ccc603648f6021bf210d1e2"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/BUILD.bazel",
+      "bytes": 704,
+      "sha256": "7a262205f194bf95c2cd68e5e2db86de8081eeec72a2fd04a4c7ad4c482ed87f"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/Force.h",
+      "bytes": 5852,
+      "sha256": "b99da9314b22439c9b6701648683ec10e8f24d069d0e4f735ffb1e1b6d610378"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ForceChecks.h",
+      "bytes": 2722,
+      "sha256": "81e210ef54cdb78ccb48c2be2dc8a2b9026327d9077d9d01a3b7ff95cc8e46e1"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ForceTypes.h",
+      "bytes": 1890,
+      "sha256": "12d8bdfee5c9ccf3d762c4effcd4bef6a32a1ecf66f7bfc917581864d4485e5f"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ForceWork.h",
+      "bytes": 1607,
+      "sha256": "a793bfb40a0ba69a51b58c470397b3d5e71aa52de82ad0851d28d6279c4d5786"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/History.h",
+      "bytes": 1253,
+      "sha256": "354c8c39a5ff58f0ea51bdf2694cc711016540708209bd493c908627c2a7473c"
+    },
+    {
+      "path": "lib_src/materials/detail/SolidCallerValues.h",
+      "bytes": 3548,
+      "sha256": "e1394bf404582ae5bb2ec7dfcbf5f815a508352f158aa7344d1a16db956f160c"
+    },
+    {
+      "path": "lib_src/materials/law90/BUILD.bazel",
+      "bytes": 651,
+      "sha256": "dc1d1f1d79be671dc4a3eec0471506441848a2a43a141e54b67df51f2aa16ffa"
+    },
+    {
+      "path": "lib_src/materials/law90/Caller.h",
+      "bytes": 4194,
+      "sha256": "802e9f4204e9e577ab437db53c7abd58df6359ab79e1090c3242528cd7760097"
+    },
+    {
+      "path": "lib_src/materials/law90/CallerChecks.h",
+      "bytes": 1428,
+      "sha256": "6cd46490e900515e49c7ea9f98b41f5c32cbc958940bdcc42b222f3b49c8176b"
+    },
+    {
+      "path": "lib_src/materials/law90/CallerTypes.h",
+      "bytes": 1035,
+      "sha256": "6f47f43f86d4e37425615d9664bb13b754598e530b9cec4dd5bec6070f02a4f6"
+    },
+    {
+      "path": "lib_src/materials/law90/MaterialIdentity.h",
+      "bytes": 2612,
+      "sha256": "f669b58b923ad827c57564731f7a948a7d5347e813f3c8e8569f04e137d84e86"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/BUILD.bazel",
+      "bytes": 437,
+      "sha256": "8029ff853e329e95cdffe8d3fcba56cc539edd5fb5af8209827280971e4c3e4d"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/CMakeLists.txt",
+      "bytes": 3847,
+      "sha256": "59c0bdaba01f1c3bb511d0f7125f1328dc7b300eeecd7388eaf34ec7e9fe82f6"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/CudaTest.cu",
+      "bytes": 7830,
+      "sha256": "94f3dcb7f6f749fdb0fbbfba37784778ba33a078917079a4f137cc8f0213f7bd"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/HostTest.cpp",
+      "bytes": 9684,
+      "sha256": "5bf9fba90c8e34641dcce373a807bcf5d4aff18e59cd4aecc831f089d505911b"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/NativeSupport.h",
+      "bytes": 5958,
+      "sha256": "ead66690c744c6110ca4932d75e661b77766dc8627aaf33fda875e9f3d962cba"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/NativeTest.cpp",
+      "bytes": 6695,
+      "sha256": "abccedcae6765a5e731249421c31089f03f900e6341f4d67734696526fb9a189"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/README.md",
+      "bytes": 9031,
+      "sha256": "f75e583e0f50b806279f5e394eb6191370d2d7a7c1484cb590982150ecc8558d"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/SourceNativeTest.cpp",
+      "bytes": 2419,
+      "sha256": "986b1ce8472129b021787a7078139574e85f9db34bb6dd363f8c495b95c46cb1"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
+      "bytes": 4189,
+      "sha256": "444ee4cdc4a55ba1c2e4e96668b4a8cb43d24b70301e953a5987d00679ea1444"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/CMakeLists.txt",
+      "bytes": 2025,
+      "sha256": "4a5c6988d0f5dd05f55c9eb68b261084436ff156e8d1425d4cbe8b9bec7dbf67"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeAssembly.F",
+      "bytes": 3791,
+      "sha256": "b84e79d70af14823b6ab1754a080c26316c9940b3569687dfec850ebf3bc0a83"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeCaller.F90",
+      "bytes": 3356,
+      "sha256": "e1b5792a5a907af2338a83a113a7f98807c6544187ad490cfdffe17c3d4ee169"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeDensity.F",
+      "bytes": 382,
+      "sha256": "6d23d14e121dcf11d0305bd6074d2d091db85286bf1531ec6781e350ffa99ab6"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeForce.F90",
+      "bytes": 3522,
+      "sha256": "8992df2cd106032405ab12b6f04a2ec2423c164cd2386348f62502ac0ec336a8"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeForce.h",
+      "bytes": 684,
+      "sha256": "d659ed57010e244b07916a6ad13ac1be9f6d396b2e0a73c94dbd5797ebb943fd"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeLength.F",
+      "bytes": 582,
+      "sha256": "4273015cd56f3d7ea72391b05c9482651335cbbf46f5d9134c9ab46a7279ead0"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativePacket.F90",
+      "bytes": 981,
+      "sha256": "af4d3afffd23d9245e67b5c143edfa7b49a8d20b3428020126fc64bf91518687"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeReduce.F",
+      "bytes": 1279,
+      "sha256": "555a62602155ba3740a0df110ba9c3054c744ac82b5941f10f33205b5facd696"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeTags.F",
+      "bytes": 1036,
+      "sha256": "49c05f8389beb17c55478cbff24a1b1bbe922b4be829127c6d35a88d663cb4c7"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeViscosity.F",
+      "bytes": 1700,
+      "sha256": "a3ce7ec680214c101ef66ba10f044193f014e797725c8b01d946ef97a29e340e"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/NativeWorld.F",
+      "bytes": 782,
+      "sha256": "6deafe4b840b276cd56c01402b4b25e912db29f51971b7f2b0e414d43ba31da6"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/prepare_sources.py",
+      "bytes": 3949,
+      "sha256": "f1b44ab3fa53a23a6008f9df65548deebf26112073c29cbc26f48c338b83e601"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/native/source-manifest.json",
+      "bytes": 13551,
+      "sha256": "dad381dd51faceff452fa4fdf8899d9b28aa4cb4118e457a01f347ba6ee23c96"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/verify_source.py",
+      "bytes": 1040,
+      "sha256": "3b1a779dc127c3d499e3b18f7ea5de28f4122749de4aca84503b7fe2f4e433b0"
+    }
+  ],
+  "prior_force_export_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/BUILD.bazel",
+      "bytes": 433,
+      "sha256": "f086638a50aabbec7bf93d824c0cfb34866b4798795dc5ade1f4fd9f06346ce0"
+    }
+  ],
+  "prior_native_target_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/CMakeLists.txt",
+      "bytes": 3822,
+      "sha256": "9d0a3a8c5d4f024b96db4758d30ebe3c68536b495299ac08876c6f158d66fa75"
+    }
+  ],
+  "prior_cuda_fixture_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/CudaTest.cu",
+      "bytes": 6919,
+      "sha256": "41e0f9c82d05f32a40b4fc9c5f5a2011d36e250e3e440f2c1a38431e72ae3ed1"
+    }
+  ],
+  "prior_release_fixture_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
+      "bytes": 3967,
+      "sha256": "5dc30647fad11757a989da2cfb54763e14fd306214fbc1682188104ae80bfa44"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
+      "bytes": 3997,
+      "sha256": "7506396bc000fdd5cb784ff284770b17064eb90f709baada3361ea32fc190cfc"
+    }
+  ],
+  "previous_records": [
+    {
+      "reason": "Explicit immutable resident curve relocation; no scalar or equation change",
+      "record": {
+        "path": "lib_src/materials/law90/BUILD.bazel",
+        "bytes": 637,
+        "sha256": "b25e656b8fe8c9995de67eaaf4a9e39bfdc40a9197090834d48b8a26c22e1fac"
+      }
+    }
+  ]
+}

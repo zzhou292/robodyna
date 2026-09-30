@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_utest/qualification/tied_shell_patch:test_support"],
+    visibility = ["//visibility:public"],
+)
+cc_test(
+    name = "tied_cin_attachment_values_check",
+    srcs = ["Fixture.h", "ValueTest.cpp"],
+    deps = ["//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_utest/qualification/tied_shell_patch:test_support", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

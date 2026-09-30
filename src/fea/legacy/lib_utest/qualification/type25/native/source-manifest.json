@@ -1,0 +1,184 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/elements/spring/rmass.F",
+      "upstream_path": "starter/source/elements/spring/rmass.F",
+      "size": 8914,
+      "sha256": "0b5f5822acbfd3951c6cbe0af20d72e6ae63edabbdedbd6e1d7628b0bf59d907",
+      "git_blob_sha1": "89d10e0f6ebaf09e72eb84967536cff4276d7017"
+    },
+    {
+      "path": "original/starter/source/elements/spring/r4buf3.F",
+      "upstream_path": "starter/source/elements/spring/r4buf3.F",
+      "size": 10230,
+      "sha256": "2836024f095d7c249509dd0526c8af74e4c2a90c4d0d18314a633f282a8ff50b",
+      "git_blob_sha1": "fff31ce808e34db67ae5a88fda9f7a04b5e3b332"
+    },
+    {
+      "path": "original/starter/source/elements/spring/rinit3.F",
+      "upstream_path": "starter/source/elements/spring/rinit3.F",
+      "size": 90241,
+      "sha256": "dabdb3eefa5a38327ec769784323c285efc1f0da2e7a6eff4b03d49eb438a551",
+      "git_blob_sha1": "3e098fe295dab3cb11060e8b3cd7eca9f53bccc7"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r4evec3.F",
+      "upstream_path": "engine/source/elements/spring/r4evec3.F",
+      "size": 10816,
+      "sha256": "505d3359948b5fbb14e057a7b39aeec4f99deeefe6b29acbeba4f58c4d76d8c6",
+      "git_blob_sha1": "1def3d40d186036c0f5c1b2ebc6a323748019641"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r6def3.F",
+      "upstream_path": "engine/source/elements/spring/r6def3.F",
+      "size": 23989,
+      "sha256": "a751a1421df8d45a24aa5b3c28b44927979424523bfdba7fa2abab6ecf1b22f8",
+      "git_blob_sha1": "0fb52ac99447dd5f6f39e7bfa6e9d692da30a681"
+    },
+    {
+      "path": "original/engine/source/elements/spring/redef3.F90",
+      "upstream_path": "engine/source/elements/spring/redef3.F90",
+      "size": 49273,
+      "sha256": "def4f78e29751ac71e649c53527a4d09ef15e8b40e0257b8469883da9ef5597e",
+      "git_blob_sha1": "5cf579750d56c000c0fd2dd04af9dd2abde783ca"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r2len3.F",
+      "upstream_path": "engine/source/elements/spring/r2len3.F",
+      "size": 10364,
+      "sha256": "d9172514fb8d3672fcf5b6035ddb3f5b051222cf9bbb3e3274e245253a67d60b",
+      "git_blob_sha1": "b2aeb067838585447e6c29195e4e5b2f660595f5"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r4cum3.F",
+      "upstream_path": "engine/source/elements/spring/r4cum3.F",
+      "size": 5781,
+      "sha256": "4aa1af0800588923016463ac71018d2126ab81c5cda67ff03d20a5f06803476b",
+      "git_blob_sha1": "9a457627e88b4b421c395dcfde24ee2395dadf50"
+    }
+  ],
+  "scope": "Complete original donor bytes; exact extracted operations compiled only in native qualification. Scalar linear Ileng0, no curves/sensor/preload/rate-failure/mass-scaling; no full solver/runtime claim.",
+  "fragments": [
+    {
+      "path": "extracted/CompleteFrame.inc",
+      "source": "original/engine/source/elements/spring/r4evec3.F",
+      "first_line": 31,
+      "last_line": 307,
+      "sha256": "6d0916cecbdcf598aae0e6cac5c3ccaef971074046764794ecb036a3fe769a5b"
+    },
+    {
+      "path": "extracted/Translation.inc",
+      "source": "original/engine/source/elements/spring/r6def3.F",
+      "first_line": 234,
+      "last_line": 259,
+      "sha256": "28c07bf855818bc7c6ebbc3aabd19d8ce92b29dac2414b8f28222de99f625d76"
+    },
+    {
+      "path": "extracted/Rotation.inc",
+      "source": "original/engine/source/elements/spring/r6def3.F",
+      "first_line": 473,
+      "last_line": 478,
+      "sha256": "6b2193b34200cd78ee088bd374f99d7c5aff4999c466ab3ac29a5b3d236bb651"
+    },
+    {
+      "path": "extracted/LinearForce.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 740,
+      "last_line": 740,
+      "sha256": "74c928cda793e6652b2b1ad61cc1683e2e710531e46ad5ab2c5eba3895b201ba"
+    },
+    {
+      "path": "extracted/ForceWork.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 1142,
+      "last_line": 1145,
+      "sha256": "dd9a9ab6690a0c591545b3dc1b39dbc436a7999d89029b27c206db8f730d838d"
+    },
+    {
+      "path": "extracted/Criterion.inc",
+      "source": "original/engine/source/elements/spring/r6def3.F",
+      "first_line": 353,
+      "last_line": 353,
+      "sha256": "028a4a297209a61bb5c46dedb84b9161d6edd69bbdb95584fa6570137193108c"
+    },
+    {
+      "path": "extracted/Failure.inc",
+      "source": "original/engine/source/elements/spring/r6def3.F",
+      "first_line": 654,
+      "last_line": 677,
+      "sha256": "ffd171b0610f840930d0e6e5e30e469c1ad015382b9f3675bd39d6e0bb7e75ee"
+    },
+    {
+      "path": "extracted/ForceToWorld.inc",
+      "source": "original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 81,
+      "last_line": 83,
+      "sha256": "3c678a24113fa2ab18a03637f87b9407fa2176bf25f66d04f39d71647b8b36ba"
+    },
+    {
+      "path": "extracted/CouplesToWorld.inc",
+      "source": "original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 109,
+      "last_line": 118,
+      "sha256": "f4e872dabbf8ccf9b81c71d21d5b572a41f7b5fed4c1fcb2df9e270379cdb2e9"
+    },
+    {
+      "path": "extracted/CriticalStep.inc",
+      "source": "original/engine/source/elements/spring/r2len3.F",
+      "first_line": 206,
+      "last_line": 212,
+      "sha256": "64a0e7859def730cacea7ad77ecae87c6abdac78a37ecc3721edb6c120ba0c9d"
+    },
+    {
+      "path": "extracted/HalfMass.inc",
+      "source": "original/starter/source/elements/spring/rmass.F",
+      "first_line": 64,
+      "last_line": 64,
+      "sha256": "d84bab505ea6682e0cd4866952ef5f1df35e471569bebd52cfa740e6ca5f3d8e"
+    },
+    {
+      "path": "extracted/HalfInertia.inc",
+      "source": "original/starter/source/elements/spring/rmass.F",
+      "first_line": 80,
+      "last_line": 86,
+      "sha256": "ef93ce0a0fe753f0ba9dede26bb3834d61e12e545535f9f99857e60de8111fcc"
+    },
+    {
+      "path": "extracted/ReferenceChord.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 118,
+      "last_line": 121,
+      "sha256": "f6ab97545a34b9cb5350439da0de422042c6fae883a301e2fa01c0f2637249ba"
+    },
+    {
+      "path": "extracted/ReferenceSeedY.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 195,
+      "last_line": 203,
+      "sha256": "ad32d54cb5bb3a6c53c660fa8fbfe0c0fa8f5bcc5f8ffb6d067fda55179e2554"
+    },
+    {
+      "path": "extracted/ReferenceSeedX.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 223,
+      "last_line": 225,
+      "sha256": "818dd2578253f144accc38dd1fc6480b3f3e3af670999ba1337184141169fd6b"
+    },
+    {
+      "path": "extracted/ReferenceCross.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 231,
+      "last_line": 233,
+      "sha256": "30416742677e220ef899508131c2635be3eab5678f79009bc63a0be470d0b328"
+    },
+    {
+      "path": "extracted/ReferenceNormalize.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 238,
+      "last_line": 244,
+      "sha256": "acf4edaddb3fa960299b862b36f7bd269e650ce8339984cc60678b2bd09dd077"
+    }
+  ]
+}

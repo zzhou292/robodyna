@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "host", size = "small", srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_src/elements:shell_mapped_startup",
+            "//lib_src/constraints/tied_shell:tied_cin_attachment", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small", srcs = ["CudaTest.cu", "Fixture.h"],
+    deps = ["//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
+            "//lib_src/constraints/tied_shell:tied_cin_attachment", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

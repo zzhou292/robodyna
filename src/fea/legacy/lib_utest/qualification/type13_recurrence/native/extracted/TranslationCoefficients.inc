@@ -1,0 +1,27 @@
+      DO I=1,NEL
+       EPLA(I)=ZERO
+       XM(I)=GEO(1,MGN(I))
+       XK(I)=GEO(3,MGN(I))
+       XC(I)=GEO(4,MGN(I))
+       YK(I)=GEO(10,MGN(I))
+       YC(I)=GEO(11,MGN(I))
+       ZK(I)=GEO(15,MGN(I))
+       ZC(I)=GEO(16,MGN(I))
+       XKA=XK(I)*GEO(41,MGN(I))
+       YKA=YK(I)*GEO(45,MGN(I))
+       ZKA=ZK(I)*GEO(49,MGN(I))
+       XKM(I)= MAX(XKA,YKA,ZKA)
+       HX(I) = GEO(141,MGN(I))
+       HY(I) = GEO(142,MGN(I))
+       HZ(I) = GEO(143,MGN(I))
+       XH(I)= MAX(HX(I),HY(I),HZ(I))
+       XCM(I)= MAX(XC(I),YC(I),ZC(I))
+       XCM(I)= XCM(I)+XH(I)
+     
+       XKR(I)= MAX(YKA,ZKA) * ALDP(I) * ALDP(I)
+       XCR(I)= (MAX(YC(I),ZC(I)) + MAX(HY(I),HZ(I))) * ALDP(I) * ALDP(I)
+       VRT(I) = GEO(101,MGN(I))
+       VRR(I) = GEO(102,MGN(I))
+       IFAIL(I) = NINT(GEO(79,MGN(I)))
+       IFAIL2(I)= NINT(GEO(95,MGN(I)))
+      ENDDO

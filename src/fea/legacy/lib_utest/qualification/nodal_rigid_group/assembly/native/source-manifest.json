@@ -1,0 +1,113 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "sources": [
+    {
+      "path": "original/inirby.F",
+      "bytes": 61171,
+      "sha256": "ea24961874d4080536176d6117e1cd8518dfe1e8b785db3c43edc04815cfe440",
+      "git_blob_sha1": "1ab28f4cae34612be63c3dd4cd16d2c380062125",
+      "cached_source": "openradioss-nodal-rigid-contract-1/starter/source/constraints/general/rbody/inirby.F"
+    },
+    {
+      "path": "original/hm_read_admas.F",
+      "bytes": 33521,
+      "sha256": "a8b0b93a701b88871ef92b63f24562c14cc9112b97e16e8c8b7a8dea0f9a25f6",
+      "git_blob_sha1": "5da7785f578ce2011d43eb01ed6001ee9bfdaa47",
+      "cached_source": "openradioss-rigid-part-assembly-1/starter/source/tools/admas/hm_read_admas.F"
+    },
+    {
+      "path": "original/convertelementmasses.cxx",
+      "bytes": 7848,
+      "sha256": "6918406ee3a57f239488fd75c84a05160aa4ab696911308d65a1286bf07eb2fe",
+      "git_blob_sha1": "8360308680588b092bdd4649f076e968a54ca16e",
+      "cached_source": "openradioss-rigid-part-assembly-1/reader/source/dyna2rad/dyna2rad/_private/convertelementmasses.cxx"
+    },
+    {
+      "path": "original/convertutils.cxx",
+      "bytes": 43605,
+      "sha256": "140587d71a3672e178372242aa7843fd63ec136442b1283b8208c1d1ab6c7675",
+      "git_blob_sha1": "c276e8cebc945d2899927f5fa92ab8ccf47b3173",
+      "cached_source": "openradioss-rigid-part-assembly-1/reader/source/dyna2rad/dyna2rad/_private/convertutils.cxx"
+    },
+    {
+      "path": "original/hm_lecgrn.F",
+      "bytes": 30560,
+      "sha256": "cb049ba94358fc465bfd27d1066662cfc22d944344ec3a4a6e7a197aa2c5aa91",
+      "git_blob_sha1": "3dc076542378cd074d811b25d347b428d2646c9b",
+      "cached_source": "openradioss-rigid-part-assembly-1/starter/source/groups/hm_lecgrn.F"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/PartCenter.inc",
+      "source": "original/inirby.F",
+      "first_line": 189,
+      "last_line": 200,
+      "sha256": "67325cb19d332c791a5ce6ebbb53c98d1ff079c8435cf4f0f10b0c4ffdb0fa39"
+    },
+    {
+      "path": "extracted/PartCenterDivide.inc",
+      "source": "original/inirby.F",
+      "first_line": 211,
+      "last_line": 213,
+      "sha256": "124ce00e448a1393d87d755d3901521ea80cd80f61a348427d6c9e8e9d71376b"
+    },
+    {
+      "path": "extracted/ExtraCenter.inc",
+      "source": "original/inirby.F",
+      "first_line": 292,
+      "last_line": 309,
+      "sha256": "485724de45d67a897d176d2454b3d0da89e579eabddb260b16c802ac28ad0ba7"
+    },
+    {
+      "path": "extracted/PrimaryTensor.inc",
+      "source": "original/inirby.F",
+      "first_line": 327,
+      "last_line": 341,
+      "sha256": "df1c1aa25399c4fb33dc127144acf9e3b05c29a75b0d5e2af8fb83a844eaa275"
+    },
+    {
+      "path": "extracted/PartTensor.inc",
+      "source": "original/inirby.F",
+      "first_line": 349,
+      "last_line": 366,
+      "sha256": "a5a074f6a84b01384ed8e28e99e80426f6fa395b404aba64c57794963a1e2b6c"
+    },
+    {
+      "path": "extracted/ExtraTensor.inc",
+      "source": "original/inirby.F",
+      "first_line": 452,
+      "last_line": 469,
+      "sha256": "2c6255f979f21ebce26382438154f611441c013fd5b2068c4f362a2c82cb3ff9"
+    },
+    {
+      "path": "extracted/MergeCenter.inc",
+      "source": "original/inirby.F",
+      "first_line": 510,
+      "last_line": 516,
+      "sha256": "67796dbeb3eaa3cf4686a8a98c8da0f80eb9740fbc2275337dfa83578913ad2a"
+    },
+    {
+      "path": "extracted/MergeParentShift.inc",
+      "source": "original/inirby.F",
+      "first_line": 526,
+      "last_line": 540,
+      "sha256": "713b4669dc5eb37e48f4db90b238016b18f08f6b62521f0e02a0d257fd3692e6"
+    },
+    {
+      "path": "extracted/MergeChildTensor.inc",
+      "source": "original/inirby.F",
+      "first_line": 570,
+      "last_line": 584,
+      "sha256": "fc8658a6377ca02a7fc6172cc2236b3b982196f59fa9e39c63a4e2df00958c8f"
+    },
+    {
+      "path": "extracted/PointMassAdd.inc",
+      "source": "original/hm_read_admas.F",
+      "first_line": 466,
+      "last_line": 467,
+      "sha256": "d9eac943bd708274d41d8187c2ed4f4bd768799b19571f4c17ea30f5b7060303"
+    }
+  ]
+}

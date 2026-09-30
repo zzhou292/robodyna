@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "reference_kinematics",
+    hdrs = [
+        "ReferenceTypes.h", "Reference.h", "ReferenceJacobian.h",
+        "ReferencePij.h", "ReferenceTransform.h", "KinematicsTypes.h",
+        "SelectedTensor.h", "TotalGradient.h", "TotalKinematics.h",
+    ],
+    deps = ["//lib_src/elements/solid18:force", "//lib_src/elements/solid_common:brick_frame"],
+)
+cc_library(
+    name = "law90_force",
+    hdrs = ["ForceTypes.h", "ForceChecks.h", "ForceWork.h", "Force.h", "History.h"],
+    deps = [":reference_kinematics", "//lib_src/elements/solid18:force", "//lib_src/materials/law90:caller"],
+)

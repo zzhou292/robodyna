@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "host", size = "small", srcs = ["HostTest.cpp"],
+    deps = ["//lib_utest/qualification/cin_force_inputs:fixture", "//lib_utest/qualification/cin_force_transfers:fixture"],
+    copts = ["-std=c++17", "-Ilib_src/solvers", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small", srcs = ["CudaTest.cu",
+        "//lib_utest/qualification/cin_force_inputs:serial_cuda_source",
+        "//lib_utest/qualification/cin_parallel_ordinary:device_packet_sources"],
+    deps = ["//lib_utest/qualification/cin_force_inputs:fixture", "//lib_utest/qualification/cin_force_transfers:fixture"],
+    copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

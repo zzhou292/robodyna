@@ -1,0 +1,359 @@
+{
+  "schema": "robo_dyna.native_contact_scene_export.v1",
+  "scope": "declared source only; runtime controls and physical trajectory unqualified",
+  "source_sha256": "f88d86629cbab8c45c0f22562a9606e8f496bd6a33806465f6817878bc6e1fd9",
+  "scene": {
+    "wall": {
+      "x_mm": [
+        -20.0,
+        0.0,
+        20.0
+      ],
+      "y_mm": [
+        -20.0,
+        0.0,
+        20.0
+      ],
+      "z_mm": 0.0,
+      "dz_dx": 0.0
+    },
+    "patch": {
+      "x_mm": [
+        -5.0,
+        0.0,
+        5.0
+      ],
+      "y_mm": [
+        -5.0,
+        0.0,
+        5.0
+      ],
+      "z_mm": 2.0,
+      "dz_dx": 0.02
+    },
+    "velocity_mm_s": [
+      1000.0,
+      0.0,
+      -10000.0
+    ],
+    "material": {
+      "density_tonne_mm3": 7.85e-09,
+      "young_n_mm2": 210000.0,
+      "poisson": 0.3,
+      "yield_n_mm2": 250.0,
+      "plastic_hardening_n_mm2": 1000.0,
+      "rate_c_per_s": 40.0,
+      "rate_p": 5.0,
+      "rate_filter_hz": 10000.0,
+      "law": "law44_linear"
+    },
+    "thickness_mm": 1.0,
+    "end_time_s": 0.0003,
+    "nodal_scale": 0.8,
+    "animation_interval_s": 1e-05,
+    "time_step_cap_s": 3e-07
+  },
+  "mesh": {
+    "nodes": [
+      {
+        "id": 1,
+        "xyz_mm": [
+          -20.0,
+          -20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 2,
+        "xyz_mm": [
+          0.0,
+          -20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 3,
+        "xyz_mm": [
+          20.0,
+          -20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 4,
+        "xyz_mm": [
+          -20.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "id": 5,
+        "xyz_mm": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "id": 6,
+        "xyz_mm": [
+          20.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "id": 7,
+        "xyz_mm": [
+          -20.0,
+          20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 8,
+        "xyz_mm": [
+          0.0,
+          20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 9,
+        "xyz_mm": [
+          20.0,
+          20.0,
+          0.0
+        ]
+      },
+      {
+        "id": 10,
+        "xyz_mm": [
+          -5.0,
+          -5.0,
+          1.9
+        ]
+      },
+      {
+        "id": 11,
+        "xyz_mm": [
+          0.0,
+          -5.0,
+          2.0
+        ]
+      },
+      {
+        "id": 12,
+        "xyz_mm": [
+          5.0,
+          -5.0,
+          2.1
+        ]
+      },
+      {
+        "id": 13,
+        "xyz_mm": [
+          -5.0,
+          0.0,
+          1.9
+        ]
+      },
+      {
+        "id": 14,
+        "xyz_mm": [
+          0.0,
+          0.0,
+          2.0
+        ]
+      },
+      {
+        "id": 15,
+        "xyz_mm": [
+          5.0,
+          0.0,
+          2.1
+        ]
+      },
+      {
+        "id": 16,
+        "xyz_mm": [
+          -5.0,
+          5.0,
+          1.9
+        ]
+      },
+      {
+        "id": 17,
+        "xyz_mm": [
+          0.0,
+          5.0,
+          2.0
+        ]
+      },
+      {
+        "id": 18,
+        "xyz_mm": [
+          5.0,
+          5.0,
+          2.1
+        ]
+      }
+    ],
+    "wall": [
+      {
+        "id": 1,
+        "part": 1,
+        "nodes": [
+          1,
+          2,
+          5
+        ]
+      },
+      {
+        "id": 2,
+        "part": 1,
+        "nodes": [
+          1,
+          5,
+          4
+        ]
+      },
+      {
+        "id": 3,
+        "part": 1,
+        "nodes": [
+          2,
+          3,
+          6
+        ]
+      },
+      {
+        "id": 4,
+        "part": 1,
+        "nodes": [
+          2,
+          6,
+          5
+        ]
+      },
+      {
+        "id": 5,
+        "part": 1,
+        "nodes": [
+          4,
+          5,
+          8
+        ]
+      },
+      {
+        "id": 6,
+        "part": 1,
+        "nodes": [
+          4,
+          8,
+          7
+        ]
+      },
+      {
+        "id": 7,
+        "part": 1,
+        "nodes": [
+          5,
+          6,
+          9
+        ]
+      },
+      {
+        "id": 8,
+        "part": 1,
+        "nodes": [
+          5,
+          9,
+          8
+        ]
+      }
+    ],
+    "patch": [
+      {
+        "id": 9,
+        "part": 2,
+        "nodes": [
+          10,
+          11,
+          14,
+          13
+        ]
+      },
+      {
+        "id": 10,
+        "part": 2,
+        "nodes": [
+          11,
+          12,
+          15,
+          14
+        ]
+      },
+      {
+        "id": 11,
+        "part": 2,
+        "nodes": [
+          13,
+          14,
+          17,
+          16
+        ]
+      },
+      {
+        "id": 12,
+        "part": 2,
+        "nodes": [
+          14,
+          15,
+          18,
+          17
+        ]
+      }
+    ],
+    "wall_nodes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "patch_nodes": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ]
+  },
+  "files": [
+    {
+      "path": "scene.json",
+      "bytes": 896,
+      "sha256": "f88d86629cbab8c45c0f22562a9606e8f496bd6a33806465f6817878bc6e1fd9"
+    },
+    {
+      "path": "contact_scene_0000.rad",
+      "bytes": 4561,
+      "sha256": "4a6dbc2ff7aa27aceb27d36fdd9ca6b25a267ddd74f890bf9c741e9766bd2e6d"
+    },
+    {
+      "path": "contact_scene_0001.rad",
+      "bytes": 354,
+      "sha256": "19b1e604a8599541d3584392078ce2817e2296d498402c94b48d3180f73fe3db"
+    }
+  ]
+}

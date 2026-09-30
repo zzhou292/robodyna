@@ -1,0 +1,6 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer", size = "small", srcs = ["Consumer.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/qbat:batch"],
+)

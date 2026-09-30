@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "shell_constant_plastic_failure",
+    hdrs = ["ShellConstantPlasticFailure.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "shell_tab1_constant_failure",
+    hdrs = ["ShellTab1ConstantFailure.h"],
+    deps = ["//lib_src/math:quaternion"],
+)

@@ -1,0 +1,5 @@
+include_guard(GLOBAL)
+add_library(tl_rigid_normal_response INTERFACE)
+get_filename_component(tl_rigid_response_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+target_include_directories(tl_rigid_normal_response INTERFACE "${tl_rigid_response_root}")
+target_compile_features(tl_rigid_normal_response INTERFACE cxx_std_17)

@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLQephRejectedCandidate LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_executable(qeph_rejected_candidate_host HostTest.cpp
+  "${tl_root}/lib_src/elements/qeph/rejected_candidate/Replay.cpp")
+target_include_directories(qeph_rejected_candidate_host PRIVATE "${tl_root}")
+target_link_libraries(qeph_rejected_candidate_host PRIVATE GTest::gtest_main CUDA::toolkit)
+target_compile_features(qeph_rejected_candidate_host PRIVATE cxx_std_17)
+target_compile_options(qeph_rejected_candidate_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_rejected_candidate_host COMMAND qeph_rejected_candidate_host)
+set_tests_properties(qeph_rejected_candidate_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+option(QEPH_REJECTED_CUDA "Authenticated actual-owner failure capture" OFF)
+if(QEPH_REJECTED_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
+  add_subdirectory("${tl_root}/lib_src/elements/qeph" qeph-values)
+  include("${tl_root}/lib_src/elements/qeph/QephBatch.cmake")
+  include("${tl_root}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+  include("${tl_root}/lib_src/constraints/NodalRigidAssemblyBinding.cmake")
+  add_executable(qeph_rejected_candidate_cuda CudaTest.cu
+    ../qt_mapped/PrepareOwner.cu ../qt_mapped/OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
+  target_link_libraries(qeph_rejected_candidate_cuda PRIVATE tl_qeph_batch
+    tl_nodal_rigid_assembly_binding tl_tied_cin_attachment GTest::gtest_main CUDA::cudart)
+  target_link_options(qeph_rejected_candidate_cuda PRIVATE "-Wl,--wrap=cudaMemcpyAsync")
+  set_target_properties(qeph_rejected_candidate_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(qeph_rejected_candidate_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+  add_test(NAME qeph_rejected_candidate_cuda COMMAND qeph_rejected_candidate_cuda)
+  set_tests_properties(qeph_rejected_candidate_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240)
+endif()
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_test(NAME qeph_rejected_candidate_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+set_tests_properties(qeph_rejected_candidate_source PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)

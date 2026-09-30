@@ -1,0 +1,5 @@
+if(NOT TARGET tl_tied_shell_search)
+  include("${CMAKE_CURRENT_LIST_DIR}/TiedPatch.cmake")
+  add_library(tl_tied_shell_search INTERFACE)
+  target_link_libraries(tl_tied_shell_search INTERFACE tl_tied_shell_patch)
+endif()

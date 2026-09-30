@@ -1,0 +1,54 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Actual ordinary LAW44/ITHK1/NPT1 coefficient branch, centered/DM0.
+      MODULE ONE_POINT_COEFFICIENTS_MOD
+      USE ISO_C_BINDING,ONLY:C_DOUBLE
+      USE T3_ENGINE_GEOMETRY_MOD,ONLY:T3_GEOMETRY_
+      USE T3_ENGINE_HISTORY_MOD,ONLY:T3_HISTORY_
+      USE T3_ENGINE_MATERIAL_MOD,ONLY:T3_MATERIAL_
+#include "implicit_f.inc"
+#include "mvsiz_p.inc"
+      CONTAINS
+      SUBROUTINE ONE_POINT_COEFFICIENTS(INPUT,G,H,M)
+#include "param_c.inc"
+#include "com04_c.inc"
+#include "impl1_c.inc"
+      REAL(C_DOUBLE),INTENT(IN) :: INPUT(4)
+      TYPE(T3_GEOMETRY_),INTENT(IN) :: G
+      TYPE(T3_HISTORY_),INTENT(IN) :: H
+      TYPE(T3_MATERIAL_),INTENT(OUT) :: M
+      INTEGER MAT(MVSIZ),PID(MVSIZ),IGEO(100,1)
+      MY_REAL PM_STACK(20,1),THK_COPY(MVSIZ)
+      ISMDISP=0
+      NPROPM=200
+      NPROPG=200
+      NPROPGI=100
+      NPSAV=8
+      NUMGEO=1
+      NUMMAT=1
+      M=T3_MATERIAL_()
+      MAT=1
+      PID=1
+      IGEO=0
+      IGEO(11,1)=1
+      PM_STACK=ZERO
+      M%GEO(37,1)=ZERO
+      M%GEO(38,1)=FIVE_OVER_6
+      M%GEO(199,1)=ZERO
+      M%PM(1,1)=INPUT(1)
+      M%PM(20,1)=INPUT(2)
+      M%PM(21,1)=INPUT(3)
+      M%PM(22,1)=INPUT(2)/(TWO*(ONE+INPUT(3)))
+      M%PM(24,1)=INPUT(2)/(ONE-INPUT(3)**2)
+      M%PM(25,1)=INPUT(3)*M%PM(24,1)
+      M%PM(26,1)=FIVE_OVER_6
+      M%PM(27,1)=SQRT(INPUT(2)/MAX(INPUT(1),EM20))
+      M%DM=ZERO
+      M%THK0=INPUT(4)
+      THK_COPY=H%THK
+      CALL C3COEF3(1,1,M%PM,MAT,M%GEO,PID,G%OFF,G%AREA,
+     . M%STI,M%STIR,M%SHF,M%THK0,M%THK02,M%NU,M%G,M%YM,
+     . M%A11,M%A12,THK_COPY,M%SSP,M%RHO,M%VOL0,M%GS,
+     . 44,1,1,2,M%VOL00,IGEO,M%A11R,1,PM_STACK,1,M%ZOFFSET)
+      END SUBROUTINE
+
+      END MODULE

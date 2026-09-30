@@ -1,0 +1,7 @@
+if(TARGET tl_qbat_geometry)
+  return()
+endif()
+get_filename_component(_qbat_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_library(tl_qbat_geometry INTERFACE)
+target_include_directories(tl_qbat_geometry INTERFACE "${_qbat_root}")
+target_compile_features(tl_qbat_geometry INTERFACE cxx_std_17)

@@ -1,0 +1,1375 @@
+#==============================================================
+#==============================================================
+# Project: RoboDyna
+# Author:  Json Zhou
+# Email:   zzhou292@wisc.edu
+# File:    BUILD.bazel
+# Brief:   Bazel build rules for collision backends (hydroelastic and DEME).
+#==============================================================
+#==============================================================
+
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "nodal_wall_mapped_publication_source_files",
+    srcs = [
+        "BUILD.bazel",
+        "NodalWallMappedContact.cmake",
+        "NodalWallMappedContact.h",
+        "nodal_wall_mapped/Initialize.cpp",
+        "nodal_wall_mapped/Operations.cu",
+        "nodal_wall_mapped/Storage.h",
+    ],
+)
+
+filegroup(
+    name = "fixed_triangle_feature_discovery_sources",
+    srcs = [
+        "BUILD.bazel",
+        "FixedTriangleFeatureDiscovery.cmake",
+        "FixedTriangleFeatureDiscovery.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "fixed_triangle_features/Diagnostics.h",
+        "FixedTriangleFeatureTypes.h",
+        "fixed_triangle_features/Discovery.cpp",
+        "fixed_triangle_features/ExactPredicates.cpp",
+        "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
+        "fixed_triangle_features/Geometry.cpp",
+        "fixed_triangle_features/Geometry.h",
+    ],
+)
+
+# Source reuse by a separate qualification-only wide-adapter binary. There is
+# no runtime storage switch or qualification adapter in the production library.
+filegroup(
+    name = "fixed_triangle_feature_qualification_wide_sources",
+    srcs = [
+        "fixed_triangle_features/Discovery.cpp",
+        "fixed_triangle_features/Geometry.cpp",
+    ],
+    visibility = ["//lib_utest/qualification/fixed_triangle_features:__pkg__"],
+)
+filegroup(
+    name = "fixed_triangle_feature_qualification_wide_headers",
+    srcs = [
+        "FixedTriangleFeatureDiscovery.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "fixed_triangle_features/Diagnostics.h",
+        "FixedTriangleFeatureTypes.h",
+        "fixed_triangle_features/Geometry.h",
+        "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
+    ],
+    visibility = ["//lib_utest/qualification/fixed_triangle_features:__pkg__"],
+)
+
+cc_library(
+    name = "fixed_triangle_feature_discovery",
+    srcs = [
+        "fixed_triangle_features/Discovery.cpp",
+        "fixed_triangle_features/ExactPredicates.cpp",
+        "fixed_triangle_features/Geometry.cpp",
+    ],
+    hdrs = [
+        "FixedTriangleFeatureDiscovery.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "fixed_triangle_features/Diagnostics.h",
+        "FixedTriangleFeatureTypes.h",
+        "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
+        "fixed_triangle_features/Geometry.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    linkopts = ["-pthread"],
+    deps = [
+        "//lib_src/math:fixed_integer",
+        ":fixed_contact_facets",
+        ":surface_contact_primitives",
+        "//lib_src/collision/weighted_surface:mapping",
+    ],
+)
+
+filegroup(
+    name = "self_contact_filter_certificate_sources",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactFilterCertificates.cmake",
+        "SelfContactFilterCertificates.cpp",
+        "SelfContactFilterCertificates.h",
+        "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
+    ],
+)
+
+cc_library(
+    name = "self_contact_filter_certificates",
+    srcs = ["SelfContactFilterCertificates.cpp"],
+    hdrs = [
+        "FixedTriangleFeatureTypes.h",
+        "SelfContactFilterCertificates.h",
+        "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixed_contact_facets"],
+)
+
+cc_library(
+    name = "self_contact_filter_batch_values",
+    srcs = ["self_contact_filters/Layout.cpp"],
+    hdrs = [
+        "self_contact_filters/Types.h",
+        "self_contact_filters/Batch.h",
+        "self_contact_filters/Storage.h",
+        "self_contact_filters/Environment.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_filter_certificates", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "self_contact_filter_batch_device",
+    srcs = ["self_contact_filters/Kernels.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":self_contact_filter_batch_values"],
+)
+
+cc_library(
+    name = "self_contact_filter_batch",
+    srcs = ["self_contact_filters/Batch.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_filter_batch_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+filegroup(
+    name = "self_contact_filter_batch_sources",
+    srcs = [
+        ":self_contact_filter_certificate_sources",
+        "SelfContactFilterBatch.cmake",
+        "SelfContactFilterBatchValues.cmake",
+        "self_contact_filters/Types.h",
+        "self_contact_filters/Batch.h",
+        "self_contact_filters/Storage.h",
+        "self_contact_filters/Environment.h",
+        "self_contact_filters/Layout.cpp",
+        "self_contact_filters/Batch.cpp",
+        "self_contact_filters/Kernels.cu",
+    ],
+)
+
+filegroup(
+    name = "represented_interval_crossing_source_proof",
+    srcs = [
+        "represented_interval_crossing/native/ExtractionManifest.json",
+        "represented_interval_crossing/native/PortableStd.h",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/CanonicalPair.h",
+        "represented_interval_crossing/CohortAdmission.h",
+        "represented_interval_crossing/BusyRelease.h",
+        "BUILD.bazel",
+        "RepresentedIntervalCrossing.cmake",
+        "RepresentedIntervalCrossing.cpp",
+        "RepresentedIntervalCrossing.h",
+        "RepresentedIntervalCrossingTypes.h",
+        "represented_interval_crossing/Batch.h",
+        "represented_interval_crossing/NormalReuseQualification.h",
+        "represented_interval_crossing/ExactPathReuseQualification.h",
+        "represented_interval_crossing/CommonPointReuseQualification.h",
+        "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
+        "represented_interval_crossing/NativeStorageDomain.h",
+        "represented_interval_crossing/native/Modes.h",
+        "represented_interval_crossing/native/Identity.h",
+        "represented_interval_crossing/native/Arithmetic.h",
+        "represented_interval_crossing/native/Geometry.h",
+        "represented_interval_crossing/native/CellKernel.h",
+        "represented_interval_crossing/ExactProjectionDomain.h",
+        "represented_interval_crossing/RelativeSeparationQualification.h",
+        "represented_interval_crossing/BatchExecution.h",
+    ],
+)
+
+cc_library(
+    name = "represented_interval_crossing",
+    srcs = ["RepresentedIntervalCrossing.cpp"],
+    hdrs = [
+        "RepresentedIntervalCrossing.h",
+        "RepresentedIntervalCrossingTypes.h",
+        "represented_interval_crossing/native/PortableStd.h",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/CanonicalPair.h",
+        "represented_interval_crossing/CohortAdmission.h",
+        "represented_interval_crossing/BusyRelease.h",
+        "represented_interval_crossing/Batch.h",
+        "represented_interval_crossing/NormalReuseQualification.h",
+        "represented_interval_crossing/ExactPathReuseQualification.h",
+        "represented_interval_crossing/CommonPointReuseQualification.h",
+        "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
+        "represented_interval_crossing/NativeStorageDomain.h",
+        "represented_interval_crossing/native/Modes.h",
+        "represented_interval_crossing/native/Identity.h",
+        "represented_interval_crossing/native/Arithmetic.h",
+        "represented_interval_crossing/native/Geometry.h",
+        "represented_interval_crossing/native/CellKernel.h",
+        "represented_interval_crossing/ExactProjectionDomain.h",
+        "represented_interval_crossing/RelativeSeparationQualification.h",
+        "represented_interval_crossing/BatchExecution.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    linkopts = ["-pthread"],
+    deps = [":fixed_contact_facets", "//lib_src/math:fixed_integer"],
+)
+
+cc_library(
+    name = "represented_interval_crossing_gpu_values",
+    srcs = ["represented_interval_crossing/native_device/Layout.cpp",
+            "represented_interval_crossing/native_device/Forecast.cpp"],
+    hdrs = [
+        "RepresentedIntervalCrossingGpu.h",
+        "represented_interval_crossing/DeviceBatch.h",
+        "represented_interval_crossing/native_device/Workspace.h",
+        "represented_interval_crossing/native_device/KernelTypes.h",
+        "represented_interval_crossing/native_device/Resources.h",
+        "represented_interval_crossing/native_device/OwnerStorage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":represented_interval_crossing", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "represented_interval_crossing_gpu_device",
+    srcs = ["represented_interval_crossing/native_device/Kernels.cu"],
+    copts = [
+        "--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true",
+        "--ftz=false", "--expt-relaxed-constexpr", "--resource-usage",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    deps = [":represented_interval_crossing_gpu_values"],
+)
+
+cc_library(
+    name = "represented_interval_crossing_gpu",
+    srcs = [
+        "RepresentedIntervalCrossingGpu.cpp",
+        "represented_interval_crossing/native_device/Workspace.cpp",
+        "represented_interval_crossing/native_device/Cohort.cpp",
+        "represented_interval_crossing/native_device/Transport.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":represented_interval_crossing_gpu_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+filegroup(
+    name = "represented_interval_crossing_gpu_sources",
+    srcs = [
+        "BUILD.bazel", "RepresentedIntervalCrossingGpu.cmake", "RepresentedIntervalCrossingGpuValues.cmake",
+        "RepresentedIntervalCrossingGpu.h", "RepresentedIntervalCrossingGpu.cpp",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/DeviceBatch.h",
+    ] + glob(["represented_interval_crossing/native_device/*"]),
+)
+
+filegroup(
+    name = "self_contact_active_use_source_proof",
+    srcs = [
+        "FixedContactFacetBinding.cpp",
+        "FixedContactFacetBinding.h",
+        "SelfContactActiveUseBinding.cpp",
+        "SelfContactActiveUseBinding.cmake",
+        "SelfContactActiveUseBinding.h",
+        "SelfContactActiveUseTypes.h",
+        "SelfContactActiveUseValues.h",
+        "self_contact_active_use/Build.cpp",
+        "self_contact_active_use/Layout.cpp",
+        "self_contact_active_use/Queries.cpp",
+        "self_contact_active_use/Storage.h",
+        "BUILD.bazel",
+    ],
+)
+
+cc_library(
+    name = "self_contact_active_uses",
+    srcs = [
+        "SelfContactActiveUseBinding.cpp",
+        "self_contact_active_use/Build.cpp",
+        "self_contact_active_use/Layout.cpp",
+        "self_contact_active_use/Queries.cpp",
+    ],
+    hdrs = [
+        "SelfContactActiveUseBinding.h",
+        "SelfContactActiveUseTypes.h",
+        "SelfContactActiveUseValues.h",
+        "self_contact_active_use/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_contact_facets",
+        ":q4_parametric_contact_types",
+        ":surface_material_measure",
+        "//lib_src/constraints:nodal_rigid_assembly_binding",
+        "//lib_src/constraints/tied_shell:cin_stage",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+filegroup(
+    name = "self_contact_force_assembly_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactForceAssembly.cmake",
+        "SelfContactForceAssembly.h",
+        "SelfContactForceTypes.h",
+        "SelfContactForceValues.h",
+        "self_contact_force/Initialize.cpp",
+        "self_contact_force/Layout.cpp",
+        "self_contact_force/Operations.cu",
+        "self_contact_force/Source.cpp",
+        "self_contact_force/Storage.h",
+        "self_contact_force/SourceQueries.h",
+        "self_contact_force/Values.cpp",
+        "//lib_src/elements:ShellPhysicalOwnerAssembly.cpp",
+        "//lib_src/solvers:nodal_assembly_authentication_source_proof",
+    ],
+)
+
+cc_library(
+    name = "self_contact_force_values",
+    srcs = [
+        "self_contact_force/Source.cpp",
+        "self_contact_force/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactForceAssembly.h",
+        "SelfContactForceTypes.h",
+        "SelfContactForceValues.h",
+        "self_contact_force/Storage.h",
+        "self_contact_force/SourceQueries.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_triangle_feature_discovery",
+        ":self_contact_active_uses",
+        "//lib_src/collision/penalty_pair:values",
+        "//lib_src/elements:shell_physical_owner_values",
+        "//lib_src/solvers:explicit_nodal_state",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cuda_library(
+    name = "self_contact_force_device",
+    srcs = ["self_contact_force/Operations.cu"],
+    hdrs = ["SelfContactForceAssembly.h"],
+    copts = [
+        "--std=c++17",
+        "--fmad=false",
+        "--prec-div=true",
+        "--prec-sqrt=true",
+        "--ftz=false",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    deps = [
+        ":self_contact_force_values",
+        "//lib_src/collision/penalty_pair:values",
+        "//lib_src/elements:shell_physical_owner",
+        "//lib_src/solvers:explicit_nodal_state",
+        "//lib_src/solvers:nodal_native_physical_coefficients",
+        "//lib_src/solvers:nodal_trial_identity",
+    ],
+)
+
+cc_library(
+    name = "self_contact_force_assembly",
+    srcs = [
+        "self_contact_force/Initialize.cpp",
+        "self_contact_force/Layout.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_force_device",
+        "//lib_src/elements:shell_physical_owner",
+    ],
+)
+
+filegroup(
+    name = "self_contact_physical_activity_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactPhysicalActivity.cmake",
+        "SelfContactPhysicalActivity.h",
+        "SelfContactPhysicalActivityTypes.h",
+        "self_contact_physical_activity/Activity.cpp",
+        "self_contact_physical_activity/Layout.cpp",
+        "self_contact_physical_activity/Selection.h",
+        "self_contact_physical_activity/Storage.h",
+        "self_contact_physical_activity/Values.cpp",
+        "//lib_src/elements:ShellBatchPublication.h",
+        "//lib_src/elements:publication/PhysicalReadback.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_physical_activity_values",
+    srcs = [
+        "self_contact_physical_activity/Layout.cpp",
+        "self_contact_physical_activity/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactPhysicalActivity.h",
+        "SelfContactPhysicalActivityTypes.h",
+        "self_contact_physical_activity/Selection.h",
+        "self_contact_physical_activity/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_active_uses",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "self_contact_physical_activity",
+    srcs = ["self_contact_physical_activity/Activity.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_physical_activity_values",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_src/solvers:nodal_trial_identity",
+    ],
+)
+
+filegroup(
+    name = "self_contact_transaction_source_proof",
+    srcs = [
+        ":represented_interval_crossing_gpu_sources",
+        "RepresentedIntervalCrossingGpu.cmake",
+        "RepresentedIntervalCrossingGpuValues.cmake",
+        "self_contact_transaction/CrossingExecutor.h",
+        "self_contact_transaction/CrossingExecutor.cpp",
+        "self_contact_transaction/CrossingExecutorValues.cpp",
+        "SelfContactFilterBatch.cmake",
+        "SelfContactFilterBatchValues.cmake",
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/FacetFilterValues.cpp",
+        "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterCandidate.cpp",
+        "self_contact_transaction/FacetFilterAccepted.cpp",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
+        ":self_contact_filter_batch_sources",
+        "BUILD.bazel",
+        "SelfContactTransaction.cmake",
+        "SelfContactTransaction.h",
+        "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "self_contact_transaction/Diagnostics.h",
+        "SelfContactFilterCertificates.cmake",
+        "SelfContactFilterCertificates.cpp",
+        "SelfContactFilterCertificates.h",
+        "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
+        "self_contact_transaction/Arena.cpp",
+        "self_contact_transaction/Candidate.cpp",
+        "self_contact_transaction/CandidateExclusions.cpp",
+        "self_contact_transaction/CandidateExclusions.h",
+        "self_contact_transaction/CrossingBatch.cpp",
+        "self_contact_transaction/CrossingBatch.h",
+        "self_contact_transaction/Qualification.cpp",
+        "self_contact_transaction/CandidateFailureCapture.cpp",
+        "self_contact_transaction/CandidateFailureCapture.h",
+        "self_contact_transaction/QualificationRanges.h",
+        "self_contact_transaction/QualificationReceipt.h",
+        "self_contact_transaction/Limits.cpp",
+        "self_contact_transaction/Layout.cpp",
+        "self_contact_transaction/LocalContact.cpp",
+        "self_contact_transaction/RigidSweep.cpp",
+        "self_contact_transaction/Source.cpp",
+        "self_contact_transaction/LocalContact.h",
+        "self_contact_transaction/TranslatedLocal.h",
+        "self_contact_transaction/SortedIntersections.h",
+        "self_contact_transaction/ResidualIntersectionLookup.h",
+        "self_contact_transaction/PolicyExclusions.h",
+        "self_contact_transaction/FinalizedCoverageLedger.h",
+        "self_contact_transaction/SharedVertexProofQualification.h",
+        "self_contact_transaction/RigidSeparationQualification.h",
+        "self_contact_transaction/ConeDirections.h",
+        "self_contact_transaction/ResidualTasks.h",
+        "self_contact_transaction/Storage.h",
+        "self_contact_transaction/Streaming.cpp",
+        "self_contact_transaction/TaskMask.cpp",
+        "self_contact_transaction/Transaction.cpp",
+        "self_contact_transaction/Values.cpp",
+        "self_contact_transaction/TranslatedLocal.cpp",
+        "self_contact_force/Initialize.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_transaction_values",
+    srcs = [
+        "self_contact_transaction/CrossingExecutorValues.cpp",
+        "self_contact_transaction/FacetFilterValues.cpp",
+        "self_contact_transaction/CrossingBatch.cpp",
+        "self_contact_transaction/Arena.cpp",
+        "self_contact_transaction/Limits.cpp",
+        "self_contact_transaction/Layout.cpp",
+        "self_contact_transaction/LocalContact.cpp",
+        "self_contact_transaction/RigidSweep.cpp",
+        "self_contact_transaction/Streaming.cpp",
+        "self_contact_transaction/TaskMask.cpp",
+        "self_contact_transaction/Values.cpp",
+        "self_contact_transaction/TranslatedLocal.cpp",
+    ],
+    hdrs = [
+        "self_contact_transaction/CrossingExecutor.h",
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
+        "SelfContactTransaction.h",
+        "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "self_contact_transaction/Diagnostics.h",
+        "self_contact_transaction/CrossingBatch.h",
+        "self_contact_transaction/QualificationRanges.h",
+        "self_contact_transaction/QualificationReceipt.h",
+        "self_contact_transaction/LocalContact.h",
+        "self_contact_transaction/TranslatedLocal.h",
+        "self_contact_transaction/SortedIntersections.h",
+        "self_contact_transaction/ResidualIntersectionLookup.h",
+        "self_contact_transaction/PolicyExclusions.h",
+        "self_contact_transaction/FinalizedCoverageLedger.h",
+        "self_contact_transaction/SharedVertexProofQualification.h",
+        "self_contact_transaction/RigidSeparationQualification.h",
+        "self_contact_transaction/ConeDirections.h",
+        "self_contact_transaction/ResidualTasks.h",
+        "self_contact_transaction/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":represented_interval_crossing_gpu_values",
+        ":self_contact_filter_batch_values",
+        ":fixed_triangle_feature_discovery",
+        ":represented_interval_crossing",
+        ":self_contact_broadphase",
+        ":self_contact_current_regularity",
+        ":self_contact_filter_certificates",
+        ":self_contact_force_assembly",
+        ":self_contact_physical_activity",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "self_contact_transaction",
+    srcs = [
+        "self_contact_transaction/CrossingExecutor.cpp",
+        "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterCandidate.cpp",
+        "self_contact_transaction/FacetFilterAccepted.cpp",
+        "self_contact_transaction/Candidate.cpp",
+        "self_contact_transaction/CandidateExclusions.cpp",
+        "self_contact_transaction/CandidateExclusions.h",
+        "self_contact_transaction/Qualification.cpp",
+        "self_contact_transaction/CandidateFailureCapture.cpp",
+        "self_contact_transaction/Source.cpp",
+        "self_contact_transaction/Transaction.cpp",
+    ],
+    hdrs = [
+        "self_contact_transaction/CrossingExecutor.h",
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
+        "SelfContactTransaction.h",
+        "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "FixedTriangleDiscoveryDiagnostics.h",
+        "DiagnosticClock.h",
+        "self_contact_transaction/Diagnostics.h",
+        "self_contact_transaction/QualificationRanges.h",
+        "self_contact_transaction/CandidateFailureCapture.h",
+        "self_contact_transaction/QualificationReceipt.h",
+        "self_contact_transaction/LocalContact.h",
+        "self_contact_transaction/TranslatedLocal.h",
+        "self_contact_transaction/SortedIntersections.h",
+        "self_contact_transaction/ResidualIntersectionLookup.h",
+        "self_contact_transaction/PolicyExclusions.h",
+        "self_contact_transaction/FinalizedCoverageLedger.h",
+        "self_contact_transaction/SharedVertexProofQualification.h",
+        "self_contact_transaction/RigidSeparationQualification.h",
+        "self_contact_transaction/ConeDirections.h",
+        "self_contact_transaction/ResidualTasks.h",
+        "self_contact_transaction/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":represented_interval_crossing_gpu",
+        ":self_contact_filter_batch",
+        ":fixed_contact_facets",
+        ":self_contact_force_assembly",
+        ":self_contact_broadphase",
+        ":self_contact_current_regularity",
+        ":self_contact_filter_certificates",
+        ":self_contact_physical_activity",
+        ":self_contact_transaction_values",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+filegroup(
+    name = "self_contact_current_regularity_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactCurrentRegularity.cmake",
+        "SelfContactCurrentRegularity.cpp",
+        "SelfContactCurrentRegularity.h",
+        "SelfContactCurrentRegularityTypes.h",
+        "SelfContactCurrentRegularityValues.h",
+        "self_contact_current_regularity/Layout.cpp",
+        "self_contact_current_regularity/Query.cpp",
+        "self_contact_current_regularity/Source.cpp",
+        "self_contact_current_regularity/Storage.h",
+        "self_contact_current_regularity/Values.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_current_regularity",
+    srcs = [
+        "SelfContactCurrentRegularity.cpp",
+        "self_contact_current_regularity/Layout.cpp",
+        "self_contact_current_regularity/Query.cpp",
+        "self_contact_current_regularity/Source.cpp",
+        "self_contact_current_regularity/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactCurrentRegularity.h",
+        "SelfContactCurrentRegularityTypes.h",
+        "SelfContactCurrentRegularityValues.h",
+        "self_contact_current_regularity/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_triangle_feature_discovery",
+        ":self_contact_active_uses",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "fixed_contact_facets",
+    srcs = [
+        "FixedContactFacetBinding.cpp",
+        "contact_facets/Layout.cpp",
+        "contact_facets/Templates.cpp",
+        "contact_facets/Keys.cpp",
+        "contact_facets/Approximation.cpp",
+    ],
+    hdrs = ["FixedContactFacetTypes.h", "FixedContactFacetBinding.h", "FixedContactFacetValues.h", "contact_facets/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_surface_binding",
+        ":q4_contact_integration",
+        "//lib_src/collision/weighted_surface:mapping",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "surface_jacobian_majorant",
+    hdrs = [
+        "SurfaceJacobianMajorantTypes.h",
+        "SurfaceJacobianMajorantValues.h",
+        "surface_majorant/Bounds.h",
+        "surface_majorant/Support.h",
+    ],
+    deps = [":surface_contact_primitives"],
+)
+
+cc_library(
+    name = "self_contact_surface_binding",
+    srcs = [
+        "SelfContactSurfaceBinding.cpp",
+        "self_contact/Features.cpp",
+        "self_contact/Layout.cpp",
+        "self_contact/Queries.cpp",
+        "self_contact/Sources.cpp",
+    ],
+    hdrs = ["SelfContactSurfaceBinding.h", "SelfContactSurfaceTypes.h", "self_contact/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":q4_surface_mapping",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_src/elements:shell_physical_owner_values",
+        "//lib_src/elements:shell_batch_plasticity_binding",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:source_identity_index",
+    ],
+)
+
+cc_library(
+    name = "broadphase_sweep",
+    hdrs = ["HydroelasticBroadphaseTypes.cuh", "HydroelasticCollisionTypes.cuh", "broadphase/Sweep.h"],
+)
+
+cc_library(
+    name = "self_contact_broadphase_values",
+    srcs = ["self_contact_broadphase/Layout.cpp"],
+    hdrs = ["SelfContactBroadphase.h", "SelfContactBroadphaseTypes.h",
+            "self_contact_broadphase/Layout.h", "self_contact_broadphase/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":broadphase_sweep", ":self_contact_surface_binding", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "self_contact_broadphase_device",
+    srcs = ["self_contact_broadphase/Kernels.cu", "self_contact_broadphase/Sort.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":self_contact_broadphase_values"],
+)
+
+cc_library(
+    name = "self_contact_broadphase",
+    srcs = ["SelfContactBroadphase.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_broadphase_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+cc_library(
+    name = "rigid_normal_response",
+    hdrs = ["RigidNormalResponse.h", "RigidNormalResponseBounds.h"],
+    deps = [":q4_contact_integration", "//lib_src/constraints:nodal_rigid_group_step_math"],
+)
+
+cuda_library(
+    name = "planar_mesh_contact_device",
+    srcs = ["PlanarMeshContactDevice.cu"],
+    hdrs = ["PlanarMeshContact.h", "PlanarMeshContactStorage.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":surface_contact_primitives", ":planar_wall_geometry", "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cc_library(
+    name = "planar_mesh_contact",
+    srcs = ["PlanarMeshContact.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_mesh_contact_device"],
+)
+
+cc_library(
+    name = "surface_contact_primitives",
+    hdrs = [
+        "SurfaceContactGeometry.h",
+        "SurfaceContactLaw.h",
+        "SurfaceContactMass.h",
+        "SurfaceContactTypes.h",
+    ],
+)
+
+cc_library(
+    name = "q4_surface_mapping",
+    hdrs = ["Q4SurfaceMapping.h", "Q4SurfaceMass.h"],
+    deps = [":surface_contact_primitives"],
+)
+
+cc_library(
+    name = "planar_wall_geometry",
+    srcs = ["PlanarWallGeometry.cpp", "PlanarWallBox.cpp"],
+    hdrs = ["PlanarWallGeometry.h", "PlanarContactTypes.h", "PlanarWallBox.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":surface_contact_primitives"],
+)
+
+cc_library(
+    name = "q4_contact_integration",
+    hdrs = ["Q4ContactBounds.h", "Q4ContactIntegrationTypes.h", "Q4ContactIntegration.h", "Q4IntegralMeasure.h"],
+    deps = [":q4_surface_mapping"],
+)
+
+cc_library(
+    name = "prepared_planar_wall_query",
+    srcs = ["PreparedPlanarWallQuery.cpp"],
+    hdrs = ["PreparedPlanarWallQuery.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_wall_geometry", ":q4_contact_integration"],
+)
+
+cc_library(
+    name = "surface_material_measure",
+    srcs = ["SurfaceMaterialMeasure.cpp"],
+    hdrs = ["SurfaceMaterialMeasure.h", "SurfaceMaterialBounds.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_contact_integration"],
+)
+
+cc_library(
+    name = "q4_rectangular_integration",
+    hdrs = ["Q4RectangularIntegrationTypes.h", "Q4RectangularIntegration.h"],
+    deps = [":q4_contact_integration"],
+    tags = ["manual"],  # Explicit opt-in qualification backend; scalar stays default.
+)
+
+cc_library(
+    name = "q4_planar_geometry",
+    srcs = ["Q4PlanarGeometry.cpp", "Q4PlanarSweepGeometry.cpp"],
+    hdrs = ["Q4PlanarGeometry.h", "Q4PlanarSweepGeometry.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_wall_geometry", ":q4_contact_integration"],
+)
+
+cc_library(
+    name = "prescribed_surface_interval",
+    hdrs = ["PrescribedSurfaceInterval.h"],
+    deps = [":planar_wall_geometry", ":q4_contact_integration"],
+)
+
+cc_library(
+    name = "t3_contact_integration",
+    hdrs = ["T3ContactIntegration.h", "T3ContactIntegrationTypes.h"],
+    deps = [":surface_material_measure"],
+)
+
+cc_library(
+    name = "q4_parametric_contact_types",
+    hdrs = ["Q4ParametricContact.h"],
+    deps = [":surface_material_measure", ":prescribed_surface_interval", ":q4_planar_geometry", ":q4_rectangular_integration"],
+)
+
+cc_library(
+    name = "prescribed_surface_contact",
+    srcs = ["PrescribedSurfaceContact.cpp"],
+    hdrs = ["PrescribedSurfaceContact.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_parametric_contact_types", ":t3_contact_integration"],
+)
+
+cc_library(
+    name = "q4_parametric_contact",
+    srcs = ["Q4ParametricContact.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_parametric_contact_types", ":prescribed_surface_contact"],
+)
+
+cc_library(
+    name = "nodal_wall_contact",
+    srcs = ["NodalWallContact.cpp", "NodalWallContactEvaluation.cpp", "NodalWallWeightStartup.cpp"],
+    hdrs = ["NodalWallContact.h", "NodalWallContactPoint.h", "NodalWallContactReduction.h", "NodalWallWeightLimits.h", "NodalWallWeightStartup.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_parametric_contact", "//lib_src/solvers:explicit_step_stability", "//lib_utils:bounded_startup_array", "//lib_utils:source_identity_index"],
+)
+
+cuda_library(
+    name = "nodal_wall_contact_device",
+    srcs = ["NodalWallContactDevice.cu"],
+    hdrs = [
+        "NodalWallContactDevice.h",
+        "NodalWallContactStorage.h",
+        "NodalWallContactArena.h",
+        "NodalWallContactIncidence.h",
+        "NodalWallContactState.h",
+        "NodalWallContactResultIO.h",
+        "NodalWallContactDiagnostics.h",
+        "NodalWallContactDiagnosticIdentity.h",
+        "NodalWallContactKernels.cuh",
+        "NodalWallContactScatter.h",
+        "NodalWallContactEvaluation.cuh",
+    ],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/elements:shell_collection_limits", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly", "//lib_utils:bounded_arena", "//lib_src/solvers:nodal_native_physical_coefficients"],
+)
+
+cc_library(
+    name = "nodal_wall_contact_owner",
+    srcs = ["NodalWallContactModel.cpp", "NodalWallContactArena.cpp", "NodalWallContactReadback.cpp", "NodalWallContactIncidence.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_wall_contact_device"],
+)
+
+cc_library(
+    name = "q4_prescribed_planar_contact",
+    srcs = ["Q4PrescribedPlanarContact.cpp"],
+    hdrs = ["Q4PrescribedPlanarContact.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_planar_geometry", ":q4_rectangular_integration", ":prescribed_surface_interval"],
+)
+
+cc_library(
+    name = "q4_planar_stiffness",
+    hdrs = ["Q4PlanarStiffness.h"],
+    deps = [":q4_planar_geometry"],
+)
+
+cuda_library(
+    name = "q4_planar_contact_device",
+    srcs = ["Q4PlanarContactDevice.cu"],
+    hdrs = ["Q4PlanarContact.h", "Q4PlanarContactStorage.h", "Q4PlanarContactDiagnostics.h", "Q4PlanarContactBackend.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = [":q4_planar_stiffness", ":q4_rectangular_integration", "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cc_library(
+    name = "q4_planar_contact",
+    srcs = ["Q4PlanarContact.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_planar_contact_device"],
+)
+
+cuda_library(
+    name = "hydroelastic_broadphase",
+    srcs = ["HydroelasticBroadphase.cu"],
+    hdrs = [
+        "HydroelasticBroadphase.cuh",
+        "HydroelasticBroadphaseFunc.cuh",
+        "HydroelasticCollisionTypes.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcudart"],
+    deps = [
+        ":broadphase_sweep",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "hydroelastic_narrowphase",
+    srcs = ["HydroelasticNarrowphase.cu"],
+    hdrs = [
+        "HydroelasticCollisionTypes.cuh",
+        "HydroelasticNarrowphase.cuh",
+        "HydroelasticNarrowphaseFunc.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcudart"],
+    deps = [
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cc_library(
+    name = "collision_system_interface",
+    hdrs = ["CollisionSystemBase.h"],
+    copts = ["--std=c++17"],
+)
+
+cc_library(
+    name = "hydroelastic_patch_collision_system",
+    srcs = ["HydroelasticPatchCollisionSystem.cc"],
+    hdrs = ["HydroelasticPatchCollisionSystem.h"],
+    copts = ["--std=c++17"],
+    deps = [
+        ":collision_system_interface",
+        ":hydroelastic_broadphase",
+        ":hydroelastic_narrowphase",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "deme_mesh_collision_system",
+    srcs = ["DemeMeshCollisionSystem.cu"],
+    hdrs = ["DemeMeshCollisionSystem.h"],
+    copts = ["--std=c++17", "-O3"],
+    linkopts = ["-lcudart"],
+    deps = [
+        ":collision_system_interface",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:surface_trimesh",
+        "@dem_engine//:dem_engine_headers",
+        "//third_party:dem_engine",
+        "@eigen//:eigen",
+    ],
+)
+
+# Explicit complete physical/CIN source profile. Legacy device owner stays closed.
+cuda_library(
+    name = "nodal_wall_mapped_device",
+    srcs = ["nodal_wall_mapped/Operations.cu"],
+    hdrs = ["NodalWallMappedContact.h", "nodal_wall_mapped/Storage.h", "nodal_wall_mapped/Layout.h",
+            "nodal_wall_mapped/Kernels.cuh", "nodal_wall_mapped/Evaluation.cuh",
+            "nodal_wall_mapped/ResponseTypes.h", "nodal_wall_mapped/ResponseIncidence.h",
+            "nodal_wall_mapped/ResponseValues.h", "nodal_wall_mapped/Response.cuh",
+            "nodal_wall_mapped/RemovalEvents.h", "nodal_wall_mapped/RemovalEvents.cuh",
+            "nodal_wall_mapped/AssemblyValidation.h", "nodal_wall_mapped/AssemblyValidation.cuh",
+            "nodal_wall_mapped/ObserverTypes.h", "nodal_wall_mapped/ObserverValues.h", "nodal_wall_mapped/ObserverReduction.cuh",
+            "nodal_wall_mapped/IntervalTypes.h", "nodal_wall_mapped/IntervalProof.h",
+            "nodal_wall_mapped/IntervalValues.h", "nodal_wall_mapped/IntervalFinalizer.h",
+            "nodal_wall_mapped/IntervalReduction.cuh",
+            "nodal_wall_mapped/ScatterNode.h", "nodal_wall_mapped/Scatter.cuh",
+            "nodal_wall_mapped/NodeStatus.h", "nodal_wall_mapped/NodeStatus.cuh"],
+    deps = [":nodal_wall_contact_device", ":rigid_normal_response", "//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/elements:shell_batch_publication", "//lib_src/elements:shell_physical_owner",
+            "//lib_src/elements:shell_mapped_footprint",
+            "//lib_src/assembly:shell_physical_binding", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
+            "//lib_utils:bounded_startup_array"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "nodal_wall_mapped",
+    srcs = ["nodal_wall_mapped/Layout.cpp", "nodal_wall_mapped/Forecast.cpp",
+            "nodal_wall_mapped/Sources.cpp", "nodal_wall_mapped/Initialize.cpp",
+            "nodal_wall_mapped/Activity.cpp", "nodal_wall_mapped/Readback.cpp"],
+    deps = [":nodal_wall_mapped_device", ":nodal_wall_contact_owner", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+# Selected source-derived TYPE25 normal packet; no Fortran/runtime dependency.
+cc_library(
+    name = "radioss_type25_assembly",
+    hdrs = ["RadiossType25Assembly.h"] + glob(["radioss_type25/assembly/*.h"]),
+    deps = [":radioss_type25_friction", "//lib_utils:ordered_node_incidence"],
+)
+
+cc_library(
+    name = "radioss_type25_assembly_device_values",
+    hdrs = ["RadiossType25AssemblyDevice.h"] + glob(["radioss_type25/assembly/device/*.h"]),
+    deps = [":radioss_type25_assembly", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_library(
+    name = "radioss_type25_assembly_kernels",
+    srcs = ["radioss_type25/assembly/device/Kernels.cu"],
+    deps = [":radioss_type25_assembly_device_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_assembly_device",
+    srcs = glob(["radioss_type25/assembly/device/*.cpp"]),
+    deps = [":radioss_type25_assembly_device_values", ":radioss_type25_assembly_kernels"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_normal",
+    hdrs = ["RadiossType25Normal.h"] + ["radioss_type25/" + name for name in [
+        "Types.h", "NativeConstants.h", "NormalResponse.h", "Units.h", "UnitConversions.h",
+    ]],
+    deps = ["//lib_src/math:quaternion", "//lib_src/math:host_device"],
+)
+
+cc_library(
+    name = "radioss_type25_friction",
+    hdrs = ["RadiossType25Friction.h"] + ["radioss_type25/" + name for name in [
+        "FrictionTypes.h", "IsotropicResponse.h", "HistoryPhase.h", "FrictionUnits.h",
+    ]],
+    deps = [":radioss_type25_normal", "//lib_src/math:fixed3_operations"],
+)
+
+cc_library(
+    name = "radioss_type25_local_geometry",
+    hdrs = ["RadiossType25LocalGeometry.h"] + ["radioss_type25/" + name for name in [
+        "GeometryTypes.h", "NormalFields.h", "RawGeometry.h", "GeometryUnits.h", "GeometryHistory.h",
+        "geometry/Prepare.h", "geometry/General.h", "geometry/Boundary.h", "geometry/Sharp.h",
+        "geometry/HistoryChecks.h", "geometry/HistoryRow.h",
+    ]],
+    deps = [":radioss_type25_friction", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_coefficients",
+    hdrs = ["RadiossType25Coefficients.h"] + ["radioss_type25/" + name for name in [
+        "CoefficientTypes.h", "CoefficientUnits.h", "NodalContributionTypes.h",
+        "coefficients/Common.h", "coefficients/MainShell.h", "coefficients/MainSolid.h", "coefficients/ReaderSolidMain.h",
+        "coefficients/Nodal.h", "coefficients/Pair.h", "coefficients/UnitFactors.h",
+        "coefficients/SolidNodal.h", "coefficients/SpringNodal.h", "coefficients/CoatedMain.h",
+    ]],
+    deps = [":radioss_type25_normal", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_main_geometry",
+    hdrs = ["RadiossType25MainGeometry.h"] + glob(["radioss_type25/main_geometry/*.h"]),
+    deps = [":radioss_type25_coefficients", ":radioss_type25_normal_math",
+            "//lib_src/elements/solid_common:brick_frame", "//lib_src/math:scalar_bits"],
+)
+
+# Native TYPE25 diagnostic search maintenance; no mechanical/candidate authority.
+cc_library(
+    name = "radioss_type25_search_values",
+    srcs = ["radioss_type25/search/Layout.cpp", "radioss_type25/search/Preflight.cpp"],
+    hdrs = ["RadiossType25Search.h"] + glob(["radioss_type25/search/*.h"]),
+    deps = [":radioss_type25_normal", ":surface_contact_primitives", "//lib_src/math:fixed3_operations", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_search_device",
+    srcs = ["radioss_type25/search/Kernels.cu"],
+    deps = [":radioss_type25_search_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_search",
+    srcs = ["radioss_type25/search/Initialize.cpp", "radioss_type25/search/Maintenance.cpp", "radioss_type25/search/Checks.cpp"],
+    deps = [":radioss_type25_search_device", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+# Native candidate numerics and bounded GPU staging; no physical publication.
+cc_library(
+    name = "radioss_type25_candidate_values",
+    srcs = ["radioss_type25/candidates/Layout.cpp"],
+    hdrs = ["RadiossType25Candidates.h"] + glob(["radioss_type25/candidates/*.h", "radioss_type25/candidates/*.cuh"]),
+    deps = [":radioss_type25_search_values", "//lib_src/math:scalar_bits"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_candidate_device",
+    srcs = ["radioss_type25/candidates/Kernels.cu", "radioss_type25/candidates/CompactGrid.cu"],
+    deps = [":radioss_type25_candidate_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_candidates",
+    srcs = ["radioss_type25/candidates/Initialize.cpp", "radioss_type25/candidates/Inventory.cpp"],
+    deps = [":radioss_type25_candidate_device", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_selection",
+    hdrs = ["RadiossType25Selection.h"] + ["radioss_type25/selection/" + name for name in [
+        "Types.h", "Prepare.h", "Projection.h", "RetainedBoundary.h", "RetainedDecision.h", "Retained.h",
+        "ContinuationTypes.h", "ContinuationPrepare.h", "ContinuationBoundary.h", "Continuation.h",
+        "ClassificationValues.h", "BoundaryValues.h",
+        "NewImpactTypes.h", "ImpactIntersection.h", "NewImpactPrepare.h", "NewImpactProjection.h",
+        "NewImpactBoundary.h", "NewImpactDecision.h", "NewImpact.h",
+    ]],
+    deps = [":radioss_type25_local_geometry", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_lifecycle",
+    hdrs = ["RadiossType25Lifecycle.h"] + glob(["radioss_type25/selection/lifecycle/*.h"]),
+    deps = [":radioss_type25_selection", ":radioss_type25_coefficients", ":surface_contact_primitives"],
+)
+
+
+# Contact lifecycle support is separate from its numerical transaction owner.
+cc_library(
+    name = "radioss_type25_runtime_types",
+    hdrs = ["radioss_type25/runtime/Types.h"],
+    deps = [":radioss_type25_lifecycle", ":radioss_type25_assembly_device_values",
+            ":radioss_type25_search_values", ":radioss_type25_candidate_values",
+            ":radioss_type25_fixed_main_startup", ":radioss_type25_normal_activation"],
+)
+cc_library(
+    name = "radioss_type25_physical_main_source",
+    srcs = glob(["radioss_type25/runtime/physical_main/*.cpp"]),
+    hdrs = ["radioss_type25/runtime/PhysicalMainSource.h"] + glob(["radioss_type25/runtime/physical_main/*.h"]),
+    deps = [":radioss_type25_runtime_types", ":radioss_type25_surface_source",
+            "//lib_src/assembly:shell_physical_binding", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_source",
+    srcs = glob(["radioss_type25/activity_source/*.cpp"]),
+    hdrs = glob(["radioss_type25/activity_source/*.h"]),
+    deps = [":radioss_type25_physical_main_source", "//lib_src/elements/type45:model",
+            "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_operand_values",
+    hdrs = glob(["radioss_type25/activity_operands/*.h"]),
+    deps = [":radioss_type25_activity_source", ":radioss_type25_current_normals",
+            "//lib_src/elements:shell_batch_publication", "//lib_utils:bounded_arena"],
+)
+cuda_library(
+    name = "radioss_type25_activity_operand_kernels",
+    srcs = ["radioss_type25/activity_operands/Kernels.cu"],
+    deps = [":radioss_type25_activity_operand_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_activity_operands",
+    srcs = glob(["radioss_type25/activity_operands/*.cpp"]),
+    deps = [":radioss_type25_activity_operand_values", ":radioss_type25_activity_operand_kernels"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+# Concrete common-owner native TYPE25 transaction. Native qualification oracles
+# are never a transitive dependency of these complete production libraries.
+cc_library(
+    name = "radioss_type25_runtime_values",
+    srcs = ["radioss_type25/runtime/Layout.cpp", "radioss_type25/runtime/Source.cpp", "radioss_type25/runtime/MovingSource.cpp", "radioss_type25/runtime/MixedSource.cpp"],
+    hdrs = ["RadiossType25Transaction.h"] + glob(["radioss_type25/runtime/*.h", "radioss_type25/runtime/diagnostics/*.h"],
+        exclude = ["radioss_type25/runtime/Types.h", "radioss_type25/runtime/PhysicalMainSource.h"]),
+    deps = [":radioss_type25_physical_main_source", ":radioss_type25_activity_operands", ":radioss_type25_runtime_types",
+            ":radioss_type25_surface_source", "//lib_utils:source_identity_index", ":radioss_type25_lifecycle", ":radioss_type25_candidates", ":radioss_type25_search",
+            ":radioss_type25_assembly_device", "//lib_src/elements:shell_batch_publication",
+            "//lib_src/elements:shell_physical_owner", "//lib_utils:bounded_arena",
+            ":radioss_type25_current_normals", ":radioss_type25_initial_state", "//lib_src/math:scalar_bits"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_runtime_kernels",
+    srcs = ["radioss_type25/runtime/Kernels.cu", "radioss_type25/runtime/NormalStage.cu", "radioss_type25/runtime/ActivityTransfer.cu"],
+    deps = [":radioss_type25_runtime_values"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_transaction",
+    srcs = ["radioss_type25/runtime/ActivityPlanning.cpp", "radioss_type25/runtime/ActivityRuntime.cpp",
+            "radioss_type25/runtime/Planning.cpp", "radioss_type25/runtime/GeneralPlanning.cpp", "radioss_type25/runtime/InitialSeed.cpp",
+            "radioss_type25/runtime/Initialize.cpp", "radioss_type25/runtime/Transaction.cpp",
+            "radioss_type25/runtime/GroupSeal.cpp"],
+    deps = [":radioss_type25_runtime_kernels", "//lib_src/solvers:nodal_trial_identity"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_nodal_seed",
+    srcs = ["radioss_type25/source_nodal/Build.cpp", "radioss_type25/source_nodal/Correction.cpp", "radioss_type25/source_nodal/OrderCertificate.cpp"],
+    hdrs = ["RadiossType25NodalSeed.h", "RadiossType25NodalCorrection.h"] + glob(["radioss_type25/source_nodal/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_coefficients", ":radioss_type25_search_values", "//lib_utils:bounded_arena", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_shell_source",
+    srcs = glob(["radioss_type25/source_shells/*.cpp"]),
+    hdrs = ["RadiossType25ShellSource.h"] + glob(["radioss_type25/source_shells/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_nodal_seed", ":radioss_type25_coefficients", ":radioss_type25_search_values",
+            "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "radioss_type25_gap_source",
+    srcs = glob(["radioss_type25/source_gaps/*.cpp"]),
+    hdrs = ["RadiossType25GapSource.h"] + glob(["radioss_type25/source_gaps/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_shell_source", ":radioss_type25_fixed_main_startup"],
+)
+
+# Bounded host startup topology and distinct native float normal stages.
+cc_library(
+    name = "radioss_type25_fixed_main_startup",
+    srcs = glob(["radioss_type25/startup/*.cpp"]),
+    hdrs = ["RadiossType25FixedMainStartup.h"] + glob(["radioss_type25/startup/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_coefficients", ":radioss_type25_local_geometry", ":radioss_type25_normal_math",
+            ":radioss_type25_search_values", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_search_startup",
+    srcs = glob(["radioss_type25/search_startup/*.cpp"]),
+    hdrs = ["RadiossType25SearchStartup.h"] + glob(["radioss_type25/search_startup/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_current_normals", ":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "radioss_type25_tied_removal",
+    srcs = glob(["radioss_type25/tied_removal/*.cpp"]),
+    hdrs = ["RadiossType25TiedRemoval.h"] + glob(["radioss_type25/tied_removal/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_search_startup"],
+)
+
+# Current native TAGNOD/ACTNOR value producer; no float-normal or owner state.
+cc_library(
+    name = "radioss_type25_normal_activation",
+    hdrs = ["RadiossType25NormalActivation.h"] + glob(["radioss_type25/normal_activation/*.h"]),
+    deps = [":radioss_type25_lifecycle"],
+)
+
+# Shared native REAL4 leaves; no state owner or reference-library linkage.
+cc_library(
+    name = "radioss_type25_normal_math",
+    hdrs = glob(["radioss_type25/normal_math/*.h"]),
+    deps = [":radioss_type25_local_geometry", "//lib_src/math:fixed3_operations", "//lib_src/math:host_device"],
+)
+cc_library(
+    name = "radioss_type25_current_normals",
+    srcs = glob(["radioss_type25/current_normals/*.cpp"]),
+    hdrs = ["RadiossType25CurrentNormals.h"] + glob(["radioss_type25/current_normals/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_fixed_main_startup", ":radioss_type25_normal_activation",
+            ":radioss_type25_normal_math", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena", "//lib_utils:bounded_startup_array"],
+)
+
+cc_library(
+    name = "radioss_type25_surface_source",
+    srcs = glob(["radioss_type25/source_surfaces/*.cpp"]),
+    hdrs = ["RadiossType25SurfaceSource.h"] + glob(["radioss_type25/source_surfaces/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_nodal_seed", ":radioss_type25_search_values", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "radioss_type25_interface_surface",
+    srcs = glob(["radioss_type25/surface_interface/*.cpp"]),
+    hdrs = ["RadiossType25InterfaceSurface.h"] + glob(["radioss_type25/surface_interface/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_surface_source", ":radioss_type25_fixed_main_startup"],
+)
+
+# Native Starter initial-history arithmetic; no source/owner admission or oracle link.
+cc_library(
+    name = "radioss_type25_initial_state_values",
+    hdrs = ["RadiossType25InitialStateValues.h"] + glob(["radioss_type25/initial_state/*.h"]),
+    deps = [":radioss_type25_selection", ":radioss_type25_lifecycle", ":radioss_type25_candidate_values"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "radioss_type25_initial_source_host",
+    srcs = ["radioss_type25/initial_source/Admission.cpp", "radioss_type25/initial_source/Host.cpp",
+            "radioss_type25/initial_source/Layout.cpp"],
+    hdrs = ["RadiossType25InitialState.h"] + glob(["radioss_type25/initial_source/*.h"]),
+    deps = [":radioss_type25_initial_state_values", ":radioss_type25_tied_removal", ":radioss_type25_candidates", ":radioss_type25_current_normals"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_library(
+    name = "radioss_type25_initial_source_kernels",
+    srcs = ["radioss_type25/initial_source/Operands.cu", "radioss_type25/initial_source/Inventory.cu",
+            "radioss_type25/initial_source/Rows.cu"],
+    deps = [":radioss_type25_initial_source_host"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "radioss_type25_initial_state",
+    srcs = ["radioss_type25/initial_source/Prepare.cpp"],
+    deps = [":radioss_type25_initial_source_kernels"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

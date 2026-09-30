@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "resident_shell_tab1_host_check",
+    srcs = ["BindingTest.cpp", "StateTest.cpp", "Source.h", "Values.h", "HostFamily.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_failure_binding",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements/qeph:batch",
+        "//lib_src/elements/t3:batch",
+        "//lib_utest/qualification/shell_placement_force:placement_force_test_support",
+        "@googletest//:gtest_main",
+    ],
+)

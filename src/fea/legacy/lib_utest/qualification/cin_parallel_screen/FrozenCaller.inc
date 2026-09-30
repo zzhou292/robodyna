@@ -1,0 +1,165 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#include "NodalCinRuntime.h"
+#include "cin_advance/Node.h"
+#include "cin_advance/ForceInputs.h"
+#include "FrozenScreen.h"
+#include "NodalCinStorage.h"
+#include "NodalRigidGroupStorage.h"
+#include "NodalNodeStep.h"
+#include "NodalForceStageCaptureLayout.h"
+#include "ExplicitNodalStep.h"
+#include "../constraints/NodalRigidGroupCandidate.h"
+#include "../constraints/tied_shell/runtime/CinMotionStage.h"
+
+namespace tl::fea {
+namespace {
+namespace cin = constraints::tied_shell::cin;
+__device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::uint32_t node) {
+  control->status = status;
+  control->node = node;
+  if (status == NodalStatus::StepTooLarge) control->limit.dt = 0;
+}
+__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared) {
+  auto* control = input.control;
+  const auto* accepted = input.accepted;
+  auto* loads = input.loads;
+  const auto* fixed = input.fixed;
+  const auto model = input.model;
+  auto* tail = input.tail;
+  auto* work = input.work;
+  auto* patches = input.patches;
+  const auto* activity = input.activity;
+  const auto groups = input.groups;
+  const auto durations = input.durations;
+  const auto epoch = input.epoch;
+  const auto attempt = input.attempt;
+  const auto* rotation_present = input.rotation_present;
+  const auto structural = input.structural;
+  if (control->status != NodalStatus::Ok) return;
+  if (!inputs_prepared && !cin_advance::force_inputs::CheckPrefix(input)) return;
+  const auto n = model.node_count;
+  const auto r = model.row_count;
+  const cin::ForceTrial force{accepted, loads, tail, tail+n, work, work+n,
+    tail+4*n, tail+4*n+r, tail+4*n+2*r, work+2*n, patches, activity};
+  auto stage = inputs_prepared ? cin::detail::TransferForceTrial(model, force)
+      : cin::PrepareForceTrial(model, force);
+  if (!stage) {
+    Fail(control, stage.status == cin::StageStatus::PendingReleaseEligibility
+        ? NodalStatus::MissingStepAdmission : NodalStatus::InvalidOutput, stage.node);
+    return;
+  }
+  if (structural.profile != NodalCinStructuralProfile::Disabled) {
+    const cin_screen_frozen::Sources sources{accepted, tail, tail+n, work, work+n,
+      fixed+n, fixed+2*n, rotation_present, model.dependent_nodes, groups, n,
+      durations.previous_drift_dt};
+    cin_screen_frozen::Result result;
+    std::uint32_t invalid_node = UINT32_MAX;
+    if (!cin_screen_frozen::Screen(sources, structural.factor, result, invalid_node)) {
+      Fail(control, NodalStatus::InvalidOutput, invalid_node);
+      return;
+    }
+    // Preserve the complete native/analytical bound for both success and a
+    // rejected step. This existing owner control is not a second row proof.
+    control->limit.dt = result.minimum_dt;
+    if (durations.drift_dt > result.minimum_dt) {
+      control->status = NodalStatus::StepTooLarge;
+      control->node = result.limiting_node;
+      return;
+    }
+  }
+  *input.failure = cin_advance::NoFailure;
+}
+__global__ void AdvanceOrdinaryCin(const cin_advance::Input input) {
+  if (input.control->status != NodalStatus::Ok) return;
+  for (std::uint32_t node = blockIdx.x*blockDim.x+threadIdx.x;
+       node < input.model.node_count; node += blockDim.x*gridDim.x) {
+    const auto status = cin_advance::AdvanceNode(input, node);
+    if (status != NodalStatus::Ok) {
+      atomicMin(input.failure, cin_advance::EncodeFailure(node, status));
+    }
+  }
+}
+__global__ void CompleteCin(const cin_advance::Input input) {
+  auto* control = input.control;
+  const auto* accepted = input.accepted;
+  auto* trial = input.trial;
+  auto* loads = input.loads;
+  const auto model = input.model;
+  auto* work = input.work;
+  auto* patches = input.patches;
+  const auto groups = input.groups;
+  const auto durations = input.durations;
+  const auto maximum_angle = input.maximum_angle;
+  const auto capture = input.capture;
+  if (control->status != NodalStatus::Ok) return;
+  const auto failure = *input.failure;
+  if (failure != cin_advance::NoFailure) {
+    Fail(control, cin_advance::FailureStatus(failure), cin_advance::FailureNode(failure));
+    return;
+  }
+  const auto n = model.node_count;
+  const auto r = model.row_count;
+  auto* acceleration = work+3*n;
+  auto* angular_acceleration = work+6*n;
+  cin::StageReport stage;
+  // Source/owner admission proves CIN has no rigid member intersection. The
+  // existing native aggregate and member arithmetic therefore stays unchanged.
+  for (std::uint32_t g = 0; g < groups.group_count; ++g) {
+    const auto result = capture.node
+      ? rigid::PrepareGroupCandidate<true>(groups, g, accepted, trial, loads, n, durations, capture)
+      : rigid::PrepareGroupCandidate<false>(groups, g, accepted, trial, loads, n, durations);
+    if (result.status != rigid::StepStatus::Success) {
+      Fail(control, result.status == rigid::StepStatus::RotationLimit
+          ? NodalStatus::StepTooLarge : NodalStatus::InvalidOutput, result.node);
+      return;
+    }
+    const auto range = groups.groups[g];
+    for (std::uint32_t i = 0; i < range.count; ++i) {
+      const auto node = groups.members[range.offset+i].node;
+      const auto status = nodal_detail::PrepareNodeOrientation(accepted, trial, node, n,
+          durations.drift_dt, maximum_angle, false);
+      if (status != NodalStatus::Ok) {
+        Fail(control, status, node);
+        return;
+      }
+    }
+  }
+  stage = cin::RecoverMotionTrial(model, {patches, trial+3*n, trial+6*n,
+      acceleration, angular_acceleration});
+  if (!stage) {
+    Fail(control, NodalStatus::InvalidOutput, stage.node);
+    return;
+  }
+  for (std::uint32_t row = 0; row < r; ++row) {
+    const auto node = model.rows[row].secondary;
+    for (unsigned a = 0; a < 3; ++a) {
+      const auto j = 3*node+a;
+      trial[j] = accepted[j]+durations.drift_dt*trial[3*n+j];
+      // A dependent is not a prescribed fixed DOF. Its transfer is represented
+      // by the retained native loads, not a fabricated fixed reaction.
+      trial[13*n+j] = 0;
+      trial[16*n+j] = 0;
+      if (!std::isfinite(trial[j])) {
+        Fail(control, NodalStatus::InvalidOutput, node);
+        return;
+      }
+    }
+    const auto status = nodal_detail::PrepareNodeOrientation(accepted, trial, node, n,
+        durations.drift_dt, maximum_angle, false);
+    if (status != NodalStatus::Ok) {
+      Fail(control, status, node);
+      return;
+    }
+  }
+  if (capture.node) {
+    for (std::uint32_t node = 0; node < n; ++node) {
+      if (groups.member_nodes && groups.member_nodes[node]) continue;
+      for (unsigned a = 0; a < 3; ++a) {
+        capture.node[3*node+a] = acceleration[3*node+a];
+        capture.node_rotation[3*node+a] = angular_acceleration[3*node+a];
+      }
+    }
+  }
+}
+} // namespace
+

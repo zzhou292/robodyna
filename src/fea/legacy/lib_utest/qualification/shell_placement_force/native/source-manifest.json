@@ -1,0 +1,65 @@
+{
+  "schema": "tl.shell-placement-force-native-adaptation.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete native Q/T family callbacks with IPOS0/3/4, native GEO199 coefficients, native shifted NIP3 and actual M%SSP, distinct TAB1 histories. No production math used as oracle.",
+  "inputs": [
+    {
+      "path": "lib_utest/qualification/shell_tab1_force/native/prepare_sources.py",
+      "bytes": 3224,
+      "sha256": "540f27164aa233327e93215161c8784547c2765e52a7b8d2cef316b9a3196853"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_force/native/source-manifest.json",
+      "bytes": 2121,
+      "sha256": "1f71f2ab1c584773bcbc0970a02b714a9a11708d8bc6e3f6beccafb82fd2f1f0"
+    },
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/prepare_sources.py",
+      "bytes": 4110,
+      "sha256": "16c0dbdd624b5e0504db61d2e0545fd0723c19096fe3e66d8de7806c9522f2cc"
+    },
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/source-manifest.json",
+      "bytes": 8611,
+      "sha256": "363321aabbf0332247a4c702a5a3ab02d7bf3eb71e2f3d7370d7b8b23016b9ff"
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredQephSection.F",
+      "bytes": 3136,
+      "sha256": "eadc9c4ab8ff70e4ada5d7cb789efe850103f1d48d9a9c3078a953ef45c0fdae"
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredT3Section.F",
+      "bytes": 2774,
+      "sha256": "dd5cbc44ef918763699cf9c17911842a2314907e3c510d134bb9440b6ed82c4e"
+    },
+    {
+      "path": "lib_utest/qualification/shell_placement_force/native/NativeCaller.F90",
+      "bytes": 1929,
+      "sha256": "9e115c1d1685c25139f249a2f6a189426b3f118c32193d1b4ac37eb6002e61d9"
+    },
+    {
+      "path": "lib_utest/qualification/shell_placement_force/native/NativePacket.h",
+      "bytes": 665,
+      "sha256": "4de4425315f3da370b3a8263dd80ae8083884597eb2ecab7b2c0c0bea21d10a6"
+    },
+    {
+      "path": "lib_utest/qualification/shell_placement_force/native/NativePacket.cpp",
+      "bytes": 3310,
+      "sha256": "a35c9e116a02b1e9e86d7be5e6d52902881b430d4c925bb0cf62a8d88c12c3e1"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_force/native/NativePacketValues.h",
+      "bytes": 1097,
+      "sha256": "7a4ae97ab964c67c4938ae29b55c0d798517fb720f8528b9dfbdd69f63a6b243"
+    }
+  ],
+  "generated": {
+    "PlacedQephMaterial.F": "e17cb8a2ccb20a585682d33fdb2f69dec4d0217166b63ece8ab9ffc088d66390",
+    "PlacedTab1QephSection.F": "1c9f6f0b98c67db5ce2fe33bee1b40585eda0baabe93b898f6a96953c22b2bb2",
+    "PlacedTab1QephForce.F": "7e48e100e5e9c21ac9b9bf5b4cb0a89ae145840363038cb7c2fd6f7423d95c2a",
+    "PlacedT3Material.F": "8542e3fa16987995a05d4ee8df7c8ebaccffed52a4f15fca8b2bba459133edd6",
+    "PlacedTab1T3Section.F": "22c8a2d707b2ce2f374571733505503ae1aa15b95b1c7966cff42a52c17402b1",
+    "PlacedTab1T3Force.F": "9422511f318a49c09c7d6bf046c097990487490c43fc31bb080320f7290ea238"
+  }
+}

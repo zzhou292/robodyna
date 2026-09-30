@@ -1,0 +1,375 @@
+{
+  "schema": "qbat-measurement-operands-source-v1",
+  "baseline_commit": "b1415d3f425eefb99ff93b2a254de1f9e88abcb4",
+  "scope": "Fresh per-parent operands; exact source/channel/slot fold. No numerical reductions or force/history changes.",
+  "files": [
+    {
+      "path": "lib_src/elements/ShellBatchArenaLayout.h",
+      "bytes": 3119,
+      "sha256": "5f22c9cd1a8aadbd0dbd040d43a9d305ef4f3e3fdbe277c2eaf3c2506dedbd93"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFields.h",
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85"
+    },
+    {
+      "path": "lib_src/elements/qbat/BUILD.bazel",
+      "bytes": 3875,
+      "sha256": "6f2067bc5dea377739b29febd394504f54dad9b0983646bfd4cfb46191fe1779",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3856,
+          "prior_sha256": "af0a6e83253b08579bfe63032d35a30052b964f4ebb67e1103a7c5adb5438236",
+          "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchAdvance.h",
+      "bytes": 3041,
+      "sha256": "bab877e6388f4fdd9a19b111517f9a35c64a225522e251ba4e0413c87e96d05c",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1880,
+          "prior_sha256": "e981390ed6eaea1d28ca19d8e51b98b981c55b695b1b9059315ba53a98482c2b",
+          "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.cpp",
+      "bytes": 2130,
+      "sha256": "109951b63322bcd7c599d965082a729770117419faabfea5b60e547574e62707"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.h",
+      "bytes": 2252,
+      "sha256": "7c4c77f3dee635e7d42ec9d4d7ea1cccc477da923442dea8a4bf23d1d8ad3a11",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2094,
+          "prior_sha256": "8654104b598c47f160e7ed5ce1354b173b10ad77ed8210725d9c3037aeb8b8b5",
+          "inherited_commit": "df75651ca54bef54f19057c8e78308cc68820fa1",
+          "unchanged_base": "69a1d05c182797c1788cb81adbf89efee74dce83",
+          "reason": "Root reviewed inherited constrained uniform/empty-CIN startup, global LAW1 profile forwarding, or projection-metric sizeof accounting; unchanged in this force-storage slice. Mismatch evidence retained in qbat-private-trial-inherited-source-mismatches-1.json."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchKernels.cu",
+      "bytes": 6138,
+      "sha256": "b165c69328d8ee73a16fbc314507b6dab4ce83d64ffddce1cc87e56ee21455f6",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6129,
+          "prior_sha256": "755bfffbf597f3192d96a2867a05aef759a7e2f6760f0ceddc36cac186d62f77",
+          "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchOperations.cu",
+      "bytes": 6165,
+      "sha256": "cc0694fcf62164568669091afb13a3575fe2f9663078d876bc3ec800b942f30f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchPublication.cpp",
+      "bytes": 4610,
+      "sha256": "e237b382c6a38d3e271ef70cb2b2a8a6d0df39f297e8b01debd7ad53bcedc924"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchReadback.cu",
+      "bytes": 7289,
+      "sha256": "6a1212e1ba93d0a09f152b94a61d87678b89c7881cb61558214cd967ae1e72b0"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchResultChecks.h",
+      "bytes": 5294,
+      "sha256": "d6d332ba3ef01a1339107bf73311508553162d01688d4b0139e4a0ec4d603af0"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchStorage.h",
+      "bytes": 2957,
+      "sha256": "71bc0b667a644918ce5526e7125cfcf8b5de3183b08839bcdccc541661350bc0"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
+      "bytes": 2217,
+      "sha256": "abd0315ef78872c9140fca53a9efea9516ade062b3e113ef2b3da1804fd138aa"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyTypes.h",
+      "bytes": 1485,
+      "sha256": "f7447afa15f15b65280e8cf07ef8f239e6c4e76017cd1db0bb1526d09dac0440"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Initialize.cu",
+      "bytes": 2856,
+      "sha256": "36454816bc179958e82d8c5794942ab66fea36d21f60fc8dc5e1653f27f078c4",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2695,
+          "prior_sha256": "77bbc0e3c5e59038bea0458308053c7c6f9e65565a3536df3b0deacaa29838cf",
+          "inherited_commit": "f20c859ece37f9ba87472c24ebb604f4a8128fa7",
+          "unchanged_base": "69a1d05c182797c1788cb81adbf89efee74dce83",
+          "reason": "Root reviewed inherited constrained uniform/empty-CIN startup, global LAW1 profile forwarding, or projection-metric sizeof accounting; unchanged in this force-storage slice. Mismatch evidence retained in qbat-private-trial-inherited-source-mismatches-1.json."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.cu",
+      "bytes": 2240,
+      "sha256": "917ee0b0eecf83016ab119985d256abd4ae38b31a93d226d0df04a2404733fc3"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.h",
+      "bytes": 2923,
+      "sha256": "4c997f59b21ea029d8a1e9d0f01b4074780ab1476ec26371459b8f244a0747f5"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementTypes.h",
+      "bytes": 870,
+      "sha256": "659d98ac1bae71f88e79105876e5e8d3d4aa5a2ca9b0e45c4010f592ac93e8d1"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementValues.h",
+      "bytes": 4261,
+      "sha256": "0be8b8b4d0a0e5a67a1012f280a4b06062fc9d025effe46eb58c00cae21d748e"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Startup.cpp",
+      "bytes": 6254,
+      "sha256": "28f554db175fb58237d42db83e42cbcc96be69587b4080bcc455e1bc483d77d7",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6010,
+          "prior_sha256": "e929456063f3c9712567287bf6821cc098d2fd395c6c5448abffd92e9964caaa",
+          "inherited_commit": "f20c859ece37f9ba87472c24ebb604f4a8128fa7",
+          "unchanged_base": "69a1d05c182797c1788cb81adbf89efee74dce83",
+          "reason": "Root reviewed inherited constrained uniform/empty-CIN startup, global LAW1 profile forwarding, or projection-metric sizeof accounting; unchanged in this force-storage slice. Mismatch evidence retained in qbat-private-trial-inherited-source-mismatches-1.json."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped/OwnerFixture.cu",
+      "bytes": 2447,
+      "sha256": "a348b5d9f903ff3bd5aef013f4aa5024037fc784e691e295408c14f60b9d709c"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped/OwnerFixture.h",
+      "bytes": 1964,
+      "sha256": "d55e0e64e648f19d91a898e7acdb6c9ec8e62c30f38180146ca773fc137a8d97"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/BUILD.bazel",
+      "bytes": 1129,
+      "sha256": "e4c9ce678ca5fdabf83b152305df2f1b102bc4faca98d217e8af39e30e94021a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/SerialCandidate.cuh",
+      "bytes": 6168,
+      "sha256": "bb3f0539bdce52c0d3718cd1a426d255aee9b54c40a13891997867d76805ad06"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/SerialMeasure.h",
+      "bytes": 3456,
+      "sha256": "d637d814db465edee2fc75aa363bc1c610ed296286cafc4ab2561bab5e2e9c13"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/source-manifest.json",
+      "bytes": 22147,
+      "sha256": "74058dfa0619abc6af0698b5d09093eeff81288f6f6001137c36a284077c21f5",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 15000,
+          "prior_sha256": "7a4293e04acb72d315c5a751f1f07609a6294f3cea5ebd4d91e4b59b34ae43a1",
+          "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+        },
+        {
+          "prior_bytes": 19102,
+          "prior_sha256": "c7ad1b1a86a62b54c745c6a4aa1ce4334eb78b044bb5ba505ba3382a0f416bfd",
+          "reason": "Transitive QBAT source receipt update for the five specifically root-reviewed inherited69 source records; frozen serial baselines retained."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/verify_sources.py",
+      "bytes": 1276,
+      "sha256": "b939d35ac34b718a8ecb8469a7d58268d1f4dce04f902185f915043cbb5748eb",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1166,
+          "prior_sha256": "fb5aa6c1391898dd91777a018fd7095fd0269efdd8901b84d56a724410f3a07f",
+          "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+        },
+        {
+          "prior_bytes": 1276,
+          "prior_sha256": "3c65b220a30fda27d8734ecfb83fc5249053239db007d6a193ddbb77f2a1fb23",
+          "reason": "Transitive QBAT source receipt update for the five specifically root-reviewed inherited69 source records; frozen serial baselines retained."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/BUILD.bazel",
+      "bytes": 1148,
+      "sha256": "0530e05ee9ab2ccec4b02f7d8adf06b1d06911a5ab67e82ee09bff8b6d15f547"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/CMakeLists.txt",
+      "bytes": 2812,
+      "sha256": "f868bec5f5f65df0c3fff7ade6733ae7200d0b5f6ae8a920f8c0c7f8c1603f5b"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/CudaTest.cu",
+      "bytes": 2822,
+      "sha256": "79f4745762369cd73beacc907f9cf0f3e12cf94a08d5148d8325966ddea95592"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/DeviceFixture.cuh",
+      "bytes": 3753,
+      "sha256": "96a0161b31e75a0da020fa2592b15dad03be2f2c9900ed27b2fede11d778075d",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3765,
+          "prior_sha256": "c9b8ec01e125b51b3b42a24c91a81172014f0dfdf4f22993bb92ef25e97cc530",
+          "reason": "Test-only precision correction: ResultValues already returns uint64_t bit patterns; compare directly without converting through Bits(double). This strengthens exact complete-packet comparison and changes no production formula or tolerance."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/Fixture.h",
+      "bytes": 4671,
+      "sha256": "005b5593ed63b9f08f88cbe0862f937e651e3d461d0819b59d820cf063b26000"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/HostTest.cpp",
+      "bytes": 5630,
+      "sha256": "ae12cf12027b01d181abf83fd539feb6d8d477010a682b9dc7330e22e0f8b033"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/LayoutTest.cpp",
+      "bytes": 2418,
+      "sha256": "06c98d457806f389435c4dfa00600c5bc719f48958b1f7c73888844fdccad209"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/OwnerTest.cu",
+      "bytes": 4259,
+      "sha256": "71bf21e3a0c7befa7ad2cba8d85f329213366238daae53a68976a1ebad3173ba",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3698,
+          "prior_sha256": "a568a445bfc9a4f2f08b72c162543c403f15543fd80d9fd5b871ae3a8749817c",
+          "reason": "Fixture-only correction after root qbat-measurement-root-tests-1: InitializeMapped leaves live binding false until AssembleMappedAccepted. Capture the virgin accepted baseline after Rig::Prepare, keep failed-candidate accepted-state comparison, and explicitly check initial NotBound preserves both outputs. No production or numerical change."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/README.md",
+      "bytes": 6407,
+      "sha256": "82d818cd89b7560520ea43182b93eab8309c62a9aab374242c39600f08c9d7db",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 5067,
+          "prior_sha256": "40851f72f99105db9089335e27ecf8f068006bd12555b17fde6c9e1936ad2512",
+          "reason": "Clarify standalone QBAT startup admission versus composed app retained/max-temporary accounting after actual V5 forecast: local +714040 B partitions into temporary +714008 B and retained +32 B; a count-only actual-layout query bounds the QBAT phase below the existing QEPH phase. Documentation only."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/SerialFinalize.h",
+      "bytes": 1006,
+      "sha256": "237720241e141cef87453b9aa0b0f3391818ccce1ba140d93848c6e5183cf619"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/baseline.json",
+      "bytes": 1126,
+      "sha256": "001495d7d1a3b8c7104f73188b7584a79c74ac8b50825c04d34a381af4facc05"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/frozen/Measurement.cu.txt",
+      "bytes": 2694,
+      "sha256": "f2e289b4f8af3a93212d4c84e7ca884b5c38bb6396be628849c823c95d1ed9a1"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/frozen/Measurement.h.txt",
+      "bytes": 1515,
+      "sha256": "90c74c7e0261c4118df87c8686f2cd4794074267c5d4a8ec163a08110188590a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/frozen/QbatBatchMeasure.h.txt",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_resident/BUILD.bazel",
+      "bytes": 1303,
+      "sha256": "8e7334b2d9b88620a62390e134628ee1d8fcee961054a5a8fd30a85294b863b8"
+    },
+    {
+      "path": "lib_utils/BoundedArena.h",
+      "bytes": 3257,
+      "sha256": "9db4481ad7e0c4fc77414dd8fec8677f7d968b293f025e2569acaeea59d18f0a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/footprint-receipt.json",
+      "bytes": 2510,
+      "sha256": "76b0fd60884e64f66bbafb73d91781eec1c17c7eeee0dc894800402bb5c2733f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatForce.h",
+      "bytes": 1387,
+      "sha256": "f0f9267e3b1589db04fa604e3227f015e7fbdb0b31adbfa64344bcc48039278c"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatHistory.h",
+      "bytes": 1598,
+      "sha256": "f2c733a7f2678122844b6bd8732b42dc4c9f09a5ac8636eaa2ee42914e13ec4b"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatForceBody.h",
+      "bytes": 5752,
+      "sha256": "c54f0b7c8e3c3a12bb6a5d661cd95de000a0df6e27ac4060abd6aa7d994544d5"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/QbatBatchAdvance.h.baseline",
+      "bytes": 1880,
+      "sha256": "e981390ed6eaea1d28ca19d8e51b98b981c55b695b1b9059315ba53a98482c2b"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/QbatBatchKernels.cu.baseline",
+      "bytes": 6129,
+      "sha256": "755bfffbf597f3192d96a2867a05aef759a7e2f6760f0ceddc36cac186d62f77"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/QbatForce.h.baseline",
+      "bytes": 5385,
+      "sha256": "c6bda24a0fd1b55727c150c68917f79530dda97c8d1430459b61aca04f8b8880"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/QbatHistory.h.baseline",
+      "bytes": 1232,
+      "sha256": "73f06b0b0704a119ad323d7ab8b4048a490231e9eb186ef193433d3ad3f7098a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/baseline.json",
+      "bytes": 805,
+      "sha256": "aa4058311d60989f7a31b66ad486853b549caa64e38b784fa3bb2c5b5391b786"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_private_trial/verify_force_body.py",
+      "bytes": 4236,
+      "sha256": "9b9a74dbe726bfe4da174bd86b7d67b343bf625ac0a2d8a5c089b26f1b26e906"
+    }
+  ],
+  "numerical_leaf_refactor": {
+    "base_commit": "69a1d05c182797c1788cb81adbf89efee74dce83",
+    "proof": "lib_utest/qualification/qbat_private_trial/verify_force_body.py",
+    "reason": "Reviewed QBAT private-trial storage refactor: public force text now delegates to a shared numerical body; resident kernel writes only its existing unpublished trial row. Exact prior force/body/status/launch proof is qbat_private_trial/verify_force_body.py. All original native donors, frozen serial caller baselines and tolerances remain unchanged; no claim that prior public force text is byte-identical."
+  }
+}

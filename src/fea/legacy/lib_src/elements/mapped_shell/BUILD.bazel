@@ -1,0 +1,33 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//lib_src/elements/mapped_connector:__pkg__", "//lib_src/elements/type13/resident:__pkg__", "//lib_src/elements/type25:__pkg__", "//lib_utest/qualification/connector_mapped_assembly:__pkg__", "//lib_src/elements/qeph:__pkg__", "//lib_src/elements/t3:__pkg__", "//lib_src/elements/qbat:__pkg__"])
+cc_library(
+    name = "values",
+    visibility = ["//lib_src/elements/mapped_connector:__pkg__", "//lib_src/elements/type13/resident:__pkg__", "//lib_src/elements/type25:__pkg__", "//lib_utest/qualification/connector_mapped_assembly:__pkg__", "//lib_src/elements/qeph:__pkg__", "//lib_src/elements/t3:__pkg__", "//lib_src/elements/qbat:__pkg__", "//lib_utest/qualification/cin_master_gather:__pkg__"],
+    hdrs = ["Incidence.h", "NodeGather.h"],
+    deps = ["//lib_src/elements:shell_nodal_stiffness", "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/solvers:nodal_force_assembly"],
+)
+cc_library(
+    name = "kernels",
+    hdrs = ["Kernels.cuh"],
+    deps = [":values", "//lib_src/elements:shell_batch_plasticity_storage",
+            "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cc_library(
+    name = "observer_values",
+    hdrs = ["ObserverTypes.h", "ObserverSums.h"],
+    deps = ["//lib_src/math:fixed3"],
+)
+cc_library(
+    name = "observer_tree",
+    hdrs = ["ObserverTree.cuh"],
+    deps = [":observer_values"],
+)
+
+cc_library(
+    name = "activity_layout",
+    hdrs = ["ActivityLayout.h"],
+    deps = ["//lib_utils:bounded_arena"],
+    visibility = ["//visibility:public"],
+)

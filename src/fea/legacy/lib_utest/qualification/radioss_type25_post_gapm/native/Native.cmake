@@ -1,0 +1,15 @@
+include_guard(GLOBAL)
+if(NOT TARGET type25_startup_oracle OR NOT TARGET type25_current_normals_oracle)
+  message(FATAL_ERROR "Post-GAPM oracle requires complete existing startup/current references")
+endif()
+if(NOT CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+  message(FATAL_ERROR "Post-GAPM native oracle qualifies pinned GNU Fortran semantics")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_LIST_DIR}/Wrapper.F90" "${CMAKE_CURRENT_LIST_DIR}/check.py"
+  "${CMAKE_CURRENT_LIST_DIR}/source-manifest.json")
+target_sources(type25_startup_oracle PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Wrapper.F90")
+add_library(type25_post_gapm_oracle STATIC "${CMAKE_CURRENT_LIST_DIR}/../NativeOracle.cpp")
+target_link_libraries(type25_post_gapm_oracle PUBLIC type25_startup_oracle)
+target_compile_features(type25_post_gapm_oracle PUBLIC cxx_std_17)
+target_compile_options(type25_post_gapm_oracle PRIVATE -fno-fast-math -ffp-contract=off)

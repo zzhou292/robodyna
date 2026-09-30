@@ -1,0 +1,34 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Original COMP_2 phase-list construction over a bounded source-shaped view.
+! The caller evaluates the complete returned list before taking the next snapshot.
+      SUBROUTINE rd_lifecycle_membership(
+     1 counts, phase, candidates_n, candidates_e,
+     2 main_global, markers, indices, count) bind(C)
+      use iso_c_binding
+      use lifecycle_foreign
+      implicit none
+      integer(c_int), intent(in) :: counts(3), phase
+      integer(c_int), intent(in) :: candidates_n(counts(3)), candidates_e(counts(3))
+      integer(c_int), intent(in) :: main_global(counts(2)), markers(4,counts(1))
+      integer(c_int), intent(out) :: indices(counts(3)), count
+      type :: source_view
+      integer(c_int), allocatable :: cand_opt_n(:), cand_opt_e(:), irtlm(:), mseglo(:)
+      end type
+      type(source_view) :: intbuf_tab
+      integer :: i, n, l, mg, i_stok, i_stok_glo, nsn, nin, jtask, nthread
+      integer :: index2(counts(3))
+      intbuf_tab%cand_opt_n = candidates_n
+      intbuf_tab%cand_opt_e = candidates_e
+      intbuf_tab%irtlm = reshape(markers, [4*counts(1)])
+      intbuf_tab%mseglo = main_global
+      nsn=counts(1); nin=1; jtask=1; nthread=1
+      i_stok_glo=counts(3); i_stok=0
+      indices=0
+      if (phase == 1) then
+@CONTINUATION@
+      else
+@NEW_IMPACT@
+      end if
+      count=i_stok
+      indices(1:i_stok)=index2(1:i_stok)
+      end subroutine

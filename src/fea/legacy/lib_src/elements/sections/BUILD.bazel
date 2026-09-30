@@ -1,0 +1,49 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "shell_layered_j2",
+    hdrs = ["ShellLayeredJ2.h", "ShellLayeredJ2Work.h", "ShellLayeredJ2ForceAdapter.h"],
+    deps = [":shell_nip3", ":shell_layered_work", "//lib_src/materials:tabulated_shell_plasticity"],
+)
+
+cc_library(
+    name = "shell_nip3",
+    hdrs = ["ShellNip3.h"],
+    deps = ["//lib_src/elements:shell_reference_placement"],
+)
+cc_library(
+    name = "shell_layered_law1",
+    hdrs = ["ShellLayeredLaw1.h"],
+    deps = [":shell_nip3", "//lib_src/materials:shell_elastic_law1_point"],
+)
+
+cc_library(
+    name = "shell_layered_work",
+    hdrs = ["ShellLayeredWork.h"],
+    deps = [":shell_nip3", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "shell_layered_j2_failure",
+    hdrs = ["ShellLayeredJ2Failure.h", "ShellLayeredJ2FailureUpdate.h", "ShellLayeredJ2FailureWork.h", "ShellLayeredJ2FailureForceAdapter.h"],
+    deps = [":shell_layered_j2", ":shell_layered_failure_work", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+)
+
+cc_library(
+    name = "shell_layered_failure_work",
+    hdrs = ["ShellLayeredFailureWork.h"],
+    deps = [":shell_layered_work"],
+)
+cc_library(
+    name = "shell_layered_tab1",
+    hdrs = ["ShellLayeredTab1.h", "ShellLayeredTab1Work.h", "ShellLayeredTab1ForceAdapter.h"],
+    deps = [":shell_layered_j2", ":shell_layered_failure_work", "//lib_src/materials/failure:shell_tab1_constant_failure"],
+)
+
+cc_library(
+    name = "shell_law44_membrane_point",
+    hdrs = ["ShellLaw44MembranePoint.h"],
+    deps = ["//lib_src/materials:law44_membrane", "//lib_src/materials:law44_zero_shear", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+)

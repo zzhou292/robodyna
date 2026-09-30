@@ -1,0 +1,1213 @@
+{
+  "baseline_commit": "301a750a3786593ad9f358a5eb7c2ad905bf4063",
+  "scope": "Exact owner row validation/maxima only; complete frozen seal/finalizer. No changed arithmetic, force assembly, CIN stage or accepted transaction.",
+  "maximum_device_tail_bytes": 8192,
+  "new_device_allocations": 0,
+  "new_per_step_allocations": 0,
+  "files": [
+    {
+      "path": "lib_src/collision/SurfaceContactMass.h",
+      "bytes": 8476,
+      "sha256": "f7c6e09529c86f41a4581311e6deacd3fce35c4b05dff6f1d210304710e2fb28"
+    },
+    {
+      "path": "lib_src/collision/SurfaceContactTypes.h",
+      "bytes": 7384,
+      "sha256": "ee19965627faacc6d68314a9b24a0fac817117b2be5be22e077349ccbdd14568"
+    },
+    {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 8562,
+      "sha256": "16843f9c7888e4516cd2e9ee4c81eb79bb7b7403516e8ac4fd4c69861731d816",
+      "prior_receipts": [
+        {
+          "bytes": 8057,
+          "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 8134,
+          "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8167,
+          "sha256": "3cde395775be0880252bfebbdd104aeb3cc3bea0355fcfd3b113655c59ad21cd",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 8057,
+              "prior_sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8134,
+          "prior_sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 8249,
+          "prior_sha256": "84a7f54306659eb8a67479ed793cca54052942a567f96d22be562f742383662a",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 8244,
+          "prior_sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 8359,
+          "prior_sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 8359,
+          "prior_sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 8384,
+          "prior_sha256": "bb184c82d5759caa672ce3f74cdc8b031754b08c4c6756db7f0743af5d285851",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 8383,
+          "prior_sha256": "2b2c8628d6eaa36e309e1caea57ff6226a8bb572237fe6d9bd067c827fa69310",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 8408,
+          "prior_sha256": "512cdc99ea9cfb41144004313911c27c78aaa2f373ff905679edc5168cc6c7b7",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8359,
+          "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8465,
+          "sha256": "99118e36f8b9abd597233bfbfaa2a6a7888133213ba5f6bdfab4c068e340ceca"
+        }
+      }
+    },
+    {
+      "path": "lib_src/solvers/CMakeLists.txt",
+      "bytes": 1839,
+      "sha256": "74ece8ce48359c7305a712f8fd391d67460b19bb21d0babb7d5a6345078727a9",
+      "prior_receipts": [
+        {
+          "bytes": 1734,
+          "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 1766,
+          "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/CMakeLists.txt",
+          "bytes": 1762,
+          "sha256": "ef35bd575b2c0d06f9d0ff176c4861b7fc14e4f12614f4637c4732448ae9f25d",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 1734,
+              "prior_sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1766,
+          "prior_sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 1790,
+          "prior_sha256": "b3c24f75896dc415d76e22e83d78878a7115c135a124878b4a5b509f2cc807a1",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1794,
+          "prior_sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1818,
+          "prior_sha256": "8586678eaecd7283aee844dfed74cfa5d6ff59583e8bc91c350372f467f307e4",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/ExplicitStepStability.h",
+      "bytes": 11698,
+      "sha256": "8b874449644ef0eae59619725e0d6685863330062c0f75efa31990a10bd450be",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 11009,
+          "prior_sha256": "f0d34a3cf0dd5592d5ef3b538456a89ffb6537b92e83ff63288dbafc676b66af",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 11698,
+          "prior_sha256": "8b874449644ef0eae59619725e0d6685863330062c0f75efa31990a10bd450be",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 11009,
+          "prior_sha256": "f0d34a3cf0dd5592d5ef3b538456a89ffb6537b92e83ff63288dbafc676b66af",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/FENodalState.cu",
+      "bytes": 26637,
+      "sha256": "8c114f9c62b931c3ff1f70e79edc7f938638b21161b4128730bb97ab1ad1297a",
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/FENodalState.cu",
+          "bytes": 26959,
+          "sha256": "506afa6522c80601bab58902c55493c061510823dea64207677baa73ddb08190",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 26929,
+              "prior_sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 26929,
+          "prior_sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 26929,
+          "prior_sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 26959,
+          "prior_sha256": "506afa6522c80601bab58902c55493c061510823dea64207677baa73ddb08190",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 26637,
+          "prior_sha256": "8c114f9c62b931c3ff1f70e79edc7f938638b21161b4128730bb97ab1ad1297a",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 26959,
+          "prior_sha256": "506afa6522c80601bab58902c55493c061510823dea64207677baa73ddb08190",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/FENodalState.h",
+      "bytes": 20833,
+      "sha256": "e7ffba1a9dd231b73776b9254e0d9f14ed0d55bc4615f277ea9e23e9bf82573f",
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/FENodalState.h",
+          "bytes": 20833,
+          "sha256": "e7ffba1a9dd231b73776b9254e0d9f14ed0d55bc4615f277ea9e23e9bf82573f",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 20539,
+              "prior_sha256": "ed367e027406d48e371add484419488e87430be7b5c1866802f386c1f1cb36d7",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 20539,
+          "prior_sha256": "ed367e027406d48e371add484419488e87430be7b5c1866802f386c1f1cb36d7",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 20539,
+          "prior_sha256": "ed367e027406d48e371add484419488e87430be7b5c1866802f386c1f1cb36d7",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/FENodalStateStorage.h",
+      "bytes": 4483,
+      "sha256": "75709454919221bb35edc4d488f18be4460b84d22916182a3726e4f54f369081",
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/FENodalStateStorage.h",
+          "bytes": 4483,
+          "sha256": "75709454919221bb35edc4d488f18be4460b84d22916182a3726e4f54f369081",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 4407,
+              "prior_sha256": "4235ba6fe6bc7d566b60c13e3d7f2fe7b2eba3208b0af87f146f169c9e0c7167",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4407,
+          "prior_sha256": "4235ba6fe6bc7d566b60c13e3d7f2fe7b2eba3208b0af87f146f169c9e0c7167",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4407,
+          "prior_sha256": "4235ba6fe6bc7d566b60c13e3d7f2fe7b2eba3208b0af87f146f169c9e0c7167",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
+      "bytes": 3977,
+      "sha256": "4e2e243008fb44903f9fea74d08e8e9026a5423e17bd9b48d09b5294a76454fc"
+    },
+    {
+      "path": "lib_src/solvers/NodalStateLayout.h",
+      "bytes": 2294,
+      "sha256": "f15feba71d695a69e5fdc31432fb1e2222dc32ef490413f5b54dbfd4ecd2698e"
+    },
+    {
+      "path": "lib_src/solvers/nodal_seal/RowLayout.h",
+      "bytes": 1263,
+      "sha256": "173c8e7bfccc99d9bbc51395d2c301ff03ef828bfb85067d77fa401b9c094a99"
+    },
+    {
+      "path": "lib_src/solvers/nodal_seal/RowValues.h",
+      "bytes": 3226,
+      "sha256": "d62999960f3d69ec4ecbea60d8a7e0e2da8e6b2aff05ab00b3aa6a01c5d89547"
+    },
+    {
+      "path": "lib_src/solvers/nodal_seal/Rows.cuh",
+      "bytes": 1204,
+      "sha256": "b6adb34cfe6eff47e55ff5b00aeb82e77d67d20358444752fa4f50590b069ab6"
+    },
+    {
+      "path": "lib_src/solvers/nodal_seal/Validation.cuh",
+      "bytes": 3858,
+      "sha256": "baaed32e8a84e85c61965703cf79faa3d513623ee68d790602a43dff224b45b4"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+      "bytes": 95412,
+      "sha256": "f353684b1e2617c61cbcc473c00c070f6ba9a092eb4715b49a3a8b0b25175f73",
+      "prior_receipts": [
+        {
+          "bytes": 17533,
+          "sha256": "5e92db8fd95281989a8749faae3d5e89b79abd147caeb98ec142d51e2e7329fa",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 23270,
+          "sha256": "7bfd9c9c0fa2cafd6af075cccf7cbc4fe84c8be4865a9dd4920fdc56c0bc0d58",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 23833,
+          "sha256": "da9a4c3e8b768786eb2f027ddc7fd67073916f9becba319ad5c47321a9d19380",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+          "bytes": 22073,
+          "sha256": "5cc14604632436da537648c51382ffaf5c4366e1b45d7dcc99564d342bfda96a",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 17533,
+              "prior_sha256": "5e92db8fd95281989a8749faae3d5e89b79abd147caeb98ec142d51e2e7329fa",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 23833,
+          "prior_sha256": "da9a4c3e8b768786eb2f027ddc7fd67073916f9becba319ad5c47321a9d19380",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 30947,
+          "prior_sha256": "7f0c4bee2b10f276b294a8458f2a394507270db7dab4028fc075ce020a45b703",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 46167,
+          "prior_sha256": "e1978b7c309241db3eeab6ae67e4e970159de4b476c3fb72f78be5f4eecb0c34",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 68487,
+          "prior_sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 68487,
+          "prior_sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 69514,
+          "prior_sha256": "94670be9ad1906db3db1bf48da765a13553c45747af32ca4354025674a7fe70b",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 75571,
+          "prior_sha256": "289bd00510a688697651b30683fe09504256d2469eaa26621abdd27e0d010ece",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 80389,
+          "prior_sha256": "b57a74303427ae74a53574440b5bdd83cbd63dd3d81914254c6ff1792bab5c9e",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+          "bytes": 68487,
+          "sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+          "bytes": 83536,
+          "sha256": "44b9ded0376227783e0b00b445e06de57259988500698bd3990caedd3ddd6b0d"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+      "bytes": 3992,
+      "sha256": "3e4f7b7d2fdbbbe8fe63b9611cb55ecce7a2279db5f60772c8782dfabe538e86",
+      "prior_receipts": [
+        {
+          "bytes": 3992,
+          "sha256": "5c01f6c23f21432d63f6cd8a67dd417c4d5cd2a956af245ab95186b072df32eb",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 3992,
+          "sha256": "78728beb25c5441a43d92763f3ce7d9c18c8a5196ba635268acd6f635d7f9e76",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 3992,
+          "sha256": "817e81501c262516db45ceff7a4192a9237433ded42c61541187ff04e6d6f589",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+          "bytes": 3992,
+          "sha256": "9894994c18f717b5b1afcecf0a072af2a9fe712c1d9b9f17a01a9863ba3bd17f",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 3992,
+              "prior_sha256": "5c01f6c23f21432d63f6cd8a67dd417c4d5cd2a956af245ab95186b072df32eb",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "817e81501c262516db45ceff7a4192a9237433ded42c61541187ff04e6d6f589",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "b1467c58924d551a8a6e989858c5df45053b190a3335a31c7da94c756926e85b",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "465aafc1071efc21721326590c8464e8e963bbf1c8e50192697c1e5798e3d755",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "f93678a8d4eab39b7589359fcb4f397332642f605ac237fa83366e1ed50fbbc4",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "5efa6800d993c91ef359d99a90555492cda7241ea88851baf94dfc2e71d2c76b",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "346b8dcb1d5fc542b07122daa28bda5392abf56045c8748ea97ed222b396a7f4",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+          "bytes": 3992,
+          "sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+          "bytes": 3992,
+          "sha256": "5c2398cc8c5bac70d4f8dbb1ba9691cace042df9c0c2d1c51b880b51c3c58a29"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+      "bytes": 114232,
+      "sha256": "ca5267d848c795ace51e8d1b0276d52c51c9eadb0bc9ca99d9312f5d677caab7",
+      "prior_receipts": [
+        {
+          "bytes": 23168,
+          "sha256": "a3e2e5e6133a31f076543c0fec76a0558736db95935a4fc44031f337c303a7d2",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 30246,
+          "sha256": "7fa3d2d9e1f64a8ba619aa31c8266fb8f4e89fa6075a551ace6904ddb27e5a05",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 31372,
+          "sha256": "682bafc14749d1e69a78c4f9dce52d20e5916dc6af31af8fc6189f865a0fe1c6",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+          "bytes": 29262,
+          "sha256": "199be6ab84df8b6685e86c0699a3e7b59ff96dceae640399efdb27457247d4da",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 23168,
+              "prior_sha256": "a3e2e5e6133a31f076543c0fec76a0558736db95935a4fc44031f337c303a7d2",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 31372,
+          "prior_sha256": "682bafc14749d1e69a78c4f9dce52d20e5916dc6af31af8fc6189f865a0fe1c6",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 39137,
+          "prior_sha256": "137fc83cf465a222f526d26d3d666fdb3f724f9bd2f051878c537e92c43dc3c3",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 55449,
+          "prior_sha256": "4ceba665570631dd6b2294412916bbe7bb7f5af220cfab9acb7bfa1bc8f5b3ab",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 80723,
+          "prior_sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 80723,
+          "prior_sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 82778,
+          "prior_sha256": "8dd71a3788e1f3c71834d38ea3dd21c86cb754e15e57d97f5a677f81fe42de78",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 88954,
+          "prior_sha256": "0c15877ed5941f76fa0b47e86f742ea5b13f5165be1be770405baee3ad49a8f4",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 96685,
+          "prior_sha256": "160ca3eabc7cceab75b931ec7ccfc8a8cc04eda1ef44502c2910b080f69a9d05",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+          "bytes": 80723,
+          "sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+          "bytes": 100619,
+          "sha256": "ddeaf7db4e7bf9879f2cdb5ccd407e08820fa350a5476e009c2f79edf5e740a8"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+      "bytes": 3905,
+      "sha256": "189e53417e09e1cda5fbe56db750a73f48868ad1e6f8352815087ab62eaaffe8",
+      "prior_receipts": [
+        {
+          "bytes": 3905,
+          "sha256": "60a2b492732321596aa16328d405e5dee2e588ee1ff8ac72aeaae56861f8d44d",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 3905,
+          "sha256": "57ed6499bbe014bf792941940a60fe380c5c86caa533772783746d8f5d8f2655",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 3905,
+          "sha256": "939550c8a7310738bd3722befc0fdd1b59f8822183c74697c627334348cdac8f",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+          "bytes": 3905,
+          "sha256": "db67b1ec5362ce3ff74a97355d0795a7f17e5fd27d1b27d6c9cda8546b6d7276",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 3905,
+              "prior_sha256": "60a2b492732321596aa16328d405e5dee2e588ee1ff8ac72aeaae56861f8d44d",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "939550c8a7310738bd3722befc0fdd1b59f8822183c74697c627334348cdac8f",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "8547adc5f43402ac4366acc0fc81a02cefa48929161951fb927b37b79e3a3f41",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "f8323cdf2c36215abf808e539a1ea80cbdf0d1d25e37bb1231368e67c4d6a52b",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "59498b516c0827aa46ee36259ac90cb1328733edaff058479f815f8454b87ba7",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "ec9dffadf95e6ddfca4b5c06c2379ebcf810796b02f960d1af5f652939918b3b",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "3ffeae37e692088ad6d4f2024726575f4da5dc0bb228ac4f210690297fb52b15",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+          "bytes": 3905,
+          "sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+          "bytes": 3905,
+          "sha256": "f21ecd900dff44d14e24a6b0fc81f1aca3fb545a0710737f8ef4d36148cdc32a"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+      "bytes": 91525,
+      "sha256": "8b3f0e1648b5248d3443b36f7584fc1a54f05e73f3395fe5d0fe5ee63b60f9b5",
+      "prior_receipts": [
+        {
+          "bytes": 19445,
+          "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 24317,
+          "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 25262,
+          "sha256": "36d0545065acd5f6849508f6513657db627e7d486dae7ae9754d54e304623d80",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+          "bytes": 23984,
+          "sha256": "9bb5efdee40145c3f53aa91913f59afa46eaf448e888d6f1f06b56a3a355844f",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 19445,
+              "prior_sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 25262,
+          "prior_sha256": "36d0545065acd5f6849508f6513657db627e7d486dae7ae9754d54e304623d80",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 32017,
+          "prior_sha256": "918ade858ac5a78b75317a590607160499f92de1e1f32157fcd0d4674f3828af",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 45851,
+          "prior_sha256": "8174a46fa85a429405478f28b5462363a4c700560c463f5f1053fefdb0adc177",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 67879,
+          "prior_sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 67879,
+          "prior_sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 68221,
+          "prior_sha256": "32b6ed004f2d0d6fa22a302e1fe33d98140f08578d7bf6c490f81eb6c5c398ec",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 75332,
+          "prior_sha256": "66ce3bb3067571123ee5e8e70807e990345cb4ef3c0fca472a41b16533b44010",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 78209,
+          "prior_sha256": "6a70a416fd65139421370e7343b5e7ea10612b47003a2ff7f925e482169a3001",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+          "bytes": 67879,
+          "sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+          "bytes": 80569,
+          "sha256": "d4807a952aa374fb3ce4bf82cd4136c1dfeeccf568ba96c100f7e3368ac85685"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+      "bytes": 6798,
+      "sha256": "271618d9aeabb554d193b6c7a2c06c59c8b1b86167d063e991a4695270f8926c",
+      "prior_receipts": [
+        {
+          "bytes": 6798,
+          "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "ee594b2376af94b904b27d7a961c9e7258b1b774850a10cf06454449b53bc872",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+          "bytes": 6798,
+          "sha256": "9fe94222ebae167b2c2b4712615092171b3559d47172a739bd765b92febc48c9",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 6798,
+              "prior_sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "ee594b2376af94b904b27d7a961c9e7258b1b774850a10cf06454449b53bc872",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "d5aaffabbc0ea1142ccb276639d9a98dbc5e44b73f26db76e520a99a2fa1e4db",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "459a248aeb394f8fb4cbd61c163c30d684f2a2d221aec105fe589f2a082bfaae",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "aacd4839528491c02bc9fa31d6efb911f3abcc41b8b66d7efbc8b2516e5b218f",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "587a939b5121fdfbd0ecd95a6c038c591e542b1cac9de11efc26b6c6d9088448",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "2afae6ebbce1483adc4e2598176f56c1f4aa7d27a846a6715d9cf18f3a4a783b",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+          "bytes": 6798,
+          "sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+          "bytes": 6798,
+          "sha256": "5b49f9b0dd9f4b4ca2571ed7fa4a3a0c7d4ce900ba4f1bd680797ba916827eb4"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/BUILD.bazel",
+      "bytes": 1341,
+      "sha256": "6dbc601a38f08593daf297c1a8a98b7fbacb464c9b9ca0c58dd2d22aebe1f76c"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/CMakeLists.txt",
+      "bytes": 3015,
+      "sha256": "560a1b62462e4dd8466e3a3f8e1b5bc95aac9ccac2a42c290d3e7334a3721501"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/CallerTest.cu",
+      "bytes": 6400,
+      "sha256": "9161c766c5d78e76c3c3550e0a2e83851adb3f1ea0ba2c54234f59af155f99c4"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/Compare.h",
+      "bytes": 1065,
+      "sha256": "da290b6bcaafdbfe74adef6537f41a23070416542f436c46bc922394525df75e"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/Frozen.cu",
+      "bytes": 402,
+      "sha256": "20716549ff37b5faccf170d5eec33a97bc8cffe1987142f63580eb2e20d3c75a"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/FrozenTypes.h",
+      "bytes": 1432,
+      "sha256": "aef16767af4b447bb1143ac731fb3b2eb0039aa14fff544e7cd8da94f3b92112"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/HostTest.cpp",
+      "bytes": 5750,
+      "sha256": "b39eedd46db68922c4207e72a71bcb6fcf920ffea03c32969a55aecf7dba7d10"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/OwnerTest.cu",
+      "bytes": 4113,
+      "sha256": "44944c31f9138ad9ec14e68e4de2c41e074ad834188197b468ecd7df2534ac86"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/README.md",
+      "bytes": 4015,
+      "sha256": "fc3db876145a7b63db751190edaaa5eae2ed8f6d213dc5e444937e170166d30c"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/frozen/ExplicitStepStability.h",
+      "bytes": 10391,
+      "sha256": "555e53b8f8396720ebaab009ae2454bbaf1e8691202775bd75e269bc73a760f1"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/frozen/Validation.cuh",
+      "bytes": 2964,
+      "sha256": "03b730acbc1a7a8b566407ccb5e4d0eefeccd139300bda7f38b1c9f5e9af81bf"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/prepare_frozen.py",
+      "bytes": 894,
+      "sha256": "d19a53b83a79c660fb3949a632b1f29e86a08247c730e4f7f31c8add4e84e836"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_vehicle/SealOrderTest.cu",
+      "bytes": 4819,
+      "sha256": "807a0973478d319c88a1e9d8fbf8bc63ff0b63e7b4eeab15ce5b27e09cbc0ffb"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_vehicle/VehicleOwnerFixture.cu",
+      "bytes": 4455,
+      "sha256": "bd161dbeba1e43b53d2c5edab149a98a1370723d2ef4a6dd04d923e57854ee0d"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_vehicle/VehicleOwnerFixture.h",
+      "bytes": 1320,
+      "sha256": "58e2e3716a05e47b33b1fca92ddbc76f12531d8d71358e1f14f0579564ae2fa6"
+    },
+    {
+      "path": "lib_utest/utest_step_stability.cc",
+      "bytes": 18644,
+      "sha256": "f3a6506a9f82b6a42c6bc3f9129ba28b2b642034b73adbba1c70169a499ccecd"
+    },
+    {
+      "path": "lib_utest/utest_step_stability_cuda.cu",
+      "bytes": 7066,
+      "sha256": "ade57cb4c802b90db7abab7425b7a532f8da79439fbbda9057a105f74e8760ee"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4339,
+      "sha256": "a5bdad94e5ef5765be342678ed5e7891a3c3d9e694ed545a28005176bfaf4ff1",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4068,
+          "prior_sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4219,
+          "prior_sha256": "b7f32a4c0059cd236c435cd86cac794b16d618b3cb556d8d9684255c55534d6e",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4188,
+          "prior_sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ],
+      "prior_receipts": [
+        {
+          "bytes": 4068,
+          "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10271,
+      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/witness_proof.py",
+      "bytes": 1078,
+      "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c",
+      "role": "Checked additive witness reversal before unchanged earlier proofs"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/recovery_proof.py",
+      "bytes": 4820,
+      "sha256": "13519f24709f78b48eab0f37685eb4b7cae6739d6b38cfd21536ed6f637ff8df",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4557,
+          "prior_sha256": "ee8cdfbccaee7b07baa5d8eea5a0189fd77c006ccb09e30101d7f6e474f0d9ab",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4677,
+          "prior_sha256": "f6f620a9de13606b96019d066a7f1c3effe0f4aeb55b5785397d4103c47e9b98",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10678,
+      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/CinMotionStage.h",
+      "bytes": 1774,
+      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/TiedPatchMotion.h",
+      "bytes": 2400,
+      "sha256": "abb80f7167c8856aedc660ef633b75c83e39eb0a4cc248db5ceb18c53135247f"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionRows.h",
+      "bytes": 1863,
+      "sha256": "561da2520acb590ca441620e37ff6c3ae609dd6a416cfbd24087a5943f9cbd63"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/RecoveryDrift.h",
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
+      "bytes": 3515,
+      "sha256": "e3767742842156cd2acf6454e29de97a27fc9c8517258aa59689771076d27eca",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2960,
+          "prior_sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3362,
+          "prior_sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/NodalNodeStep.h",
+      "bytes": 2661,
+      "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/RecoveryDrift.h",
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/Recovery.cu",
+      "bytes": 2082,
+      "sha256": "26d05a26cdb721dc713e7b8af184cac366e303abd6ed3587186259e3b97adf48"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10547,
+      "sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/DriftTypes.h",
+      "bytes": 654,
+      "sha256": "3ca2f18d9cdb4c4ac3b5ef9560ed8d71b5e1cec07ca337e753b500d25c39baf8"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/DriftValues.h",
+      "bytes": 2349,
+      "sha256": "cdf5baa9c72afd306255555b3ccff3ffccec34e3655c4a7f75eb43dd8bfdd554"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Drift.cu",
+      "bytes": 1792,
+      "sha256": "42e447058a1c775e3328984be7f2bb7c077e5ef33f0e48149e8ad8e9790dc2d3"
+    },
+    {
+      "path": "lib_src/solvers/nodal_reset/Reset.cuh",
+      "bytes": 1381,
+      "sha256": "3a6979a1c6d1b0140da6735870411b558545b84d48df128ece5b05c2f8ffba66",
+      "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/reset_proof.py",
+      "bytes": 4425,
+      "sha256": "9cf68500ce1146c06e999706853b3fe8cdca00eac2196c9212d377b3d3f5de26",
+      "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change.",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3678,
+          "prior_sha256": "e59201990b8f61de6258c60a5343baac5777090b082cc2ff53c26d0de120f40a",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        }
+      ],
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/nodal_reset_rows/reset_proof.py",
+          "bytes": 4054,
+          "sha256": "929b5dc4a8476b02b8cd0125f467b70802e44f6d46c2a684fc5f885c9f4c67d6"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/baseline.json",
+      "bytes": 613,
+      "sha256": "a32eb6f5c33876551ed1d6b23abf8f4be15d942b27672b21091c0b0a433e918c",
+      "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/frozen/ExplicitStepStability.h",
+      "bytes": 11009,
+      "sha256": "f0d34a3cf0dd5592d5ef3b538456a89ffb6537b92e83ff63288dbafc676b66af",
+      "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+    },
+    {
+      "path": "lib_utest/qualification/nodal_reset_rows/frozen/ResetTrial.cuh",
+      "bytes": 387,
+      "sha256": "144dd8014e0ad50e951dec916a21312dfd6f22012f195c4a717ea91f345c4d2e",
+      "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+    }
+  ],
+  "limiter_integration": {
+    "base": "223d813",
+    "incoming": "994658e",
+    "reason": "Both exact scheduling and optional witness reversals retained; no frozen baseline changes."
+  },
+  "recovery_integration_base": "bf1c6a4",
+  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850",
+  "cooperative_group_integration": {
+    "main_commit": "b1415d3",
+    "cooperative_commit": "c0eed45",
+    "main_manifest": {
+      "bytes": 57263,
+      "sha256": "90c0ce2f4307604fc23d675dff70890caf9fb0fdcf0435ca7f865345de2d6c05"
+    },
+    "cooperative_manifest": {
+      "bytes": 41173,
+      "sha256": "131f89af3db346af8ff193087ba08a2f7900d923b22a77652a0b93f89deaa464"
+    },
+    "scope": "Union of qualified drift/reset and exact cooperative screen, no arithmetic changes; existing histories and strict inverse proofs retained."
+  }
+}

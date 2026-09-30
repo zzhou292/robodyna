@@ -1,0 +1,97 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+#==============================================================
+#==============================================================
+# Project: RoboDyna
+# Author:  Json Zhou
+# Email:   zzhou292@wisc.edu
+# File:    BUILD.bazel
+# Brief:   Bazel build rules for material model headers.
+#==============================================================
+#==============================================================
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "shell_elastic_law1",
+    hdrs = ["ShellElasticLaw1.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "shell_elastic_law1_point",
+    hdrs = ["ShellElasticLaw1Point.h"],
+    deps = [":shell_elastic_law1"],
+)
+
+cc_library(
+    name = "tabulated_shell_plasticity",
+    hdrs = [
+        "TabulatedShellPlasticity.h",
+        "detail/TabulatedShellPlasticityCurve.h",
+        "detail/TabulatedShellPlasticityRate.h",
+        "detail/TabulatedShellPlasticityUpdate.h",
+        "detail/Law44ElasticParameters.h",
+        "detail/Law44Hardening.h",
+    ],
+    deps = [":vinter_value", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "materials",
+    hdrs = [
+        "MaterialModel.cuh",
+        "MooneyRivlin.cuh",
+        "SVK.cuh",
+        "SolidMaterialProperties.h",
+    ],
+    copts = ["--std=c++17"],
+)
+
+cc_library(
+    name = "law44_membrane",
+    hdrs = ["Law44MembranePlasticity.h"],
+    deps = [":law44_zero_shear"],
+)
+
+cc_library(
+    name = "law44_zero_shear",
+    hdrs = ["Law44ZeroShearPlasticity.h"],
+    deps = [":tabulated_shell_plasticity"],
+)
+
+cc_library(
+    name = "law44_scope",
+    hdrs = ["Law44MaterialScope.h"],
+    deps = [":tabulated_shell_plasticity"],
+)
+
+cc_library(
+    name = "solid_law36_point",
+    hdrs = [
+        "SolidLaw36Point.h",
+        "law36/Types.h",
+        "law36/Prepare.h",
+        "law36/Update.h",
+        "law36/Caller.h",
+    ],
+    deps = [":vinter_value", ":solid_caller_values", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "vinter_value",
+    hdrs = ["detail/VinterValue.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "vinter2_value",
+    hdrs = ["detail/Vinter2Value.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "solid_caller_values",
+    hdrs = ["detail/SolidCallerValues.h"],
+    deps = ["//lib_src/math:quaternion"],
+)

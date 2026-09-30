@@ -1,0 +1,30 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Whole SBULK3 and exact RINIT3 STR/length value blocks only; no production numerical calls or source admission",
+  "files": [
+    {
+      "path": "native/original/sbulk3.F",
+      "bytes": 8387,
+      "sha256": "a031d54928c0abff616603e79a2ed3ee91fdd462349c2958221c05f05fc65879",
+      "git_blob": "6c978dd59d37c84547161c3303f37ea710456c95"
+    },
+    {
+      "path": "native/original/rinit3.F",
+      "bytes": 90241,
+      "sha256": "dabdb3eefa5a38327ec769784323c285efc1f0da2e7a6eff4b03d49eb438a551",
+      "git_blob": "3e098fe295dab3cb11060e8b3cd7eca9f53bccc7"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "../radioss_type25_fixed_main_startup/native/original/starter_mvsiz_p.inc",
+      "bytes": 1622,
+      "sha256": "8498e1f3be7d3872f79594a09b18fa97f57875b25ca893cf853b28109293857e",
+      "git_blob": "274ad22011292c0f56994a526638fee5a2b265e8"
+    }
+  ]
+}

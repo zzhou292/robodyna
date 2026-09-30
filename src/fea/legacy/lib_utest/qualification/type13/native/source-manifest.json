@@ -1,0 +1,128 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Exact active RKINI3, R4BUF3 explicit N3/skew fallback and RMASS Ileng1 startup operations. Resolved property; no engine recurrence, source conversion or endpoint coupling. Warning I/O omitted and degenerate input rejected before the native oracle.",
+  "sources": [
+    {
+      "path": "original/starter/source/elements/spring/rkini3.F",
+      "upstream_path": "starter/source/elements/spring/rkini3.F",
+      "size": 4388,
+      "sha256": "ccd2d2fea5d61963dbf8205e029325712839988f0533202d11569ee6830ff593",
+      "git_blob_sha1": "14977bfcdd77b1118a53157f6cf9115d5efedfa6"
+    },
+    {
+      "path": "original/starter/source/elements/spring/r4buf3.F",
+      "upstream_path": "starter/source/elements/spring/r4buf3.F",
+      "size": 10230,
+      "sha256": "2836024f095d7c249509dd0526c8af74e4c2a90c4d0d18314a633f282a8ff50b",
+      "git_blob_sha1": "fff31ce808e34db67ae5a88fda9f7a04b5e3b332"
+    },
+    {
+      "path": "original/starter/source/elements/spring/rmass.F",
+      "upstream_path": "starter/source/elements/spring/rmass.F",
+      "size": 8914,
+      "sha256": "0b5f5822acbfd3951c6cbe0af20d72e6ae63edabbdedbd6e1d7628b0bf59d907",
+      "git_blob_sha1": "89d10e0f6ebaf09e72eb84967536cff4276d7017"
+    },
+    {
+      "path": "original/starter/source/properties/spring/hm_read_prop13.F",
+      "upstream_path": "starter/source/properties/spring/hm_read_prop13.F",
+      "size": 67887,
+      "sha256": "9468295a1d9feea2dd4987a2ca4b77420cda8a9f2d928b0ca029e0e3f9dd2631",
+      "git_blob_sha1": "3c768a4aaf4646dc9bbbbfa05c36ebd1c2f23fcb"
+    },
+    {
+      "path": "original/common_source/modules/constant_mod.F",
+      "upstream_path": "common_source/modules/constant_mod.F",
+      "size": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "original/starter/share/spe_inc/implicit_f.inc",
+      "upstream_path": "starter/share/spe_inc/implicit_f.inc",
+      "size": 1597,
+      "sha256": "9431871663a79d913a40ab9b433aa70d3ed4dc5cc5c345c1f25798b7451eff73",
+      "git_blob_sha1": "80a0c9ad24913bb2c60c9c49663bf15ad6fd5d04"
+    },
+    {
+      "path": "original/starter/share/r8/my_real.inc",
+      "upstream_path": "starter/share/r8/my_real.inc",
+      "size": 1474,
+      "sha256": "92c03276ae3899b1fdab5f6833cea538aa94c9d2c41f3d35a4f304ea5e64fd8c",
+      "git_blob_sha1": "e8a7d1176e886459a7323d0b3a246233d2d2e712"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/MaximumSlope.inc",
+      "source": "original/starter/source/elements/spring/rkini3.F",
+      "first_line": 72,
+      "last_line": 81,
+      "sha256": "67926211771136df0e34d3c84cf29b5451866e26b39302a3af44f39e034cda96"
+    },
+    {
+      "path": "extracted/ReferenceChord.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 118,
+      "last_line": 121,
+      "sha256": "f6ab97545a34b9cb5350439da0de422042c6fae883a301e2fa01c0f2637249ba"
+    },
+    {
+      "path": "extracted/ReferenceN3.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 149,
+      "last_line": 157,
+      "sha256": "12f16c1dcc3d3dd8cc7e683ddaca3a11cf32ac12402f3f2ead2a0f79a18fe1c5"
+    },
+    {
+      "path": "extracted/ReferenceSkewY.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 169,
+      "last_line": 178,
+      "sha256": "eb75116ef85d340d1836e0552dd39c77d0e6f55475b8eb1b51a527828fcf46a6"
+    },
+    {
+      "path": "extracted/ReferenceSkewX.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 223,
+      "last_line": 225,
+      "sha256": "818dd2578253f144accc38dd1fc6480b3f3e3af670999ba1337184141169fd6b"
+    },
+    {
+      "path": "extracted/ReferenceCross.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 231,
+      "last_line": 233,
+      "sha256": "30416742677e220ef899508131c2635be3eab5678f79009bc63a0be470d0b328"
+    },
+    {
+      "path": "extracted/ReferenceNormalize.inc",
+      "source": "original/starter/source/elements/spring/r4buf3.F",
+      "first_line": 238,
+      "last_line": 244,
+      "sha256": "acf4edaddb3fa960299b862b36f7bd269e650ce8339984cc60678b2bd09dd077"
+    },
+    {
+      "path": "extracted/HalfMass.inc",
+      "source": "original/starter/source/elements/spring/rmass.F",
+      "first_line": 63,
+      "last_line": 65,
+      "sha256": "e01084366d2a30665b2edec9a8f4245c2a85f93d196aac1fef466ea30978b89f"
+    },
+    {
+      "path": "extracted/HalfInertia.inc",
+      "source": "original/starter/source/elements/spring/rmass.F",
+      "first_line": 80,
+      "last_line": 86,
+      "sha256": "ef93ce0a0fe753f0ba9dede26bb3834d61e12e545535f9f99857e60de8111fcc"
+    },
+    {
+      "path": "extracted/InertiaFloor.inc",
+      "source": "original/starter/source/properties/spring/hm_read_prop13.F",
+      "first_line": 124,
+      "last_line": 125,
+      "sha256": "81851ca023207b6ba72a3f77319a28d9aca19e6db300ee6f41e7d598c9be7d8b"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "contracts": {
+    "allowed_fixture_NPT": [
+      3
+    ],
+    "material": "synthetic homogeneous plane-stress elastic predictor only",
+    "original_comments": "Historical donor quadrature comments are retained; local header and this manifest identify the NPT3 change precisely.",
+    "other_NPT_branches": "original expressions retained, not qualified",
+    "required_define": "MYREAL8",
+    "state": "Per-point layout and all history updates unchanged; initialize fresh Gauss states; never relabel/restart existing midpoint histories.",
+    "unchanged_thickness_update": "Equal h0/NPT layer measure retained; exact for the bounded affine elastic thickness-strain field; nonlinear layer audit pending."
+  },
+  "donor": {
+    "files_sha256": {
+      "LICENSE.md": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "real_type.h": "057c418c48ad7e771f9dd125f2461104628631d6e6f80aa73f1ff910bdc01796",
+      "shell_force_assembly_kernel.cu": "411db646e3070ade11ad217e68e6326f5e6604e3ede4e0402ebb4b03b0004ea8",
+      "shell_force_assembly_kernel.h": "06f474d1c859391eef88013c914886a1da5d889fca8dcbe5d9fca7c10ef4a10c",
+      "shell_geometry_kernel.cu": "e5c8a9609aff7f42854062b30204645f9ba3d918b31d2aeb5cb40beab0d52430",
+      "shell_geometry_kernel.h": "b429eb23b52f98d0cb347592f7cfb3ab936deb029b5cbe1d7cb7cab5cd96adf2",
+      "shell_strain_material_kernel.cu": "13ebd98348f91919f5bf81f6d3932f5a19039504611608bc0e6d2194080fd0ba",
+      "shell_strain_material_kernel.h": "c599a32b33c10bbf597565d26998713dc88716fe6b52757b148b1273a98bf830"
+    },
+    "license": "GNU AGPL version 3 or later; original notice retained; exact LICENSE.md included",
+    "origin": "https://github.com/OpenRadioss/OpenRadioss",
+    "original_path": "engine/source/elements/shell/coque/shell_strain_material_kernel.cu",
+    "originals_modified": false,
+    "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+    "source_manifest_sha256": "4d86922b5dbcadadc5995286fb81781b89040fe2ed83116d7d6a33bde814b394"
+  },
+  "generated_file": "shell_strain_material_kernel_gauss3.cu",
+  "generator": {
+    "local_change_date": "2026-09-08",
+    "path": "lib_utest/qualification/shell/operators/generate_gauss3.py",
+    "sha256": "b046685dd855581ffcbbe6d697974de62a8bc7d69f17fde5ced39d100f354316"
+  },
+  "outputs": {
+    "LICENSE.md": {
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    "shell_strain_material_kernel_gauss3.cu": {
+      "bytes": 41935,
+      "sha256": "353f782ecbe7ab4f932bf1cc3683fa96262317b9b386f674c37724846cab3bf6"
+    },
+    "shell_thickness_gauss3.h": {
+      "bytes": 835,
+      "sha256": "56aa3e2e12508aaed92cc00b9fded52504969157672a9d10dcd495e0427fc7f9"
+    },
+    "transformation.patch": {
+      "bytes": 1362,
+      "sha256": "40ac4f906c5e2ae6574648d5b0111ba479d0751a796aa1d8823144949ffa42c3"
+    }
+  },
+  "schema_version": 1,
+  "scope": "NPT=3 Gauss thickness coordinates and stress-resultant weights in an isolated elastic fixture. No plasticity, MAT024, full-K2, or vehicle admission is implied.",
+  "table": {
+    "mapping": "z=h0*xi/2; physical_weight=h0*w/2",
+    "nodes_symbol": "Quadrature::gauss_zeta_m_3",
+    "original_node_literals": [
+      "-0.7745966692414834",
+      "0.0",
+      "0.7745966692414834"
+    ],
+    "original_weight_literals": [
+      "0.5555555555555556",
+      "0.8888888888888888",
+      "0.5555555555555556"
+    ],
+    "path": "Total-Lagrangian-FEA/lib_utils/quadrature_utils.h",
+    "sha256": "1bb073cfc14ff2fe9a4c2bcc48b7c1a875133f4ed8242276d39ba929ce690f51",
+    "weights_symbol": "Quadrature::weight_zeta_m_3"
+  },
+  "transformations": [
+    {
+      "original": "#include \"real_type.h\"",
+      "replacement": "#include \"real_type.h\"\n// Local modification 2026-09-08: NPT=3 Gauss thickness rule; see generated manifest.json.\n#include \"shell_thickness_gauss3.h\"",
+      "required_count": 1
+    },
+    {
+      "original": "        Real zeta = -0.5 + ((Real)ipt + 0.5) / (Real)NPT;",
+      "replacement": "        Real zeta = (NPT == 3) ? crash_shell_gauss3::zeta(ipt)\n                               : -0.5 + ((Real)ipt + 0.5) / (Real)NPT;",
+      "required_count": 1
+    },
+    {
+      "original": "        Real wt = thk0_i / (Real)NPT;",
+      "replacement": "        Real wt = (NPT == 3) ? thk0_i * crash_shell_gauss3::weight(ipt)\n                             : thk0_i / (Real)NPT;",
+      "required_count": 1
+    }
+  ]
+}

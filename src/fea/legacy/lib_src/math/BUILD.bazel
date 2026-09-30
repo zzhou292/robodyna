@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(name = "quaternion", hdrs = ["Quaternion.h"])
+cc_library(name = "fixed3", hdrs = ["Fixed3.h"])
+cc_library(name = "fixed3_operations", hdrs = ["Fixed3Operations.h"], deps = [":fixed3", ":quaternion"])
+cc_library(name = "symmetric_eigen3", hdrs = ["SymmetricEigen3.h"], deps = [":fixed3", ":quaternion", "@eigen//:eigen"])
+cc_library(name = "positive_identity_plus_symmetric3", hdrs = ["PositiveIdentityPlusSymmetric3.h"], deps = [":quaternion"])
+cc_library(
+    name = "native_symmetric_eigen3",
+    hdrs = ["NativeSymmetricEigen3.h"] + glob(["native_symmetric_eigen3/*.h"]),
+    deps = [":fixed3", ":quaternion"],
+)
+
+cc_library(name = "fixed_integer", hdrs = ["FixedInteger.h", "HostDevice.h"])
+filegroup(name = "fixed_integer_sources", srcs = ["FixedInteger.h", "HostDevice.h", "fixed_integer/ExtractionManifest.json"])
+
+# Shared execution-space annotation, without pulling an arithmetic backend.
+cc_library(name = "host_device", hdrs = ["HostDevice.h"])
+
+cc_library(name = "scalar_bits", hdrs = ["ScalarBits.h"], deps = [":host_device"])

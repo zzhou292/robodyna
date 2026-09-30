@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["ModelTest.cpp", "LedgerTest.cpp", "SolidOrderTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/assembly:beam18_node_contributions", "//lib_src/assembly:nodal_coefficient_ledger",
+            "//lib_src/elements/beam18:model", "//lib_utest/qualification/beam18_force:test_values",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/extended_solid_coefficients:test_values", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "output",
+    size = "small",
+    srcs = ["OutputTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements:shell_physical_owner_values", "//lib_src/assembly:beam18_node_contributions",
+            "//lib_src/elements/beam18:model", "//lib_utest/qualification/beam18_force:test_values",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support", "@googletest//:gtest_main"],
+)

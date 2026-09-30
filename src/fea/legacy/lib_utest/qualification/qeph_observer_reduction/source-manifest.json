@@ -1,0 +1,113 @@
+{
+  "baseline_commit": "3a1a9acb2eab10f298d348f45adcea37af8cdfba",
+  "scope": "Mapped QEPH observer trees; all mechanics and serial fallback bodies retained",
+  "files": [
+    {
+      "path": "lib_utest/qualification/qeph_observer_reduction/reference/ShellBatchFields.h",
+      "bytes": 2542,
+      "sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/SerialDiagnostics.h",
+      "bytes": 5423,
+      "sha256": "4e70d11daa534db840b6feed129918906a4b5037d51a991af82b0e646054a6a0"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFields.h",
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/CandidateDiagnostics.h",
+      "bytes": 3548,
+      "sha256": "cbda9a0fc528a9e9750c8872613bcc74f789d5014e1c554806232ae037a601f9"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Result.h",
+      "bytes": 4608,
+      "sha256": "93bde1836116c1b1f55e5dafd850fd40e9a77bf671164883a4b8e8327cc5209e"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistory.h",
+      "bytes": 3593,
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878",
+      "prior_sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3",
+      "prior_bytes": 3493,
+      "followup": "Inherited qualified projection-working-length identity comparison; exact two-line expansion reviewed against b939. No history arithmetic change in this slice."
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchDiagnostics.h",
+      "bytes": 4024,
+      "sha256": "58637b6162a754f793e4dab546fe2c241d65a9698b39e3179d7df451883d5e2b"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverTypes.h",
+      "bytes": 364,
+      "sha256": "19e5b08c45f742267be0015f38eabcc695a3e485a43d1c55a0f14e747f55b0da"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverSums.h",
+      "bytes": 359,
+      "sha256": "c06f9b69edeafb1624528718ace7aaf8f1c5b2faa62ee81f031759ccafae9930"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverValues.h",
+      "bytes": 5423,
+      "sha256": "8abd9250550d80548fcaed9871609e1e0a0dfbe6d19957cddc56b76ccce3e10a"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverKernels.cu",
+      "bytes": 2705,
+      "sha256": "4ed913d56a6b6d42691550755a4296d32b7899cbafb19487c2cc47dc867111fb"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverTypes.h",
+      "bytes": 1450,
+      "sha256": "b8b82445c51d640c3006ba54a307631c39af3cf98f6e94d2fa474eac74d5d462",
+      "previous_records": [
+        {
+          "bytes": 1294,
+          "sha256": "02846bceb852deefbd4b3bb5e30aecbf42da9e86dce1eafeb115b2348a64b7a2"
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverSums.h",
+      "bytes": 2617,
+      "sha256": "4b878223e7244cdae7af4e288c7f449878dd12d2d4a21b96a8d775960c4da003",
+      "previous_records": [
+        {
+          "bytes": 2437,
+          "sha256": "6b80e67e02db6ba3dd8312931ccb4b38b128919cad28c0abbfbc4fbdf5266ebf"
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverTree.cuh",
+      "bytes": 442,
+      "sha256": "ae12cbdd9b01af28278b2612e05ba9debcbfe9a054455abcdfc475ada0fea734"
+    }
+  ],
+  "mapped_t3_observer_registration": {
+    "scope": "Neutral mapped shell observer helper extraction and optional T3 observation tail; old equation and frozen serial oracle bodies unchanged. Prior records retained.",
+    "previous_manifest_sha256": "01df387721316de1ed0bfe5f0c0f61da11a579ee5a31e53beec4c0cbef18ee1c",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/qeph/mapped/ObserverTypes.h",
+        "bytes": 1265,
+        "sha256": "e3a20fe8ace4a125d8bba81e96f6f1924d07b1b352c209b8241f159e47b0cf55"
+      },
+      {
+        "path": "lib_src/elements/qeph/mapped/ObserverSums.h",
+        "bytes": 2372,
+        "sha256": "46b21d00eb83c1e77ca2e3a5763571a25885672cef667b8f7345be7bb6502121"
+      },
+      {
+        "path": "lib_src/elements/qeph/mapped/ObserverKernels.cu",
+        "bytes": 2872,
+        "sha256": "3ef54889760e98218f666859d70ae3b66cabe3a49997f16397ba65ab6cda5b2d"
+      }
+    ]
+  },
+  "root_include_fix": "Scoped host/device decoration makes neutral observer headers self-contained under real NVCC; no arithmetic or record-layout change."
+}

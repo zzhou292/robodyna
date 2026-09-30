@@ -1,0 +1,11 @@
+# Ordered native nodal seed qualification
+
+This host-startup module reduces two supplied native occurrence channels. It owns no physics, source parser, clock or GPU state. The shell-source seed overload preserves its existing ETNOD/count accumulation and one ASSTIFI call per node. Primary outputs still require independently bound ordinary-exterior roles; a seeded physical census does not admit coated/internal main coefficients.
+
+The independent reference compiles original MY_ORDERS and exact selected SPMD_MSIN contact-loop blocks. CINMAS/C3INMAS ordinary PM20×THK/count blocks are extracted separately. Unrelated mass/thermal loops are intentionally outside this packet. Higher-order solids are not admitted. Separate original SBULK3/RINIT3, PMASS and ASSTIFI libraries are reused. No reference calls the production accumulator or production coefficient arithmetic.
+
+Wrappers bind at most1024nodes and256parents per family. Matrices are original column-major widths IXS11/IXC7/IXTG6/IXT5/IXP6/IXR6, with C++ zero-based node indices converted to native1-based indices. Native sorts receive original synthetic EIDs; the C++ port fixture independently builds an ordered occurrence schedule. The reference's unused IXR5 slot carries a private property-kind tag only to initialize GEO12; it is not claimed as an authentic source MID. Generated EID/import/source completeness remains outside this numerical coupon.
+
+Penta SBULK3 leaves raw4/8 untouched. The native coefficient call uses LECTUR's source-proved +0 initialization, and all8 raw occurrences are passed to SPMD. TYPE45 zero witness executes original PARGEO storage and generic STIF selection followed by the complete RINIT3 block; GEO(3) is rank-adapted to the wrapper's one-property GEO(3,1). SET_U_GEO10 is a boundary-only captured-value shim proving Kn is distinct from STR. This is not a joint dynamics port.
+
+Every pre-ASSTIFI seed, ET sum and incidence count compares exact bits/integers. Final scalar K uses the existing64epsilon coefficient-oracle bound for native pow; no branch/order/count tolerance is added. Wrong property-family ordering is an explicit negative control. Legacy zero-seed field bits and forecasts, aliases, byte caps, late-invalid/overflow publication preservation and retry are checked. Production consumer links no GTest/Fortran/native library.

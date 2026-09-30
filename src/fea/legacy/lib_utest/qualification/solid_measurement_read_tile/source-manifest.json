@@ -1,0 +1,159 @@
+{
+  "baseline": "7fc8f030fcea10be1f930cffb8745fa86fe65643",
+  "frozen": [
+    {
+      "path": "lib_utest/qualification/solid_measurement_read_tile/frozen/Candidate.cu",
+      "bytes": 6331,
+      "sha256": "371ae301a88080aa13867d06834f238a6f41f558e8dd3604be7f0add45b1e712",
+      "name": "Candidate.cu"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_read_tile/frozen/MeasurementValues.h",
+      "bytes": 4418,
+      "sha256": "91c962d11c7b9531f9634f0a04e1f100ccc40a6fd300aca05190a5f433a7f1b0",
+      "name": "MeasurementValues.h"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "bytes": 2765,
+      "sha256": "fa2451d4d2a2cad34077cc97c92f2a44853ff277ca3e1fc3212bb8fd74ac712a"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementTypes.h",
+      "bytes": 698,
+      "sha256": "ef4af0d53f3f91735b881200f73ed1a9c158a9d065ff63c921e44a3f9c0409e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Measure.h",
+      "bytes": 5659,
+      "sha256": "50a275bba41a1206f03edba18419b76d9c8556d3108dcfe7f47cd6d90d6e0420"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "bytes": 2676,
+      "sha256": "beba0aaa9adf5039ea9f24451efc2fd7f8bf29b4516a096983f04264b644972f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.h",
+      "bytes": 1287,
+      "sha256": "bbbf19bc1a9d9656b8667bc949a79ef44d0b914206baa0ba308ebef78ee1a788"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementWork.h",
+      "bytes": 1212,
+      "sha256": "6ae7f6d8268c0cc109511ecdbcc19f0861910b1822dfab80bbc64ee37ea930e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Storage.h",
+      "bytes": 2469,
+      "sha256": "04504ce6b0e27b588218b352272ad8e989c9009faf4d3c0b556a1e82cf005e64"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Identity.cpp",
+      "bytes": 2302,
+      "sha256": "124b6142ab0aac34710ab5dbc76a28342a60531290a24f39e0cae74881bb0a4f"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/SolidHostTest.cpp",
+      "bytes": 4979,
+      "sha256": "9d7b28163f14fbea78ad54d484199ea2dbdc94255adc44318b6625566b13a5f0"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/SolidCudaTest.cu",
+      "bytes": 5383,
+      "sha256": "381c9ff9fe482dbea4ce5c928ff6e36434a5d7ab2c278042a7d9deadbd2be67c"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/SolidSupport.h",
+      "bytes": 2553,
+      "sha256": "d4aef88792bb218b17605ab352f2a0ecc56001d96f9cac949694b775ea298fc0"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/generate_oracles.py",
+      "bytes": 3874,
+      "sha256": "5d9482c134b59bfac3382dd51f1cfcff7bf930dbcec863b1787d5d33a4411b2a"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/FrozenCandidate.cu",
+      "bytes": 347,
+      "sha256": "8b74a62ad93a80f1eb0135da225d4a5a52706fd621e379dba85ead9de2f244d0"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/generate_oracle.py",
+      "bytes": 2385,
+      "sha256": "63ee038c7c56f76563b2dfae07d73bda6b7ce49e4415b9a35f7bd2b6e1bb8740"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/CudaRig.h",
+      "bytes": 7050,
+      "sha256": "dfb273f0eb491b4f8b05d1a2d065e8588380875cfdd688948ada98ca27030a02"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/TestSupport.h",
+      "bytes": 5401,
+      "sha256": "1ff624ebb57ea3ab42457780f5343cde597b520d5d60c0f08abbca6fd64df307"
+    }
+  ],
+  "production": [
+    {
+      "path": "lib_src/elements/solids/resident/measurement/Finalize.cuh",
+      "bytes": 1008,
+      "sha256": "4604b0bc183820de7ae745175cc5b6d83233c440c9bc2db04de83b1ef00ab372"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/measurement/Read.h",
+      "bytes": 1502,
+      "sha256": "ed4b35867e5c31f91bfb28022c37b8d226ab1893574d0fbf4dc5dd8a148b92fe"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/measurement/Tile.h",
+      "bytes": 627,
+      "sha256": "ecad447b82a23e3d5983c4e97f7c2745e53799d478d4d470921178a55c042a79"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/measurement/Begin.h",
+      "bytes": 740,
+      "sha256": "740134c3d6600b13142236b532d63b619f0fb294fe1eafc603a1f50d95a436aa"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/measurement/Family.cuh",
+      "bytes": 1484,
+      "sha256": "ff51e4ab87a4c3d287b2e768df850b1b9bb57028f8f2a40be6f2104d54603146"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/BUILD.bazel",
+      "bytes": 1901,
+      "sha256": "85ac34c7631dc5353fa8ef617bdb1f1fc00358926cb1f3dbe82e25b6d7c6b570"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Batch.cmake",
+      "bytes": 1558,
+      "sha256": "e2a4d36af6d35bd2948a761fa95a03dfc64189b030903c288a14e5185eb01d34"
+    }
+  ],
+  "wrapper_launches": [
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/SolidCurrentCandidate.cu",
+      "before": "// SPDX-License-Identifier: AGPL-3.0-or-later\n// Actual production finalizer; the test suffix changes no kernel body.\n#include \"lib_src/elements/solids/resident/Candidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchControlFinalizeTest(Storage* state,unsigned accepted,unsigned trial,\n    NodalPreparedView view,BatchDiagnostics identity,bool initial,bool operands) {\n  Finalize<<<1,1,0,view.stream>>>(state,accepted,trial,view,identity,initial,operands);\n}\n}\n",
+      "after": "// SPDX-License-Identifier: AGPL-3.0-or-later\n// Actual production finalizer; the test suffix changes no kernel body.\n#include \"lib_src/elements/solids/resident/Candidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchControlFinalizeTest(Storage* state,unsigned accepted,unsigned trial,\n    NodalPreparedView view,BatchDiagnostics identity,bool initial,bool operands) {\n  Finalize<<<1,measurement::Threads,0,view.stream>>>(state,accepted,trial,view,identity,initial,operands);\n}\n}\n",
+      "bytes": 491,
+      "sha256": "09ec6a37ee66ebe1133bcf165e80a397be6cba67a88e38d5dbcbfb8d740b8f1c"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/CurrentCandidate.cu",
+      "before": "// SPDX-License-Identifier: AGPL-3.0-or-later\n#include \"lib_utest/qualification/solid_candidate_validation/CurrentCandidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchOperandFinalizeTest(Storage* state, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity) {\n  Finalize<<<1, 1, 0, view.stream>>>(state, accepted, trial, view, identity, false, true);\n}\n}\n",
+      "after": "// SPDX-License-Identifier: AGPL-3.0-or-later\n#include \"lib_utest/qualification/solid_candidate_validation/CurrentCandidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchOperandFinalizeTest(Storage* state, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity) {\n  Finalize<<<1, measurement::Threads, 0, view.stream>>>(state, accepted, trial, view, identity, false, true);\n}\n}\n",
+      "bytes": 423,
+      "sha256": "a8e737c6fd361ac5f2acd44636ce8412f3f47660819a50dff00a4e42b5d5408e"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/CurrentCandidate.cu",
+      "before": "// SPDX-License-Identifier: AGPL-3.0-or-later\n// Compile the actual owning body. The test-only suffix exposes its final fold.\n#include \"lib_src/elements/solids/resident/Candidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchFinalizeTest(Storage* state, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity) {\n  Finalize<<<1, 1, 0, view.stream>>>(state, accepted, trial, view, identity, false);\n}\n}\n",
+      "after": "// SPDX-License-Identifier: AGPL-3.0-or-later\n// Compile the actual owning body. The test-only suffix exposes its final fold.\n#include \"lib_src/elements/solids/resident/Candidate.cu\"\nnamespace tl::fea::solids::batch_detail {\nvoid LaunchFinalizeTest(Storage* state, unsigned accepted, unsigned trial,\n    NodalPreparedView view, BatchDiagnostics identity) {\n  Finalize<<<1, measurement::Threads, 0, view.stream>>>(state, accepted, trial, view, identity, false);\n}\n}\n",
+      "bytes": 465,
+      "sha256": "a99c345441a4d5a60790c7a8195c8245a1ac0de5cd581d4feb9f2a79ac8215e7"
+    }
+  ]
+}

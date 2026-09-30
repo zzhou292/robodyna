@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "point",
+    hdrs = ["Types.h", "Prepare.h", "Stress.h", "Update.h"],
+    deps = ["//lib_src/math:symmetric_eigen3", "//lib_src/math:quaternion", "//lib_src/math:positive_identity_plus_symmetric3"],
+)
+cc_library(
+    name = "caller",
+    hdrs = ["Caller.h", "CallerTypes.h", "TotalStrain.h"],
+    deps = [":point"],
+)
+
+cc_library(
+    name = "mechanical_slots",
+    hdrs = ["MechanicalSlots.h"],
+    deps = [":point"],
+)

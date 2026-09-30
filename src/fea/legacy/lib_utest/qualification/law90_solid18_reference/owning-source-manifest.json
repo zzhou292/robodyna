@@ -1,0 +1,240 @@
+{
+  "schema": "law90-solid18-reference-owning-v1",
+  "files": [
+    {
+      "path": "lib_src/elements/solid18/BUILD.bazel",
+      "bytes": 1112,
+      "sha256": "472fe2b3d53d56b2b0b09531f4a6f5a52ddb62ad7719469183d3f13e41bd8551"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18CurrentGeometry.h",
+      "bytes": 4625,
+      "sha256": "11897daf7c6a015e1da99f4df7987003ab4f2155d471ef3346d31d7e9c15253b"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18NaturalDerivatives.h",
+      "bytes": 2393,
+      "sha256": "38e696e1720e6bd3815659f3f818fa77f2660c18c2f412261d1489d21df17a8f"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18PointKinematics.h",
+      "bytes": 2297,
+      "sha256": "391dd42705de863bbe9dd9294ad454a554979a285f17d3d4a16bfeabf6f4314d"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18RateValues.h",
+      "bytes": 1252,
+      "sha256": "fdc2975bc7ec91e5da0457db4ebc565aa13bffb45c731502876a1e6691773aec"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18Reference.h",
+      "bytes": 1208,
+      "sha256": "a3666008993f5a10e1bdf285307c99fa27938dddeb09d188526829d98a753d2b"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18ReferenceValues.h",
+      "bytes": 2257,
+      "sha256": "f13608c0a69a44c03a53447f3d7b477cc42a472011ad017bb7e6280d9afcb28f"
+    },
+    {
+      "path": "lib_src/elements/solid18/Solid18SelectiveShear.h",
+      "bytes": 3334,
+      "sha256": "ea45fa43b0eb005670bb7e77614c4dc8e45eceb189e2ee6222dc10a1f4f3cb7e"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/BUILD.bazel",
+      "bytes": 704,
+      "sha256": "7a262205f194bf95c2cd68e5e2db86de8081eeec72a2fd04a4c7ad4c482ed87f"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/KinematicsTypes.h",
+      "bytes": 1134,
+      "sha256": "1d726954e459c7fe15d5b3e4ddb3d8cd7017097520f3a3245fe4a9a0abf208fd"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/Reference.h",
+      "bytes": 3123,
+      "sha256": "806f33c0418ea556760b3284d86f071a2add952c67788d81a3fcb0ffc7e2b4c5"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ReferenceJacobian.h",
+      "bytes": 2746,
+      "sha256": "b80f9c559e09cf684dbc434027d23de9b00170fce708cd4a8c2124d5d4a38076"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ReferencePij.h",
+      "bytes": 1673,
+      "sha256": "1fdcff8028cec81e511fa64377f0c9e5e4d566d5020fdd219f1521ff4c81c088"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ReferenceTransform.h",
+      "bytes": 2913,
+      "sha256": "1b7558ddde5fce504c57bd5a555d4ef55d86d621f0a8b1e6aa6beca252d31b2c"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+      "bytes": 1713,
+      "sha256": "97b0b5d375234e19b1adad831861687e616fd2344cfffa63cfd2df6a9bd7a89c"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/SelectedTensor.h",
+      "bytes": 1793,
+      "sha256": "d1bb8f49d93a37c4b50df68fc984a0edea54c1e66e1224f7b463d0294191a534"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/TotalGradient.h",
+      "bytes": 1731,
+      "sha256": "99a073c50d940da9ba162d1d938720bcdbfb81900f9b9577bbc24be07e433e74"
+    },
+    {
+      "path": "lib_src/elements/solid18/total_strain/TotalKinematics.h",
+      "bytes": 3322,
+      "sha256": "5888e9580aafde0aaeda94b4af2080a3bad9c1fe5c214694ec62b6f1c15b8e54"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/Agreement.h",
+      "bytes": 6283,
+      "sha256": "0b0c0b6c6c3b49d2ad70958f7f724300263db6be2b981cf87d8678cbc94e3fa2"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+      "bytes": 738,
+      "sha256": "fd2bf079b87317ca4bcea9b4e4ef971dd941a47ad543df4f9617bfb4636374ce"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/CMakeLists.txt",
+      "bytes": 3984,
+      "sha256": "aff0eeb3dedb7dde2151b7fee360ac648b518cfd5f8b8f20379028c30078cf20"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/CudaTest.cu",
+      "bytes": 5872,
+      "sha256": "abbca89b929c86b98fd8de8cb0a0908252506dbb2ed0e0fa7023bcffd1a85b49"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/HostTest.cpp",
+      "bytes": 7418,
+      "sha256": "25c4a4a11e394435157a5471ab293c25e87c196d4394e9a9a3dd3a8d4710b168"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/NativeOracle.cpp",
+      "bytes": 1199,
+      "sha256": "c2e62f912db8212e574247ac2b12b873a3c2bc6ce03845421ed8a254efc85d16"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/NativeOracle.h",
+      "bytes": 484,
+      "sha256": "08e0516be14e1cdaba1b0189d980d11a01aadb8f931926098f86a41d7bdc1a30"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/NativeTest.cpp",
+      "bytes": 3334,
+      "sha256": "45410220af02bd3cf93d9ddd6538eda21407b16d234957aadd54f1b03de56287"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/README.md",
+      "bytes": 6914,
+      "sha256": "4087dc38203dac7a162ad0fc9b3051e5a7eae2770c7247769fe514b2edf20e94"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/SourceFixture.h",
+      "bytes": 1520,
+      "sha256": "9b3c3f2b26d1c92f51e1e19ec76093e34357b9be9acca0b1d5e2f5562b8036f2"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/SourceNativeTest.cpp",
+      "bytes": 4552,
+      "sha256": "7268878b07a3e5e95d11984bf03f62bdd111b47a182afcd2b48b72fc066ea79a"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/TestSupport.h",
+      "bytes": 4395,
+      "sha256": "ee32629c32e82ea06f9189998aeec8c2e789779e32815502051b06db73e05317"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/WorkingModeBound.h",
+      "bytes": 1845,
+      "sha256": "e911772b8d6018710b11327416c4761b059710531255f5470bdc722031360998"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/CMakeLists.txt",
+      "bytes": 2703,
+      "sha256": "92c533960934759326fc7d42cc6802d19498e7bb9d395b98db30de7f0e11877e"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeCurrent.F",
+      "bytes": 3056,
+      "sha256": "bf4dfbacf815d6fea22a1c0692973b1cf8991adee1593abc589025e02c9808c2"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeEngineContext.F90",
+      "bytes": 1213,
+      "sha256": "4c4f1b510df5b51d8c12222002324e7d8b89abf3f99a3b3a4c29aafa24a7527d"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeGeometry.F",
+      "bytes": 9206,
+      "sha256": "2f7bd6181264c36e36a0a7a1d4d553417d8ed0182184299a48ced477653a9175"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeRate.F",
+      "bytes": 4544,
+      "sha256": "820b04bb69fc8608c9340913a09645d895dc24d4039e9d2a0892d1c01eaac8ba"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeReference.F",
+      "bytes": 6498,
+      "sha256": "def57a6dcb5d105a08238de317a6ba053c52d97d2910659ccfa4e66dea946e8b"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeStartContext.F90",
+      "bytes": 1078,
+      "sha256": "23cf300d27930f99d48ffa4ade8a50259a26f043f5ae984bf292d1f9df102467"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/NativeTotal.F",
+      "bytes": 5050,
+      "sha256": "de2d9de4f468a9ba335f13ff7e6a802f1958a5cf7bb5688c84a4ba914c4018f1"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/prepare_sources.py",
+      "bytes": 5763,
+      "sha256": "d5687d32eb03579fd633af54645ec57eed0aeb8c92497bf25598b8fd674fbdcb"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/native/source-manifest.json",
+      "bytes": 33316,
+      "sha256": "b622e808f7e99e8eab21e7d334db4267209a9e077865cd04e17a5a5dbc0bb873"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/source_fixture/FixtureReaderTest.py",
+      "bytes": 2197,
+      "sha256": "56976374a6f1534b4c439ed1b03253843da3b53d6eb3282461973f114c4af82f"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/source_fixture/manifest.json",
+      "bytes": 17241,
+      "sha256": "c5adae0a61384bb7b57c88ed113798cf5b0fbaa8758fd48f93e15cc61f65f94a"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/source_fixture/prepare_fixture.py",
+      "bytes": 4927,
+      "sha256": "9b23224e241b3063fbd8f68b9dd51b9e3959ce248a279209c9a1a1c838b269b8"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/verify_source.py",
+      "bytes": 1048,
+      "sha256": "b1d439037dc7c62e5f769a10222f0a0b9a8792e1af41c4c2a274cbcce3d2d7cf"
+    }
+  ],
+  "previous_fixture_exports": [
+    {
+      "previous": {
+        "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+        "bytes": 404,
+        "sha256": "d149619bdcaa8c76b961d408844259188f000e9792941ffecbefe12bf6b9442d"
+      },
+      "change": "Add test-only TestSupport export; prior owning test target unchanged."
+    }
+  ]
+}

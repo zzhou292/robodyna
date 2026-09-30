@@ -1,0 +1,266 @@
+{
+  "schema": "tl.layered-failure-native-caller.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Exact selected local LAW44 NLay1 centered NIP3 caller operations; complete law and Johnson leaf remain shared donors",
+  "sources": [
+    {
+      "path": "original/mulawc.F90",
+      "upstream_path": "engine/source/materials/mat_share/mulawc.F90",
+      "bytes": 165437,
+      "sha256": "778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526",
+      "git_blob_sha1": "f8ca5808fd2eebc76e64d28120b8ac6cb711b376"
+    },
+    {
+      "path": "original/fail_setoff_c.F",
+      "upstream_path": "engine/source/materials/fail/fail_setoff_c.F",
+      "bytes": 20116,
+      "sha256": "9d0bd8d4d2a02e76872456f5f82d650cb9f0b5d38b10e6fc658f9782857b72f9",
+      "git_blob_sha1": "9626d858aa54db1184681baf1e4e7acb28bbaa6e"
+    },
+    {
+      "path": "original/hm_read_prop01.F",
+      "upstream_path": "starter/source/properties/shell/hm_read_prop01.F",
+      "bytes": 16609,
+      "sha256": "13d216d324eafee9085522d19c597754a5ad51aad02a294316a6c459b89c37d4",
+      "git_blob_sha1": "5a7af926ee09df65436592aee9140a24c1058943"
+    }
+  ],
+  "fragments": [
+    {
+      "file": "WorkBefore.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          543,
+          547
+        ]
+      ],
+      "bytes": 332,
+      "sha256": "86097d64ea6599234f2a0671fb443684f0049e60e9fa80d3a1cf377ec94a9040"
+    },
+    {
+      "file": "SectionBegin.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          566,
+          582
+        ]
+      ],
+      "bytes": 650,
+      "sha256": "2c36b057d3a5214b150c0bcbc803d94c4cecef262fc47041ceeb7dcea51dfc9d"
+    },
+    {
+      "file": "Transverse.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          682,
+          683
+        ]
+      ],
+      "bytes": 74,
+      "sha256": "9347480da11f073e967ce25426d5537f174dd3eb9c6a1e3acb48ab93af77658d"
+    },
+    {
+      "file": "LayerThickness.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          767,
+          767
+        ]
+      ],
+      "bytes": 65,
+      "sha256": "ff5731ba5e433b308dec25b78144438a085a9a1c8ae04aa6634f8a7cdb9e45f3"
+    },
+    {
+      "file": "LayerStrain.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          850,
+          855
+        ]
+      ],
+      "bytes": 239,
+      "sha256": "dcd8b764ebe1fe7082773bc9e4716bb197763e265a2e48b31c1c677c617cae64"
+    },
+    {
+      "file": "PointPlasticWork.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2010,
+          2018
+        ]
+      ],
+      "bytes": 565,
+      "sha256": "478b32bf85b3aef4eac7892b0c54ee3ec7d996fdcd1b9ef7afb63acd457f954a"
+    },
+    {
+      "file": "LayerResultants.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2657,
+          2664
+        ]
+      ],
+      "bytes": 663,
+      "sha256": "a07f60da2259a018e59f85cfadf602a6a28f1220591ac45936588653edae9562"
+    },
+    {
+      "file": "LayerFactors.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2825,
+          2826
+        ],
+        [
+          2828,
+          2828
+        ]
+      ],
+      "bytes": 233,
+      "sha256": "718e0118ef6ee805b8cf876ff2ff01e45324599b6447b820b56010d4c8a3ec0a"
+    },
+    {
+      "file": "WorkAfter.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3046,
+          3048
+        ]
+      ],
+      "bytes": 285,
+      "sha256": "b0966f0f77b4c5ccf14deb1cd54861ce4130f005057d6592f5974710812f5329"
+    },
+    {
+      "file": "WorkAccumulate.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3089,
+          3094
+        ]
+      ],
+      "bytes": 223,
+      "sha256": "156daf26648ca10ce00dd794593c95953348611dad1299c84b00cc13063d5fe8"
+    },
+    {
+      "file": "ThicknessViscosity.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          3016,
+          3032
+        ]
+      ],
+      "bytes": 927,
+      "sha256": "dd6994c9975c3a754f375ff84283a305798a5e9d74cca15ec72250cfebd60e68"
+    },
+    {
+      "file": "CallerFailureIncrement.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2067,
+          2070
+        ]
+      ],
+      "bytes": 156,
+      "sha256": "57995038251c4abab7f00478d4a67bd2f21550535c07000f619b289f6f5461cd"
+    },
+    {
+      "file": "PointMask.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2613,
+          2618
+        ]
+      ],
+      "bytes": 211,
+      "sha256": "04601b63490f5e1d94eac01c10bd62e13a897438576e2d68cf1d540155a23ac6"
+    },
+    {
+      "file": "SavedStress.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2634,
+          2641
+        ]
+      ],
+      "bytes": 391,
+      "sha256": "034ca56ae7ccc65f8073206a3e5e553efe55a8426b51b7ee1e57ca844ffe8e7e"
+    },
+    {
+      "file": "ParentPublish.inc",
+      "source": "original/mulawc.F90",
+      "ranges": [
+        [
+          2937,
+          2952
+        ],
+        [
+          2956,
+          2960
+        ]
+      ],
+      "bytes": 804,
+      "sha256": "3a523e8c06db8ffb9e68eccf3cd528d98590469598e858119eed3bcf9177f34c"
+    },
+    {
+      "file": "PropertyDefault.inc",
+      "source": "original/hm_read_prop01.F",
+      "ranges": [
+        [
+          170,
+          173
+        ]
+      ],
+      "bytes": 126,
+      "sha256": "fe818007e63bbd025053a804fc72a974ce517e4539df7d612bb313347275515b"
+    },
+    {
+      "file": "ParentThreshold.inc",
+      "source": "original/fail_setoff_c.F",
+      "ranges": [
+        [
+          140,
+          141
+        ]
+      ],
+      "bytes": 127,
+      "sha256": "ee6a9ce28532fdfe7f595e1ae356439a51a05052aa539c530026da558ac07d6d"
+    },
+    {
+      "file": "FailedThickness.inc",
+      "source": "original/fail_setoff_c.F",
+      "ranges": [
+        [
+          161,
+          169
+        ]
+      ],
+      "bytes": 746,
+      "sha256": "0efd704e65d19dbb63618edf698a4be4ef107b5a4db88eebf3f09eff29d82114"
+    },
+    {
+      "file": "ParentCriterion.inc",
+      "source": "original/fail_setoff_c.F",
+      "ranges": [
+        [
+          172,
+          177
+        ]
+      ],
+      "bytes": 411,
+      "sha256": "11aed3e8c2bcfcc0234fa055077a9eac97b61b6979655af347e21d0d0ce35728"
+    }
+  ]
+}

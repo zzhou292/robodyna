@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer",
+    size = "small",
+    srcs = ["Consumer.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_gap_source"],
+)
+cc_test(
+    name = "source",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    copts = ["-std=c++17"],
+    data = ["native/prepare.py", "native/Gap.F.in", "native/source-manifest.json",
+        "//lib_utest/qualification/radioss_type25_coefficients:native_source_files",
+        "//lib_utest/qualification/radioss_type25_fixed_main_startup:gap_source_donor",
+        "//lib_utest/qualification/radioss_type25_normal:native_source_files"],
+    deps = ["@googletest//:gtest_main"],
+)

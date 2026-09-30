@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#pragma once
+#include "Fixture.h"
+#include "lib_src/solvers/ExplicitNodalStep.h"
+#include "lib_src/solvers/NodalTrialIdentity.h"
+#include "lib_src/elements/publication/PhysicalState.h"
+
+namespace physical_publication_test {
+inline constexpr std::uint64_t MappedWallSource = 720,SelfContactSource = 721;
+template<class Report> bool Good(const Report& report) {
+  using Status = decltype(report.status);
+  EXPECT_EQ(report.status,Status::Success) << report.message;
+  return report.status == Status::Success;
+}
+inline bool Good(const fe::NodalReport& report) {
+  EXPECT_EQ(report.status,fe::NodalStatus::Ok)
+      << report.message << " node=" << report.node;
+  return report.status == fe::NodalStatus::Ok;
+}
+struct Snapshot {
+  fe::NodalStamp stamp;
+  fe::ShellPhysicalDiagnostics diagnostics;
+  std::vector<std::uint64_t> values;
+};
+struct Rig {
+  explicit Rig(bool surface_rigid=false,double t3_failure=2.5,
+               bool contact_geometry=false,
+               ContactConstraintLayout constraints=
+                   ContactConstraintLayout::Legacy,
+               bool interior_edge_contact=false,
+               double adjacent_apex_x=.05,
+               fe::ShellBatchStartup declared_startup={},
+               bool separate_adjacent_contact=false, bool detached_adjacent_triangle=false)
+      : fixture(surface_rigid,t3_failure,contact_geometry,constraints,
+                interior_edge_contact,adjacent_apex_x,declared_startup,
+                separate_adjacent_contact, detached_adjacent_triangle) {}
+  Fixture fixture;
+  fe::FENodalState owner;
+  fe::qeph::QephBatch qeph;
+  fe::t3::T3Batch t3;
+  fe::qbat::Batch qbat;
+  fe::type25::Batch welds;
+  fe::type13::Batch beams;
+  fe::solids::Batch solids;
+  fe::ShellBatchPublication publication; // Destroy before all borrowed objects.
+  // Concrete contact modules will own these privately. Their fixture lifetime
+  // ends before the publication that registered them.
+  fe::ShellPhysicalScratchParticipation mapped_wall_participation;
+  fe::ShellPhysicalScratchParticipation self_contact_participation;
+  std::uint64_t external_force_source_node = 0;
+  double external_force_z_n = 0;
+  fe::ShellPhysicalParticipants Participants() { return {&qeph,&t3,&qbat,&welds,&beams,&solids}; }
+  fe::ShellFormulationParticipants Shells() { return {&qeph,&t3,&qbat,&welds}; }
+  bool Initialize(bool initialize_solids = true,bool attach = true);
+  // Opt-in execution-authority path. Legacy publication qualifications keep
+  // using fixture.physical through Initialize/Attach.
+  bool InitializeAgainst(const fe::ShellPhysicalBinding&,
+      bool initialize_solids = true,bool attach = true);
+  bool InitializeSolids();
+  bool Attach();
+  bool AttachAgainst(const fe::ShellPhysicalBinding&);
+  bool ConfigureScratch(bool mapped_wall,bool self_contact);
+  bool Begin(fe::NodalTrialToken&,fe::NodalAssemblyView&);
+  bool Advance(const fe::NodalTrialToken&,const fe::NodalAssemblyView&,fe::NodalPreparedView&);
+  bool Evaluate(const fe::NodalTrialToken&,const fe::NodalPreparedView&,fe::ShellPhysicalDiagnostics&,bool include_solids = true);
+  bool Prepare(fe::NodalTrialToken&,fe::NodalPreparedView&,fe::ShellPhysicalDiagnostics&);
+  bool Read(Snapshot&);
+};
+inline void Exact(const Snapshot& before,const Snapshot& after) {
+  EXPECT_TRUE(fe::trial_identity::SameStamp(before.stamp,after.stamp));
+  EXPECT_TRUE(fe::shell_publication_detail::SamePhysicalDiagnostics(before.diagnostics,after.diagnostics));
+  EXPECT_EQ(before.values,after.values);
+}
+} // namespace physical_publication_test

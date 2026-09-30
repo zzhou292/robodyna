@@ -1,0 +1,27 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete selected IN24, literal I25SURFI filter/tagging, original SH2; serial source-only oracle",
+  "files": [
+    {
+      "path": "original/i24surfi.F",
+      "source_path": "starter/source/interfaces/inter3d1/i24surfi.F",
+      "bytes": 74037,
+      "sha256": "aa55e679ceb96b8d83ed7611bc6486c011ff9ef1a5bd86e1d5764b3363cd55f3",
+      "git_blob": "910e8b87fb058708efc9290e5ac1b6eee7d827c0"
+    },
+    {
+      "path": "../../radioss_type25_fixed_main_startup/native/original/i25surfi.F",
+      "source_path": "starter/source/interfaces/inter3d1/i25surfi.F",
+      "bytes": 27552,
+      "sha256": "f47b140133ddd3eea5e01e0b42309ee7ee27360cf7ae9fc40b9db7cfe781a7db",
+      "git_blob": "fc03db70db0a48fdf25f7cf3bac5ac3572d76bb2"
+    },
+    {
+      "path": "../../radioss_type25_surface_source/native/original/build_cnel.F",
+      "source_path": "starter/source/model/mesh/build_cnel.F",
+      "bytes": 17299,
+      "sha256": "22fca37dd6b104f5b7a5eb6a0a6dc39af406a6021832cf86ec3f5ac0df467c15",
+      "git_blob": "479172c0109876256cdc555a00e7ad8369fe2279"
+    }
+  ]
+}

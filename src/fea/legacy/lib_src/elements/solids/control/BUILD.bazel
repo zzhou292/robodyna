@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "selection",
+    srcs = ["Budget.cpp", "Parents.cpp", "Packets.cpp", "Selection.cpp", "Identity.cpp"],
+    hdrs = ["Types.h", "Selection.h", "Internal.h", "Impl.h"],
+    deps = ["//lib_src/assembly:solid_node_contributions", "//lib_src/elements/solid_common/distortion:working_units",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    visibility = ["//visibility:public"],
+)

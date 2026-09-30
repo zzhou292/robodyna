@@ -1,0 +1,430 @@
+{
+  "baseline_commit": "cc7d08f",
+  "scope": "Exact mapped assembly-input validation only; unchanged response/scatter/activity/interval and complete caller suffix; no new storage.",
+  "files": [
+    {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactScatter.h",
+      "bytes": 2491,
+      "sha256": "4042467d5520a119bd2f2bf18b520a34e4b81408f54427b271e3f63a6a4c7f47"
+    },
+    {
+      "path": "lib_src/collision/NodalWallMappedContact.cmake",
+      "bytes": 1342,
+      "sha256": "efe6a3bedd99d7d5cbc4e98758866289f934389bc33e88e916876c67c8bac437"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Activity.cpp",
+      "bytes": 5006,
+      "sha256": "591035d19301edefa4e9fc76dff9805155411043b4821a894b03c375e810e7d7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/AssemblyValidation.cuh",
+      "bytes": 2428,
+      "sha256": "de653097f762841852e8e2bc7568c0a403aabd3b060694764feda168fac1f845"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/AssemblyValidation.h",
+      "bytes": 3247,
+      "sha256": "2db5659664fe369300d83f91fd363ad1c091e6c1a61cde65cb32016487f16169"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3847,
+      "sha256": "ee4cf936e7a462b4263905e31220c53af9403a03881de14f77e7308bedbe8882"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
+      "bytes": 7358,
+      "sha256": "08dd40c68096e11eda3528231b3011efebba7c7ab44154554ee5ce8b08f7ecc0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalReduction.cuh",
+      "bytes": 2843,
+      "sha256": "8be37e16a6024ed0a647b3cb942abd9715e3e26b37ebf057d3790e0f7959f4a7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
+      "bytes": 3551,
+      "sha256": "4b7538260d8a8fed84eef1a067c6171db8c0730615279118a23f309ba5144a3c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
+      "bytes": 7444,
+      "sha256": "e7fdd526056058220a2b2f697975c739e286fdc0e660f0ec77a08b2ae5e2740d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
+      "bytes": 5365,
+      "sha256": "c2e5aad75ca4acabde68e31f8880c4537bbc3aa084d3621633d3b323d3b75a6a"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Storage.h",
+      "bytes": 3147,
+      "sha256": "a8dfd243261502c483ab3c7e27901b20cfaddf8ed84500775d30c8553d402f7a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/BUILD.bazel",
+      "bytes": 812,
+      "sha256": "7529969d599bc6813f980bc12a5243654af35c8aeffbbe6b946831dbd9c1e68c"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/CMakeLists.txt",
+      "bytes": 3229,
+      "sha256": "7ddb0fe6742ff73fb65f6ceddcfcb510ca79eccb04bd3d95072655290a5508b7"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/CudaTest.cu",
+      "bytes": 5327,
+      "sha256": "c98361512fedef004d0e46320bb3e49025256324e188e4e1efa811e90069e92f"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/Fixture.h",
+      "bytes": 5576,
+      "sha256": "df3b7207b8f5f8eb0f1e848a67bdfd906fbbcba655ea64ec8cc97cebc1a53b5e"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/FrozenValidation.h",
+      "bytes": 1566,
+      "sha256": "04115b91790ae10be2ba72745f93a0a806ac4a9b182b3bf818e19e6607681a06"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/HostTest.cpp",
+      "bytes": 2592,
+      "sha256": "869e836bc1d076db093ba967c090d662f377a161f2418688c01c5e23f3e9413c"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/OwnerTest.cu",
+      "bytes": 3008,
+      "sha256": "e014c05b0ff5408de755f387df8f4f630dbd531a866ca1f76edf323dcae5afe9"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Kernels.cuh",
+      "bytes": 3580,
+      "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Layout.h",
+      "bytes": 1384,
+      "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Operations.cu",
+      "bytes": 10427,
+      "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+      "bytes": 9394,
+      "sha256": "70f76b140dca9c2725f3d25f454a6df2337359f595c76375449d36140518aa91"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+      "bytes": 2646,
+      "sha256": "ad6a404982e29e1346e5501c7edf91f2a7f7e817b2a3c034f2e625c492871682"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+      "bytes": 9334,
+      "sha256": "5d5b14a036bbdf08e568c090946667ba88364713a3a49919a6a3b6cedc3382c8"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+      "bytes": 2076,
+      "sha256": "3dee73f14dea9f5157b2cf1994405d0641706b9aa648416f85a14633b96b2002"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/Verify.cmake",
+      "bytes": 701,
+      "sha256": "ab620d9998c5cd6a07d55bf442f59a786f8821f062cfd200ac5050b07cad5c01"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/source-manifest.json",
+      "bytes": 1005,
+      "sha256": "72688493a88da0348c715ea8af56bab0b700e1a4335e647b814bb14f533f5950"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "bytes": 2685,
+      "sha256": "131b8f083ea638661f60b82edb153400d883236e3ca2dbe34a473cd28b386806"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "bytes": 1634,
+      "sha256": "506091e79556ebc2fefe735412515d045e6f1eb2df39c08527b07c865b4bc70a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py",
+      "bytes": 786,
+      "sha256": "b05b563193a3201026ec7d593507b1b6c5f5678b0b0dc64c4197f850f388f55b"
+    }
+  ],
+  "response_previous_receipts": [
+    {
+      "manifest_sha256": "3987ab1d7af7601ec9117d88dfb1390732ddd2babb84ee34546ca9f2908782e3",
+      "reason": "Mapped-only ordered rigid response and ordinary max scheduling, with separately counted CSR/maxima tail. Complete serial Response and CheckResponse preserved at mapped_wall_response/reference; activity, scatter, observer and interval arithmetic unchanged.",
+      "files": [
+        {
+          "path": "lib_src/collision/BUILD.bazel",
+          "bytes": 11278,
+          "sha256": "e53654f2eb75a63091fe84f9ec8c3c7ddb8d14e4b0166b669b35808e8fd8b782"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+          "bytes": 5570,
+          "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+          "bytes": 1801,
+          "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1454,
+          "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10235,
+          "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
+          "bytes": 5160,
+          "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+        }
+      ]
+    },
+    {
+      "manifest_sha256": "72b18b11dae9941f15c36079489ab2db8d549b5b98df1a797b2bd2a6ff3c3b10",
+      "reason": "Refresh delegated identity receipt after ordered response schedule qualification; prior receipt retained.",
+      "files": [
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+          "bytes": 5854,
+          "sha256": "d9f5c16edbec3242ebf6291201c653731df15367008ea2be47e76da8cca74de6"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+          "bytes": 2493,
+          "sha256": "317dcba4a152cff4c4c44387c52cfa78cb85e37bcbcfdf2af77f9e6aff03502b"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+          "bytes": 6167,
+          "sha256": "7e483ece6926e333addbaaaccf458012a907dc90a6a38afef518db544f647f95"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+          "bytes": 2076,
+          "sha256": "54b186c68d44f2cafd80df7ce570e0589edc6c37608ffa4b69cfaacc538891df"
+        }
+      ]
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "fd39aac4b7275d15e047bf7a36d7ea856e118c7780139a396316d3f708c437e8",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/BUILD.bazel",
+          "bytes": 11452,
+          "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+          "bytes": 3561,
+          "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+          "bytes": 2720,
+          "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+          "bytes": 7107,
+          "sha256": "3bef13c44efc2b99817ba47539bfc2954559749e6650217757f7e5f7323e9b87"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+          "bytes": 2493,
+          "sha256": "7b9b901c5d8c2c78fba4a8d78390fef531ee879dacc01657dda09c2084822d18"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+          "bytes": 7420,
+          "sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+          "bytes": 2076,
+          "sha256": "3ecfad73519d1462b99e523021a592d7a14df81206197a43a778266122d88dae"
+        }
+      ]
+    }
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "ea08ed05a1b3a5d838b4c46e155e4a97f5a57490752d34045e67f5c6b9059ea3",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 12597,
+        "sha256": "0e5a3426b1cdfb99f6475b31ba19fd4b0449415862bb92ea030bed17cab68e2f"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+        "bytes": 7989,
+        "sha256": "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+        "bytes": 2493,
+        "sha256": "6a93786d078830f70b9db7bd5948430b82dbd61972baa756dea5c52faffd3487"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+        "bytes": 8709,
+        "sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+        "bytes": 2076,
+        "sha256": "d13b142c6a7f540771aa495a0d1b68b18b7d934914bd592c1554ce1fb8dca814"
+      }
+    ],
+    "added_paths": [
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py"
+    ],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  },
+  "self_contact_broadphase_previous_receipts": [
+    {
+      "record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 11452,
+        "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
+      },
+      "reason": "The prior record predates additive S0 binding (5e642b4) and S1 majorant (d9dd9f7) targets. Their exact f0bbbbe..30028be BUILD diff adds only two cc_library blocks. This change adds bounded self-contact broadphase targets and the legacy SAP shared-header dependency; all mapped-wall targets and mechanics remain unchanged.",
+      "adapter_base_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "commit": "30028beda6c13e61a39d7c868a6106748665703d",
+        "bytes": 12515,
+        "sha256": "7b18306f019f4159e419f020e198d7b81c78fc09515fa2c102c95d3c0b1c338f"
+      }
+    }
+  ],
+  "contact_prerequisite_integration_review": {
+    "base": "1e6a0a2a8660d388ca96ca26552e4afca8c38a89",
+    "donor_commits": [
+      "7a629e7cbac6fa4abd5b1fefb058a7675a59fe81",
+      "f75000b5b11e2471b009f9d5d24eef56fb03acc0",
+      "0ac44625365582eb940155bd6d15309260fca924",
+      "3bd26db6d6489c99bf25b93d89e53c160b8477ea",
+      "9bf7ab5a4f59d01852b3a2a7cc236a8304e732a9"
+    ],
+    "prior_current_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 12685,
+      "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+    },
+    "facet_composed_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 13385,
+      "sha256": "6fa002cad18d3d97ac8ff629debdeb5566c71816af063c8b08e4f9ba5816f984"
+    },
+    "current_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+    },
+    "scope": "Additive weighted mapping, fixed pair, physical facets and bounded broadphase build ownership only. Existing mapped-wall arithmetic, removal scheduling and prior receipt history remain unchanged."
+  },
+  "discovery_crossing_build_composition": {
+    "previous_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+    },
+    "current_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
+    },
+    "feature_commit": "5e904fa",
+    "feature_proof_commit": "fa324be",
+    "crossing_commit": "8ceff1a",
+    "crossing_proof_commit": "8f14a89",
+    "scope": "Checked removal of the two additive host-only cc_library rules and their source-proof filegroups restores the exact prior mapped-wall collision build identity. No mapped-wall source, dependency, arithmetic, target, or execution path changes."
+  }
+}

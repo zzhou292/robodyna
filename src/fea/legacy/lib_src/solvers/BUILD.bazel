@@ -1,0 +1,251 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "nodal_assembly_authentication_source_proof",
+    srcs = [
+        "FENodalState.cu",
+        "FENodalState.h",
+        "FENodalStateStorage.h",
+        "NodalTrialIdentity.h",
+    ],
+)
+
+filegroup(
+    name = "nodal_owner_stream_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "FENodalState.h",
+        "NodalOwnerStream.cpp",
+    ],
+)
+
+cc_library(
+    name = "nodal_state_layout",
+    hdrs = ["NodalStateLimits.h", "NodalStateLayout.h"],
+    deps = ["//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "nodal_rigid_storage_layout",
+    hdrs = ["NodalRigidOwnerLimits.h", "NodalRigidStorageLayout.h"],
+    deps = [":nodal_state_layout", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "nodal_trial_identity",
+    # Compatibility facade: identity is now also used inside the owning module.
+    deps = [":explicit_nodal_state"],
+)
+
+cc_library(
+    name = "nodal_native_physical_coefficients",
+    hdrs = ["NodalNativePhysicalCoefficients.h"],
+    deps = [":nodal_trial_identity"],
+)
+
+cc_library(
+    name = "cin_structural_step_values",
+    hdrs = ["NodalCinStructuralStep.h", "cin_timestep/Ordinary.h", "cin_timestep/Rigid.h", "cin_timestep/Screen.h",
+            "cin_timestep/Sources.h", "cin_timestep/ScreenValues.h"],
+    deps = ["//lib_src/collision:rigid_normal_response"],
+)
+
+cc_library(
+    name = "cin_physical_main_values",
+    hdrs = ["NodalCinPhysicalMains.h", "cin_physical_mains/Values.h"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math"],
+)
+
+cuda_library(
+    name = "explicit_nodal_state",
+    srcs = ["FENodalState.cu", "NodalOwnerStream.cpp", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "NodalUniformMotionObserver.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
+            "NodalCinStartup.cpp", "NodalCinStorage.cu", "NodalCinState.cpp", "NodalCinReadback.cu", "NodalCinPhysicalMains.cu", "NodalCinStructuralLimit.cpp", "ExplicitNodalCinStep.cu", "cin_advance/ForceInputs.cu", "cin_advance/Capture.cu", "cin_advance/Screen.cu", "cin_advance/Groups.cu",
+            "cin_advance/ForceTransfers.cu", "cin_advance/ForceGather.cu", "cin_advance/Recovery.cu", "cin_advance/Drift.cu"],
+    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "NodalUniformMotionObserver.h", "nodal_motion/Values.h", "NodalCinStructuralLimit.h", "cin_limiter/Witness.h", "cin_limiter/Capture.h", "nodal_seal/Validation.cuh", "nodal_reset/Reset.cuh", "nodal_seal/Rows.cuh", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",
+            "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h",
+            "NodalForceStageSnapshot.h", "NodalForceStageCaptureLayout.h", "NodalForceStageSnapshotRanges.h",
+            "NodalCinGatherLayout.h", "cin_advance/ForceGather.h", "cin_advance/ForceGatherTypes.h", "cin_advance/ForceGatherValues.h", "cin_advance/NumericalMassRead.cuh", "cin_advance/ForceGatherLayout.h", "cin_advance/ForceGatherIncidence.h",
+            "NodalCinRuntime.h", "cin_advance/FailureKey.h", "cin_advance/Input.h", "cin_advance/ForceInputs.h", "cin_advance/ForceTransfers.h", "cin_advance/Recovery.h", "cin_advance/RecoveryTypes.h", "cin_advance/RecoveryDrift.h", "cin_advance/DriftTypes.h", "cin_advance/DriftValues.h",
+            "cin_advance/Capture.h", "cin_advance/Screen.h", "cin_advance/ScreenSummary.h", "cin_advance/GroupReport.h", "cin_advance/Groups.h", "cin_advance/GroupResponse.h", "cin_advance/GroupScreenValues.h", "cin_advance/GroupScreen.cuh", "cin_advance/group_motion/Storage.h", "cin_advance/group_motion/Primary.h", "cin_advance/group_motion/Wrench.h", "cin_advance/group_motion/Members.h", "cin_advance/group_motion/Orientation.h", "cin_advance/group_motion/Motion.cuh", "cin_advance/Node.h", "NodalCinLayout.h", "NodalCinStorage.h", "cin_physical_mains/OutputRanges.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":explicit_step_stability", ":nodal_seal_row_values", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index", "//lib_utils:ordered_node_incidence",
+            ":cin_structural_step_values", ":cin_physical_main_values", "//lib_src/math:scalar_bits"],
+)
+
+cc_library(
+    name = "fe_nodal_state_view",
+    hdrs = ["FENodalStateView.h"],
+)
+
+cc_library(
+    name = "nodal_force_assembly",
+    hdrs = ["NodalForceAssembly.h"],
+    deps = [":fe_nodal_state_view", "//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "nodal_repeated_force_assembly",
+    hdrs = ["NodalRepeatedForceAssembly.h"],
+    deps = [":nodal_force_assembly"],
+)
+
+cc_library(
+    name = "nodal_repeated_stiffness",
+    hdrs = ["NodalRepeatedStiffness.h"],
+    deps = [":nodal_force_assembly"],
+)
+
+cc_library(
+    name = "explicit_step_stability",
+    hdrs = ["ExplicitStepStability.h"],
+    deps = [":fe_nodal_state_view", "//lib_src/collision:surface_contact_primitives"],
+)
+
+cc_library(
+    name = "FEAT10ConstraintManager",
+    hdrs = ["FEAT10ConstraintManager.h"],
+    deps = ["//lib_src/constraints:FEAT10ConstraintManager"],
+)
+
+cuda_library(
+    name = "solvers_syncednesterov",
+    srcs = ["SyncedNesterov.cu"],
+    hdrs = [
+        "SolverBase.h",
+        "SyncedNesterov.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "solvers_syncedadamw",
+    srcs = ["SyncedAdamW.cu"],
+    hdrs = [
+        "SolverBase.h",
+        "SyncedAdamW.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "solvers_syncedadamwnocoop",
+    srcs = ["SyncedAdamWNocoop.cu"],
+    hdrs = [
+        "SolverBase.h",
+        "SyncedAdamW.cuh",
+        "SyncedAdamWNocoop.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcublas"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "solvers_syncednewton",
+    srcs = ["SyncedNewton.cu"],
+    hdrs = [
+        "SolverBase.h",
+        "SyncedNewton.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcusolver", "-lcublas", "-lcusparse", "-lcudss"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "solvers_syncedvbd",
+    srcs = ["SyncedVBD.cu"],
+    hdrs = [
+        "SolverBase.h",
+        "SyncedVBD.cuh",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcublas"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "multi_element_problem",
+    srcs = ["FEMultiElementProblem.cu"],
+    hdrs = [
+        "FEMultiElementProblem.h",
+        "FEStateBuffer.h",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cuda_library(
+    name = "multi_element_newton",
+    srcs = ["MultiElementNewton.cu"],
+    hdrs = [
+        "MultiElementNewton.cuh",
+        "SolverBase.h",
+    ],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcusolver", "-lcublas", "-lcusparse", "-lcudss"],
+    deps = [
+        ":multi_element_problem",
+        ":solvers_syncednewton",
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)
+
+cc_library(
+    name = "nodal_seal_row_values",
+    hdrs = ["nodal_seal/RowValues.h", "nodal_seal/RowLayout.h"],
+    deps = [":explicit_step_stability"],
+    visibility = ["//visibility:public"],
+)

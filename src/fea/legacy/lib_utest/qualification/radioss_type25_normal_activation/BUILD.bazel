@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer", size = "small", srcs = ["Consumer.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_normal_activation"],
+)
+cc_test(
+    name = "source", size = "small", srcs = ["SourceProofTest.cpp"],
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+    data = glob(["native/**"]) + ["//lib_utest/qualification/radioss_type25_selection:source_constants_helper"],
+)

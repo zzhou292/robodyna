@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_test(
+    name = "cin_physical_main_host",
+    size = "small",
+    srcs = ["ValuesTest.cpp"],
+    deps = ["//lib_src/solvers:cin_physical_main_values",
+            "//lib_utest/qualification/cin_physical_timestep:value_fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_test(
+    name = "cin_physical_main_cuda",
+    size = "small",
+    srcs = ["OwnerTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:cin_physical_main_values",
+            "//lib_utest/qualification/cin_physical_timestep:owner_support",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

@@ -1,0 +1,214 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "TYPE1 IPOS0/3/4, NIP3, NODADT1. Exact donor coefficients and unchanged native point/failure loop with independent native quadrature input.",
+  "inputs": [
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/original/shell_offset_wm_ini.F90",
+      "original_path": "engine/source/elements/shell/shell_offset_wm_ini.F90",
+      "bytes": 7789,
+      "sha256": "46d3437e99ee0e5ccdaaba2d89897dcaf80c235050c07aeacb4edc650a7b2a31",
+      "git_blob_sha1": "9192a88924ecdcb854fe224f34b63dc8eac2a842"
+    },
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/original/layini.F",
+      "original_path": "engine/source/elements/shell/coque/layini.F",
+      "bytes": 41570,
+      "sha256": "744be8fb1910479bd5d29c3e0f6e421195a09b24c3e19991969a1516000da7c3",
+      "git_blob_sha1": "ed6c29cd3a19f4e12b8d61171f4beb6c250c3c5a"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/properties/shell/hm_read_prop01.F",
+      "original_path": "starter/source/properties/shell/hm_read_prop01.F",
+      "bytes": 16609,
+      "sha256": "13d216d324eafee9085522d19c597754a5ad51aad02a294316a6c459b89c37d4",
+      "git_blob_sha1": "5a7af926ee09df65436592aee9140a24c1058943"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cinmas.F",
+      "original_path": "starter/source/elements/shell/coque/cinmas.F",
+      "bytes": 91639,
+      "sha256": "06a32031e4e0c9cdac68605a60d9fe4ef427d1548eac52499f6bef9d9912fe5e",
+      "git_blob_sha1": "faaf1c988e0be143bbe572e4d05da42298bc262f"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "original_path": "engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "bytes": 41674,
+      "sha256": "9b8d5c29258b80366179baf1e70b631117fa056c7cd1a2503ff98e47d8f978e5",
+      "git_blob_sha1": "9fbff29d0c49a65ee9bc65b702acf04ca01d103a"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "original_path": "engine/source/elements/sh3n/coquedk/cndt3.F",
+      "bytes": 12054,
+      "sha256": "4ae20594cb1868ec0ef6d9ccb2aed816257862582ce292395e97cb767dfea404",
+      "git_blob_sha1": "652c459ee3cf93bdb4983e748ad5d2fd6b5ed672"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "original_path": "starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "bytes": 76288,
+      "sha256": "17218f450465558b6858316022b8fd2584baabd9c775aba7ef2cf89b0a0958a8",
+      "git_blob_sha1": "9b93b8ecda3d10689a99b99d0d897f90505e8e28"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "original_path": "engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "bytes": 11385,
+      "sha256": "a8dfdfad230aec3619854c11665d4d50a7be57a7012f8279109f90b20518f926",
+      "git_blob_sha1": "eb9875148193813fa6731d7b491fb697ce13eb9c"
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_failure/native/NativeCaller.F90",
+      "bytes": 8194,
+      "sha256": "e510710bff008e20c83f40d5d7fc62cd86519a9f5a7e91d9bf3204afecee0d75"
+    },
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/NativePlacement.F",
+      "bytes": 3270,
+      "sha256": "4ae70817998e2ae05afe3c3900d03bb7d7e5adaefb0634aabc6679d0c1b0acd6"
+    },
+    {
+      "path": "lib_utest/qualification/shell_reference_placement/native/NativeCaller.F90",
+      "bytes": 1776,
+      "sha256": "e9b69c9efa907a56ea126884c811dc1ba6c203ed72693c34fc0a979462789261"
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_failure/native/NativeInterfaces.F90",
+      "bytes": 1473,
+      "sha256": "6b0e8a26bcd107bd9376f72a5649739036274c9e0ceed7fa8b49ac53e105d9e0"
+    }
+  ],
+  "fragments": [
+    {
+      "file": "PlacementShift.inc",
+      "source": "lib_utest/qualification/native/qeph/original/starter/source/properties/shell/hm_read_prop01.F",
+      "ranges": [
+        [
+          331,
+          337
+        ]
+      ],
+      "sha256": "4804e0685309eceb728928237378cb1d359fc58e1d816d2028e44419c6297681"
+    },
+    {
+      "file": "PlacementPosition.inc",
+      "source": "lib_utest/qualification/shell_reference_placement/native/original/layini.F",
+      "ranges": [
+        [
+          248,
+          257
+        ]
+      ],
+      "sha256": "ce55462d4e2565fbc0d4d32d797e49a0aba07d9f3c2650ad096b203c2f0ccd41"
+    },
+    {
+      "file": "PlacementQ4Inertia.inc",
+      "source": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cinmas.F",
+      "ranges": [
+        [
+          1382,
+          1386
+        ]
+      ],
+      "sha256": "b0206011076f8a9797d352f09ea19204f13a3a266c66f6c7352268d6b0ce1203"
+    },
+    {
+      "file": "PlacementT3Inertia.inc",
+      "source": "lib_utest/qualification/native/t3/original/starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "ranges": [
+        [
+          1113,
+          1117
+        ]
+      ],
+      "sha256": "3095c8ccdca182bf45262181391ba76c793b6a46fb07734248aea17fdd3de02c"
+    },
+    {
+      "file": "PlacementOffset.inc",
+      "source": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "ranges": [
+        [
+          263,
+          264
+        ],
+        [
+          267,
+          269
+        ]
+      ],
+      "sha256": "ebb2e3340f58af36a85f767ce8df8066b826086da68a2c3ba5f8d9e3ada7f010"
+    },
+    {
+      "file": "PlacementLength.inc",
+      "source": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "ranges": [
+        [
+          85,
+          89
+        ]
+      ],
+      "sha256": "120b4ec1329782bcfd2462a0d5c78259c3e0121f2d7a170b691448c80d44265b"
+    },
+    {
+      "file": "PlacementStiffnessFactor.inc",
+      "source": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "ranges": [
+        [
+          102,
+          102
+        ]
+      ],
+      "sha256": "956905bcc56b9b8afc2a3887b982f5d28b0062d16a5aa55f04e422755458d753"
+    },
+    {
+      "file": "PlacementQ4Stiffness.inc",
+      "source": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "ranges": [
+        [
+          211,
+          218
+        ]
+      ],
+      "sha256": "854e43e4a77558cbadb0db2f57d05c723cc47bc9a1b7fbaffffb7751876d87c6"
+    },
+    {
+      "file": "PlacementT3Stiffness.inc",
+      "source": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "ranges": [
+        [
+          123,
+          135
+        ]
+      ],
+      "sha256": "3d7ef74e87cc7fb944cd845477915edfacf1fdf32a6d12f3c8bd79bfcd8e04c9"
+    },
+    {
+      "file": "PlacementNativeDt.inc",
+      "source": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "ranges": [
+        [
+          223,
+          225
+        ]
+      ],
+      "sha256": "e8003d478d4ce283381455fe2280f34fffa1921ced480b642f37ea83f723284a"
+    }
+  ],
+  "wm_source": "lib_utest/qualification/shell_reference_placement/native/original/shell_offset_wm_ini.F90",
+  "caller_source": "lib_utest/qualification/shell_layered_failure/native/NativeCaller.F90",
+  "generated": {
+    "PlacementShift.inc": "4804e0685309eceb728928237378cb1d359fc58e1d816d2028e44419c6297681",
+    "PlacementPosition.inc": "ce55462d4e2565fbc0d4d32d797e49a0aba07d9f3c2650ad096b203c2f0ccd41",
+    "PlacementQ4Inertia.inc": "b0206011076f8a9797d352f09ea19204f13a3a266c66f6c7352268d6b0ce1203",
+    "PlacementT3Inertia.inc": "3095c8ccdca182bf45262181391ba76c793b6a46fb07734248aea17fdd3de02c",
+    "PlacementOffset.inc": "ebb2e3340f58af36a85f767ce8df8066b826086da68a2c3ba5f8d9e3ada7f010",
+    "PlacementLength.inc": "120b4ec1329782bcfd2462a0d5c78259c3e0121f2d7a170b691448c80d44265b",
+    "PlacementStiffnessFactor.inc": "956905bcc56b9b8afc2a3887b982f5d28b0062d16a5aa55f04e422755458d753",
+    "PlacementQ4Stiffness.inc": "854e43e4a77558cbadb0db2f57d05c723cc47bc9a1b7fbaffffb7751876d87c6",
+    "PlacementT3Stiffness.inc": "3d7ef74e87cc7fb944cd845477915edfacf1fdf32a6d12f3c8bd79bfcd8e04c9",
+    "PlacementNativeDt.inc": "e8003d478d4ce283381455fe2280f34fffa1921ced480b642f37ea83f723284a",
+    "PlacementWm.F90": "3778f8a3323ce27eb27acd047bab7ecc78ba13efb8609f545e45d3016d9bbb1a",
+    "PlacementPacket.F90": "720f435610df1538b58204be784165613516c42304b031b9ba0d390332f39768"
+  }
+}

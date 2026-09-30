@@ -1,0 +1,42 @@
+{
+  "baseline_commit": "b939d7645dc371f684c451700bcf4d4bce8deaa6",
+  "scope": "Frozen serial mapped candidate validation and diagnostics; no new native mechanics claim",
+  "files": [
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/reference/QephBatchDiagnostics.h",
+      "bytes": 3759,
+      "sha256": "fc499f312a1ff9b5c9f6e90d763c0b8f4cd3090bafffb54b9ee7916bb270421c"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/reference/QephBatchKernels.cu",
+      "bytes": 9465,
+      "sha256": "6160ca1a35ecb071d9303ca4a788bc8c2936290a2c9d9a18fcca06fd69806899"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/SerialDiagnostics.h",
+      "bytes": 5423,
+      "sha256": "4e70d11daa534db840b6feed129918906a4b5037d51a991af82b0e646054a6a0"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Result.h",
+      "bytes": 4608,
+      "sha256": "93bde1836116c1b1f55e5dafd850fd40e9a77bf671164883a4b8e8327cc5209e"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFields.h",
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85",
+      "prior_sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9",
+      "prior_bytes": 2542,
+      "followup": "Default-double accumulator template; expression body authenticated by qeph_observer_reduction"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistory.h",
+      "bytes": 3593,
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878",
+      "prior_sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3",
+      "prior_bytes": 3493,
+      "followup": "Inherited qualified projection-working-length identity comparison; exact two-line expansion reviewed against b939. No history arithmetic change in this slice."
+    }
+  ]
+}

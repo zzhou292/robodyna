@@ -1,0 +1,65 @@
+{
+  "schema": "tl.law90_sdi_qualification_sources.v1",
+  "files": [
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 4153,
+      "sha256": "7a119b3ecc3c0c8f93ffdd1410a3ec962e2340ebf43463897e19d95d6b6b38a8"
+    },
+    {
+      "path": "Fields.cpp",
+      "bytes": 4978,
+      "sha256": "b55e8237120664f251b41b314b723a920c49ad354898a93082c751c32d09e5d6"
+    },
+    {
+      "path": "FixtureTest.py",
+      "bytes": 3040,
+      "sha256": "344124b0e0329dae8d8aea8864dbd3c7a0d53627d05d91846db79bd3007482ec"
+    },
+    {
+      "path": "Main.cpp",
+      "bytes": 2597,
+      "sha256": "388d77e17210537d5ab74dbba68bf17347ea096e921d9b70e0a4010b746c5c4f"
+    },
+    {
+      "path": "NativeUnits.F",
+      "bytes": 712,
+      "sha256": "a3e13f9691a58c35d530d9ee03e1b3a185d2846975d75c5237a89513dde31dee"
+    },
+    {
+      "path": "Observation.h",
+      "bytes": 1324,
+      "sha256": "0122346432c98aebec11d8689bd1f5b7e09dd2ecbb364623d1e916630a3fb91f"
+    },
+    {
+      "path": "Preparation.cpp",
+      "bytes": 1370,
+      "sha256": "2a57efd9b4038f5205347a59414a037d35f17fc77bffa9ae739aa1565468a029"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6209,
+      "sha256": "82d7625e614ac021885a2e17cd5e0040fd10aa92665cbbedc6e175af3f7663c0"
+    },
+    {
+      "path": "Writer.cpp",
+      "bytes": 3652,
+      "sha256": "841465876a37d0a8dd13b44d4bd6d5c0107f2ba6a38fb1fda5bbf60056f8992f"
+    },
+    {
+      "path": "fixture.py",
+      "bytes": 3841,
+      "sha256": "0def457f1948a37e99eb840313ce3a908d7b809849707da349c632aa2d153708"
+    },
+    {
+      "path": "prepare_sources.py",
+      "bytes": 2645,
+      "sha256": "cd753dc0479a9e0741f8ecd4f093b38ab3e790c1e35e464343e365d1d442aef7"
+    },
+    {
+      "path": "run_check.py",
+      "bytes": 6680,
+      "sha256": "b63283a473e5295c9c8dd3686bdd02b36f9a99987a20eeb784442f8e7c1868bb"
+    }
+  ]
+}

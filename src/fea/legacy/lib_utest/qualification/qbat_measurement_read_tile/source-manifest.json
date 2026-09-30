@@ -1,0 +1,112 @@
+{
+  "baseline": "92dd532ea815cedbea3942144147f1b2a8c27414",
+  "frozen": [
+    {
+      "path": "lib_utest/qualification/qbat_measurement_read_tile/frozen/Measurement.cu",
+      "bytes": 2240,
+      "sha256": "917ee0b0eecf83016ab119985d256abd4ae38b31a93d226d0df04a2404733fc3",
+      "name": "Measurement.cu"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_read_tile/frozen/Measurement.h",
+      "bytes": 2951,
+      "sha256": "ddb031bffb2d1441f15b12d3ed13a9873ebaf276b191f1656700fa6f8ce5b021",
+      "name": "Measurement.h"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_read_tile/frozen/MeasurementValues.h",
+      "bytes": 4261,
+      "sha256": "0be8b8b4d0a0e5a67a1012f280a4b06062fc9d025effe46eb58c00cae21d748e",
+      "name": "MeasurementValues.h"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementTypes.h",
+      "bytes": 870,
+      "sha256": "659d98ac1bae71f88e79105876e5e8d3d4aa5a2ca9b0e45c4010f592ac93e8d1"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyTypes.h",
+      "bytes": 1485,
+      "sha256": "f7447afa15f15b65280e8cf07ef8f239e6c4e76017cd1db0bb1526d09dac0440"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
+      "bytes": 2217,
+      "sha256": "abd0315ef78872c9140fca53a9efea9516ade062b3e113ef2b3da1804fd138aa"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchKernels.cu",
+      "bytes": 6138,
+      "sha256": "b165c69328d8ee73a16fbc314507b6dab4ce83d64ffddce1cc87e56ee21455f6"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchReadback.cu",
+      "bytes": 7339,
+      "sha256": "5e74d8e8d1a2871396392423d6378920cf81642b388da4924facde6ed5a23c1e"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchIdentity.cpp",
+      "bytes": 2630,
+      "sha256": "c0d0bb17645367c3d98060dc1cff1bff9065e524449e82c645d506af6dd2ec74"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/Fixture.h",
+      "bytes": 4671,
+      "sha256": "005b5593ed63b9f08f88cbe0862f937e651e3d461d0819b59d820cf063b26000"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/DeviceFixture.cuh",
+      "bytes": 3753,
+      "sha256": "96a0161b31e75a0da020fa2592b15dad03be2f2c9900ed27b2fede11d778075d"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/SerialFinalize.h",
+      "bytes": 1006,
+      "sha256": "237720241e141cef87453b9aa0b0f3391818ccce1ba140d93848c6e5183cf619"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/QbatSupport.h",
+      "bytes": 2337,
+      "sha256": "9e381f7075988fe535251fcc122db4f45c238a6a35a3d1010951fe57c8195caf"
+    },
+    {
+      "path": "lib_utest/qualification/finalizer_local_control/generate_oracles.py",
+      "bytes": 3874,
+      "sha256": "5d9482c134b59bfac3382dd51f1cfcff7bf930dbcec863b1787d5d33a4411b2a"
+    }
+  ],
+  "production": [
+    {
+      "path": "lib_src/elements/qbat/mapped/measurement/Finalize.cuh",
+      "bytes": 1696,
+      "sha256": "f01bae4c64c70dadd604369caaa8b65c56c2c811b0b077f11ab473c63ad8a083"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/measurement/Read.h",
+      "bytes": 2332,
+      "sha256": "f2789bab6021f7c4710a14b89bddacd1a798363558da90064ae1f9d18cee8574"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/measurement/Tile.h",
+      "bytes": 914,
+      "sha256": "67a12eae367329405d2ff77952242d129f7c915894d6235bd6a4a68739c2775c"
+    },
+    {
+      "path": "lib_src/elements/qbat/BUILD.bazel",
+      "bytes": 4149,
+      "sha256": "3979781a3f4a730d0ff1923d25ae5266fbade838a48688b437fb2c42590beb5a"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatch.cmake",
+      "bytes": 1409,
+      "sha256": "687720cd0511563332a25a8e00f1bab516ccb61cea55af8076748c2d7bd5102d"
+    }
+  ]
+}

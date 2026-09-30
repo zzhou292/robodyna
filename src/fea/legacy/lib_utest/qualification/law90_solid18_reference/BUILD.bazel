@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h", "WorkingModeBound.h"],
+    deps = ["//lib_src/elements/solid18/total_strain:reference_kinematics",
+            "//lib_utest/qualification/solid18_reference:source_fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h"],
+    deps = ["//lib_src/elements/solid18/total_strain:reference_kinematics",
+            "//lib_utest/qualification/solid18_reference:source_fixture",
+            "@googletest//:gtest"],
+    visibility = ["//visibility:public"],
+)

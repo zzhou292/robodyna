@@ -1,0 +1,74 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = [
+        "//lib_utest/qualification/self_contact_current_regularity:__pkg__",
+        "//lib_utest/qualification/self_contact_force_assembly:__pkg__",
+        "//lib_utest/qualification/self_contact_transaction:__pkg__",
+    ],
+    deps = [
+        "//lib_src/assembly:shell_execution_binding",
+        "//lib_src/collision:self_contact_active_uses",
+        "//lib_src/constraints:nodal_rigid_part_topology",
+        "//lib_src/constraints/tied_shell:tied_post_kinchk",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    tags = ["m2-self-contact-refinement", "symmetric-edge-area"],
+    srcs = [
+        "ActivityTest.cpp",
+        "AreaTest.cpp",
+        "AuthorityTest.cpp",
+        "CapacityTest.cpp",
+        "CinIndexTest.cpp",
+        "CinTieTest.cpp",
+        "ClassificationTest.cpp",
+        "Fixture.h",
+        "ScalingTest.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/assembly:shell_execution_binding",
+        "//lib_src/collision:self_contact_active_uses",
+        "//lib_src/constraints:nodal_rigid_part_topology",
+        "//lib_src/constraints/tied_shell:tied_post_kinchk",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "source_check",
+    size = "small",
+    tags = ["m2-self-contact-refinement", "symmetric-edge-area"],
+    srcs = ["SourceProofTest.cpp"],
+    data = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "ScalingTest.cpp",
+        "verify_sources.py",
+        "//lib_src/collision:self_contact_active_use_source_proof",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
+
+genrule(
+    name = "source_artifact",
+    srcs = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "ScalingTest.cpp",
+        "verify_sources.py",
+        "//lib_src/collision:self_contact_active_use_source_proof",
+    ],
+    outs = ["source-proof.json"],
+    cmd = "python3 -B $(location verify_sources.py) > $@",
+)

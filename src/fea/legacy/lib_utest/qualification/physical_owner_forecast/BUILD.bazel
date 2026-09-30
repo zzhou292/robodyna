@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "physical_owner_forecast_host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "physical_owner_forecast_cuda",
+    size = "small",
+    srcs = ["CudaTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

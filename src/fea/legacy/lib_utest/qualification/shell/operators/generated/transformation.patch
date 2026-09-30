@@ -1,0 +1,28 @@
+--- a/donor/shell_strain_material_kernel.cu
++++ b/generated/shell_strain_material_kernel_gauss3.cu
+@@ -43,6 +43,8 @@
+ #include <cfloat>
+ #include <type_traits>
+ #include "real_type.h"
++// Local modification 2026-09-08: NPT=3 Gauss thickness rule; see generated manifest.json.
++#include "shell_thickness_gauss3.h"
+ 
+ // ===========================================================================
+ //  Johnson-Cook material parameters — passed via constant memory or struct
+@@ -693,12 +695,14 @@
+         // --- Gauss point z-coordinate in [-0.5, +0.5] of unit thickness ---
+         //     For NPT points, Simpson-like spacing:
+         //     zeta = (-0.5 + (ipt + 0.5) / NPT)  →  maps to [-0.5, +0.5]
+-        Real zeta = -0.5 + ((Real)ipt + 0.5) / (Real)NPT;
++        Real zeta = (NPT == 3) ? crash_shell_gauss3::zeta(ipt)
++                               : -0.5 + ((Real)ipt + 0.5) / (Real)NPT;
+         Real z_pos = zeta * thk0_i;  // physical z-coordinate
+ 
+         //  Integration weight  (trapezoidal / equal spacing):
+         //  wt = thk0 / NPT   (equal weight for each point)
+-        Real wt = thk0_i / (Real)NPT;
++        Real wt = (NPT == 3) ? thk0_i * crash_shell_gauss3::weight(ipt)
++                             : thk0_i / (Real)NPT;
+ 
+         // --- Combined strain increment at this z-point ---
+         Real deps_xx = exx + z_pos * kxx;

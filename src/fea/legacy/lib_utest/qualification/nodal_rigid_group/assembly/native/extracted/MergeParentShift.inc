@@ -1,0 +1,15 @@
+            XX=(XG(1)-X(1,M))*(XG(1)-X(1,M))
+            XY=(XG(1)-X(1,M))*(XG(2)-X(2,M))
+            XZ=(XG(1)-X(1,M))*(XG(3)-X(3,M))
+            YY=(XG(2)-X(2,M))*(XG(2)-X(2,M))
+            YZ=(XG(2)-X(2,M))*(XG(3)-X(3,M))
+            ZZ=(XG(3)-X(3,M))*(XG(3)-X(3,M))
+            RBY(1,NRB)=RBY(1,NRB)+(YY+ZZ)*XMG
+            RBY(2,NRB)=RBY(2,NRB)-XY*XMG
+            RBY(3,NRB)=RBY(3,NRB)-XZ*XMG
+            RBY(4,NRB)=RBY(4,NRB)-XY*XMG
+            RBY(5,NRB)=RBY(5,NRB)+(ZZ+XX)*XMG
+            RBY(6,NRB)=RBY(6,NRB)-YZ*XMG
+            RBY(7,NRB)=RBY(7,NRB)-XZ*XMG
+            RBY(8,NRB)=RBY(8,NRB)-YZ*XMG
+            RBY(9,NRB)=RBY(9,NRB)+(XX+YY)*XMG

@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "shell_output_ranges_host",
+    size = "small",
+    srcs = ["EnvelopeTest.cpp", "BindingTest.cpp", "ScopeTest.cpp", "ExecutionTest.cpp",
+            "Fixture.h", "Probes.h", "oracle/FrozenFormulation.h",
+            "oracle/FrozenExecution.h", "oracle/FrozenExecution.cpp"],
+    includes = ["oracle"],
+    deps = ["//lib_src/elements:shell_physical_owner_values",
+            "//lib_src/elements:shell_formulation_output_ranges",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/assembly:shell_execution_binding",
+            "//lib_utest/qualification/qbat_catalog:fixture",
+            "//lib_utest/qualification/qbat_binding:fixture",
+            "//lib_utest/qualification/shell_execution:fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

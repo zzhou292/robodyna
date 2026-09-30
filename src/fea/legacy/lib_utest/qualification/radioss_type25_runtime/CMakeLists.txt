@@ -1,0 +1,157 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLNativeType25Runtime LANGUAGES C CXX CUDA Fortran)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(TYPE25_LIFECYCLE_CUDA ON)
+set(TYPE25_ASSEMBLY_CUDA ON)
+set(TYPE25_SEARCH_CUDA ON)
+set(TYPE25_CANDIDATE_CUDA ON)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_lifecycle" lifecycle)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_assembly" assembly)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_candidates" candidates)
+add_subdirectory("${TL_ROOT}/lib_src/solvers" nodal-owner)
+include("${TL_ROOT}/lib_src/elements/qeph/QephBatch.cmake")
+include("${TL_ROOT}/lib_src/elements/t3/T3Batch.cmake")
+include("${TL_ROOT}/lib_src/elements/ShellBatchPublication.cmake")
+include("${TL_ROOT}/lib_src/collision/RadiossType25Transaction.cmake")
+add_executable(type25_runtime_consumer ConsumerTest.cpp)
+target_link_libraries(type25_runtime_consumer PRIVATE tl_radioss_type25_transaction GTest::gtest_main)
+add_test(NAME type25_runtime_consumer COMMAND type25_runtime_consumer)
+set_tests_properties(type25_runtime_consumer PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+include("${TL_ROOT}/lib_src/collision/RadiossType25FixedMainStartup.cmake")
+add_executable(type25_runtime_source_host SourceAdmissionTest.cpp FullLedgerTest.cpp ActivePrefixSourceTest.cpp)
+target_link_libraries(type25_runtime_source_host PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main)
+add_test(NAME type25_runtime_source_host COMMAND type25_runtime_source_host)
+set_tests_properties(type25_runtime_source_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_composed_cuda ComposedCudaTest.cu)
+target_link_libraries(type25_runtime_composed_cuda PRIVATE tl_radioss_type25_transaction
+  type25_lifecycle_oracle type25_assembly_oracle GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_composed_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_composed_cuda COMMAND type25_runtime_composed_cuda)
+set_tests_properties(type25_runtime_composed_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+option(TYPE25_RUNTIME_MOVING_SCENE "Build the real common-owner native wall/patch coupon" OFF)
+set(TYPE25_NATIVE_SCENE_APP_ROOT "" CACHE PATH "Pinned app material bridge source checkout")
+if(TYPE25_RUNTIME_MOVING_SCENE)
+  if(NOT EXISTS "${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridge.cmake")
+    message(FATAL_ERROR "Moving scene requires the explicitly pinned app material bridge")
+  endif()
+  set(ROBO_DYNA_TL_ROOT "${TL_ROOT}" CACHE PATH "Explicit qualified TL source checkout" FORCE)
+  include("${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridge.cmake")
+  set(observed "${CMAKE_CURRENT_BINARY_DIR}/observed-fixture")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py"
+    --output "${observed}" RESULT_VARIABLE fixture_status)
+  if(NOT fixture_status EQUAL 0)
+    message(FATAL_ERROR "Pinned native scene fixture generation failed")
+  endif()
+  file(GLOB fixture_inputs CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/fixture/*")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${fixture_inputs}
+    "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py")
+  add_executable(type25_runtime_moving_cuda MovingSceneTest.cu)
+  target_include_directories(type25_runtime_moving_cuda PRIVATE "${observed}")
+  target_compile_definitions(type25_runtime_moving_cuda PRIVATE
+    TYPE25_NATIVE_REFERENCE_FILE="${observed}/native-reference.bin")
+  target_link_libraries(type25_runtime_moving_cuda PRIVATE tl_radioss_type25_transaction
+    robo_dyna_native_scene_material GTest::gtest_main CUDA::cudart)
+  set_target_properties(type25_runtime_moving_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_test(NAME type25_runtime_moving_cuda COMMAND type25_runtime_moving_cuda)
+  set_tests_properties(type25_runtime_moving_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240)
+  add_executable(type25_runtime_moving_probe MovingSceneProbe.cu)
+  target_include_directories(type25_runtime_moving_probe PRIVATE "${observed}")
+  target_compile_definitions(type25_runtime_moving_probe PRIVATE TYPE25_NATIVE_REFERENCE_FILE="${observed}/native-reference.bin")
+  target_link_libraries(type25_runtime_moving_probe PRIVATE tl_radioss_type25_transaction robo_dyna_native_scene_material CUDA::cudart)
+  set_target_properties(type25_runtime_moving_probe PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  add_executable(type25_runtime_material_bridge
+    "${TYPE25_NATIVE_SCENE_APP_ROOT}/modelio/native_contact_scene/MaterialBridgeTest.cpp")
+  target_link_libraries(type25_runtime_material_bridge PRIVATE robo_dyna_native_scene_material GTest::gtest_main)
+  add_test(NAME type25_runtime_material_bridge COMMAND type25_runtime_material_bridge)
+  add_test(NAME type25_runtime_observed_source COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/prepare_fixture.py" --output "${observed}" --check)
+endif()
+
+# Complete original normal-cache oracle is linked only into owning tests.
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_current_normals" current-normal-regression)
+add_executable(type25_runtime_moving_cache_cuda MovingCacheTest.cu)
+target_link_libraries(type25_runtime_moving_cache_cuda PRIVATE tl_radioss_type25_transaction
+  type25_current_normals_oracle GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_moving_cache_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_moving_cache_cuda COMMAND type25_runtime_moving_cache_cuda)
+set_tests_properties(type25_runtime_moving_cache_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_mass_host MassOperandsTest.cpp)
+target_link_libraries(type25_runtime_mass_host PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main)
+add_test(NAME type25_runtime_mass_host COMMAND type25_runtime_mass_host)
+set_tests_properties(type25_runtime_mass_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_accepted_mass_cuda AcceptedMassOwnerTest.cu)
+target_link_libraries(type25_runtime_accepted_mass_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup type25_friction_oracle GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_accepted_mass_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_accepted_mass_cuda COMMAND type25_runtime_accepted_mass_cuda)
+set_tests_properties(type25_runtime_accepted_mass_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_full_ledger_cuda FullLedgerRig.cu FullLedgerCudaTest.cu ActivePrefixCudaTest.cu)
+target_link_libraries(type25_runtime_full_ledger_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_full_ledger_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_full_ledger_cuda COMMAND type25_runtime_full_ledger_cuda)
+set_tests_properties(type25_runtime_full_ledger_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_physical_main_host PhysicalMainTest.cpp)
+target_link_libraries(type25_runtime_physical_main_host PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main)
+add_test(NAME type25_runtime_physical_main_host COMMAND type25_runtime_physical_main_host)
+set_tests_properties(type25_runtime_physical_main_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_mixed_source_host MixedRuntimeHostTest.cpp)
+target_link_libraries(type25_runtime_mixed_source_host PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main)
+add_test(NAME type25_runtime_mixed_source_host COMMAND type25_runtime_mixed_source_host)
+add_executable(type25_runtime_mixed_cuda FullLedgerRig.cu MixedRuntimeCudaTest.cu)
+target_link_libraries(type25_runtime_mixed_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup type25_current_normals_oracle GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_mixed_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_mixed_cuda COMMAND type25_runtime_mixed_cuda)
+
+add_executable(type25_runtime_preflight_cuda FullLedgerRig.cu PreflightTest.cu)
+target_link_libraries(type25_runtime_preflight_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_preflight_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_preflight_cuda COMMAND type25_runtime_preflight_cuda)
+set_tests_properties(type25_runtime_preflight_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+add_executable(type25_runtime_general_cuda GeneralInitializeTest.cu FullLedgerRig.cu)
+target_link_libraries(type25_runtime_general_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_general_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_general_cuda COMMAND type25_runtime_general_cuda)
+set_tests_properties(type25_runtime_general_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 180)
+add_executable(type25_general_consumer "${CMAKE_CURRENT_LIST_DIR}/../radioss_type25_general_initialize/Consumer.cpp")
+target_link_libraries(type25_general_consumer PRIVATE tl_radioss_type25_transaction)
+add_test(NAME type25_general_consumer COMMAND type25_general_consumer)
+set_tests_properties(type25_general_consumer PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
+add_executable(type25_runtime_shell_removal_cuda FullLedgerRig.cu ShellRemovalCudaTest.cu)
+target_link_libraries(type25_runtime_shell_removal_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_shell_removal_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_shell_removal_cuda COMMAND type25_runtime_shell_removal_cuda)
+set_tests_properties(type25_runtime_shell_removal_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 2 TIMEOUT 180)
+
+# Actual TAB1 glass removal shares the ordinary self/wall common publisher.
+add_executable(type25_runtime_glass_removal_cuda
+  glass_removal/Initialize.cu glass_removal/Advance.cu glass_removal/Read.cu
+  glass_removal/InitialSource.cpp glass_removal/Compare.cpp glass_removal/CudaTest.cu)
+target_link_libraries(type25_runtime_glass_removal_cuda PRIVATE tl_radioss_type25_transaction
+  tl_radioss_type25_fixed_main_startup GTest::gtest_main CUDA::cudart)
+set_target_properties(type25_runtime_glass_removal_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+add_test(NAME type25_runtime_glass_removal_cuda COMMAND type25_runtime_glass_removal_cuda)
+set_tests_properties(type25_runtime_glass_removal_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)

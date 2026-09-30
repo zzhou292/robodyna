@@ -1,0 +1,38 @@
+C     Test packing only. Both arithmetic fragments are exact pinned source.
+      SUBROUTINE TL_TIED_FORCE(X,FORCE,COUPLE,REPEATED,DPARA,FOUT)
+     . BIND(C,NAME="tl_tied_patch_force")
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE), INTENT(IN) :: X(3,5),FORCE(3),COUPLE(3)
+      REAL(C_DOUBLE), INTENT(OUT) :: DPARA(7,1),FOUT(3,4)
+      INTEGER(C_INT), INTENT(IN) :: REPEATED
+      INTEGER, PARAMETER :: I=5,II=1,J1=1,J2=2,J3=3
+      INTEGER J4
+      INTEGER, PARAMETER :: IRODDL=1
+      INTEGER WEIGHT(5)
+      REAL(C_DOUBLE), PARAMETER :: ONE=1D0,TWO=2D0,ZERO=0D0
+      REAL(C_DOUBLE), PARAMETER :: FOURTH=.25D0
+      REAL(C_DOUBLE) A(3,5),AR(3,5),MS(5),IN(5),FS(3)
+      REAL(C_DOUBLE) FX(4),FY(4),FZ(4)
+      REAL(C_DOUBLE) X0,X1,X2,X3,X4,XS,Y0,Y1,Y2,Y3,Y4,YS
+      REAL(C_DOUBLE) Z0,Z1,Z2,Z3,Z4,ZS
+      REAL(C_DOUBLE) X12,X22,X32,X42,Y12,Y22,Y32,Y42
+      REAL(C_DOUBLE) Z12,Z22,Z32,Z42,XX,YY,ZZ,XY,YZ,ZX
+      REAL(C_DOUBLE) XXX,YYY,ZZZ,XY2,YZ2,ZX2,DET
+      REAL(C_DOUBLE) B1,B2,B3,C1,C2,C3,XMSI,INS,MX,MY,MZ
+      REAL(C_DOUBLE) A1,A2,A3,FX0,FY0,FZ0
+      A=ZERO
+      AR=ZERO
+      A(:,I)=FORCE
+      AR(:,I)=COUPLE
+      MS=ZERO
+      IN=ZERO
+      WEIGHT=1
+      J4=4
+      IF (REPEATED == 1) J4=3
+#include "Geometry.inc"
+#include "Load.inc"
+      FOUT(1,:)=FX
+      FOUT(2,:)=FY
+      FOUT(3,:)=FZ
+      END

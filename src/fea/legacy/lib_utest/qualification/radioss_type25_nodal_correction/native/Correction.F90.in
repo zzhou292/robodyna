@@ -1,0 +1,42 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+subroutine rd_nodal_correction(numnod,numels8,nodes,controls,bulks,controlled,initial,nsec,secondaries,result) bind(C)
+  use iso_c_binding
+  implicit none
+  integer(C_INT),intent(in)::numnod,numels8,nsec
+  integer(C_INT),intent(in)::nodes(8,numels8),controls(numels8),secondaries(nsec)
+  real(C_DOUBLE),intent(in)::bulks(numels8),controlled(numels8),initial(numnod)
+  real(C_DOUBLE),intent(out)::result(numnod)
+@CONSTANTS@
+  integer::i,j,n,mid,pid,icontr,nty,igsti,nsn,ns,ninter,nixs
+  integer::ixs(11,numels8),igeo(97,numels8),itag(numnod),ipari(34,1)
+  real(C_DOUBLE)::pm(107,numels8),stifint(numnod),sfac,sfac_max
+  type secondary_list
+    integer,allocatable::nsv(:)
+  end type
+  type(secondary_list)::intbuf_tab(1)
+  ninter=1
+  nixs=11
+  ixs=0
+  igeo=0
+  pm=0
+  do i=1,numels8
+    ixs(1,i)=i
+    ixs(2:9,i)=nodes(:,i)
+    ixs(10,i)=i
+    igeo(97,i)=controls(i)
+    pm(32,i)=bulks(i)
+    pm(107,i)=controlled(i)
+  enddo
+  ipari=0
+  ipari(7,1)=24
+  ipari(34,1)=-1
+  ipari(5,1)=nsec
+  allocate(intbuf_tab(1)%nsv(nsec))
+  intbuf_tab(1)%nsv=secondaries
+  stifint=initial
+@INITIAL_MAX@
+@SOLIDS@
+@TYPE24@
+  result=stifint
+  deallocate(intbuf_tab(1)%nsv)
+end subroutine

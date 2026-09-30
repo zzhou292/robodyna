@@ -1,0 +1,98 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only complete local COR/DST/GLOB selection stages and original transitive intersection helpers. Stage wrappers and typed ABI are separately reviewed.",
+  "files": [
+    {
+      "path": "native/original/i25cor3.F",
+      "bytes": 37861,
+      "sha256": "054ab489b4528241f7a98b04c8e65cba05df73eb09cc2a0887bb5a23397043a2"
+    },
+    {
+      "path": "native/original/i25dst3_1.F",
+      "bytes": 34749,
+      "sha256": "b7a000755ef7641c99d9dad6f1c4c8de0deadeccd5c3367f5d47792172df2f28"
+    },
+    {
+      "path": "native/original/i25dst3_21.F",
+      "bytes": 31013,
+      "sha256": "ec1d785cee2c4404396e7171548542d6eacc6fa76c87984cf1ecd124994ebddb"
+    },
+    {
+      "path": "native/original/i25dst3_22.F",
+      "bytes": 102182,
+      "sha256": "d57eebd18dccb809b0036c76a6811bce8f36694fefc362061c4b33a8ac1a93ff"
+    },
+    {
+      "path": "native/original/i25comp_1.F",
+      "bytes": 8951,
+      "sha256": "687e25a63c6e99768a88393fc8c4d51535e1786cfe7eac6b7b761843576d6139"
+    },
+    {
+      "path": "native/original/i25comp_2.F",
+      "bytes": 14026,
+      "sha256": "49b4656d294120131e729e620004c3e34866e07d9d2f04f1de565fe90eeae1e3"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    }
+  ],
+  "retained_abi": {
+    "function": "rd_selection_retained",
+    "scope": "one supplied local retained occurrence; MVSIZ=1",
+    "coordinates": "real(c_double)(3,5): four main corners then secondary",
+    "scalars": "real(c_double)(12): main K, secondary K, secondary gap, main gap max, four vertex gaps, DRAD, DGAPLOAD, two selection metrics",
+    "normals": "real(c_float)(3,4)",
+    "bisectors": "real(c_float)(3,2,4)",
+    "flags": "integer(c_int)(19): four equality-preserving node indices, four neighbors, four boundary references, ETYP, global main ID, four IRTLM values, ICONT_I",
+    "values": "real(c_double)(9,4): raw LB/LC, clamped LB/LC, PENT, cache PENM/LBM/LCM, observed DD",
+    "sector_flags": "integer(c_int)(4,4): FAR, cached FAR, raw-defined, clamped-defined",
+    "row_markers": "integer(c_int)(4): resulting IRTLM",
+    "row_values": "real(c_double)(4): classification product, DIST, two selection metrics",
+    "defined": "integer(c_int): wrapper old-sector-readiness only; not a native status"
+  },
+  "continuation_abi": {
+    "function": "rd_selection_continuation",
+    "scope": "one supplied local occurrence and row snapshot; MVSIZ=1; serial qualification",
+    "common_arrays": "same coordinates(3,5), scalars(12), normals(3,4), flags(19), and finite seed as retained",
+    "references": "integer(c_int) raw ADMSR(4), ISLIDE(4), LBOUND(reference_count); references not compressed",
+    "bisectors": "real(c_float)(3,2,reference_count), direct native indices, qualification cap1048576",
+    "segment_count": "actual native NRTM, scalar integer(c_int) by reference",
+    "constraints": "integer(c_int)(5) main1..4 then secondary, separately for ICODT and ISKEW",
+    "values": "real(c_double)(9,4), same retained field order",
+    "sector_flags": "integer(c_int)(6,4): FAR, cached FAR, raw-defined, clamped-defined, KSLIDE, INGAP",
+    "row_markers": "integer(c_int)(4), source IRTLM; C++ restores local_main only after an observed winner write",
+    "row_values": "real(c_double)(4): classification product, DIST, two selection metrics",
+    "axes": "integer(c_int)(3), initialized native IBCX/IBCY/IBCZ",
+    "decision": "integer(c_int)(2), observed effective IT and local winner-branch entry; inactive selected IT is API-zero"
+  },
+  "new_impact_abi": {
+    "function": "rd_selection_new_impact",
+    "scope": "one supplied local occurrence, actual indexed main/reference tables, serial reference-only COMMON",
+    "arguments": 20,
+    "counts": "integer(c_int)(4): NRTM, reference slots, primary local main, ICONT_I",
+    "kinematics": "real(c_double)(3,5,2): four primary corners then secondary, position then velocity",
+    "source_int": "integer(c_int)(14,NRTM): IRECT4, MSEGTYP, MSEGLO, MVOISIN4, ADMSR4",
+    "source_real": "real(c_double)(6,NRTM): main coefficient, GAP_M, GAP_NM4",
+    "normals": "real(c_float)(3,4,NRTM)",
+    "bounds": "integer(c_int)(references), source LBOUND flags",
+    "bisectors": "real(c_float)(3,2,references)",
+    "control": "real(c_double)(3): secondary coefficient, secondary gap, DT1",
+    "prior": "IRTLM integer4 and selection metrics real2",
+    "seed": "finite real(c_double), only undefined-scratch preservation",
+    "projection": "real(c_double)(5,4): rawLB/rawLC/clampedLB/clampedLC/DD",
+    "side_values": "real(c_double)(2,4): PENA/PENB",
+    "side_flags": "integer(c_int)(4,4): FARA/FARB/INGAPA/INGAPB",
+    "cache_values": "real(c_double)(3,4): PENM/LBM/LCM",
+    "cache_far": "integer(c_int)(4): FARM",
+    "row_outputs": "IRTLM integer4 and selection metrics real2",
+    "scalar_values": "real(c_double)(4): classification product/PENT/LBS/LCS",
+    "decision": "integer(c_int)(10): selected sector/FAR/cached main/side choice/global winner/prechoiceA/prechoiceB/intersectionA/intersectionB/recontact",
+    "table_caps": {
+      "main": 1048576,
+      "normal_reference": 1048576
+    },
+    "declared_table_bytes": "264*main_slots + 28*reference_slots; excludes small fixed scratch/compiler/allocator overhead"
+  }
+}

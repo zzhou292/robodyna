@@ -1,0 +1,48 @@
+{
+  "schema": "tl.shell-tab1-force-native-adaptation.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete independently authenticated family geometry/material/force drivers, shared native TAB1 caller with actual family M%SSP; no production implementation used by reference",
+  "inputs": [
+    {
+      "path": "lib_utest/qualification/shell_failure_force/native/prepare_sources.py",
+      "bytes": 4925,
+      "sha256": "1093a13d0501afbb682c2380adc3023b3005dae338ca5e7db49e94ed780dd163"
+    },
+    {
+      "path": "lib_utest/qualification/shell_failure_force/native/source-manifest.json",
+      "bytes": 4663,
+      "sha256": "1db5fadf466bf3eaced36a6f0c7ad86d65e2d632c65c5593e19ac81ef54b4137"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_glass/native/NativeCaller.F90",
+      "bytes": 2114,
+      "sha256": "31215c3ac45458650a9f1a7dd59bda08c611269014af78317e8fc691fc4420c7"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_glass/native/NativePoint.F",
+      "bytes": 3433,
+      "sha256": "d71744e22ddfc6e1e2fb63d9010dcffab6209b88439e3503ad38756d634a58a6"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_glass/native/NativeDefaults.F",
+      "bytes": 1536,
+      "sha256": "0fc14738b81b19c34d3d29d166f712167b5b1f36d0c2efef361db4054cf5c811"
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_failure/native/NativeParent.F",
+      "bytes": 1637,
+      "sha256": "bfc032064a70057ab2fec0e5a0e77143de5124724265825470644e94d64304d4"
+    },
+    {
+      "path": "lib_utest/qualification/shell_tab1_force/native/NativeCaller.F90",
+      "bytes": 1533,
+      "sha256": "236458cccfd960a1afce3d09fa2d9a1dca5183efd84892f17039cab0d5f40cb8"
+    }
+  ],
+  "generated": {
+    "Tab1QephSection.F": "709905cb7288e4324f10b50777e5c28a55f1c4f12e811d598cd2579db42d0749",
+    "Tab1QephForce.F": "add511e16ed15e4d9af310bab564445b38f8ef0384f9511efca6d3f7c6e56c8a",
+    "Tab1T3Section.F": "07da90dcecf49430a61e0647bd4b8194f65c7812a0a89f163ad5b700a755ba4f",
+    "Tab1T3Force.F": "27bada9a8d34daf645872ea43df9197ad1dc7864d5c2676edd6bba97ef826413"
+  }
+}

@@ -1,0 +1,56 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    visibility = ["//lib_utest/qualification/shell_output_ranges:__pkg__",
+                  "//lib_utest/qualification/physical_mesh_wall:__pkg__",
+                  "//lib_utest/qualification/qt_mapped:__pkg__", "//lib_utest:__pkg__", "//lib_utest/qualification/qbat_catalog:__pkg__",
+                  "//lib_utest/qualification/qbat_resident:__pkg__",
+                  "//lib_utest/qualification/nodal_coefficients:__pkg__",
+                  "//lib_utest/qualification/rigid_part_model:__pkg__"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements:shell_batch_binding", "//lib_src/elements/qbat:geometry",
+            "//lib_src/elements/t3:startup", "@googletest//:gtest_main"],
+)
+cc_library(
+    name = "original_source",
+    testonly = True,
+    visibility = ["//lib_utest/qualification/qbat_mapped:__pkg__",
+                  "//lib_utest/qualification/qbat_catalog:__pkg__",
+                  "//lib_utest/qualification/qbat_resident:__pkg__"],
+    srcs = ["OriginalFixture.cpp"],
+    hdrs = ["OriginalFixture.h"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_src/elements:shell_batch_binding", "//lib_utest/qualification/qbat:source_fixture"],
+)
+cc_test(
+    name = "qbat_binding_host_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "FailureTest.cpp", "MassTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixture", "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/assembly:nodal_mass_binding", "//lib_utest/qualification/nodal_mass:test_support",
+            "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "qbat_binding_original_check",
+    size = "medium",
+    srcs = ["OriginalTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixture", ":original_source", "//lib_utest/qualification/qbat:source_fixture",
+            "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "qbat_binding_closed_participants_check",
+    size = "small",
+    srcs = ["ClosedParticipantsTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+    deps = [":fixture", "//lib_src/elements:shell_batch_publication",
+            "//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
+            "//lib_src/assembly:nodal_mass_binding", "//lib_utest/qualification/nodal_mass:test_support",
+            "@googletest//:gtest_main"],
+)

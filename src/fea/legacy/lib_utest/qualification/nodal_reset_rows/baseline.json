@@ -1,0 +1,20 @@
+{
+  "commit": "1d626200a9ba2bf6a1c0d6cede96b68c739dd463",
+  "sources": {
+    "owner": {
+      "path": "lib_src/solvers/FENodalState.cu",
+      "bytes": 26959,
+      "sha256": "506afa6522c80601bab58902c55493c061510823dea64207677baa73ddb08190"
+    },
+    "stability": {
+      "path": "lib_src/solvers/ExplicitStepStability.h",
+      "bytes": 11009,
+      "sha256": "f0d34a3cf0dd5592d5ef3b538456a89ffb6537b92e83ff63288dbafc676b66af"
+    },
+    "build": {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 8359,
+      "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf"
+    }
+  }
+}

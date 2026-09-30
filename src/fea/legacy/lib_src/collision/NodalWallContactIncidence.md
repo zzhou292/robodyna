@@ -1,0 +1,34 @@
+# Ordered native-share incidence
+
+`NodalWallContactModel.cpp` builds one immutable row for each compact contact
+node during the existing admission/rate traversal. A row contains encoded
+`4 * parent + local` slots in canonical parent/local order. Q4 has four slots;
+T3 has three, with no padding incidence. Startup checks complete coverage before
+publishing the prepared model.
+
+`NodalWallContactArena` owns and rebases `node_count + 1` offsets and
+`4 * parent_count` slot capacity inside its existing bounded arena. This adds
+18,764 bytes of arrays for 1,030 nodes and 915 parents, plus header/alignment
+accounting. It does not add a device allocation or enlarge a configured cap.
+
+`NodalWallContactKernels.cuh` reads each row instead of scanning all parents for
+each node. The point law, finite-wall query, arithmetic order, failure ordering,
+parent reduction, force scatter and publication remain the existing operations.
+Per-node source traversal changes from O(nodes * parents) searches to O(native
+incidences). This is an indexing change, not a new contact approximation.
+
+Qualification: `wall-incidence-build-1.json` and `wall-incidence-tests-1.json`
+under the workspace reports record 83 passing functions in 13 affected groups.
+Host checks cover exact shared/sparse-node incidence, permutation invariance,
+all 3,549 actual-sized mixed-family slots, rebased pointers and capacity failures.
+CUDA checks retain last-node/parent rejection, rollback and stable allocations.
+Actual assembly parity now passes both128 and1024 intervals: all29/197 accepted
+mesh/OBJ/field/index/interval files match the earlier baseline exactly, including
+yielded native histories. Reports `source-assembly-wall-incidence-parity-1/2`
+retain file-level checks. The128-step inclusive stage timer falls from14.026 to
+7.705 seconds (1.820x), and the1024-step archive run from116.835 to64.698 seconds
+(1.806x). These are measured component runs, not vehicle-scale throughput.
+
+## Explicit vehicle startup
+
+`NodalWallDeviceLimits::Vehicle()` adds a bounded dense global-to-compact startup index. Count/prefix construction and a parent/local ordered fill prepare the existing immutable offsets and slots; rate evaluation keeps the legacy node and per-node share order. The previous scan remains for Legacy. Kernels and reductions are unchanged. Count/byte profiles and measured layouts are documented in `lib_utest/qualification/vehicle_wall_device/README.md`.

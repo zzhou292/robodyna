@@ -1,0 +1,174 @@
+{
+  "base": "98c5a39",
+  "force_dependency": "939e5d6",
+  "scope": "Immutable beam18 model, exact endpoint snapshot and explicit V5 additive ledger only; no runtime admission",
+  "files": {
+    "lib_src/assembly/BUILD.bazel": {
+      "bytes": 4513,
+      "sha256": "f8c72a7d1d1932ba33666bf61e6aeeaabe6f21209ea33969031fe1b9ed5b0b33"
+    },
+    "lib_src/assembly/Beam18NodeContributions.cmake": {
+      "bytes": 436,
+      "sha256": "bf682cff215a0f5d20366eeab62525b9ec728cdb916b2ba75967185b6fc62909"
+    },
+    "lib_src/assembly/Beam18NodeContributions.cpp": {
+      "bytes": 3633,
+      "sha256": "023cf1618c114ee8a6579e3f87acd7a8c59ce54939e261e1fc745d0a2cc47eaf"
+    },
+    "lib_src/assembly/Beam18NodeContributions.h": {
+      "bytes": 1934,
+      "sha256": "424fbc0b7f3cf2df13112e3a0c368752f9dee9c1c079debde22c5a33b85ae121"
+    },
+    "lib_src/assembly/NodalCoefficientBeams.cpp": {
+      "bytes": 1152,
+      "sha256": "89f18e7874c0686b0a12995cb0cc674e084aee78141a508fda7b579851e5a675"
+    },
+    "lib_src/assembly/NodalCoefficientBudget.cpp": {
+      "bytes": 7311,
+      "sha256": "8e97245dbd27510a7397347112af4fdd2164aedce36464a98c02975dd4bc5cbb"
+    },
+    "lib_src/assembly/NodalCoefficientChecks.cpp": {
+      "bytes": 6594,
+      "sha256": "9560e525a8e9a9a8c5724fc7890b45e6a60e80955c6a569b005f842daec6c52d"
+    },
+    "lib_src/assembly/NodalCoefficientInternal.h": {
+      "bytes": 1865,
+      "sha256": "75775d2cc9a6f73efe629608ddbf3bfa3c411ee2e0951c175197b27d5130d952"
+    },
+    "lib_src/assembly/NodalCoefficientLedger.cmake": {
+      "bytes": 1305,
+      "sha256": "95d3ebbab9538e978a5ac2bd72ee4300b67fc4aa9c8607ec1e0336234197a11a"
+    },
+    "lib_src/assembly/NodalCoefficientLedger.cpp": {
+      "bytes": 10618,
+      "sha256": "fcc5eccde09751cc7df723472dfb0c03183c3a6c3f30f7ee9a4ff25e75b8f3ac"
+    },
+    "lib_src/assembly/NodalCoefficientLedger.h": {
+      "bytes": 4284,
+      "sha256": "e4ae3b764035e2a0931ee9f1dd969f84b092be1a2e27de0a144acbecea146797"
+    },
+    "lib_src/assembly/NodalCoefficientTypes.h": {
+      "bytes": 3245,
+      "sha256": "37b913ca2c0f6f75be500e2314bbc297654c56a4d7d52de33e6cab03f43f56d1"
+    },
+    "lib_src/elements/ShellPhysicalOutputRanges.cpp": {
+      "bytes": 4718,
+      "sha256": "eebfa798a78eca92988fa996dc5e1931c67960b0bb637006309323769181ba25"
+    },
+    "lib_src/elements/beam18/BUILD.bazel": {
+      "bytes": 1068,
+      "sha256": "08b66c7d78f30f9b84dd28d1797d25e06e62c78b50e00b25abcb8d8138226e45"
+    },
+    "lib_src/elements/beam18/MODEL.md": {
+      "bytes": 3575,
+      "sha256": "0aa11ff3d18f625e1a174c096d71c5517d3cfe84dbf76a63a7ff0a63ecc1b0d4"
+    },
+    "lib_src/elements/beam18/Model.cmake": {
+      "bytes": 611,
+      "sha256": "b51eb3684fc54193eda36f0e6e2db32df03d8edbdc851db7b5f6d963f20795dd"
+    },
+    "lib_src/elements/beam18/Model.cpp": {
+      "bytes": 5103,
+      "sha256": "f4b78e6ff302db61d84b3d557f5b62dbe64909456e82bff1ebb68268f19a2830"
+    },
+    "lib_src/elements/beam18/Model.h": {
+      "bytes": 2622,
+      "sha256": "a5377aaa68c2f9c75492fbdeba0dd3d19be14cfd335c5db7d51e3387fb1860c9"
+    },
+    "lib_src/elements/beam18/model/Budget.cpp": {
+      "bytes": 4292,
+      "sha256": "cfb3b750d9a0a31fcd7893f055a9bd62428a8a0e014f77fe146fb7ebcfecdbb0"
+    },
+    "lib_src/elements/beam18/model/Identity.cpp": {
+      "bytes": 2301,
+      "sha256": "4e3a04e53e6fdd2b8ade93514c7156f3ba10c6a9db0c98ed003c0ec8696af9a1"
+    },
+    "lib_src/elements/beam18/model/Internal.h": {
+      "bytes": 1178,
+      "sha256": "f7e257dec9c0a6f12caec87e4d2210dd695eb6ed4d9de11f536e51a4605d95fb"
+    },
+    "lib_src/elements/beam18/model/Parents.cpp": {
+      "bytes": 1291,
+      "sha256": "b083debc4ece5466fc9b46e9f9131ecf4d144abd2a0ed0418dc9986f692948ea"
+    },
+    "lib_utest/qualification/beam18_force/BUILD.bazel": {
+      "bytes": 956,
+      "sha256": "6b20c250854f62ae859596002fd4ff83952396ff2be682515753dc5b98c43e60"
+    },
+    "lib_utest/qualification/beam18_model/BUILD.bazel": {
+      "bytes": 1121,
+      "sha256": "927ef86279172c32bdb2e0ccb741487289543dc49fc01e4c30f8f0cd70661320"
+    },
+    "lib_utest/qualification/beam18_model/CMakeLists.txt": {
+      "bytes": 2995,
+      "sha256": "a9f0871551dae39671539c52ba3f9f296b9cca831e1a46c6d1173ec035914510"
+    },
+    "lib_utest/qualification/beam18_model/Fixture.h": {
+      "bytes": 1897,
+      "sha256": "3538944a84df0622378a50623bd869b8ac7bc590bd2b46a18885b5b6044978f9"
+    },
+    "lib_utest/qualification/beam18_model/LedgerTest.cpp": {
+      "bytes": 4132,
+      "sha256": "81267b345934b8327955ce63d748712fe0260ad57e75ebf9d1bc2999e120b839"
+    },
+    "lib_utest/qualification/beam18_model/ModelTest.cpp": {
+      "bytes": 6209,
+      "sha256": "fd561ce3fa331e92598fb747dc9ea550a24f1cf6b5a306de5edd5877ac03aedc"
+    },
+    "lib_utest/qualification/beam18_model/NativeTest.cpp": {
+      "bytes": 4847,
+      "sha256": "ce0bcb00032dedd56b6cf0a2f3c744b6fdf72bfb0f0d06eb781aac7b34ed31f2"
+    },
+    "lib_utest/qualification/beam18_model/OutputTest.cpp": {
+      "bytes": 1421,
+      "sha256": "30a1f73c0bb2a61729bef02ad8cd9700fa61e0071ad1772ff426309d6c1e0b94"
+    },
+    "lib_utest/qualification/beam18_model/README.md": {
+      "bytes": 3226,
+      "sha256": "7e6a497cea33f548b8245832791764dfa9d885d03e5ec7d6c96b8b4a29b86ea6"
+    },
+    "lib_utest/qualification/beam18_model/SolidOrderTest.cpp": {
+      "bytes": 2834,
+      "sha256": "09b0b91d91d4c53a2e258b9fb5f453b18f346984c41516e9f4b6cb59bb8167b2"
+    },
+    "lib_utest/qualification/beam18_model/verify_source.py": {
+      "bytes": 970,
+      "sha256": "0de9a5f3a7f85d76cd176205681c5a1e802f88c58645fc9acf36b3b301795572"
+    },
+    "lib_utest/qualification/extended_solid_coefficients/verify_sources.py": {
+      "bytes": 1926,
+      "sha256": "b79a36ce9312d9d898a88ea3b3e4dbcf30a0e72bc3b277097748279ae8a98d6f",
+      "prior_receipts": [
+        {
+          "bytes": 1926,
+          "sha256": "5dae8b87e057e4682347c0199bf2560c936f5636d5295888b14ff8f7f87ffb9d",
+          "reason": "Manifest hash only follows audited optional fixture arguments; all extended coefficient numerical/source assertions retained."
+        }
+      ]
+    },
+    "lib_src/elements/beam18/Section.h": {
+      "bytes": 1558,
+      "sha256": "e4709eec3f22db60eb85c516fba9eeeb2619c9a6ce8ecddbe5287d35a6c09956"
+    },
+    "lib_src/elements/beam18/PropertyArea.h": {
+      "bytes": 991,
+      "sha256": "53f5835ca0f4e5db86a2fcd1457aa773ffbebee5669c0a50125e3b806f1e89e8"
+    }
+  },
+  "resident_fixture_visibility_followup": {
+    "scope": "Add only beam18_resident visibility to the existing beam force test_values library; no source, native or numerical changes.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 811,
+      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
+    }
+  },
+  "common_publication_test_visibility": {
+    "scope": "Add only beam18_publication access to existing test_values; native and production arithmetic unchanged.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
+    }
+  }
+}

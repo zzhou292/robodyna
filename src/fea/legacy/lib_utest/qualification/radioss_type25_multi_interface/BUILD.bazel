@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:radioss_type25_transaction", "@googletest//:gtest_main"],
+)
+# Actual two-interface native kernels and existing publication/M2/CUDA paths
+# are executed by the owning CMake gate, without a second numerical oracle.

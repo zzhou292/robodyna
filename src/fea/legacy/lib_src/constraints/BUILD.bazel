@@ -1,0 +1,88 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "nodal_rigid_assembly_types",
+    hdrs = ["NodalRigidAssemblyTypes.h"],
+    deps = [":nodal_rigid_group"],
+)
+
+cc_library(
+    name = "nodal_rigid_assembly_binding",
+    srcs = ["NodalRigidAssemblyBinding.cpp", "NodalRigidAssemblyBindingBudget.cpp",
+            "NodalRigidAssemblyBindingMap.cpp"],
+    hdrs = ["NodalRigidAssemblyBinding.h", "NodalRigidAssemblyBindingInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_assembly_types", ":nodal_rigid_part_assembly_model", "//lib_src/assembly:nodal_node_domain",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "nodal_rigid_group",
+    srcs = ["NodalRigidGroupModel.cpp", "NodalRigidInertiaFinalize.cpp"],
+    hdrs = ["NodalRigidGroupModel.h", "NodalRigidGroupMath.h", "NodalRigidInertiaFinalize.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "@eigen//:eigen"],
+)
+
+cc_library(
+    name = "nodal_rigid_assembly",
+    srcs = ["NodalRigidAssemblyBody.cpp", "NodalRigidAssemblyMerge.cpp", "NodalRigidAssemblyFinalize.cpp"],
+    hdrs = ["NodalRigidAssemblyValues.h", "NodalRigidAssemblyInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group"],
+)
+
+cc_library(
+    name = "nodal_rigid_part_topology",
+    srcs = ["NodalRigidPartTopology.cpp", "NodalRigidPartTopologyChecks.cpp"],
+    hdrs = ["NodalRigidPartTopology.h", "NodalRigidPartTopologyInternal.h"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "nodal_rigid_part_assembly_model",
+    srcs = ["NodalRigidPartAssemblyModel.cpp", "NodalRigidPartAssemblyBudget.cpp",
+            "NodalRigidPartAssemblyTopology.cpp", "NodalRigidPartAssemblyMap.cpp"],
+    hdrs = ["NodalRigidPartAssemblyModel.h", "NodalRigidPartAssemblyInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_assembly", ":nodal_rigid_part_topology",
+            "//lib_src/assembly:nodal_coefficient_ledger", "//lib_utils:bounded_arena",
+            "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "nodal_rigid_group_step_math",
+    hdrs = ["NodalRigidFrameStep.h", "NodalRigidTwoMemberStep.h", "NodalRigidFiniteVelocity.h", "NodalRigidGroupStepMath.h", "NodalRigidGroupState.h", "NodalRigidGroupCandidate.h", "NodalRigidAccelerationSink.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group", ":nodal_rigid_assembly_types"],
+)
+
+cc_library(
+    name = "nodal_rigid_observation",
+    hdrs = ["NodalRigidObservationTypes.h", "NodalRigidObservationMath.h",
+            "NodalRigidKineticObservation.h", "NodalRigidKineticValues.h", "NodalRigidKickObservation.h",
+            "NodalRigidForceStageObservationTypes.h", "NodalRigidForceStageChecks.h", "NodalRigidForceStageKinetic.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group_step_math"],
+)
+
+cuda_library(
+    name = "FEAT10ConstraintManager",
+    srcs = [
+        "FEAT10ConstraintManager.cu",
+        "FEAT10ConstraintJoints.cu",
+        "FEAT10ConstraintPrimitives.cu",
+    ],
+    hdrs = ["FEAT10ConstraintManager.h"],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
+    linkopts = ["-lcudart"],
+    deps = [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cuda_utils",
+        "@eigen//:eigen",
+    ],
+)

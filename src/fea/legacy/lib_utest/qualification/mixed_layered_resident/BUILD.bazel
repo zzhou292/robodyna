@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "mixed_layered_layout_check",
+    srcs = ["MixedLayoutTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
+        "@googletest//:gtest_main",
+    ],
+)

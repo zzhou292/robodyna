@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLBeam18Publication LANGUAGES CXX C)
+enable_testing()
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+option(BEAM18_PUBLICATION_CUDA "Actual common publisher shell and structural beam gate" OFF)
+if(BEAM18_PUBLICATION_CUDA)
+  enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
+endif()
+set(PHYSICAL_PUBLICATION_CUDA "${BEAM18_PUBLICATION_CUDA}")
+add_subdirectory(../physical_publication existing-publication)
+add_library(beam18_publication_source STATIC Source.cpp)
+target_link_libraries(beam18_publication_source PUBLIC physical_publication_fixture tl_beam18_batch_values)
+target_compile_options(beam18_publication_source PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(beam18_publication_host HostTest.cpp)
+target_link_libraries(beam18_publication_host PRIVATE beam18_publication_source GTest::gtest_main)
+target_compile_options(beam18_publication_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME beam18_publication_host COMMAND beam18_publication_host)
+add_test(NAME beam18_publication_source_identity COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_SOURCE_DIR}/verify_source.py")
+if(BEAM18_PUBLICATION_CUDA)
+  add_executable(beam18_publication_cuda Startup.cu Attempt.cu Values.cpp
+    LoadedTest.cu RejectionTest.cu OwnershipTest.cu
+    ../physical_publication/OwnerStartup.cu ../physical_publication/OwnerAttempt.cu
+    ../physical_publication/OwnerSnapshot.cu)
+  target_link_libraries(beam18_publication_cuda PRIVATE beam18_publication_source tl_shell_batch_publication CUDA::cudart)
+  set_target_properties(beam18_publication_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(beam18_publication_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+  add_test(NAME beam18_publication_cuda COMMAND beam18_publication_cuda)
+endif()
+get_property(tests DIRECTORY PROPERTY TESTS)
+set_tests_properties(${tests} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240)

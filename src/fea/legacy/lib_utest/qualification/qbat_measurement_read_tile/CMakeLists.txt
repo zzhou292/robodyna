@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLQbatMeasurementReadTile LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+set(oracle "${CMAKE_CURRENT_BINARY_DIR}/oracle")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_LIST_DIR}/source_proof.py" "${CMAKE_CURRENT_LIST_DIR}/source-manifest.json")
+foreach(generator IN ITEMS "${CMAKE_CURRENT_LIST_DIR}/source_proof.py" "${CMAKE_CURRENT_LIST_DIR}/../finalizer_local_control/generate_oracles.py")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${generator}" --output "${oracle}" COMMAND_ERROR_IS_FATAL ANY)
+endforeach()
+add_library(qbat_read_tile_values STATIC
+  "${TL_ROOT}/lib_src/elements/qbat/QbatBatchArena.cpp"
+  "${TL_ROOT}/lib_src/elements/qbat/QbatBatchIdentity.cpp")
+target_include_directories(qbat_read_tile_values PUBLIC "${TL_ROOT}" "${oracle}" ${CUDAToolkit_INCLUDE_DIRS})
+target_compile_features(qbat_read_tile_values PUBLIC cxx_std_17)
+target_compile_options(qbat_read_tile_values PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qbat_read_tile_host HostTest.cpp)
+target_link_libraries(qbat_read_tile_host PRIVATE qbat_read_tile_values GTest::gtest_main)
+target_compile_options(qbat_read_tile_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qbat_read_tile_host COMMAND qbat_read_tile_host)
+add_test(NAME qbat_read_tile_source COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/source_proof.py")
+option(QBAT_READ_TILE_CUDA "Complete Control, production caller and literal frozen finalizer comparisons" OFF)
+if(QBAT_READ_TILE_CUDA)
+  enable_language(CUDA)
+  # Compile the actual mapped producer/maximum/finalizer translation unit.
+  # Full participant/owner linkage remains the separate owning gate.
+  add_executable(qbat_read_tile_cuda CudaTest.cu
+    "${TL_ROOT}/lib_src/elements/qbat/mapped/Measurement.cu")
+  target_include_directories(qbat_read_tile_cuda PRIVATE "${oracle}")
+  target_link_libraries(qbat_read_tile_cuda PRIVATE qbat_read_tile_values GTest::gtest_main CUDA::cudart)
+  set_target_properties(qbat_read_tile_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(qbat_read_tile_cuda PRIVATE
+    $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;--ptxas-options=-v;-Xcompiler=-fno-fast-math,-ffp-contract=off>)
+  add_test(NAME qbat_read_tile_cuda COMMAND qbat_read_tile_cuda)
+endif()
+get_property(checks DIRECTORY PROPERTY TESTS)
+set_tests_properties(${checks} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)

@@ -1,0 +1,16 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Qualification-only local ASS0 and I25FOR3 endpoint preparation; no production reference linkage",
+  "files": [
+    {
+      "path": "native/original/i25ass3.F",
+      "bytes": 22981,
+      "sha256": "76a2fe241d137da8c3288d2b035ac7d8f19acf53b8e8084a6a09261630288a95"
+    },
+    {
+      "path": "../radioss_type25_normal/native/original/i25for3.F",
+      "bytes": 132646,
+      "sha256": "c601423a4ab8561230c0b86fec7cc277003cd8e9ba78cece91c11156bf2ca986"
+    }
+  ]
+}

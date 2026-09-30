@@ -1,0 +1,11 @@
+"""Verify the complete retained TYPE13 donors and exact arithmetic extracts."""
+from pathlib import Path
+import importlib.util
+
+root = Path(__file__).resolve().parent
+helper = root.parents[1] / 'nodal_rigid_group' / 'native' / 'verify_sources.py'
+spec = importlib.util.spec_from_file_location('tl_type13_source_verifier', helper)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.verify(root)
+print('Pinned TYPE13 startup sources and exact arithmetic fragments verified')

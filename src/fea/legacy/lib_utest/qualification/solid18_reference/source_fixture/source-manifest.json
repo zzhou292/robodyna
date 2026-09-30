@@ -1,0 +1,264 @@
+{
+  "archive_sha256": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+  "member": "2010-toyota-yaris-coarse-v1l/yaris-coarse-v1l.key",
+  "member_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+  "canonical_manifest_sha256": "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
+  "header": {
+    "file": "YarisSolid18SourceFixture.h",
+    "bytes": 678491,
+    "sha256": "949fe1b0bdaf628fcefbe3f45d6f99a88d388eb793309ad828cc6200c6943878"
+  },
+  "nodes": 3672,
+  "solids": 908,
+  "part_id": 2000977,
+  "source_units": {
+    "mass_to_kg": 1000.0,
+    "length_to_m": 0.001,
+    "time_to_s": 1.0
+  },
+  "arrays": {
+    "node_ids": {
+      "bytes": 3145320,
+      "dtype": "<u8",
+      "fields": [
+        "source_node_id"
+      ],
+      "file": "arrays/node_ids.bin",
+      "sha256": "14e5f078598e832836317394913e276a066cac121cf652335762168bb2b0d940",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "node_positions": {
+      "bytes": 9435960,
+      "dtype": "<f8",
+      "fields": [
+        "x_m",
+        "y_m",
+        "z_m"
+      ],
+      "file": "arrays/node_positions.bin",
+      "sha256": "b15188d013bcae29435a583c42adb2ecf5941369fb72c2304b5e986674a164f1",
+      "shape": [
+        393165,
+        3
+      ]
+    },
+    "node_source_lines": {
+      "bytes": 1572660,
+      "dtype": "<u4",
+      "fields": [
+        "source_line"
+      ],
+      "file": "arrays/node_source_lines.bin",
+      "sha256": "fdb91194914d3c609bb285ce6c2bb136d49d818f6088f5067677c618a5f621c1",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "node_codes": {
+      "bytes": 3145320,
+      "dtype": "<i4",
+      "fields": [
+        "tc_raw",
+        "rc_raw"
+      ],
+      "file": "arrays/node_codes.bin",
+      "sha256": "4e799f5e8856cab88a731199e51687a609ba335430ceb20bdd2a29ad2ff193f1",
+      "shape": [
+        393165,
+        2
+      ]
+    },
+    "node_blank_masks": {
+      "bytes": 786330,
+      "dtype": "<u2",
+      "fields": [
+        "blank_field_mask"
+      ],
+      "file": "arrays/node_blank_masks.bin",
+      "sha256": "883dd1d9da7eb174f5d13f51ce18958fcfa9b61e9778637709647498ebdf8dfa",
+      "shape": [
+        393165,
+        1
+      ]
+    },
+    "solids_records": {
+      "bytes": 1218720,
+      "dtype": "<u8",
+      "fields": [
+        "element_id",
+        "part_id",
+        "n1",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6",
+        "n7",
+        "n8"
+      ],
+      "file": "arrays/solids_records.bin",
+      "sha256": "efdc8209e57eb2914cb27c276b2c271ae6a8020b502eb37e1df797afaeec4b4f",
+      "shape": [
+        15234,
+        10
+      ]
+    },
+    "solids_node_indices": {
+      "bytes": 487488,
+      "dtype": "<u4",
+      "fields": null,
+      "file": "arrays/solids_node_indices.bin",
+      "sha256": "ac15785c169a11a60817d127a43dd09f82d402c8e4a7b7d52dbde0842e394718",
+      "shape": [
+        15234,
+        8
+      ]
+    },
+    "solids_source_lines": {
+      "bytes": 60936,
+      "dtype": "<u4",
+      "fields": [
+        "source_line"
+      ],
+      "file": "arrays/solids_source_lines.bin",
+      "sha256": "45c9df2164a505c0d9fd6152e962d2ae7253f39ae06c5cb0c2f5da0bc06b3e88",
+      "shape": [
+        15234,
+        1
+      ]
+    },
+    "solids_blank_masks": {
+      "bytes": 30468,
+      "dtype": "<u2",
+      "fields": [
+        "blank_field_mask"
+      ],
+      "file": "arrays/solids_blank_masks.bin",
+      "sha256": "2b925073dbad07f704716e8a4ba63fce3378765d39889b89f26f57ee96a7fae0",
+      "shape": [
+        15234,
+        1
+      ]
+    }
+  },
+  "material_receipt": {
+    "archive_sha256": "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451",
+    "member": "2010-toyota-yaris-coarse-v1l/yaris-coarse-v1l.key",
+    "member_sha256": "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301",
+    "member_bytes": 42846753,
+    "readme": "## 2010 Toyota Yaris Coarse Finite Element Model\n**Version 1l, released December 2016**\n\nThe Toyota Yaris finite element (FE) model was developed by [Center for\nCollision Safety and Analysis][CCSA] researchers at George Mason University. The\neffort was sponsored by the Federal Highway Administration.\n\nThe model was created for use with the LS-DYNA FE program, and is continuously\nupdated to improve its capabilities in predicting responses in various impact\nscenarios. Any feedback to improve the model is welcomed and highly encouraged.\n\nUsers of the model must verify their own simulations. Neither CCSA or FHWA\nassume any responsibility for the validity, accuracy, or applicability of\nresults obtained from this model.\n\nWe ask that the CCSA at GMU and the FHWA be acknowledged for any use of this FE\nmodel resulting in papers and publications.\n\nAddition information can be found in the [Validation][doi:10.13021/G8JS5D].\n\n[CCSA]: https://www.ccsa.gmu.edu/\n[doi:10.13021/G8JS5D]: https://doi.org/10.13021/G8JS5D \"2010 Toyota Yaris Finite Element Model Validation Coarse Mesh\"\n\n### Contacts\nDhafer Marzougui <dmarzoug@gmu.edu> (703) 993-4680  \nFadi Tahan       <tahan@gmu.edu>    (703) 993-4633\nSteve Kan        <cdkan@gmu.edu>    (703) 993-5896  \n\n### LS-DYNA Input files\n1. yaris-coarse-v1l.key\n  \n  Based on VIN JTDBT4K37A4067025.\n  \n  This file includes the complete vehicle model (parts, materials, sections,\n  connections, nodes). It is 378,376 elements.\n  \n  The vehicle model includes the interior components (instrument panel, seats,\n  trim, etc.) that are indispensable for occupant protection analysis.\n  \n  The vehicle model had been validated towards full scale destructive tests\n  provided by NHTSA, IIHS, & others, and non-destructive tests performed by CCSA at\n  FOIL/FHWA and others. Additionally, coupon tests were performed in order to\n  get the physical properties of different components.\n  \n2. sset-yaris-coarse-v1l.key\n  \n  This file is used to set the simulation parameters. Simple modifcations can be\n  made to this file to run different impact configurations. The file includes:\n  \n    - Added masses (for dummies and cargo/luggage)\n    - Vehicle `*INITIAL_VELOCITY` (setup with rotating front and rear wheels)\n    - `*SET_PART` for `*CONTACT_INTERIOR` (foam and rubber solids)\n    - `*SET_PART` for vehicle contact (most vehicle components)\n    - `*SET_NODE_LIST` for contact with ground (tires)\n    - Instrumentations for measuring accelerations and intrusions\n  \n3. wall.key\n  \n  U.S. NCAP rigid wall model.\n  \n4. combine.key\n  \n  This file is used to combine the vehicle model with a barrier or another\n  vehicle using the `*INCLUDE` keyword. This file also contains all the control\n  cards and time intervals for the output databases.\n  `*CONTACT_AUTOMATIC_SINGLE_SURFACE` is included for the vehicle components,\n  and between the vehicle and barrier or another vehicle. The\n  `*CONTACT_INTERIOR` is also included in this file, since only one can be\n  defined and may be needed for the vehicle and barrier or two vehicles.\n  \n  The provided `combine.key` file is set for **NCAP Frontal Wall Impact** and\n  can be easily changed to simulate other impacts.\n  \n#### Model units\n  - Mass **t**: metric ton (1,000 kg)\n  - Length **mm**: millimeter\n  - Force **N**: newton\n  - Time **s**: second\n",
+    "scope": "Original adhesive source declaration receipt; no mechanics admission",
+    "blocks": [
+      {
+        "keyword": "*PART",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 18003,
+        "last_line": 18007,
+        "raw_text": "*PART\n$# title\nWindshield_Adhesive\n$#     pid     secid       mid     eosid      hgid      grav    adpopt      tmid\n   2000977   2000977   2000977\n",
+        "sha256": "d6c69b23793e58bcf3f8029a68dda81803ebef4f9ffb7c2efda57bc3af3d73ac",
+        "cards": [
+          {
+            "source_line": 18005,
+            "text": "Windshield_Adhesive"
+          },
+          {
+            "source_line": 18007,
+            "text": "   2000977   2000977   2000977"
+          }
+        ]
+      },
+      {
+        "keyword": "*SECTION_SOLID",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 18008,
+        "last_line": 18010,
+        "raw_text": "*SECTION_SOLID\n$#   secid    elform       aet\n   2000977         2\n",
+        "sha256": "1fb617b8de746fcb9839d59b64ecd9777a1a69fedee115e6ba4fab01b55385d4",
+        "cards": [
+          {
+            "source_line": 18010,
+            "text": "   2000977         2"
+          }
+        ]
+      },
+      {
+        "keyword": "*MAT_PIECEWISE_LINEAR_PLASTICITY",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 18011,
+        "last_line": 18020,
+        "raw_text": "*MAT_PIECEWISE_LINEAR_PLASTICITY\n$#     mid        ro         e        pr      sigy      etan      fail      tdel\n   2000977 1.0700E-9 1887.0000  0.417000 10.041000\n$#       c         p      lcss      lcsr        vp\n                       2100010                 0.0\n$#    eps1      eps2      eps3      eps4      eps5      eps6      eps7      eps8\n\n$#     es1       es2       es3       es4       es5       es6       es7       es8\n\n$-------------------------------------------------------------------------------\n",
+        "sha256": "c44e2909ebb71d182414dc9c9592c64606b9c58e9855367f0d26f79d92433796",
+        "cards": [
+          {
+            "source_line": 18013,
+            "text": "   2000977 1.0700E-9 1887.0000  0.417000 10.041000"
+          },
+          {
+            "source_line": 18015,
+            "text": "                       2100010                 0.0"
+          },
+          {
+            "source_line": 18017,
+            "text": ""
+          },
+          {
+            "source_line": 18019,
+            "text": ""
+          }
+        ]
+      },
+      {
+        "keyword": "*DEFINE_CURVE",
+        "filename": "yaris-coarse-v1l.key",
+        "first_line": 18183,
+        "last_line": 18194,
+        "raw_text": "*DEFINE_CURVE\n$#    lcid      sidr       sfa       sfo      offa      offo    dattyp\n   2100010         0  1.000000  1.000000\n$#                a1                  o1\n               0.000          10.0410004\n           0.0073000          11.9879999\n           0.0107000          16.9239998\n           0.0143000          21.1639996\n           0.0181000          24.7399998\n           0.0222000          27.4580002\n           0.0268000          29.2779999\n           0.0300000          29.2879999\n",
+        "sha256": "7f53b0ee3484bbeb1954ff2dc47194fac469ad7749ec2b8ecd5e3361efdd04c2",
+        "cards": [
+          {
+            "source_line": 18185,
+            "text": "   2100010         0  1.000000  1.000000"
+          },
+          {
+            "source_line": 18187,
+            "text": "               0.000          10.0410004"
+          },
+          {
+            "source_line": 18188,
+            "text": "           0.0073000          11.9879999"
+          },
+          {
+            "source_line": 18189,
+            "text": "           0.0107000          16.9239998"
+          },
+          {
+            "source_line": 18190,
+            "text": "           0.0143000          21.1639996"
+          },
+          {
+            "source_line": 18191,
+            "text": "           0.0181000          24.7399998"
+          },
+          {
+            "source_line": 18192,
+            "text": "           0.0222000          27.4580002"
+          },
+          {
+            "source_line": 18193,
+            "text": "           0.0268000          29.2779999"
+          },
+          {
+            "source_line": 18194,
+            "text": "           0.0300000          29.2879999"
+          }
+        ]
+      }
+    ]
+  },
+  "selected_raw_rows_sha256": "aa957d62c7b43677813f3cca5ca41c82fca543491bf35332f4e624c8974a3cbd",
+  "mechanical_admission": false
+}

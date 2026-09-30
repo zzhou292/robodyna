@@ -1,0 +1,178 @@
+#include "QephBatchDiagnostics.h"
+#include "mapped/Result.h"
+#include "mapped/CandidateDiagnostics.h"
+#include "QephLayeredJ2.h"
+#include "QephBatchFailureSection.h"
+#include "QephBatchStartup.h"
+#include "../../solvers/NodalForceAssembly.h"
+#include "../../solvers/NodalNativePhysicalCoefficients.h"
+
+namespace tl::fea::qeph::batch_detail {
+namespace {
+namespace sc=tlfea::contact;
+__global__ void MarkFailure(NodalAssemblyView view) { RecordNodalAssemblyFailure(view,sc::Status::kInvalidArgument); }
+
+__device__ bool ValidateNodes(Storage& s,NodalAssemblyView v,bool initial) {
+  if(!native_physical_coefficients::Admitted(s.model.config.owner.rigid_groups,v.rigid_groups,
+      v.mass.model,s.model.config.owner.node_count)) { s.control.status=BatchStatus::InvalidMass; return false; }
+  for(unsigned n=0;n<s.model.config.owner.node_count;++n) {
+    const double im=v.mass.inverse_mass[n],ij=v.inverse_inertia[n];
+    if(v.mass.fixed[n]||v.translation_fixed_bits[n]||v.rotation_fixed[n]||
+       !detail::Positive(im)||!detail::Positive(ij)||
+       ::fabs(im*s.model.mass[n]-1)>1e-12||::fabs(ij*s.model.inertia[n]-1)>1e-12) {
+      s.control.status=BatchStatus::InvalidMass; s.control.node=n; return false;
+    }
+    const auto x=ReadVector(v.accepted.position_xyz,n),velocity=ReadVector(v.accepted.velocity_xyz,n);
+    const auto omega=ReadVector(v.accepted.angular_velocity_xyz,n); const auto* q=v.accepted.orientation_wxyz+4*n;
+    if(!FiniteVector(x)||!FiniteVector(velocity)||!FiniteVector(omega)||!tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]})) {
+      s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
+    }
+    const auto ref=s.model.initial_position[n];
+    if(initial&&!shell_startup_detail::MatchesInitialNode(s.model.config.startup,x,ref,velocity,omega,q)) {
+      s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
+    }
+  }
+  return true;
+}
+__global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView v,bool initial) {
+  auto& s=*storage; s.control={};
+  if(v.result->base_epoch!=v.accepted.base_epoch||v.result->attempt!=v.attempt||
+     v.bounds->base_epoch!=v.accepted.base_epoch||v.bounds->attempt!=v.attempt||
+     !v.bounds->initialized||!v.bounds->valid||v.bounds->sealed||v.result->status!=sc::Status::kOk)
+    s.control.status=BatchStatus::AssemblyFailure;
+  else if(ValidateNodes(s,v,initial)) {
+    for(unsigned e=0;e<s.model.config.element_count;++e) {
+      const auto& result=accepted->element[e]; const auto& h=result.proposed_history;
+      if(!h.matches_reference(s.model.element[e].reference)||h.stamp().time!=v.position_time||
+         h.stamp().sample_index!=v.accepted.base_epoch) {
+        s.control.status=BatchStatus::StaleTrial; s.control.element=e; break;
+      }
+      if(AccumulateNodalForces<4>(s.model.element[e].nodes,result.internal_force,result.internal_couple,v.forces,-1)
+         !=NodalForceAssemblyStatus::Success) { s.control.status=BatchStatus::AssemblyFailure; s.control.element=e; break; }
+    }
+    if(s.control.status==BatchStatus::Success&&initial&&!s.model.joined&&
+       s.model.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+      double kinetic=0;
+      for(unsigned n=0;n<s.model.config.owner.node_count;++n)
+        if(!AddInitialTranslationKinetic(s.model.mass[n],ReadVector(v.accepted.velocity_xyz,n),kinetic)) {
+          s.control.status=BatchStatus::NonfiniteResult; s.control.node=n; break;
+        }
+      if(s.control.status==BatchStatus::Success) {
+        s.control.diagnostics.kinetic_translation=kinetic;
+        s.control.diagnostics.valid=true;
+      }
+    }
+  }
+  if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);
+}
+__global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,
+    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,
+    shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
+    shell_batch_plasticity_detail::FailureDeviceStorage* failure) {
+  auto& s=*storage;
+  auto* element_status=s.candidate_status;
+  // Parent work is independent: each thread owns its result, section history
+  // and status. No control or shared-node force reduction is written here.
+  const unsigned first=blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned stride=gridDim.x*blockDim.x;
+  for(unsigned e=first;e<s.model.config.element_count;e+=stride) {
+    element_status[e]=Status::kSuccess;
+    PrescribedInterval interval; interval.base_time=v.base_time; interval.dt=s.model.config.owner.fixed_dt;
+    interval.sample_index=v.kinematics.base_epoch+1;
+    shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
+      interval.position_endpoint,interval.velocity_midpoint,interval.omega_midpoint);
+    if(s.model.mapped&&mixed&&mixed->law[e]==ShellSectionLaw::RigidSkin) {
+      element_status[e]=mapped::AdvanceSkin(s.model.element[e].reference,accepted->element[e],interval,trial->element[e]);
+      if(element_status[e]==Status::kSuccess&&failure) {
+        failure->state[1u-accepted_slab][e]=ShellBatchFailureState{};
+      }
+    } else if(failure&&mixed)
+      element_status[e]=EvaluateFailureSectionIntoTrial(s.model.element[e].reference,accepted->element[e].proposed_history,
+        interval,*mixed,*failure,accepted_slab,e,trial->element[e]);
+    else if(mixed)
+      element_status[e]=EvaluateMixedSectionIntoTrial(s.model.element[e].reference,accepted->element[e].proposed_history,
+        interval,*mixed,accepted_slab,e,trial->element[e]);
+    else if(!plasticity)
+      element_status[e]=detail::EvaluateForceWithThicknessIntoTrial(s.model.element[e].reference,
+        accepted->element[e].proposed_history,interval,s.model.element[e].reference.input.thickness,trial->element[e]);
+    else
+      element_status[e]=EvaluatePlasticSection(s.model.element[e].reference,accepted->element[e].proposed_history,
+        interval,*plasticity,accepted_slab,e,trial->element[e]);
+  }
+}
+__global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,
+                                   NodalPreparedView v,BatchDiagnostics identity,
+    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  auto& s=*storage; s.control={}; s.control.diagnostics=identity;
+  const auto* element_status=s.candidate_status;
+  // The same-stream kernel boundary makes every parent result visible before
+  // preserving the original first-failure scan and serial reduction order.
+  // A failed candidate never exposes partially evaluated higher-index cells.
+  for(unsigned i=0;i<s.model.config.element_count;++i) {
+    const auto status=element_status[i];
+    if(status!=Status::kSuccess) {
+      s.control.status=BatchStatus::ElementFailure; s.control.element=i; s.control.element_status=status; return;
+    }
+  }
+  if(s.model.mapped) {
+    if(!mixed) { s.control.status=BatchStatus::InvalidInput; return; }
+    for(unsigned e=0;e<s.model.config.element_count;++e) {
+      const bool skin=mixed->law[e]==ShellSectionLaw::RigidSkin;
+      if(!mapped::ValidResult(s.model.element[e].reference,trial->element[e],v.proposed_time,
+          v.kinematics.base_epoch+1,skin)) {
+        s.control.status=BatchStatus::NonfiniteResult; s.control.element=e; return;
+      }
+    }
+  }
+  if(!Measure(s.model,*accepted,*trial,v,s.control,s.model.mapped?mixed->law:nullptr)) { s.control.status=BatchStatus::NonfiniteResult; return; }
+  s.control.diagnostics.valid=true;
+}
+__global__ void PrepareMappedDiagnostics(Storage* storage,const Slab* trial,NodalPreparedView view,
+    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  auto& s=*storage;
+  const auto first=blockIdx.x*blockDim.x+threadIdx.x;
+  const auto stride=gridDim.x*blockDim.x;
+  const auto* roles=mixed?mixed->law:nullptr;
+  for(std::size_t parent=first;parent<s.model.config.element_count;parent+=stride)
+    mapped::PrepareDiagnosticParent(s.model,trial->element[parent],s.candidate_status[parent],
+        roles,parent,view,s.assembly.parent[parent]);
+  for(std::size_t node=first;node<s.model.config.owner.node_count;node+=stride)
+    mapped::PrepareDiagnosticNode(s.model,view,node,s.assembly.node[node]);
+}
+__global__ void FinalizeMappedDiagnostics(Storage* storage,const Slab* accepted,const Slab* trial,
+    NodalPreparedView view,BatchDiagnostics identity,
+    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  mapped::FinalizeDiagnostics(*storage,*accepted,*trial,view,identity,mixed?mixed->law:nullptr,storage->control);
+}
+}
+void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
+void LaunchMappedCandidateDiagnostics(Storage* s,const Slab* a,const Slab* b,NodalPreparedView view,
+    BatchDiagnostics identity,const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  PrepareMappedDiagnostics<<<256,128,0,view.stream>>>(s,b,view,mixed);
+  if(cudaPeekAtLastError()!=cudaSuccess) return;
+  FinalizeMappedDiagnostics<<<1,1,0,view.stream>>>(s,a,b,view,identity,mixed);
+}
+void LaunchMappedObserverDiagnostics(Storage* s,const Slab* a,const Slab* b,NodalPreparedView view,
+    BatchDiagnostics identity,const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  PrepareMappedDiagnostics<<<256,128,0,view.stream>>>(s,b,view,mixed);
+  if(cudaPeekAtLastError()!=cudaSuccess) return;
+  LaunchMappedObserverReduction(s,a,b,view,identity,mixed);
+}
+void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
+    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count,
+    shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
+    shell_batch_plasticity_detail::FailureDeviceStorage* failure,bool mapped) {
+  // The private caller supplies its immutable startup-admitted active count,
+  // never a device-header dereference or a new independent capacity setting.
+  constexpr unsigned threads=64;
+  const unsigned blocks=1u+static_cast<unsigned>((element_count-1)/threads);
+  CandidateElements<<<blocks,threads,0,v.stream>>>(s,a,b,v,plasticity,accepted_slab,mixed,failure);
+  // Preserve the first launch error for ReadControl and never finalize stale
+  // parent slots after a rejected launch. Stream execution errors are checked
+  // by the existing control readback/synchronization before any publication.
+  if(cudaPeekAtLastError()!=cudaSuccess) return;
+  if(mapped) LaunchMappedObserverDiagnostics(s,a,b,v,d,mixed);
+  else FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d,mixed);
+}
+void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
+} // namespace tl::fea::qeph::batch_detail

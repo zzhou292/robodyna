@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "tab1_force_test_support",
+    testonly = True,
+    hdrs = ["Tab1ForceFixture.h"],
+    deps = [
+        "//lib_src/elements/qeph:layered_tab1",
+        "//lib_src/elements/t3:layered_tab1",
+        "//lib_utest/qualification/shell_failure_force:failure_force_test_support",
+        "//lib_utest/qualification/shell_tab1_glass:tab1_test_support",
+        "@googletest//:gtest",
+    ],
+    visibility = ["//lib_utest/qualification/shell_placement_force:__pkg__"],
+)
+cc_test(
+    name = "shell_tab1_force_values_check",
+    srcs = ["Tab1ForceValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":tab1_force_test_support", "@googletest//:gtest_main"],
+)

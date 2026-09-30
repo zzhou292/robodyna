@@ -1,0 +1,6 @@
+if(NOT TARGET tl_tied_shell_patch)
+  add_library(tl_tied_shell_patch INTERFACE)
+  get_filename_component(tl_tied_patch_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+  target_include_directories(tl_tied_shell_patch INTERFACE "${tl_tied_patch_root}")
+  target_compile_features(tl_tied_shell_patch INTERFACE cxx_std_17)
+endif()

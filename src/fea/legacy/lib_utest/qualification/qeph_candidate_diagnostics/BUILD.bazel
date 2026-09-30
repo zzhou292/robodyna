@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture",
+    hdrs = ["Fixture.h", "SerialDiagnostics.h"],
+    deps = ["//lib_utest/qualification/qeph_mapped_gather:fixture", "//lib_src/elements/qeph:batch_values", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/qeph_observer_reduction:__pkg__"],
+)
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h", "SerialDiagnostics.h"],
+    deps = ["//lib_utest/qualification/qeph_mapped_gather:fixture", "//lib_src/elements/qeph:batch_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["CudaTest.cu", "Fixture.h", "SerialDiagnostics.h"],
+    deps = ["//lib_utest/qualification/qeph_mapped_gather:fixture", "//lib_src/elements/qeph:batch", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

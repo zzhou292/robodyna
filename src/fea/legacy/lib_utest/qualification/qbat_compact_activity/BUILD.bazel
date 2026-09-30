@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    srcs = ["HostTest.cpp"],
+    deps = ["//lib_src/elements/qbat:batch_values", "//lib_src/elements/qeph:batch_values",
+            "//lib_src/elements/mapped_shell:activity_layout", "//lib_utils:bounded_arena",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements/type45:values", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/type45_resident:__pkg__"],
+)
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/elements/type45:values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

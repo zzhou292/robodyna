@@ -1,0 +1,30 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete NORMA1D/VOLINT arithmetic and INSOL3D unique-support geometry only; no matching or source authority",
+  "files": [
+    {
+      "path": "original/insol3.F",
+      "bytes": 20825,
+      "sha256": "1d5b8fb9be628eeb1977cf78de5e0038c01515ed12ddc9194e4e969ac78a30b7",
+      "git_blob": "ea88779f123b00334372decad00918698662060e"
+    },
+    {
+      "path": "original/norma1.F",
+      "bytes": 8505,
+      "sha256": "175dd2d3e6c88ead6083094213a5d5a22c411c9db5b8f845c361d9144a869002",
+      "git_blob": "83a2bfd9d26d83de813e01ba7350939f0ec907ef"
+    },
+    {
+      "path": "original/volint.F",
+      "bytes": 4295,
+      "sha256": "d0501f1f0a2c2b7fe4386266ab0868df10a4966eacda321fc6ecc52f6adbd5e5",
+      "git_blob": "721d50dd40c3da09f24861fe8458f004d6f140bf"
+    },
+    {
+      "path": "../../radioss_type25_normal/native/original/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    }
+  ]
+}

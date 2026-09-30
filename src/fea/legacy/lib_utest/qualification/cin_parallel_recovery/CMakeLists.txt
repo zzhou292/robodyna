@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLCinParallelRecovery LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+set(packet_dir "${CMAKE_CURRENT_LIST_DIR}/../cin_parallel_ordinary")
+include("${tl_root}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+add_executable(cin_parallel_recovery_host HostTest.cpp
+  "${packet_dir}/Packet.cpp" "${packet_dir}/Compare.cpp")
+target_include_directories(cin_parallel_recovery_host PRIVATE "${tl_root}" "${tl_root}/lib_src/solvers")
+target_link_libraries(cin_parallel_recovery_host PRIVATE tl_tied_cin_attachment GTest::gtest_main CUDA::toolkit)
+target_compile_features(cin_parallel_recovery_host PRIVATE cxx_std_17)
+target_compile_options(cin_parallel_recovery_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME cin_parallel_recovery_host COMMAND cin_parallel_recovery_host)
+set_tests_properties(cin_parallel_recovery_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+add_test(NAME cin_parallel_recovery_source_identity
+  COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+set_tests_properties(cin_parallel_recovery_source_identity PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+option(CIN_PARALLEL_RECOVERY_CUDA "Frozen full caller and actual owner CUDA qualification" OFF)
+if(CIN_PARALLEL_RECOVERY_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
+  add_executable(cin_parallel_recovery_cuda CallerTest.cu TailTest.cu OwnerTest.cu Frozen.cu
+    "${packet_dir}/DevicePacket.cu" "${packet_dir}/Serial.cu"
+    "${packet_dir}/Packet.cpp" "${packet_dir}/Compare.cpp"
+    ../rigid_assembly_owner/Fixture.cpp)
+  target_include_directories(cin_parallel_recovery_cuda PRIVATE "${tl_root}" "${tl_root}/lib_src/solvers")
+  target_link_libraries(cin_parallel_recovery_cuda PRIVATE tl_explicit_nodal_state GTest::gtest_main CUDA::cudart)
+  set_target_properties(cin_parallel_recovery_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(cin_parallel_recovery_cuda PRIVATE
+    $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>)
+  add_test(NAME cin_parallel_recovery_cuda COMMAND cin_parallel_recovery_cuda)
+  set_tests_properties(cin_parallel_recovery_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()

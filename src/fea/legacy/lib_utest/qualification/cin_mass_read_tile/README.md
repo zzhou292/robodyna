@@ -1,0 +1,5 @@
+# Cooperative CIN numerical-mass reads
+
+The actual eight-block vehicle kernel trace measured the serial CIN master-gather completion at about3ms per interval. This candidate uses64 lanes to stage scalar mass operands; lane0 still performs every source-row add-then-subtract operation and finite-prefix test in the original order. No tree reduction, floating atomic, persistent storage or budget increase is introduced. Rejected rows expose no numeric payload. Failure returns through the existing serial apply, retaining its first-error and partial-write behavior.
+
+New CUDA tests compare a frozen independent scalar recurrence over zero signs, cancellation, tile boundaries,11165rows, rejected rows and overflowing prefixes. The existing complete frozen caller and actual-owner tests cover fallback, failed-row writes, retry and publication. Historical source manifests stay unchanged; the new source proof binds the reviewed delta and current dependencies. Full vehicle timing remains required after these gates.

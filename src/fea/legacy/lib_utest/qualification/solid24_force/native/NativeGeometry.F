@@ -1,0 +1,192 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Exact complete native geometry leaves; one element with actual leading bounds.
+      SUBROUTINE HEPH_FORCE_GEOMETRY(XREF,X,V,JAC_REF,DT,G,STATUS)
+      USE HEPH_NATIVE_PACKETS
+      USE HEPH_NATIVE_INTERFACES
+      USE HEPH_NATIVE_MESSAGE_MOD,ONLY:GEOMETRY_ERRORS
+      USE HEPH_NATIVE_ALEANIM_MOD,ONLY:FANI_CELL_
+      USE HEPH_NATIVE_ELEMENT_MOD,ONLY:NIXS
+      IMPLICIT NONE
+      REAL(KIND=8),INTENT(IN) :: XREF(3,8),X(3,8),V(3,8),JAC_REF(10),DT
+      TYPE(GEOMETRY_PACKET),INTENT(OUT) :: G
+      INTEGER,INTENT(OUT) :: STATUS
+      INTEGER,PARAMETER :: NEL=1
+      INTEGER I,N,K,IXS(NIXS,1),NGL(1)
+      REAL(KIND=8) OFF(MVSIZ),OFFG(MVSIZ),DIRECTIONS(MVSIZ,9),SAV(1,21),VOLDP(1)
+      REAL(KIND=8) ZERO_BUFFER(MVSIZ),NORMAL(MVSIZ,6,3),INITIAL(MVSIZ,8,3),DISP(MVSIZ,8,3)
+      REAL(KIND=8) PR(MVSIZ,4,3),JAC_I(10,MVSIZ),UNUSED_VOLUME(MVSIZ),GAMA(1,6),MATERIAL_FRAME(MVSIZ,9)
+      REAL(KIND=8) FULL_RATE(MVSIZ,9),UNUSED(MVSIZ,6),D(3,8)
+      TYPE(FANI_CELL_) FANI_CELL
+      CALL HEPH_NATIVE_GLOBALS(DT)
+      G%X=ZERO
+      G%V=ZERO
+      G%FRAME=ZERO
+      G%P=ZERO
+      G%PH=ZERO
+      G%JAC=ZERO
+      G%VOLUME=ZERO
+      G%LENGTH=ZERO
+      G%GRADIENT=ZERO
+      G%RATE=ZERO
+      FULL_RATE=ZERO
+      UNUSED=ZERO
+      INITIAL=ZERO
+      DISP=ZERO
+      PR=ZERO
+      JAC_I=ZERO
+      ZERO_BUFFER=ZERO
+      NORMAL=ZERO
+      DIRECTIONS=ZERO
+      GAMA=ZERO
+      MATERIAL_FRAME=ZERO
+      D=ZERO
+      OFF=ONE
+      OFFG=ONE
+      IXS=1
+      NGL=1
+      GEOMETRY_ERRORS=0
+      STATUS=0
+      DO N=1,8
+        IXS(N+1,1)=N
+        G%X(1,N,:)=X(:,N)
+        G%V(1,N,:)=V(:,N)
+      END DO
+      DO K=1,3
+        DO N=1,7
+          SAV(1,N+7*(K-1))=XREF(K,N)-XREF(K,8)
+        END DO
+      END DO
+      JAC_I(:,1)=JAC_REF
+      CALL HEPH_NATIVE_SREPISO3(
+     . G%X(1,1,1),G%X(1,2,1),G%X(1,3,1),G%X(1,4,1),
+     . G%X(1,5,1),G%X(1,6,1),G%X(1,7,1),G%X(1,8,1),
+     . G%X(1,1,2),G%X(1,2,2),G%X(1,3,2),G%X(1,4,2),
+     . G%X(1,5,2),G%X(1,6,2),G%X(1,7,2),G%X(1,8,2),
+     . G%X(1,1,3),G%X(1,2,3),G%X(1,3,3),G%X(1,4,3),
+     . G%X(1,5,3),G%X(1,6,3),G%X(1,7,3),G%X(1,8,3),
+     . DIRECTIONS(1,1),DIRECTIONS(1,2),DIRECTIONS(1,3),DIRECTIONS(1,4),
+     . DIRECTIONS(1,5),DIRECTIONS(1,6),DIRECTIONS(1,7),DIRECTIONS(1,8),
+     . DIRECTIONS(1,9),NEL)
+      CALL HEPH_NATIVE_SORTHO3(
+     . DIRECTIONS(1,1),DIRECTIONS(1,2),DIRECTIONS(1,3),DIRECTIONS(1,4),
+     . DIRECTIONS(1,5),DIRECTIONS(1,6),DIRECTIONS(1,7),DIRECTIONS(1,8),
+     . DIRECTIONS(1,9),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,1),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,4),G%FRAME(1,8),
+     . G%FRAME(1,9),G%FRAME(1,7),NEL)
+      CALL HEPH_NATIVE_SRROTA3(
+     . G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),
+     . G%FRAME(1,9),G%X(1,1,1),G%X(1,2,1),G%X(1,3,1),
+     . G%X(1,4,1),G%X(1,5,1),G%X(1,6,1),G%X(1,7,1),
+     . G%X(1,8,1),G%X(1,1,2),G%X(1,2,2),G%X(1,3,2),
+     . G%X(1,4,2),G%X(1,5,2),G%X(1,6,2),G%X(1,7,2),
+     . G%X(1,8,2),G%X(1,1,3),G%X(1,2,3),G%X(1,3,3),
+     . G%X(1,4,3),G%X(1,5,3),G%X(1,6,3),G%X(1,7,3),
+     . G%X(1,8,3),NEL)
+      CALL HEPH_NATIVE_SRROTA3(
+     . G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),
+     . G%FRAME(1,9),G%V(1,1,1),G%V(1,2,1),G%V(1,3,1),
+     . G%V(1,4,1),G%V(1,5,1),G%V(1,6,1),G%V(1,7,1),
+     . G%V(1,8,1),G%V(1,1,2),G%V(1,2,2),G%V(1,3,2),
+     . G%V(1,4,2),G%V(1,5,2),G%V(1,6,2),G%V(1,7,2),
+     . G%V(1,8,2),G%V(1,1,3),G%V(1,2,3),G%V(1,3,3),
+     . G%V(1,4,3),G%V(1,5,3),G%V(1,6,3),G%V(1,7,3),
+     . G%V(1,8,3),NEL)
+      CALL HEPH_NATIVE_SGCOOR3(
+     . ZERO,8,X,IXS,
+     . INITIAL(1,1,1),INITIAL(1,1,2),INITIAL(1,1,3),DISP(1,1,1),
+     . DISP(1,1,2),DISP(1,1,3),SAV,D,
+     . OFF,OFFG,NEL,X,
+     . 42,10)
+      CALL HEPH_NATIVE_SZDERITO3(
+     . OFF,UNUSED_VOLUME,PR(1,1,1),PR(1,2,1),
+     . PR(1,3,1),PR(1,4,1),PR(1,1,2),PR(1,2,2),
+     . PR(1,3,2),PR(1,4,2),PR(1,1,3),PR(1,2,3),
+     . PR(1,3,3),PR(1,4,3),JAC_I,NEL,
+     . 1)
+      CALL HEPH_NATIVE_SDEFOT3(
+     . PR(1,1,1),PR(1,2,1),PR(1,3,1),PR(1,4,1),
+     . PR(1,1,2),PR(1,2,2),PR(1,3,2),PR(1,4,2),
+     . PR(1,1,3),PR(1,2,3),PR(1,3,3),PR(1,4,3),
+     . DISP(1,1,1),DISP(1,2,1),DISP(1,3,1),DISP(1,4,1),
+     . DISP(1,5,1),DISP(1,6,1),DISP(1,7,1),DISP(1,8,1),
+     . DISP(1,1,2),DISP(1,2,2),DISP(1,3,2),DISP(1,4,2),
+     . DISP(1,5,2),DISP(1,6,2),DISP(1,7,2),DISP(1,8,2),
+     . DISP(1,1,3),DISP(1,2,3),DISP(1,3,3),DISP(1,4,3),
+     . DISP(1,5,3),DISP(1,6,3),DISP(1,7,3),DISP(1,8,3),
+     . G%GRADIENT(1,1),G%GRADIENT(1,2),G%GRADIENT(1,3),G%GRADIENT(1,4),
+     . G%GRADIENT(1,5),G%GRADIENT(1,6),G%GRADIENT(1,7),G%GRADIENT(1,8),
+     . G%GRADIENT(1,9),NEL)
+      CALL HEPH_NATIVE_SZTORTH3(
+     . 1,1,0,NEL,
+     . G%FRAME(1,1),G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),
+     . G%FRAME(1,5),G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),
+     . G%FRAME(1,9),MATERIAL_FRAME(1,1),MATERIAL_FRAME(1,2),MATERIAL_FRAME(1,3),
+     . MATERIAL_FRAME(1,4),MATERIAL_FRAME(1,5),MATERIAL_FRAME(1,6),MATERIAL_FRAME(1,7),
+     . MATERIAL_FRAME(1,8),MATERIAL_FRAME(1,9),GAMA)
+      CALL HEPH_NATIVE_SORDEFT3(
+     . 1,1,G%GRADIENT(1,1),G%GRADIENT(1,2),
+     . G%GRADIENT(1,3),G%GRADIENT(1,4),G%GRADIENT(1,5),G%GRADIENT(1,6),
+     . G%GRADIENT(1,7),G%GRADIENT(1,8),G%GRADIENT(1,9),MATERIAL_FRAME(1,1),
+     . MATERIAL_FRAME(1,2),MATERIAL_FRAME(1,3),MATERIAL_FRAME(1,4),MATERIAL_FRAME(1,5),
+     . MATERIAL_FRAME(1,6),MATERIAL_FRAME(1,7),MATERIAL_FRAME(1,8),MATERIAL_FRAME(1,9))
+      CALL HEPH_NATIVE_SZDERI3(
+     . OFF,G%VOLUME,NGL,10,
+     . G%X(1,1,1),G%X(1,2,1),G%X(1,3,1),G%X(1,4,1),
+     . G%X(1,5,1),G%X(1,6,1),G%X(1,7,1),G%X(1,8,1),
+     . G%X(1,1,2),G%X(1,2,2),G%X(1,3,2),G%X(1,4,2),
+     . G%X(1,5,2),G%X(1,6,2),G%X(1,7,2),G%X(1,8,2),
+     . G%X(1,1,3),G%X(1,2,3),G%X(1,3,3),G%X(1,4,3),
+     . G%X(1,5,3),G%X(1,6,3),G%X(1,7,3),G%X(1,8,3),
+     . G%P(1,1,1),G%P(1,2,1),G%P(1,3,1),G%P(1,4,1),
+     . G%P(1,1,2),G%P(1,2,2),G%P(1,3,2),G%P(1,4,2),
+     . G%P(1,1,3),G%P(1,2,3),G%P(1,3,3),G%P(1,4,3),
+     . G%PH(1,1,1),G%PH(1,1,2),G%PH(1,1,3),G%PH(1,1,4),
+     . G%PH(1,2,1),G%PH(1,2,2),G%PH(1,2,3),G%PH(1,2,4),
+     . G%PH(1,3,1),G%PH(1,3,2),G%PH(1,3,3),G%PH(1,3,4),
+     . G%PH(1,4,1),G%PH(1,4,2),G%PH(1,4,3),G%PH(1,4,4),
+     . G%JAC(1,1),G%JAC(1,2),G%JAC(1,3),G%JAC(1,4),
+     . G%JAC(1,5),G%JAC(1,6),G%JAC(1,7),SAV,
+     . OFFG,NEL,VOLDP,1)
+      IF(GEOMETRY_ERRORS/=0.OR.G%VOLUME(1)<=ZERO) THEN
+        STATUS=1
+        RETURN
+      ENDIF
+      CALL HEPH_NATIVE_SDLEN3(
+     . G%VOLUME,G%LENGTH,G%X(1,1,1),G%X(1,2,1),
+     . G%X(1,3,1),G%X(1,4,1),G%X(1,5,1),G%X(1,6,1),
+     . G%X(1,7,1),G%X(1,8,1),G%X(1,1,2),G%X(1,2,2),
+     . G%X(1,3,2),G%X(1,4,2),G%X(1,5,2),G%X(1,6,2),
+     . G%X(1,7,2),G%X(1,8,2),G%X(1,1,3),G%X(1,2,3),
+     . G%X(1,3,3),G%X(1,4,3),G%X(1,5,3),G%X(1,6,3),
+     . G%X(1,7,3),G%X(1,8,3),NORMAL(1,1,1),NORMAL(1,2,1),
+     . NORMAL(1,3,1),NORMAL(1,4,1),NORMAL(1,5,1),NORMAL(1,6,1),
+     . NORMAL(1,1,2),NORMAL(1,2,2),NORMAL(1,3,2),NORMAL(1,4,2),
+     . NORMAL(1,5,2),NORMAL(1,6,2),NORMAL(1,1,3),NORMAL(1,2,3),
+     . NORMAL(1,3,3),NORMAL(1,4,3),NORMAL(1,5,3),NORMAL(1,6,3),
+     . NEL,42,0,0)
+      CALL HEPH_NATIVE_SDEFO3(
+     . FANI_CELL,G%P(1,1,1),G%P(1,2,1),G%P(1,3,1),
+     . G%P(1,4,1),G%P(1,1,2),G%P(1,2,2),G%P(1,3,2),
+     . G%P(1,4,2),G%P(1,1,3),G%P(1,2,3),G%P(1,3,3),
+     . G%P(1,4,3),ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,G%V(1,1,1),G%V(1,2,1),G%V(1,3,1),
+     . G%V(1,4,1),G%V(1,5,1),G%V(1,6,1),G%V(1,7,1),
+     . G%V(1,8,1),G%V(1,1,2),G%V(1,2,2),G%V(1,3,2),
+     . G%V(1,4,2),G%V(1,5,2),G%V(1,6,2),G%V(1,7,2),
+     . G%V(1,8,2),G%V(1,1,3),G%V(1,2,3),G%V(1,3,3),
+     . G%V(1,4,3),G%V(1,5,3),G%V(1,6,3),G%V(1,7,3),
+     . G%V(1,8,3),FULL_RATE(1,1),FULL_RATE(1,2),FULL_RATE(1,3),
+     . FULL_RATE(1,4),FULL_RATE(1,5),FULL_RATE(1,6),FULL_RATE(1,7),
+     . FULL_RATE(1,8),FULL_RATE(1,9),G%RATE(1,4),G%RATE(1,5),
+     . G%RATE(1,6),UNUSED(1,1),UNUSED(1,2),UNUSED(1,3),
+     . UNUSED(1,4),UNUSED(1,5),UNUSED(1,6),NEL,
+     . 0,10,0,24,
+     . 1,0)
+      G%RATE(:,1)=FULL_RATE(:,1)
+      G%RATE(:,2)=FULL_RATE(:,5)
+      G%RATE(:,3)=FULL_RATE(:,9)
+      END

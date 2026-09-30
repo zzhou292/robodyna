@@ -1,0 +1,283 @@
+{
+  "baseline_commit": "3edbf971242ff3c011b5b0f6433b356609b09fc4",
+  "baseline_cpp_sha256": "d43aaed0aba880a32d6a78b695fc8daee78d281673a38bbcf42b337750737437",
+  "normalization": "Comments and whitespace only; no token/value/formula normalization.",
+  "functions": [
+    {
+      "name": "CountSeparationOperation",
+      "sha256": "0367ae63541f4845ed50408428c4d88f5fc9d94314a19d5f8824bebc7dc48dae"
+    },
+    {
+      "name": "CountNormalOperation",
+      "sha256": "0367ae63541f4845ed50408428c4d88f5fc9d94314a19d5f8824bebc7dc48dae"
+    },
+    {
+      "name": "CountExactPathOperation",
+      "sha256": "0367ae63541f4845ed50408428c4d88f5fc9d94314a19d5f8824bebc7dc48dae"
+    },
+    {
+      "name": "CountCommonPointOperation",
+      "sha256": "0367ae63541f4845ed50408428c4d88f5fc9d94314a19d5f8824bebc7dc48dae"
+    },
+    {
+      "name": "ScalarCompare",
+      "sha256": "1d6250adbbd6fa086a2a521c32ea4c017b109e5d5e20b5aa7784ef1f3193a5eb"
+    },
+    {
+      "name": "Compare",
+      "sha256": "959c1418e1dac46b10a229e2227987e78c2fb6a407d4eff1fc0d1169442a95fe"
+    },
+    {
+      "name": "Compare",
+      "sha256": "fc1bf043c8ec9847f95104504a2b595323c75c6fd23efbdd1a63d63287e4475a"
+    },
+    {
+      "name": "Compare",
+      "sha256": "61b0c236ed58eac42da703a1f500d59f36dfbbc676245c1672f9f5bdd00df506"
+    },
+    {
+      "name": "Compare",
+      "sha256": "4cec13707916558f8ba7b789e3780f8dcdc78e1f0557fb406b234b1c85ae548f"
+    },
+    {
+      "name": "Same",
+      "sha256": "dc1b024f10807ecce9793e94c926f337b879c85d6f20d777e854b8836e825553"
+    },
+    {
+      "name": "Same",
+      "sha256": "dc1b024f10807ecce9793e94c926f337b879c85d6f20d777e854b8836e825553"
+    },
+    {
+      "name": "SameBits",
+      "sha256": "0f447d4d6ab4eedcf485ce9d2380c2b9cd5ee6cb3013b453397d232cdf8be797"
+    },
+    {
+      "name": "SameFiniteCoordinate",
+      "sha256": "ed6b474c1a4650558c92fbbfd4d87fb1b9a67df28e77f4957d61f571ea0ee123"
+    },
+    {
+      "name": "SameBits",
+      "sha256": "0a35f6c5e84adcf7e30298ebebcd689b79253aadaf5803fb963abe85e31ccbf9"
+    },
+    {
+      "name": "Exact",
+      "sha256": "b019fbad8c998109897fa68b737c0640e57a02b1b0b69611dfac4dc3ac79e8e0"
+    },
+    {
+      "name": "Add",
+      "sha256": "5400292cd7479f9feab97b03bb0ef667685d74acfb241954f106904836605873"
+    },
+    {
+      "name": "Negate",
+      "sha256": "f8264f73541f20c841a64e0ee772c580c0bea8618fc8e496663e677e13ad829b"
+    },
+    {
+      "name": "Subtract",
+      "sha256": "56776ed7437bad8743f6bd9051643ffc95d5f2153675971422b5cc38d8c8bf1e"
+    },
+    {
+      "name": "Multiply",
+      "sha256": "87b6cbd1732d177f9ce39a342737b195d0fdec1a7f98ead7aa6be95dd72b4388"
+    },
+    {
+      "name": "Scale",
+      "sha256": "edc6987a73f6bd34033bcc9076d4727f9317b0aef7c9c43e82c1e6da02333e01"
+    },
+    {
+      "name": "Sign",
+      "sha256": "95f89ebb1fd2ac68680539895cb21c618ceefc379b9b5d1ff18abf6902a16c05"
+    },
+    {
+      "name": "Compare",
+      "sha256": "10d4abc4367b2bc0065219bc0312f988afdeb42f65384787ebc49b9dd216d4fe"
+    },
+    {
+      "name": "Add",
+      "sha256": "9a96ee89c658a42a4edc751a3e40a5a186eaa7761465260d18efada6b95d381c"
+    },
+    {
+      "name": "Subtract",
+      "sha256": "2ba422c82571a51d781bcef85faf00ca20206c635bed26c0fe534a1427c99947"
+    },
+    {
+      "name": "Cross",
+      "sha256": "00d49ba19db81625366f717ab6d452d326e91a5d7d60f6603bba2bd3cc24d084"
+    },
+    {
+      "name": "Dot",
+      "sha256": "9a21c45f0c7497e56f7da7d838fb05f601f1881b1aa87748b0f7fcbc3ed45f2c"
+    },
+    {
+      "name": "Zero",
+      "sha256": "40e252f51eb423d3468bd57b6b46752811c42300778a11a73c096d2cc1b0af89"
+    },
+    {
+      "name": "Component",
+      "sha256": "a40f9d37f34a1a352db3e7169534a1d927893a6be0c00324b0967c20d8ae236e"
+    },
+    {
+      "name": "Lower",
+      "sha256": "29f3e90afe2dcbf05b8d3b34413863c6fae923e81f226a8357f7836dfc686e72"
+    },
+    {
+      "name": "Upper",
+      "sha256": "2dd0917711d655b366ca8e1c4e3e6961d6415faa543f1577bbc9a4997cc87fd7"
+    },
+    {
+      "name": "Middle",
+      "sha256": "78d66ece5684cf522786a6bd211f3c308a9723acd4fc7e7fef9098ab668efc0e"
+    },
+    {
+      "name": "Component",
+      "sha256": "a40f9d37f34a1a352db3e7169534a1d927893a6be0c00324b0967c20d8ae236e"
+    },
+    {
+      "name": "At",
+      "sha256": "d2addc840db34150779110e01ee018044ae2007e3e2111fe8ba7189c1b8852ba"
+    },
+    {
+      "name": "At",
+      "sha256": "0087e226a09778a7c92fa759a4b69846b5412fce6d9e149b70281bc5fcb26135"
+    },
+    {
+      "name": "CommonTranslation",
+      "sha256": "c019d876eae3de10699fe8fc5e9e21b30af15a8c83f52c68f442748815c3a698"
+    },
+    {
+      "name": "Edge",
+      "sha256": "11ee4a262a62c95f6d88235e5984f138a597c72f26f1c8ef5bb898c77c32b4b2"
+    },
+    {
+      "name": "Normal",
+      "sha256": "1effe36a54dc9f35ede3da79cdbbc6d8fce4f590ec4ae86dc503e0c5ffdc2638"
+    },
+    {
+      "name": "Degenerate",
+      "sha256": "7ebf775b05fa1573b2a0cba74b045407e50fc0a9ccd503d85f37845f90812301"
+    },
+    {
+      "name": "SeparatedOnAxis",
+      "sha256": "cf18aab223a849c0605135715be287b01651da54ee831692697992c21bbf7f61"
+    },
+    {
+      "name": "CommonEndpointPoint",
+      "sha256": "dd980eec2396b078656b2bd957d26a32c00207a37d1868bce8d08bc85073349c"
+    },
+    {
+      "name": "Intersects",
+      "sha256": "c2db6828fc3338e6d3293c6716df6555f1c242c1185054ce04becac3a1e0fa2f"
+    },
+    {
+      "name": "Intersects",
+      "sha256": "6368ebc16a7e1c517c9ec1bedd8851ffa7dcccdbcc113582b4766c93ac5cb5fb"
+    },
+    {
+      "name": "PointInClosedTriangle",
+      "sha256": "943f142b87801d4f89a6e1b8ecd1d5b491c74a47e87594949be66f2a87065e4c"
+    },
+    {
+      "name": "PointInClosedTriangle",
+      "sha256": "7fa7cfd3983c0843d0e9d525b7882580631534626071da0897bf3ea3b9db7316"
+    },
+    {
+      "name": "SegmentsIntersect",
+      "sha256": "7f8c7620198b4896a9c139d8c5695e9a4399ec98fa0275e0854ca4a9e5f9bf60"
+    },
+    {
+      "name": "FeatureLess",
+      "sha256": "3e5a0c44f6c67190d2d181a23a4d053a8b9bea361d1d237d36422f6254e0c781"
+    },
+    {
+      "name": "ConsiderFeature",
+      "sha256": "0a93e6223be998b80c94a40cb9c4e4ebcea20c81480f61d778595016e4af61d7"
+    },
+    {
+      "name": "IntersectionFeature",
+      "sha256": "51e592e440ab6b51715d6222872d0e772b362a04d3227dfa99763931ba576c72"
+    },
+    {
+      "name": "RegularCell",
+      "sha256": "e1961d39af3295cf5de70e73679924bfc1d43103d8393ce19f9df7600f6789d6"
+    },
+    {
+      "name": "RegularCell",
+      "sha256": "58e66b210bf786afc98f840d7845e333d41c9c7b22e6a1c4e5c7d79375bc0c26"
+    },
+    {
+      "name": "SweptBoxesSeparated",
+      "sha256": "d32b6378c88d7792d359cc98c0502ac5f0ab9ec1d46198d77879801db694a21a"
+    },
+    {
+      "name": "ReasonPriority",
+      "sha256": "20ecf1004fd0010f52b0872f2d5c80a82b4b6ec230ef00ef9d30435a8c100595"
+    },
+    {
+      "name": "CopyKey",
+      "sha256": "80e35e8482c9cddc490f8e65bb4495afeab534063fe1aa61be16d0a670023b79"
+    },
+    {
+      "name": "CopyKey",
+      "sha256": "2cff187f32b330dc8a1488ee111a3ab679c6b640e6fadab40cfacac539ea829e"
+    },
+    {
+      "name": "CopyKey",
+      "sha256": "ddaf32ce6154605ea5b8d2eec8d5ef5db2758958df4780797f8de02a1a116d5d"
+    },
+    {
+      "name": "StoreResult",
+      "sha256": "ad81f9dd96068009196658d4601fa0e7af8cce1cc80f63a00faafd13c738ad20"
+    },
+    {
+      "name": "Unresolved",
+      "sha256": "1fccd258b03cd050c0a626ef82267c7c72e1ef8521fb1baccf6e79cb3a4c4a7f"
+    },
+    {
+      "name": "BeginCell",
+      "sha256": "e29f850340b633e93c51592fdc0e35bc2d5a424f0f067f5fa9dd85fa526da04b"
+    },
+    {
+      "name": "NormalAt",
+      "sha256": "cca2f532ada467b8704f580bcd713c30bba540e4079465bd1e20a200d6d00119"
+    },
+    {
+      "name": "Regular",
+      "sha256": "b70887fffea07cbdc9395f7df46f0b7f3c23bfa0209fc92305a8f3d13a820585"
+    },
+    {
+      "name": "RelativeEndpointHull",
+      "sha256": "77c75976085d0cd76db76186a9e5afed1dec11a5a817f36aaddec47864c9ec3d"
+    },
+    {
+      "name": "StrictHullGap",
+      "sha256": "776bb37b236e34165f9c997c9450c5a7332ed2974850e9377afbd0fd234c8592"
+    },
+    {
+      "name": "RelativeCoordinatesSeparated",
+      "sha256": "89d45d816efb196dfb665409a2845344122c2ea46a0306a07d54e5c9204590f5"
+    },
+    {
+      "name": "RelativeAxisSeparated",
+      "sha256": "11a59b003a6fd0b62104551389f7a084f11e055045cf62e96244bd49cdbd19c5"
+    },
+    {
+      "name": "EvaluateCell",
+      "sha256": "65c770e53b21f871cfcfacd4b73413b00e7eb84b974a51cecfec61e945d0ced9"
+    },
+    {
+      "name": "RaiseReason",
+      "sha256": "8a85caabc443b13757b55f4cd0a29de2ca732f595cca48d7fbebf2395f2bf650"
+    },
+    {
+      "name": "CertifyPair",
+      "sha256": "96adb6cf2a210ff3a1b63e0a12db654b58d9e94bf9f5796262cfc53130a487a5"
+    },
+    {
+      "name": "CoordinateBits",
+      "sha256": "1cb7440abae70a78cc9639f1eb32213dbd64dbc34aa4deaab2e46f6b1e584fcd"
+    },
+    {
+      "name": "CanonicalAnchor",
+      "sha256": "bb265bbc225e68e69baec91f54fe8e501b821ec119976ad6c3255d152273a06d"
+    }
+  ]
+}

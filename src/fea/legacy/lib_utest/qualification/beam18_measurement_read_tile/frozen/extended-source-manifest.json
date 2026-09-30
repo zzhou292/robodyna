@@ -1,0 +1,178 @@
+{
+  "baseline_commit": "90845dcc51ae276d71881633e9a0c0873b99e0cc",
+  "scope": "Explicit ExtendedLaw44Law90 immutable source-slot masses; original prefix/order and old ledger rejection preserved.",
+  "unchanged_bodies": {
+    "NodalDomainReport Map(": "12e9199dc601829095d2ea63d5b16e37b203102168baf1a9e6e586be793926a9",
+    "inline bool Same(": "aecea607a47718480dd3496c844b4d0ae4f72869378c2b033b594d58f650c891"
+  },
+  "original_input_prefix": "\n  std::uint64_t source_instance_id = 0;\n  const solid18::Reference* solid18 = nullptr;\n  std::size_t solid18_count = 0;\n  const solid24::Reference* solid24 = nullptr;\n  std::size_t solid24_count = 0;\n  const solid6z::Reference* solid6z = nullptr;\n  std::size_t solid6z_count = 0;\n",
+  "files": [
+    {
+      "path": "lib_src/assembly/BUILD.bazel",
+      "bytes": 4513,
+      "sha256": "f8c72a7d1d1932ba33666bf61e6aeeaabe6f21209ea33969031fe1b9ed5b0b33"
+    },
+    {
+      "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
+      "bytes": 7311,
+      "sha256": "8e97245dbd27510a7397347112af4fdd2164aedce36464a98c02975dd4bc5cbb"
+    },
+    {
+      "path": "lib_src/assembly/SolidContributionChecks.h",
+      "bytes": 3593,
+      "sha256": "000650a40f2a9d19107d57c85e2ec7efdca425f93853c2d21c981eeb15c03c90"
+    },
+    {
+      "path": "lib_src/assembly/SolidNodeContributions.cmake",
+      "bytes": 427,
+      "sha256": "b2d3e8473ca0e2093d256d654491c724aba7a0b899e88d43e18e7eff6282e71b"
+    },
+    {
+      "path": "lib_src/assembly/SolidNodeContributions.cpp",
+      "bytes": 6835,
+      "sha256": "1468d8ba998964bb396755dde1f48570d4b75f51eae5cc18f931d23a14bd6fa5"
+    },
+    {
+      "path": "lib_src/assembly/SolidNodeContributions.h",
+      "bytes": 3603,
+      "sha256": "100a1a6646217d312cf46cd908178017fe85b8a9ff90abc2bf80d36fe0deba8c"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/BUILD.bazel",
+      "bytes": 1099,
+      "sha256": "0573fec0cb289c732a6ef158dac9ce476ec34cbf78d82f4a83b581e90d2feb14"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/BoundsTest.cpp",
+      "bytes": 4193,
+      "sha256": "cc6eebed812cd1fbec84e96aae287310b60998f1ae7e86132d3ef9be49309651"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/CMakeLists.txt",
+      "bytes": 1239,
+      "sha256": "8e94d8310554c1087eb3d93e2ecafe374ef75682e54a6fe5a0783678e9310bd1"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/Fixture.h",
+      "bytes": 1950,
+      "sha256": "c8ffb36c542394848f8c745b92e0e4cd60e9d60434348738e6935369f6475094"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/HostTest.cpp",
+      "bytes": 5223,
+      "sha256": "c8341f9d487357dbcc5478d6de31422e2e1283826a487e296401647ce53b0703"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/LifetimeTest.cpp",
+      "bytes": 3515,
+      "sha256": "1c14cd66c656a8703adc319dbb0cef2e96e9932ef5b62dd83ebc846fd1ca7cd7"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+      "bytes": 738,
+      "sha256": "fd2bf079b87317ca4bcea9b4e4ef971dd941a47ad543df4f9617bfb4636374ce"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/TestSupport.h",
+      "bytes": 4395,
+      "sha256": "ee32629c32e82ea06f9189998aeec8c2e789779e32815502051b06db73e05317"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/owning-source-manifest.json",
+      "bytes": 9227,
+      "sha256": "3a17a527f001ba406697f5178e759e093c2c6892eb9bc3e2fae0856ec2f1aec9"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/verify_source.py",
+      "bytes": 1048,
+      "sha256": "b1d439037dc7c62e5f769a10222f0a0b9a8792e1af41c4c2a274cbcce3d2d7cf"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/BUILD.bazel",
+      "bytes": 1794,
+      "sha256": "28f3b8ec39671b109df74940bff1bda4f5ba900decbb0167f2229e7907143928"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/CMakeLists.txt",
+      "bytes": 4580,
+      "sha256": "1ab63df15fc89a4eabe462e2f250390860e019b633c1d516f575d4ededca8ceb"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/SolidFixture.h",
+      "bytes": 2226,
+      "sha256": "ff6e301e0cdd266cdbec26811eb18560f3f3a7fb4cccad439d4f602c9dbb72b9"
+    },
+    {
+      "path": "lib_utest/qualification/nodal_coefficients/SolidTest.cpp",
+      "bytes": 7798,
+      "sha256": "79df3b1f4ad6d173a3657fbc59f997d40682757f409632ad899fbfe83aa75e75"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/BUILD.bazel",
+      "bytes": 625,
+      "sha256": "108d88f8a6cd3448f0fa2203f6350a5ff3ffa5bd916c4178392aea0c28449bb2"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/TestSupport.h",
+      "bytes": 1855,
+      "sha256": "09af38c78492773cafd5f39e2afbf06c99bd358cd269b3aa6e8b38454579f8e8"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/source-manifest.json",
+      "bytes": 6382,
+      "sha256": "06defd0c6bd8bd431b79b069f5e28c0939856c945f6d17877581926bca2f9b3d"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/verify_source.py",
+      "bytes": 1375,
+      "sha256": "66e9fd8f3d74b34773fe0ce0a7e7d4e2f1d9549e7323578db68e612bdde49cdd"
+    }
+  ],
+  "prior_ledger_extension_records": [
+    {
+      "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
+      "bytes": 5782,
+      "sha256": "c4dc60cdb6bbcdf3ce5ebe0763ff97ef421f164af8354d5e418194ca597c6bea"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/BUILD.bazel",
+      "bytes": 721,
+      "sha256": "1a66ab82bc5e43172750135697ac24f9bb22b02fbaec442be5ee4f597f650d3c"
+    }
+  ],
+  "prior_force_export_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+      "bytes": 780,
+      "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
+    }
+  ],
+  "beam18_model_ledger_followup": {
+    "scope": "Additive immutable beam Model, endpoint snapshot, V5 ledger and build ownership. Existing reference/force/material formulas unchanged; V1-V4 source restrictions retained.",
+    "prior_records": [
+      {
+        "path": "lib_src/assembly/BUILD.bazel",
+        "bytes": 4172,
+        "sha256": "5e8a62ac6b9e2e5f43983085125e42058fc89255bc6cfd6c5743cc3e4d2a1bf2"
+      },
+      {
+        "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
+        "bytes": 6008,
+        "sha256": "40c370edce60940a9022c91be9ec1291ae3bf4d661d063aab0db5cc12a16fd45"
+      }
+    ],
+    "dependency_receipt_prior_records": [
+      {
+        "path": "lib_utest/qualification/law90_solid18_reference/owning-source-manifest.json",
+        "bytes": 9227,
+        "sha256": "7765f6dc7688b6311abe4cf43a4c2a9b5076e60751921a65dc4157011dc62568"
+      },
+      {
+        "path": "lib_utest/qualification/solid18_law44_reference/source-manifest.json",
+        "bytes": 6260,
+        "sha256": "7abcd2b38b86e19171f5119e55406335fa16d8e5c886ea07800cbd9b70e4c54f"
+      }
+    ],
+    "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
+  }
+}

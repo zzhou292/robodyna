@@ -1,0 +1,141 @@
+{
+  "scope": "Selected rear LAW44 H8 reference; exact original eight source slots",
+  "original_fixture_manifest_sha256": "e799eee2fb93e7189fb1bbc84a7d100c6e1f98e50d381dd71ce5d2c2d354fd4b",
+  "files": {
+    "lib_src/elements/solid18/Solid18ReferenceValues.h": {
+      "bytes": 2257,
+      "sha256": "f13608c0a69a44c03a53447f3d7b477cc42a472011ad017bb7e6280d9afcb28f"
+    },
+    "lib_src/elements/solid18/law44/BUILD.bazel": {
+      "bytes": 590,
+      "sha256": "b6728abbab833c8082adf92021d884a62685889134a8a7f9d1b66cd8fe98b20d"
+    },
+    "lib_src/elements/solid18/law44/README.md": {
+      "bytes": 1446,
+      "sha256": "62d6a0a09dc0ffe9b58a973de77d1a43f803ca79c5071218cbc4e28af65cdf01"
+    },
+    "lib_src/elements/solid18/law44/Reference.h": {
+      "bytes": 1004,
+      "sha256": "d6ba6944d98ede9659dfb4984679bb4fbf1665fa27f6b62a4a881f0bebefdab1"
+    },
+    "lib_src/elements/solid18/law44/Topology.h": {
+      "bytes": 2004,
+      "sha256": "9cfffbefa82eeb6f6f256968bc381ac999b0e58dce54cb69596bb4192624d4fe"
+    },
+    "lib_src/elements/solid18/law44/Types.h": {
+      "bytes": 1363,
+      "sha256": "5e25e961d8cf93eb924545e9ead904cf681205b15c8a780d7d61f90663b09557"
+    },
+    "lib_utest/qualification/solid18_law44_reference/BUILD.bazel": {
+      "bytes": 625,
+      "sha256": "108d88f8a6cd3448f0fa2203f6350a5ff3ffa5bd916c4178392aea0c28449bb2"
+    },
+    "lib_utest/qualification/solid18_law44_reference/CMakeLists.txt": {
+      "bytes": 4041,
+      "sha256": "4617c6a2de46a8c283154ca68ed763f63609484fcc8af6d7fe2707a936ce8fe4"
+    },
+    "lib_utest/qualification/solid18_law44_reference/CudaTest.cu": {
+      "bytes": 4474,
+      "sha256": "e0148c80ea0394e8adac1fe06475c9dbef69118a5192be761f88b76cf3c1f809"
+    },
+    "lib_utest/qualification/solid18_law44_reference/HostTest.cpp": {
+      "bytes": 4954,
+      "sha256": "f0e20015d02f13e30f2438fb4705e306a8f119b94d821bb2519c0e2e77b524a2"
+    },
+    "lib_utest/qualification/solid18_law44_reference/NativeOracle.cpp": {
+      "bytes": 2155,
+      "sha256": "ec7b0436a20b8b576a14bf55add419616462ec3f78b38d3b9d546771ceffb627"
+    },
+    "lib_utest/qualification/solid18_law44_reference/NativeOracle.h": {
+      "bytes": 587,
+      "sha256": "9f8ece55cdd6791f61cd87b443e59a460c1f16b6f79697c50a130db62b2917f5"
+    },
+    "lib_utest/qualification/solid18_law44_reference/NativeTest.cpp": {
+      "bytes": 1985,
+      "sha256": "7049a604436442588136d96339ff40d015d93846a19dca5931b2340f329ba230"
+    },
+    "lib_utest/qualification/solid18_law44_reference/README.md": {
+      "bytes": 3775,
+      "sha256": "b1d51d64bc125ff4f6c08b0a6ddcb5bca2364942178585c5a58e4836cb38ae74"
+    },
+    "lib_utest/qualification/solid18_law44_reference/SourceNativeTest.cpp": {
+      "bytes": 1792,
+      "sha256": "067d0a743b64f5cab9af58d5b3361181df3ac2e022e39610f2069bdb357a7b4d"
+    },
+    "lib_utest/qualification/solid18_law44_reference/TestSupport.h": {
+      "bytes": 1855,
+      "sha256": "09af38c78492773cafd5f39e2afbf06c99bd358cd269b3aa6e8b38454579f8e8"
+    },
+    "lib_utest/qualification/solid18_law44_reference/export_fixture.py": {
+      "bytes": 4255,
+      "sha256": "e9097b873b19ac6f21ad2cf304452e79ca6901b3d4e52d1d5002969b835a69f7"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/NativePacket.F90": {
+      "bytes": 1919,
+      "sha256": "239b366e12b36ad3eeaceed024c2a454f68c23022e896ba58db2008e8d68c0fe"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/NativeScatter.F": {
+      "bytes": 2658,
+      "sha256": "ffc7f4d89c08246d5390981a5528eae747a89b5ba404bbdca32fe4dfb97db84d"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/original/starter/source/elements/initia/spmd_msin.F": {
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/scatter-source-receipt.json": {
+      "bytes": 1046,
+      "sha256": "3b1255afc2543f796a0dcec1fde016c989d2c2653f933c89271902a92466f88e"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/spmd_mass.inc": {
+      "bytes": 177,
+      "sha256": "4993f04dca4e73e7a2d2f39225b4480f335f7b90e44c669c4833d3c9536606b7"
+    },
+    "lib_utest/qualification/solid18_law44_reference/prepare_fixture.py": {
+      "bytes": 5174,
+      "sha256": "e76d5567af3c5b11608514bc1931bb5b35b0976e8fac126a13b49cc60e415c6c"
+    },
+    "lib_utest/qualification/solid18_law44_reference/verify_source.py": {
+      "bytes": 1375,
+      "sha256": "66e9fd8f3d74b34773fe0ce0a7e7d4e2f1d9549e7323578db68e612bdde49cdd"
+    },
+    "lib_utest/qualification/solid18_reference/NativeOracle.cpp": {
+      "bytes": 3985,
+      "sha256": "8e6e6ccea2a8c654249e3d5f11278ff2be18c00dda74c62e5c8271945760da04"
+    },
+    "lib_utest/qualification/solid18_reference/TestSupport.h": {
+      "bytes": 2275,
+      "sha256": "4027d7a8c4330a1e8aae220bcb190115cc26e4b43c3b174223bcf7e8781cc5b2"
+    },
+    "lib_utest/qualification/solid18_reference/native/NativeReference.F": {
+      "bytes": 6239,
+      "sha256": "ab2ff52659e7b0cb51a438541c54df6025b63c5eea31dbda92ebfc66bdbb1a71"
+    },
+    "lib_utest/qualification/solid18_reference/native/original/starter/source/elements/initia/initia.F": {
+      "bytes": 157433,
+      "sha256": "9fefea57c7913ae1d9c2cb89255822d6615074d88a609e28815921eb566000c0"
+    },
+    "lib_utest/qualification/solid18_reference/native/prepare_sources.py": {
+      "bytes": 3788,
+      "sha256": "c3c00d2d7857196f31a6983326e96f7e6cce822d94fa96a459adb8802639e0a1"
+    },
+    "lib_utest/qualification/solid18_reference/native/source-manifest.json": {
+      "bytes": 8662,
+      "sha256": "6f1999e21131a7107f29098a543a9b833ae2cb67b145ffbe6c68c1adaaf4be55"
+    },
+    "lib_utest/qualification/solid_law44_point/source_fixture/source-receipt.json": {
+      "bytes": 14374,
+      "sha256": "045a5d85cf6700e3950e2248d0c8e337c1ce64311651b0c1470a96915b7c14b3"
+    }
+  },
+  "previous_fixture_exports": [
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/BUILD.bazel",
+      "previous": {
+        "bytes": 542,
+        "sha256": "3226e3f18bd7e471e5984886e5675059cb0a39f0a390f06d8b8e2b928da22624"
+      },
+      "change": "Add extended coefficient test visibility; existing force export unchanged."
+    }
+  ],
+  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved"
+}

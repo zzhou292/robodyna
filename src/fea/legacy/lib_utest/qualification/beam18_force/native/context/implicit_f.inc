@@ -1,0 +1,3 @@
+      USE L44S_REF_CONSTANT_MOD
+      IMPLICIT NONE
+#define my_real REAL(KIND=8)

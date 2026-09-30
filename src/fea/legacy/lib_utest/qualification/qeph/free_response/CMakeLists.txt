@@ -1,0 +1,32 @@
+# Opt-in native qualification only. No production owner or CUDA dependency.
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+add_library(qeph_recurrence_audit_core STATIC RecurrenceDictionary.cpp RecurrenceProbe.cpp
+  RecurrenceIdentity.cpp RecurrenceAnalysis.cpp RecurrencePowerGram.cpp RecurrenceAudit.cpp)
+target_include_directories(qeph_recurrence_audit_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(qeph_recurrence_audit_core PUBLIC qeph_q1_native Eigen3::Eigen)
+target_compile_features(qeph_recurrence_audit_core PUBLIC cxx_std_17)
+target_compile_definitions(qeph_recurrence_audit_core PUBLIC EIGEN_DONT_PARALLELIZE)
+target_compile_options(qeph_recurrence_audit_core PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_recurrence_audit_check RecurrenceAuditTest.cpp)
+target_link_libraries(qeph_recurrence_audit_check PRIVATE qeph_recurrence_audit_core GTest::gtest_main)
+add_test(NAME qeph_recurrence_audit_check COMMAND qeph_recurrence_audit_check)
+set_tests_properties(qeph_recurrence_audit_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+# Existing JSON/hash/create-only utilities are reused ONLY by the report layer.
+# Neither this target nor these workspace paths enter the numerical core.
+get_filename_component(QEPH_AUDIT_WORKSPACE "${TL_ROOT}/.." ABSOLUTE)
+set(ROBO_DYNA_ROOT "${QEPH_AUDIT_WORKSPACE}/robo-dyna" CACHE PATH "robo-dyna source for qualification artifact utilities")
+set(CHRONO_SOURCE_DIR "${QEPH_AUDIT_WORKSPACE}/chrono" CACHE PATH "Chrono source for qualification RapidJSON headers")
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+add_library(qeph_recurrence_report_io STATIC "${ROBO_DYNA_ROOT}/output/ArtifactIO.cpp")
+target_include_directories(qeph_recurrence_report_io PUBLIC "${ROBO_DYNA_ROOT}" "${CHRONO_SOURCE_DIR}/src")
+target_compile_features(qeph_recurrence_report_io PUBLIC cxx_std_17)
+target_link_libraries(qeph_recurrence_report_io PRIVATE OpenSSL::Crypto)
+add_library(qeph_recurrence_report STATIC RecurrenceReport.cpp)
+target_link_libraries(qeph_recurrence_report PUBLIC qeph_recurrence_audit_core qeph_recurrence_report_io)
+add_executable(qeph_recurrence_audit recurrence_audit_main.cpp)
+target_link_libraries(qeph_recurrence_audit PRIVATE qeph_recurrence_report)
+add_executable(qeph_recurrence_report_check RecurrenceReportTest.cpp)
+target_link_libraries(qeph_recurrence_report_check PRIVATE qeph_recurrence_report GTest::gtest_main)
+add_test(NAME qeph_recurrence_report_check COMMAND qeph_recurrence_report_check)
+set_tests_properties(qeph_recurrence_report_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

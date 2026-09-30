@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["OwnerFixture.cpp"],
+    hdrs = ["OwnerFixture.h"],
+    deps = ["//lib_src/elements/beam18/resident:values", "//lib_src/assembly:beam18_node_contributions",
+            "//lib_utest/qualification/beam18_force:test_values",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["EndpointTest.cpp", "ValueTest.cpp"],
+    deps = [":fixture", "//lib_src/elements/beam18/resident:values",
+            "//lib_src/elements/beam_common:endpoint_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

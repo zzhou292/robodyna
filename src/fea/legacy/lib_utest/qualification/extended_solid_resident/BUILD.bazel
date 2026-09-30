@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["OwnerFixture.cpp"],
+    hdrs = ["Fixture.h", "OwnerFixture.h"],
+    visibility = ["//lib_utest/qualification/solid_law44_analytic:__pkg__"],
+    deps = ["//lib_src/elements/solids/resident:values",
+            "//lib_utest/qualification/extended_solid_model:fixture",
+            "//lib_utest/qualification/solid_resident:test_values", "@googletest//:gtest"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["RelocateTest.cpp", "StateTest.cpp", "BudgetTest.cpp", "OwnerFixtureTest.cpp"],
+    deps = [":fixture", "//lib_src/elements/solids/resident:values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Actual CUDA/native owner and authenticated4063 constructor targets are owned
+# by the adjacent CMakeLists.txt, reusing the complete original donor libraries.

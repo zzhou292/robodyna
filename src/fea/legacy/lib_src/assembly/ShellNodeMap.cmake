@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalNodeDomain.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../elements/ShellBatchBinding.cmake")
+add_library(tl_shell_node_map STATIC "${CMAKE_CURRENT_LIST_DIR}/ShellNodeMap.cpp")
+target_link_libraries(tl_shell_node_map PUBLIC tl_nodal_node_domain tl_shell_batch_binding)
+target_compile_features(tl_shell_node_map PUBLIC cxx_std_17)
+target_compile_options(tl_shell_node_map PRIVATE -fno-fast-math -ffp-contract=off)

@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h", "CoefficientFixture.h"],
+    deps = ["//lib_src/constraints/tied_shell:tied_shell_patch", "@googletest//:gtest"],
+    visibility = ["//visibility:public"],
+)
+cc_test(
+    name = "tied_patch_host_test",
+    srcs = ["ValueTest.cpp", "Fixture.h", "CoefficientFixture.h", "CoefficientValueTest.cpp",
+            "RepeatedAssemblyFixture.h", "RepeatedAssemblyTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints/tied_shell:tied_shell_patch",
+            "//lib_src/solvers:nodal_repeated_force_assembly", "@googletest//:gtest_main"],
+)

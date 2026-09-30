@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "type13_contribution_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/assembly:type13_node_contributions",
+            "//lib_utest/qualification/type13_model:model_fixture", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "type13_contribution_original_check",
+    size = "medium",
+    tags = ["manual"],
+    srcs = ["OriginalTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/assembly:type13_node_contributions",
+            "//lib_utest/qualification/type13_model:original_model_fixture", "@googletest//:gtest_main"],
+)

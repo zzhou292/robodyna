@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "Packet.h"],
+    deps = ["//lib_src/elements/solids/resident:values", "//lib_src/solvers:nodal_force_assembly",
+            "//lib_src/solvers:nodal_repeated_stiffness", "//lib_utils:ordered_node_incidence", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Complete actual CUDA/native/owner gate is the adjacent CMake project.

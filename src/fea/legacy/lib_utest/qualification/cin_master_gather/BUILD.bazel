@@ -1,0 +1,56 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+genrule(
+    name = "frozen_caller",
+    srcs = ["prepare_reference.py", "reference/ExplicitNodalCinStep.cu"],
+    outs = ["Frozen.cu"],
+    cmd = "python3 -B $(location prepare_reference.py) $@",
+)
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = [
+        "DeviceFixture.cuh",
+        "Fixture.h",
+        "Frozen.h",
+        "//lib_utest/qualification/cin_force_transfers:owner_test_source",
+    ],
+    deps = [
+        "//lib_src/elements/mapped_shell:values",
+        "//lib_src/solvers:explicit_nodal_state",
+        "//lib_utest/qualification/cin_force_transfers:fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "CapacityTest.cpp"],
+    deps = [":fixture"],
+    copts = ["-std=c++17", "-Ilib_src/solvers", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = [
+        "CallerTest.cu",
+        "OwnerTest.cu",
+        ":frozen_caller",
+        "//lib_utest/qualification/cin_parallel_ordinary:device_packet_sources",
+    ],
+    deps = [":fixture"],
+    copts = [
+        "--std=c++17",
+        "-Ilib_src/solvers",
+        "--fmad=false",
+        "--prec-div=true",
+        "--prec-sqrt=true",
+        "--ftz=false",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    tags = ["exclusive", "gpu"],
+)

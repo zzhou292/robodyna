@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "shell_constant_failure_value_check",
+    srcs = ["FailureValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/materials/failure:shell_constant_plastic_failure", "@googletest//:gtest_main"],
+)

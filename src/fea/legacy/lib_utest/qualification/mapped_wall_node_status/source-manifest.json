@@ -1,0 +1,292 @@
+{
+  "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+  "scope": "Four integer status scans only; complete source-order error and floating-point producer bodies preserved; no arena/layout/forecast growth.",
+  "original_callers": {
+    "Evaluation": {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3561,
+      "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+    },
+    "Scatter": {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 2720,
+      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+    }
+  },
+  "files": [
+    {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactScatter.h",
+      "bytes": 2491,
+      "sha256": "4042467d5520a119bd2f2bf18b520a34e4b81408f54427b271e3f63a6a4c7f47"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3847,
+      "sha256": "ee4cf936e7a462b4263905e31220c53af9403a03881de14f77e7308bedbe8882"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
+      "bytes": 7358,
+      "sha256": "08dd40c68096e11eda3528231b3011efebba7c7ab44154554ee5ce8b08f7ecc0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalReduction.cuh",
+      "bytes": 2843,
+      "sha256": "8be37e16a6024ed0a647b3cb942abd9715e3e26b37ebf057d3790e0f7959f4a7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/NodeStatus.cuh",
+      "bytes": 486,
+      "sha256": "285ea59e0ae780c72df5760103a197bbf84a97ce9b487d0fa2c43aad9bddc72f"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/NodeStatus.h",
+      "bytes": 1101,
+      "sha256": "546a5c26d58168582324fb98422d42e9f63dadcfb1e22f65eda7aaf10892bb7a"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
+      "bytes": 3551,
+      "sha256": "4b7538260d8a8fed84eef1a067c6171db8c0730615279118a23f309ba5144a3c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverValues.h",
+      "bytes": 4989,
+      "sha256": "6512f32bbf7f82e6783f0a74648b38e954dac36012d15dfaeecac16a14efe31d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Response.cuh",
+      "bytes": 2726,
+      "sha256": "8f8726c80b74c207a8cbfcb3036fe6e7888027b7209a102f62711e6a64910094"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+      "bytes": 17181,
+      "sha256": "ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+      "bytes": 5781,
+      "sha256": "04bcfdcea7a0a36a97ed34e368176e3460bf22e52ac5760db8c524fc424e0d43"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_evaluation/Fixture.h",
+      "bytes": 2600,
+      "sha256": "0b772ee8d906165e88c43938535ce636f7c42f7458e6b0f8efab16e298c75415"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+      "bytes": 9394,
+      "sha256": "70f76b140dca9c2725f3d25f454a6df2337359f595c76375449d36140518aa91"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+      "bytes": 2646,
+      "sha256": "ad6a404982e29e1346e5501c7edf91f2a7f7e817b2a3c034f2e625c492871682"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/BUILD.bazel",
+      "bytes": 342,
+      "sha256": "cc9ce590f302ba976deeab14e38fa1868cebf0386a708cbb7b59285a768e7b81"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/CMakeLists.txt",
+      "bytes": 2897,
+      "sha256": "67d3b588cb2186b2e8c7f50109fc93524d56fc434f7cd3f7b754a5ed33d2046d"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/EvaluationTest.cu",
+      "bytes": 5164,
+      "sha256": "3f1b1afecc62f9a7c3220a652f6bfa4f9cc7a70063b1dc076993722ce6c8c653"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/FrozenEvaluation.cuh",
+      "bytes": 3668,
+      "sha256": "c37a1ff6f729c53e54f01902266b4455c5f2ad4940bcd990d7350cc55c2c2f76"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/FrozenScatter.cuh",
+      "bytes": 2766,
+      "sha256": "2c0d2264f4688a7685cbd2a11719c2835d9610ec4435b5969985993282746209"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/HostTest.cpp",
+      "bytes": 2498,
+      "sha256": "082bf9a400c6937fb3487253a964ba16365b8a29aebd87b7f0e6eb0506356c0c"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_node_status/ScatterTest.cu",
+      "bytes": 2836,
+      "sha256": "fc31aef071850b212a122c290c454be74c075aea3ef04cf75e025371c25ba649"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+      "bytes": 9334,
+      "sha256": "5d5b14a036bbdf08e568c090946667ba88364713a3a49919a6a3b6cedc3382c8"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+      "bytes": 2076,
+      "sha256": "3dee73f14dea9f5157b2cf1994405d0641706b9aa648416f85a14633b96b2002"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/source-manifest.json",
+      "bytes": 7589,
+      "sha256": "d02aa696e0567b1a3f4af3dde15adf4d03c38198193a10250b9fc418856bbd78"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/verify_sources.py",
+      "bytes": 3941,
+      "sha256": "c34f2d34f1a48e237f253fbfe49ea749c17eb4c619bfbf9b7232ca2f6fcbb564"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/Fixture.cpp",
+      "bytes": 2842,
+      "sha256": "c378ab173523ee2d53ad9185f6f02abf6363c9bb4ea43f38b6a3d6c78d2af312"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/Fixture.h",
+      "bytes": 2345,
+      "sha256": "fb54b0f978039b3626a92c2b59070a0b99d25d2812a926c045861b99d4999889"
+    },
+    {
+      "path": "lib_utest/qualification/vehicle_wall_device/VehicleWallChecks.cpp",
+      "bytes": 3551,
+      "sha256": "d29395c59b1daf066a86408de90019103e2712780a2b406dc301fa67a1ac9903"
+    },
+    {
+      "path": "lib_utest/qualification/vehicle_wall_device/VehicleWallFixture.cpp",
+      "bytes": 3749,
+      "sha256": "bb8776a2ca8babb4d0d59e627d27d5bac55e50066b7ca1a938490edec74a9538"
+    },
+    {
+      "path": "lib_utest/qualification/vehicle_wall_device/VehicleWallFixture.h",
+      "bytes": 1967,
+      "sha256": "cec3f6ff3865dc5c89733527159bf98d7f6302c38ffb45ced5f1615a9ca28e4c"
+    }
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "bf02626b1fcf6756367c090a00c25247aedfe565a28d7a722a4f80a5fd18a527",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 12597,
+        "sha256": "0e5a3426b1cdfb99f6475b31ba19fd4b0449415862bb92ea030bed17cab68e2f"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+        "bytes": 12736,
+        "sha256": "ea08ed05a1b3a5d838b4c46e155e4a97f5a57490752d34045e67f5c6b9059ea3"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+        "bytes": 5642,
+        "sha256": "a6728010e01cad532831e6e23def72aa43df3ff8e1c277c7ec1b09f6072d5ce6"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+        "bytes": 7989,
+        "sha256": "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+        "bytes": 2493,
+        "sha256": "6a93786d078830f70b9db7bd5948430b82dbd61972baa756dea5c52faffd3487"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+        "bytes": 8709,
+        "sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+        "bytes": 2076,
+        "sha256": "d13b142c6a7f540771aa495a0d1b68b18b7d934914bd592c1554ce1fb8dca814"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_response/source-manifest.json",
+        "bytes": 6184,
+        "sha256": "f4bb6eb52342949a3055926852e7e153244a8c2e01d40d63152895262931fbdb"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_response/verify_sources.py",
+        "bytes": 3802,
+        "sha256": "d3d0a435679596992fe3d951f9f9f2314b456e986918e999d8b7af6f1a94a290"
+      }
+    ],
+    "added_paths": [],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  },
+  "contact_prerequisite_integration_review": {
+    "base": "1e6a0a2a8660d388ca96ca26552e4afca8c38a89",
+    "previous_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 12685,
+        "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+        "bytes": 15152,
+        "sha256": "39adaf1756e57cc6c3094480cb4e2210f413dafd01c29e1ed056aeea9fc0603c"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+        "bytes": 5781,
+        "sha256": "090a447bc1584d0a53c28a929bf41b1f4b9a077ccc7aaf1c124daa5f397aad67"
+      }
+    ],
+    "scope": "Only additive contact prerequisite build/proof composition. Frozen node-status arithmetic, old callers and mapped-wall mechanics remain unchanged."
+  }
+}

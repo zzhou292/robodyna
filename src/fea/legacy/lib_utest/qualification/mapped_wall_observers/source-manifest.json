@@ -1,0 +1,224 @@
+{
+  "revision": "3eca05d76b7dd2b190769c3469a6cdbad1c4b441",
+  "scope": "Optional mapped global ReduceNodes observer only. Complete frozen source and unchanged physical/local/certified interval leaves retained. New tree certifies its own nominal; no constitutive/nodal force/STI change.",
+  "files": [
+    {
+      "path": "lib_src/collision/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactReduction.h",
+      "bytes": 1613,
+      "sha256": "8be6f84bc4ef8ba8f079a10e532b904e04bd1a15631d55ca5c4ab22b52d4027d"
+    },
+    {
+      "path": "lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactScatter.h",
+      "bytes": 2491,
+      "sha256": "4042467d5520a119bd2f2bf18b520a34e4b81408f54427b271e3f63a6a4c7f47"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverTypes.h",
+      "bytes": 1461,
+      "sha256": "5a7ed4c80eb8fb84bee7b18c759003f75310a908d6b13ee8fd5c55528cc9aaf9"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverValues.h",
+      "bytes": 4989,
+      "sha256": "6512f32bbf7f82e6783f0a74648b38e954dac36012d15dfaeecac16a14efe31d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
+      "bytes": 3551,
+      "sha256": "4b7538260d8a8fed84eef1a067c6171db8c0730615279118a23f309ba5144a3c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3847,
+      "sha256": "ee4cf936e7a462b4263905e31220c53af9403a03881de14f77e7308bedbe8882"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/reference/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/SerialObservers.h",
+      "bytes": 1408,
+      "sha256": "381236b7b5a165149acc5874eb806f281abde41f579523610ef39311bcb51cf3"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/Truth.h",
+      "bytes": 3757,
+      "sha256": "3687ad5481575e244e32823b5f98f067b09632597130d8541ef82464e10ad433"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/IntervalTruth.h",
+      "bytes": 2337,
+      "sha256": "d9aec40fe70124b94afe3b480ba3cfb2c8d2c5d6224131e43621ea29eeaf3fc5"
+    }
+  ],
+  "previous_interval_seam_records": {
+    "reason": "Separate optional interval observer tail; original MeasureInterval and global observer math unchanged.",
+    "files": [
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+        "bytes": 1278,
+        "sha256": "2562d4a6e7a3c28fb9ed44667885fd60ba7db6673834f412b34b92b10d79a411"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+        "bytes": 1665,
+        "sha256": "ea763892887820e148812af91308f12d90d6f0c1f2ed9958dd66850692692a84"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+        "bytes": 5507,
+        "sha256": "f35cfc27a3908965a2027d260111bea407f33ff45588896dcf8aa450c3886ec6"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10124,
+        "sha256": "08d5745250d827d4bcdde1e3f749e39f4cd2982a61a4d545d0c5fae6ac07a882"
+      }
+    ]
+  },
+  "assembly_validation_previous_receipts": [
+    {
+      "manifest_sha256": "bc331267e08175b4837ac2dd7c147f9de9d895d892701960bdf685dfbc6b9fba",
+      "reason": "Mapped-only exact assembly-input helper extraction and schedule; no Response/scatter/observer/interval arithmetic changes. Complete old Kernels and Operations retained by mapped_wall_assembly_inputs.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+          "bytes": 3580,
+          "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1384,
+          "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10427,
+          "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+        }
+      ]
+    }
+  ],
+  "response_previous_receipts": [
+    {
+      "manifest_sha256": "7e483ece6926e333addbaaaccf458012a907dc90a6a38afef518db544f647f95",
+      "reason": "Mapped-only ordered rigid response and ordinary max scheduling, with separately counted CSR/maxima tail. Complete serial Response and CheckResponse preserved at mapped_wall_response/reference; activity, scatter, observer and interval arithmetic unchanged.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1454,
+          "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+          "bytes": 1801,
+          "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+          "bytes": 5570,
+          "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10235,
+          "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+        }
+      ]
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+          "bytes": 2720,
+          "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+          "bytes": 3561,
+          "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+        }
+      ]
+    }
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      }
+    ],
+    "added_paths": [],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  }
+}

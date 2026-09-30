@@ -1,0 +1,627 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "vehicle_shell_geometry_fixture",
+    testonly = True,
+    hdrs = ["qualification/vehicle_shell_host/VehicleShellFixture.h"],
+    visibility = ["//lib_utest/qualification/nodal_coefficients:__pkg__"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_binding"],
+)
+
+cc_test(
+    name = "nodal_domain_values",
+    size = "small",
+    srcs = [
+        "qualification/nodal_domain/DomainTest.cpp",
+        "qualification/nodal_domain/MapTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_utest/qualification/qbat_binding:fixture",
+            "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_domain_full_count",
+    size = "medium",
+    srcs = [
+        "qualification/nodal_domain/SizeTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+    ],
+    args = ["--gtest_filter=NodalDomainSize.DeclaredMaximum"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "shell_node_map_source_count",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/nodal_domain/SizeTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+    ],
+    args = ["--gtest_filter=NodalDomainSize.SourceCountShellMap"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_prepared_planar_wall_query",
+    size = "small",
+    srcs = ["utest_prepared_planar_wall_query.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:prepared_planar_wall_query", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_nodal_wall_contact",
+    size = "small",
+    srcs = ["utest_nodal_wall_contact.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:nodal_wall_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_prescribed_surface_contact",
+    size = "small",
+    srcs = ["utest_prescribed_surface_contact.cc", "prescribed_surface_contact_fixture.h", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:q4_prescribed_planar_contact", "//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_parametric_contact_cuda",
+    size = "small",
+    srcs = ["utest_parametric_contact_cuda.cu", "parametric_contact_cuda_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_t3_contact_integration",
+    size = "small",
+    srcs = ["utest_t3_contact_integration.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_parametric_contact",
+    size = "small",
+    srcs = ["utest_q4_parametric_contact.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_surface_material_measure",
+    size = "small",
+    srcs = ["utest_surface_material_measure.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:surface_material_measure", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_planar_wall_box",
+    size = "small",
+    srcs = ["utest_planar_wall_box.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_planar_stiffness",
+    size = "small",
+    srcs = ["utest_q4_planar_stiffness.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_stiffness", "@eigen//:eigen", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_q4_planar_contact_cuda",
+    size = "small",
+    srcs = ["utest_q4_planar_contact_cuda.cu", "q4_planar_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_planar_geometry",
+    size = "small",
+    srcs = ["utest_q4_planar_geometry.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_planar_sweep_geometry",
+    size = "small",
+    srcs = ["utest_q4_planar_sweep_geometry.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_unrestricted_mass",
+    size = "small",
+    srcs = ["utest_q4_unrestricted_mass.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_integral_measure",
+    size = "small",
+    srcs = ["utest_q4_integral_measure.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_prescribed_planar_contact",
+    size = "small",
+    srcs = ["utest_q4_prescribed_planar_contact.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_rectangular_integration",
+    size = "small",
+    srcs = ["utest_q4_rectangular_integration.cc", "q4_rectangular_integration_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_rectangular_integration", "@googletest//:gtest_main"],
+    tags = ["manual"],
+)
+
+cuda_test(
+    name = "utest_q4_rectangular_integration_cuda",
+    size = "small",
+    srcs = ["utest_q4_rectangular_integration_cuda.cu", "q4_rectangular_integration_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu", "manual"],
+    deps = ["//lib_src/collision:q4_rectangular_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_contact_integration",
+    size = "small",
+    srcs = ["utest_q4_contact_integration.cc", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_contact_integration", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_q4_contact_integration_cuda",
+    size = "small",
+    srcs = ["utest_q4_contact_integration_cuda.cu", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_planar_wall_geometry",
+    size = "small",
+    srcs = ["utest_planar_wall_geometry.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:planar_wall_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_surface_mapping",
+    size = "small",
+    srcs = ["utest_q4_surface_mapping.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_surface_mapping", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_q4_surface_mapping_cuda",
+    size = "small",
+    srcs = ["utest_q4_surface_mapping_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_surface_mapping", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_reissner_shell_mass",
+    size = "small",
+    srcs = ["utest_reissner_shell_mass.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements:reissner_shell_mass", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_temporal_cuda",
+    size = "small",
+    srcs = ["utest_nodal_temporal_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [":nodal_temporal_fixture", "//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "nodal_temporal_fixture",
+    testonly = True,
+    hdrs = ["qualification/nodal/NodalTemporalFixture.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_history_admission_cuda",
+    size = "small",
+    srcs = ["utest_nodal_history_admission_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [":nodal_temporal_fixture", "//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_capacity_cuda",
+    size = "small",
+    srcs = ["utest_nodal_capacity_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_rotation_cuda",
+    size = "small",
+    srcs = ["utest_nodal_rotation_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_reissner_shell_assembly",
+    size = "small",
+    srcs = ["utest_reissner_shell_assembly.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements:reissner_shell_assembly", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_planar_mesh_contact_cuda",
+    size = "small",
+    srcs = ["utest_planar_mesh_contact_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:planar_mesh_contact", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_step_cuda",
+    size = "small",
+    srcs = ["utest_nodal_step_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/solvers:explicit_nodal_state",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_step_stability",
+    size = "small",
+    srcs = ["utest_step_stability.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/solvers:explicit_step_stability",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_step_stability_cuda",
+    size = "small",
+    srcs = ["utest_step_stability_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/solvers:explicit_step_stability",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_surface_geometry",
+    size = "small",
+    srcs = ["utest_surface_geometry.cc"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_surface_contact",
+    size = "small",
+    srcs = ["utest_surface_contact.cc"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_cuda_runtime",
+    size = "small",
+    srcs = ["utest_cuda_runtime.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = ["@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_surface_contact_cuda",
+    size = "small",
+    srcs = ["utest_surface_contact_cuda.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_surface_broadphase",
+    size = "small",
+    srcs = ["utest_surface_broadphase.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_3243",
+    size = "small",
+    srcs = ["utest_3243.cc"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    data = ["//:data_utest"],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:csv_utils",
+        "//lib_utils:mesh_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_utils",
+    srcs = ["utest_utils.cc"],
+    copts = ["--std=c++17"],
+    deps = [
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_collision",
+    srcs = ["utest_collision.cc"],
+    copts = ["--std=c++17"],
+    data = ["//:data_meshes"],
+    deps = [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "//lib_src/collision:hydroelastic_narrowphase",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:mesh_utils",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_sparse_mass",
+    srcs = ["utest_sparse_mass.cc"],
+    copts = ["--std=c++17"],
+    linkopts = [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+    ],
+    data = [
+        "//:data_meshes",
+        "//:data_utest",
+    ],
+    deps = [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:csv_utils",
+        "//lib_utils:mesh_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_feat10_mesh",
+    srcs = ["utest_feat10_mesh.cc"],
+    copts = ["--std=c++17"],
+    linkopts = [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+    ],
+    data = [
+        "//:data_meshes",
+        "//:data_utest",
+    ],
+    deps = [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:csv_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_feat10_von_mises",
+    srcs = ["utest_feat10_von_mises.cc"],
+    copts = ["--std=c++17"],
+    linkopts = [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+    ],
+    data = ["//:data_meshes"],
+    deps = [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_feat10_cudss",
+    srcs = ["utest_feat10_cudss.cc"],
+    copts = ["--std=c++17"],
+    linkopts = [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas",
+    ],
+    data = [
+        "//:data_meshes",
+        "//:data_utest",
+    ],
+    deps = [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:csv_utils",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Shared immutable mixed-shell startup fixture. Its analytic oracle and native
+# reference declarations are test-only headers; no donor implementation links.
+cc_library(
+    name = "shell_batch_binding_test_fixture",
+    testonly = True,
+    hdrs = [
+        "qualification/t3/mixed_binding/ShellBatchBindingFixture.h",
+        "qualification/native/t3/T3StartupTestOracle.h",
+        "qualification/native/t3/T3Reference.h",
+    ],
+    deps = [
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_src/elements/qeph:startup",
+        "//lib_src/elements/t3:startup",
+        "//lib_src/math:fixed3",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Explicit host-only source-count wall weights; no resident CUDA dependency.
+cc_test(
+    name = "vehicle_wall_weights_source_size",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/vehicle_wall_weights/WeightSourceSizeTest.cpp",
+        "qualification/vehicle_wall_weights/WeightTestSupport.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:nodal_wall_contact", "@googletest//:gtest_main"],
+)
+
+# Explicit host-only vehicle catalog qualification; no resident CUDA dependency.
+cc_test(
+    name = "vehicle_plasticity_catalog_small",
+    srcs = [
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogAdmissionTest.cpp",
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogFixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+        "qualification/host_shell_collection/AllocationFailure.cpp",
+        "qualification/host_shell_collection/AllocationFailure.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "vehicle_plasticity_catalog_source_size",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogSourceSizeTest.cpp",
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogFixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+        "qualification/host_shell_collection/AllocationFailure.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest_main"],
+)
+
+# Reuse the native recurrence geometry/path and comparison declarations in new laws.
+cc_library(
+    name = "layered_shell_force_test_fixture",
+    testonly = True,
+    hdrs = [
+        "qualification/native/law44/NativePoint.h",
+        "qualification/native/law44/NativeRateTestSupport.h",
+        "qualification/native/law44/YarisCurveFixture.h",
+        "qualification/native/qeph/QephForceReference.h",
+        "qualification/native/qeph/QephHistory.h",
+        "qualification/native/qeph/QephReference.h",
+        "qualification/native/qeph/QephReferenceTypes.h",
+        "qualification/native/t3/T3ForceReference.h",
+        "qualification/native/t3/T3ForceTestOracle.h",
+        "qualification/native/t3/T3History.h",
+        "qualification/native/t3/T3Kinematics.h",
+        "qualification/native/t3/T3KinematicsTestOracle.h",
+        "qualification/native/t3/T3Reference.h",
+        "qualification/native/t3/T3StartupTestOracle.h",
+        "qualification/qeph/QephForceFixture.h",
+        "qualification/qeph/QephKinematicsFixture.h",
+        "qualification/qeph/QephStartupFixture.h",
+        "qualification/shell_layered_j2/LayeredJ2CovarianceFixture.h",
+        "qualification/shell_layered_j2/LayeredJ2Fixture.h",
+        "qualification/shell_layered_j2/native_recurrence/LayeredNativePath.h",
+        "qualification/shell_layered_j2/native_recurrence/NativeLayeredReference.h",
+        "qualification/t3/T3ForcePortFixture.h",
+        "qualification/t3/T3PortFixture.h",
+    ],
+    deps = ["//lib_src/elements:reissner_frame", "//lib_src/elements/qeph:layered_j2", "//lib_src/elements/t3:layered_j2", "@googletest//:gtest_main"],
+)

@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../../../assembly/SolidNodeContributions.cmake")
+add_library(tl_solid_control_selection STATIC Budget.cpp Parents.cpp Packets.cpp Selection.cpp Identity.cpp)
+target_link_libraries(tl_solid_control_selection PUBLIC tl_solid_node_contributions)
+target_compile_features(tl_solid_control_selection PUBLIC cxx_std_17)
+target_compile_options(tl_solid_control_selection PRIVATE -fno-fast-math -ffp-contract=off)

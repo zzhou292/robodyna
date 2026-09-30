@@ -1,0 +1,214 @@
+{
+  "schema": "tl.qt_mapped_source_receipt.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Existing independent full native caller/scatter and original one-point fixture; no native donor transformations in this increment. Root numerical execution required.",
+  "files": [
+    {
+      "path": "lib_src/elements/ShellNodalStiffness.h",
+      "bytes": 1955,
+      "sha256": "15087328d3b101ced21f68e7aed07b4cfe659bf5c88f9f0dc3ae39badd17af62"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Stiffness.h",
+      "bytes": 2931,
+      "sha256": "4f94e502309c03f5685d6ec31efb454f66c33dda7b40828bc1d17da6fd57e633"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Stiffness.h",
+      "bytes": 2855,
+      "sha256": "20c82ea3e89a234e9b40841f611b4a3834eeffc98461ccc3a6509cc9dfe104a5"
+    },
+    {
+      "path": "lib_utest/qualification/native/law44_one_point/source-manifest.json",
+      "bytes": 3072,
+      "sha256": "3a36dbd6c9e3141d2ed4f03b281b33fe538f9874fe27aa3f2af2375f8afc4bb1"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/source-manifest.json",
+      "bytes": 28358,
+      "sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/Cuda.cmake",
+      "bytes": 1319,
+      "sha256": "48797eaa94c6df4c4f54f2c8d494b901ee510d94b41d6f6d234e0354f7ca56a1"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/Native.cmake",
+      "bytes": 888,
+      "sha256": "b97b9c39980da245eb437a0803c9b8cec36d4167707a96dd09aa1ff205b4f3cc"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/NativeLayeredTest.cpp",
+      "bytes": 3564,
+      "sha256": "618ab3ace7b700a23c31d322d92cfd6706a9c71ba55734f8c4d4886af15323b7"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/NativeOnePointTest.cpp",
+      "bytes": 2057,
+      "sha256": "bf80667fc94b47c9729d96808d70735e12ca44f179e3dd183aaa0ff3075fa281"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/NativeScatter.h",
+      "bytes": 2524,
+      "sha256": "b321576cf027c6e1d0fc795a2564227809b7a62840aadaa2b1b344b8a80261a5"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/OwnerFixture.cpp",
+      "bytes": 4012,
+      "sha256": "0544ee90d90229fe2abdd8756d621e38fd8a89f2296c772bd2344bece3f678ce"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/OwnerFixture.h",
+      "bytes": 8097,
+      "sha256": "c3b056ff2928e6b87d8721b935244d0c08c5ab0a8af9ac1b3e88761dfa13e84c"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/OwnerSkinTest.cu",
+      "bytes": 5559,
+      "sha256": "87685d7dc318a85b80280fbbe7b3ed138478af80cf02bf2d834410fd8659338d"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/OwnerTrialTest.cu",
+      "bytes": 8678,
+      "sha256": "d08f1a64cf78abf061667c067979f695d8e8d44f16c34e39841bed8b038943e9"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/PrepareOwner.cu",
+      "bytes": 2166,
+      "sha256": "d44d39d8cd2caab84f45ab9e4c356dfd8849932bbb37470a2ff7042298beaf0c"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/ResultTest.cpp",
+      "bytes": 2415,
+      "sha256": "04242912c3a42d5e09c9b2a78705696ebbd989e6794a2a8ae9f379eb563c2bfd"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/SkinFixtureTest.cpp",
+      "bytes": 1470,
+      "sha256": "1f0338c846520d7d4d59f79b9b44f0caf70290f7dd7c0a868f1a0fb47649622a"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/StartupTest.cpp",
+      "bytes": 6858,
+      "sha256": "e85ad10a223103a556833de8c0bfc2dbd06791b6b73165beb8d21ee8747db589"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/StiffnessTest.cpp",
+      "bytes": 3554,
+      "sha256": "355374908582e6c0b6bceb0dc8334b0acc7ee0ebd3c436fdb9b3b31dc343a0fa"
+    },
+    {
+      "path": "lib_utest/qualification/qt_mapped/TypedValues.h",
+      "bytes": 2884,
+      "sha256": "70ac4f994a2a0dcc4f67d6a334a3df70b680ff69d280413fa3dff91766bd60a9"
+    },
+    {
+      "path": "lib_utest/qualification/shell_placement_force/native/NativePacket.cpp",
+      "bytes": 3310,
+      "sha256": "a35c9e116a02b1e9e86d7be5e6d52902881b430d4c925bb0cf62a8d88c12c3e1"
+    },
+    {
+      "path": "lib_utest/qualification/shell_placement_force/native/source-manifest.json",
+      "bytes": 3014,
+      "sha256": "6b47e9ba1c13ea1e3a2b7f2261e7eff051902d106f6149c1bdf17522338f5275"
+    },
+    {
+      "path": "lib_utest/qualification/t3_one_point/NativeOracle.cpp",
+      "bytes": 4173,
+      "sha256": "5cead824a8790b95f293102d4d120e01e46a6b8fc525385f940959981fd9099c"
+    },
+    {
+      "path": "lib_utest/qualification/t3_one_point/native/source-manifest.json",
+      "bytes": 2916,
+      "sha256": "05a9140e1dfa77dc5efd70a5fbee3d0a562b08ee044b6e97b1e893e6776d029c"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Assemble.cu",
+      "bytes": 3494,
+      "sha256": "4fc03045e91b2f98e176141aa23fb3b25e692e828aa63de24152f16de06e0679"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Assemble.cu",
+      "bytes": 3472,
+      "sha256": "3d245f5a22bf0632b961da34f663d84f550a4690b529089464f64b1952137edb"
+    },
+    {
+      "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+      "bytes": 1991,
+      "sha256": "b23e3cf6b44d7a1c95a74bb942815c35bd3404185e4e2d5118b5bba86765a706"
+    },
+    {
+      "path": "lib_src/elements/ShellParentExecution.h",
+      "bytes": 1203,
+      "sha256": "df2903dbc495a3eba89d8dc0a281fd37a70b715ff8dec740f5730073b9ac3fea"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/Kernels.cuh",
+      "bytes": 7285,
+      "sha256": "56833279b06625b69a53be599bc613365a7118f4d3f75ce3de71c9958623c250"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Startup.cpp",
+      "bytes": 6704,
+      "sha256": "a07c9b39dd839d8bc20bb462124f488b057563f6537877e7405b3384bf912c07"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Startup.cpp",
+      "bytes": 6418,
+      "sha256": "1cac9b31fe97555dbc3f3f24f7492a1c40b5ea1722b0f07b98a8bf13ba690c5d"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/AssemblyValues.h",
+      "bytes": 2068,
+      "sha256": "c890cab758ec87371396da8b552c41886f8b6ba91b73da79eb6a6d97f232591f"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/AssemblyValues.h",
+      "bytes": 2227,
+      "sha256": "8d344624c304a3cda1137b4da209f6bd0524e28bf36a5df4428e15de73e80ae6"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Kernels.cu",
+      "bytes": 1152,
+      "sha256": "d61cd3b750d3af2047b9ec4650572318bf4fbf2767299f532ff37c4c1dadf122"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Kernels.cu",
+      "bytes": 1142,
+      "sha256": "cc2fa08a8dd373661aed3fc8080e6392c45ab2784e139e4db308c58b3db7eccf"
+    }
+  ],
+  "mapped_t3_gather_registration": {
+    "scope": "Register shared bounded mapped QEPH/T3 gather and T3 optional arena; no native force/material/startup equations changed. Direct mapped T3 fixture now constructs its required optional tail.",
+    "previous_manifest_sha256": "4cd021e7a599720dc2d6bcafd6448857d0427c8fe3f1378ab5bbad36a2030849",
+    "previous_entries": [
+      {
+        "path": "lib_utest/qualification/qt_mapped/StartupTest.cpp",
+        "bytes": 6852,
+        "sha256": "14f2299781e9a906f226bffb5eb6a83e246312e09371706bc8576b2bf8428182"
+      }
+    ]
+  },
+  "global_law1_execution_extension": {
+    "scope": "Explicit per-parent global LAW1 dispatch/identity and native initial-thickness STI profile. Legacy/native mathematical leaves retained; owning mixed publication and native regressions required.",
+    "prior_active_records": [
+      {
+        "path": "lib_src/elements/qeph/mapped/Stiffness.h",
+        "bytes": 2468,
+        "sha256": "f40353e47557fbb7dcf00a5d37c80e863377602ed69a4b958f570530ed4f8465"
+      },
+      {
+        "path": "lib_src/elements/t3/mapped/Stiffness.h",
+        "bytes": 2394,
+        "sha256": "3242f1377890f6a682365c47d4cbab912b2fc48ff19a79fdfbe975d73f8f99fd"
+      }
+    ],
+    "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
+  }
+}

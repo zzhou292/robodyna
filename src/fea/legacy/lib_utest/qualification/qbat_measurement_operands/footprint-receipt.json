@@ -1,0 +1,71 @@
+{
+  "schema": "tl.qbat_mapped_phase_footprint.v1",
+  "kind": "count_only_actual_layout_query_no_source_population_or_gpu",
+  "queried_tl_commit": "edab8e17e6d6e641f77f093fdb258d98152db492",
+  "counts": {
+    "qbat_parents": 4250,
+    "owner_nodes": 376930,
+    "cin_attachments": 11165,
+    "qbat_curve_points_upper_bound": 1024,
+    "qeph_parents": 324094
+  },
+  "bytes": {
+    "qbat_device_mirror_upper_bound": 82772920,
+    "owner_proof": 45410248,
+    "qbat_startup_temporary_upper_bound": 128183168,
+    "qeph_two_result_slabs_lower_bound": 923019712,
+    "minimum_margin": 794836544,
+    "qbat_standalone_host_growth": 714040,
+    "qbat_temporary_growth": 714008,
+    "qbat_retained_growth": 32,
+    "actual_composed_runtime_host_growth": 32,
+    "actual_composed_complete_run_host_growth": 32
+  },
+  "operations": [
+    "Layout::InitializeMapped(4250,376930,MaxShellPlasticityCurvePoints,MaxVehicleShellResidentDeviceBytes)",
+    "owner proof = sizeof(double)*(15*376930+2*11165+1)",
+    "QEPH lower bound = 2*324094*sizeof(qeph::ForceTrial)"
+  ],
+  "evidence": [
+    "crash-work/reports/qbat-forecast-margin-author-1.json",
+    "crash-work/reports/qbat-forecast-margin-author-1.log",
+    "crash-work/reports/qbat-operands-vehicle-functions-1"
+  ],
+  "sources": [
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.cpp",
+      "bytes": 2130,
+      "sha256": "109951b63322bcd7c599d965082a729770117419faabfea5b60e547574e62707"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.h",
+      "bytes": 2094,
+      "sha256": "8654104b598c47f160e7ed5ce1354b173b10ad77ed8210725d9c3037aeb8b8b5"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
+      "bytes": 2217,
+      "sha256": "abd0315ef78872c9140fca53a9efea9516ade062b3e113ef2b3da1804fd138aa"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/MeasurementTypes.h",
+      "bytes": 870,
+      "sha256": "659d98ac1bae71f88e79105876e5e8d3d4aa5a2ca9b0e45c4010f592ac93e8d1"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForceData.h",
+      "bytes": 1072,
+      "sha256": "a1ecf7bf9f57044597bff04988fb62f2dc93a299b6bc700c7d3ba552fd6e74f4"
+    },
+    {
+      "path": "lib_src/elements/ShellPhysicalOwnerLayout.cpp",
+      "bytes": 678,
+      "sha256": "329fcaf90e7ff21b0af644e481cddf54c8fffdf734e299430961607780c5eccd"
+    },
+    {
+      "path": "lib_src/elements/ShellMappedFootprint.h",
+      "bytes": 1494,
+      "sha256": "68893b1f03eb1f86ba0d94bf99864fe5e6f76808bd691c506fa76ed5fe203f87"
+    }
+  ]
+}

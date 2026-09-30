@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "consumer",
+    srcs = ["Consumer.cpp"],
+    deps = ["//lib_src/collision:radioss_type25_initial_state"],
+)
+cc_test(
+    name = "source",
+    srcs = ["SourceProofTest.cpp"],
+    data = ["native/prepare.py", "native/source-manifest.json", "native/Wrapper.F90",
+        "native/Boundary.F90", "native/FullHistory.F90"] + glob(["native/original/*"]) +
+        ["//lib_utest/qualification/radioss_type25_selection:source_constants_helper"],
+    copts = ["-std=c++17"],
+    deps = ["@googletest//:gtest_main"],
+)

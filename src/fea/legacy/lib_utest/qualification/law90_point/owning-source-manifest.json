@@ -1,0 +1,130 @@
+{
+  "scope": "selected LAW90 point only; no element or source admission",
+  "files": [
+    {
+      "path": "lib_src/materials/law42/Stress.h",
+      "bytes": 1076,
+      "sha256": "c887f10460d40a8c4d37e902c4c318651460299d8064b8fcad1fa99c7059fe0a"
+    },
+    {
+      "path": "lib_src/materials/law90/Point.h",
+      "bytes": 2805,
+      "sha256": "5c9f88a6a784ac83c23b0405ef6a1682880c2475da677b4797f89b9517ed462d"
+    },
+    {
+      "path": "lib_src/materials/law90/PointChecks.h",
+      "bytes": 2009,
+      "sha256": "fd7269c06807a9489a2c98f09e25ba76f107a20710e38c571599f5595fe92618"
+    },
+    {
+      "path": "lib_src/materials/law90/PointCurves.h",
+      "bytes": 2140,
+      "sha256": "4a16308877c6fd2cf9a35924b8501f519cb4abe809f845a3b37d68a40ef4568e"
+    },
+    {
+      "path": "lib_src/materials/law90/PointHistoryUpdate.h",
+      "bytes": 2913,
+      "sha256": "9ff762a5bed44d42312d413b9820d6dfef1a86117354d63380034479d0bf489d"
+    },
+    {
+      "path": "lib_src/materials/law90/PointKinematics.h",
+      "bytes": 2512,
+      "sha256": "c35e4dfb8ed60c8dbbdbbcb5c9bd498bd9ec4bc8ee78d9afcca82c0e4293cf45"
+    },
+    {
+      "path": "lib_src/materials/law90/PointREADME.md",
+      "bytes": 3640,
+      "sha256": "26cbfed8da26d91787eab16dccbfff8db8674ea16e303c58cfb5ffd9a19170fd"
+    },
+    {
+      "path": "lib_src/materials/law90/PointStress.h",
+      "bytes": 1417,
+      "sha256": "c2b58eb8a0ece8100d4a5ceea78f64e5fba5a0e6c447ff6f29ada5d76c0b578c"
+    },
+    {
+      "path": "lib_src/materials/law90/PointTypes.h",
+      "bytes": 1719,
+      "sha256": "9f06df7ab7c8ec5e571425af61aa9568bfdca9f0f5677f2c7d65a980f21f8826"
+    },
+    {
+      "path": "lib_src/math/PositiveIdentityPlusSymmetric3.h",
+      "bytes": 928,
+      "sha256": "a258d2b8457bfc53724cb825e3a6383046ed187302296d52139709a6ef922796"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/BUILD.bazel",
+      "bytes": 572,
+      "sha256": "e72693404bdb7e1165f9782140591a5d40fcae931b365ce34c30f5b122f22b6d"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/CMakeLists.txt",
+      "bytes": 2229,
+      "sha256": "4015738c708637bb7a6bf96a1744089934a8b8ba184fd0d21f5025175a33b985"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/CudaTest.cu",
+      "bytes": 5771,
+      "sha256": "80a5e488d77509499ffe937387e56f5e48e116c0f567141173a70ee3a383b91b"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/HostTest.cpp",
+      "bytes": 8460,
+      "sha256": "f938cbd4297ace5d98d9af4f2a28b9405201f542ecc79fbd7610789b91566332"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/NativeSupport.h",
+      "bytes": 2880,
+      "sha256": "d568a301366a7301caf427fcd4ddff3e19c32b40cf3d9032960dc0a240c36689"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/NativeTest.cpp",
+      "bytes": 7618,
+      "sha256": "8bcf2aa67b22e8b5fce4e83cc70a59675b03d88686d81cb067c20470708503c1"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/README.md",
+      "bytes": 4673,
+      "sha256": "23497fc291c2982366d010590beb01046b742155316acaab606530dfdc6fc492"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/TestSupport.h",
+      "bytes": 3186,
+      "sha256": "a43206234e0e7eb0d125608e45789eb689a46c791e397de60054f7f2c050ecfa"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/CMakeLists.txt",
+      "bytes": 1410,
+      "sha256": "2267061c7929c281bc99d59fa0a9038a7fc5bd07f3e21994feb6b1a1af7accb0"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/NativeContext.F90",
+      "bytes": 183,
+      "sha256": "08f458f8a2f1c2b7c661014a2384b302b91012b581e135b1e5d0a59b69eac074"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/NativePoint.F",
+      "bytes": 2249,
+      "sha256": "257308791025f31d423cac3ea621f4d05d44164b98d7557cff2b1602b504843a"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/NativePoint.h",
+      "bytes": 479,
+      "sha256": "e55e97092eb2584152e44c43a58ced45e92383396110f872d6b99890c0a14161"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/prepare_sources.py",
+      "bytes": 2608,
+      "sha256": "7728d89173f55543378b0da63fe07b16ad01c9f7fcabe9aa7e94bb58397fe8a5"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/native/source-manifest.json",
+      "bytes": 6029,
+      "sha256": "63b180db2834fa46bb26c6cfc3dca4be635d90f2902e04f7104c7e1dbd5c0dc8"
+    },
+    {
+      "path": "lib_utest/qualification/law90_point/verify_source.py",
+      "bytes": 1186,
+      "sha256": "da3484a9f05a5cad39db9a8c8cff4136468a7de1942ac08530b324781b64dfe5"
+    }
+  ]
+}

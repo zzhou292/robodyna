@@ -1,0 +1,119 @@
+{
+  "baseline_commit": "8e1b9fb618673f60cea03f0b4711da8903f9ec15",
+  "scope": "Only six T3 observation sums use fixed trees; complete serial error fallback and all mechanics are retained. No new native equation claim.",
+  "baseline_bodies": {
+    "CandidateElements": "67f759ad5be965856d5764f02f4aa46717503860a216644188cba8f05d33786c",
+    "FinalizeCandidate": "de3a4b0620a63902788a5dd13f9a9a02707a14539b49a20742ea789bc9ea948d",
+    "Measure": "959a3a5c73fb610ef0fbd6ce5ab8b172ea47d34a3acf78069a9ae364957bb466"
+  },
+  "files": [
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverTypes.h",
+      "bytes": 1450,
+      "sha256": "b8b82445c51d640c3006ba54a307631c39af3cf98f6e94d2fa474eac74d5d462",
+      "previous_records": [
+        {
+          "bytes": 1294,
+          "sha256": "02846bceb852deefbd4b3bb5e30aecbf42da9e86dce1eafeb115b2348a64b7a2"
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverSums.h",
+      "bytes": 2617,
+      "sha256": "4b878223e7244cdae7af4e288c7f449878dd12d2d4a21b96a8d775960c4da003",
+      "previous_records": [
+        {
+          "bytes": 2437,
+          "sha256": "6b80e67e02db6ba3dd8312931ccb4b38b128919cad28c0abbfbc4fbdf5266ebf"
+        }
+      ]
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverTree.cuh",
+      "bytes": 442,
+      "sha256": "ae12cbdd9b01af28278b2612e05ba9debcbfe9a054455abcdfc475ada0fea734"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFields.h",
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchDiagnostics.h",
+      "bytes": 3545,
+      "sha256": "1d2306fc5951e100ca1c6c433a4f3fb6b9331c3fe7923d44057102fb33cbfa34"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Result.h",
+      "bytes": 4213,
+      "sha256": "1c6a8cfad19cf38773214e89fce65b3df266132fe74fb5cc8686cf9af2ffeae3"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Stiffness.h",
+      "bytes": 2394,
+      "sha256": "3242f1377890f6a682365c47d4cbab912b2fc48ff19a79fdfbe975d73f8f99fd"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverValues.h",
+      "bytes": 5423,
+      "sha256": "8abd9250550d80548fcaed9871609e1e0a0dfbe6d19957cddc56b76ccce3e10a"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchDiagnostics.h",
+      "bytes": 4024,
+      "sha256": "58637b6162a754f793e4dab546fe2c241d65a9698b39e3179d7df451883d5e2b"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/SerialDiagnostics.h",
+      "bytes": 5423,
+      "sha256": "4e70d11daa534db840b6feed129918906a4b5037d51a991af82b0e646054a6a0"
+    },
+    {
+      "path": "lib_utest/qualification/t3_mapped_gather/SerialAssembly.cuh",
+      "bytes": 3162,
+      "sha256": "309ae9da983a9bb83b9e9cc5c9b2af48ebf91872b04eca9d64efa93bca53ec98"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_shell_observer/Truth.h",
+      "bytes": 1427,
+      "sha256": "9f7851c052943050029834c39a92c127567b44b486e4cafbf165029aefb245bf"
+    },
+    {
+      "path": "lib_utest/qualification/t3_observer_reduction/SerialDiagnostics.h",
+      "bytes": 5197,
+      "sha256": "e752e742175456c31129dd18a4654c8142014d898cd18205adf0787d1c9724f7"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/CandidateDiagnostics.h",
+      "bytes": 1625,
+      "sha256": "bf583d13eb9419e4b3a6c7943af6d46763b2aada0dadc167e5ad90131aa728ed"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/SerialDiagnostics.h",
+      "bytes": 1839,
+      "sha256": "583ab29b848b84922c6386497a3107fcd19c3231a0df184f2fea7c1ca65edcda"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/ObserverTypes.h",
+      "bytes": 360,
+      "sha256": "6e94f126823efb4e4cde23141b4992e6587bfe07fde8e10be194e195fc58f19d"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/ObserverSums.h",
+      "bytes": 355,
+      "sha256": "e597dbf4694f41435f288e84f8f1c808185d5aec58e7822de2b27711377e9f34"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/ObserverValues.h",
+      "bytes": 5631,
+      "sha256": "0a9e0959385c566e49d0fb9e31d8dff1ef23362e235149d121ecffa6872c0798"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/ObserverKernels.cu",
+      "bytes": 3722,
+      "sha256": "711e91f1eb2a3fcfe5ee6e848536c6354d1ad8240f6bb59fa1cef1bef2cee4ea"
+    }
+  ],
+  "root_include_fix": "Scoped host/device decoration makes neutral observer headers self-contained under real NVCC; no arithmetic or record-layout change."
+}

@@ -1,0 +1,8 @@
+                    for(1:nel,1) = for(1:nel,1) + thkly(jpos:jpos+nel-1)*signxx(1:nel)
+                    for(1:nel,2) = for(1:nel,2) + thkly(jpos:jpos+nel-1)*signyy(1:nel)
+                    for(1:nel,3) = for(1:nel,3) + thkly(jpos:jpos+nel-1)*signxy(1:nel)
+                    for(1:nel,4) = for(1:nel,4) + thkly(jpos:jpos+nel-1)*signyz(1:nel)
+                    for(1:nel,5) = for(1:nel,5) + thkly(jpos:jpos+nel-1)*signzx(1:nel)
+                    mom(1:nel,1) = mom(1:nel,1) + wmc(1:nel) *signxx(1:nel)
+                    mom(1:nel,2) = mom(1:nel,2) + wmc(1:nel) *signyy(1:nel)
+                    mom(1:nel,3) = mom(1:nel,3) + wmc(1:nel) *signxy(1:nel)

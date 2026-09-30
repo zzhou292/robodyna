@@ -1,0 +1,339 @@
+{
+  "schema": "tl.qeph-wall-recurrence-support-source-map.v1",
+  "stage": "frozen-before-first-test-execution",
+  "scope": "Native moving-map and chronological power/Gram helper qualification with existing legacy-wrapper behavior; no full CW1 contact screen or impact admission",
+  "host_test_functions": 10,
+  "hermetic_runtime": false,
+  "prerequisites": [
+    "qeph-bq4-native-recurrence-1",
+    "qeph-shared-helpers-1"
+  ],
+  "delegated_native_manifest": {
+    "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+    "bytes": 19722,
+    "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+  },
+  "external_dependency_scope": "Eigen, GTest, compiler and runtime supplied by build environment; no full compiler dependency closure",
+  "unresolved_external_quoted_includes": [
+    "rapidjson/...",
+    "rapidjson/error/error.h",
+    "rapidjson/reader.h"
+  ],
+  "inputs": [
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ReissnerFrame.h",
+      "bytes": 10621,
+      "sha256": "764090dab48e12b3deb732251867c51616ec2f90a222f2a53b79b315a74c0180"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.h",
+      "bytes": 1733,
+      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.h",
+      "bytes": 2008,
+      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.h",
+      "bytes": 1241,
+      "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/CMakeLists.txt",
+      "bytes": 6792,
+      "sha256": "4144bdd2457c38cb7af6d990f46b379d1d3b5243744285921f4b2d23fef762b4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/CMakeLists.txt",
+      "bytes": 2599,
+      "sha256": "2ba2dd9e1c109f5e5a57c401bbb9be7dc5821fd6f98e58a79610a7107a82b104"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/README.md",
+      "bytes": 3665,
+      "sha256": "39d9291843a58cc7b6e9c94b4d315418870747ff107f22076aa757ca11fbb866"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAnalysis.cpp",
+      "bytes": 4058,
+      "sha256": "b53930ee420064b1de15b5c0856dd60ace58dc20bce0458f2a0a1c6ec3340a40"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.cpp",
+      "bytes": 2557,
+      "sha256": "972e0c2e43bb76b4a5a1ed132b1b410dbaa1c12fc32b588078595a70ca1e7278"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.h",
+      "bytes": 3112,
+      "sha256": "b7cc942316d07dcef171363c92a6d255833b77d5e12f9c907f918b0c5e7443ba"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAuditTest.cpp",
+      "bytes": 7941,
+      "sha256": "933b9422dd217ef0d0760b0ce5407d560f4d09d7cf09ee79f0a3d8c183a83d8d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceDictionary.cpp",
+      "bytes": 3296,
+      "sha256": "2a1c8b4ec7a61c63bd4d3304f31ed7fbbd7231065760e925902a00635cbec149"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.cpp",
+      "bytes": 3178,
+      "sha256": "4bf6a7b318f283ce2753444c9c30d1552cff2cce7de3fd5f2d2cf5ffc74e1bfd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.h",
+      "bytes": 183,
+      "sha256": "cc54bf8122bcfd8e06bbe9a097d3682f66805c8ad7edb98ffbe4d2fcad736193"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceNativeMap.h",
+      "bytes": 965,
+      "sha256": "c4cca1e1c5a0f91b67e3d99605ee29a42abf28bd111ddfd6a8e7e09ca8b36e1a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrencePowerGram.cpp",
+      "bytes": 2888,
+      "sha256": "4a0c141b3e91eacc5b6996ab2974adcca1ff57387a25ff7eea72df98cdcccbd4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrencePowerGram.h",
+      "bytes": 1382,
+      "sha256": "cb58111908bc393be71adfa3387f35643b9adc6d85c2020ce83712c6c718e4ae"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceProbe.cpp",
+      "bytes": 7056,
+      "sha256": "32049e499eb2e54f73b038ee778e8b0106c0342e9122e772f42b81fbb43b60c8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReport.cpp",
+      "bytes": 7897,
+      "sha256": "e8e1fc49813fbb15a8244637c3d8d1447a45bb4f7df8b015c7d3d802760e16d8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReport.h",
+      "bytes": 460,
+      "sha256": "9df1c73ddd38f1d3a1b810d3f8c1d219dfa96926ec7abe8a18cd9b678e72b3f7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReportTest.cpp",
+      "bytes": 3900,
+      "sha256": "c2c1207b485d404e998c8051ea567a20ce99a9156ccb7dbca14db6a617def320"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/recurrence_audit_main.cpp",
+      "bytes": 2328,
+      "sha256": "36527bc9e263eab045fe9aaa443b52a6c8a7dd73f5e5c9a3b705064d41a336fc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/CMakeLists.txt",
+      "bytes": 702,
+      "sha256": "fbb07a5e1bbd7d0d502abb65b7ddcde687b988c6020e3a753b2ca2f428dcd696"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbe.cpp",
+      "bytes": 1541,
+      "sha256": "5632c98deb2f4ee8217f4f63d44566b162cfb6becd547eb02f3a41012498c2ee"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbe.h",
+      "bytes": 848,
+      "sha256": "1946ee69df61dca21c6e89ab09850540c10d8e4301c06eaf97e0c53a50ed14b5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbeTest.cpp",
+      "bytes": 7377,
+      "sha256": "b3392afb91c3c541b3223c4f080a6adebf92d7555426bd5fa5621be71837ca68"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/PowerGramCompositionTest.cpp",
+      "bytes": 10796,
+      "sha256": "652249e612c1df1c78110d4840fdeb88d1edec0412d3813278972804d20d116e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/README.md",
+      "bytes": 2689,
+      "sha256": "ffd6907731fb9989e39471c59bb6b143a8c54f4f79fe7396c129e82c4928c646"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/allocators.h",
+      "bytes": 22522,
+      "sha256": "bf6f3a6b2fc0b62557554a15a9c301479cfb589f5529d671931908862e90b74c"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/document.h",
+      "bytes": 132821,
+      "sha256": "8b4ace5e179728205d634eca89aaeff10f60a46ef75e08a3572ee7b68ea29832"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/encodedstream.h",
+      "bytes": 10660,
+      "sha256": "394710616961270b0e4033c03a22b2e5b411958dc07eb4495ba36131648e3558"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/encodings.h",
+      "bytes": 29260,
+      "sha256": "1d4c62bd4ecc0b5a8b4b53faf48a8d09f09f086e41a90fc2b135517c3d148379"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/error/error.h",
+      "bytes": 9744,
+      "sha256": "64fdd0bad7480cd2a257fddf0aaa16b9a8d4a401189ebe0e44cee2ee6be8687c"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/biginteger.h",
+      "bytes": 9122,
+      "sha256": "7771c3f2c82c4736d32b487558d19eaacf678e030945c5b5c994ae9ffa952755"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/clzll.h",
+      "bytes": 2045,
+      "sha256": "4ca3e63eaae4c67b049e8a6cbb532182e1d9c9023b7d992c556fcab0c2f4c045"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/diyfp.h",
+      "bytes": 11488,
+      "sha256": "2efb18fcfaf4882a23720b0e08fdbe3e94be3b282b6c5c017d18bfd205e80880"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/dtoa.h",
+      "bytes": 8104,
+      "sha256": "25d736a672d49b85355b1e064f86010e13d520a10a69163dff8d051dac4b512d"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/ieee754.h",
+      "bytes": 2973,
+      "sha256": "00757a3dc2aad5b90d915f9c49b378026dc612d49a7f057106d72b1ebd1a0105"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/itoa.h",
+      "bytes": 10110,
+      "sha256": "a0f965f33b11ce112b7bf2fbdeaf5338fca174e33f9f47608ccdd6d8559f3871"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/meta.h",
+      "bytes": 6620,
+      "sha256": "5fcbfd72da1732926e4d0be2a1d79dce892f98d7b66879f818c57583a82505d3"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/pow10.h",
+      "bytes": 3574,
+      "sha256": "74cd5ef251a854565a36abe49521be4d8ed17a76e3d27231fd119fb9374a9364"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/stack.h",
+      "bytes": 7163,
+      "sha256": "1bc01f4623d7b4ed6e890220fa9753375c0f0fb87c8a84f41cd7eecf38a38cd2"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/strfunc.h",
+      "bytes": 2178,
+      "sha256": "9bcc71e2e8f7096325218cebd9aa5338d2c8539bddfc6324eec6d8037c466dbe"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/strtod.h",
+      "bytes": 8973,
+      "sha256": "ad524108ca9df43b73a4009c2a47255436403711b3e9c42b3b1ee0b32675a814"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/internal/swap.h",
+      "bytes": 1398,
+      "sha256": "72acfabebd33f44869e7724603e57744da33337998b32443b66eaba58d2bbbfd"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/memorystream.h",
+      "bytes": 2646,
+      "sha256": "a7bf789978c6d7dda7bb93c0c9555b7d53b3177cbf34c3998c7e18068a3723f5"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/msinttypes/inttypes.h",
+      "bytes": 8372,
+      "sha256": "78ee41fd99bcbe59ca93f6a870a83c0a90f4b179af571f6e684f2600491bbae7"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/msinttypes/stdint.h",
+      "bytes": 9386,
+      "sha256": "bf2d1bc4885bc1e0720ec9af8f399477c7e105ae1e70e2863c31a8123cae1c17"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/ostreamwrapper.h",
+      "bytes": 2310,
+      "sha256": "645eb8da79e36fcf0beb315a8ea336c6bd1a4db2003318b1ca68f17a167b27e6"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/prettywriter.h",
+      "bytes": 10518,
+      "sha256": "75adaed0efd180955a44cd5322fb20f5f1b15b5ed40998fe88c50fc2ecd2c64f"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/rapidjson.h",
+      "bytes": 25599,
+      "sha256": "04cb7c640fe18a3d696b92fba9af31b42fb2db294ad641fe738ddfbddca97284"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/reader.h",
+      "bytes": 93817,
+      "sha256": "9902058538bcca216f57b74bb404fa666b1b8d9224acd5b173ab3189c68db6f0"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/stream.h",
+      "bytes": 6732,
+      "sha256": "a3708a941a130a5679d2302368169852e5c4ca5f54758ea0e94caf61615c8ae0"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/stringbuffer.h",
+      "bytes": 3972,
+      "sha256": "4788a86bc76a2880bdefa1765b366bda2303b62c1b8de1aabb4940fe37722b88"
+    },
+    {
+      "path": "chrono/src/chrono_thirdparty/rapidjson/writer.h",
+      "bytes": 26856,
+      "sha256": "40db14761c8f72d44261553400c24111b64bcc367bd23eeed4c45043ec80b39b"
+    },
+    {
+      "path": "planning/QEPH_FREE_RESPONSE_ADMISSION.md",
+      "bytes": 12236,
+      "sha256": "30c37d8b01c695fa6237e7f0a5d57c547cf41a42fe886d265fc587902239b23c"
+    },
+    {
+      "path": "planning/QEPH_WALL_RECURRENCE_SCREEN.md",
+      "bytes": 10553,
+      "sha256": "cd3c910c39766cdddfa0b94ec3df5b0e1ac717699df621f8a3fb2f1af0ecd61d"
+    },
+    {
+      "path": "robo-dyna/output/ArtifactIO.cpp",
+      "bytes": 4619,
+      "sha256": "cc7e8caec0440a352e9f13aaec73614af2c0d30c6a4b4d8b550a9670b7b782dc"
+    },
+    {
+      "path": "robo-dyna/output/ArtifactIO.h",
+      "bytes": 1405,
+      "sha256": "ecc22a6c9e111390534fbe343f2cd4baa5f3c0813e66afb766018b4b1c67d823"
+    }
+  ]
+}

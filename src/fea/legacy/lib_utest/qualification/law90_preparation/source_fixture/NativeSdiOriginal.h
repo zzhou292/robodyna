@@ -1,0 +1,40 @@
+// Executed native SDI direct/export receipt, law90-sdi-root-tests-2.
+#pragma once
+namespace original_radiator_sdi {
+inline constexpr double density_kg_m3 = 0x1.81fffffffffffp+9;
+inline constexpr double prepared[33] = {
+  0x1.81fffffffffffp+9,
+  0x1.81fffffffffffp+9,
+  0x1.406f400000000p+24,
+  0x1.406f400000000p+23,
+  0x0.0p+0,
+  0x1.2a05f20000000p+34,
+  0x1.8d5d42aaaaaabp+32,
+  0x1.c9c3800000000p+23,
+  0x1.0000000000000p+0,
+  0x1.0000000000000p+0,
+  0x1.0000000000000p+0,
+  0x1.e848000000000p+19,
+  0x0.0p+0,
+  0x0.0p+0,
+  0x0.0p+0,
+  0x0.0p+0,
+  0x1.0000000000000p+0,
+  0x0.0p+0,
+  0x1.0000000000000p+1,
+  0x0.0p+0,
+  0x1.0000000000000p+1,
+  0x1.4000000000000p+3,
+  0x1.8000000000000p+1,
+  0x1.064eda4372f85p+25,
+  0x1.74876e7fffffap+39,
+  0x1.064eda4372f85p+25,
+  0x1.daffccfd9c7cbp+34,
+  0x1.064eda4372f85p+25,
+  0x1.064eda4372f85p+24,
+  0x1.5dbe7859eea07p+23,
+  0x1.99db350963a40p+31,
+  0x1.99db350963a40p+31,
+  0x1.0000000000000p+0,
+};
+}

@@ -1,0 +1,37 @@
+C SPDX-License-Identifier: AGPL-3.0-or-later
+C Each channel maps onto the exact R4DEF3 axial criterion block; native order 1..6.
+      SUBROUTINE TYPE13_FAILURE(DEFORMATION,LIMITS,L0,BASE_CRIT,BASE_ACTIVE,RESULT)
+     . BIND(C,NAME='type13_native_failure')
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN)::DEFORMATION(6),LIMITS(2,6),L0,BASE_CRIT,BASE_ACTIVE
+      REAL(C_DOUBLE),INTENT(OUT)::RESULT(2)
+      INTEGER,PARAMETER::NEL=1
+      DOUBLE PRECISION,PARAMETER::ZERO=0D0,ONE=1D0,TWO=2D0,EM3=1D-3,PI=3.14159265358979323846D0
+      INTEGER I,K,MGN(1),IFAIL(1),IFAIL2(1),ISRATE,NINDX,INDX(1),IDEL7NOK
+      DOUBLE PRECISION GEO(128,1),DLIM,CC,CN,XA,XB,OFF(1),DMX(1),DMN(1),DX(1),XL0(1),
+     . VFAIL,DV(1),VRT(1),FX(1),E6(1,6),CRIT(1),CRIT_NEW(1),ASRATE,DT1
+      GEO=ZERO
+      MGN=1
+      IFAIL=1
+      IFAIL2=0
+      OFF=BASE_ACTIVE
+      XL0=L0
+      DV=ZERO
+      VRT=ONE
+      FX=ZERO
+      E6=ZERO
+      CRIT=ZERO
+      CRIT_NEW=BASE_CRIT
+      DT1=ZERO
+      NINDX=0
+      IDEL7NOK=0
+      DO K=1,6
+        DX=DEFORMATION(K)
+        DMN=LIMITS(1,K)
+        DMX=LIMITS(2,K)
+#include "extracted/ChannelCriterion.inc"
+      ENDDO
+#include "extracted/CoupledFailure.inc"
+      RESULT=(/CRIT_NEW(1),OFF(1)/)
+      END

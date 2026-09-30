@@ -1,0 +1,122 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "startup",
+    hdrs = ["QephData.h", "QephStartupFrame.h", "QephStartup.h"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/elements:shell_placement_coefficients", "//lib_src/elements:shell_reference_placement"],
+)
+
+cc_library(
+    name = "kinematics",
+    hdrs = [
+        "QephKinematicsData.h", "QephGeometryWork.h", "QephCurrentFrame.h",
+        "QephVelocityCorrection.h", "QephProjectionInverse.h", "QephProjection.h", "QephProjectionUnits.h",
+        "QephRates.h", "QephKinematics.h",
+    ],
+    deps = [":startup"],
+)
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "QephHistoryData.h", "QephHistory.h", "QephForceData.h", "QephForce.h",
+        "QephMaterial.h", "QephLaw1.h", "QephElasticForces.h",
+        "QephStabilizationState.h", "QephStabilizationForces.h",
+        "QephForceProjection.h", "QephForceProjectionUnits.h", "QephStiffnessDiagnostics.h",
+    ],
+    deps = [":kinematics", "//lib_src/elements:shell_global_law1_profile", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
+)
+
+cc_library(
+    name = "layered_j2",
+    hdrs = ["QephLayeredForceCore.h", "QephLayeredJ2.h", "QephPlasticStabilization.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_j2"],
+)
+
+cc_library(
+    name = "mapped_values",
+    hdrs = ["mapped/Stiffness.h", "mapped/Result.h"],
+    deps = [":force", "//lib_src/elements:shell_nodal_stiffness",
+            "//lib_src/elements:shell_batch_plasticity_binding"],
+)
+
+cc_library(
+    name = "batch_values",
+    srcs = ["rejected_candidate/Replay.cpp", "QephBatchModel.cpp", "QephBatchIdentity.cpp", "mapped/Startup.cpp"],
+    hdrs = ["rejected_candidate/Types.h", "rejected_candidate/MaterialParameters.h", "rejected_candidate/Read.h", "QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h", "QephBatchLayeredSection.h", "QephBatchFailureSection.h" , "mapped/Startup.h", "mapped/AssemblyValues.h", "mapped/AssemblyTypes.h", "mapped/AssemblyLayout.h", "mapped/Incidence.h", "mapped/CandidateDiagnostics.h", "mapped/ObserverTypes.h", "mapped/ObserverSums.h", "mapped/ObserverValues.h", "mapped/ActivityValues.h", "mapped/ActivityLayout.h", "mapped/FailureActivityValues.h", "mapped/MixedActivityValues.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/mapped_shell:activity_layout", "//lib_src/elements/mapped_shell:observer_values", "//lib_src/elements/mapped_shell:values", "//lib_src/elements:shell_mapped_footprint", ":mapped_values", "//lib_src/elements:shell_mapped_startup",
+        ":force", ":layered_j2", ":layered_law1", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements:shell_batch_joined_model",
+        "//lib_src/elements:shell_formulation_scope",
+        "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",
+        "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_src/assembly:nodal_mass_binding",
+        "//lib_src/solvers:nodal_native_physical_coefficients",
+    ],
+)
+
+cuda_library(
+    name = "batch",
+    srcs = [
+        "mapped/Initialize.cu", "mapped/Assemble.cu", "mapped/Kernels.cu", "mapped/ObserverKernels.cu",
+        "mapped/Publication.cpp", "mapped/Readback.cpp",
+        "mapped/ActivityReadback.cu", "mapped/ActivityKernels.cu",
+        "mapped/FailureActivityReadback.cu", "mapped/FailureActivityKernels.cu",
+        "mapped/MixedActivityReadback.cu", "mapped/MixedActivityKernels.cu",
+        "rejected_candidate/Copy.cpp", "rejected_candidate/Inputs.cpp",
+        "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
+        "QephBatchPublication.cpp",
+        "QephBatchPlasticity.cpp", "QephBatchSections.cpp", "QephBatchFailure.cpp", "QephBatchFailureReadback.cpp",
+    ],
+    hdrs = [],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = ["//lib_src/elements/mapped_shell:observer_tree", "//lib_src/elements/mapped_shell:kernels", "//lib_src/elements:shell_prepared_activity_readback",
+        ":batch_values", "//lib_src/elements:shell_physical_owner",
+        "//lib_src/elements:shell_mapped_startup",
+        ":force", ":layered_j2", ":layered_law1", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements:shell_batch_joined_model",
+        "//lib_src/elements:shell_formulation_scope",
+        "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",
+        "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_src/assembly:nodal_mass_binding",
+        "//lib_src/solvers:nodal_native_physical_coefficients",
+    ],
+)
+
+cc_library(
+    name = "layered_law1",
+    hdrs = ["QephLayeredLaw1.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_law1", "//lib_src/elements/sections:shell_layered_work"],
+)
+
+cc_library(
+    name = "layered_j2_failure",
+    hdrs = ["QephLayeredJ2Failure.h"],
+    deps = [":layered_j2", "//lib_src/elements/sections:shell_layered_j2_failure"],
+)
+
+cc_library(
+    name = "layered_tab1",
+    hdrs = ["QephLayeredTab1.h"],
+    deps = [":layered_j2", "//lib_src/elements/sections:shell_layered_tab1"],
+)
+
+filegroup(
+    name = "global_law1_source",
+    srcs = ["QephForce.h"],
+    visibility = ["//lib_utest/qualification/shell_global_law1:__pkg__"],
+)
+
+filegroup(
+    name = "private_trial_source",
+    srcs = ["QephForce.h", "QephLayeredForceCore.h", "QephLayeredLaw1.h",
+            "QephBatchLayeredSection.h", "QephBatchFailureSection.h", "QephBatchKernels.cu"],
+    visibility = ["//lib_utest/qualification/qeph_private_trial:__pkg__"],
+)

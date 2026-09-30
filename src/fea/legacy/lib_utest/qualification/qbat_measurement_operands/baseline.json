@@ -1,0 +1,38 @@
+{
+  "baseline_commit": "b1415d3f425eefb99ff93b2a254de1f9e88abcb4",
+  "files": [
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.cu",
+      "fixture": "frozen/Measurement.cu.txt",
+      "bytes": 2694,
+      "sha256": "f2e289b4f8af3a93212d4c84e7ca884b5c38bb6396be628849c823c95d1ed9a1"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.h",
+      "fixture": "frozen/Measurement.h.txt",
+      "bytes": 1515,
+      "sha256": "90c74c7e0261c4118df87c8686f2cd4794074267c5d4a8ec163a08110188590a"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "fixture": "frozen/QbatBatchMeasure.h.txt",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    }
+  ],
+  "baseline_abi": {
+    "Storage": 656,
+    "Layout": 456,
+    "AssemblyMemory": 48,
+    "Impl": 181376,
+    "alignment": 8
+  },
+  "new_abi": {
+    "Storage": 664,
+    "Layout": 480,
+    "AssemblyMemory": 56,
+    "Impl": 181408,
+    "alignment": 8
+  },
+  "abi_evidence": "qbat-measurement-abi-author-1: bounded GNU11.4 compile and class-layout dump; no CUDA execution"
+}

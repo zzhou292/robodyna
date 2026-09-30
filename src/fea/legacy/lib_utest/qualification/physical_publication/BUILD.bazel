@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["Sources.cpp", "Constraints.cpp"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements:shell_batch_publication",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_src/elements/solids:model",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/beam18_publication:__pkg__"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "physical_publication_host_check",
+    size = "small",
+    srcs = ["HostTest.cpp", "Type13MappedHostTest.cpp", "Sources.cpp", "Constraints.cpp", "Fixture.h"],
+    deps = ["//lib_src/elements:shell_batch_publication",
+            "//lib_src/elements/type13/resident:type13_batch",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_src/elements/solids:model",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "scratch_participation_source_proof",
+    size = "small",
+    srcs = ["ParticipationSourceProofTest.cpp"],
+    data = [
+        "Cuda.cmake",
+        "HostTest.cpp",
+        "ParticipationTest.cu",
+        "verify_participation_sources.py",
+        "//lib_src/collision:nodal_wall_mapped_publication_source_files",
+        "//lib_src/elements:scratch_participation_source_files",
+        "//lib_utest/qualification/physical_mesh_wall:publication_participation_source_files",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
+# The complete actual-owner CUDA transaction uses the owning CMake target,
+# reusing named participant observation helpers without copying native oracles.

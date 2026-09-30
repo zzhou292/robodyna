@@ -1,0 +1,74 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLSelfContactForceAssembly LANGUAGES CXX C)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(CUDAToolkit REQUIRED)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
+include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
+include("${TL_ROOT}/lib_src/collision/SelfContactActiveUseBinding.cmake")
+add_executable(self_contact_force_values
+  ValueTest.cpp SourceTest.cpp
+  "${TL_ROOT}/lib_src/collision/self_contact_force/Values.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_force/Source.cpp")
+target_include_directories(self_contact_force_values PRIVATE
+  "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}")
+target_link_libraries(self_contact_force_values PRIVATE
+  tl_fixed_triangle_feature_discovery tl_self_contact_active_uses GTest::gtest_main)
+target_compile_features(self_contact_force_values PRIVATE cxx_std_17)
+target_compile_options(self_contact_force_values PRIVATE
+  -fno-fast-math -ffp-contract=off)
+add_test(NAME self_contact_force_values COMMAND self_contact_force_values)
+
+add_test(NAME self_contact_force_source
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+add_test(NAME self_contact_force_shaped_syntax
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/check_syntax.py"
+    --compiler "${CMAKE_CXX_COMPILER}"
+    --output "${CMAKE_CURRENT_BINARY_DIR}/syntax")
+set_tests_properties(
+  self_contact_force_values self_contact_force_source
+  self_contact_force_shaped_syntax
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90
+  LABELS "m2;self-contact-source-shape;symmetric-edge-area")
+
+option(SELF_CONTACT_FORCE_CUDA
+  "Build actual physical-owner CUDA qualification" OFF)
+if(SELF_CONTACT_FORCE_CUDA)
+  enable_language(CUDA)
+  set(PHYSICAL_PUBLICATION_CUDA ON CACHE BOOL
+    "Reuse complete physical owner fixture" FORCE)
+  add_subdirectory(
+    "${CMAKE_CURRENT_LIST_DIR}/../physical_publication"
+    physical-publication)
+  include("${TL_ROOT}/lib_src/collision/SelfContactForceAssembly.cmake")
+  add_executable(self_contact_force_cuda
+    CudaTest.cu
+    "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerStartup.cu"
+    "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerAttempt.cu"
+    "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerSnapshot.cu")
+  target_link_libraries(self_contact_force_cuda PRIVATE
+    physical_publication_fixture
+    tl_shell_batch_publication
+    tl_self_contact_force_assembly
+    CUDA::cudart GTest::gtest_main)
+  set_target_properties(self_contact_force_cuda PROPERTIES
+    CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(self_contact_force_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME self_contact_force_cuda
+    COMMAND self_contact_force_cuda
+      "--gtest_filter=-SelfContactForceCuda.EventPermutationPreservesCanonicalAssemblyAndAllocationExactly")
+  set_tests_properties(self_contact_force_cuda PROPERTIES
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240
+    LABELS "m2;rigid-cin-response")
+  add_test(NAME self_contact_force_determinism_cuda
+    COMMAND self_contact_force_cuda
+      "--gtest_filter=SelfContactForceCuda.EventPermutationPreservesCanonicalAssemblyAndAllocationExactly")
+  set_tests_properties(self_contact_force_determinism_cuda PROPERTIES
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240
+    LABELS "coupon;determinism;cuda")
+endif()

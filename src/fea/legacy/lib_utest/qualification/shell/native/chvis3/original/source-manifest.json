@@ -1,0 +1,197 @@
+{
+  "files": [
+    {
+      "bytes": 34283,
+      "file": "LICENSE.md",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090",
+      "original_path": "LICENSE.md",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/LICENSE.md"
+    },
+    {
+      "bytes": 14510,
+      "file": "engine/source/elements/shell/coque/chvis3.F",
+      "git_blob_sha1": "bf2708bf13ef526dc75d2a314faddd0136afab8b",
+      "original_path": "engine/source/elements/shell/coque/chvis3.F",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "c39f092edcbb8d3fba1d590c77d6cdcefe8f5eccfaad666593240d2b2b7ca2d4",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/chvis3.F"
+    },
+    {
+      "bytes": 105714,
+      "file": "common_source/modules/elements/element_mod.F90",
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2",
+      "original_path": "common_source/modules/elements/element_mod.F90",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/common_source/modules/elements/element_mod.F90"
+    },
+    {
+      "bytes": 1478,
+      "file": "engine/share/spe_inc/implicit_f.inc",
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17",
+      "original_path": "engine/share/spe_inc/implicit_f.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/implicit_f.inc"
+    },
+    {
+      "bytes": 1968,
+      "file": "engine/share/spe_inc/comlock.inc",
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6",
+      "original_path": "engine/share/spe_inc/comlock.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/comlock.inc"
+    },
+    {
+      "bytes": 3256,
+      "file": "engine/share/spe_inc/mvsiz_p.inc",
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b",
+      "original_path": "engine/share/spe_inc/mvsiz_p.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/mvsiz_p.inc"
+    },
+    {
+      "bytes": 4073,
+      "file": "engine/share/includes/com04_c.inc",
+      "git_blob_sha1": "626b9a3a62a756194032e5b872a413b5b22236f9",
+      "original_path": "engine/share/includes/com04_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/com04_c.inc"
+    },
+    {
+      "bytes": 2208,
+      "file": "engine/share/includes/com06_c.inc",
+      "git_blob_sha1": "ec26889940ee3cc606bfb3ccb6fe9e2240d7cc4b",
+      "original_path": "engine/share/includes/com06_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/com06_c.inc"
+    },
+    {
+      "bytes": 3581,
+      "file": "engine/share/includes/param_c.inc",
+      "git_blob_sha1": "74dff9d9ecb44c2a0a0314b770356640d84dc2a6",
+      "original_path": "engine/share/includes/param_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/param_c.inc"
+    },
+    {
+      "bytes": 1920,
+      "file": "engine/share/includes/remesh_c.inc",
+      "git_blob_sha1": "d1ada781554d9e82c41c644c330607d7ebdd51a8",
+      "original_path": "engine/share/includes/remesh_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "a78cd9813944003d08b9fb3743764d9386aa6151d79b22bc532573b602007865",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/remesh_c.inc"
+    },
+    {
+      "bytes": 1476,
+      "file": "engine/share/includes/scr02_c.inc",
+      "git_blob_sha1": "321f2d031f000bbd9f33706fd8ce174baad6a9e9",
+      "original_path": "engine/share/includes/scr02_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "53a70351e6c9e46fb5ec08e199827df5129deec0dd81a06b8532c9bd3fceb8b2",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/scr02_c.inc"
+    },
+    {
+      "bytes": 1893,
+      "file": "engine/share/includes/scr06_c.inc",
+      "git_blob_sha1": "545f3b4d928fc9968850e8c693e393348d40a433",
+      "original_path": "engine/share/includes/scr06_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "b739a1c8ea7cfad791682945c271d0d32a9f3fa080c4cdbd4dd813591a974c6d",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/scr06_c.inc"
+    },
+    {
+      "bytes": 3329,
+      "file": "engine/share/includes/scr14_c.inc",
+      "git_blob_sha1": "38f4bfbda090ec767a0511639207fa3d58ad5b77",
+      "original_path": "engine/share/includes/scr14_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/scr14_c.inc"
+    },
+    {
+      "bytes": 3793,
+      "file": "engine/share/includes/scr16_c.inc",
+      "git_blob_sha1": "ee6cf4ed9975c1daa7694c10d8798b28ebeef8ab",
+      "original_path": "engine/share/includes/scr16_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "88451e40791ebb08e9bdd1990dbca40fad5f50328aef775d15a7437eaf95cf25",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/scr16_c.inc"
+    },
+    {
+      "bytes": 2111,
+      "file": "engine/share/includes/scr17_c.inc",
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5",
+      "original_path": "engine/share/includes/scr17_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/scr17_c.inc"
+    },
+    {
+      "bytes": 2693,
+      "file": "engine/share/includes/sms_c.inc",
+      "git_blob_sha1": "3348f453cd4700251b57d40ead1764f2458adf8a",
+      "original_path": "engine/share/includes/sms_c.inc",
+      "retrieval": "existing local bytes verified against pinned git tree",
+      "sha256": "f95904664529c1189a474640c20966e83bc1656ef4430c4dbad5be01c37e955a",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/includes/sms_c.inc"
+    },
+    {
+      "bytes": 86324,
+      "file": "common_source/modules/constant_mod.F",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "original_path": "common_source/modules/constant_mod.F",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/common_source/modules/constant_mod.F"
+    },
+    {
+      "bytes": 1658,
+      "file": "engine/share/r8/my_real.inc",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b",
+      "original_path": "engine/share/r8/my_real.inc",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/r8/my_real.inc"
+    },
+    {
+      "bytes": 3556,
+      "file": "engine/share/spe_inc/hardware.inc",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d",
+      "original_path": "engine/share/spe_inc/hardware.inc",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/hardware.inc"
+    },
+    {
+      "bytes": 2151,
+      "file": "engine/share/spe_inc/tlock_c.inc",
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867",
+      "original_path": "engine/share/spe_inc/tlock_c.inc",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/tlock_c.inc"
+    },
+    {
+      "bytes": 12412,
+      "file": "engine/share/spe_inc/constant.inc",
+      "git_blob_sha1": "7a26e1997dd0e89309eea78b558710fe4de522e5",
+      "original_path": "engine/share/spe_inc/constant.inc",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "13af548603f08537f4eb5df2cf69b9564c932fe62c8c73cf95ecfe38ba308b36",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/share/spe_inc/constant.inc"
+    }
+  ],
+  "origin": "https://github.com/OpenRadioss/OpenRadioss",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Native CHVIS3 oracle source context only; no production adoption",
+  "total_bytes": 294387
+}

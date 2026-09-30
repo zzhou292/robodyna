@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "Oracle.h", "SerialValidation.h", "FailureValuesTest.cpp",
+            "FailureValuesFixture.h", "SerialFailureValues.h", "MixedValuesTest.cpp",
+            "SerialMixedReadback.h", "SerialMixedValues.h", "MixedOracleSupport.h"],
+    deps = ["//lib_src/elements/qeph:batch_values",
+            "//lib_utest/qualification/qt_mapped:owner_fixture",
+            "//lib_src/elements:shell_batch_plasticity_storage",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# The actual mixed-owner/CIN CUDA test reuses the owning CMake fixture sources.
+
+cc_library(
+    name = "failure_value_fixture", testonly = True,
+    hdrs = ["FailureValuesFixture.h", "SerialFailureValues.h"],
+    deps = ["//lib_src/elements/qeph:batch_values"],
+    visibility = ["//lib_utest/qualification/t3_compact_activity:__pkg__"],
+)

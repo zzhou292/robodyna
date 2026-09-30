@@ -1,0 +1,64 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    visibility = [
+        "//lib_utest/qualification/self_contact_transaction:__pkg__",
+    ],
+    hdrs = ["Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/assembly:shell_execution_binding",
+        "//lib_src/collision:self_contact_current_regularity",
+        "//lib_src/constraints:nodal_rigid_part_topology",
+        "//lib_src/constraints/tied_shell:tied_post_kinchk",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "//lib_utest/qualification/self_contact_active_uses:fixture",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = [
+        "ActivityReceiptTest.cpp",
+        "CapacityIdentityTest.cpp",
+        "FailureTest.cpp",
+        "GeometryTest.cpp",
+        "Oracle.h",
+        "ScalingTest.cpp",
+        "ValuesTest.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Executable source proof, matching the corrected feature/crossing/active-use
+# qualifier pattern.  Do not replace this with a non-executing filegroup test.
+cc_test(
+    name = "source_proof",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    data = [
+        "ActivityReceiptTest.cpp",
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "CapacityIdentityTest.cpp",
+        "FailureTest.cpp",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "Oracle.h",
+        "README.md",
+        "ScalingTest.cpp",
+        "ValuesTest.cpp",
+        "check_syntax.py",
+        "verify_sources.py",
+        "//lib_src/collision:self_contact_current_regularity_source_proof",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)

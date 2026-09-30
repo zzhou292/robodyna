@@ -1,0 +1,2 @@
+      INTEGER IOUT
+      COMMON /T45_OUTPUT/ IOUT

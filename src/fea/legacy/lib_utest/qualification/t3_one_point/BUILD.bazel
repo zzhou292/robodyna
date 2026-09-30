@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "t3_one_point_check",
+    size = "small",
+    srcs = ["Fixture.h", "MathTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/t3:one_point_law44", "//lib_utest/qualification/qbat:source_fixture", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "t3_one_point_cuda_check",
+    size = "small",
+    srcs = ["Fixture.h", "MathCudaTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/t3:one_point_law44", "//lib_utest/qualification/qbat:source_fixture", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "one_point_fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/t3_one_point_resident:__pkg__"],
+    deps = ["//lib_src/elements/t3:one_point_law44", "//lib_src/elements/t3:startup",
+            "//lib_utest/qualification/qbat:source_fixture", "@googletest//:gtest"],
+)

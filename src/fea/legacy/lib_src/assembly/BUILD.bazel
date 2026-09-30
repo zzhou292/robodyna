@@ -1,0 +1,112 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "shell_physical_binding",
+    srcs = ["ShellPhysicalBinding.cpp"],
+    hdrs = ["ShellPhysicalBinding.h"],
+    copts = ["-std=c++17"],
+    deps = [":nodal_coefficient_ledger", ":shell_execution_binding", "//lib_src/elements:shell_formulation_scope",
+            "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "nodal_coefficient_ledger",
+    srcs = ["NodalCoefficientLedger.cpp", "NodalCoefficientBudget.cpp",
+            "NodalCoefficientChecks.cpp", "NodalCoefficientShells.cpp",
+            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp", "NodalCoefficientSolids.cpp", "NodalCoefficientBeams.cpp"],
+    hdrs = ["NodalCoefficientLedger.h", "NodalCoefficientTypes.h", "NodalCoefficientInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":beam18_node_contributions", ":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":solid_node_contributions", ":nodal_node_domain",
+            "//lib_src/elements/type25:type25_model", "//lib_src/elements:shell_batch_binding",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "solid_node_contributions",
+    srcs = ["SolidNodeContributions.cpp"],
+    hdrs = ["SolidNodeContributions.h", "SolidContributionChecks.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_node_domain", "//lib_src/elements/solid18:reference",
+            "//lib_src/elements/solid18/law44:reference",
+            "//lib_src/elements/solid18/total_strain:reference_kinematics",
+            "//lib_src/elements/solid24:reference", "//lib_src/elements/solid6z:reference",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "element_mass_contributions",
+    srcs = ["ElementMassContributions.cpp"],
+    hdrs = ["ElementMassContributions.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_node_domain", "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "type13_node_contributions",
+    srcs = ["Type13NodeContributions.cpp"],
+    hdrs = ["Type13NodeContributions.h", "Type13ContributionChecks.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":nodal_node_domain",
+        "//lib_src/elements/type13:type13_model",
+        "//lib_src/math:fixed3_operations",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "nodal_node_domain",
+    srcs = ["NodalNodeDomain.cpp"],
+    hdrs = ["NodalNodeDomain.h", "NodalDomainIdentity.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/math:fixed3",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:bounded_startup_array",
+        "//lib_utils:source_identity_index",
+    ],
+)
+
+cc_library(
+    name = "shell_node_map",
+    srcs = ["ShellNodeMap.cpp"],
+    hdrs = ["ShellNodeMap.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":nodal_node_domain",
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "nodal_mass_binding",
+    srcs = ["NodalMassBinding.cpp"],
+    hdrs = ["NodalMassBinding.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_src/elements/type25:type25_model",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:bounded_startup_array",
+    ],
+)
+
+cc_library(
+    name = "shell_execution_binding",
+    srcs = ["ShellExecutionBinding.cpp", "shell_execution/Budget.cpp", "shell_execution/Parents.cpp"],
+    hdrs = ["ShellExecutionBinding.h", "shell_execution/Internal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_coefficient_ledger", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "beam18_node_contributions",
+    srcs = ["Beam18NodeContributions.cpp"],
+    hdrs = ["Beam18NodeContributions.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/beam18:model", ":nodal_node_domain", "//lib_utils:bounded_arena"],
+)

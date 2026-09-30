@@ -1,0 +1,91 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2dst3.F",
+      "source": "starter/source/interfaces/inter3d1/i2dst3.F",
+      "size": 13415,
+      "sha256": "eaf326d1ef89e34f1d9fdda9edfb0c7682cfb43952be6b34538a266b12159e19",
+      "git_blob_sha1": "6917e961760b4e777234bb04f284a8a40326aac6"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i7lin3.F",
+      "source": "starter/source/interfaces/inter3d1/i7lin3.F",
+      "size": 2895,
+      "sha256": "225b73c5d7dd80e2481997a731f1ca07a49278a81e3027c8a4df7330ae862af3",
+      "git_blob_sha1": "599979b97ad19ff8125e51b90ab4c51aaeb7ba05"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "source": "starter/source/interfaces/inter3d1/i2cor3.F",
+      "size": 9055,
+      "sha256": "93d93f7b6dfe07f393dbcb7a76b99edd14ba89f0a77f761bcf110925dfbe7037",
+      "git_blob_sha1": "1e50ec301b7cbb8e9ea3e7f69a17f316ad198889"
+    },
+    {
+      "path": "original/starter/share/includes/vect07_c.inc",
+      "source": "starter/share/includes/vect07_c.inc",
+      "size": 1462,
+      "sha256": "b1a3f0d940add205c7f5ef22ccbe46100e1fa8f0286946eb3e8df23fa1678505",
+      "git_blob_sha1": "e36b072f11ba264a5d98e9c6e9ee79d88fd43ee1"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "source": "starter/source/interfaces/inter3d1/i2buc1.F",
+      "size": 15225,
+      "sha256": "68c4d5e0b7c006272e606a06cecc70d5b1ff60fd2477ade225ffc782b9847d82",
+      "git_blob_sha1": "d94df868cb35f4897bfb912b6ca1917b1c363469"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2trivox.F90",
+      "source": "starter/source/interfaces/inter3d1/i2trivox.F90",
+      "size": 20700,
+      "sha256": "5f38a51877c3d91ca8b03f74739b3dc32a61e7ab52d54f1c7bc6688f22b78086",
+      "git_blob_sha1": "cdd9b80d0953b8f496e4fc17a3a2c2d75dba7c38"
+    }
+  ],
+  "fragments": [
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "first_line": 183,
+      "last_line": 198,
+      "path": "Gap.inc",
+      "sha256": "69a077b07d95895c0a9aaab7d5756e9b3e46a390ff8b2921c4b9fb50d4c8299d"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "first_line": 155,
+      "last_line": 173,
+      "path": "SearchDiagonals.inc",
+      "sha256": "f31321fc7aca5a900d016ae7b0ec9c4f915283e14b8abb9b8d197664ac5b13a5"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "first_line": 247,
+      "last_line": 247,
+      "path": "SearchThickness.inc",
+      "sha256": "93f884d90be99c080e25ccb5b9e79a2bfa808f1c2881fa636e2091e254d61c84"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2buc1.F",
+      "first_line": 249,
+      "last_line": 253,
+      "path": "SearchInflation.inc",
+      "sha256": "ab99cf81461fcba50f50af7dad173d274f1d0ddc5a25385f3107b1bac26410c1"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2trivox.F90",
+      "first_line": 209,
+      "last_line": 219,
+      "path": "SearchBox.inc",
+      "sha256": "8690baa97c832e589096e6c3b52d3157500915abe71833bf3ccd2d0dcb51bf32"
+    },
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2trivox.F90",
+      "first_line": 241,
+      "last_line": 244,
+      "path": "SearchBoxFilter.inc",
+      "sha256": "8cde74a680ca47f98b8bcd01c4b3c1c934be591125a91c12bf11b9d2a2fab667"
+    }
+  ]
+}

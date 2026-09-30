@@ -1,0 +1,73 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "nodal_mass_vehicle_check",
+    size = "large",
+    srcs = ["NodalMassVehicleTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_utest/qualification/type25_batch:vehicle_mass_input", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "test_support",
+    testonly = True,
+    visibility = ["//lib_utest/qualification/qbat_binding:__pkg__",
+                  "//lib_utest/qualification/qbat_catalog:__pkg__"],
+    hdrs = ["NodalMassTestSupport.h"],
+    deps = [
+        "//lib_src/assembly:nodal_mass_binding",
+        "//lib_src/elements/type25:type25_model",
+        "//lib_utest:shell_batch_binding_test_fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "cuda_fixture",
+    testonly = True,
+    hdrs = ["NodalMassCudaFixture.h"],
+    deps = [
+        ":test_support",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_utest:nodal_temporal_fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "nodal_mass_binding_check",
+    size = "small",
+    srcs = ["NodalMassBindingTest.cpp", "NodalMassCapacityTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":test_support", "//lib_src/assembly:nodal_mass_binding", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_mass_joined_check",
+    size = "small",
+    srcs = ["NodalMassJoinedTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+    deps = [":cuda_fixture", "//lib_src/assembly:nodal_mass_binding", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "connector_publication_check",
+    size = "small",
+    srcs = [
+        "connector/ConnectorPublicationFixture.h",
+        "connector/ConnectorPublicationFixture.cu",
+        "connector/ConnectorPublicationTest.cu",
+    ],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        ":cuda_fixture",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_src/elements/type25:type25_batch",
+        "//lib_utest/qualification/type25:evaluation_values",
+        "@googletest//:gtest_main",
+    ],
+)

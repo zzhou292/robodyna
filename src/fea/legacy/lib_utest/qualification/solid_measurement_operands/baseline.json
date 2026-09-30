@@ -1,0 +1,35 @@
+{
+  "commit": "edab8e17e6d6e641f77f093fdb258d98152db492",
+  "files": [
+    {
+      "path": "lib_src/elements/solids/resident/Measure.h",
+      "fixture": "frozen/Measure.h.txt",
+      "bytes": 5519,
+      "sha256": "61e259f1e7d097246d0ab7cfde6d41e83ba2c78cb29b325a3c6ecff5a821e0fc"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Candidate.cu",
+      "fixture": "frozen/Candidate.cu.txt",
+      "bytes": 6129,
+      "sha256": "e1d3d78ed9cb3c9d535c1582154c9c20af7fd8e8e5adfcba808e162225f1f919"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "fixture": "frozen/Arena.h.txt",
+      "bytes": 2533,
+      "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.cpp",
+      "fixture": "frozen/Arena.cpp.txt",
+      "bytes": 6092,
+      "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "fixture": "frozen/ResultValidation.cu.txt",
+      "bytes": 1677,
+      "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
+    }
+  ]
+}

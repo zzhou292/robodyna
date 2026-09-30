@@ -1,0 +1,13 @@
+# Native contact local diagnostic fold
+
+Source-only candidate from TL2733. No new mechanics or resource layout.
+
+The one permitted production edit is runtime/Kernels.cu::Diagnostics: seed local active count and three sums from current Control, retain the exact canonical positive-occurrence fold and unit multiplication order, publish those four fields once, then keep the original finite check/Fail minimum-key behavior. Never replace the complete Control or skip prior failures.
+
+Ownership: MakeLayout appends responses, sorted slots, positive flags and Control as separate checked BoundedArenaLayout regions; Bind preserves those offsets. Respond launches ResponseRows, PackForces and Diagnostics serially on one owner stream. The following Fence copies Control and drains the stream before host inspection or further publication. No legitimate observer or overlapping writer reads intermediate diagnostic totals. Alias promises are not added.
+
+Qualification plan: compile the literal old2733 Fail/Diagnostics bodies beside the current extracted bodies, in separate test namespaces. Frozen whole-source hashes and exact function reversal authenticate that this is the sole production change; same-device bitwise complete-Control comparisons cover all fields without struct-padding comparisons. Test nonzero incoming values, signed zeros, count0, poisoned inactive slots, canonical permutation/cancellation, NaN/Inf/overflow including unit conversion, preserved existing failure keys, count wrap and repeated same-device repair. Current Layout is used for GPU storage; verify the relevant admitted ranges are disjoint. Reuse the existing native TYPE25 ComposedCuda and real owner MovingCache/AcceptedMass/FullLedger/ActivePrefix coupons as owning regression gates. No replacement mechanics fixture or public corruption API.
+
+Compilation, CUDA execution, owner regressions, compiled register/stack/store inspection, exact101-step output equality and matched timing remain pending until the live vehicle/render hardware lane is released. Static PTX already proves the old kernel writes aggregates inside its loop; no candidate speedup is claimed.
+
+Expected focused gate:2 host GTests (`native_diagnostic_host`),8 CUDA GTests (`native_diagnostic_cuda`), and one exact source CTest (`native_diagnostic_source`):10 GTests/3 CTests total, no skips. The production-only source reversal passed during source authoring; no C++/CUDA compilation has run. The existing owning targets are `type25_runtime_composed_cuda`(5), `type25_runtime_moving_cache_cuda`(7), `type25_runtime_accepted_mass_cuda`(5), and `type25_runtime_full_ledger_cuda`(5 including ActivePrefix), totaling22 GTests. Their existing native/owner fixtures remain unchanged.

@@ -1,0 +1,31 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+cc_library(
+    name = "virgin",
+    hdrs = ["Virgin.h"],
+    deps = ["//lib_src/elements/type45:values"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "values",
+    srcs = ["Arena.cpp", "Plan.cpp", "Forecast.cpp", "Upload.cpp", "Identity.cpp", "OutputRanges.cpp"],
+    hdrs = glob(["*.h"], exclude = ["Virgin.h"]),
+    deps = [":virgin", "//lib_src/elements/type45:model", "//lib_src/elements/type45:values",
+            "//lib_src/elements:shell_physical_owner_values", "//lib_src/elements:shell_batch_fields",
+            "//lib_src/elements:shell_batch_startup", "//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
+            "//lib_src/solvers:cin_physical_main_values", "//lib_utils:bounded_arena"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)
+cuda_library(
+    name = "batch",
+    srcs = ["Batch.cu", "Candidate.cu", "Assembly.cu", "Contexts.cu", "AssembleOperation.cu",
+            "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp"],
+    deps = [":values", "//lib_src/elements:shell_physical_owner",
+            "//lib_src/elements:shell_physical_owner_values", "//lib_src/assembly:shell_physical_binding",
+            "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)

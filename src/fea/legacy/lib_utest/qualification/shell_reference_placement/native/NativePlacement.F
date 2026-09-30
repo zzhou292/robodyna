@@ -1,0 +1,87 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Exact selected property/quadrature/coefficient operations; no production math.
+      SUBROUTINE PLACEMENT_NATIVE_SHIFT(IPOS,VALUE)
+     . BIND(C,NAME='placement_native_shift')
+      USE ISO_C_BINDING, ONLY:C_INT,C_DOUBLE
+      USE LAW44_POINT_REF_CONSTANT_MOD
+      IMPLICIT NONE
+      INTEGER(C_INT),VALUE :: IPOS
+      REAL(C_DOUBLE),INTENT(OUT) :: VALUE
+      REAL(C_DOUBLE) GEO(199),ZSHIFT
+#include "PlacementShift.inc"
+      VALUE=GEO(199)
+      END
+
+      SUBROUTINE PLACEMENT_NATIVE_RULE(IPOS,POSITION,FORCE,MOMENT)
+     . BIND(C,NAME='placement_native_rule')
+      USE ISO_C_BINDING, ONLY:C_INT,C_DOUBLE
+      USE LAW44_POINT_REF_CONSTANT_MOD
+      USE PLACEMENT_SHELL_OFFSET_WM_INI_MOD
+      USE LF_INTERFACES, ONLY:LAW44_POINT_SECTION
+      IMPLICIT NONE
+      INTEGER(C_INT),VALUE :: IPOS
+      REAL(C_DOUBLE),INTENT(OUT) :: POSITION(3),FORCE(3),MOMENT(3)
+      REAL(C_DOUBLE) GEO(199,1),Z0(3,3),WF(3,3),POSLY(1,3),
+     . THKLY(3),ZSHIFT
+      INTEGER PID(1),MAT(1),MATLY(3),N,I,J,IADR
+      INTEGER,PARAMETER :: NPT=3,JFT=1,JLT=1
+      INTERFACE
+        SUBROUTINE PLACEMENT_NATIVE_SHIFT(IPOS,VALUE)
+     .   BIND(C,NAME='placement_native_shift')
+          USE ISO_C_BINDING, ONLY:C_INT,C_DOUBLE
+          INTEGER(C_INT),VALUE :: IPOS
+          REAL(C_DOUBLE),INTENT(OUT) :: VALUE
+        END SUBROUTINE
+      END INTERFACE
+      PID=1;MAT=1
+      CALL PLACEMENT_NATIVE_SHIFT(IPOS,GEO(199,1))
+      CALL LAW44_POINT_SECTION(Z0(:,3),WF(:,3),MOMENT)
+#include "PlacementPosition.inc"
+      POSITION=POSLY(1,:);FORCE=THKLY
+      IF(ZSHIFT/=ZERO)THEN
+        DO I=1,3
+          CALL SHELL_OFFSET_WM_INI(I,3,ZSHIFT,MOMENT(I))
+        ENDDO
+      ENDIF
+      END
+
+      SUBROUTINE PLACEMENT_NATIVE_COEFFICIENTS(SHIFT,MASS,AR,T,
+     . ELASTIC,G0,SHEAR,LENGTH,DM,SPEED,ACTIVE,RESULT)
+     . BIND(C,NAME='placement_native_coefficients')
+      USE ISO_C_BINDING, ONLY:C_DOUBLE
+      USE LAW44_POINT_REF_CONSTANT_MOD
+      IMPLICIT NONE
+      REAL(C_DOUBLE),VALUE :: SHIFT,MASS,AR,T,ELASTIC,G0,SHEAR,
+     . LENGTH,DM,SPEED,ACTIVE
+      REAL(C_DOUBLE),INTENT(OUT) :: RESULT(10)
+      REAL(C_DOUBLE) GEO(199,1),ZSHIFT,F_OFFSET,FAC,Z0,ATHK,
+     . EMS(1),EM(1),AREA(1),THK(1),XI(1),THK0(1),THK02(1),
+     . ZOFFSET(1),F_OSET(1),VOL0(1),A1(1),ALDT(1),ALPE(1),
+     . VISCMX(1),AMU(1),STI(1),STIR(1),OFF(1),G(1),SHF(1),
+     . DTFAC1(7),F_DTE(1),SSP(1),DT(1)
+      INTEGER PID(1),IPROP,I,ITYEL
+      INTEGER,PARAMETER :: JFT=1,JLT=1,LFT=1,LLT=1
+      GEO=ZERO;GEO(199,1)=SHIFT;IPROP=1;PID=1
+      EMS=MASS;EM=MASS;AREA=AR;THK=T;FAC=TWELVE
+#include "PlacementQ4Inertia.inc"
+      RESULT(1)=XI(1)
+#include "PlacementT3Inertia.inc"
+      RESULT(2)=XI(1)
+      THK0=T;THK02=T*T
+#include "PlacementOffset.inc"
+      RESULT(3)=ZOFFSET(1)
+      ALDT=LENGTH;ALPE=ONE;VISCMX=DM;AMU=DM
+#include "PlacementLength.inc"
+#include "PlacementStiffnessFactor.inc"
+      RESULT(4)=F_OSET(1)
+      VOL0=T*AR;A1=ELASTIC;OFF=ACTIVE
+      I=1
+#include "PlacementQ4Stiffness.inc"
+      RESULT(5)=STI(1);RESULT(6)=STIR(1)
+      G=G0;SHF=SHEAR
+#include "PlacementT3Stiffness.inc"
+      RESULT(7)=STI(1);RESULT(8)=STIR(1)
+      DTFAC1=ONE;F_DTE=ONE;SSP=SPEED;ITYEL=3
+#include "PlacementNativeDt.inc"
+      RESULT(9)=ALDT(1);RESULT(10)=DT(1)
+      END

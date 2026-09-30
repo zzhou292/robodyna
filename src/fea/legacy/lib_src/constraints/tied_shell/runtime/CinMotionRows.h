@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#pragma once
+#include "CinForceStage.h"
+#include "../TiedPatchMotion.h"
+
+namespace tl::constraints::tied_shell::cin {
+namespace detail {
+TL_TIED_PATCH_HD inline void WriteXyz(double* field, std::uint32_t node, Vec3 value) noexcept {
+  field[3*node] = value.x;
+  field[3*node+1] = value.y;
+  field[3*node+2] = value.z;
+}
+TL_TIED_PATCH_HD inline bool MotionPointersValid(StageView model, MotionTrial trial) noexcept {
+  return (model.explicitly_empty ? (!model.row_count && !model.witness_count && !model.rows && !trial.patches) :
+      (model.rows && trial.patches)) && trial.velocity_xyz && trial.angular_velocity_xyz &&
+      trial.acceleration_xyz && trial.angular_acceleration_xyz;
+}
+TL_TIED_PATCH_HD inline StageReport PrepareMotionRow(StageView model, MotionTrial trial,
+    std::uint32_t r, SecondaryMotion& output) noexcept {
+  const auto row = model.rows[r];
+  MasterMotion masters;
+  for (unsigned slot = 0; slot < 4; ++slot) {
+    masters.velocity[slot] = detail::ReadXyz(trial.velocity_xyz, row.masters[slot]);
+    masters.acceleration[slot] = detail::ReadXyz(trial.acceleration_xyz, row.masters[slot]);
+  }
+  SecondaryMotion recovered;
+  if (RecoverMotion(trial.patches[r], masters, recovered) != Status::Success) {
+    return {StageStatus::NonfiniteResult, r, row.secondary};
+  }
+  output = recovered;
+  return {};
+}
+TL_TIED_PATCH_HD inline void ApplyMotionRow(StageView model, MotionTrial trial,
+    std::uint32_t r, const SecondaryMotion& recovered) noexcept {
+  const auto row = model.rows[r];
+  detail::WriteXyz(trial.velocity_xyz, row.secondary, recovered.velocity);
+  detail::WriteXyz(trial.angular_velocity_xyz, row.secondary, recovered.angular_velocity);
+  detail::WriteXyz(trial.acceleration_xyz, row.secondary, recovered.acceleration);
+  detail::WriteXyz(trial.angular_acceleration_xyz, row.secondary, recovered.angular_acceleration);
+}
+} // namespace detail
+} // namespace tl::constraints::tied_shell::cin

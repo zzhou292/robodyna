@@ -1,0 +1,110 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+exports_files(
+    ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/self_contact_transaction:__pkg__"],
+)
+
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = [
+        "DiagnosticsTest.cpp",
+        "exact_storage/DiscoverySerialization.h",
+        "AdapterTest.cpp",
+        "CapacityTest.cpp",
+        "ExhaustiveTest.cpp",
+        "ExactStorageTest.cpp",
+        "ExactStorageOracle.h",
+        "//lib_utest/qualification/self_contact_transaction:ConeDirectionOracle.h",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "IntersectionTest.cpp",
+        "MaskTest.cpp",
+        "OracleTest.cpp",
+        "ParallelTest.cpp",
+        "StratumTest.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:fixed_triangle_feature_discovery",
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_utest/qualification/contact_facets:fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "source_proof",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    data = [
+        "verify_sources.py",
+        "DiagnosticsTest.cpp",
+        "exact_storage/DiscoverySerialization.h",
+        "AdapterTest.cpp",
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "CapacityTest.cpp",
+        "ExhaustiveTest.cpp",
+        "ExactStorageTest.cpp",
+        "ExactStorageOracle.h",
+        "//lib_utest/qualification/self_contact_transaction:ConeDirectionOracle.h",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "IntersectionTest.cpp",
+        "MaskTest.cpp",
+        "OracleTest.cpp",
+        "ParallelTest.cpp",
+        "StratumTest.cpp",
+        "check_syntax.py",
+        "//lib_src/collision:fixed_triangle_feature_discovery_sources",
+        "//lib_src/math:fixed_integer_sources",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "exact_storage_wide",
+    testonly = True,
+    srcs = [
+        "exact_storage/WideAdapter.cpp",
+        "//lib_src/collision:fixed_triangle_feature_qualification_wide_sources",
+    ],
+    hdrs = ["//lib_src/collision:fixed_triangle_feature_qualification_wide_headers"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    linkopts = ["-pthread"],
+    deps = [
+        "//lib_src/math:fixed_integer",
+        "//lib_src/collision:fixed_contact_facets",
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/collision/weighted_surface:mapping",
+    ],
+)
+
+cc_binary(
+    name = "exact_storage_adaptive_driver",
+    testonly = True,
+    srcs = ["exact_storage/DiscoveryParityDriver.cpp", "exact_storage/DiscoverySerialization.h", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:fixed_triangle_feature_discovery"],
+)
+
+cc_binary(
+    name = "exact_storage_wide_driver",
+    testonly = True,
+    srcs = ["exact_storage/DiscoveryParityDriver.cpp", "exact_storage/DiscoverySerialization.h", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":exact_storage_wide"],
+)
+
+cc_test(
+    name = "exact_storage_discovery_parity",
+    size = "small",
+    timeout = "moderate",
+    srcs = ["exact_storage/BazelComparisonTest.cpp"],
+    data = ["exact_storage/compare_discovery.py", ":exact_storage_adaptive_driver", ":exact_storage_wide_driver"],
+    copts = ["-std=c++17"],
+    deps = ["@googletest//:gtest_main"],
+    tags = ["unit", "host", "exact-storage", "differential"],
+)

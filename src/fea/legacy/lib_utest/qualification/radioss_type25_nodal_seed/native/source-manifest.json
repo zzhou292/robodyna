@@ -1,0 +1,55 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Independent complete ordered contact-channel blocks and source initialization; numerical-only bounded qualification",
+  "files": [
+    {
+      "path": "native/original/spmd_msin.F",
+      "source_path": "starter/source/elements/initia/spmd_msin.F",
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8",
+      "git_blob": "026190303b0ea69cda76a475d7a28c35dcc727b1"
+    },
+    {
+      "path": "native/original/cinmas.F",
+      "source_path": "starter/source/elements/shell/coque/cinmas.F",
+      "bytes": 91639,
+      "sha256": "06a32031e4e0c9cdac68605a60d9fe4ef427d1548eac52499f6bef9d9912fe5e",
+      "git_blob": "faaf1c988e0be143bbe572e4d05da42298bc262f"
+    },
+    {
+      "path": "native/original/c3inmas.F",
+      "source_path": "starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "bytes": 76288,
+      "sha256": "17218f450465558b6858316022b8fd2584baabd9c775aba7ef2cf89b0a0958a8",
+      "git_blob": "9b93b8ecda3d10689a99b99d0d897f90505e8e28"
+    },
+    {
+      "path": "native/original/my_orders.c",
+      "source_path": "common_source/tools/sort/my_orders.c",
+      "bytes": 3652,
+      "sha256": "75d1173b7558f5c832620f299d331e7f1cc631037c4b1f5e000769b516fd68e0",
+      "git_blob": "37dca9fd6fb96ed1dbb0aab8033462bb5d71cfb3"
+    },
+    {
+      "path": "native/original/lectur.F",
+      "source_path": "starter/source/starter/lectur.F",
+      "bytes": 473360,
+      "sha256": "2c6233fe282f8812973f33ce021cacbccb34ddb68699bb75f763260c93d50178",
+      "git_blob": "b7895c7695a5a99206dd9cb6426abb9ffe4f795d"
+    },
+    {
+      "path": "native/original/hm_read_prop45.F",
+      "source_path": "starter/source/properties/spring/hm_read_prop45.F",
+      "bytes": 54868,
+      "sha256": "95e285901e2d7e8b3154f8789304607c57608a256f998f96472021660267325d",
+      "git_blob": "68f97a6ad82e24d5fd2e5fca6d11c898a82c7ad5"
+    },
+    {
+      "path": "native/original/hm_read_prop_generic.F",
+      "source_path": "starter/source/properties/hm_read_prop_generic.F",
+      "bytes": 11490,
+      "sha256": "969eee78fc2d222fb5ab92650155ffb23f5caff64d2323aaecc6c22f0e9a555a",
+      "git_blob": "ded8c7017c27b7b6ef7762d7cc8ad37454b46d2a"
+    }
+  ]
+}

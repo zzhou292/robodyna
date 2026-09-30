@@ -1,0 +1,32 @@
+{
+  "revision": "4853da859b0f74d359b9fae361b6f400deb06e4f",
+  "source_definitions": [
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 5647,
+      "sha256": "a7368406292f6ee3f55eaf5f86ba252af98d3bb55d08d677abab1c03a950afa2"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 3826,
+      "sha256": "e02151652044e6e953ba4a322349c2a1010a90a5021a654ffa40b23b44a1d0a5"
+    }
+  ],
+  "files": [
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/FrozenScatter.h",
+      "bytes": 3239,
+      "sha256": "61992004be1e11002a007ebe4f4848af8d15b6e99b933054ad0075c00a83b1f2"
+    },
+    {
+      "path": "lib_src/solvers/NodalForceAssembly.h",
+      "bytes": 3219,
+      "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
+    },
+    {
+      "path": "lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    }
+  ]
+}

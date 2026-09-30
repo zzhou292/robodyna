@@ -1,0 +1,283 @@
+{
+  "baseline_commit": "30028beda6c13e61a39d7c868a6106748665703d",
+  "scope": "Bounded immutable S0/current-or-linear-endpoint SAP adapter; original owning implementation/defaults unchanged; exact shared overlap/filter traversal. No mechanics/runtime self-contact admission.",
+  "files": [
+    {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticBroadphase.cmake",
+      "bytes": 619,
+      "sha256": "4116390730ab8807cfba37d856048185bd722863099fe3219ca428ac9902ebad"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticBroadphase.cu",
+      "bytes": 29258,
+      "sha256": "de6c0c32e3e47af80ca998f08438736bb8099a9cdf91dd3cca905268f15690f7"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticBroadphase.cuh",
+      "bytes": 7795,
+      "sha256": "0c08edcfac3b23426a486dced65da3b0a66f288095ff92ed928d69d78d898848"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticBroadphaseFunc.cuh",
+      "bytes": 6767,
+      "sha256": "387b887f343af3be1556e4b090c5af5dc356290669ddb701b18bece934c2005a"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticBroadphaseTypes.cuh",
+      "bytes": 193,
+      "sha256": "4e35843dc0834689dd426c88850807f43564012316ce66b935ef76f7eead0c48"
+    },
+    {
+      "path": "lib_src/collision/HydroelasticCollisionTypes.cuh",
+      "bytes": 827,
+      "sha256": "fdac88c826492ed647e19e2461deb0bb837797a416607a0de3a70cc1ade2a245"
+    },
+    {
+      "path": "lib_src/collision/SelfContactBroadphase.cmake",
+      "bytes": 1225,
+      "sha256": "c10fb5b283bac04aa30307ed1665192094952fed31186b124c2c62457c0f31bf"
+    },
+    {
+      "path": "lib_src/collision/SelfContactBroadphase.cpp",
+      "bytes": 7528,
+      "sha256": "d013a7e2348f15e6cb5c5dac700a042df4a9de4cf63d523529463a91a17cb3b6"
+    },
+    {
+      "path": "lib_src/collision/SelfContactBroadphase.h",
+      "bytes": 1730,
+      "sha256": "fda322bfe5232a67684bcb08964c35a856ed1a821f06ae926223033ab5111836"
+    },
+    {
+      "path": "lib_src/collision/SelfContactBroadphaseTypes.h",
+      "bytes": 2055,
+      "sha256": "df7703f8f2593c0694e8195a30e6d38d5d75df57947ff295d221260072fbf304"
+    },
+    {
+      "path": "lib_src/collision/SelfContactSurfaceBinding.h",
+      "bytes": 2524,
+      "sha256": "c46e150200eb9f0a0dbae1afcb4ef6a016fcdcbb2f61b6b19469db4250c0921f"
+    },
+    {
+      "path": "lib_src/collision/SelfContactSurfaceTypes.h",
+      "bytes": 3479,
+      "sha256": "315ba5ce0438e4611f13bcb81ebbcfb0d0001c31bcf670b7277b5b2da00a3382"
+    },
+    {
+      "path": "lib_src/collision/SurfaceContactTypes.h",
+      "bytes": 7384,
+      "sha256": "ee19965627faacc6d68314a9b24a0fac817117b2be5be22e077349ccbdd14568"
+    },
+    {
+      "path": "lib_src/collision/broadphase/Sweep.h",
+      "bytes": 2303,
+      "sha256": "1ec13f0e28ba25ace489969803f58444a47cf27eb1e599561def90ddb4391e83"
+    },
+    {
+      "path": "lib_src/collision/self_contact_broadphase/Kernels.cu",
+      "bytes": 4757,
+      "sha256": "494c61982b35b43e7654c9ddc26d47fa8ac73e835a87ddbda7e91e6d8511d571"
+    },
+    {
+      "path": "lib_src/collision/self_contact_broadphase/Layout.cpp",
+      "bytes": 4839,
+      "sha256": "adebef9063c532707cdf4624aaf59806c84df834cc15f82774024dc8a75ff0bf"
+    },
+    {
+      "path": "lib_src/collision/self_contact_broadphase/Layout.h",
+      "bytes": 1459,
+      "sha256": "8065e1174eb270080c0cb77d699a0b9130fca8c44897b3799ac9478983e88b4a"
+    },
+    {
+      "path": "lib_src/collision/self_contact_broadphase/Sort.cu",
+      "bytes": 3832,
+      "sha256": "d98d5649dd2fd961aa08307f3212d59a52244e2976ea978e4db77a81c32db87b"
+    },
+    {
+      "path": "lib_src/collision/self_contact_broadphase/Storage.h",
+      "bytes": 1112,
+      "sha256": "6b24d543a3ca36bce6c5aa441eb30622785735c68d85744a776e259a168df0d9"
+    },
+    {
+      "path": "lib_src/solvers/NodalTrialIdentity.h",
+      "bytes": 3307,
+      "sha256": "39a7515540d39d497858740c942f1ac859b7262300be3f3b65dc41a9dcc9a5d1"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+      "bytes": 18000,
+      "sha256": "e1b152d7d325cd9676b95c059ff8f79c91efc8a3b36812b7f4e501e7ce3a69f6"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+      "bytes": 6856,
+      "sha256": "a760b2dd419e03cc9343beac5ba499281d22390ea6de37019d28584b719f91d4"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_binding/Fixture.h",
+      "bytes": 4087,
+      "sha256": "74f9fd870ddb2d8d13105f3045a3f78c3c052afb60c9207c56d0e45151661849"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_catalog/Fixture.h",
+      "bytes": 3933,
+      "sha256": "8e5fa471346ea583e8e52bac6eb8bdc7316638e0e3cb3062b682ba3935ac748d"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/BUILD.bazel",
+      "bytes": 897,
+      "sha256": "a5e2d890d160de5e882c38c716bdf1db2761bd2cd52e77cd03b31183bab7f4b7"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/CMakeLists.txt",
+      "bytes": 2431,
+      "sha256": "4014df0b6dd7a17f9d30a91f9ad946c5bd3d0d8bc680b5466c1316b61addd204"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/CudaFixture.h",
+      "bytes": 4495,
+      "sha256": "ed21ab6839a83a553f00932a0a698a3d0586d627cfd7739d118e5ae64f3fe0ac"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
+      "bytes": 11026,
+      "sha256": "185020c38773d3bb20c8bf02d797357d123ab6227fffead2d915248d3dba7f03"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/HostTest.cpp",
+      "bytes": 5771,
+      "sha256": "e4dfbbfdb3981019b3efd9ae297a05a9a0df159f1f38eb96a945b8024867798f"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/ManySource.h",
+      "bytes": 3078,
+      "sha256": "9e8c602fa48e5ce75521326c676c186ce264297c24a1337781c3d8daea5b9740"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/Oracle.h",
+      "bytes": 1360,
+      "sha256": "9a2742486d7001419344cd1fdc1e13de7559cf7259237c66b42209daafc53d4f"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/README.md",
+      "bytes": 6848,
+      "sha256": "e0dc3d3213be56540d8048a5c009883268e6b11993c0863173ff6adb75573c79"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/reference/HydroelasticBroadphase.cu",
+      "bytes": 29258,
+      "sha256": "de6c0c32e3e47af80ca998f08438736bb8099a9cdf91dd3cca905268f15690f7"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/reference/HydroelasticBroadphase.cuh",
+      "bytes": 7857,
+      "sha256": "8e8c0c36c06ccabed3b3a45c4ce3b7aac2c93d43f38a0274ca8145fd640407ce"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_broadphase/reference/HydroelasticBroadphaseFunc.cuh",
+      "bytes": 8776,
+      "sha256": "52b93c7ddad0e2fda5cad9da9d10fd903c468c2275ed931b06d0b2637efe7456"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_surface/BUILD.bazel",
+      "bytes": 1046,
+      "sha256": "f2160096ded235cfc27a7ce9ccfe0f538084be96fb67082c4b3ee5acccb5f4c7"
+    },
+    {
+      "path": "lib_utest/qualification/self_contact_surface/Fixture.h",
+      "bytes": 2571,
+      "sha256": "263aecc49a0b8d35578ffc604bb2c78e95d97fdfff7342d954ba288aa80ef13b"
+    },
+    {
+      "path": "lib_utest/utest_surface_broadphase.cu",
+      "bytes": 11457,
+      "sha256": "729945674b0307bc747f159e7e78b11cf94e7faf0846b7fe625f32bc39994087"
+    },
+    {
+      "path": "lib_utils/BoundedArena.h",
+      "bytes": 3257,
+      "sha256": "9db4481ad7e0c4fc77414dd8fec8677f7d968b293f025e2569acaeea59d18f0a"
+    }
+  ],
+  "integration_review": {
+    "base": "1e6a0a2a8660d388ca96ca26552e4afca8c38a89",
+    "previous_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 13672,
+        "sha256": "6932353e90f974307e17e3d27ef43a1f226f8e9798d77cc0f1bda404c51fcfd3"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+        "bytes": 11237,
+        "sha256": "f1650830e7fb45f251c99bfbe998ea77958089e10cd82a4089705813ad977de9"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+        "bytes": 5642,
+        "sha256": "2d06348748f5d9c1d219eb5d651a5ab8238cc3607b8530752292f693dcebec56"
+      },
+      {
+        "path": "lib_utest/qualification/self_contact_surface/BUILD.bazel",
+        "bytes": 904,
+        "sha256": "2266b6ec894802db0f5e432cd5fdd8f1acbb102afdf7deb0b643dd5d9048b9b8"
+      }
+    ],
+    "reason": "Compose the frozen broadphase with the later qualified mapped-wall removal proof and the additive fixed-facet fixture. Production broadphase/SAP bytes are unchanged; only complete build/proof identities and narrow fixture visibility are updated.",
+    "discovery_crossing_build_composition": {
+      "previous_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 14542,
+        "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+      },
+      "current_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 16292,
+        "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
+      },
+      "feature_commit": "5e904fa",
+      "feature_proof_commit": "fa324be",
+      "crossing_commit": "8ceff1a",
+      "crossing_proof_commit": "8f14a89",
+      "reason": "Two new host-only cc_library rules and their source-proof filegroups are additive. Their own verifiers authenticate complete sources and dependencies; checked reversal below restores the exact previously qualified broadphase build identity without changing any broadphase target.",
+      "mapped_wall_proof_previous": {
+        "manifest": {
+          "bytes": 17181,
+          "sha256": "ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971"
+        },
+        "verifier": {
+          "bytes": 5781,
+          "sha256": "04bcfdcea7a0a36a97ed34e368176e3460bf22e52ac5760db8c524fc424e0d43"
+        }
+      },
+      "mapped_wall_proof_current": {
+        "manifest": {
+          "bytes": 18000,
+          "sha256": "e1b152d7d325cd9676b95c059ff8f79c91efc8a3b36812b7f4e501e7ce3a69f6"
+        },
+        "verifier": {
+          "bytes": 6856,
+          "sha256": "a760b2dd419e03cc9343beac5ba499281d22390ea6de37019d28584b719f91d4"
+        }
+      }
+    },
+    "cuda13_fixture_correction": {
+      "failed_report": "crash-work/reports/self-contact-prerequisite-tests-1.json",
+      "previous_record": {
+        "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
+        "bytes": 10769,
+        "sha256": "69cfc6b27d7e0d9ecf700f82f365b29f5b7d9839700c85be362ba9dc33d02702"
+      },
+      "current_record": {
+        "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
+        "bytes": 11026,
+        "sha256": "185020c38773d3bb20c8bf02d797357d123ab6227fffead2d915248d3dba7f03"
+      },
+      "scope": "Test-only correction: a zero grid is a synchronous launch argument/configuration error. CUDA 13.2 returns cudaErrorInvalidValue while older runtimes can return cudaErrorInvalidConfiguration. The gate now requires either documented category and exact propagation of the observed backend code through poison/revocation."
+    }
+  }
+}

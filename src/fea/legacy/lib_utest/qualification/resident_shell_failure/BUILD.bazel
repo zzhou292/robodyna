@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_test(
+    name = "resident_shell_failure_host_check",
+    srcs = ["FailureBindingTest.cpp", "FailureLayoutTest.cpp", "FailureDispatchTest.cpp", "FailureResidentSource.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_failure_binding",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements/qeph:batch",
+        "//lib_src/elements/t3:batch",
+        "//lib_src/math:fixed3_operations",
+        "//lib_utest/qualification/plasticity_binding:plasticity_binding_fixture",
+        "//lib_utest/qualification/shell_failure_force:failure_force_test_support",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "failure_source_fixture",
+    testonly = True,
+    hdrs = ["FailureResidentSource.h"],
+    visibility = ["//lib_utest/qualification/t3_one_point_resident:__pkg__"],
+    deps = ["//lib_src/elements:shell_batch_failure_binding",
+            "//lib_utest/qualification/plasticity_binding:plasticity_binding_fixture"],
+)

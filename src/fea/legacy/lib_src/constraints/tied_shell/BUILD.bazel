@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "cin_stage",
+    hdrs = ["runtime/CinStageTypes.h", "runtime/CinForceStage.h", "runtime/CinForceTransfer.h", "runtime/CinMotionStage.h", "runtime/CinMotionRows.h"],
+    deps = [":tied_cin_attachment", ":tied_shell_patch"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "tied_cin_attachment",
+    srcs = ["TiedCinAttachmentModel.cpp", "TiedCinAttachmentMap.cpp"],
+    hdrs = ["TiedCinAttachmentModel.h", "TiedCinAttachmentInternal.h"],
+    deps = [":tied_post_kinchk", ":tied_shell_patch", "//lib_src/assembly:nodal_node_domain",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "tied_post_kinchk",
+    srcs = ["TiedPostKinChk.cpp"],
+    hdrs = ["TiedPostKinChk.h"],
+    deps = [":tied_shell_classification", "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "tied_shell_classification",
+    srcs = ["TiedClassification.cpp", "TiedClassificationBudget.cpp",
+            "TiedClassificationChecks.cpp", "TiedClassificationKinematics.cpp"],
+    hdrs = ["TiedClassification.h", "TiedClassificationInternal.h", "TiedClassificationTags.h"],
+    deps = ["//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "tied_shell_patch",
+    hdrs = ["TiedPatchTypes.h", "TiedPatchGeometry.h", "TiedPatchForce.h", "TiedPatchMotion.h", "TiedPatchCoefficients.h"],
+    deps = ["//lib_src/math:fixed3_operations"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "tied_shell_search",
+    hdrs = ["TiedSearchTypes.h", "TiedSearchProjection.h", "TiedSearch.h", "TiedSearchBounds.h"],
+    deps = [":tied_shell_patch"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,96 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+      MODULE LAW44_SOLID_SETUP
+      USE ISO_C_BINDING, ONLY: C_DOUBLE,C_INT
+      USE L44S_REF_CONSTANT_MOD
+      IMPLICIT NONE
+      TYPE UNIT_CONTEXT
+        REAL(C_DOUBLE) FAC_T_WORK
+      END TYPE
+      INTEGER :: LAST_WARNING=0,WARNING_COUNT=0
+      CONTAINS
+
+! Inputs are original scalar values in the chosen working units. All native
+! default/CA0/modulus expressions below are exact HM_READ_MAT44 excerpts.
+      SUBROUTINE PREPARE_LAW44(RAW,UPARAM,OMEGA,ANALYTIC)
+      REAL(C_DOUBLE),INTENT(IN) :: RAW(7)
+      REAL(C_DOUBLE),INTENT(IN),OPTIONAL :: ANALYTIC(5)
+      REAL(C_DOUBLE),INTENT(OUT) :: UPARAM(24),OMEGA
+      REAL(C_DOUBLE) E,NU,RHO0,CA,CB,CN,CC,CP,SIGM,EPSM,EPSR1,
+     . EPSR2,EPSP_REF,ASRATE,EPSGM,YLD_SCALE,YLD_SCALE_UNIT,
+     . FISOKIN,BULK,A1,G,PARMAT(17),PM(100,1)
+      INTEGER ICC,IVFLAG,ISRAT,ISRATE,IFUNC(1),MAT_ID,LSUBMODEL,
+     . NUPARAM,NFUNC,NVARTMP,NUVAR,I,IPM(3,1)
+      INTEGER,PARAMETER :: MSGWARNING=2,ANINFO_BLIND_1=1
+      LOGICAL IS_AVAILABLE
+      CHARACTER(1) TITR
+      TYPE(UNIT_CONTEXT) UNITAB
+      E=RAW(1)
+      NU=RAW(2)
+      RHO0=RAW(3)
+      EPSP_REF=RAW(4)
+      CP=RAW(5)
+      ASRATE=RAW(6)
+      CA=RAW(7)
+      CB=ZERO
+      CN=ONE
+      SIGM=ZERO
+      EPSM=ZERO
+      EPSR1=ZERO
+      EPSR2=ZERO
+      ICC=0
+      IVFLAG=0
+      ISRAT=1
+      ISRATE=0
+      IFUNC=1
+      IF(PRESENT(ANALYTIC)) THEN
+        CA=ANALYTIC(1)
+        CB=ANALYTIC(2)
+        CN=ANALYTIC(3)
+        SIGM=ANALYTIC(4)
+        EPSM=ANALYTIC(5)
+        IFUNC=0
+      ENDIF
+      YLD_SCALE=ZERO
+      FISOKIN=ZERO
+      UNITAB%FAC_T_WORK=ONE
+      MAT_ID=1
+      LSUBMODEL=0
+      TITR=' '
+      IS_AVAILABLE=.FALSE.
+      LAST_WARNING=0
+      WARNING_COUNT=0
+#include "setup.inc"
+      PARMAT=ZERO
+      PARMAT(4)=ISRATE
+      PARMAT(5)=ASRATE
+      PM=ZERO
+      I=1
+#include "filter_setup.inc"
+      OMEGA=PM(9,1)
+      END SUBROUTINE
+
+! Exact selected reader callbacks: dimensionless YLD_SCALE and observed warning.
+      SUBROUTINE HM_GET_FLOATV_DIM(NAME,VALUE,AVAILABLE,SUBMODEL,UNITS)
+      CHARACTER(*),INTENT(IN) :: NAME
+      REAL(C_DOUBLE),INTENT(OUT) :: VALUE
+      LOGICAL,INTENT(OUT) :: AVAILABLE
+      INTEGER,INTENT(IN) :: SUBMODEL
+      TYPE(UNIT_CONTEXT),INTENT(IN) :: UNITS
+      IF(NAME/='YLD_SCALE') ERROR STOP 'Unexpected dimension query'
+      VALUE=ONE
+      AVAILABLE=.TRUE.
+      END SUBROUTINE
+      SUBROUTINE ANCMSG(MSGID,MSGTYPE,ANMODE,I1,C1)
+      INTEGER,INTENT(IN) :: MSGID,MSGTYPE,ANMODE,I1
+      CHARACTER(*),INTENT(IN) :: C1
+      IF(MSGID/=1880) ERROR STOP 'Unexpected LAW44 reader warning'
+      LAST_WARNING=MSGID
+      WARNING_COUNT=WARNING_COUNT+1
+      END SUBROUTINE
+      END MODULE
+
+      SUBROUTINE LAW44_SOLID_GLOBALS()
+#include "implicit_f.inc"
+#include "param_c.inc"
+      NPROPMI=13
+      END

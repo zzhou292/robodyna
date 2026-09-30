@@ -1,0 +1,1018 @@
+{
+  "schema": "tl.t3-force-port.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Prescribed single native T3 centered LAW1 history/force on host and CUDA; no owner, contact, h0 force, source MAT024 or dynamics admission",
+  "native_reference_tl_commit": "f605e70",
+  "native_reference_checkpoint": "t3-r3-native-force-history-1",
+  "startup_rates_tl_commit": "f5ceb29",
+  "startup_rates_checkpoint": "t3-port-startup-rates-1",
+  "live_startup_manifest_sha256": "0cfcebdf3441428e28935cdfc3a8011df48bb9919042ecd25598e364acd8f9bf",
+  "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
+  "transformations": [
+    "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
+    "Reuse qualified T3 current geometry/rates, preserving raw*(h/area) and pre-strain/pre-DT observables",
+    "Reuse unchanged ShellElasticLaw1 PM and SIGEPS01G centered point update only; T3 owns EPSD, thickness, old-total work, DM, stiffness and projection",
+    "Native C3SROTO3 IFRAM_OLD1 copy, complete selected C3FINT3 and three-term force/two-term couple world projection",
+    "Retain numerical geometry bands and explicit finite-positive material intermediates; staged complete history/output publication",
+    "Native R3 and independent physical oracles only in qualification; current-position virtual-power adapter is a test-local value copy"
+  ],
+  "test_matrix": {
+    "host_functions": 9,
+    "cuda_functions": 3,
+    "full_native_cases_per_backend": 870,
+    "independent_signed_modes_per_backend": 64,
+    "force_failure_cases_per_backend": 13,
+    "nonfinite_history_slots_per_backend": 26,
+    "device_packet_limit_bytes": 8192,
+    "device_threads": 1
+  },
+  "ported_files": [
+    {
+      "path": "lib_src/elements/t3/T3Force.h",
+      "bytes": 4118,
+      "sha256": "c02fb03e8f2b84f98e59bef7e567093e5e6d58e10a429fccc632f81f48f91f68"
+    },
+    {
+      "path": "lib_src/elements/t3/T3ForceConstants.h",
+      "bytes": 1040,
+      "sha256": "bae5ebe69327ca16d13e0354584d9259e1088693e9008c94d944d90924df4909"
+    },
+    {
+      "path": "lib_src/elements/t3/T3ForceData.h",
+      "bytes": 1021,
+      "sha256": "b97dffb4d3dc7dd1c67dfdd39b7d117e539969be1d369caf5fc60544439895f8"
+    },
+    {
+      "path": "lib_src/elements/t3/T3ForceProjection.h",
+      "bytes": 2294,
+      "sha256": "4cc2da71c7bf5a6efa84c4f706799af6809b1ea6278a97d8158f339c0748d91e"
+    },
+    {
+      "path": "lib_src/elements/t3/T3History.h",
+      "bytes": 3389,
+      "sha256": "33960de7060fadeb8ce02c2cc78c5cc3394b1501bb02b1f3a6e38658ba1b1919"
+    },
+    {
+      "path": "lib_src/elements/t3/T3HistoryData.h",
+      "bytes": 1771,
+      "sha256": "b75927d7bb38793e7e7807572e377b96de3bcbd8fd6e1657115dd40a105e7e89"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Law1.h",
+      "bytes": 2749,
+      "sha256": "23c091218d57945afc5658a86b180886745abd5b6024c248559e583fce8268ae"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Material.h",
+      "bytes": 1640,
+      "sha256": "6c1f13a28f26fe284de9016fb2bf66bad028ecf0d6554f1c54b0c63294a80c2d"
+    },
+    {
+      "path": "lib_src/elements/t3/T3StiffnessDiagnostics.h",
+      "bytes": 1909,
+      "sha256": "7d8f8e875b326cc066142a077928102cac1bd7064376ec7f36c495265f2222a0"
+    },
+    {
+      "path": "lib_src/elements/t3/T3LayeredForceCore.h",
+      "sha256": "59f470904bea0ebba41c94fb2d945feb3125a58637bc669a5e8b9e342c68c4b4",
+      "bytes": 4727
+    },
+    {
+      "path": "lib_src/elements/t3/T3LayeredJ2Failure.h",
+      "sha256": "57975f106796a58cbe4505f71c223f08d4eaf2518a5aa1af241b31ac38468398",
+      "bytes": 1973
+    },
+    {
+      "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+      "bytes": 1991,
+      "sha256": "b23e3cf6b44d7a1c95a74bb942815c35bd3404185e4e2d5118b5bba86765a706",
+      "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
+    }
+  ],
+  "tests": [
+    {
+      "path": "lib_utest/qualification/t3/T3ForcePortFixture.h",
+      "bytes": 8457,
+      "sha256": "0480b9729e20ae72d27fb94140dac835dd2728a9da29db16d79a721da0e56bd8"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3ForcePortCases.h",
+      "bytes": 2996,
+      "sha256": "17dbca583ae48dda234a287a6239cda26563b559435798bbacbce541bb969448"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3ForcePortTest.cpp",
+      "bytes": 13564,
+      "sha256": "4b2dd58817ecf2bcebfa4564b319467dcee8ba2ecbaa5384458983a8b6e4e386"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3ForcePortCudaTest.cu",
+      "bytes": 8095,
+      "sha256": "37f2725b6ba873551a1b69e0babac7c0778f5a015cced05391bca968f4b58baf"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3Force.cmake",
+      "bytes": 1816,
+      "sha256": "3e5f09e42ed20f5094646d89157a31b7a4dfe7dfbce7be32aeb671096b68c68c"
+    },
+    {
+      "path": "lib_utest/qualification/t3/FORCE.md",
+      "bytes": 9950,
+      "sha256": "7a41faad97de2d5313ad9160b51987da81c749daa7464d2d83f0b0a9e4bc2769"
+    }
+  ],
+  "shared_and_native_dependencies": [
+    {
+      "path": "lib_src/materials/ShellElasticLaw1.h",
+      "bytes": 3424,
+      "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
+    },
+    {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 2400,
+      "sha256": "c140c8b5c1c4375d31098ae3c58dfe7df012d8336f09aa470bf3fd315eb15354"
+    },
+    {
+      "path": "lib_src/elements/t3/BUILD.bazel",
+      "bytes": 5567,
+      "sha256": "bcd21c0b89186884834f60f4213e16bc8bc5ba4e947d23ef3fb735fa12618a9f"
+    },
+    {
+      "path": "lib_src/elements/t3/CMakeLists.txt",
+      "bytes": 279,
+      "sha256": "c6ef2dbfdf564703da528ebc7b3b16eb25eeee31c581eccc1d3677640813a151"
+    },
+    {
+      "path": "lib_utest/qualification/t3/CMakeLists.txt",
+      "bytes": 3975,
+      "sha256": "6841eb77c4080b34380eee141b5e8475ef33aed5aadc1b7dd77b9b2ab5fe5030"
+    },
+    {
+      "path": "lib_utest/qualification/t3/source-manifest.json",
+      "bytes": 24834,
+      "sha256": "0cfcebdf3441428e28935cdfc3a8011df48bb9919042ecd25598e364acd8f9bf"
+    },
+    {
+      "path": "lib_utest/qualification/t3/verify_sources.py",
+      "bytes": 2001,
+      "sha256": "1a58ad357485fad4ed3863ad1b7d4d09e7d4fa1bb01af47577272bb828db6d6f"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3PortFixture.h",
+      "bytes": 8353,
+      "sha256": "80a7a08f4d2813a62f4fdd1e0ded78f4a0b37e6658f7fe21b1a1cdb9e2b7f8b4"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3ForceReference.h",
+      "bytes": 2141,
+      "sha256": "c3f91b4a33cfb8fa9a788da095b21c2b86764dcb741f25918ce480274f0df437"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3ForceReference.cpp",
+      "bytes": 3055,
+      "sha256": "20eababc9662ef93e72a05a11a0fb1217be83cd81089d38d11c789b009d8aedc"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3History.h",
+      "bytes": 2060,
+      "sha256": "b1028201f703514d3438b9b8fbaf4710831e4673ee82619d35aaf2e0b916eec1"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3History.cpp",
+      "bytes": 3122,
+      "sha256": "d390b5add99c7e4f7ee72502de429070d10d0880564728a1c6de44317d7e6dbd"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeHistory.F",
+      "bytes": 1330,
+      "sha256": "22d75709d122a6d400e10e620b76629bca69f91be43d13d1d2ff7a755c7f7d35"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeMaterial.F",
+      "bytes": 2324,
+      "sha256": "63734c54a238451653c0808659acc34faafddee283d34e603d568c2c36576270"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeLaw1.F",
+      "bytes": 3871,
+      "sha256": "a73e53b43f81a0e2849b3a90e1618f1cf6e821ccfac62dfaa7bca53f604515e3"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeStiffness.F",
+      "bytes": 1472,
+      "sha256": "7a7721d9a865c8d6a32d599fdcff30480d5d3291d695a371f0e2ac80f6fb8e18"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Force.F",
+      "bytes": 3174,
+      "sha256": "f863f4fbaefea6dce1f676f5cfde30f1628987f86e93f8eafb200ec9951b4312"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Scatter.F",
+      "bytes": 1712,
+      "sha256": "6dc13cafd8e1b4e1f9b5dbd52f988ab0f843ba9838ddc131f5fcf7c19cc75165"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3ForceTestOracle.h",
+      "bytes": 5831,
+      "sha256": "20fd0b79d9b3ce7e68b32fbc2dd23cdfad362b1689ffbe02aadee1ad52884369"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3ForceTest.cpp",
+      "bytes": 13577,
+      "sha256": "31ad16560addd0514f154162d7efc98070d0013d68575015ea2cd51ea78d76a2"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Force.cmake",
+      "bytes": 2333,
+      "sha256": "2d1a7fffe3f2287cdefd53d36ce8e6033248e92d314f78f3ae3eb540fd4768ad"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3EngineContext.h",
+      "bytes": 819,
+      "sha256": "7dd754fb35bf94a933b668f05870d10cede5544f63c590ee602e454b8449ff4c"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeGeometry.F",
+      "bytes": 6731,
+      "sha256": "408482a2b62d1c286a63d82cc74b93956b27305b7b1615fd0058360bdd997fe5"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Kinematics.F",
+      "bytes": 691,
+      "sha256": "768f3e434f1fcee6a8df9a9c9d7277f37b631a0522e2ce358abfaa4619c4d3cf"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Kinematics.h",
+      "bytes": 2050,
+      "sha256": "f4c8100a3abf910a49802bbe14471e2258f7cb9f744c1dcabae69e60b2d466e4"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Kinematics.cpp",
+      "bytes": 3660,
+      "sha256": "3e092871c003124f200a16ab181a74af0b5fcbd296560fafe43c22c07ea0ce90"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3KinematicsTestOracle.h",
+      "bytes": 6492,
+      "sha256": "855c0af93b19140ca1a35786f7f4a38b8a1446963f24f13cc3e6cee532519293"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3StartupTestOracle.h",
+      "bytes": 4409,
+      "sha256": "39b741ee1b75503cd3acd3ca9d818ed376d416506f884cbed4487fdbe152c32c"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/prepare_sources.py",
+      "bytes": 4742,
+      "sha256": "3e9318257a91db97881eeb08fccf730018145e5adefebe7274171484083b4e65"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/verify_sources.py",
+      "bytes": 5662,
+      "sha256": "67aa47b575fea7ba31558ad4550cdc71323f8471a7e9d220e94b326fe451e482"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/source-manifest.json",
+      "bytes": 28358,
+      "sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f"
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
+      "sha256": "0ba587bc3e37cfccac919e4b55856e18d72234935451978a2509b31cdf18c8f5",
+      "bytes": 1675
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
+      "sha256": "bf2bb29c16fe2c11f1c85b399a95ac4997599997b055a093211102a4e7cbcb31",
+      "bytes": 1685
+    },
+    {
+      "path": "lib_src/elements/ShellReferencePlacement.h",
+      "bytes": 970,
+      "sha256": "059cc0c9d3114e253d545cb45480263540a6fd82c7b77a880e1536af233f0307"
+    },
+    {
+      "path": "lib_src/elements/ShellPlacementCoefficients.h",
+      "bytes": 1988,
+      "sha256": "e7497ac1d49fe97aaeab400f2efe071dfde93c7e59d68ec630eb16a7db406ce4"
+    }
+  ],
+  "donor_routines": [
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "bytes": 6618,
+      "sha256": "35d43e70c21fc830659ae2f778ce0efefa9308bd71d2bd35bf27552e3e4ae046",
+      "git_blob_sha1": "ea36b962b077c40bc8c947058447b75c5e10d631",
+      "source": "engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "ranges": [
+        {
+          "routine": "C3COEF3",
+          "first_line": 30,
+          "last_line": 174
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3stra3.F",
+      "bytes": 6140,
+      "sha256": "89fa371f45da2f80efd9281f979f112353f4dbd4f3835569365f7cfe4e16fbe4",
+      "git_blob_sha1": "15e35c9f2f05d16e9c8ea6b5c1311c9f564551f3",
+      "source": "engine/source/elements/sh3n/coque3n/c3stra3.F",
+      "ranges": [
+        {
+          "routine": "C3STRA3",
+          "first_line": 30,
+          "last_line": 161
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "bytes": 11385,
+      "sha256": "a8dfdfad230aec3619854c11665d4d50a7be57a7012f8279109f90b20518f926",
+      "git_blob_sha1": "eb9875148193813fa6731d7b491fb697ce13eb9c",
+      "source": "engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "ranges": [
+        {
+          "routine": "C3DT3",
+          "first_line": 32,
+          "last_line": 309
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3fint3.F",
+      "bytes": 9952,
+      "sha256": "6be7aef2cde7058e73b87f3e41a265e3aefcdc3abd17366e566173513cad0e99",
+      "git_blob_sha1": "28766b6799fca41b4e776f7cf692a63f10cad1f7",
+      "source": "engine/source/elements/sh3n/coque3n/c3fint3.F",
+      "ranges": [
+        {
+          "routine": "C3FINT3",
+          "first_line": 30,
+          "last_line": 117
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3fcum3.F",
+      "bytes": 6021,
+      "sha256": "81fb103f64d079e5df1e4a58f1754098d3340bf4532d6f98bd92f2cf26fb5c7b",
+      "git_blob_sha1": "3998956ba3843278448f07ca89cefcf1e59cadf7",
+      "source": "engine/source/elements/sh3n/coque3n/c3fcum3.F",
+      "ranges": [
+        {
+          "routine": "C3FCUM3",
+          "first_line": 30,
+          "last_line": 135
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3mcum3.F",
+      "bytes": 5726,
+      "sha256": "9ec4b0a7583a52c8083dd5287223cfd371a7e35d90f900574c7b9e9f3b783c47",
+      "git_blob_sha1": "f7552dd3bc776e9fb065dc9051127991ad7faad7",
+      "source": "engine/source/elements/sh3n/coque3n/c3mcum3.F",
+      "ranges": [
+        {
+          "routine": "C3MCUM3",
+          "first_line": 30,
+          "last_line": 78
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "bytes": 30239,
+      "sha256": "32299c6e8ccfbd8c9a50a80296a112ef437311cfd2968661f07e5bb7e6ed604a",
+      "git_blob_sha1": "f672b13d0448f2872d1015d8e4d5f0c41c5c97e2",
+      "source": "engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "ranges": [
+        {
+          "routine": "C3SROTO3",
+          "first_line": 687,
+          "last_line": 749
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3updt3.F",
+      "bytes": 22910,
+      "sha256": "09ef59836fe603b482e01edf1fcdc54eb26f0a0d5b2c0860dd8e60e732e072fd",
+      "git_blob_sha1": "e12bbffec1f4b11c2289b5d1968861ae153c79e2",
+      "source": "engine/source/elements/sh3n/coque3n/c3updt3.F",
+      "ranges": [
+        {
+          "routine": "C3UPDT3 test-only scatter",
+          "first_line": 32,
+          "last_line": 396
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3forc3.F",
+      "bytes": 36434,
+      "sha256": "311455e0ce9c40399f7651b5dbc3937725edd1494753c15b9975e0fcdf842b7f",
+      "git_blob_sha1": "c44556106f3347f455ed6af37cefc820fdbaf922",
+      "source": "engine/source/elements/sh3n/coque3n/c3forc3.F",
+      "ranges": [
+        {
+          "routine": "selected EPSD driver",
+          "first_line": 553,
+          "last_line": 564
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/materials/mat/mat001/sigeps01g.F",
+      "bytes": 9494,
+      "sha256": "087cdff78867e433493f901b8d93ddf4395ffe4ed78f5d0b7025f1df1d030dec",
+      "git_blob_sha1": "551a94e6945ef2c6dfd26fc1529b21675ef58abb",
+      "source": "engine/source/materials/mat/mat001/sigeps01g.F",
+      "ranges": [
+        {
+          "routine": "SIGEPS01G centered branch via shared helper",
+          "first_line": 29,
+          "last_line": 224
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/materials/mat_share/mulawglc.F",
+      "bytes": 25262,
+      "sha256": "e03099d16b22a99d9af716d3c1052c40059caddb508798e503d992feea43c301",
+      "git_blob_sha1": "83a4fbd8167e977c171bd5cef23c10a0bbf012a4",
+      "source": "engine/source/materials/mat_share/mulawglc.F",
+      "ranges": [
+        {
+          "routine": "selected old-work/material driver",
+          "first_line": 156,
+          "last_line": 238
+        },
+        {
+          "routine": "selected LAW1 call",
+          "first_line": 321,
+          "last_line": 330
+        },
+        {
+          "routine": "selected material restore, DM and work",
+          "first_line": 518,
+          "last_line": 583
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "source": "common_source/modules/constant_mod.F",
+      "ranges": [
+        {
+          "routine": "MYREAL8 integer powers and ratios",
+          "first_line": 479,
+          "last_line": 868
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/materials/mat/mat001/hm_read_mat01.F",
+      "bytes": 7311,
+      "sha256": "f1510ebddf4960a6105da5a8898156af6f61aa78165a47a895008227465be746",
+      "git_blob_sha1": "53425863d7d2a464cfddd73929df7ff26851f3bf",
+      "source": "starter/source/materials/mat/mat001/hm_read_mat01.F",
+      "ranges": [
+        {
+          "routine": "shared PM elastic coefficient expressions",
+          "first_line": 116,
+          "last_line": 140
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b",
+      "git_blob_sha1": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a",
+      "source": "starter/source/materials/mat/hm_read_mat.F90",
+      "ranges": [
+        {
+          "routine": "shared PM elastic coefficient expressions",
+          "first_line": 1612,
+          "last_line": 1618
+        }
+      ]
+    }
+  ],
+  "build_registration_revision": {
+    "previous_manifest_sha256": "c992c39c158e040fdbce7f3a56291c497c6a7eb6c9e5b23b73ca2c585bc4025d",
+    "reason": "Add qualified native physical-coefficient admission dependency to resident batch registration; native donor, startup, rates and force arithmetic remain unchanged",
+    "changed_files": [
+      "lib_src/elements/t3/BUILD.bazel",
+      "lib_utest/qualification/t3/source-manifest.json",
+      "lib_utest/qualification/t3/verify_sources.py"
+    ],
+    "previous_input_records": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1721,
+        "sha256": "20b94cce2919572db12894f7c32e986a919f9176c9a867c9cc80bda07bff4f05"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 15356,
+        "sha256": "e7463642e2428de1e0c4ca7f0f4738f07c268c357ff0fc50686435b3f5719628"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "3fc9e4475cabbae6f3eb4b30c4528f4e52ae60216cbfd05b9695805389e019ea"
+      }
+    ],
+    "preceding_revision": {
+      "previous_manifest_sha256": "95ca9995361c4053d8d44b22790ef20222c0c6c2f43026f6526486d230ebc35a",
+      "reason": "Additive tabulated material and resident plasticity build registration with explicit upstream build revision; LAW1 force/history sources, native recipes and tests unchanged",
+      "changed_files": [
+        "lib_src/elements/t3/BUILD.bazel",
+        "lib_src/materials/BUILD.bazel",
+        "lib_utest/qualification/t3/source-manifest.json",
+        "lib_utest/qualification/t3/verify_sources.py"
+      ],
+      "previous_input_records": [
+        {
+          "path": "lib_src/materials/BUILD.bazel",
+          "bytes": 833,
+          "sha256": "8e878071d34ad04f0922df0b865be643fca2c7b8188ba1d7db03259efd4e0b89"
+        },
+        {
+          "path": "lib_src/elements/t3/BUILD.bazel",
+          "bytes": 1471,
+          "sha256": "083d4a2f527847daa1af20496a63da269bad98f37fa1f58028a6e257d79b6e1c"
+        },
+        {
+          "path": "lib_utest/qualification/t3/source-manifest.json",
+          "bytes": 14715,
+          "sha256": "6aa446c4bd7600a3ffd6c9cc0687926b1127a1d6e2bf0c874fbff1c41b2f6301"
+        },
+        {
+          "path": "lib_utest/qualification/t3/verify_sources.py",
+          "bytes": 2001,
+          "sha256": "fcbbd824fc635a164f39d0ca4a1b1697bf80ab1c1f143f5436f854e2bb9d3e88"
+        }
+      ],
+      "preceding_revision": {
+        "previous_manifest_sha256": "c57073c0de93ebbaf0b47651c0be697c8488f89846a360be84faa778aea5c2a2",
+        "reason": "Optional mixed Q4/T3 publication and shared binding registration; point formulas and native tests unchanged",
+        "changed_files": [
+          "lib_src/elements/t3/BUILD.bazel",
+          "lib_utest/qualification/t3/CMakeLists.txt",
+          "lib_utest/qualification/t3/source-manifest.json",
+          "lib_utest/qualification/t3/verify_sources.py"
+        ],
+        "preceding_revision": {
+          "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
+          "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
+          "changed_files": [
+            "lib_utest/qualification/t3/CMakeLists.txt",
+            "lib_utest/qualification/t3/source-manifest.json",
+            "lib_utest/qualification/t3/verify_sources.py"
+          ],
+          "preceding_revision": {
+            "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
+            "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+            "changed_files": [
+              "lib_src/elements/t3/BUILD.bazel",
+              "lib_utest/qualification/t3/CMakeLists.txt",
+              "lib_utest/qualification/t3/source-manifest.json",
+              "lib_utest/qualification/t3/verify_sources.py"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "analytic_material_build_registration": {
+    "previous_manifest_sha256": "91bb1fc756a84854000167f3a2a7671f14ce97f941853ee0edce7b2528ded8d6",
+    "changed_path": "lib_src/materials/BUILD.bazel",
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1139,
+      "sha256": "0db48dcc4cbbf0558aea8996bdb7820b443872388d18f0a9060846ac8d705e64"
+    },
+    "reason": "Register the two analytic LAW44 helper headers in the existing material target; all force donor, arithmetic and test dependencies remain byte-identical.",
+    "implementation_commit": "7906cbb",
+    "force_arithmetic_changed": false
+  },
+  "layered_law1_build_registration": {
+    "previous_manifest_sha256": "696f3b4dcb37b84b0e1237a3b8f1a4e7c19aaa9ca163d315d5156d6a57d5ef3b",
+    "changed_path": "lib_src/materials/BUILD.bazel",
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1217,
+      "sha256": "949967c732d285dd1c0123c1631ef549e8a50173cf90a5b23ca79b84dec48039"
+    },
+    "reason": "Register the distinct elastic SIGEPS01C point target; existing LAW1 global and T3 force donor, arithmetic and tests remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "layered_law1_force_build_registration": {
+    "previous_manifest_sha256": "19aef934829c7434cb8eb00b71e91c5cf05ee2d49d09f20d9dfacf03fce5c623",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16039,
+        "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
+      }
+    ],
+    "reason": "Add separate NIP3 LAW1 force target; existing T3 startup/global force/native arithmetic unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_build_registration": {
+    "previous_manifest_sha256": "696f3b4dcb37b84b0e1237a3b8f1a4e7c19aaa9ca163d315d5156d6a57d5ef3b",
+    "previous_input_records": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16039,
+        "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
+      }
+    ],
+    "reason": "Register vehicle startup index and retained-scope accounting dependencies; native donor, startup/rates/force arithmetic and original test sources remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_merge_registration": {
+    "previous_manifest_sha256": "f14e8d4fe88898001536f86607b850e4f4a78068536f7539b2b720322bbc5a7d",
+    "vehicle_capacity_author_commit": "ec54a2f7fb046e9a52f23320e9fa3eaf471f7a77",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2031,
+        "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16551,
+        "sha256": "dabe887f9885f4b9d77ebe6b054cf3c2d7d504a1a7d642c7cadf9cbd7ebd21bf"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "fd9647fd6989c97937c86d6d3b740279ef4a86997b08dd5735498d3705711305"
+      }
+    ],
+    "reason": "Compose vehicle startup registrations with the independently qualified layered LAW1 force registrations; donor and force arithmetic remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "mixed_layered_resident_build_registration": {
+    "previous_manifest_sha256": "204b1a4eee63c90be4418cfefda782e039c9532932f226f22502c09e16b0112c",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2143,
+        "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 17235,
+        "sha256": "fcf394bb8ba495a657db3d6ff97d6a75661f2cbb3c01340ff79b7ddb0572508f"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "7b3998edece90b7ec8c479082050c24a43a48d2714988cd67797862c7e298e41"
+      }
+    ],
+    "reason": "Register explicit mixed resident dispatch/readback; original T3 startup, integrated force and donor arithmetic remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "mixed_layered_resident_merge_registration": {
+    "previous_manifest_sha256": "3b3b7c329194e388f2b0a5dd8e7e6173ee58f4745d9f1b3e97769742cf5cdfdf",
+    "author_commit": "0912f04cc88f11e8e4634d0bb83bdfe7b02e6291",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2143,
+        "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 17775,
+        "sha256": "15eabcb6d869a4c34cd2cee4f78734243aae7e7bde7515b53f8aa0e533c619d1"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "ce41b3e895f733ca35e213ac14e0680aa762398c619f4e2991b9fa791372a240"
+      }
+    ],
+    "reason": "Compose mixed resident registration with the independently qualified vehicle and layered LAW1 registrations; native donor, integrated startup and force arithmetic remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "accepted_failure_force_extension": {
+    "scope": "Explicit local NIP3 constant-D1 family value operation; same family core and legacy active1 APIs retained. OFF0 native history/stiffness/force gates do not admit resident/contact/source runtime.",
+    "previous_manifest_sha256": "0c6e97a86f6aa785ffc9c47dd74c56c760d37725484112f2692112d4f563df54",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/T3History.h",
+        "bytes": 2774,
+        "sha256": "c8d180a12a7357c7ac43f0d8fdc40914eb6273e378ab5fa4749b8fef270faff8"
+      },
+      {
+        "path": "lib_src/elements/t3/T3HistoryData.h",
+        "bytes": 1508,
+        "sha256": "da1a8ae42be61d8cee797506d2fdd4c06f7723547bd88e533d4976c332e80dde"
+      },
+      {
+        "path": "lib_src/elements/t3/T3StiffnessDiagnostics.h",
+        "bytes": 1608,
+        "sha256": "243feb418ae0d8a3e8f8f5f88e142d8534a48f4b075399b438c87574f4fd42fc"
+      },
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2210,
+        "sha256": "5ef040a5deb6024f761cbeabcbfe1c22e7958b40ed499ed8fc81aa29979dc690"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 18984,
+        "sha256": "7e9edf0fa0f859161f5f909e1dbbe21644b86a88fd04900716d1f0ae818f3f30"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "0b647f952d652a2d917a35f287de4a603ba0fce390aa210d1fed1a53519545ec"
+      }
+    ],
+    "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
+  },
+  "resident_constant_failure_registration": {
+    "scope": "Register complete-family constant-failure resident arena and readback; force arithmetic and donor files unchanged.",
+    "previous_manifest_sha256": "d816fac162d279450ecefed1947070f914e54a7ae9eb6ebf3939d2cc769bf96c",
+    "previous_file_identities": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2403,
+        "sha256": "94d3c1a69afe6684c0bddf896efe3be15917870d64f22277726dad478762d918"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 19477,
+        "sha256": "6b302f66b9a4aa00fcdc022612d91eba40c5ab156d516ad698c51a70dbf33718"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "3f3753eebb26ba0c70e2057e633ec24c4f43ba0fc1827296b85a27736ef55e59"
+      }
+    ],
+    "review": "Independent resident storage/transaction/readback review found no blocker after deleting raw arena owner copying; actual resident CUDA execution remains the owning qualification."
+  },
+  "glass_and_failure_build_registration": "Main 6083b01 registers optional failure batches and glass force headers; only BUILD metadata and its startup manifest identity change. Native donor and legacy T3 force arithmetic are unchanged.",
+  "native_reference_placement_scope": "Centered family coefficients now reuse typed placement helpers with unchanged operations. Explicit nonzero section/coefficient value qualification is owned by shell_reference_placement; live reference/batch/source placement admission remains separate.",
+  "resident_tab1_build_registration": {
+    "scope": "Register the qualified TAB1 adapter as an explicit resident batch dependency; native and historical pins unchanged."
+  },
+  "law44_sound_speed_build_registration": {
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1347,
+      "sha256": "10e5728b4dd84d4c4f7a8fc71ed56df7010cee5bdc845e3ae600280eedbddb67"
+    },
+    "reason": "ae3ba80 adds only the law44_membrane owning target; no old material target or native source changed."
+  },
+  "one_point_law44_registration": {
+    "previous_manifest_sha256": "34d54e89ce93519dac1178b315aa517627cc9eecff59d97799c606723a36aec8",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 1477,
+        "sha256": "96c5c67678e83b247d1c13413ad67d19aa04440e002687e249d554ede8049d6b"
+      },
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2824,
+        "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 21078,
+        "sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "58c5ac6ec9059c8f6d72d49436a3f9f51ab9a8bc4bdcb0db6c0e552bcfb0a25f"
+      }
+    ],
+    "reason": "Separate true NPG1/NPTT1/GS0 LAW44 force target and shared point/scope ownership; legacy T3 integrated and NIP3 arithmetic unchanged."
+  },
+  "one_point_resident_registration": {
+    "previous_build_record": {
+      "path": "lib_src/elements/t3/BUILD.bazel",
+      "bytes": 3199,
+      "sha256": "a4fbba8b90a569a4389eb5841f04e5b709d97db3cc9b91a971b7203e52eb1e19"
+    },
+    "scope": "Add optional T3 one-point resident dispatch/readback ownership; original force and native donor records unchanged.",
+    "previous_startup_record": {
+      "path": "lib_utest/qualification/t3/source-manifest.json",
+      "bytes": 21577,
+      "sha256": "987cef2ba3a7858c4231fabfc25913bf3df9d6825340c60d23eceadf0306ab61"
+    },
+    "previous_startup_verifier": {
+      "path": "lib_utest/qualification/t3/verify_sources.py",
+      "bytes": 2001,
+      "sha256": "d087e2642bb5441eb24b7cb99af609c102cd59a59eca6040fd7098480e3b7356"
+    }
+  },
+  "qbat_formulation_resident_registration": {
+    "previous_manifest_sha256": "3fc5c3c697564df90529add83e761b89343dd81b794b827afe9c14e08c6ba289",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3278,
+        "sha256": "bb698c0f1ca36bdede32f8c209d9a1a9f2f3d5c543fc4764728386a19a607ec6"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 21942,
+        "sha256": "0d3a2c6e16340b32c885253c1b027bfd91e753283e9f9728db548031a0e20c89"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "d639371ca1451bf3cc770559c4450774107b4bc40a1e7f524c46fd5819ccea43"
+      }
+    ],
+    "scope": "Add complete formulation participant scope dependency and retain its reviewed startup manifest chain. Native donor and force arithmetic unchanged."
+  },
+  "solid_law36_value_registration": {
+    "previous_manifest_sha256": "a2f22fbc32ecc62e23667c6629cc3b896e27486c8b812b624fcaa15986fa1aeb",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 1722,
+        "sha256": "fbade62c5f13c2e01b6bbaa6da864fd5fcb64a0337a4553b67b0b88528a1bbae"
+      }
+    ],
+    "scope": "Register isolated solid LAW36 point and neutral VINTER helper; old shell public APIs and interpolation expressions unchanged."
+  },
+  "mapped_qt_resident_registration": {
+    "scope": "Host batch-value ownership and explicit mapped Q/T physical owner targets. No native donor, material or force arithmetic changes.",
+    "previous_manifest_sha256": "89f48df30c555da674e2377eb3b7d759fb1d7466f7167f43928642327eaaf157",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3332,
+        "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 22454,
+        "sha256": "c23336f714a7b23c8bd5bb2ae8caa3dc240e56c60b62976e5e34bd6fadd4b523"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "9763cd4c5d1bdb3cc292f47e75fe42c9ca7cbf160f0dee1eaceccb2c5b8915f3"
+      }
+    ]
+  },
+  "prepared_activity_readback_registration": {
+    "scope": "Add the shared host readback preflight dependency for actual owner/token prepared parent activity. No donor, startup, force arithmetic or existing accepted readback changes.",
+    "previous_manifest_sha256": "ea4233013ec48246d190fe2c79d7f4c56f860baaf87b2bec1d5c417c49a0ec32",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 4780,
+        "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 22951,
+        "sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "fd173766ce9f14b33baa275489eee2ea6cef8d70141cb341500d833a6b3ee07e"
+      }
+    ]
+  },
+  "mapped_t3_gather_registration": {
+    "scope": "Register shared bounded mapped QEPH/T3 gather and T3 optional arena; no native force/material/startup equations changed. Direct mapped T3 fixture now constructs its required optional tail.",
+    "previous_manifest_sha256": "e1e0d997d5021dc61b83b426df2f76103f5d8b5436783d9f79219bb64a732064",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 4879,
+        "sha256": "4154a28ff8d0461655aa719c2d6860b405df72d9ef3f69f4621318c8fbae096d"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 23500,
+        "sha256": "082477e94696bda6ba87755a2bbadfe25b915142e1cb52b14961ebc80888c59a"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "09cc234e2a7ff41f32cadcf4540012dfb4baeaa53775be492a0addcbb2b64fa4"
+      }
+    ]
+  },
+  "mapped_t3_observer_registration": {
+    "scope": "Neutral mapped shell observer helper extraction and optional T3 observation tail; old equation and frozen serial oracle bodies unchanged. Prior records retained.",
+    "previous_manifest_sha256": "c7bf8d2a8140206c641ac4ac9a8a8f98904fc7492b9d6233ce567ba7965bef96",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 5078,
+        "sha256": "e0a32ef2ea3a1acf409c5fc167734cc672678210761b8190775a38125d3a2370"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 24054,
+        "sha256": "2c86b84995c5998222be26578b8a88d6e682c276928416b30b59e103f9f9745e"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "e994e0a876aeb48d33c03eb02c239ae8b74a01a78adc3955512f02271ad8fe42"
+      }
+    ]
+  },
+  "law90_additive_build_metadata_registration": {
+    "scope": "Inherited 4c48553 additive vinter2_value BUILD target; no existing material or force expression changes.",
+    "previous_manifest_sha256": "aa6b5bd32778656ece74bc49eab9e09dff0b8670a7b9cc2a7ea03b3fd9150b2d",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 2119,
+        "sha256": "dbb9431634c768813db181b4db6504d3017e001e7ddfc3fb1604a0e159d352dc"
+      }
+    ]
+  },
+  "selected_solid_caller_build_registration": {
+    "commit": "6dd815d143ac8a620166343552ccf7590d969744",
+    "scope": "6dd815d adds the solid_caller_values dependency to law36 and its SolidCallerValues.h target. This reviewed BUILD registration does not change T3 material, force, startup or native source bodies.",
+    "previous_manifest_sha256": "9103870dd9494cfbf7438ab5d84825d4e68a011dcd8d0362b84f81f3c7b8f92a",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 2242,
+        "sha256": "83cc785eac867f94e56430f1c335afbce6a835ce7cfec97e270dd916a01d5f4c"
+      }
+    ],
+    "active_verification": "resident_shell_failure CMake -> t3/T3Force.cmake -> verify_force_sources.py -> startup/native verifiers. Historical batch/mixed source maps are not executed by that chain and remain unchanged."
+  },
+  "global_law1_profile_extension": {
+    "qualified_source": "8c182589e7d15fb364bf476301921ad526499f1b",
+    "legacy_body_proof": "lib_utest/qualification/shell_global_law1/source-proof.json",
+    "proof_sha256": "a9aadde0ca45d61cfc90a1b584f42df4721b5dbeab4ae52a43ee34ac1bcdd245",
+    "changed_wrappers": [
+      "lib_src/elements/t3/T3Force.h"
+    ],
+    "scope": "Old EvaluateForce retains reference coefficient thickness. New explicit ITHK0/1 value profile; raw numerical leaves and native donors unchanged. T3 accepted thickness is used directly without the QEPH coefficient floor."
+  },
+  "global_law1_execution_extension": {
+    "scope": "Explicit per-parent global LAW1 dispatch/identity and native initial-thickness STI profile. Legacy/native mathematical leaves retained; owning mixed publication and native regressions required.",
+    "prior_active_records": [
+      {
+        "path": "lib_src/elements/t3/T3Force.h",
+        "bytes": 4125,
+        "sha256": "092ef048af5e64eb1e661c493bf3d96222b441d3e7d77d905f28a15033dd3ad3"
+      },
+      {
+        "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+        "bytes": 1350,
+        "sha256": "9de51cbad7fcb60758e91e623030ed427369366ce6739825d037efd21d3813c1",
+        "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
+      }
+    ],
+    "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
+  }
+}

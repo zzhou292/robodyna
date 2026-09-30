@@ -1,0 +1,74 @@
+{
+  "baseline": "1c8cf7e73a475075a3665c800779b8daf7a0be60",
+  "frozen": [
+    {
+      "name": "Candidate.cu",
+      "bytes": 2906,
+      "sha256": "6a3d7190b3a159ba267f20db479577d0fed725a0acd3b7bdd9a5e94af862c546"
+    },
+    {
+      "name": "Measurement.h",
+      "bytes": 2451,
+      "sha256": "ecce9e2eb5193e7215d7a59e6637fe1bd36d53a28d19f43709be444c73c832fd"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "lib_src/elements/type13/resident/Measure.h",
+      "bytes": 3067,
+      "sha256": "a9a1b0269bf63f8b2967dd69461e764d231089fc335fd2a613d829a89a3fee37"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.cu",
+      "bytes": 888,
+      "sha256": "724a50404b4764c36bf4c20fe03ca758c91e52a4a8332a36d91105a9be2da78c"
+    },
+    {
+      "path": "lib_src/elements/ConnectorMeasurement.h",
+      "bytes": 2056,
+      "sha256": "b54583bdd1f1e2f172905c2e241191a3fe56d994c18eced6cda93b27982deb6b"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.h",
+      "bytes": 1656,
+      "sha256": "559d7c27bf3dd2f26409c40f82338d08485e1863d12881c020ed3f8d8bb7e19c"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Arena.cpp",
+      "bytes": 2235,
+      "sha256": "54439fdc5cf4cb126340182960f5005afff0f40d0ceda47777b1c2ac8413535c"
+    }
+  ],
+  "production": [
+    {
+      "path": "lib_src/elements/type13/resident/Candidate.cu",
+      "bytes": 2446,
+      "sha256": "9823042a325b9b5092864a81bf8e1ae06a1793728a4c81ae1cfc6003244b0032"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/Measurement.h",
+      "bytes": 2736,
+      "sha256": "8f977aa745f1ec7dfedc4f01e030171d0a6adcda2749d34cb46350988591a4b6"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/measurement/Tile.h",
+      "bytes": 582,
+      "sha256": "3800f1156c5444408a3a9dc6af8c89ada6f4b31ac8ab9e3972a09bac95af3232"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/measurement/Read.h",
+      "bytes": 972,
+      "sha256": "23768235f21635b282cb877c3abbfb219e719d436470d9c0042037b11f709547"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/measurement/Finalize.cuh",
+      "bytes": 1926,
+      "sha256": "e11f3ee3ad28242da220f2f32569ae3f77cd266232258323af444c233116e1ef"
+    },
+    {
+      "path": "lib_src/elements/type13/resident/BUILD.bazel",
+      "bytes": 1966,
+      "sha256": "ddb81331016d6be21578b24748238f3d76a2b2be2c1f99c1ebf732603f0d99f8"
+    }
+  ]
+}

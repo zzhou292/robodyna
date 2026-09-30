@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLExtendedSolidModel LANGUAGES CXX)
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+option(TL_EXTENDED_SOLID_MODEL_CUDA "Root-only legacy resident initializer guard" OFF)
+if(TL_EXTENDED_SOLID_MODEL_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${TL_ROOT}/lib_src/solvers" owner)
+  set(TL_SOLID_BATCH_CUDA ON)
+endif()
+add_subdirectory("${TL_ROOT}/lib_src/elements/solids/resident" resident)
+add_executable(extended_solid_model_host ValueTest.cpp IdentityTest.cpp BudgetTest.cpp ResidentGuardTest.cpp)
+target_link_libraries(extended_solid_model_host PRIVATE tl_solid_batch_values GTest::gtest_main)
+target_compile_options(extended_solid_model_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME extended_solid_model_host COMMAND extended_solid_model_host)
+add_executable(extended_solid_model_legacy ../solid_model/HostTest.cpp)
+target_link_libraries(extended_solid_model_legacy PRIVATE tl_solid_model GTest::gtest_main)
+target_compile_options(extended_solid_model_legacy PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME extended_solid_model_legacy COMMAND extended_solid_model_legacy)
+set_tests_properties(extended_solid_model_host extended_solid_model_legacy
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+if(TL_EXTENDED_SOLID_MODEL_CUDA)
+  add_executable(extended_solid_model_cuda ResidentGuardTest.cu)
+  target_link_libraries(extended_solid_model_cuda PRIVATE tl_solid_batch GTest::gtest_main)
+  target_compile_features(extended_solid_model_cuda PRIVATE cuda_std_17)
+  target_compile_options(extended_solid_model_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME extended_solid_model_cuda COMMAND extended_solid_model_cuda)
+  set_tests_properties(extended_solid_model_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()
+option(TL_EXTENDED_SOLID_MODEL_ORIGINAL "Root-only complete authenticated4063 source gate" OFF)
+set(REAR18_SOURCE_FIXTURE "" CACHE PATH "Authenticated rear306 fixture directory")
+set(TL_LAW90_RADIATOR_FIXTURE "" CACHE PATH "Authenticated radiator1345 fixture directory")
+if(TL_EXTENDED_SOLID_MODEL_ORIGINAL)
+  if(NOT REAR18_SOURCE_FIXTURE OR NOT TL_LAW90_RADIATOR_FIXTURE)
+    message(FATAL_ERROR "Original gate requires both authenticated fixture directories")
+  endif()
+  set(fixture "${CMAKE_CURRENT_BINARY_DIR}/fixture")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/../solid18_law44_reference/prepare_fixture.py"
+    --fixture "${REAR18_SOURCE_FIXTURE}" --output "${fixture}/RearOriginalFixture.h" RESULT_VARIABLE rear_status)
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/../law90_solid18_reference/source_fixture/prepare_fixture.py"
+    --input "${TL_LAW90_RADIATOR_FIXTURE}" --output "${fixture}/RadiatorSourceFixture.h" RESULT_VARIABLE foam_status)
+  if(NOT rear_status EQUAL 0 OR NOT foam_status EQUAL 0)
+    message(FATAL_ERROR "Original fixture authentication failed")
+  endif()
+  add_executable(extended_solid_model_original OriginalTest.cpp)
+  target_include_directories(extended_solid_model_original PRIVATE "${fixture}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../solid18_law44_reference")
+  target_link_libraries(extended_solid_model_original PRIVATE tl_solid_model GTest::gtest_main)
+  target_compile_options(extended_solid_model_original PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME extended_solid_model_original COMMAND extended_solid_model_original)
+  set_tests_properties(extended_solid_model_original PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180)
+endif()
+
+add_test(NAME extended_solid_model_law44_identity COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_SOURCE_DIR}/../solid_law44_point/verify_source.py")
+add_test(NAME extended_solid_model_law90_identity COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_SOURCE_DIR}/../law90_preparation/verify_source.py")
+set_tests_properties(extended_solid_model_law44_identity extended_solid_model_law90_identity
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

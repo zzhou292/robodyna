@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "law44_analytic_preparation_check",
+    srcs = ["AnalyticPreparationTest.cpp", "AnalyticTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/sections:shell_layered_j2", "@googletest//:gtest_main"],
+)

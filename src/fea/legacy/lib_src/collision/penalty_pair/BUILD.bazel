@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "values",
+    hdrs = ["Types.h", "Endpoint.h", "Values.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lib_src/collision/weighted_surface:mapping",
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/collision:surface_jacobian_majorant",
+    ],
+)

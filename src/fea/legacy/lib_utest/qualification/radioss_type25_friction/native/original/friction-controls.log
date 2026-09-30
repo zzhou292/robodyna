@@ -1,0 +1,46 @@
+bounded: {"command": ["env", "OPENRADIOSS_PATH=/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss", "RAD_CFG_PATH=/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/hm_cfg_files", "RAD_H3D_PATH=/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/extlib/h3d/lib/linux64", "LD_LIBRARY_PATH=/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/extlib/hm_reader/linux64", "OMP_STACKSIZE=400m", "OMP_NUM_THREADS=4", "/usr/bin/gdb", "--batch", "-x", "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/tangential-mode-probe-1/inspect.gdb", "--args", "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/openradioss-alignment-2026-09-24/runtime/OpenRadioss/exec/engine_linux64_gf", "-i", "case_0001.rad", "-nt", "4"], "cpus": [0, 1, 2, 3], "gpu": null}
+Breakpoint 1 at 0x1182650
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+************************************************************************
+**                                                                    **
+**                                                                    **
+**                         OpenRadioss Engine                         **
+**                                                                    **
+**            Non-linear Finite Element Analysis Software             **
+**                                                                    **
+**                                                                    **
+**                                                                    **
+**                    Linux 64 bits, GNU compiler                     **
+**                      Double Precision Version                      **
+**                                                                    **
+**                                                                    **
+**                                                                    **
+************************************************************************
+** OpenRadioss Software                                               **
+** COPYRIGHT (C) 2026 Siemens                                         **
+** Licensed under GNU Affero General Public License.                  **
+** See License file.                                                  **
+************************************************************************
+ 
+ ROOT: case  RESTART: 0001
+ NUMBER OF HMPP PROCESSES     4
+ 24/09/2026
+ NC=       0 T= 0.0000E+00 DT= 1.7196E-07 ERR=  0.0% DM/M= 0.0000E+00
+[Switching to Thread 0x7f0a91d9f640 (LWP 1583923)]
+
+Thread 4 "engine_linux64_" hit Breakpoint 1, 0x0000000001182650 in i25for3_ ()
+RD_ARG JLT=128
+RD_ARG MFROT=2
+RD_ARG IFQ=10
+RD_ARG IORTHFRIC=0
+RD_ARG INTTH=0
+RD_ARG ILEV=1
+RD_ARG INTEREFRIC=0
+RD_ARG ALPHA0=1
+RD_ARG VISC=0.05
+RD_ARG VISCF=0
+RD_ARG VISCFFRIC=0
+RD_ARG FRICC=0.1
+RD_COMMON INCONV=1 TT=1.71962e-07 DT1=1.71962e-07 DT2=0.000686769 DT12=8.5981e-08
+[Inferior 1 (process 1583917) killed]

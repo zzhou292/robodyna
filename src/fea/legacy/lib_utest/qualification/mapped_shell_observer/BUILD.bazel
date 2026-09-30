@@ -1,0 +1,6 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "truth",
+    hdrs = ["Truth.h"],
+    visibility = ["//lib_utest/qualification/qeph_observer_reduction:__pkg__", "//lib_utest/qualification/t3_observer_reduction:__pkg__"],
+)

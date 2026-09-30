@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "parameters",
+    hdrs = ["Types.h", "Parameters.h"],
+    deps = ["//lib_src/materials/law42:mechanical_slots"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "force",
+    hdrs = ["ForceTypes.h", "Damping.h", "Projection.h", "FaceSort.h", "Penalty.h", "CenterForce.h", "CornerForce.h", "Force.h"],
+    deps = [":parameters", "//lib_src/elements/solid_common:brick_frame"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "working_units",
+    hdrs = ["UnitTypes.h", "NativeParameters.h", "UnitPrepare.h", "UnitResponse.h"],
+    deps = [":force", "//lib_src/collision:radioss_type25_coefficients"],
+    visibility = ["//visibility:public"],
+)

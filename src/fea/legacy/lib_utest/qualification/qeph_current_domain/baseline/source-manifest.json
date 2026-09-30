@@ -1,0 +1,908 @@
+{
+  "schema": "tl.qeph-prescribed-law1-port.v3",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "one-cell IREP0 QEPH startup, prescribed geometry/rates and centered LAW1 force/history host/device qualification; no owner, batch or dynamics",
+  "native_reference_checkpoint": "qeph-q2-qualified-reference-1",
+  "native_reference_tl_commit": "560b0ca",
+  "native_source_manifest_sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be",
+  "donor_routines": [
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coqueba/cneveci.F",
+      "sha256": "3ef878d85af903ee6feab44274730e2f087c0fe6772d0f42074e1f31d363902d",
+      "git_blob_sha1": "a25c03ff8e2caa17a7eb6d49fa2002ca4845b993",
+      "ranges": [
+        {
+          "routine": "CNEVECI",
+          "first_line": 33,
+          "last_line": 94
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/clskew.F",
+      "sha256": "bcc967ccdf7853a684fce394c2705c3e83c0ef6718e75ee35955060b313d4944",
+      "git_blob_sha1": "816fe246ca805203da9f45851a5f67cff95a8713",
+      "ranges": [
+        {
+          "routine": "CLSKEW3",
+          "first_line": 32,
+          "last_line": 109
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cderii.F",
+      "sha256": "a89895b580ffcc5ac109295b23d76aaa76b959eef8ef924efd8f8f0e2e09620a",
+      "git_blob_sha1": "fd8098eb61e7ecf968769807af18dbc6e903a62e",
+      "ranges": [
+        {
+          "routine": "CDERII",
+          "first_line": 31,
+          "last_line": 96
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cinmas.F",
+      "sha256": "06a32031e4e0c9cdac68605a60d9fe4ef427d1548eac52499f6bef9d9912fe5e",
+      "git_blob_sha1": "faaf1c988e0be143bbe572e4d05da42298bc262f",
+      "ranges": [
+        {
+          "first_line": 851,
+          "last_line": 874
+        },
+        {
+          "first_line": 925,
+          "last_line": 932
+        },
+        {
+          "first_line": 1381,
+          "last_line": 1412
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czcorc.F",
+      "sha256": "998536764ac38021cd658f4d07d2688b048db30d0ee1fcf984e6172a835d4c97",
+      "git_blob_sha1": "27249296cdb91ef710d2fd6a1b521b9cc1e4a7a9",
+      "ranges": [
+        {
+          "routine": "CZCORC1",
+          "first_line": 38,
+          "last_line": 614
+        },
+        {
+          "routine": "CZCORP5X",
+          "first_line": 1656,
+          "last_line": 1935
+        },
+        {
+          "routine": "A3INVDP",
+          "first_line": 621,
+          "last_line": 650
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cdkcoor3.F",
+      "sha256": "6be02f7e07db6c6f024fde19c8097068bf93959b61daff3d84661c65aea183ed",
+      "git_blob_sha1": "22daefba0d4b550ecd66d65f30fb0ccf24bf79dd",
+      "ranges": [
+        {
+          "routine": "CLSKEW3",
+          "first_line": 304,
+          "last_line": 400
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czcorp5.F",
+      "sha256": "f0f30f0b3e6c01513a90412b6865c28acd31a31dbc60d2a68410cfc5971683b0",
+      "git_blob_sha1": "de4af4ae46add600a3f268eb23af1a5fa79e7f53",
+      "ranges": [
+        {
+          "routine": "CZCORP5",
+          "first_line": 33,
+          "last_line": 397
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czdef.F",
+      "sha256": "f9ba7c81092818d002b3e042741af123c6bb658bced6777178b06b2f02f9de0c",
+      "git_blob_sha1": "f96518edddcb40421b84a16274efe2483881f034",
+      "ranges": [
+        {
+          "routine": "CZDEF",
+          "first_line": 30,
+          "last_line": 203
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coque/cortdir3.F",
+      "sha256": "c295e484a265e093ff7122a038418428742a4936ab2fcb164db7312e5b74d4e5",
+      "git_blob_sha1": "ff9c4d37fbe26dd06d09f72678136a030a54d2bc",
+      "ranges": [
+        {
+          "routine": "CORTDIR3",
+          "first_line": 42,
+          "last_line": 445
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "bytes": 41674,
+      "sha256": "9b8d5c29258b80366179baf1e70b631117fa056c7cd1a2503ff98e47d8f978e5",
+      "git_blob_sha1": "9fbff29d0c49a65ee9bc65b702acf04ca01d103a",
+      "ranges": [
+        {
+          "routine": "CNCOEF3B",
+          "first_line": 30,
+          "last_line": 287
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
+      "bytes": 12054,
+      "sha256": "4ae20594cb1868ec0ef6d9ccb2aed816257862582ce292395e97cb767dfea404",
+      "git_blob_sha1": "652c459ee3cf93bdb4983e748ad5d2fd6b5ed672",
+      "ranges": [
+        {
+          "routine": "CNDT3",
+          "first_line": 35,
+          "last_line": 321
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czfintce.F",
+      "bytes": 7612,
+      "sha256": "0434b6be6465bda892256a32d99e673d87f6db0bb91efe689aa0df98cd95bf02",
+      "git_blob_sha1": "2607bf862d14d0d8445ae4f9585299fdfe0508f1",
+      "ranges": [
+        {
+          "routine": "CZFINTCE",
+          "first_line": 30,
+          "last_line": 104
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czfintn.F",
+      "bytes": 90687,
+      "sha256": "3656b0db9c04f1b5b757e00be05b82ec1e49ee82ace323e5a6751c12100e0988",
+      "git_blob_sha1": "83f9c2f3e3225f155b1a87d829b0e9067e73c50b",
+      "ranges": [
+        {
+          "routine": "CZFINTN1",
+          "first_line": 30,
+          "last_line": 494
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czproj.F",
+      "bytes": 58607,
+      "sha256": "4427b64bae7965a8f52d7a44806f627fdab5c108913db5ae02b9addde6f43820",
+      "git_blob_sha1": "35b41be9faa075ad34d7bdc13f23aeaf178b1c6b",
+      "ranges": [
+        {
+          "routine": "CZPROJN",
+          "first_line": 881,
+          "last_line": 1472
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czstra3.F",
+      "bytes": 5759,
+      "sha256": "c0e63e855ada8ea6ba02ec48ef4469133c630391c0423e22926cf87c5eb15409",
+      "git_blob_sha1": "2059ca57c36e1818d3976146a34dabfb70a1ff84",
+      "ranges": [
+        {
+          "routine": "CZSTRA3",
+          "first_line": 30,
+          "last_line": 144
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/materials/mat/mat001/sigeps01g.F",
+      "bytes": 9494,
+      "sha256": "087cdff78867e433493f901b8d93ddf4395ffe4ed78f5d0b7025f1df1d030dec",
+      "git_blob_sha1": "551a94e6945ef2c6dfd26fc1529b21675ef58abb",
+      "ranges": [
+        {
+          "routine": "SIGEPS01G",
+          "first_line": 29,
+          "last_line": 224
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "ranges": [
+        {
+          "first_line": 617,
+          "last_line": 742
+        },
+        {
+          "first_line": 860,
+          "last_line": 868
+        },
+        {
+          "first_line": 942,
+          "last_line": 942
+        },
+        {
+          "first_line": 977,
+          "last_line": 977
+        }
+      ]
+    }
+  ],
+  "ported_files": [
+    {
+      "path": "lib_src/elements/qeph/QephData.h",
+      "bytes": 1915,
+      "sha256": "789c0655cb498d80a3ec92cc39c491b5fc648a48b09fe65aedc901f95c580031"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStartupFrame.h",
+      "bytes": 4590,
+      "sha256": "36b65c6c570e7314fda752f07b1aa48c5543aff4cf6f043d4ea476ff23cbada4"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStartup.h",
+      "bytes": 4269,
+      "sha256": "da4cd3435755e73ab466996a7f24d39670c9aa1589fed65417d3bcba5ccf1957"
+    },
+    {
+      "path": "lib_src/elements/qeph/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephKinematicsData.h",
+      "bytes": 2075,
+      "sha256": "1e1342d9dd3767f8613124436c5c2fe706ef2aaa1285a44a7bef63a9c55ee018"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephGeometryWork.h",
+      "bytes": 1648,
+      "sha256": "ad56e80b373c608465db8c82fc5f4c8298f876b6db9eb4658f441a0d8cef83cf"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephCurrentFrame.h",
+      "bytes": 4630,
+      "sha256": "f5767f7744bf4bb055f2150142e3c03a15e1a9a005e02c046ed237a3d1f80e6e"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephVelocityCorrection.h",
+      "bytes": 2242,
+      "sha256": "f09752adf0b4086fa67a5c6fd4bc2ef481632a5d5eb7db79d1fc2b8a35166eef"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephProjectionInverse.h",
+      "bytes": 1095,
+      "sha256": "608a5890d52ccb79ae6196bfdab6b939b7d0124f2c3b3df8d398b2641acf34b5"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephProjection.h",
+      "bytes": 4675,
+      "sha256": "568878aa2fa3cf406fcf3ec9284728024873e19b1d53d3306e9693fec71443e5"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephRates.h",
+      "bytes": 2228,
+      "sha256": "a36f7af8c4bb42095085e8894a5ce8bb56e38475d0e12f01c02ff12d0b5fa068"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephKinematics.h",
+      "bytes": 5454,
+      "sha256": "83d0d4957f7028dbca8733948e9112ef399de034cd309077e318e4ca96efc663"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephElasticForces.h",
+      "bytes": 1717,
+      "sha256": "1a840c6af8c623d3c6f5e5766254de97a166788bbb8b38aadc0feb5008e66037"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForce.h",
+      "bytes": 5612,
+      "sha256": "7bdfa1ab27fe155d131bb035b9663082b5d291b63c1a567e47056da6810158eb",
+      "prior_sha256": "baa62c03f8575d1fa7d8da62db6716829606e82b6521af575e22e270c4650ede",
+      "prior_bytes": 4529,
+      "followup": "Private resident trial destination; exact original numerical body is reconstructed and checked by qeph_private_trial/verify_sources.py; public staging retained."
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForceData.h",
+      "bytes": 1072,
+      "sha256": "a1ecf7bf9f57044597bff04988fb62f2dc93a299b6bc700c7d3ba552fd6e74f4"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForceProjection.h",
+      "bytes": 3196,
+      "sha256": "482263ba09996dafd20bca44232bcf8130afbfb2cd5e0bbec49bfa0dccc3ff61"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistory.h",
+      "bytes": 3593,
+      "sha256": "f42cbed041570266881a86119809a4cb869d95ebc5fafcec2f023f9976325878"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistoryData.h",
+      "bytes": 2262,
+      "sha256": "17a5dfe9697e6d985cd54fdb888c9222f25c0f893f9e6389bccb44fb9b9ed17a"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephLaw1.h",
+      "bytes": 2661,
+      "sha256": "dc3fd8bf528c87445790e1a5b4c2b754d8370852689029e4c818a75902b2c149"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephMaterial.h",
+      "bytes": 2863,
+      "sha256": "4dac252b7730159a33d9a8cd06baea4a569be911fafc699919eaad9b3011e4c1"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStabilizationForces.h",
+      "bytes": 3574,
+      "sha256": "40787ce0132246bb24bcf6175999cd569027b91ad846726fb4b41d76eafc1cd4"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStabilizationState.h",
+      "bytes": 2537,
+      "sha256": "8d627e55a2a7e28702ce99bf58d189654c22ad2a1887b6f23b2de54cd4f09acb"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
+      "bytes": 2004,
+      "sha256": "663e40efb514fca51ea21d8d66eef5733018258bba29f63729ec3682ece18d5a"
+    },
+    {
+      "path": "lib_src/materials/ShellElasticLaw1.h",
+      "bytes": 3424,
+      "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephLayeredForceCore.h",
+      "sha256": "d0ed04f5724fb98420035f60581a55a28f0661cf9e9e5ba15965d6a1bc3a9c88",
+      "bytes": 5790,
+      "prior_sha256": "268daa778e9aa4ccdc15b8a3807a0798badbf37d98e4f8136d69d90861f13383",
+      "prior_bytes": 5012,
+      "followup": "Private resident trial destination; exact original numerical body is reconstructed and checked by qeph_private_trial/verify_sources.py; public staging retained."
+    },
+    {
+      "path": "lib_src/elements/qeph/QephLayeredJ2Failure.h",
+      "sha256": "a34d38082404514f228506e4897a1cb57b32214871035c9695dc77aada1808bc",
+      "bytes": 1983
+    },
+    {
+      "path": "lib_src/elements/qeph/QephProjectionUnits.h",
+      "sha256": "4783e0b2e59d6ff094d1184bea00fe53cde48b8d866aaffc6812d183fa10c153",
+      "bytes": 4623,
+      "scope": "Explicit immutable working-length packet adapter around unchanged native projection leaf; physical fields remain SI."
+    },
+    {
+      "path": "lib_src/elements/qeph/QephForceProjectionUnits.h",
+      "sha256": "e9b839d4a62ac564f6aa766fee7f675f6852199ca14a3f31ebd9686f992d7887",
+      "bytes": 1960,
+      "scope": "Explicit immutable working-length packet adapter around unchanged native projection leaf; physical fields remain SI."
+    },
+    {
+      "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+      "bytes": 1991,
+      "sha256": "b23e3cf6b44d7a1c95a74bb942815c35bd3404185e4e2d5118b5bba86765a706",
+      "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
+    }
+  ],
+  "shared_and_native_dependencies": [
+    {
+      "path": "lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "lib_src/elements/ReissnerFrame.h",
+      "bytes": 10621,
+      "sha256": "764090dab48e12b3deb732251867c51616ec2f90a222f2a53b79b315a74c0180"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephStartup.F",
+      "bytes": 2343,
+      "sha256": "554528ff1eae15807a354db4cf01f168e69b88b70b20e91d2547c11e12fb908a"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephReference.cpp",
+      "bytes": 5207,
+      "sha256": "d09678dc65879a54cb6db1d0372c3446f2e653cf6fb41676133614dbdd67325f"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephGeometry.cpp",
+      "bytes": 2293,
+      "sha256": "9e7152b1be1b381139246398c4b2e59a2755f6bcad1289e5ce1a47b7fd34df45"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeGeometry.F",
+      "bytes": 6563,
+      "sha256": "6adfaa4d938d8099c56326f2b6984632d8240375d4c783fbced2d89252f634b0"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephBridge.h",
+      "bytes": 1298,
+      "sha256": "1a33971d22771f02b8fb04d2256f20fee8d9689dc980e70c780db78dd3975374"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephReference.h",
+      "bytes": 1241,
+      "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephForceReference.h",
+      "bytes": 1733,
+      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephForceReference.cpp",
+      "bytes": 4505,
+      "sha256": "4535964f160dd514fdd7592bc1a1adcc25265728a2a5cb7fa371e0115e239b4d"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephHistory.h",
+      "bytes": 2008,
+      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephHistory.cpp",
+      "bytes": 2448,
+      "sha256": "e3d5c542d85e4d5b9c44223b101fb88e908f71800c88afecaa1cee0fe3be5616"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeMaterial.F",
+      "bytes": 2999,
+      "sha256": "c8184b50d34abce5785b9392a0907c328bc92b25364ed32700f3857ec53df2c2"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeLaw1.F",
+      "bytes": 3733,
+      "sha256": "cddd8bbea6ebcbd6ed1e701bb153f928090f926eca64a91ca86d0d9e8de0e931"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeStiffness.F",
+      "bytes": 1681,
+      "sha256": "60651474e891231e588115c3a1d97348ab9dddeb5131450630353ec760123c9d"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephNativeHistory.F",
+      "bytes": 1466,
+      "sha256": "5faf3fb45ea763fe7c1d375c7d49d5a805bd4d68b543505be0cd83c08e55b5c6"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephForce.F",
+      "bytes": 3996,
+      "sha256": "026378bc21260d26209ca972de1b196edbf7976455825622b34aa45d17564ed7"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephScatter.F",
+      "bytes": 2124,
+      "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
+      "sha256": "0ba587bc3e37cfccac919e4b55856e18d72234935451978a2509b31cdf18c8f5",
+      "bytes": 1675
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
+      "sha256": "bf2bb29c16fe2c11f1c85b399a95ac4997599997b055a093211102a4e7cbcb31",
+      "bytes": 1685
+    },
+    {
+      "path": "lib_src/elements/ShellReferencePlacement.h",
+      "bytes": 970,
+      "sha256": "059cc0c9d3114e253d545cb45480263540a6fd82c7b77a880e1536af233f0307"
+    },
+    {
+      "path": "lib_src/elements/ShellPlacementCoefficients.h",
+      "bytes": 1988,
+      "sha256": "e7497ac1d49fe97aaeab400f2efe071dfde93c7e59d68ec630eb16a7db406ce4"
+    }
+  ],
+  "tests": [
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupFixture.h",
+      "bytes": 7419,
+      "sha256": "9bc4ebcdc1321d131d4091009f0fce2ee7a11d1c79fd0135db9e02edb5467a65"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupTest.cpp",
+      "bytes": 7146,
+      "sha256": "ab7ae02724d297cce78d62c2b080237f623ae0b668ce50b5043ecc9eec22a485"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupCudaTest.cu",
+      "bytes": 4690,
+      "sha256": "de3511aa77d8dc9ce196e524edb8d62d31aab69932ee42510908ea7c2b6bc4f4"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephKinematicsFixture.h",
+      "bytes": 11457,
+      "sha256": "8ae458bf57887f91faecf9bc67d933faecfb4ee5b6d9cce6b9ff6a5156fefb22"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephKinematicsTest.cpp",
+      "bytes": 8200,
+      "sha256": "faff66a16b5c1f00f51be96c873633afacc78baa92871e13f0dc629cf9bfdfad"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephKinematicsCudaTest.cu",
+      "bytes": 6945,
+      "sha256": "d34e10b74ccabfe20f05dbafdc16c2de7181eb49576d22582c779825750d7d96"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephForceFixture.h",
+      "bytes": 7860,
+      "sha256": "5f408c4473e3741c93c0563d8975cf0cf74ca2c0917a7766910608ccb5f78958"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephForceTest.cpp",
+      "bytes": 16394,
+      "sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephForceCudaTest.cu",
+      "bytes": 8151,
+      "sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465"
+    }
+  ],
+  "transformations": [
+    "One-cell scalar specialization of complete selected startup CNEVECI/CLSKEW3 IREP0/CDERII arithmetic; other IREP branches are unsupported, not approximated.",
+    "Unused X21 startup dead stores omitted; array loops reduce to one cell and raw fixed-size POD records.",
+    "Selected centered uniform CINMAS mass and native total-inertia expression retained; physical and area-added partitions remain separate diagnostics.",
+    "Binary64 sqrt, division and left-associated operations preserved; no rsqrt, fast math or fused multiply-add enabled for qualification.",
+    "Added finite/material/convexity/determinant-boundary checks and staged output; this is explicitly narrower than general native input acceptance.",
+    "Generic Vec3/Matrix3 records extracted with compatibility aliases; no Reissner chart or frame arithmetic moved.",
+    "Q3b retains selected engine CLSKEW3 IREP0 normalization, distinct from starter CLSKEW3; current sums/differences preserve source order.",
+    "CZCORC1 explicit path gathers endpoint positions and midpoint rates, applies source velocity correction, full projection, then normalizes rate differences.",
+    "CORTDIR3 IREP0/IDRAPE0 is a verified donor no-op; no synthetic callback or reachable stub.",
+    "CZCORP5 IRESP2 full warped projection retains planar switch, inline six-entry inverse and source floors; IRESP1 A3INVDP_V is not called.",
+    "CZDEF IVECTOR0/OFFG1 retains all eight regular and six hourglass rates, including warped curvature additions.",
+    "One private coherent work record retains later Q3c intermediates. Named public diagnostics retain raw/effective warp and flat VQN +Z/DI DB zeros.",
+    "Reference POD stays caller-immutable; bounded sane-field checks are not provenance authentication and do not repeat startup.",
+    "Prescribed finite time must advance; sample_index is only a caller label. Failed operations preserve all public output bytes.",
+    "Q1 exact planar rigid-rate truth retains O(h) transverse shear; no dynamics or zero-step initial-force claim.",
+    "Q3b first-run correction: explicitly promote native default-REAL32 literals 3.413,0.7071,0.78,0.22 to binary64 in characteristic length; MYREAL8 does not change literal kinds. Other selected raw literals are exactly representable, named constants retain their MYREAL8 source values.",
+    "Q3c reuses the unchanged private Q3b PrepareGeometry exactly once; returns pre-CNDT3 kinematics and separates material/stabilization/projection work.",
+    "Q3c ports the complete selected LAW1/CVIS1/ITHK0/ISROT0/IDRIL0 branch; no reachable callbacks or unselected plastic/layer behavior.",
+    "Shared materials/ShellElasticLaw1.h is only native PM elastic coefficients and centered SIGEPS01G point stress update; caller owns GS/THK08, strain packing, reported thickness, damping and work.",
+    "Native NODADT1/ALPE1 stiffness and DTEL are diagnostics only; no timestep admission or mass modification.",
+    "History retains all38 named native values plus exact ReferenceInput binding and explicit caller time/index; raw fixed arrays and trivial copies have no public serialized ABI.",
+    "Every operation stages complete output; finite reported THKN below EM30 is explicitly rejected before source MAX, preserving the Q2 wrapper domain.",
+    "Preserve named native constant expression order including ZEP06=ONE/TEN-FOUR/HUNDRED, ONEP414=ONEP41+FOUREM3, THREEP464=THREE+ZEP4+ZEP06+FOUREM3; no sqrt2/sqrt12 substitutions."
+  ],
+  "domain": {
+    "poisson_ratio": "0<=nu<.5",
+    "positive_inputs": [
+      "rho_kg_m3",
+      "young_Pa",
+      "thickness_m"
+    ],
+    "determinant_floor_m2": 1e-20,
+    "determinant_exclusion_relative_epsilon": 64,
+    "normalized_corner_turn_floor_epsilon": 128,
+    "proper_frame_absolute": 1e-10,
+    "mass_and_each_inertia": "strictly positive finite binary64"
+  },
+  "predeclared_tolerances": {
+    "error_formula": "abs(actual-reference)<=2e-12*(dimension+abs(reference))",
+    "frame_dimension": 1,
+    "coordinate_and_derivative_dimension": "max original node0-relative vertex distance L",
+    "area_dimension": "L^2",
+    "mass_inertia_dimension": "that independent nonzero reference partition; never total inertia for physical partition"
+  },
+  "test_domain": {
+    "host_functions": 5,
+    "cuda_functions": 2,
+    "parity_cases_per_function": 72,
+    "representative_edges_m": [
+      0.01,
+      0.02
+    ],
+    "source_scale_thickness_m": 0.001648,
+    "source_scale_density_kg_m3": 7890,
+    "source_scale_young_Pa": 200000000000.0,
+    "source_scale_poisson": 0.3,
+    "source_geometry_authenticated": false,
+    "cuda_threads": 1,
+    "cuda_allocation_cap_bytes": 4096,
+    "threshold_adjacent_half_side_m": 2.5e-11,
+    "safe_threshold_multiplier": "1+512*DBL_EPSILON",
+    "independent_skew_configurations": 24,
+    "skew_vertices_xy": [
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2.5,
+        1
+      ],
+      [
+        0.5,
+        1
+      ]
+    ],
+    "skew_scales_m": [
+      1,
+      0.005,
+      0.01
+    ]
+  },
+  "startup_baseline": {
+    "manifest": {
+      "path": "lib_utest/qualification/qeph/startup-source-manifest.json",
+      "bytes": 7205,
+      "sha256": "84ab8306fb7ed9a063b28ac5bd5672d8cd5814cf1a04c60bf77dea53d01de2eb"
+    },
+    "tl_commit": "bf57436",
+    "checkpoint": "qeph-q3a-startup-1",
+    "checkpoint_manifest_sha256": "ed0213c6f8316cdf01c542346d99d1467302347db72c3eac11254c0bd423746b",
+    "status": "qualified 5 host and 2 CUDA functions; current QephData appends kInvalidReference only"
+  },
+  "kinematics_domain": {
+    "context": {
+      "IREP": 0,
+      "IRESP": 2,
+      "ISMSTR": -1,
+      "IMPL_S": 0,
+      "IVECTOR": 0,
+      "NPT": 0,
+      "IDRIL": 0,
+      "IXFEM": 0,
+      "IDRAPE": 0,
+      "IDT1SH": 0
+    },
+    "reference": "immutable successful startup POD with prepared and finite-positive sane fields; not authentication",
+    "current_geometry": "same Q3a binary64 determinant/convexity predicates, actual engine frame arithmetic",
+    "time": "finite base>=0, dt>0, finite base+dt strictly>base",
+    "sample_index": "arbitrary uint64 caller label, not incremented",
+    "native_planar_switch": "raw_Z1^2 < LM*1e-8",
+    "output": "all observables and retained work finite; area/reciprocal/characteristic length/FACN strictly positive"
+  },
+  "kinematics_predeclared_tolerances": {
+    "parity_coefficient": 2e-12,
+    "covariance_coefficient": 2e-11,
+    "formula": "abs(actual-reference)<=coefficient*(dimension+abs(reference))",
+    "length_scale": "maximum current node0-relative distance L",
+    "rate_scale": "R=max(1/s,max norm omega,max norm(v_i-v_0)/L)",
+    "frame_normals_FACN_dimension": 1,
+    "area_dimension": "L^2",
+    "reciprocal_area_dimension": "1/L^2",
+    "length_position_warp_dimension": "L",
+    "omega_first_five_rates_dimension": "R",
+    "curvature_rates_dimension": "R/L",
+    "hourglass_dimension": "R*L except indices2/3 R",
+    "projection_DI_DB_dimension": "numerical unit floor in fixed SI coordinates; mixed translation/rotation coefficients, not uniform physical tensors"
+  },
+  "kinematics_test_domain": {
+    "host_functions": 7,
+    "cuda_functions": 3,
+    "native_parity_configurations": 216,
+    "geometry_fixtures": 9,
+    "cyclic_orderings": 4,
+    "common_world_transforms": 2,
+    "rate_patterns": [
+      "static",
+      "mixed affine at h1e-4",
+      "general-axis rigid at h.02"
+    ],
+    "independent_affine_modes": 8,
+    "affine_amplitude_per_s": 0.04,
+    "affine_dt_s": 1e-06,
+    "independent_rigid_dt_s": [
+      0.04,
+      0.02,
+      0.01
+    ],
+    "independent_rigid_axes": [
+      "world Z",
+      "(1,2,3)/sqrt14"
+    ],
+    "planar_switch_warp_m": [
+      1e-06,
+      0.001
+    ],
+    "source_geometry_authenticated": false,
+    "cuda_threads": 1,
+    "cuda_allocation_cap_bytes": 4096,
+    "dynamics_qualified": false,
+    "independent_characteristic_length": "rectangle formula in long double with exact hexadecimal native literal values; actual CUDA checked too"
+  },
+  "native_default_real_literals": [
+    {
+      "source_literal": "3.413",
+      "promoted_binary64": 3.4130001068115234,
+      "exact_hex": "0x1.b4dd300000000p+1"
+    },
+    {
+      "source_literal": "0.7071",
+      "promoted_binary64": 0.707099974155426,
+      "exact_hex": "0x1.6a09020000000p-1"
+    },
+    {
+      "source_literal": "0.78",
+      "promoted_binary64": 0.7799999713897705,
+      "exact_hex": "0x1.8f5c280000000p-1"
+    },
+    {
+      "source_literal": "0.22",
+      "promoted_binary64": 0.2199999988079071,
+      "exact_hex": "0x1.c28f5c0000000p-3"
+    }
+  ],
+  "retained_first_kinematics_execution": {
+    "checkpoint": "qeph-q3b-first-execution-1",
+    "manifest_sha256": "4412beeaf91f95fc9aebec97cfac8a7a2b32d56b3fb37634000173ed3f915bb8",
+    "observed": "native parity failed characteristic length on host/CUDA, corrected literal kinds without tolerance changes"
+  },
+  "kinematics_baseline": {
+    "manifest": {
+      "path": "lib_utest/qualification/qeph/kinematics-source-manifest.json",
+      "bytes": 17377,
+      "sha256": "9f87b38c6ed564489aa0cdb34390d38e87ca7bf28453c0f6521feaefc107b5b4"
+    },
+    "tl_commit": "8d94089",
+    "checkpoint": "qeph-q3b-geometry-rates-1",
+    "checkpoint_manifest_sha256": "e09eb8362e54e57fb5b6444138f479fa9d599a4e5db396b902a53a154bede313",
+    "status": "qualified 7 host and 3 CUDA; source equations and tests unchanged in Q3c"
+  },
+  "force_domain": {
+    "material": "centered isotropic LAW1,0<=nu<.5,positive finite E/rho/t",
+    "context": [
+      "ITHK0",
+      "CVIS1",
+      "DM=DN=(1/100+5/1000)",
+      "ISROT0",
+      "IDRIL0",
+      "NPT0",
+      "OFF1",
+      "NODADT1",
+      "ALPE1"
+    ],
+    "history": "finite38 values,reported thickness>0,active==1; exact bound input/time,next nonoverflowing sample",
+    "publication": "all base/input/output bytes unchanged on failure",
+    "reported_thickness": "predicted THKN>=EM30 required before unchanged MAX; effective force thickness remains reference t",
+    "readiness": false
+  },
+  "force_predeclared_tolerances": {
+    "coefficient": 2e-12,
+    "formula": "abs(actual-reference)<=coefficient*(dimension+abs(reference))",
+    "scales": "L=max current node0-relative distance,t=reference t,E=reference E,c=sqrt(E/max(rho,EM20))",
+    "stress": "E",
+    "bending_stress": "E*t/L",
+    "stabilization": "E; components2,3,8,9 E/L",
+    "strain_curvature": "first5 1,last3 1/L",
+    "thickness": "t",
+    "internal_work": "membrane E*t*L^2,bending E*t^3",
+    "viscous_work": "E*t*L^2",
+    "internal_force": "E*t*L",
+    "internal_couple": "E*t*L^2",
+    "stiffness": "STI E*t,STIR E*t*L^2",
+    "dt": "L/c",
+    "independent_native_q2": {
+      "relative": 2e-10,
+      "absolute": 2e-11,
+      "work_absolute_J": 2e-22
+    },
+    "covariance_coefficient": 2e-11,
+    "kinematics": "unchanged Q3b 80-field contract"
+  },
+  "force_test_domain": {
+    "status": "source frozen before first execution",
+    "host_functions": 9,
+    "cuda_functions": 3,
+    "parity_configurations_each": 432,
+    "histories": "zero + full prescribed38-field seed",
+    "geometries": "unchanged Q3b9 geometries x4 cyclic x2 transforms x3 patterns",
+    "independent": "8 physical strain/curvature modes at metre/10/20mm, physical moments, load-hold-reversal work,12HG persistence,static/IDRIL0,rigid characterization,balance,covariance,native CUPDTN3 sign/stiffness scatter",
+    "cuda_threads": 1,
+    "cuda_packet_cap_bytes": 8192,
+    "failure": "missing/foreign reference,stale time/index,overflow/nonadvancing time,nonfinite fields,late THKN rejection,complete byte preservation,retry",
+    "dynamics_qualified": false
+  },
+  "accepted_failure_force_extension": {
+    "scope": "Explicit local NIP3 constant-D1 family value operation; same family core and legacy active1 APIs retained. OFF0 native history/stiffness/force gates do not admit resident/contact/source runtime.",
+    "previous_manifest_sha256": "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/qeph/QephHistory.h",
+        "bytes": 2874,
+        "sha256": "5ee6fa1b44b588c17350b6095d2a3c40c5bbbb94fb20aff9e1a3e88a1c648ef2"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephHistoryData.h",
+        "bytes": 2000,
+        "sha256": "848c87e948e5abe1efabbf84b77912f4672e214fe9a8c4d00341b32841954820"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStabilizationForces.h",
+        "bytes": 3550,
+        "sha256": "ded0128a521c7a906efa222edb96eab2872e64c1f110c2005ed47e0f2111de4d"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStabilizationState.h",
+        "bytes": 2255,
+        "sha256": "1513d23b608abe5c606b9605cacbc22a7c9988e8aced25079e9870b0fc815732"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
+        "bytes": 1678,
+        "sha256": "7c62acd02b1d3c3f6209c1a3d162a1ccea564c33632fe9a97596216dae44b6e1"
+      }
+    ],
+    "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
+  },
+  "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate.",
+  "projection_working_length_extension": {
+    "replay_head": "fe30c7cee913466eb74ce9d46ae623499c4f1b29",
+    "legacy_default_metres": 1,
+    "changed_wrappers": [
+      "lib_src/elements/qeph/QephData.h",
+      "lib_src/elements/qeph/QephStartupFrame.h",
+      "lib_src/elements/qeph/QephStartup.h",
+      "lib_src/elements/qeph/QephKinematicsData.h",
+      "lib_src/elements/qeph/QephKinematics.h",
+      "lib_src/elements/qeph/QephForce.h",
+      "lib_src/elements/qeph/QephHistory.h",
+      "lib_src/elements/qeph/QephLayeredForceCore.h"
+    ],
+    "scope": "Reference identity, input validation and explicit dimensional packet conversion; raw QephProjection.h and QephForceProjection.h and native donors unchanged. Owning profile qualification is separate."
+  },
+  "global_law1_profile_extension": {
+    "qualified_source": "8c182589e7d15fb364bf476301921ad526499f1b",
+    "legacy_body_proof": "lib_utest/qualification/shell_global_law1/source-proof.json",
+    "proof_sha256": "a9aadde0ca45d61cfc90a1b584f42df4721b5dbeab4ae52a43ee34ac1bcdd245",
+    "changed_wrappers": [
+      "lib_src/elements/qeph/QephForce.h"
+    ],
+    "scope": "Old EvaluateForce retains reference coefficient thickness. New explicit ITHK0/1 value profile and native coefficient-floor length; raw numerical leaves/native donors unchanged."
+  },
+  "global_law1_execution_extension": {
+    "scope": "Explicit per-parent global LAW1 dispatch/identity and native initial-thickness STI profile. Legacy/native mathematical leaves retained; owning mixed publication and native regressions required.",
+    "prior_active_records": [
+      {
+        "path": "lib_src/elements/qeph/QephForce.h",
+        "bytes": 4619,
+        "sha256": "b9b0ec407088062cfe3997f525110da305d524f7e05091bd26f3f989d1b82360"
+      },
+      {
+        "path": "lib_src/elements/ShellGlobalLaw1Profile.h",
+        "bytes": 1350,
+        "sha256": "9de51cbad7fcb60758e91e623030ed427369366ce6739825d037efd21d3813c1",
+        "scope": "Explicit coefficient-thickness policy around unchanged global LAW1 operators; owner/catalog binding remains separate."
+      }
+    ],
+    "base": "2a0beb2bd4f78dbc4f3d7ce0431543533b540379"
+  }
+}

@@ -1,0 +1,28 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Complete native global reduction, with explicit disabled output-only channels.
+      SUBROUTINE SOLID18_FORCE_REDUCE(G,IP,NOW,OBS,VOLUME0,GLOBAL,STIFF)
+      USE SOLID18_FORCE_PACKETS
+#include "implicit_f.inc"
+      TYPE(NATIVE_GEOMETRY),INTENT(IN) :: G
+      INTEGER,INTENT(IN) :: IP
+      REAL(KIND=8),INTENT(IN) :: NOW(20),OBS(38),VOLUME0
+      REAL(KIND=8),INTENT(INOUT) :: GLOBAL(11),STIFF
+      REAL(KIND=8) :: ZERO_ARRAY(MVSIZ),SVIS(MVSIZ,6),PP(1),EPSDM(1)
+      REAL(KIND=8) :: EINTTHM(1),CONDEN(1)
+      ZERO_ARRAY=ZERO
+      SVIS=ZERO
+      PP=ZERO
+      EPSDM=ZERO
+      EINTTHM=ZERO
+      CONDEN=ZERO
+      CALL SOLID18_FORCE_S8EFMOY3(
+     . NOW(1),G%VOLUME(1,IP),NOW(20),PP,
+     . NOW(15),NOW(17),NOW(20),NOW(13),
+     . NOW(14),EPSDM,GLOBAL(1),GLOBAL(9),
+     . GLOBAL(8),GLOBAL(11),GLOBAL(7),G%CENTER_VOLUME,
+     . OBS(38),STIFF,2,ONE,
+     . NOW(18),VOLUME0,1,0,
+     . ZERO_ARRAY,EINTTHM,0,1,
+     . ZERO_ARRAY,CONDEN,SVIS,0,
+     . GLOBAL(10),NOW(16),1)
+      END

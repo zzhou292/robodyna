@@ -1,0 +1,26 @@
+{
+  "schema": "tlfea.type25_shell_source_observations.v1",
+  "native_source": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "native_starter_receipt": "native-contact-scene-starter-4.json",
+  "native_engine_receipt": "native-contact-scene-observation-4.json",
+  "files": [
+    {
+      "name": "declared-scene.json",
+      "source": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-startup-4/declared-scene.json",
+      "bytes": 5400,
+      "sha256": "d4f1b04b51efc4191942dd50e644cece571c011e451fc7774800b6b891769bd6"
+    },
+    {
+      "name": "native-startup.jsonl",
+      "source": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-startup-4/native-startup.jsonl",
+      "bytes": 3197,
+      "sha256": "f1b56447ed57388a389290830debf69addf6d46c2b14677ed0aa684c14c613f1"
+    },
+    {
+      "name": "native-observations.jsonl",
+      "source": "/home/jsonzhou/Desktop/chrono-work/crash-work/investigations/native-contact-scene-observation-4/native-observations.jsonl",
+      "bytes": 14062,
+      "sha256": "02fdf931655e88e064608791e162cdfd69e895b900c786b4b6f0eff1b31f2253"
+    }
+  ]
+}
