@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["openssl.bzl"])
+
+cc_test(
+    name = "openssl_sdk_test",
+    size = "small",
+    srcs = ["OpenSslSdkTest.cpp"],
+    deps = ["@openssl//:crypto", "@googletest//:gtest_main"],
+)

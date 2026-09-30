@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# Additive include-path adapter for inherited application includes such as
+# collision/Foo.h. Consumers must still depend on the actual owning libraries.
+cc_library(
+    name = "legacy_include_root",
+    includes = ["."],
+    visibility = ["@robodyna//build_defs/app:__subpackages__"],
+)

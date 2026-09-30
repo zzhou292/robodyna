@@ -1,0 +1,18 @@
+load(":defs.bzl", "chrono_host_bridge")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["check_inputs.cmake", "native_sources.bzl"])
+
+alias(
+    name = "native_core_fea",
+    actual = "//src/compatibility/chrono:native_core_fea",
+    tags = ["manual", "chrono-native-aggregate", "cpu-only"],
+)
+
+# Transitional aggregate. This is not the future independent FEA/MBD boundary.
+chrono_host_bridge(
+    name = "host_core_fea",
+    source = "//src/compatibility/chrono:source_tree",
+    compile_jobs = 4,
+)

@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+# Additive product metadata only; the qualified guard scripts are unchanged.
+exports_files(["run_bounded.py"])
+filegroup(
+    name = "bounded_guard_runtime",
+    srcs = [
+        "run_bounded.py",
+        "bounded_gpu.py",
+        "bounded_gpu_query.py",
+        "bounded_history.py",
+        "bounded_session.py",
+        "bounded_stop.py",
+    ],
+)

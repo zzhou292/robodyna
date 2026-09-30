@@ -1,0 +1,2 @@
+# Imported implementation is addressed only through @legacy_fea, never twice.
+src/fea/legacy

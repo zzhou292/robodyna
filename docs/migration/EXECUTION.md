@@ -6,11 +6,14 @@ No publication is part of the current staged operation.
 
 ## Checkpoints
 
-1. IN PROGRESS — preserve source and dirty-state evidence, consolidate qualified
-   app/renderer/postprocess histories, import exact TL/Chrono source trees.
-2. PENDING — one root Bazel entry with reusable TL targets, Chrono transition build,
+1. SOURCE IMPORTS VERIFIED — all three imported trees match pinned Git trees and
+   original histories are reachable. App/renderer/postprocess histories consolidated;
+   original dirty-doc and dependency differences preserved.129 LFS payloads verified
+   and restored locally; all six dependency gitlinks inventoried. Optional dependency
+   checkout/build qualification remains explicit follow-up.
+2. IN PROGRESS — one root Bazel entry with reusable TL targets, Chrono transition build,
    explicit dependencies, host checks and source-verification tools.
-3. PENDING — real application CLI around existing preparation/run/output libraries;
+3. IN PROGRESS — real application CLI around existing preparation/run/output libraries;
    exact short Yaris regression and replay/video compatibility.
 4. PENDING — extract neutral mechanics seams, prove FEA-only/MBD-only link closures
    and a coupled flexible-beam/rigid-mechanism test.
@@ -32,3 +35,15 @@ workspace. Manage Bazel server lifetime; use batch mode for bounded qualificatio
 
 Do not rerun the11-hour100ms trajectory for packaging-only edits. Begin with host,
 source and short native coupons; run longer physics only when a change warrants it.
+
+## Evidence so far
+
+- Exact tree imports: source manifest and bounded import receipts in the outer workspace.
+- Imported application postprocessing: 32 host tests passed.
+- Root Bazel source-boundary checks: seven tests and critical source/patch identity passed.
+- Bazel graph resolved; Chrono bridge and native482-TU aggregate compiled.
+- Core, rigid, FE, source-inventory and OpenSSL SDK host gates passed.
+- Product Python admission and C++ request tests passed.
+- Importer preservation/rejection tests passed (six cases).
+- Full native vehicle backend build is in progress; GPU parity and independent
+  FEA/MBD gates remain pending.

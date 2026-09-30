@@ -1,0 +1,89 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+_DEPS = [
+    "//build_defs/chrono:host_core_fea",
+    "@googletest//:gtest_main",
+]
+
+# Small runtime tests; building the inherited aggregate is a separate heavy job.
+# These do not claim independent FEA-only or MBD-only library qualification.
+cc_test(
+    name = "core_test",
+    srcs = ["CoreTest.cpp"],
+    deps = _DEPS,
+    size = "small",
+    tags = ["manual", "chrono-transition", "cpu-only"],
+)
+
+cc_test(
+    name = "rigid_test",
+    srcs = ["RigidTest.cpp"],
+    deps = _DEPS,
+    size = "small",
+    tags = ["manual", "chrono-transition", "cpu-only"],
+)
+
+cc_test(
+    name = "fea_test",
+    srcs = ["FeaTest.cpp"],
+    deps = _DEPS,
+    size = "small",
+    tags = ["manual", "chrono-transition", "cpu-only"],
+)
+
+test_suite(
+    name = "host_bridge_tests",
+    tests = [":core_test", ":rigid_test", ":fea_test"],
+    tags = ["manual", "chrono-transition"],
+)
+
+# Same source-level checks, linked only to the native aggregate. Building both
+# suites separately avoids duplicate Chrono definitions in one executable.
+cc_test(
+    name = "native_core_test",
+    srcs = ["CoreTest.cpp"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "chrono-native-aggregate", "cpu-only"],
+)
+
+cc_test(
+    name = "native_rigid_test",
+    srcs = ["RigidTest.cpp"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "chrono-native-aggregate", "cpu-only"],
+)
+
+cc_test(
+    name = "native_fea_test",
+    srcs = ["FeaTest.cpp"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "chrono-native-aggregate", "cpu-only"],
+)
+
+test_suite(
+    name = "native_host_tests",
+    tests = [":native_core_test", ":native_rigid_test", ":native_fea_test", ":native_source_inventory_test"],
+    tags = ["manual", "chrono-native-aggregate"],
+)
+
+py_test(
+    name = "native_source_inventory_test",
+    srcs = ["NativeSourceInventoryTest.py"],
+    main = "NativeSourceInventoryTest.py",
+    args = [
+        "$(location //build_defs/chrono:native_sources.bzl)",
+        "$(location //src/compatibility/chrono:src/chrono/CMakeLists.txt)",
+    ],
+    data = [
+        "//build_defs/chrono:native_sources.bzl",
+        "//src/compatibility/chrono:src/chrono/CMakeLists.txt",
+    ],
+    size = "small",
+    tags = ["manual", "chrono-native-aggregate", "cpu-only"],
+)

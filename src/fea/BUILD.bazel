@@ -1,0 +1,32 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Source-preserving P1 facade. This is not yet an independent module extraction.
+alias(name = "nodal_state", actual = "@legacy_fea//lib_src/solvers:explicit_nodal_state")
+alias(name = "publication", actual = "@legacy_fea//lib_src/elements:shell_batch_publication")
+alias(name = "native_contact", actual = "@legacy_fea//lib_src/collision:radioss_type25_transaction")
+alias(name = "solids", actual = "@legacy_fea//lib_src/elements/solids/resident:batch")
+
+cc_library(
+    name = "explicit",
+    deps = [":nodal_state", ":publication", ":native_contact"],
+)
+
+# Narrow host-only primitives: no explicit owner, CUDA runtime or viewer.
+cc_library(
+    name = "host_values",
+    deps = [
+        "@legacy_fea//lib_src/math:fixed3",
+        "@legacy_fea//lib_src/math:quaternion",
+        "@legacy_fea//lib_utils:bounded_arena",
+        "@legacy_fea//lib_utils:source_identity_index",
+    ],
+)
+
+# Retained implicit/ANCF implementations have distinct state and numerical
+# contracts. They are not selected by the Yaris explicit target above.
+alias(name = "implicit_newton", actual = "@legacy_fea//lib_src/solvers:multi_element_newton")
+alias(name = "implicit_adamw", actual = "@legacy_fea//lib_src/solvers:solvers_syncedadamw")
+alias(name = "implicit_nesterov", actual = "@legacy_fea//lib_src/solvers:solvers_syncednesterov")
+alias(name = "legacy_dem_contact", actual = "@legacy_fea//lib_src/collision:deme_mesh_collision_system")

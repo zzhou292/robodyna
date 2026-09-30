@@ -1,0 +1,7 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "rules_cuda_0.2.5_bazel9.patch",
+    "rules_foreign_cc_0.9.0_bazel9_v3.patch",
+    "googletest_1.17.0_bazel9.patch",
+])

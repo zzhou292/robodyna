@@ -1,0 +1,72 @@
+{
+  "schema": "robodyna.inherited_gitlinks.v1",
+  "created_utc": "2026-09-30T23:02:16.661670+00:00",
+  "selection_policy": "Preserve recorded gitlink identity. Existing source checkout differences are evidence, not silently adopted revisions.",
+  "dependencies": [
+    {
+      "name": "fea-dem-engine",
+      "path": "src/fea/legacy/third_party/DEM-Engine",
+      "url": "https://github.com/projectchrono/DEM-Engine.git",
+      "recorded_commit": "cf8ae333c7693b4a6356e3c2df7993c53d5bb696",
+      "source_checkout_initialized": true,
+      "source_checkout_commit": "cf8ae333c7693b4a6356e3c2df7993c53d5bb696",
+      "source_checkout_differs_from_gitlink": false,
+      "imported_checkout_initialized": false
+    },
+    {
+      "name": "chrono-googletest",
+      "path": "src/compatibility/chrono/src/chrono_thirdparty/googletest",
+      "url": "https://github.com/google/googletest.git",
+      "recorded_commit": "33af80a883ddc33d9c0fac0a5b4578301efb18de",
+      "source_checkout_initialized": true,
+      "source_checkout_commit": "662fe38e44900c007eccb65a5d2ea19df7bd520e",
+      "source_checkout_differs_from_gitlink": true,
+      "imported_checkout_initialized": false
+    },
+    {
+      "name": "chrono-googlebenchmark",
+      "path": "src/compatibility/chrono/src/chrono_thirdparty/googlebenchmark",
+      "url": "https://github.com/google/benchmark.git",
+      "recorded_commit": "bc946b919cac6f25a199a526da571638cfde109f",
+      "source_checkout_initialized": true,
+      "source_checkout_commit": "60b16f11a30146ac825b7d99be0b9887c24b254a",
+      "source_checkout_differs_from_gitlink": true,
+      "imported_checkout_initialized": false
+    },
+    {
+      "name": "chrono-flatbuffers",
+      "path": "src/compatibility/chrono/src/chrono_thirdparty/flatbuffers",
+      "url": "https://github.com/google/flatbuffers.git",
+      "recorded_commit": "8573108bbef495f3dd13db8353f43b2e86d25950",
+      "source_checkout_initialized": true,
+      "source_checkout_commit": "8573108bbef495f3dd13db8353f43b2e86d25950",
+      "source_checkout_differs_from_gitlink": false,
+      "imported_checkout_initialized": false
+    },
+    {
+      "name": "chrono-fmu-forge",
+      "path": "src/compatibility/chrono/src/chrono_thirdparty/fmu-forge",
+      "url": "https://github.com/projectchrono/fmu-forge.git",
+      "recorded_commit": "cbf2a58ba9518e6230e831ff0b3640f9a0b4905a",
+      "source_checkout_initialized": false,
+      "source_checkout_commit": null,
+      "source_checkout_differs_from_gitlink": false,
+      "imported_checkout_initialized": false
+    },
+    {
+      "name": "chrono-hydrochrono",
+      "path": "src/compatibility/chrono/src/chrono_thirdparty/HydroChrono",
+      "url": "https://github.com/Project-SEA-Stack/HydroChrono.git",
+      "recorded_commit": "fbdbe7e5f7c6fcb834215f48c655e73651cbd371",
+      "source_checkout_initialized": false,
+      "source_checkout_commit": null,
+      "source_checkout_differs_from_gitlink": false,
+      "imported_checkout_initialized": false
+    }
+  ],
+  "extra_preserved_local_repository": {
+    "path": "chrono/src/chrono_thirdparty/fmu_tools",
+    "commit": "6ed4f301",
+    "imported": false
+  }
+}

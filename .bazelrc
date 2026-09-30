@@ -1,0 +1,29 @@
+common --enable_bzlmod
+build --lockfile_mode=error
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Scheduling limits supplement the workstation guard; they are not an RSS cap.
+build --jobs=4
+build --local_resources=cpu=4
+build --local_resources=memory=16384
+test --local_test_jobs=1
+
+# Keep numerical flags target-local. Inherited explicit and implicit backends
+# have different qualified policies; neither fast math nor its inverse is global.
+build:host --compilation_mode=opt
+build:cuda --compilation_mode=opt
+build --flag_alias=cuda_archs=@rules_cuda//cuda:archs
+build --@rules_cuda//cuda:archs=compute_75:sm_75;compute_86:sm_86,compute_86
+build:sm75 --@rules_cuda//cuda:archs=compute_75:sm_75,compute_75
+build:sm75 --define=robodyna_cuda_arch=75
+build:sm86 --@rules_cuda//cuda:archs=compute_86:sm_86,compute_86
+build:sm86 --define=robodyna_cuda_arch=86
+build:sm120 --@rules_cuda//cuda:archs=compute_120:sm_120,compute_120
+build:sm120 --define=robodyna_cuda_arch=120
+
+# Optional foreign builds use the explicitly supplied local CUDA installation.
+# The guarded build must verify these identify the same toolkit as rules_cuda.
+build --action_env=CUDACXX
+build --action_env=CUDAToolkit_ROOT
+build --action_env=CUDA_PATH

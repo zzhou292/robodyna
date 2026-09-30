@@ -1,0 +1,109 @@
+"""Native Bazel build of the initial inherited CPU mechanics aggregate.
+
+Source lists are explicit and source-derived. This target changes build ownership,
+not numerical algorithms, state ownership or the FEA/MBD coupling method.
+"""
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load(":native_config.bzl", "native_configuration")
+load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
+
+_VENDOR_GROUPS = [
+    "collision_bullet",
+    "collision_convexdecompHACDv2",
+    "collision_convexdecompVHACD",
+    "tiny_obj",
+    "libstl",
+]
+_VENDOR_HEADERS = [
+    "HACDv2", "VHACD", "tinyobjloader", "libstl", "filesystem", "cxxopts", "rapidjson", "rapidxml",
+]
+_TAGS = ["manual", "chrono-native-aggregate", "cpu-only"]
+
+def chrono_native_host(name):
+    """Declare an aggregate in the absorbed source-root package only.
+
+    Args:
+        name: Native aggregate target name; it must not claim domain independence.
+    """
+    config_name = name + "_configuration"
+    config_prefix = config_name + "/include"
+    native_configuration(
+        name = config_name,
+        config_template = "src/ChConfig.h.in",
+        version_template = "src/ChVersion.h.in",
+        config_header = config_prefix + "/chrono/ChConfig.h",
+        version_header = config_prefix + "/chrono/ChVersion.h",
+        tags = _TAGS,
+    )
+    cc_library(
+        name = name + "_configuration_headers",
+        hdrs = [":" + config_name],
+        strip_include_prefix = config_prefix,
+        tags = _TAGS,
+    )
+
+    # Header export matches the inherited include roots. Header globs do not
+    # decide which algorithms compile: implementation sources are explicit below.
+    header_patterns = ["src/chrono/**/*.h", "src/chrono/**/*.inl"]
+    for vendor in _VENDOR_HEADERS:
+        for extension in ["h", "hpp", "inl", "inc"]:
+            header_patterns.append("src/chrono_thirdparty/" + vendor + "/**/*." + extension)
+    # Not every retained directory uses every header extension. Bazel 9 rejects
+    # an individual empty pattern unless explicitly permitted. Keep a separate
+    # required-header check so a missing source import still fails clearly.
+    headers = native.glob(header_patterns, allow_empty = True)
+    for required in ["src/chrono/physics/ChBody.h", "src/chrono/fea/ChMesh.h"]:
+        if required not in headers:
+            fail("Required absorbed Chrono header is missing: " + required)
+    cc_library(
+        name = name + "_headers",
+        hdrs = headers,
+        includes = ["src", "src/chrono/collision/bullet", "src/chrono_thirdparty", "src/chrono_thirdparty/HACDv2"],
+        defines = ["CH_STATIC", "CH_IGNORE_DEPRECATED", "EIGEN_DONT_PARALLELIZE", "_ENABLE_EXTENDED_ALIGNED_STORAGE", "NDEBUG"],
+        deps = [":" + name + "_configuration_headers", "@eigen//:eigen"],
+        tags = _TAGS,
+    )
+    common = {
+        "alwayslink": True,
+        "deps": [":" + name + "_headers"],
+        "local_defines": ["CH_API_COMPILE", "BT_THREADSAFE", "BP_USE_FIXEDPOINT_INT_32"],
+        "target_compatible_with": ["@platforms//os:linux"],
+        "tags": _TAGS,
+    }
+    core_sources = []
+    vendor_sources = []
+    for group, paths in NATIVE_SOURCE_GROUPS.items():
+        if group in _VENDOR_GROUPS:
+            vendor_sources.extend(paths)
+        else:
+            core_sources.extend(paths)
+    cc_library(
+        name = name + "_implementation",
+        srcs = core_sources,
+        # The inherited PCH installs Eigen plugins before any other headers.
+        # Preserve that include order without inventing a Bazel PCH toolchain.
+        copts = [
+            "-O3", "-fPIC", "-include", "$(location src/chrono/ChCorePCH.h)",
+            "-Wint-in-bool-context", "-Wno-sign-compare", "-Wno-reorder", "-Wno-unused-function",
+            "-Wno-unused-parameter", "-Wno-unused-result", "-Wno-deprecated",
+        ],
+        # Compiler-option location expansion uses additional_compiler_inputs;
+        # a transitive/textual header alone does not enter that prerequisite map.
+        additional_compiler_inputs = ["src/chrono/ChCorePCH.h"],
+        **common
+    )
+    cc_library(
+        name = name + "_bundled_collision",
+        srcs = vendor_sources,
+        # Chrono's owning CMake also disables PCH/warnings for these sources.
+        copts = ["-O3", "-fPIC", "-w"],
+        **common
+    )
+    cc_library(
+        name = name,
+        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"],
+        linkopts = ["-pthread"],
+        target_compatible_with = ["@platforms//os:linux"],
+        tags = _TAGS,
+    )

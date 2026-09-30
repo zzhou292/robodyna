@@ -1,0 +1,17 @@
+load("//build_defs/chrono:native.bzl", "chrono_native_host")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["CMakeLists.txt", "src/chrono/CMakeLists.txt", "src/ChConfig.h.in", "src/ChVersion.h.in"])
+
+chrono_native_host(name = "native_core_fea")
+
+# All absorbed first-party source remains available during native package
+# extraction. No external checkout or previously installed Chrono is referenced.
+filegroup(
+    name = "source_tree",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel", "**/.git/**"],
+    ),
+)

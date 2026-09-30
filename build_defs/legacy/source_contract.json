@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "qualified_commit": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
+  "source_root": "src/fea/legacy",
+  "repository_name": "legacy_fea",
+  "scope": "Critical migration sentinels only; complete import provenance is maintained separately.",
+  "source_files": {
+    "lib_src/solvers/FENodalState.h": "fa5cf7ae8e7a6118f82d0988c661cd74d6cc264d3832234f6cd14541f01ffab5",
+    "lib_src/solvers/FENodalState.cu": "b68f9a8f63730190ed40f241114079f0fe3c5333e53c16364e00c18c7bf00c98",
+    "lib_src/solvers/ExplicitNodalCinStep.cu": "a1302bf548330c38c8e608dde7b232f8f83d3e83362f8a44cad4eff980ca7e11",
+    "lib_src/solvers/BUILD.bazel": "4f524bc501d9a304400a10d6932e36c6ad1812080b594a8c2220512d65e2062d",
+    "lib_src/elements/publication/PhysicalTransaction.cpp": "312e8d6fe1425d8ce51ebf9428a1d068ad6e0cf8b4eeb795f25a4484611ceb94",
+    "lib_src/elements/ShellPhysicalPublication.h": "fe7b919ee57b67977aca4ee73006ec2e33984c5cd2bc3146136ba6610e88b9e6",
+    "lib_src/elements/solids/resident/Batch.h": "9551ca5cc0fdaefebcbc21dad81b364c37b687e344deba5eb2036833a74406e9",
+    "lib_src/elements/solids/resident/BUILD.bazel": "e95a8b12af82b4543b0f9407a46142cca1e41c7059a930e0a24dcb76c0fcd55a",
+    "lib_src/collision/radioss_type25/runtime/Transaction.cpp": "4a9b40c4e3fc3c7ccf89a346f6f837fab9b3252f215039d1d3b4bf1db3198de6",
+    "lib_src/collision/BUILD.bazel": "cb664575cac454b8881050b7d725a78ec412f75a0e3eaee30ef46411af2746e6",
+    "lib_src/materials/law36/README.md": "e08c201b2144dc63c8645a014a2a09fa249d715ce49eae41a53cb1b0b6e94b4f",
+    "lib_src/elements/sections/ShellNip3.h": "3a5985263bd8904fbbdef558d9045a6c231ac63aac7801f5aaf45b2db1836e6b",
+    "lib_src/solvers/FEStateBuffer.h": "2475f530799c85a8c8e475208ee93ce51a9d74d59f74d8f90f82b723e504ff6e"
+  },
+  "patches": {
+    "rules_cuda_0.2.5_bazel9.patch": "b7d083d86aa8ab40eb4e4a640f74fc0181106d71d953be7fd3ded3d42137e51f",
+    "rules_foreign_cc_0.9.0_bazel9_v3.patch": "b319f6f0bc7dd7f789b58344aa0674e196583605df095541e66ec18792d4e8fd",
+    "googletest_1.17.0_bazel9.patch": "785aad444dafc8980d3cc4674447a200ff0465605496bc44aee2c0faca768496"
+  },
+  "dependency_versions": {
+    "platforms": "1.0.0",
+    "rules_cc": "0.2.17",
+    "rules_cuda": "0.2.5",
+    "rules_foreign_cc": "0.9.0",
+    "eigen": "3.4.0.bcr.3",
+    "googletest": "1.17.0"
+  },
+  "dependency_notes": {
+    "rules_cc": "Explicit 0.2.17 request matches the resolved qualified and root lock source hash 3832f45d145354049137c0090df04629d9c2b5493dc5c2bf46f1834040133a07; inherited MODULE minimum request was 0.2.14."
+  }
+}

@@ -1,0 +1,24 @@
+[submodule "fea-dem-engine"]
+path = src/fea/legacy/third_party/DEM-Engine
+url = https://github.com/projectchrono/DEM-Engine.git
+
+[submodule "chrono-googletest"]
+path = src/compatibility/chrono/src/chrono_thirdparty/googletest
+url = https://github.com/google/googletest.git
+
+[submodule "chrono-googlebenchmark"]
+path = src/compatibility/chrono/src/chrono_thirdparty/googlebenchmark
+url = https://github.com/google/benchmark.git
+
+[submodule "chrono-flatbuffers"]
+path = src/compatibility/chrono/src/chrono_thirdparty/flatbuffers
+url = https://github.com/google/flatbuffers.git
+
+[submodule "chrono-fmu-forge"]
+path = src/compatibility/chrono/src/chrono_thirdparty/fmu-forge
+url = https://github.com/projectchrono/fmu-forge.git
+
+[submodule "chrono-hydrochrono"]
+path = src/compatibility/chrono/src/chrono_thirdparty/HydroChrono
+url = https://github.com/Project-SEA-Stack/HydroChrono.git
+branch = feature/chrono-fsi-interface

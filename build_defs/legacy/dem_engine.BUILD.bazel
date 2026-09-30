@@ -1,0 +1,49 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+package(default_visibility = ["//visibility:public"])
+
+_REQUIRED_SOURCES = glob(["CMakeLists.txt", "src/DEM/API.h"], allow_empty = False)
+
+filegroup(
+    name = "srcs",
+    srcs = _REQUIRED_SOURCES + glob(
+        ["cmake/**", "src/**", "thirdparty/**", "data/**"],
+        exclude = _REQUIRED_SOURCES,
+        allow_empty = True,
+    ),
+)
+cc_library(
+    name = "dem_engine_headers",
+    hdrs = glob(["src/DEM/API.h"], allow_empty = False) + glob(
+        ["src/**/*.h", "src/**/*.hpp", "src/**/*.cuh", "thirdparty/**/*.hpp"],
+        exclude = ["src/DEM/API.h"],
+        allow_empty = True,
+    ),
+    includes = ["src", "thirdparty"],
+)
+
+# Temporary foreign build for this external dependency. The simulator's native
+# structural/contact targets do not depend on it. CUDA paths come from the
+# declared build environment, never a hardcoded workstation installation.
+_COMMON_CACHE = {
+    "USE_CHPF": "OFF",
+    "USE_MANAGED_ARRAYS": "OFF",
+    "CXXSTD_MAX": "17",
+}
+
+cmake(
+    name = "dem_engine",
+    lib_source = ":srcs",
+    cache_entries = select({
+        "@robodyna//build_defs:sm75": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "75"),
+        "@robodyna//build_defs:sm86": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "86"),
+        "@robodyna//build_defs:sm120": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "120"),
+        "//conditions:default": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "75;86"),
+    }),
+    generate_args = ["-GUnix Makefiles"],
+    build_args = ["--parallel", "4", "--target", "simulator_multi_gpu", "--target", "DEMERuntimeDataHelper_install"],
+    out_data_dirs = ["share"],
+    out_static_libs = ["libsimulator_multi_gpu.a"],
+    out_shared_libs = ["libDEMERuntimeDataHelper.so"],
+)

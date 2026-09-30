@@ -1,0 +1,7 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["MODULE.bazel", ".bazelrc", ".bazelversion", ".bazelignore"])
+
+# Explicit product labels keep native and optional legacy solver families clear.
+alias(name = "fea_explicit", actual = "//src/fea:explicit")
+alias(name = "fea_host_values", actual = "//src/fea:host_values")

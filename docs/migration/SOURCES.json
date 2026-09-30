@@ -1,31 +1,43 @@
 {
   "schema": "robodyna.source_migration.v1",
-  "status": "imports_pending",
+  "status": "tracked_source_imports_verified_build_pending",
   "created_utc": "2026-09-30T22:32:58.291458+00:00",
   "sources": [
     {
       "component": "fea",
       "path": "src/fea/legacy",
       "source_commit": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
-      "imported": false
+      "imported": true,
+      "import_commit": "3567d2e180917e604bffb95d22d6b3e7fbda0175",
+      "source_tree": "6aa5c4906a3e518fad62051849d1720c25e3816e",
+      "exact_tree_at_import": true,
+      "history_reachable": true
     },
     {
       "component": "chrono_capabilities",
       "path": "src/compatibility/chrono",
       "source_commit": "a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38",
-      "imported": false
+      "imported": true,
+      "import_commit": "557e501b926526ca1ca918d670a2abd80b19cfdb",
+      "source_tree": "bec2d91ed3ed83cfa194256fe13d1a68d26d3be2",
+      "exact_tree_at_import": true,
+      "history_reachable": true
     },
     {
       "component": "application",
       "path": "src/compatibility/app",
-      "source_commit": null,
-      "imported": false,
+      "source_commit": "b543106584f79521a9367bd976bffb76c312bbeb",
+      "imported": true,
       "consolidation_parents": [
         "3b6ef1c566061246679d56b4ffd538315dde74dc",
         "7260743c19a6082fa3a717b2b9c88881a120bc56",
         "41774b5b267e59c79a8b41ec1db4df5b15c0e8f8",
         "32bc6d9"
-      ]
+      ],
+      "import_commit": "5cc63a149bd35f6eb310ba7f2781b35a3785b12a",
+      "source_tree": "43477801627158ce448dfbc88034d6c0201eeb14",
+      "exact_tree_at_import": true,
+      "history_reachable": true
     }
   ],
   "preservation": "Original worktrees and all accepted/failed simulation/media artifacts remain outside and unchanged.",
@@ -34,5 +46,15 @@
     "accepted_intervals": 666667,
     "fixed_dt_s": 1.5e-07,
     "video_receipt_sha256": "57267c8ce4c6f70885d232b4f7bd792ee26251514d684181a0dd125a2f8554cf"
+  },
+  "updated_utc": "2026-09-30T22:44:49.281091+00:00",
+  "gitlink_inventory": "DEPENDENCIES.json",
+  "lfs": {
+    "verified_files": 129,
+    "payload_bytes": 400603833,
+    "pointer_identity_preserved": true,
+    "local_payloads_restored": true,
+    "network_transfer": false,
+    "receipt": "outer workspace crash-work/reports/robodyna-lfs-preservation-1.json"
   }
 }

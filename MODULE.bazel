@@ -1,0 +1,53 @@
+module(name = "robodyna", version = "0.1.0")
+
+# Start with the qualified explicit backend's versions. Overrides belong to
+# this product root; imported MODULE files do not select another dependency graph.
+bazel_dep(name = "platforms", version = "1.0.0")
+# Both the qualified inherited lock and the first root graph resolve 0.2.17.
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "rules_cuda", version = "0.2.5")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+bazel_dep(name = "eigen", version = "3.4.0.bcr.3")
+bazel_dep(name = "googletest", version = "1.17.0")
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+single_version_override(
+    module_name = "rules_cuda",
+    version = "0.2.5",
+    patches = ["//build_defs/patches:rules_cuda_0.2.5_bazel9.patch"],
+    patch_strip = 1,
+)
+single_version_override(
+    module_name = "rules_foreign_cc",
+    version = "0.9.0",
+    patches = ["//build_defs/patches:rules_foreign_cc_0.9.0_bazel9_v3.patch"],
+    patch_strip = 1,
+)
+single_version_override(
+    module_name = "googletest",
+    version = "1.17.0",
+    patches = ["//build_defs/patches:googletest_1.17.0_bazel9.patch"],
+    patch_strip = 1,
+)
+
+# Transitional repository boundary preserves inherited //lib_src labels and
+# include roots. This is owned, in-tree source, not a separately installed product.
+local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+local_repository(name = "legacy_fea", path = "src/fea/legacy")
+
+# A separately retained upstream dependency of the optional legacy DEM backend.
+# Paths are relative to THIS root, not the ignored imported MODULE.bazel.
+new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
+new_local_repository(
+    name = "dem_engine",
+    path = "src/fea/legacy/third_party/DEM-Engine",
+    build_file = "//build_defs/legacy:dem_engine.BUILD.bazel",
+)
+
+register_toolchains("@rules_cuda//cuda:all")
+
+# Explicit system SDK boundary matching the inherited artifact-hash provider.
+# The generated repository records resolved paths/header version; no binary is
+# copied into Git and no package installation or download occurs here.
+system_openssl = use_repo_rule("//build_defs/sdk:openssl.bzl", "system_openssl")
+system_openssl(name = "openssl")

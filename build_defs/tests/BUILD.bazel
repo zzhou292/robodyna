@@ -1,0 +1,9 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "source_boundary_test",
+    size = "small",
+    srcs = ["test_source_boundary.py"],
+    main = "test_source_boundary.py",
+    deps = ["//build_defs:source_boundary"],
+)

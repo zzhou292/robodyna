@@ -1,0 +1,16 @@
+# Invoked by CMAKE_PROJECT_Chrono_INCLUDE after the inherited project() call.
+# This is an input check, not a replacement for Chrono's generated configuration.
+if(NOT DEFINED EIGEN3_INCLUDE_DIR)
+    message(FATAL_ERROR "Robodyna requires the Bazel-declared Eigen include root")
+endif()
+foreach(header IN ITEMS Eigen/Core Eigen/src/Core/util/Macros.h)
+    if(NOT EXISTS "${EIGEN3_INCLUDE_DIR}/${header}")
+        message(FATAL_ERROR "Declared Eigen header is missing: ${header}; host Eigen fallback is disabled")
+    endif()
+endforeach()
+if(NOT CHRONO_GPU_VENDOR STREQUAL "NONE")
+    message(FATAL_ERROR "The initial Robodyna Chrono bridge is host-only")
+endif()
+if(NOT CH_ENABLE_MODULE_FEA OR CH_ENABLE_MODULE_FEA_MULTIPHYSICS)
+    message(FATAL_ERROR "The initial bridge requires the mechanical FEA reference profile")
+endif()
