@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+# Baseline tests deliberately use only the existing public API and virtual hooks.
+# Run before and after introducing the participant-service interface.
+cc_test(
+    name = "baseline_test",
+    srcs = ["Fixture.h", "InvalidationTest.cpp", "GravityTest.cpp", "LifecycleTest.cpp"],
+    deps = [
+        "//tests/mesh_compat:fixture",
+        "//tests/archive_support:streams",
+        "@googletest//:gtest_main",
+    ],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    size = "small",
+    tags = ["manual", "cpu-only", "participant-services"],
+)
