@@ -1,6 +1,8 @@
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
 load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
 load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
+load("//build_defs/chrono:scm.bzl", "chrono_native_scm")
+load("//build_defs/chrono:stb.bzl", "chrono_native_stb")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -8,9 +10,31 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["CMakeLists.txt", "src/chrono/CMakeLists.txt", "src/ChConfig.h.in", "src/ChVersion.h.in"])
 
 chrono_native_host(name = "native_core_fea")
+chrono_native_stb(name = "native_stb")
 chrono_native_vsg(name = "native_vsg")
+chrono_native_scm(name = "native_scm")
 
 exports_files(["data/logo_chrono_alpha.png"])
+
+exports_files([
+    "src/demos/mbs/demo_MBS_spring.cpp",
+    "src/demos/mbs/demo_MBS_collisionNSC.cpp",
+    "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
+    "data/models/tractor_wheel/tractor_wheel.obj",
+])
+
+filegroup(
+    name = "scm_demo_assets",
+    srcs = [":vsg_assets", "data/models/tractor_wheel/tractor_wheel.obj"],
+)
+
+filegroup(
+    name = "rigid_demo_assets",
+    srcs = [":vsg_assets"] + glob([
+        "data/textures/bluewhite.png", "data/textures/cubetexture_bluewhite.png",
+        "data/textures/pinkwhite.png", "data/textures/concrete.jpg", "data/textures/blue.png",
+    ]),
+)
 
 # Export unchanged source bytes to their real neutral native compile owners.
 exports_files(

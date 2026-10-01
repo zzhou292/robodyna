@@ -33,6 +33,11 @@
 #include "chrono_vehicle/ChVehicleDataPath.h"
 #include "chrono_vehicle/terrain/SCMTerrain.h"
 
+#ifdef ROBODYNA_CAPTURE_DEMO
+    #include "examples/support/CaptureSession.h"
+    #include "examples/scm/Telemetry.h"
+#endif
+
 using namespace chrono;
 
 // =============================================================================
@@ -95,6 +100,13 @@ class MySoilParams : public vehicle::SCMTerrain::SoilParametersCallback {
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
 
+#ifdef ROBODYNA_CAPTURE_DEMO
+    const auto capture_options = robodyna::examples::ReadCaptureOptions(
+        argc, argv, "src/compatibility/chrono/src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp", 0.002);
+    robodyna::examples::CaptureSession capture(capture_options);
+    SetChronoOutputPath(capture_options.output.string() + '/');
+#endif
+
     // Set world frame with Y up
     vehicle::ChWorldFrame::SetYUP();
 
@@ -106,7 +118,11 @@ int main(int argc, char* argv[]) {
     auto collsys_type = ChCollisionSystem::Type::BULLET;
     ChSystemSMC sys;
     sys.SetGravityY();
+#ifdef ROBODYNA_CAPTURE_DEMO
+    sys.SetNumThreads(2, 2, 1);  // Match the two-CPU demo/render resource profile.
+#else
     sys.SetNumThreads(4, 8, 1);
+#endif
     switch (collsys_type) {
         case ChCollisionSystem::Type::BULLET: {
             auto collsys = chrono_types::make_shared<ChCollisionSystemBullet>();
@@ -267,8 +283,16 @@ int main(int argc, char* argv[]) {
     terrain.SetMeshWireframe(true);
 
     // Create the run-time visualization system
+#ifdef ROBODYNA_CAPTURE_DEMO
+    std::shared_ptr<vsg3d::ChVisualSystemVSG> vis;
+    if (!capture_options.headless) {
+#endif
     auto visSCM = chrono_types::make_shared<vehicle::ChScmVisualizationVSG>(&terrain);
+#ifdef ROBODYNA_CAPTURE_DEMO
+    vis = chrono_types::make_shared<robodyna::examples::CaptureVisual>();
+#else
     auto vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
+#endif
     vis->AttachSystem(&sys);
     vis->AttachPlugin(visSCM);
     vis->SetWindowTitle("SCM deformable terrain");
@@ -279,7 +303,13 @@ int main(int argc, char* argv[]) {
     vis->SetCameraAngleDeg(40.0);
     vis->SetLightIntensity(1.0f);
     vis->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);
+#ifdef ROBODYNA_CAPTURE_DEMO
+    capture.ConfigureVisual(*vis);
+#endif
     vis->Initialize();
+#ifdef ROBODYNA_CAPTURE_DEMO
+    }
+#endif
 
     // Create the Blender exporter
 #ifdef CHRONO_POSTPROCESS
@@ -307,6 +337,20 @@ int main(int argc, char* argv[]) {
     */
 
     // Simulation loop
+#ifdef ROBODYNA_CAPTURE_DEMO
+    robodyna::examples::scm::Telemetry telemetry(wheel->GetPos(), mesh_resolution);
+    if (vis)
+        vis->SetCameraTarget(wheel->GetPos());
+    capture.State(0, sys, vis.get());
+    for (std::uint64_t step = 1; step <= capture_options.steps; ++step) {
+        robodyna::examples::Require(sys.DoStepDynamics(0.002) != 0, "Original SCM dynamics step failed");
+        telemetry.Observe(sys.GetChTime(), wheel, *motor, terrain);
+        if (vis)
+            vis->SetCameraTarget(wheel->GetPos());
+        capture.State(step, sys, vis.get());
+    }
+    capture.Finish(sys, telemetry.Finish(terrain));
+#else
     while (vis->Run()) {
         double time = sys.GetChTime();
         if (output) {
@@ -334,6 +378,7 @@ int main(int argc, char* argv[]) {
         sys.DoStepDynamics(0.002);
         ////terrain.PrintStepStatistics(std::cout);
     }
+#endif
 
     if (output) {
         csv.WriteToFile(out_dir + "/output.dat");

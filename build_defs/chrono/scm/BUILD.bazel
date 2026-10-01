@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+alias(name = "terrain", actual = "//src/compatibility/chrono:native_scm", tags = ["manual"])
+alias(name = "visualization", actual = "//src/compatibility/chrono:native_scm_vsg", tags = ["manual"])
+alias(name = "assets", actual = "//src/compatibility/chrono:scm_demo_assets", tags = ["manual"])
+
+cc_test(
+    name = "terrain_values_test",
+    srcs = ["ScmTerrainTest.cpp"],
+    deps = [":terrain", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "retained-scm"],
+)

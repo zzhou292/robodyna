@@ -2,7 +2,9 @@
 
 The user authorized implementation on 2026-09-30. Work on local branch
 `work/initial-integration`; destination is https://github.com/zzhou292/robodyna.git.
-No publication is part of the current staged operation.
+The user subsequently authorized initial publication to this repository after
+retained Chrono demonstrations and a Robodyna logo are complete. Those tasks
+have passed their runtime/media gates; final publication is being prepared.
 
 ## Checkpoints
 
@@ -89,3 +91,17 @@ The next code change should follow `NEXT_SEAMS.md`: remove the generic visual
 model's FE implementation dependency before extracting participant/system services.
 Do not reopen completed imports or rerun the 11-hour physical trajectory merely
 to resume this migration. `OPERATING.md` records tested operator entry points.
+
+## Retained demonstrations and first publication
+
+The original spring, NSC collision/mixer and SCM lugged-wheel examples now build
+and execute through native Bazel targets. Each completed six seconds headlessly
+and with recorded VSG visualization; all model telemetry matched exactly between
+the two modes. All videos passed full decoding and visual review. These examples
+use CPU dynamics and GPU graphics; they do not claim a new CUDA MBD/SCM port.
+
+A shared capture utility preserves the existing Yaris replay: its short regression
+MP4 remains byte-identical after the extraction. The final product/example suite
+passed 24 test targets. The selected Robodyna logo is in `assets/brand/`.
+The next architecture seams remain in `NEXT_SEAMS.md`; demo qualification did not
+complete standalone FEA/MBD dependency separation.

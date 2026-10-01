@@ -12,7 +12,7 @@ already completed migrations.
 | Retained source | Proposed Robodyna owner | Root build / execution evidence |
 | --- | --- | --- |
 | `chrono` core math, geometry, archives | `core`, `geometry`, `numerics` | Native aggregate and host tests passed; first neutral extraction qualified |
-| `chrono/physics` bodies, joints, shafts, motors | `mbd`, shared `mechanics`, mixed `simulation` | Native aggregate and rigid host tests passed; independent MBD gate pending |
+| `chrono/physics` bodies, joints, shafts, motors | `mbd`, shared `mechanics`, mixed `simulation` | Native aggregate, rigid host tests and original spring/NSC six-second videos passed; independent MBD gate pending |
 | `chrono/fea` mechanical, thermal and scalar elements | `fea` | Native aggregate and focused FE host tests passed; full domain coverage and independent FE gate pending |
 | `chrono/collision`, contact classes | `collision`, `contact`, domain adapters | Included in native aggregate; inherited profiles retain separate semantics |
 | `chrono_mumps` | `numerics/linear` optional backend | Source retained; SDK and native target qualification pending |
@@ -28,7 +28,7 @@ already completed migrations.
 | `chrono_peridynamics` | `peridynamics` | Source retained; current FE node inheritance remains declared until extracted |
 | `chrono_multicore` | CPU `execution`, numerical/contact backends | Source retained; native targets and focused runtime qualification pending |
 | `chrono_dem` | `dem` | Source retained; distinct from optional TL DEME integration; native qualification pending |
-| `chrono_vehicle` | `vehicle` | Source retained; native engineering subsystem targets pending |
+| `chrono_vehicle` | `vehicle` | Native CPU SCM terrain and six-second lugged-wheel/rut demonstration passed; broader vehicle subsystems pending |
 | `chrono_models` | `models/vehicle`, `models/robot` | Source retained; reusable catalogs and asset admission pending |
 | `chrono_vehicle/cosim` | vehicle coupling / integrations | Source retained; external communication/runtime qualification pending |
 | `chrono_vehicle/fmi` | vehicle FMI adapters | Source retained; FMI dependencies and qualification pending |

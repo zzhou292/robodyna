@@ -91,10 +91,26 @@ def _verify_probe(probe, capture, count, fps):
             or Fraction(stream.get("avg_frame_rate", "0")) != fps
             or Fraction(stream.get("r_frame_rate", "0")) != fps):
         raise ValueError("Encoded stream does not match the captured-state hold plan")
-    duration = float(probe.get("format", {}).get("duration", "nan"))
-    # ffprobe prints decimal seconds to six places; no full-frame tolerance.
-    if not math.isfinite(duration) or abs(duration - count / fps) > 1e-6:
-        raise ValueError("Encoded duration does not match the captured-state hold plan")
+    ticks = stream.get("duration_ts")
+    start = stream.get("start_pts")
+    if type(ticks) is not int or ticks <= 0 or type(start) is not int or start != 0:
+        raise ValueError("Encoded stream requires integer duration ticks and a zero start")
+    try:
+        time_base = Fraction(stream.get("time_base", ""))
+        movie_duration = Fraction(probe.get("format", {}).get("duration", ""))
+    except (ValueError, TypeError, ZeroDivisionError) as error:
+        raise ValueError("Encoded stream/container timing is malformed") from error
+    expected = Fraction(count, fps)
+    if time_base <= 0 or ticks * time_base != expected:
+        raise ValueError("Encoded stream duration does not exactly match the captured-state hold plan")
+    # The qualified FFmpeg MP4 muxer uses a 1000 Hz movie-header clock, distinct
+    # from the video track clock. It rounds the movie duration up to whole ticks.
+    # For 182/30 seconds this is 6.067 s; the track must still be EXACTLY 182/30.
+    # This is an explicit container quantization rule, not a frame-sized tolerance.
+    movie_timescale = 1000
+    movie_ticks = (expected.numerator * movie_timescale + expected.denominator - 1) // expected.denominator
+    if movie_duration != Fraction(movie_ticks, movie_timescale):
+        raise ValueError("MP4 movie duration differs from its expected millisecond rounding")
 
 
 def encode_capture(capture_dir, output_dir, ffmpeg,

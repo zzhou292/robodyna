@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "telemetry",
+    srcs = ["Telemetry.cpp"],
+    hdrs = ["Telemetry.h"],
+    deps = ["//build_defs/chrono/scm:terrain", "//build_defs/app:artifact_io"],
+)
+
+cc_binary(
+    name = "rigid_tire",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp"],
+    local_defines = ["ROBODYNA_CAPTURE_DEMO"],
+    deps = [":telemetry", "//examples/support:capture", "//build_defs/chrono/scm:visualization"],
+    data = [
+        "//build_defs/chrono/scm:assets",
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
+    ],
+    tags = ["manual", "retained-scm"],
+)

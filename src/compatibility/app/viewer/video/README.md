@@ -42,6 +42,12 @@ retained individually, with each state's exact presentation frame range.
 
 `manifest.json` is written after ffprobe confirms codec, dimensions, rate, frame
 count and duration, and ffmpeg completes a full decode with error checking.
+Duration uses the exact video-track `duration_ts * time_base`, with `start_pts=0`.
+The separate MP4 movie-header duration must equal that duration rounded up to the
+qualified muxer's 1000 Hz clock; no whole-frame tolerance is permitted. Thus a
+182-frame movie at 30 fps has an exact track duration of 182/30 seconds while
+the container reports 6.067 seconds. The encoder command and video bytes are
+unchanged by this verification rule.
 It includes the complete original capture metadata, per-state hold plan, movie
 hash, tool hashes and exact commands. `ffprobe.json`, `encode.log`, `ffprobe.log`
 and `decode.log` retain verification evidence. A failure leaves partial output

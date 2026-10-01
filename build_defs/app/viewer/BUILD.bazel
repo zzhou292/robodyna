@@ -1,6 +1,13 @@
 load("//build_defs/app:defs.bzl", "app_library")
 
 app_library(
+    name = "vsg_image_capture",
+    srcs = ["viewer/VsgImageCapture.cpp"],
+    hdrs = ["viewer/VsgImageCapture.h"],
+    deps = ["//build_defs/chrono/vsg:vsg", "//build_defs/app/output:artifact_io"],
+)
+
+app_library(
     name = "replay_assets",
     srcs = [
         "viewer/ReplayAssets.cpp",
@@ -29,6 +36,7 @@ app_library(
         "//build_defs/app/output:artifact_io",
         "//build_defs/app/chrono/replay:replay_visual_values",
         ":replay_assets",
+        ":vsg_image_capture",
     ],
     copts = [
     ],

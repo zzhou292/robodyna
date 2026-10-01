@@ -1,0 +1,532 @@
+{
+  "schema": "robodyna.chrono_examples_qualification.v1",
+  "status": "named_examples_runtime_and_media_passed",
+  "recorded_utc": "2026-10-01T02:16:36.783940+00:00",
+  "artifact_paths": "relative to the enclosing chrono-work workspace; runs and movies are retained outside Git",
+  "evidence_scope": [
+    "native Bazel original-demo execution",
+    "bounded real step and time accounting",
+    "exact complete headless/capture telemetry equality",
+    "all captured PNG decode attestations",
+    "full MP4 decode attestations",
+    "root visual review of initial, intermediate and final frames"
+  ],
+  "qualification_boundary": {
+    "cuda_dynamics": false,
+    "independent_fea_mbd_library_closure": false,
+    "experimental_accuracy_validated": false,
+    "complete_energy_balance": false,
+    "physical_restart": false
+  },
+  "verification_method": {
+    "closed_json_receipts_read_and_hashed": true,
+    "summary_comparisons_performed": true,
+    "movie_sizes_checked": true,
+    "movie_hashes_from_closed_encoder_receipts": true,
+    "png_or_movie_payloads_rehashed_in_this_documentation_pass": false,
+    "visual_review": "closed root visual-review receipt inspected; image hashes retained from that receipt"
+  },
+  "examples": [
+    {
+      "name": "spring",
+      "bazel_target": "//examples/mbd:spring",
+      "source_demo": {
+        "path": "src/compatibility/chrono/src/demos/mbs/demo_MBS_spring.cpp",
+        "sha256": "96a81b943959a9953be6c4861e5413c7564e2bf1a10d7fb1babc15f4fe406a7f"
+      },
+      "physics_backend": "retained_chrono_cpu",
+      "renderer_backend": "vulkan_vsg",
+      "cuda_dynamics": false,
+      "horizon": {
+        "steps": 6000,
+        "time_step_s": 0.001,
+        "actual_time_s": 6.000000000000338,
+        "capture_every_steps": 40,
+        "captured_states": 151
+      },
+      "headless": {
+        "summary": {
+          "path": "crash-work/runs/chrono-demos-20261001-1/spring-headless-2/run-summary.json",
+          "bytes": 2217,
+          "sha256": "ad9c9f34933974a0a311d78beb34b0bbac34d991356b9c14fe259d7d5a788b85"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-spring-headless-2.json",
+            "bytes": 3230,
+            "sha256": "f336058ffaf0a79c2ad31c7e6fa546c1e62ef0c82c50dbe9479c94068d62d4de"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 0.311,
+          "peak_sampled_rss_bytes": 9437184
+        }
+      },
+      "capture": {
+        "summary": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/run-summary.json",
+          "bytes": 2220,
+          "sha256": "21c979a385ff1c7bdbef41d903b1713a06177189f9bf8a9c970ccb76c37c38db"
+        },
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/manifest.json",
+          "bytes": 968,
+          "sha256": "fce219c514d964472d81e2f3876e6d4ac9e4785e02135fdccc0a7d0ace8f3620"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-spring-capture-1.json",
+            "bytes": 178334,
+            "sha256": "b064e8dd66a009ec9125b8305b377d0a5501343b043470fb6348daea5d2b7047"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 130.246,
+          "peak_sampled_rss_bytes": 203661312
+        },
+        "width": 1280,
+        "height": 800,
+        "all_png_decoded": true
+      },
+      "comparison": {
+        "entire_telemetry_equal": true,
+        "run_summary_equal_except": [
+          "headless",
+          "frames"
+        ],
+        "comparison": "exact parsed JSON values",
+        "canonical_telemetry_sha256": "3212a29da131117d5d12532f3910ea4c74e6ffee9887e3a3bd21d2bb2c868347"
+      },
+      "observations": {
+        "schema": "robodyna.original_mbd_observations.v1",
+        "model": "original_demo_MBS_spring",
+        "dynamics_backend": "retained_chrono_cpu",
+        "cuda_dynamics": false,
+        "scope": "observed original demo dynamics; not a new physical model or complete energy ledger",
+        "observed_states": 6001,
+        "final_time_s": 6.000000000000338,
+        "mass_each_kg": 1.0,
+        "stiffness_n_per_m": 50.0,
+        "damping_ns_per_m": 1.0,
+        "rest_length_m": 1.5,
+        "initial_first_position_m": [
+          -1.0,
+          -3.0,
+          0.0
+        ],
+        "initial_second_position_m": [
+          1.0,
+          -3.0,
+          0.0
+        ],
+        "final_first_position_m": [
+          -1.0,
+          -1.4889842686339114,
+          0.0
+        ],
+        "final_second_position_m": [
+          1.0,
+          -1.4889842686339114,
+          0.0
+        ],
+        "maximum_displacement_m": 2.7004700103330777,
+        "maximum_speed_m_per_s": 9.538820885363414,
+        "native_callback_position_difference_m": 0.0,
+        "native_callback_velocity_difference_m_per_s": 0.0,
+        "native_callback_length_difference_m": 0.0,
+        "native_callback_force_difference_n": 0.0,
+        "maximum_analytic_position_error_m": 0.005267618331277424,
+        "maximum_analytic_velocity_error_m_per_s": 0.013811588809551467,
+        "final_native_force_n": 0.023767214646192802,
+        "final_callback_force_n": 0.023767214646192802,
+        "final_native_length_m": 1.4889842686339114,
+        "final_callback_length_m": 1.4889842686339114,
+        "analytic_scope": "continuous damped oscillator reference; numerical errors reported, not prescribed motion"
+      },
+      "video": {
+        "path": "crash-work/renders/chrono-demos-20261001-1/spring-video/movie.mp4",
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/spring-video/manifest.json",
+          "bytes": 52560,
+          "sha256": "d77bae6f364007058eeeb552a17654228ba8aa475bb0b409761b397874862e81"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-spring-encode-1.json",
+            "bytes": 4368,
+            "sha256": "586a493775484a756bd3d70165996eb1512c97c007afedd9ede25fdf49fd3f2f"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 1.619,
+          "peak_sampled_rss_bytes": 270983168
+        },
+        "file": "movie.mp4",
+        "bytes": 125735,
+        "sha256": "0867e91f7da554703bc5c5208c38156f7141b9cfebc81b8006eca0ec982457eb",
+        "frames": 151,
+        "fps": 25,
+        "duration_s": 6.04,
+        "samples_per_second": 25.0,
+        "full_decode_passed": true,
+        "interpolated_frames": false,
+        "deformation_scale": 1
+      },
+      "visual_review": {
+        "passed": true,
+        "observations": [
+          "Both masses visibly oscillate together and settle; the native spring and callback agree.",
+          "Initial unstepped spring line is not yet fully laid out; subsequent sampled dynamics show the spring normally."
+        ],
+        "images": [
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/frame-000000.png",
+            "sha256": "b8dc10e8076c13b3f33262b489bd12b35083474c9f663423efa4b68f71f07de5"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/frame-000020.png",
+            "sha256": "1bc8ebdf20eab2f88d23f6cd46676cf7a2d5fd755807d7df009e55ea34fa294b"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/frame-000075.png",
+            "sha256": "02ba914efde66283843430cdc774196170b7ec1785ce303f40ee65654279d0fb"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/spring-capture/frame-000150.png",
+            "sha256": "dd6e779a9e81b23caaf1ca2b5942a258f47141696ce12bfa79aa17f28ded3e81"
+          }
+        ]
+      }
+    },
+    {
+      "name": "nsc",
+      "bazel_target": "//examples/mbd:collision_nsc",
+      "source_demo": {
+        "path": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collisionNSC.cpp",
+        "sha256": "ea09e34602da91cc61d161db25cba8cb310ffe69ea5b2572aba37abb69f2a03a"
+      },
+      "physics_backend": "retained_chrono_cpu",
+      "renderer_backend": "vulkan_vsg",
+      "cuda_dynamics": false,
+      "horizon": {
+        "steps": 2000,
+        "time_step_s": 0.003,
+        "actual_time_s": 6.000000000000116,
+        "capture_every_steps": 20,
+        "captured_states": 101
+      },
+      "headless": {
+        "summary": {
+          "path": "crash-work/runs/chrono-demos-20261001-1/nsc-headless/run-summary.json",
+          "bytes": 1431,
+          "sha256": "60bc60d71e36534e9b0f584621f8d98098389571a094400165c2db227e190ad9"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-nsc-headless-1.json",
+            "bytes": 4504,
+            "sha256": "e1389c8ccd8d38a01dbdab0e27f2895e16dc498fc53f3b7a481e7c9ac56127e8"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 1.873,
+          "peak_sampled_rss_bytes": 33816576
+        }
+      },
+      "capture": {
+        "summary": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/nsc-capture/run-summary.json",
+          "bytes": 1434,
+          "sha256": "de22ffddeab8ddc66a1a41a17034a09574624d27832521db5b981f850c2cdf78"
+        },
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/nsc-capture/manifest.json",
+          "bytes": 976,
+          "sha256": "9105983f1c3940a5748828e5ace902daadadc0a7502f4cd024a017250a67a7b0"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-nsc-capture-1.json",
+            "bytes": 161055,
+            "sha256": "b82c3f29a1f8b40146bd9aaeb491289cf746038e08aeb91e771a7cceaf662ec5"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 117.562,
+          "peak_sampled_rss_bytes": 285741056
+        },
+        "width": 1280,
+        "height": 800,
+        "all_png_decoded": true
+      },
+      "comparison": {
+        "entire_telemetry_equal": true,
+        "run_summary_equal_except": [
+          "headless",
+          "frames"
+        ],
+        "comparison": "exact parsed JSON values",
+        "canonical_telemetry_sha256": "99b00972d70b9cd9ee588c77858ac9b1e28b72ef719dbd0e746e7b9ca5d0ef6e"
+      },
+      "observations": {
+        "schema": "robodyna.original_mbd_observations.v1",
+        "model": "original_demo_MBS_collisionNSC",
+        "dynamics_backend": "retained_chrono_cpu",
+        "cuda_dynamics": false,
+        "scope": "observed original demo dynamics; not a new physical model or complete energy ledger",
+        "random_seed": 20260930,
+        "falling_objects": 87,
+        "fixed_bodies": 5,
+        "dynamic_bodies_including_mixer": 88,
+        "dynamic_mass_kg": 374032.9746226343,
+        "observed_states": 2001,
+        "final_time_s": 6.000000000000116,
+        "states_with_contacts": 2000,
+        "maximum_reported_contacts": 617,
+        "maximum_displacement_m": 13.146955143462375,
+        "maximum_speed_m_per_s": 19.24020005826627,
+        "contact_backend": "retained_CPU_Bullet_NSC_PSOR50",
+        "seed_scope": "reproducible ChRandom initialization for this build; not cross-platform bitwise dynamics certification"
+      },
+      "video": {
+        "path": "crash-work/renders/chrono-demos-20261001-1/nsc-video-2/movie.mp4",
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/nsc-video-2/manifest.json",
+          "bytes": 37982,
+          "sha256": "aaad0aba77365f94e814234bd6fee4f1f0a098f9f031fc06cad5ec6c5081da1f"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-nsc-encode-2.json",
+            "bytes": 7792,
+            "sha256": "efe375bdb60371a84a5f21d654e9c56bfdc4adfe36406cd5b1431cf8bc28d1e8"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 5.851,
+          "peak_sampled_rss_bytes": 273862656
+        },
+        "file": "movie.mp4",
+        "bytes": 1719062,
+        "sha256": "9a9eefbc7dac56535be062c871c9de0e0c11a9f480de4b682d728c84adc59ee0",
+        "frames": 182,
+        "fps": 30,
+        "duration_s": 6.066666666666666,
+        "samples_per_second": 16.666666666666668,
+        "full_decode_passed": true,
+        "interpolated_frames": false,
+        "deformation_scale": 1
+      },
+      "visual_review": {
+        "passed": true,
+        "observations": [
+          "All object families are visible; falling, collision response and rotating mixer motion are clear."
+        ],
+        "images": [
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/nsc-capture/frame-000000.png",
+            "sha256": "c3f2d5dbcd2c2735f5d814ec47345bdf3915b0e923570fd67964e9d3ac9adb00"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/nsc-capture/frame-000050.png",
+            "sha256": "fcfb73eb9d40730502ce226c0ca171eba0568e38c624ef1248b8696d12d002ae"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/nsc-capture/frame-000100.png",
+            "sha256": "7f762985ea73c40a3aa15c6740f947fbb475427b6164808bc07222cf92d2a464"
+          }
+        ]
+      }
+    },
+    {
+      "name": "scm",
+      "bazel_target": "//examples/scm:rigid_tire",
+      "source_demo": {
+        "path": "src/compatibility/chrono/src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
+        "sha256": "fd602faa3bf22e29c27a2ab2cb6af861acf68d4db76811b7fe8701abb3eb2355"
+      },
+      "physics_backend": "retained_chrono_cpu",
+      "renderer_backend": "vulkan_vsg",
+      "cuda_dynamics": false,
+      "horizon": {
+        "steps": 3000,
+        "time_step_s": 0.002,
+        "actual_time_s": 5.999999999999561,
+        "capture_every_steps": 20,
+        "captured_states": 151
+      },
+      "headless": {
+        "summary": {
+          "path": "crash-work/runs/chrono-demos-20261001-1/scm-headless/run-summary.json",
+          "bytes": 1453,
+          "sha256": "a480655bd8565621267945495c6aad93fa597836b2c92dfad3b168c1224dba2c"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-scm-headless-1.json",
+            "bytes": 6199,
+            "sha256": "b24c32741e3e9fca35425e2ddcf466a998e78288037f955089d30dcd74a93bc2"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 3.978,
+          "peak_sampled_rss_bytes": 48766976
+        }
+      },
+      "capture": {
+        "summary": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/scm-capture/run-summary.json",
+          "bytes": 1456,
+          "sha256": "60ea31409f291d472b45f0e361d438ebd9957ab47be2fee42d3d3ae69da455f8"
+        },
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/scm-capture/manifest.json",
+          "bytes": 995,
+          "sha256": "1d3d757be4173b1b745ac3b4e1dd28a0ea5303e06ebdf1bd5682567c690f5245"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-scm-capture-1.json",
+            "bytes": 194176,
+            "sha256": "1cd0ea1819c1195e27f53e521789ab93b5daf3cf130de2e96ac96ab1cab76527"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 142.104,
+          "peak_sampled_rss_bytes": 332140544
+        },
+        "width": 1280,
+        "height": 800,
+        "all_png_decoded": true
+      },
+      "comparison": {
+        "entire_telemetry_equal": true,
+        "run_summary_equal_except": [
+          "headless",
+          "frames"
+        ],
+        "comparison": "exact parsed JSON values",
+        "canonical_telemetry_sha256": "99fa57df1b4315a57b599b4461726bc9e5d6f41d58215ea58c22e26020e61da9"
+      },
+      "observations": {
+        "model": "retained_chrono_scm_lugged_rigid_tire",
+        "physics_backend": "CPU SCM with Bullet ray casting",
+        "observed_steps": 3000,
+        "time_s": 5.999999999999561,
+        "initial_wheel_position_m": [
+          0.0,
+          1.12,
+          -1.5
+        ],
+        "final_wheel_position_m": [
+          1.2615165283845614e-07,
+          0.7065710899770317,
+          1.5690917289902322
+        ],
+        "horizontal_wheel_travel_m": 3.0690917289902346,
+        "motor_angle_rad": 4.712388980384345,
+        "peak_contact_force_n": 23860.843428811437,
+        "maximum_soil_depression_m": 0.21773423595603889,
+        "maximum_plastic_sinkage_m": 0.6012283545952849,
+        "contact_steps": 2858,
+        "stored_soil_nodes": 2577,
+        "peak_ray_hits": 352,
+        "gpu_ray_steps": 0,
+        "gpu_force_steps": 0,
+        "contact_observed": true,
+        "permanent_rut_observed": true
+      },
+      "video": {
+        "path": "crash-work/renders/chrono-demos-20261001-1/scm-video/movie.mp4",
+        "manifest": {
+          "path": "crash-work/renders/chrono-demos-20261001-1/scm-video/manifest.json",
+          "bytes": 52698,
+          "sha256": "03f5f36d3f76f3fa3d4199595683b1918b3d23365a71fab718ee15d4634a944b"
+        },
+        "guard": {
+          "receipt": {
+            "path": "crash-work/reports/robodyna-scm-encode-1.json",
+            "bytes": 9043,
+            "sha256": "46786aae5c57943b03ce48578a7e54e207dca6ab9692b3ed46eea211fcd76635"
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "cleanup": "complete",
+          "elapsed_seconds": 7.385,
+          "peak_sampled_rss_bytes": 268857344
+        },
+        "file": "movie.mp4",
+        "bytes": 12620873,
+        "sha256": "fdf0c662d7014a281ac882e9fd8d7ff4865283b788fbfb2abdd77faf844fa09d",
+        "frames": 151,
+        "fps": 25,
+        "duration_s": 6.04,
+        "samples_per_second": 25.0,
+        "full_decode_passed": true,
+        "interpolated_frames": false,
+        "deformation_scale": 1
+      },
+      "visual_review": {
+        "passed": true,
+        "observations": [
+          "The lugged wheel rolls across the grid; a visible deformed rut and pressure-color changes remain behind it."
+        ],
+        "images": [
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/scm-capture/frame-000000.png",
+            "sha256": "3145541eafc6f5f05020eb8f4557a7b4327d5207907fd30302b213d77b0ec717"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/scm-capture/frame-000075.png",
+            "sha256": "a77f01dd816c4d0521e2da2df6344e22ae7006e62c585565ac022589384d8b66"
+          },
+          {
+            "path": "crash-work/renders/chrono-demos-20261001-1/scm-capture/frame-000150.png",
+            "sha256": "1b0cd238a8b5d2dc3c3754c5de95942b37ccef33adb73757e2c58b3db57f9e5a"
+          }
+        ]
+      }
+    }
+  ],
+  "preserved_failed_attempts": [
+    {
+      "receipt": {
+        "path": "crash-work/reports/robodyna-spring-headless-1.json",
+        "bytes": 3663,
+        "sha256": "140fbbcf6ab14659eba3f3d993bacb09f79d8aa5d61705a039d65318ce8ffacf"
+      },
+      "status": "command_failed",
+      "exit_code": 1,
+      "cleanup": "complete",
+      "preserved": true
+    },
+    {
+      "receipt": {
+        "path": "crash-work/reports/robodyna-nsc-encode-1.json",
+        "bytes": 7585,
+        "sha256": "6c7ad02940db85e236a638f01689ed5ea9fe0a58ac63b6e59dfb98730bc0e113"
+      },
+      "status": "command_failed",
+      "exit_code": 1,
+      "cleanup": "complete",
+      "preserved": true
+    }
+  ],
+  "visual_review": {
+    "receipt": {
+      "path": "crash-work/reports/robodyna-chrono-demos-visual-review-1.json",
+      "bytes": 3053,
+      "sha256": "3caffff2898d14f0660b522c3c201eb3d0e91986a251f1cbf2fb7d91b03a4356"
+    },
+    "passed": true,
+    "scope": "Visual motion and framing review; numerical correctness is limited to separately recorded diagnostics and tests."
+  }
+}

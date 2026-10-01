@@ -21,15 +21,12 @@ def chrono_native_vsg(name):
     """
     cc_library(
         name = name,
-        srcs = VSG_SOURCES + [
-            "src/chrono_thirdparty/stb/stb_image.cpp",
-            "src/chrono_thirdparty/stb/stb_image_write.cpp",
-        ],
-        hdrs = native.glob(["src/chrono_vsg/**/*.h", "src/chrono_thirdparty/stb/*.h"]),
+        srcs = VSG_SOURCES,
+        hdrs = native.glob(["src/chrono_vsg/**/*.h"]),
         includes = ["src"],
         local_defines = ["CH_API_COMPILE_VSG"],
         copts = ["-O3", "-fPIC"],
-        deps = [":native_core_fea", "@vsg_sdk//:sdk"],
+        deps = [":native_core_fea", ":native_stb", "@vsg_sdk//:sdk"],
         # The SDK's Xchange and ImGui are shared: owning Chrono CMake includes
         # these two STB TUs, while the separate ImGui implementation stays in SDK.
         target_compatible_with = ["@platforms//os:linux"],

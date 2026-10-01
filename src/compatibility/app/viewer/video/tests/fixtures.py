@@ -68,3 +68,17 @@ def tools(directory):
         path.write_text("This fixture must never be executed.\n")
         path.chmod(0o700)
     return directory / "ffmpeg"
+
+
+def live_capture(directory):
+    rows, metadata = capture(directory)
+    for key in ("input_horizon_complete", "input_stop_reason", "input_receipt"):
+        metadata.pop(key)
+    metadata.update(schema="robodyna.chrono_live_capture.v1", simulation_executed_by_viewer=True,
+                    physics_backend="chrono_cpu", source_demo="demo_VEH_SCMTerrain_RigidTire.cpp",
+                    source_demo_sha256="c" * 64, time_step_s=.002, capture_every_steps=20,
+                    final_epoch=40, final_time_s=.08)
+    for index, row in enumerate(rows):
+        row.update(epoch=index * 20, accepted_time_s=index * .04)
+    write_index(directory, rows, metadata)
+    return rows, metadata

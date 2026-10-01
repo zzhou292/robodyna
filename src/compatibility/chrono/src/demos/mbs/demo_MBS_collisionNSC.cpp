@@ -24,6 +24,10 @@
 #include "chrono/assets/ChTexture.h"
 #include "chrono/core/ChRealtimeStep.h"
 #include "chrono/core/ChRandom.h"
+#ifdef ROBODYNA_CAPTURE_DEMO
+    #include "examples/support/CaptureSession.h"
+    #include "examples/mbd/Telemetry.h"
+#endif
 
 #ifdef CHRONO_COLLISION
     #include "chrono/collision/multicore/ChCollisionSystemMulticore.h"
@@ -33,7 +37,7 @@
     #include "chrono_irrlicht/ChVisualSystemIrrlicht.h"
 using namespace chrono::irrlicht;
 #endif
-#ifdef CHRONO_VSG
+#if defined(CHRONO_VSG) || defined(ROBODYNA_CAPTURE_DEMO)
     #include "chrono_vsg/ChVisualSystemVSG.h"
 using namespace chrono::vsg3d;
 #endif
@@ -143,6 +147,15 @@ std::shared_ptr<ChBody> AddContainer(ChSystemNSC& sys) {
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
 
+#ifdef ROBODYNA_CAPTURE_DEMO
+    try {
+    const auto capture_options = robodyna::examples::ReadCaptureOptions(
+        argc, argv, "src/compatibility/chrono/src/demos/mbs/demo_MBS_collisionNSC.cpp", 0.003);
+    robodyna::examples::CaptureSession capture(capture_options);
+    constexpr std::uint32_t capture_seed = 20260930;
+    ChRandom::SetSeed(capture_seed);
+#endif
+
     // Create the physical system
     ChSystemNSC sys;
     sys.SetGravityY();
@@ -173,12 +186,15 @@ int main(int argc, char* argv[]) {
     if (vis_type == ChVisualSystem::Type::IRRLICHT)
         vis_type = ChVisualSystem::Type::VSG;
 #endif
-#ifndef CHRONO_VSG
+#if !defined(CHRONO_VSG) && !defined(ROBODYNA_CAPTURE_DEMO)
     if (vis_type == ChVisualSystem::Type::VSG)
         vis_type = ChVisualSystem::Type::IRRLICHT;
 #endif
 
     std::shared_ptr<ChVisualSystem> vis;
+#ifdef ROBODYNA_CAPTURE_DEMO
+    if (!capture_options.headless) {
+#endif
     switch (vis_type) {
         case ChVisualSystem::Type::IRRLICHT: {
 #ifdef CHRONO_IRRLICHT
@@ -198,8 +214,12 @@ int main(int argc, char* argv[]) {
         }
         default:
         case ChVisualSystem::Type::VSG: {
-#ifdef CHRONO_VSG
+#if defined(CHRONO_VSG) || defined(ROBODYNA_CAPTURE_DEMO)
+#ifdef ROBODYNA_CAPTURE_DEMO
+            auto vis_vsg = chrono_types::make_shared<robodyna::examples::CaptureVisual>();
+#else
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
+#endif
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetWindowTitle("NSC collision demo");
             vis_vsg->AddCamera(ChVector3d(0, 18, -20));
@@ -212,13 +232,21 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetLightIntensity(1.0f);
             vis_vsg->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);
             vis_vsg->EnableShadows();
+#ifdef ROBODYNA_CAPTURE_DEMO
+            capture.ConfigureVisual(*vis_vsg);
             vis_vsg->Initialize();
+#else
+            vis_vsg->Initialize();
+#endif
 
             vis = vis_vsg;
 #endif
             break;
         }
     }
+#ifdef ROBODYNA_CAPTURE_DEMO
+    }
+#endif
 
     // Modify some setting of the physical system for the simulation, if you want
     sys.SetSolverType(ChSolver::Type::PSOR);
@@ -227,9 +255,19 @@ int main(int argc, char* argv[]) {
     ////sys.SetSleepingAllowed(true);
 
     // Simulation loop
-    ChRealtimeStepTimer rt;
     double step_size = 0.003;
-
+#ifdef ROBODYNA_CAPTURE_DEMO
+    robodyna::examples::mbd::CollisionTelemetry telemetry(sys, capture_seed);
+    telemetry.Observe(sys);
+    capture.State(0, sys, capture_options.headless ? nullptr : vis.get());
+    for (std::uint64_t step = 1; step <= capture_options.steps; ++step) {
+        robodyna::examples::Require(sys.DoStepDynamics(step_size) != 0, "Original NSC dynamics step failed");
+        telemetry.Observe(sys);
+        capture.State(step, sys, capture_options.headless ? nullptr : vis.get());
+    }
+    capture.Finish(sys, telemetry.Summary());
+#else
+    ChRealtimeStepTimer rt;
     while (vis->Run()) {
         vis->BeginScene();
         vis->Render();
@@ -247,6 +285,13 @@ int main(int argc, char* argv[]) {
 
         rt.Spin(step_size);
     }
+#endif
 
     return 0;
+#ifdef ROBODYNA_CAPTURE_DEMO
+    } catch (const std::exception& error) {
+        std::cerr << "robodyna original collisionNSC: " << error.what() << '\n';
+        return 1;
+    }
+#endif
 }

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from viewer.video.capture import metadata_dict, validate_capture
-from viewer.video.tests.fixtures import capture, write_index
+from viewer.video.tests.fixtures import capture, live_capture, write_index
 
 
 class CaptureTests(unittest.TestCase):
@@ -79,6 +79,38 @@ class CaptureTests(unittest.TestCase):
         write_index(recovered_dir, rows, metadata)
         with self.assertRaisesRegex(ValueError, "Recovered"):
             validate_capture(recovered_dir)
+
+    def test_live_capture_retains_actual_steps_and_distinct_authority(self):
+        directory = self.directory.parent / "live"
+        _, metadata = live_capture(directory)
+        value = validate_capture(directory)
+        self.assertEqual(metadata_dict(value), metadata)
+        self.assertEqual([frame.epoch for frame in value.frames], [0, 20, 40])
+        self.assertTrue(value.metadata["simulation_executed_by_viewer"])
+        self.assertNotIn("input_receipt", value.metadata)
+
+    def test_live_capture_rejects_wrong_physics_and_provenance_claims(self):
+        directory = self.directory.parent / "live"
+        rows, metadata = live_capture(directory)
+        for key, value in (("simulation_executed_by_viewer", False), ("physics_backend", "cuda"),
+                           ("source_demo_sha256", "unknown"), ("source_demo", ""),
+                           ("input_receipt", {}), ("time_step_s", 0),
+                           ("capture_every_steps", 30), ("time_step_s", .001)):
+            with self.subTest(key=key):
+                write_index(directory, rows, {**metadata, key: value})
+                with self.assertRaises(ValueError):
+                    validate_capture(directory)
+
+    def test_live_capture_rejects_skipped_steps_and_wrong_recorded_times(self):
+        directory = self.directory.parent / "live"
+        rows, metadata = live_capture(directory)
+        for key, value in (("epoch", 19), ("accepted_time_s", .045)):
+            with self.subTest(key=key):
+                changed = copy.deepcopy(rows)
+                changed[1][key] = value
+                write_index(directory, changed, dict(metadata))
+                with self.assertRaisesRegex(ValueError, "step schedule"):
+                    validate_capture(directory)
 
 
 if __name__ == "__main__":

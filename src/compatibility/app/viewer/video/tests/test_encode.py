@@ -5,9 +5,10 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
-from viewer.video.encode import encode_capture, hold_boundaries, main
-from viewer.video.tests.fixtures import capture, tools
+from viewer.video.encode import encode_capture, hold_boundaries, main, _verify_probe
+from viewer.video.tests.fixtures import capture, live_capture, tools
 
 
 class InputPipe(io.BytesIO):
@@ -51,7 +52,8 @@ class EncodeTests(unittest.TestCase):
         self.probe = {"streams": [{"codec_type": "video", "codec_name": "h264",
                                   "pix_fmt": "yuv420p", "width": 2, "height": 2,
                                   "nb_read_frames": "18", "avg_frame_rate": "30/1",
-                                  "r_frame_rate": "30/1"}],
+                                  "r_frame_rate": "30/1", "time_base": "1/15360",
+                                  "duration_ts": 9216, "start_pts": 0}],
                       "format": {"duration": "0.600000"}}
 
     def popen(self, command, **kwargs):
@@ -69,6 +71,16 @@ class EncodeTests(unittest.TestCase):
         with patch("viewer.video.encode.subprocess.Popen", side_effect=self.popen):
             with patch("viewer.video.encode.subprocess.run", side_effect=self.run_media):
                 return encode_capture(self.source, self.output, self.ffmpeg, rate, 30)
+
+    def test_live_simulation_metadata_survives_verified_encoding(self):
+        self.source = self.directory / "live"
+        self.rows, self.metadata = live_capture(self.source)
+        movie = self.invoke()
+        result = json.loads((movie.parent / "manifest.json").read_text())
+        self.assertEqual(result["capture_metadata"]["schema"], "robodyna.chrono_live_capture.v1")
+        self.assertTrue(result["capture_metadata"]["simulation_executed_by_viewer"])
+        self.assertEqual(result["capture_metadata"]["final_time_s"], .08)
+        self.assertTrue(result["full_decode_passed"])
 
     def test_exact_png_holds_commands_and_verified_normal_receipt(self):
         movie = self.invoke()
@@ -97,7 +109,8 @@ class EncodeTests(unittest.TestCase):
         self.source = self.directory / "recovered"
         self.rows, self.metadata = capture(self.source, recovered=True)
         self.probe["streams"][0]["nb_read_frames"] = "23"
-        self.probe["format"]["duration"] = "0.766667"
+        self.probe["streams"][0]["duration_ts"] = 11776
+        self.probe["format"]["duration"] = "0.767000"
         self.invoke(rate=4)
         receipt = json.loads((self.output / "manifest.json").read_text())
         self.assertEqual([row["video_frames"] for row in receipt["recorded_samples"]], [8, 7, 8])
@@ -188,6 +201,48 @@ class EncodeTests(unittest.TestCase):
                 main(["capture", "output", "--ffmpeg", "/pinned/ffmpeg",
                       "--samples-per-second", "5", "--output-fps", "30"])
             encode.assert_called_once_with("capture", "output", "/pinned/ffmpeg", 5.0, 30)
+
+
+class ExactMovieTimingTests(unittest.TestCase):
+    def setUp(self):
+        # Actual NSC encoding timing: exact video track, millisecond MP4 header.
+        self.capture = SimpleNamespace(metadata={"width": 1280, "height": 800})
+        self.probe = {
+            "streams": [{"codec_type": "video", "codec_name": "h264", "pix_fmt": "yuv420p",
+                         "width": 1280, "height": 800, "nb_read_frames": "182",
+                         "avg_frame_rate": "30/1", "r_frame_rate": "30/1",
+                         "time_base": "1/15360", "duration_ts": 93184,
+                         "duration": "6.066667", "start_pts": 0}],
+            "format": {"duration": "6.067000"},
+        }
+
+    def test_actual_probe_retains_exact_track_and_rounded_container_duration(self):
+        _verify_probe(self.probe, self.capture, 182, 30)
+
+    def test_wrong_or_missing_authoritative_stream_timing_rejects(self):
+        import copy
+        changes = [("duration_ts", 93185), ("duration_ts", 93184.0),
+                   ("time_base", "1/15361"), ("time_base", "0/1"),
+                   ("start_pts", 1), ("start_pts", False)]
+        for key, value in changes:
+            with self.subTest(key=key, value=value):
+                changed = copy.deepcopy(self.probe)
+                changed["streams"][0][key] = value
+                with self.assertRaises(ValueError):
+                    _verify_probe(changed, self.capture, 182, 30)
+        for key in ("duration_ts", "time_base", "start_pts"):
+            with self.subTest(missing=key):
+                changed = copy.deepcopy(self.probe)
+                del changed["streams"][0][key]
+                with self.assertRaises(ValueError):
+                    _verify_probe(changed, self.capture, 182, 30)
+
+    def test_container_allows_only_the_known_rounding_not_an_extra_tick(self):
+        for duration in ("6.066000", "6.067001", "6.068000", "NaN"):
+            with self.subTest(duration=duration):
+                self.probe["format"]["duration"] = duration
+                with self.assertRaises(ValueError):
+                    _verify_probe(self.probe, self.capture, 182, 30)
 
 
 if __name__ == "__main__":

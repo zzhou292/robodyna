@@ -1,0 +1,36 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "options",
+    srcs = ["Options.cpp"],
+    hdrs = ["Options.h"],
+    deps = [
+        "//src/core:foundation",
+        "//build_defs/app:artifact_io",
+        "@rules_cc//cc/runfiles",
+    ],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "capture",
+    srcs = ["CaptureSession.cpp", "Summary.cpp"],
+    hdrs = ["CaptureSession.h", "SessionState.h"],
+    deps = [
+        ":options",
+        "//build_defs/chrono/vsg:vsg",
+        "//build_defs/app/viewer:vsg_image_capture",
+        "//build_defs/app:artifact_io",
+    ],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+)
+alias(name = "capture_session", actual = ":capture")
+
+cc_test(
+    name = "capture_values_test",
+    srcs = ["CaptureValuesTest.cpp"],
+    deps = [":capture", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "bounded-examples"],
+)

@@ -26,11 +26,15 @@
 #include "chrono/core/ChRealtimeStep.h"
 
 #include "chrono/assets/ChVisualSystem.h"
+#ifdef ROBODYNA_CAPTURE_DEMO
+    #include "examples/support/CaptureSession.h"
+    #include "examples/mbd/Telemetry.h"
+#endif
 #ifdef CHRONO_IRRLICHT
     #include "chrono_irrlicht/ChVisualSystemIrrlicht.h"
 using namespace chrono::irrlicht;
 #endif
-#ifdef CHRONO_VSG
+#if defined(CHRONO_VSG) || defined(ROBODYNA_CAPTURE_DEMO)
     #include "chrono_vsg/ChVisualSystemVSG.h"
 using namespace chrono::vsg3d;
 #endif
@@ -65,6 +69,13 @@ class MySpringForce : public ChLinkTSDA::ForceFunctor {
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+
+#ifdef ROBODYNA_CAPTURE_DEMO
+    try {
+    const auto capture_options = robodyna::examples::ReadCaptureOptions(
+        argc, argv, "src/compatibility/chrono/src/demos/mbs/demo_MBS_spring.cpp", 0.001);
+    robodyna::examples::CaptureSession capture(capture_options);
+#endif
 
     ChSystemNSC sys;
     sys.SetGravitationalAcceleration(ChVector3d(0, 0, 0));
@@ -149,12 +160,15 @@ int main(int argc, char* argv[]) {
     if (vis_type == ChVisualSystem::Type::IRRLICHT)
         vis_type = ChVisualSystem::Type::VSG;
 #endif
-#ifndef CHRONO_VSG
+#if !defined(CHRONO_VSG) && !defined(ROBODYNA_CAPTURE_DEMO)
     if (vis_type == ChVisualSystem::Type::VSG)
         vis_type = ChVisualSystem::Type::IRRLICHT;
 #endif
 
     std::shared_ptr<ChVisualSystem> vis;
+#ifdef ROBODYNA_CAPTURE_DEMO
+    if (!capture_options.headless) {
+#endif
     switch (vis_type) {
         case ChVisualSystem::Type::IRRLICHT: {
 #ifdef CHRONO_IRRLICHT
@@ -174,8 +188,12 @@ int main(int argc, char* argv[]) {
         }
         default:
         case ChVisualSystem::Type::VSG: {
-#ifdef CHRONO_VSG
+#if defined(CHRONO_VSG) || defined(ROBODYNA_CAPTURE_DEMO)
+#ifdef ROBODYNA_CAPTURE_DEMO
+            auto vis_vsg = chrono_types::make_shared<robodyna::examples::CaptureVisual>();
+#else
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
+#endif
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(1280, 800);
@@ -186,18 +204,36 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetCameraAngleDeg(40);
             vis_vsg->SetLightIntensity(1.0f);
             vis_vsg->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);
+#ifdef ROBODYNA_CAPTURE_DEMO
+            capture.ConfigureVisual(*vis_vsg);
             vis_vsg->Initialize();
+#else
+            vis_vsg->Initialize();
+#endif
 
             vis = vis_vsg;
 #endif
             break;
         }
     }
+#ifdef ROBODYNA_CAPTURE_DEMO
+    }
+#endif
 
     // Simulation loop
-    int frame = 0;
-
     double timestep = 0.001;
+#ifdef ROBODYNA_CAPTURE_DEMO
+    robodyna::examples::mbd::SpringTelemetry telemetry(*body_1, *body_2, rest_length, spring_coef, damping_coef);
+    telemetry.Observe(sys.GetChTime(), *body_1, *body_2, *spring_1, *spring_2);
+    capture.State(0, sys, capture_options.headless ? nullptr : vis.get());
+    for (std::uint64_t step = 1; step <= capture_options.steps; ++step) {
+        robodyna::examples::Require(sys.DoStepDynamics(timestep) != 0, "Original spring dynamics step failed");
+        telemetry.Observe(sys.GetChTime(), *body_1, *body_2, *spring_1, *spring_2);
+        capture.State(step, sys, capture_options.headless ? nullptr : vis.get());
+    }
+    capture.Finish(sys, telemetry.Summary());
+#else
+    int frame = 0;
     ChRealtimeStepTimer realtime_timer;
     while (vis->Run()) {
         vis->BeginScene();
@@ -217,6 +253,13 @@ int main(int argc, char* argv[]) {
 
         frame++;
     }
+#endif
 
     return 0;
+#ifdef ROBODYNA_CAPTURE_DEMO
+    } catch (const std::exception& error) {
+        std::cerr << "robodyna original spring: " << error.what() << '\n';
+        return 1;
+    }
+#endif
 }

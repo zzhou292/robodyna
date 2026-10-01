@@ -17,7 +17,9 @@ from ..file_integrity import sha256_file
 _SCHEMAS = {
     "robo_dyna.physical_replay_capture.v1": ("final_epoch", "final_time_s"),
     "robo_dyna.recovered_sample_capture.v1": ("final_saved_epoch", "final_saved_time_s"),
+    "robodyna.chrono_live_capture.v1": ("final_epoch", "final_time_s"),
 }
+_LIVE_SCHEMA = "robodyna.chrono_live_capture.v1"
 _COLUMNS = ["sample", "epoch", "accepted_time_s", "file", "bytes", "sha256"]
 _TEXT_CAP = 2 * 1024 * 1024
 
@@ -103,9 +105,10 @@ def validate_capture(capture_dir):
     metadata = json.loads(manifest_bytes, object_pairs_hook=_unique_object)
     if not isinstance(metadata, dict) or metadata.get("schema") not in _SCHEMAS:
         raise ValueError("Unsupported Chrono capture schema")
+    live = metadata["schema"] == _LIVE_SCHEMA
     if (metadata.get("complete_capture") is not True
             or metadata.get("interpolated_frames") is not False
-            or metadata.get("simulation_executed_by_viewer") is not False
+            or metadata.get("simulation_executed_by_viewer") is not live
             or type(metadata.get("deformation_scale")) not in (int, float)
             or metadata["deformation_scale"] != 1):
         raise ValueError("Capture must be complete, physical scale 1 and noninterpolated")
@@ -164,5 +167,33 @@ def validate_capture(capture_dir):
             or frames[-1].epoch != metadata[epoch_key]
             or frames[-1].accepted_time_s != final_time):
         raise ValueError("Final captured epoch or physical time mismatch")
+    if live:
+        _validate_live_steps(metadata, frames)
     return Capture(directory, _freeze(metadata), tuple(frames),
                    hashlib.sha256(manifest_bytes).hexdigest(), index_hash)
+
+
+def _validate_live_steps(metadata, frames):
+    """Live demos advance mechanics; they cannot claim an archived-state replay."""
+    if any(key in metadata for key in ("input_receipt", "input_archive_manifest",
+                                      "input_recovery_descriptor", "interval_ledger_available")):
+        raise ValueError("Live capture cannot claim an archived replay receipt")
+    if metadata.get("physics_backend") != "chrono_cpu":
+        raise ValueError("Unqualified live-demo physics backend")
+    source = metadata.get("source_demo")
+    digest = metadata.get("source_demo_sha256")
+    if (type(source) is not str or not 0 < len(source) <= 4096 or "\x00" in source
+            or type(digest) is not str or re.fullmatch(r"[0-9a-f]{64}", digest) is None):
+        raise ValueError("Live capture requires its source demo identity")
+    step = _finite_time(metadata.get("time_step_s"))
+    if step <= 0:
+        raise ValueError("Live physical timestep must be positive")
+    stride = _positive_integer(metadata.get("capture_every_steps"), "capture_every_steps")
+    steps = _positive_integer(metadata.get("final_epoch"), "final_epoch")
+    if steps % stride or len(frames) != steps // stride + 1:
+        raise ValueError("Live capture must include initial and final states at its declared cadence")
+    for index, frame in enumerate(frames):
+        if (frame.epoch != index * stride
+                or not math.isclose(frame.accepted_time_s, frame.epoch * step,
+                                    rel_tol=1e-9, abs_tol=1e-12)):
+            raise ValueError("Live captured state differs from the declared physical step schedule")

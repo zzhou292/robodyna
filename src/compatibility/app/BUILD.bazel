@@ -56,6 +56,17 @@ py_library(
     deps = [":python_io"],
 )
 
+py_library(
+    name = "python_video_test_fixtures",
+    srcs = ["viewer/video/tests/fixtures.py"],
+    imports = ["."],
+    visibility = ["//build_defs/app/viewer/tests:__pkg__"],
+)
+exports_files(
+    ["viewer/video/tests/test_capture.py", "viewer/video/tests/test_encode.py"],
+    visibility = ["//build_defs/app/viewer/tests:__pkg__"],
+)
+
 # Exact JSON spelling comparison reused by the migration gate; implementation
 # remains unchanged in the retained output utility.
 py_library(

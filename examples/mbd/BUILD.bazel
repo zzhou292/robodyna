@@ -1,0 +1,36 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "telemetry",
+    srcs = ["Telemetry.cpp"],
+    hdrs = ["Telemetry.h"],
+    deps = ["//build_defs/chrono:native_core_fea", "//build_defs/app:artifact_io"],
+)
+
+cc_binary(
+    name = "spring",
+    srcs = ["//src/compatibility/chrono:src/demos/mbs/demo_MBS_spring.cpp"],
+    local_defines = ["ROBODYNA_CAPTURE_DEMO"],
+    deps = [":telemetry", "//examples/support:capture_session"],
+    data = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_spring.cpp",
+        "//build_defs/chrono/vsg:assets",
+        "@vsg_sdk//:runtime",
+    ],
+    tags = ["manual", "original-demo", "cpu-dynamics", "vulkan-rendering"],
+)
+
+cc_binary(
+    name = "collision_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/mbs/demo_MBS_collisionNSC.cpp"],
+    local_defines = ["ROBODYNA_CAPTURE_DEMO"],
+    deps = [":telemetry", "//examples/support:capture_session"],
+    data = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_collisionNSC.cpp",
+        "//src/compatibility/chrono:rigid_demo_assets",
+        "@vsg_sdk//:runtime",
+    ],
+    tags = ["manual", "original-demo", "cpu-dynamics", "vulkan-rendering"],
+)

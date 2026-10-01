@@ -1,0 +1,31 @@
+{
+  "schema": "robodyna.original_demo_adaptation.v1",
+  "source_checkpoint": "48443824898443134920b3ddd0ac680d74b58c65",
+  "files": [
+    {
+      "path": "src/compatibility/chrono/src/demos/mbs/demo_MBS_spring.cpp",
+      "baseline_bytes": 8012,
+      "baseline_sha256": "5b109a902a75c44f0e414f366dd879f5b482ec66270a224270c2fb454eb21ce1",
+      "qualified_adapted_source_sha256": "96a81b943959a9953be6c4861e5413c7564e2bf1a10d7fb1babc15f4fe406a7f"
+    },
+    {
+      "path": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collisionNSC.cpp",
+      "baseline_bytes": 10312,
+      "baseline_sha256": "bbd08ba39f6e41e85a5ceb7403edc779bd14076f955f504b9dfb76130e0c37e9",
+      "qualified_adapted_source_sha256": "ea09e34602da91cc61d161db25cba8cb310ffe69ea5b2572aba37abb69f2a03a"
+    }
+  ],
+  "adaptation_scope": [
+    "optional bounded capture branch",
+    "explicit collision ChRandom seed",
+    "read-only diagnostic telemetry",
+    "native Bazel target metadata"
+  ],
+  "original_setup_and_equations_retained": true,
+  "original_preserved_worktrees_modified": false,
+  "dynamics_backend": "retained Chrono CPU",
+  "render_backend": "native VSG Vulkan",
+  "runtime_qualification": "passed",
+  "qualification_record": "../QUALIFICATION.json",
+  "qualification_document": "../../docs/verification/CHRONO_DEMOS.md"
+}
