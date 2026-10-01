@@ -44,3 +44,20 @@ py_test(
     deps = [":swig_runner_library"],
     size = "small",
 )
+
+py_library(name = "surface_library", srcs = ["compare_surface.py"])
+
+py_binary(
+    name = "compare_surface",
+    srcs = ["compare_surface.py"],
+    main = "compare_surface.py",
+    deps = [":surface_library"],
+)
+
+py_test(
+    name = "surface_comparison_test",
+    srcs = ["tests/test_compare_surface.py"],
+    main = "tests/test_compare_surface.py",
+    deps = [":surface_library"],
+    size = "small",
+)

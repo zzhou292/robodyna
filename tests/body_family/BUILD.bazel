@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+# Install this package at tests/body_family before the implementation move.
+# Exact same old spelling/type/density arguments then exercise reverse aliases.
+cc_test(
+    name = "baseline_test",
+    srcs = ["PrimitiveConstructorsTest.cpp", "MeshConstructorsTest.cpp", "AuxiliaryArchiveTest.cpp", "FamilySupport.h", "main.cpp"],
+    args = ["$(location box.obj)"],
+    data = ["box.obj"],
+    deps = ["//build_defs/chrono:native_core_fea", "//tests/archive_support:streams", "@googletest//:gtest"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    size = "small",
+    tags = ["manual", "cpu-only", "body-family-compatibility"],
+)

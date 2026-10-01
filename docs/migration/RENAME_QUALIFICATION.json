@@ -208,6 +208,19 @@
       "path": "crash-work/investigations/robodyna-mesh-cmake-swig-1/receipt.json",
       "sha256": "30a44f30f22786a8d0546ba06d05e1856ed193d3addaae4bb343126206cc6472",
       "passed": true
+    },
+    "robodyna-body-family-baseline-2": {
+      "path": "crash-work/reports/robodyna-body-family-baseline-2.json",
+      "sha256": "6a7725998d0a6f2b33bceccbf6c4b02aeb01ac6049c95c8d1729321ed0c2cda0",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.322,
+      "peak_sampled_rss_bytes": 998543360
+    },
+    "robodyna-mesh-swig-parity-review-1": {
+      "path": "crash-work/investigations/robodyna-mesh-swig-parity-1/review.json",
+      "sha256": "0614380880723eb62ef2a9089b8fe44b0cc0dd4da4ad547767ea7b6847a6c98d",
+      "passed": true
     }
   },
   "limits": {
@@ -249,5 +262,21 @@
     "test_targets_passed": 6,
     "scope": "Pre-system move metadata/ownership, represented archive fields and common FE/body clock; no physical restart"
   },
-  "body_demo_regression": "Original six-second spring, NSC collision and SCM headless runs passed; complete recorded summaries match pre-rename baseline exactly. Retained CPU dynamics, no CUDA or new rendering claim."
+  "body_demo_regression": "Original six-second spring, NSC collision and SCM headless runs passed; complete recorded summaries match pre-rename baseline exactly. Retained CPU dynamics, no CUDA or new rendering claim.",
+  "mesh_binding_surface": {
+    "core_python_public_entries": 949,
+    "core_csharp_files": 610,
+    "fea_python_public_entries": 235,
+    "vehicle_python_public_entries": 651,
+    "vehicle_csharp_files": 510,
+    "all_equal": true,
+    "diagnostics": "Only explicitly declared absolute snapshot roots normalized; relative paths, line numbers, warning codes and messages unchanged. Original failed comparison receipt retained.",
+    "runtime_qualified": false
+  },
+  "body_family_baseline": {
+    "before_source_move": true,
+    "constructor_archive_test_cases_passed": 10,
+    "comparison_tool_test_cases_passed": 7,
+    "scope": "Stored fields and existing frozen bytes exact; only the pre-existing recomputed inverse frame uses the measured four-ULP bound"
+  }
 }
