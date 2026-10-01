@@ -153,7 +153,7 @@ void CreateLuggedGeometry(std::shared_ptr<ChBody> wheel_body, std::shared_ptr<Ch
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Set terrain patch size and initial vehicle location
     ChVector3d init_loc;
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
         auto visSCM = chrono_types::make_shared<ChScmVisualizationVSG>(&terrain);
 
         auto visVSG = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-        visVSG->SetWindowTitle("Wheeled vehicle on SCM deformable terrain");
+        visVSG->SetWindowTitle("Robodyna | Wheeled vehicle on SCM deformable terrain");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->EnableSkyTexture(SkyMode::DOME);

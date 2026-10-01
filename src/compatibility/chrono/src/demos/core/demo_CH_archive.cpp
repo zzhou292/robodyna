@@ -619,7 +619,7 @@ void my_reflection_example() {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     std::cout << "CHRONO foundation classes demo: archives (serialization)\n" << std::endl;
 

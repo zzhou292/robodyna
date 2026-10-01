@@ -35,7 +35,7 @@ namespace ChronoDemo
             vis.SetCameraVertical(CameraVerticalDir.Y);
             vis.SetWindowSize(new ChVector2i(800, 600));
             vis.SetWindowPosition(new ChVector2i(100, 100));
-            vis.SetWindowTitle("Collisions between objects");
+            vis.SetWindowTitle("Robodyna | Collisions between objects");
             vis.AddCamera(new ChVector3d(1, 3, -10), new ChVector3d(0, 0, 0));
             vis.SetLightIntensity(1.0f);
             vis.SetLightDirection(1.5 * chrono.CH_PI_2, chrono.CH_PI_4);
@@ -50,7 +50,7 @@ namespace ChronoDemo
             vis.AttachSystem(sys);
             vis.SetCameraVertical(CameraVerticalDir.Y);
             vis.SetWindowSize(800, 600);
-            vis.SetWindowTitle("Collisions between objects");
+            vis.SetWindowTitle("Robodyna | Collisions between objects");
             vis.Initialize();
             vis.AddLogo();
             vis.AddSkyBox();
@@ -115,7 +115,7 @@ namespace ChronoDemo
             }
 
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             // Set the path to the Chrono data files
             chrono.SetChronoDataPath(CHRONO_DATA_DIR);

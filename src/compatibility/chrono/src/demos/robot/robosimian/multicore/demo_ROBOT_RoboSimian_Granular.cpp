@@ -318,7 +318,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     if (render) {
         vis->AttachSystem(sys);
-        vis->SetWindowTitle("RoboSimian - Granular terrain");
+        vis->SetWindowTitle("Robodyna | RoboSimian - Granular terrain");
         vis->SetCameraVertical(CameraVerticalDir::Z);
         vis->AddCamera(ChVector3d(2.7, -2.7, 0), ChVector3d(0, 0, 0));
         vis->SetWindowSize(1280, 720);

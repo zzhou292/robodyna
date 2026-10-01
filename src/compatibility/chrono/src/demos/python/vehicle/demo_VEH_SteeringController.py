@@ -27,7 +27,7 @@ import math as m
 # =============================================================================
 
 def main():
-    #print("Copyright (c) 2017 projectchrono.org\nChrono version: ", CHRONO_VERSION , "\n\n")
+    #print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", CHRONO_VERSION , "\n\n")
 
     #  Create the HMMWV vehicle, set parameters, and initialize
     hmmwv = veh.HMMWV_Full()
@@ -80,11 +80,11 @@ def main():
 
     # Create the vehicle Irrlicht interface
     vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-    vis.SetWindowTitle('HMMWV steering controller')
+    vis.SetWindowTitle('Robodyna | HMMWV steering controller')
     vis.SetWindowSize(1280, 1024)
     vis.SetChaseCamera(chrono.ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5)
     vis.Initialize()
-    vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+    vis.AddLogo()
     vis.AddLightDirectional()
     vis.AddSkyBox()
     vis.AttachVehicle(hmmwv.GetVehicle())

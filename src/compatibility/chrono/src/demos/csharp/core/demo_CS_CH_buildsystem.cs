@@ -24,7 +24,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             // Set the path to the Chrono data files
             chrono.SetChronoDataPath(CHRONO_DATA_DIR);

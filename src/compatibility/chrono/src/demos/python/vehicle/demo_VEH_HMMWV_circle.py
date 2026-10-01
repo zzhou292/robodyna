@@ -82,7 +82,7 @@ steeringPID.SetGains(0.8, 0, 0)
 
 # Create the vehicle Irrlicht application
 vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-vis.SetWindowTitle('Constant radius test')
+vis.SetWindowTitle('Robodyna | Constant radius test')
 vis.SetWindowSize(1280, 1024)
 vis.SetHUDLocation(500, 20)
 vis.Initialize()

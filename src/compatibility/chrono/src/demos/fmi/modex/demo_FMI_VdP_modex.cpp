@@ -51,7 +51,7 @@ using namespace chrono;
 void PrintInfo(const ChExternalFmu& fmu_wrapper);
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------------------------
     // Specify FMU and unpack directory

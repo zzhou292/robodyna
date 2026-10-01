@@ -109,7 +109,7 @@ class SPHPropertiesCallbackWithPressureScale : public DepthPressurePropertiesCal
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Parse command line arguments
     ChCLI cli(argv[0], "Lunar Lander on CRM Terrain Demo");
@@ -391,7 +391,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sys);
-        visVSG->SetWindowTitle("Lunar Lander Simulation");
+        visVSG->SetWindowTitle("Robodyna | Lunar Lander Simulation");
         visVSG->SetWindowSize(ChVector2i(1920, 1080));
         visVSG->SetWindowPosition(100, 100);
         visVSG->SetCameraVertical(CameraVerticalDir::Z);

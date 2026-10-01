@@ -171,7 +171,7 @@ def main():
         visVSG = vsg3d.ChVisualSystemVSG()
         visVSG.AttachPlugin(visFSI)
         visVSG.AttachSystem(sys)
-        visVSG.SetWindowTitle("Tire Test Rig on CRM deformable terrain")
+        visVSG.SetWindowTitle("Robodyna | Tire Test Rig on CRM deformable terrain")
         visVSG.SetWindowSize(1280, 800)
         visVSG.SetWindowPosition(100, 100)
         visVSG.AddCamera(chrono.ChVector3d(1.0, 2.5, 1.0), chrono.ChVector3d(0, 1, 0))

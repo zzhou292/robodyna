@@ -75,7 +75,7 @@ bool output = false;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create vehicle
@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     // Create the vehicle VSG interface
     auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis_vsg->SetWindowTitle(title);
+    vis_vsg->SetWindowTitle("Robodyna | " + title);
     vis_vsg->AttachVehicle(&vehicle);
     vis_vsg->SetChaseCamera(vehicle_model->TrackPoint(), vehicle_model->CameraDistance(),
                             vehicle_model->CameraHeight());

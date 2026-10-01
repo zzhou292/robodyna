@@ -101,7 +101,7 @@ class ChModalVisualSystemIrrlicht : public irrlicht::ChVisualSystemIrrlicht {
   public:
     ChModalVisualSystemIrrlicht() {
         SetWindowSize(1024, 768);
-        SetWindowTitle("Chrono::Modal");
+        SetWindowTitle("Robodyna | Modal analysis");
     }
 
     virtual ~ChModalVisualSystemIrrlicht();

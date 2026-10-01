@@ -67,7 +67,7 @@ def main():
         vis = vsg.ChVisualSystemVSG()
         vis.AttachSystem(system)
         vis.AddCamera(ch.ChVector3d(3, 3, 1))
-        vis.SetWindowTitle("Viper Rover on Rigid Terrain")
+        vis.SetWindowTitle("Robodyna | Viper Rover on Rigid Terrain")
         vis.Initialize()
 
     # Simulation loop.

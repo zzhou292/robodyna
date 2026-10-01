@@ -196,7 +196,7 @@ std::shared_ptr<ChSuspensionTestRig> CreateFromSpecFile() {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Option 1: Create the suspension rig from an existing vehicle model
     ////auto rig = CreateFromVehicleModel();
@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
     // Create the run-time visualization system
     auto vis = chrono_types::make_shared<ChSuspensionTestRigVisualSystemVSG>();
     vis->SetWindowSize(1280, 800);
-    vis->SetWindowTitle("Suspension Test Rig");
+    vis->SetWindowTitle("Robodyna | Suspension Test Rig");
     vis->AttachSTR(rig.get());
     vis->Initialize();
 

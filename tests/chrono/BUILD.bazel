@@ -117,6 +117,8 @@ py_test(
         "//src/compatibility/chrono:mesh_source_inputs",
         "//src/compatibility/chrono:system_source_inputs",
         "//src/compatibility/chrono:assembly_source_inputs",
+        "//src/compatibility/chrono:branding_source_inputs",
+        "//src/compatibility/app:branding_source_inputs",
         "//src/compatibility/chrono:src/chrono/assets/ChVisualShapeFEA.cpp",
         "//src/compatibility/app:renamed_type_source_inputs",
         "//src/compatibility/chrono:src/chrono_swig/interface/core/ChMassProperties.i",

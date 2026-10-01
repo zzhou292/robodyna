@@ -62,7 +62,7 @@ const double INITIAL_VELOCITY = -2.5;  // m/s downward
 const double GROUND_CLEARANCE = 0.01;  // meters
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create the physical system
     ChSystemNSC sys;
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     auto vis_VSG = chrono_types::make_shared<ChVisualSystemVSG>();
     vis_VSG->AttachSystem(&sys);
-    vis_VSG->SetWindowTitle("Lunar Lander Simulation");
+    vis_VSG->SetWindowTitle("Robodyna | Lunar Lander Simulation");
     vis_VSG->SetWindowSize(ChVector2i(1280, 720));
     vis_VSG->SetWindowPosition(ChVector2i(100, 100));
     vis_VSG->SetCameraVertical(CameraVerticalDir::Z);

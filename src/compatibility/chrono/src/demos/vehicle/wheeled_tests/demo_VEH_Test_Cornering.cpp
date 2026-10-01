@@ -38,7 +38,7 @@ using namespace chrono;
 using namespace chrono::postprocess;
 
 int main(int argc, char** argv) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     ChCLI cli(argv[0]);
 
@@ -219,7 +219,7 @@ int main(int argc, char** argv) {
     // -------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("OpenCRG Steering");
+    vis->SetWindowTitle("Robodyna | OpenCRG Steering");
     vis->SetWindowSize(1200, 800);
     vis->SetChaseCamera(vehicle_model->TrackPoint(), vehicle_model->CameraDistance(), vehicle_model->CameraHeight());
     vis->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

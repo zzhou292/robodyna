@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
     visVSG->AttachSystem(&sysMBS);
     visVSG->AttachPlugin(visFSI);
     visVSG->ToggleAbsFrameVisibility();
-    visVSG->SetWindowTitle("CRM moving patch demo");
+    visVSG->SetWindowTitle("Robodyna | CRM moving patch demo");
     visVSG->SetCameraVertical(CameraVerticalDir::Z);
     visVSG->AddCamera(ChVector3d(terrain_length / 2, -3, 2), ChVector3d(terrain_length / 2, 0, 0));
     visVSG->SetWindowSize(1280, 720);

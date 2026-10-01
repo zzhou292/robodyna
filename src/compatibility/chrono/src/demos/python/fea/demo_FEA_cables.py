@@ -20,7 +20,7 @@ from cables import Model1, Model2, Model3
 #ChSolver::Type solver_type = ChSolver::Type::SPARSE_QR
 solver = chrono.ChSolverSparseQR()
 
-print("Copyright (c) 2017 projectchrono.org\nChrono version: ")
+print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ")
 
 # Create a Chrono physical system
 sys = chrono.ChSystemSMC()
@@ -68,9 +68,9 @@ mesh.AddVisualShapeFEA(vis_beam_B)
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(sys)
 vis.SetWindowSize(1024,768)
-vis.SetWindowTitle('FEA cables')
+vis.SetWindowTitle('Robodyna | FEA cables')
 vis.Initialize()
-vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+vis.AddLogo()
 vis.AddSkyBox()
 vis.AddCamera(chrono.ChVector3d(0, 0.6, -1))
 vis.AddTypicalLights()

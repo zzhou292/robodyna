@@ -320,7 +320,7 @@ fmi2Status FmuComponent::exitInitializationModeIMPL() {
 
         vis_sys->SetLogLevel(irr::ELL_NONE);
         vis_sys->SetJPEGQuality(100);
-        vis_sys->SetWindowTitle("Wheeled Vehicle FMU (FMI 2.0)");
+        vis_sys->SetWindowTitle("Robodyna | Wheeled Vehicle FMU (FMI 2.0)");
         vis_sys->SetWindowSize(800, 800);
         vis_sys->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5);
         vis_sys->SetBackgroundColor(ChColor(0.37f, 0.50f, 0.60f));

@@ -62,7 +62,7 @@ ChOutput::Mode vehicle_output_mode = ChOutput::Mode::FRAMES;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select vehicle model (see WheeledVehicleJSON.h)
     auto models = WheeledVehicleJSON::List();
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
     std::string title = "Vehicle demo - JSON specification - " + vehicle_model->ModelName();
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle(title);
+    vis->SetWindowTitle("Robodyna | " + title);
     vis->AttachVehicle(&vehicle);
     vis->AttachDriver(&driver);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), vehicle_model->CameraDistance(), 0.5);

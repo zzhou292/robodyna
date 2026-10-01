@@ -39,7 +39,7 @@ using namespace chrono;
 ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a physical system
     ChSystemNSC sys;
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Rolling and spinning friction");
+            vis_irr->SetWindowTitle("Robodyna | Rolling and spinning friction");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("VSG Rolling Friction");
+            vis_vsg->SetWindowTitle("Robodyna | VSG Rolling Friction");
             vis_vsg->SetBackgroundColor(ChColor(0.8f, 0.85f, 0.9f));
             vis_vsg->SetOutputScreen(0);
             vis_vsg->EnableSkyTexture(SkyMode::BOX);

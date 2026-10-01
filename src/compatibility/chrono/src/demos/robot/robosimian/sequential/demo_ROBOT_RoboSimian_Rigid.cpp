@@ -311,7 +311,7 @@ int main(int argc, char* argv[]) {
 
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(my_sys);
-    vis->SetWindowTitle("RoboSimian - Rigid terrain");
+    vis->SetWindowTitle("Robodyna | RoboSimian - Rigid terrain");
     vis->SetWindowSize(800, 600);
     vis->Initialize();
     vis->AddLogo();

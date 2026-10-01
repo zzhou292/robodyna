@@ -429,7 +429,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("CRM Plate Sinkage");
+        visVSG->SetWindowTitle("Robodyna | CRM Plate Sinkage");
         visVSG->SetWindowSize(1280, 800);
         visVSG->AddCamera(ChVector3d(1.5 * p.container_x, -1.5 * p.container_y, soil_top_init + 0.4 * p.container_z), ChVector3d(0, 0, soil_top_init));
         visVSG->SetLightIntensity(0.9f);

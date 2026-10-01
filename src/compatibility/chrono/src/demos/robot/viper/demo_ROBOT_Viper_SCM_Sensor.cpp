@@ -147,7 +147,7 @@ std::shared_ptr<ChContactMaterial> CustomWheelMaterial(ChContactMethod contact_m
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Reference heights
     double terrain_height = -0.5;
@@ -479,7 +479,7 @@ int main(int argc, char* argv[]) {
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(CameraVerticalDir::Z);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Viper Rover on SCM");
+            vis_irr->SetWindowTitle("Robodyna | Viper Rover on SCM");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->AttachSystem(&sys);
             vis_vsg->AttachPlugin(visSCM);
             vis_vsg->SetWindowSize(1280, 800);
-            vis_vsg->SetWindowTitle("Viper Rover on SCM");
+            vis_vsg->SetWindowTitle("Robodyna | Viper Rover on SCM");
             vis_vsg->SetBackgroundColor(ChColor(0, 0, 0));
             vis_vsg->AddCamera(ChVector3d(1.0, 2.0, 1.4), ChVector3d(0, 0, wheel_diameter));
             vis_vsg->SetLightIntensity(1.0f);

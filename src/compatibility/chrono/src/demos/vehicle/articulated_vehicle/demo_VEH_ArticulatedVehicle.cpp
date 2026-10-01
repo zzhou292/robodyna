@@ -64,7 +64,7 @@ ChVector3d trackPoint(0.0, 0.0, 1.75);
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create the vehicle
     ACV_Vehicle vehicle(false, ChContactMethod::NSC);
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
     vis->AttachVehicle(&vehicle);
     vis->AttachDriver(&driver);
-    vis->SetWindowTitle("Articulated Vehicle Demo");
+    vis->SetWindowTitle("Robodyna | Articulated Vehicle Demo");
     vis->SetWindowSize(1280, 800);
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->SetLightIntensity(1.0f);

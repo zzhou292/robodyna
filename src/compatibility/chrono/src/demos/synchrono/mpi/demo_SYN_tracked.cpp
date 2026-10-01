@@ -234,7 +234,7 @@ int main(int argc, char* argv[]) {
 
     if (cli.HasValueInVector<int>("irr", node_id)) {
         auto temp_app = chrono_types::make_shared<ChTrackedVehicleVisualSystemIrrlicht>();
-        temp_app->SetWindowTitle("SynChrono Tracked Vehicle Demo");
+        temp_app->SetWindowTitle("Robodyna | Distributed tracked vehicle");
         temp_app->SetChaseCamera(trackPoint, cam_distance, 0.5);
         temp_app->Initialize();
         temp_app->AddTypicalLights();
@@ -308,7 +308,7 @@ void LogCopyright(bool show) {
         return;
 
     SynLog() << "Copyright (c) 2020 projectchrono.org\n";
-    SynLog() << "Chrono version: " << CHRONO_VERSION << "\n\n";
+    SynLog() << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n\n";
 }
 
 void AddCommandLineOptions(ChCLI& cli) {

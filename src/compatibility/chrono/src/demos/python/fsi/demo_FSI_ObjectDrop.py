@@ -286,7 +286,7 @@ def main(argv):
         visVSG = vsg3d.ChVisualSystemVSG()
         visVSG.AttachPlugin(visFSI)
         visVSG.AttachSystem(sysMBS)
-        visVSG.SetWindowTitle("Object Drop")
+        visVSG.SetWindowTitle("Robodyna | Object Drop")
         visVSG.SetWindowSize(1280, 800)
         visVSG.SetWindowPosition(100, 100)
         visVSG.AddCamera(chrono.ChVector3d(2.5 * fsize.x, 2.5 * fsize.y, 1.5 * fsize.z),

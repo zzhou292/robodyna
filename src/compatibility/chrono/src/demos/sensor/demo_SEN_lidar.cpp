@@ -79,7 +79,7 @@ bool GetProblemSpecs(int argc,
                      float& min_vert_angle);
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2019 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2019 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // --------------
     // Lidar settings

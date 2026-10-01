@@ -136,7 +136,7 @@ void CreateActuatorFMU(FmuChronoUnit& actuator_fmu,
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
 #ifdef FMU_EXPORT_SUPPORT
     // FMUs generated in current build

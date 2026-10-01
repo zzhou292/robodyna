@@ -35,7 +35,7 @@ using namespace chrono;
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select model
     std::string input;
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
     if (render) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachSystem(sysMBS.get());
-        visVSG->SetWindowTitle("YAML FSI model - " + model_name);
+        visVSG->SetWindowTitle("Robodyna | YAML FSI model - " + model_name);
         visVSG->AddCamera(camera_location, camera_target);
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);

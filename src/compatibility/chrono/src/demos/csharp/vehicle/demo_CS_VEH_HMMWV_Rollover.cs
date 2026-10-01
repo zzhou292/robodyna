@@ -33,7 +33,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             bool isYUp = false; // default declaration regarding use of the y-up world.
             Console.WriteLine("Do you want to use a Y-Up world Orientation (Y/N)? (default N):");
@@ -134,7 +134,7 @@ namespace ChronoDemo
 
             // Create the VSG vehicle interface
             ChWheeledVehicleVisualSystemVSG vis = new ChWheeledVehicleVisualSystemVSG();
-            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Rollover Demo");
+            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Robodyna | Rollover Demo");
             if (isYUp) { chrono_vsg.CastToChVisualSystemVSG(vis).SetCameraVertical(CameraVerticalDir.Y); }
             vis.SetChaseCamera(new ChVector3d(0.0, 0.0, 2.0), 5.0, 0.05);
             chrono_vsg.CastToChVisualSystemVSG(vis).SetLightIntensity(1.0f);

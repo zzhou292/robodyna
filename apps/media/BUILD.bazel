@@ -7,3 +7,11 @@ py_binary(
     deps = ["//src/compatibility/app:python_video"],
     visibility = ["//visibility:public"],
 )
+
+py_binary(
+    name = "export_video",
+    srcs = ["export_video.py"],
+    main = "export_video.py",
+    deps = ["//src/compatibility/app:python_video"],
+    visibility = ["//visibility:public"],
+)

@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
     // Create the visualization window
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(sys);
-    vis->SetWindowTitle("Mesh-mesh test");
+    vis->SetWindowTitle("Robodyna | Mesh-mesh test");
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->AddCamera(ChVector3d(2, 1, 2), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

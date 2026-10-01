@@ -101,7 +101,7 @@ void AddParticles(ChSystemMulticoreNSC* sys) {
 // Create the system, specify simulation parameters, and run simulation loop.
 // -----------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Simulation parameters
     // ---------------------
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("Particles NSC");
+    vis->SetWindowTitle("Robodyna | Particles NSC");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0, -3, 0), ChVector3d(0, 0, -1));
     vis->SetWindowSize(1280, 720);

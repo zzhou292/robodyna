@@ -125,7 +125,7 @@ std::shared_ptr<Generic_Vehicle> CreateVehicle(ChSystem& sys, ChVector3d locatio
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // ------------------------
     // Create the Chrono system
@@ -190,7 +190,7 @@ int main(int argc, char* argv[]) {
     // ---------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Generic Vehicles");
+    vis->SetWindowTitle("Robodyna | Generic Vehicles");
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
     vis->AttachVehicle(vehicles[i_ego].get());

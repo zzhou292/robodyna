@@ -63,7 +63,7 @@ std::shared_ptr<ChVisualSystem> CreateVisualizationSystem(ChVisualSystem::Type v
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(vertical);
             vis_irr->SetWindowSize(1280, 720);
-            vis_irr->SetWindowTitle(title);
+            vis_irr->SetWindowTitle("Robodyna | " + title);
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -87,7 +87,7 @@ std::shared_ptr<ChVisualSystem> CreateVisualizationSystem(ChVisualSystem::Type v
             vis_vsg->SetCameraVertical(vertical);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle(title);
+            vis_vsg->SetWindowTitle("Robodyna | " + title);
             vis_vsg->EnableSkyTexture(SkyMode::DOME);
             vis_vsg->AddCamera(cam_pos, cam_target);
             vis_vsg->SetCameraAngleDeg(50);

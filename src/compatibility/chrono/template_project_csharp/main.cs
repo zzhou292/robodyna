@@ -99,7 +99,7 @@ namespace ChronoDemo
 
             ChVisualSystemIrrlicht vis = new ChVisualSystemIrrlicht();
             vis.SetWindowSize(800, 600);
-            vis.SetWindowTitle("[C#] SMC demonstration");
+            vis.SetWindowTitle("Robodyna | [C#] SMC demonstration");
             vis.Initialize();
             vis.AddLogo();
             vis.AddSkyBox();

@@ -89,7 +89,7 @@ class MyEventReceiver : public IEventReceiver {
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // 1- Create a Chrono physical system
     ChSystemNSC sys;
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Four-bar mechanism");
+    vis->SetWindowTitle("Robodyna | Four-bar mechanism");
     vis->Initialize();
     vis->AddLogo();
     vis->AddCamera(ChVector3d(0, 0, -12));

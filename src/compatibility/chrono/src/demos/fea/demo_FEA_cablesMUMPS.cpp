@@ -32,7 +32,7 @@ ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org" << std::endl
-              << "Chrono version: " << CHRONO_VERSION << std::endl
+              << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl
               << std::endl;
 
     // Create a Chrono physical system

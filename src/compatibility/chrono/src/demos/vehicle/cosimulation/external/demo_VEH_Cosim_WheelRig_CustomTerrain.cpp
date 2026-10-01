@@ -160,7 +160,7 @@ void MyTerrain::OnInitialize(unsigned int num_tires) {
         m_vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         m_vis->AttachSystem(m_system);
         m_vis->SetCameraVertical(CameraVerticalDir::Z);
-        m_vis->SetWindowTitle("Custom terrain node");
+        m_vis->SetWindowTitle("Robodyna | Custom terrain node");
         m_vis->SetWindowSize(1280, 720);
         m_vis->AddCamera(ChVector3d(2, 1.4, 1));
         m_vis->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

@@ -291,10 +291,10 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
         visVSG->AttachVehicle(vehicle.get());
         visVSG->AttachPlugin(visFSI);
-        visVSG->SetWindowTitle("Floating Block");
+        visVSG->SetWindowTitle("Robodyna | Floating Block");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
-        visVSG->SetLogo(GetChronoDataFile("logo_chrono_alpha.png"));
+        visVSG->SetLogo(GetChronoDataFile("logo_robodyna_alpha.png"));
         visVSG->SetBackgroundColor(ChColor(0.1f, 0.15f, 0.2f));
         visVSG->SetChaseCameraPosition(ChVector3d(0, -7 * byDim, 3 + bzDim / 2), ChVector3d(0, 0, bzDim / 2));
         visVSG->SetLightIntensity(0.9f);

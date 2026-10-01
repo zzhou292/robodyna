@@ -93,7 +93,7 @@ class ContactMaterial : public ChContactContainer::AddContactCallback {
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2020 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2020 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Parameters
     float friction = 0.6f;
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     // Create the visualization window
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("NSC callbacks (Chrono::Multicore)");
+    vis->SetWindowTitle("Robodyna | Multicore nonsmooth-contact callbacks");
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->AddCamera(ChVector3d(4, 4, -5), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

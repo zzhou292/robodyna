@@ -103,7 +103,7 @@ class DummyWheel : public ChWheel {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Create Chrono system
     ChSystemSMC sys;
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
     }
     #endif
 
-    vis_vsg->SetWindowTitle("FEA tire");
+    vis_vsg->SetWindowTitle("Robodyna | FEA tire");
     vis_vsg->AddCamera(ChVector3d(0, -1.5, 0), VNULL);
     vis_vsg->SetWindowSize(1280, 800);
     vis_vsg->SetBackgroundColor(ChColor(0.8f, 0.85f, 0.9f));

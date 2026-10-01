@@ -35,7 +35,7 @@ using namespace chrono;
 using namespace chrono::irrlicht;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Use analytical Inverse Kinematics (true) or Chrono Imposed motion (false)
     const bool USE_ANALYTICAL_IK = true;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Industrial Robot");
+    vis->SetWindowTitle("Robodyna | Industrial Robot");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

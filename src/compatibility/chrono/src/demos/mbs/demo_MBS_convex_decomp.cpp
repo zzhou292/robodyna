@@ -36,7 +36,7 @@ using namespace chrono;
 ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono physical system -----------------------------------------
     ChSystemNSC sys;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Convex decomposition");
+            vis_irr->SetWindowTitle("Robodyna | Convex decomposition");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("Convex decomposition");
+            vis_vsg->SetWindowTitle("Robodyna | Convex decomposition");
             vis_vsg->EnableSkyTexture(SkyMode::BOX);
             vis_vsg->AddCamera(ChVector3d(0, 1, 3));
             vis_vsg->SetCameraAngleDeg(50);

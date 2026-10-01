@@ -209,7 +209,7 @@ void RunModel(bool load_from_file) {
     ChVisualSystemIrrlicht vis;
     vis.AttachSystem(&sys);
     vis.SetWindowSize(1024, 768);
-    vis.SetWindowTitle("Archive Reduced Model");
+    vis.SetWindowTitle("Robodyna | Archive Reduced Model");
     vis.Initialize();
     vis.AddLogo();
     vis.AddSkyBox();
@@ -251,7 +251,7 @@ void RunModel(bool load_from_file) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2021 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2021 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     CreateOutputDirectory(std::filesystem::path(out_dir));
     // Directory for output data

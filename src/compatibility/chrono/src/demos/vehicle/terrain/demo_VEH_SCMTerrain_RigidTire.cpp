@@ -98,7 +98,7 @@ class MySoilParams : public vehicle::SCMTerrain::SoilParametersCallback {
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
 #ifdef ROBODYNA_CAPTURE_DEMO
     const auto capture_options = robodyna::examples::ReadCaptureOptions(
@@ -295,7 +295,7 @@ int main(int argc, char* argv[]) {
 #endif
     vis->AttachSystem(&sys);
     vis->AttachPlugin(visSCM);
-    vis->SetWindowTitle("SCM deformable terrain");
+    vis->SetWindowTitle("Robodyna | Wheel and deformable soil");
     vis->AddCamera(ChVector3d(3.0, 2.0, 0.0), ChVector3d(0, tire_rad, 0));
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);

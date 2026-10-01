@@ -67,7 +67,7 @@ double t_end = 30;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create systems
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
         case ChVisualSystem::Type::IRRLICHT: {
 #ifdef CHRONO_IRRLICHT
             auto vis_irr = chrono_types::make_shared<ChWheeledVehicleVisualSystemIrrlicht>();
-            vis_irr->SetWindowTitle("Two cars demo");
+            vis_irr->SetWindowTitle("Robodyna | Two cars demo");
             vis_irr->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 6.0, 0.5);
             vis_irr->SetChaseCameraState(utils::ChChaseCamera::Track);
             vis_irr->SetChaseCameraPosition(ChVector3d(-15, 0, 2.0));
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
         case ChVisualSystem::Type::VSG: {
 #ifdef CHRONO_VSG
             auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-            vis_vsg->SetWindowTitle("Two cars demo");
+            vis_vsg->SetWindowTitle("Robodyna | Two cars demo");
             vis_vsg->SetWindowSize(ChVector2i(1200, 800));
             vis_vsg->SetWindowPosition(ChVector2i(100, 300));
             vis_vsg->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 6.0, 0.5);

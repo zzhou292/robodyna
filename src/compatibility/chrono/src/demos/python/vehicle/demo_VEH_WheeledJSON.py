@@ -18,7 +18,7 @@ import os
 # =============================================================================
 
 def main() : 
-    #print("Copyright (c) 2017 projectchrono.org\nChrono version: ", CHRONO_VERSION , "\n\n")
+    #print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", CHRONO_VERSION , "\n\n")
 
     # Create the vehicle system
     vehicle = veh.WheeledVehicle(vehicle_file, chrono.ChContactMethod_NSC)
@@ -58,18 +58,18 @@ def main() :
     # Create Irrlicht visualization
     if vis_type == chrono.ChVisualSystem.Type_IRRLICHT:
         vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-        vis.SetWindowTitle('HMMWV JSON specification')
+        vis.SetWindowTitle('Robodyna | HMMWV JSON specification')
         vis.SetWindowSize(1280, 1024)
         vis.SetChaseCamera(chrono.ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5)
         vis.Initialize()
-        vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+        vis.AddLogo()
         vis.AddLightDirectional()
         vis.AddSkyBox()
         vis.AttachVehicle(vehicle)
         vis.AttachDriver(driver)
     elif vis_type == chrono.ChVisualSystem.Type_VSG:
         vis = veh.ChWheeledVehicleVisualSystemVSG()
-        vis.SetWindowTitle('HMMWV JSON specification')
+        vis.SetWindowTitle('Robodyna | HMMWV JSON specification')
         vis.SetWindowSize(1280, 1024)
         vis.EnableSkyTexture()
         vis.SetLightIntensity(1.0)

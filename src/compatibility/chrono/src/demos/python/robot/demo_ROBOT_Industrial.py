@@ -111,7 +111,7 @@ if not USE_ANALYTICAL_IK:
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(sys)
 vis.SetWindowSize(800, 600)
-vis.SetWindowTitle("Industrial Robot")
+vis.SetWindowTitle("Robodyna | Industrial Robot")
 vis.Initialize()
 vis.AddLogo()
 vis.AddSkyBox()

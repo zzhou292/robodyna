@@ -57,6 +57,26 @@ class SourceTransformationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "relative"):
             original_bytes(self.root, self.entry)
 
+    def test_explicit_latin1_restores_original_comment_bytes(self):
+        original = b'// propri\xe9t\xe9\nvoid Old();\n'
+        (self.root / "new.cpp").write_bytes(original.replace(b"Old", b"New"))
+        self.entry["original_sha256"] = hashlib.sha256(original).hexdigest()
+        with self.assertRaises(UnicodeDecodeError):
+            original_bytes(self.root, self.entry)
+        self.entry["encoding"] = "latin-1"
+        self.assertEqual(original_bytes(self.root, self.entry), original)
+        # A lossy or UTF-8-normalized comment must not satisfy the original pin.
+        (self.root / "new.cpp").write_bytes(original.replace(b"Old", b"New").decode("latin-1").encode("utf-8"))
+        with self.assertRaisesRegex(ValueError, "beyond"):
+            original_bytes(self.root, self.entry)
+
+    def test_undeclared_source_encodings_reject(self):
+        for encoding in ("utf-16", "ascii", "UTF8", "", None, 17):
+            with self.subTest(encoding=encoding):
+                self.entry["encoding"] = encoding
+                with self.assertRaisesRegex(ValueError, "encoding"):
+                    original_bytes(self.root, self.entry)
+
 
 if __name__ == "__main__":
     unittest.main()

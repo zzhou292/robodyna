@@ -55,9 +55,9 @@ ChVulkanRTDevice::~ChVulkanRTDevice() {
 void ChVulkanRTDevice::CreateInstance() {
     VkApplicationInfo app = {};
     app.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app.pApplicationName = "Chrono::Sensor Vulkan RT";
+    app.pApplicationName = "Robodyna sensor visualization";
     app.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app.pEngineName = "Chrono::Sensor";
+    app.pEngineName = "Robodyna";
     app.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     app.apiVersion = VK_API_VERSION_1_2;
 
@@ -172,7 +172,7 @@ void ChVulkanRTDevice::PickPhysicalDevice() {
         vkGetPhysicalDeviceMemoryProperties(m_physical_device, &m_memory_properties);
 
         if (m_config.verbose) {
-            std::cout << "Chrono::Sensor Vulkan RT device: " << m_properties.deviceName << std::endl;
+            std::cout << "Robodyna sensor Vulkan RT device: " << m_properties.deviceName << std::endl;
         }
         return;
     }

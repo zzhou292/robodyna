@@ -35,7 +35,7 @@ namespace ChronoDemo
         static ChVehicleVisualSystem CreateVehicleVisualizationSystem(ChWheeledVehicle vehicle, bool isYUp)
         {
             ChWheeledVehicleVisualSystemVSG vis = new ChWheeledVehicleVisualSystemVSG();
-            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Mesh Terrain Demo");
+            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Robodyna | Mesh Terrain Demo");
             if (isYUp) { chrono_vsg.CastToChVisualSystemVSG(vis).SetCameraVertical(CameraVerticalDir.Y); }
             vis.SetChaseCamera(new ChVector3d(0.0, 0.0, 2.0), 5.0, 0.05);
             chrono_vsg.CastToChVisualSystemVSG(vis).EnableSkyTexture(SkyMode.DOME);
@@ -50,7 +50,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             //------------------------------------------------------------
             // Basic set up & world orientation

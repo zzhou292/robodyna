@@ -229,7 +229,7 @@ if render:
     vis.AttachSystem(sys)
     vis.SetWindowSize(chrono.ChVector2i(1200, 800))
     vis.SetWindowPosition(chrono.ChVector2i(100, 300))
-    vis.SetWindowTitle("YAML model - " + model_name)
+    vis.SetWindowTitle("Robodyna | YAML model - " + model_name)
     vis.SetCameraVertical(chrono.CameraVerticalDir_Z)
     vis.AddCamera(chrono.ChVector3d(0, -5, 0.5), chrono.ChVector3d(0, 0, 0.5))
     vis.SetCameraAngleDeg(40)

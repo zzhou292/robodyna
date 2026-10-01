@@ -583,7 +583,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Wave Tank");
+        visVSG->SetWindowTitle("Robodyna | Wave Tank");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->AddCamera(ChVector3d(0, -12 * csize.y(), depth / 2), ChVector3d(0, 0, depth / 2));

@@ -543,7 +543,7 @@ int main(int argc, char* argv[]) {
     // Create run-time visualization
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(sys);
-    vis->SetWindowTitle("Demo motors (Chrono::Multicore)");
+    vis->SetWindowTitle("Robodyna | Multicore motors");
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->AddCamera(ChVector3d(4, 2, -10), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

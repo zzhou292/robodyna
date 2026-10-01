@@ -1,3 +1,4 @@
+load("//build_defs/chrono:branding_sources.bzl", "BRANDING_SOURCE_INPUTS")
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
 load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
 load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
@@ -16,7 +17,7 @@ chrono_native_stb(name = "native_stb")
 chrono_native_vsg(name = "native_vsg")
 chrono_native_scm(name = "native_scm")
 
-exports_files(["data/logo_chrono_alpha.png"])
+exports_files(["data/logo_robodyna_alpha.png"])
 exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
 exports_files(["src/chrono_swig/interface/core/ChMassProperties.i", "src/chrono_swig/interface/core/ChObject.i"])
@@ -239,5 +240,12 @@ filegroup(
         "//include/robodyna/simulation:RbSystem.h",
         "//include/robodyna/mbd:RbBody.h", "//include/robodyna/fea:RbMesh.h",
     ],
+    visibility = ["//tests/chrono:__pkg__"],
+)
+
+# Source evidence only; optional imports are not runtime qualification.
+filegroup(
+    name = "branding_source_inputs",
+    srcs = BRANDING_SOURCE_INPUTS,
     visibility = ["//tests/chrono:__pkg__"],
 )

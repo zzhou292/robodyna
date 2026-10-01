@@ -48,7 +48,7 @@ ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2021 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2021 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     double beam_Young = 100.e6;
     double beam_density = 400;

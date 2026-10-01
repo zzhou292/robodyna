@@ -883,7 +883,7 @@ void example5(const std::string& out_dir) {
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2021 projectchrono.org\n"
-              << "Chrono version: " << CHRONO_VERSION << std::endl;
+              << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     std::cout << "CHRONO demo about low-level time integration of differential equations:" << std::endl;
 

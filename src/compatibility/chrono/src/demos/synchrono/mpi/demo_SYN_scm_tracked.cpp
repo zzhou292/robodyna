@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     // Copyright
     if (node_id == 0) {
         SynLog() << "Copyright (c) 2020 projectchrono.org\n";
-        SynLog() << "Chrono version: " << CHRONO_VERSION << "\n\n";
+        SynLog() << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n\n";
     }
 
     // -----------------------------------------------------
@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<ChTrackedVehicleVisualSystemIrrlicht> app;
     if (cli.HasValueInVector<int>("irr", node_id)) {
         app = chrono_types::make_shared<ChTrackedVehicleVisualSystemIrrlicht>();
-        app->SetWindowTitle("SynChrono SCM Demo");
+        app->SetWindowTitle("Robodyna | Distributed deformable soil");
         app->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 10.0, 0.5);
         app->Initialize();
         app->AddTypicalLights();

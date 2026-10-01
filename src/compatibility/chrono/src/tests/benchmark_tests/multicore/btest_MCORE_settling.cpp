@@ -135,7 +135,7 @@ void SettlingSMC::SimulateVis() {
 #ifdef CHRONO_VSG
     auto vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     vis->AttachSystem(m_system);
-    vis->SetWindowTitle("Settling test");
+    vis->SetWindowTitle("Robodyna | Settling test");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0, -6, 0), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

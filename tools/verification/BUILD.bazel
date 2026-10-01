@@ -1,0 +1,46 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(name = "catalog", srcs = ["catalog.py"])
+py_library(
+    name = "inventory",
+    srcs = ["chrono_inventory.py", "cmake_evidence.py"],
+    deps = [":catalog"],
+)
+
+# Discovery only: this target does not claim to execute the listed simulations/tests.
+py_binary(
+    name = "chrono_catalog",
+    srcs = ["catalog_cli.py"],
+    main = "catalog_cli.py",
+    args = ["--inventory", "$(rlocationpath //docs/verification:CHRONO_DEMOS_TESTS_INVENTORY.json)"],
+    data = ["//docs/verification:CHRONO_DEMOS_TESTS_INVENTORY.json"],
+    deps = [":catalog", "@rules_python//python/runfiles"],
+)
+
+# Explicit source refresh against a real checkout/Git history; no builds or SDK probes.
+py_binary(
+    name = "audit_chrono_sources",
+    srcs = ["chrono_inventory.py"],
+    main = "chrono_inventory.py",
+    deps = [":inventory"],
+    tags = ["manual", "local"],
+)
+
+py_test(
+    name = "catalog_test",
+    srcs = ["tests/test_catalog.py"],
+    main = "tests/test_catalog.py",
+    deps = [":catalog", ":inventory"],
+    size = "small",
+)
+py_test(
+    name = "inventory_test",
+    srcs = ["tests/test_inventory.py"],
+    main = "tests/test_inventory.py",
+    deps = [":inventory"],
+    size = "small",
+    tags = ["requires-git"],
+)
+test_suite(name = "catalog_tests", tests = [":catalog_test", ":inventory_test"])

@@ -179,7 +179,7 @@ bool ReportTrackFailure(ChTrackedVehicle& veh, double threshold = 1e-2) {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Compatibility checks
     if (use_track_bushings || use_suspension_bushings) {
@@ -435,7 +435,7 @@ int main(int argc, char* argv[]) {
     // -----------------------------------------
 
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("M113 Vehicle Demo");
+    vis->SetWindowTitle("Robodyna | M113 Vehicle Demo");
     vis->SetWindowSize(1280, 800);
     vis->AttachVehicle(&vehicle);
     vis->AttachDriver(driver.get());

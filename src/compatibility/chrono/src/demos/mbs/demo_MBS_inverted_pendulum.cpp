@@ -178,7 +178,7 @@ void MyController::Advance(double step) {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Problem parameters
     // ------------------
@@ -287,7 +287,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Inverted Pendulum");
+            vis_irr->SetWindowTitle("Robodyna | Inverted Pendulum");
             vis_irr->SetCameraVertical(CameraVerticalDir::Y);
             vis_irr->Initialize();
             vis_irr->AddLogo();
@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
             vis_vsg->AttachSystem(&sys);
-            vis_vsg->SetWindowTitle("Inverted Pendulum");
+            vis_vsg->SetWindowTitle("Robodyna | Inverted Pendulum");
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->AddCamera(ChVector3d(0, 1, 7));
             vis_vsg->SetWindowSize(1280, 800);

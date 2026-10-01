@@ -196,7 +196,7 @@ void create_some_falling_items(ChSystemNSC& sys) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono physical system
     ChSystemNSC sys;
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Contacts with cohesion");
+    vis->SetWindowTitle("Robodyna | Contacts with cohesion");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

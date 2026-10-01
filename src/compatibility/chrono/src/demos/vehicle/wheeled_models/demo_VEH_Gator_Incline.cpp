@@ -65,7 +65,7 @@ double t_end = 20;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create systems
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     // ------------------------------------------------------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Gator Incline Stop");
+    vis->SetWindowTitle("Robodyna | Gator Incline Stop");
     vis->AttachVehicle(&gator.GetVehicle());
     vis->AttachTerrain(&terrain);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 2.0), 9.0, 0.05);

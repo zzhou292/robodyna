@@ -387,7 +387,7 @@ class CH_VSG_API ChVisualSystemVSG : virtual public ChVisualSystem {
     /// Change logo image.
     void SetLogo(const std::string& filename) { m_logo_filename = filename; }
 
-    /// Disable showing the Chrono logo (default: true).
+    /// Hide the logo (visible by default).
     void HideLogo() { m_show_logo = false; }
 
     /// Set logo display height (in pixels, default: 64).

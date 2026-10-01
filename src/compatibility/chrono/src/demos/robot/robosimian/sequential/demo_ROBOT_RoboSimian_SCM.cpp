@@ -400,7 +400,7 @@ int main(int argc, char* argv[]) {
     if (render) {
         vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
         vis->AttachSystem(&my_sys);
-        vis->SetWindowTitle("RoboSimian - SCM terrain");
+        vis->SetWindowTitle("Robodyna | RoboSimian - SCM terrain");
         vis->SetWindowSize(800, 600);
         vis->Initialize();
         vis->AddLogo();

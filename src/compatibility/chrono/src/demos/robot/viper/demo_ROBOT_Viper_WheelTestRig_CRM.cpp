@@ -165,7 +165,7 @@ int main() {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sys);
-        visVSG->SetWindowTitle("Viper wheel on CRM deformable terrain");
+        visVSG->SetWindowTitle("Robodyna | Viper wheel on CRM deformable terrain");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->AddCamera(ChVector3d(1.0, 2.5, 1.0), ChVector3d(0, 1, 0));

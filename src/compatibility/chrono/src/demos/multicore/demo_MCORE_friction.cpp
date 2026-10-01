@@ -33,7 +33,7 @@ using namespace chrono::vsg3d;
 // --------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Parameters
     double radius = 0.5;
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
     // Create the visualization window
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("Friction test");
+    vis->SetWindowTitle("Robodyna | Friction test");
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->AddCamera(ChVector3d(10, 10, 20), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

@@ -239,7 +239,7 @@ void FsiRigidBceScalingTest<num_boxes>::SimulateVis() {
     auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     visVSG->AttachPlugin(visFSI);
     visVSG->AttachSystem(&m_sysFSI->GetMultibodySystem());
-    visVSG->SetWindowTitle("FSI Box Benchmark");
+    visVSG->SetWindowTitle("Robodyna | FSI Box Benchmark");
     visVSG->SetWindowSize(1280, 800);
     visVSG->AddCamera(ChVector3d(0, -3 * m_box_size.y(), 0.75 * m_box_size.z()),
                       ChVector3d(0, 0, 0.75 * m_box_size.z()));

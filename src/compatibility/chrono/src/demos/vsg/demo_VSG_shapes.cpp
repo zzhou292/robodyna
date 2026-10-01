@@ -27,7 +27,7 @@ using namespace chrono;
 using namespace chrono::vsg3d;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     ChSystemNSC sys;
     auto mat = chrono_types::make_shared<ChContactMaterialNSC>();
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->SetWindowSize(ChVector2i(1200, 800));
     vis->SetWindowPosition(ChVector2i(100, 300));
-    vis->SetWindowTitle("Chrono VSG Shapes");
+    vis->SetWindowTitle("Robodyna | Visual shapes");
     vis->EnableSkyTexture(SkyMode::BOX);
     vis->SetLightIntensity(0.9f);
     vis->SetLightDirection(0.5 * CH_PI_2, CH_PI_4);

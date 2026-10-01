@@ -251,7 +251,7 @@ void ChPreciceAdapterMbs::InitializeParticipant() {
 
         m_vsg = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         m_vsg->AttachSystem(m_sys.get());
-        m_vsg->SetWindowTitle("Chrono preCICE MBS participant - " + m_participant_name);
+        m_vsg->SetWindowTitle("Robodyna | preCICE multibody participant - " + m_participant_name);
         m_vsg->AddCamera(m_vis_settings.camera_location, m_vis_settings.camera_target);
         m_vsg->SetWindowSize(1280, 800);
         m_vsg->SetWindowPosition(100, 100);

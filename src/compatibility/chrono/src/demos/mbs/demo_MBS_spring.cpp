@@ -68,7 +68,7 @@ class MySpringForce : public ChLinkTSDA::ForceFunctor {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
 #ifdef ROBODYNA_CAPTURE_DEMO
     try {
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("ChLinkTSDA demo");
+            vis_irr->SetWindowTitle("Robodyna | Spring dynamics");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("ChLinkTSDA demo");
+            vis_vsg->SetWindowTitle("Robodyna | Spring dynamics");
             vis_vsg->SetBackgroundColor(ChColor(18.0f / 255, 26.0f / 255, 32.0f / 255));
             vis_vsg->AddCamera(ChVector3d(0, 0, 12));
             vis_vsg->SetCameraAngleDeg(40);

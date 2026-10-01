@@ -77,7 +77,7 @@ bool GetProblemSpecs(int argc,
                      LightType& light_type);
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2020 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2020 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // ---------------
     // Camera settings

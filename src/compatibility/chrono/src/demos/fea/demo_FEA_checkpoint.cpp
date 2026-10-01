@@ -155,7 +155,7 @@ void ConfigureSystem(ChSystem& sys) {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create output directory
     std::string out_dir = GetChronoOutputPath() + "FEA_CHECKPOINT";
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
-    vis->SetWindowTitle("FEA checkpointing");
+    vis->SetWindowTitle("Robodyna | FEA checkpointing");
     vis->EnableSkyTexture(SkyMode::BOX);
     vis->AddCamera(ChVector3d(-0.8, 0.8, 0.8), ChVector3d());
     vis->SetCameraAngleDeg(50);

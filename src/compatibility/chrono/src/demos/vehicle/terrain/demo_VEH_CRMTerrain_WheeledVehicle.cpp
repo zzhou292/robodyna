@@ -296,7 +296,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
         visVSG->AttachVehicle(vehicle.get());
         visVSG->AttachPlugin(visFSI);
-        visVSG->SetWindowTitle("Wheeled vehicle on CRM deformable terrain");
+        visVSG->SetWindowTitle("Robodyna | Wheeled vehicle on CRM deformable terrain");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->EnableSkyTexture(SkyMode::DOME);

@@ -42,7 +42,7 @@ def main():
     vis.SetCameraVertical(chrono.CameraVerticalDir_Z)
     vis.SetWindowSize(chrono.ChVector2i(1200, 800))
     vis.SetWindowPosition(chrono.ChVector2i(100, 300))
-    vis.SetWindowTitle("Chrono VSG Assets")
+    vis.SetWindowTitle("Robodyna | Visual assets")
     vis.AddCamera(chrono.ChVector3d(8.0, 12.3, 3.0), chrono.ChVector3d(-0.1, 1.0, 0.4))
     vis.SetCameraAngleDeg(40)
     vis.SetLightIntensity(1.0)

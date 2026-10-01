@@ -248,7 +248,7 @@ void TimingOutput(chrono::ChSystem* mSys, std::ostream* ofile = NULL);
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\n"
-              << "Chrono version: " << CHRONO_VERSION << std::endl;
+              << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // ------------------------
     // Convert input parameters
@@ -381,7 +381,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     if (render) {
         vis->AttachSystem(sys);
-        vis->SetWindowTitle("HMMWV granular terrain");
+        vis->SetWindowTitle("Robodyna | HMMWV granular terrain");
         vis->SetCameraVertical(CameraVerticalDir::Z);
         vis->AddCamera(ChVector3d(-horizontal_pos, -5, 0), ChVector3d(-horizontal_pos, 0, 0));
         vis->SetWindowSize(1280, 720);

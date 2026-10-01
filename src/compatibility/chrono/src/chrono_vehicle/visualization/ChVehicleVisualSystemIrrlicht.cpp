@@ -525,7 +525,7 @@ ChVehicleVisualSystemIrrlicht::ChVehicleVisualSystemIrrlicht()
     : ChVisualSystemIrrlicht(), m_keyboard_mode(ChInteractiveDriver::KeyboardMode::CUMULATIVE), m_window_focused(true), m_renderStats(true), m_HUD_x(600), m_HUD_y(20) {
     // Set default window size and title
     SetWindowSize(1000, 800);
-    SetWindowTitle("Chrono::Vehicle");
+    SetWindowTitle("Robodyna | Vehicle simulation");
 
     // Default camera uses Z up
     SetCameraVertical(CameraVerticalDir::Z);

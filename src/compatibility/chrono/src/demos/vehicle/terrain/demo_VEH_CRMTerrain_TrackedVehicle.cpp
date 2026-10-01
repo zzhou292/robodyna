@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
         visVSG->AttachVehicle(vehicle.get());
         visVSG->AttachPlugin(visFSI);
-        visVSG->SetWindowTitle("Tracked vehicle on CRM deformable terrain");
+        visVSG->SetWindowTitle("Robodyna | Tracked vehicle on CRM deformable terrain");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->AddCamera(ChVector3d(0, 8, 0.5), ChVector3d(0, -1, 0));

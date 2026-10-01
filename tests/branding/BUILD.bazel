@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+# Real-image CPU check using the existing STB owner, without graphics linkage.
+cc_test(
+    name = "alpha_asset_test",
+    srcs = ["AlphaAssetTest.cpp"],
+    args = [
+        "$(location //assets/brand:robodyna-logo-primary.png)",
+        "$(location //src/compatibility/chrono:data/logo_robodyna_alpha.png)",
+    ],
+    data = [
+        "//assets/brand:robodyna-logo-primary.png",
+        "//src/compatibility/chrono:data/logo_robodyna_alpha.png",
+    ],
+    deps = ["//src/compatibility/chrono:native_stb", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "brand-assets"],
+)

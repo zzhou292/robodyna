@@ -118,7 +118,7 @@ class MySoilParams : public vehicle::SCMTerrain::SoilParametersCallback {
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Global parameter for moving patch size:
     double wheel_range = 0.5;
@@ -419,7 +419,7 @@ int main(int argc, char* argv[]) {
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(CameraVerticalDir::Y);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Curiosity Obstacle Crossing on SCM");
+            vis_irr->SetWindowTitle("Robodyna | Curiosity Obstacle Crossing on SCM");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -440,7 +440,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(800, 600);
-            vis_vsg->SetWindowTitle("Curiosity Obstacle Crossing on SCM");
+            vis_vsg->SetWindowTitle("Robodyna | Curiosity Obstacle Crossing on SCM");
             vis_vsg->AddCamera(ChVector3d(-1.0, 1.0, 3.0), ChVector3d(-5.0, 0.0, 0.0));
             vis_vsg->Initialize();
 

@@ -74,7 +74,7 @@ std::shared_ptr<ChBody> CreateLobedGear(ChVector3d gear_center,
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono physical system
     ChSystemSMC sys;
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     // Create the Irrlicht visualization system
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Beam continuous extrusion and FEA contacts");
+    vis->SetWindowTitle("Robodyna | Beam continuous extrusion and FEA contacts");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

@@ -479,7 +479,7 @@ void Test_pendulum3D_DAE(double L, double m, double t_end, double t_step, const 
 }
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Create output directory
     std::string out_dir = GetChronoOutputPath() + "DEMO_EXTERNAL_DYNAMICS_DAE";

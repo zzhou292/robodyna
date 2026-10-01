@@ -230,7 +230,7 @@ void FEAcontactTest::SimulateVis() {
     auto vis = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
     vis->AttachSystem(m_system);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("FEA contacts");
+    vis->SetWindowTitle("Robodyna | FEA contacts");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

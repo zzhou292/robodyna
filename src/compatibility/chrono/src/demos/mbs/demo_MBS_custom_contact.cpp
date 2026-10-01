@@ -110,7 +110,7 @@ class CustomContact : public ChCollisionSystem::NarrowphaseCallback,  // interce
 ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create the system
     ChSystemSMC sys;
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(CameraVerticalDir::Z);
             vis_irr->SetWindowSize(1280, 800);
-            vis_irr->SetWindowTitle("Custom contact");
+            vis_irr->SetWindowTitle("Robodyna | Custom contact");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
             auto vis_vsg = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
             vis_vsg->AttachSystem(&sys);
-            vis_vsg->SetWindowTitle("Custom contact");
+            vis_vsg->SetWindowTitle("Robodyna | Custom contact");
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
             vis_vsg->SetLightIntensity(1.0f);

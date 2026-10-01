@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     visVSG->AttachPlugin(visFSI);
     visVSG->AttachSystem(&sysMBS);
-    visVSG->SetWindowTitle("FSI-TDPF sphere decay");
+    visVSG->SetWindowTitle("Robodyna | FSI-TDPF sphere decay");
     visVSG->SetWindowSize(1280, 720);
     visVSG->SetBackgroundColor(ChColor(0.04f, 0.11f, 0.18f));
     visVSG->AddCamera(ChVector3d(10, -50, 10), ChVector3d(0, 0, 0));

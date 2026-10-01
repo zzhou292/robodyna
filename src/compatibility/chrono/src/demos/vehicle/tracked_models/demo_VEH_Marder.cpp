@@ -92,7 +92,7 @@ void AddFallingObjects(ChSystem* system);
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------------------
     // Construct the M113 vehicle
@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
     // -----------------------------------------
 
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Marder Vehicle Demo");
+    vis->SetWindowTitle("Robodyna | Marder Vehicle Demo");
     vis->SetWindowSize(1280, 800);
     vis->SetChaseCamera(trackPoint, 8.0, 0.75);
     vis->AttachVehicle(&vehicle);

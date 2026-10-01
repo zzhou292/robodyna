@@ -83,7 +83,7 @@ bool snapshots = false;
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Global parameter for moving patch size:
     double wheel_range = 0.5;
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(CameraVerticalDir::Y);
             vis_irr->SetWindowSize(1280, 720);
-            vis_irr->SetWindowTitle("Curiosity Obstacle Crossing on SCM");
+            vis_irr->SetWindowTitle("Robodyna | Curiosity Obstacle Crossing on SCM");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetWindowSize(1152, 648);
-            vis_vsg->SetWindowTitle("Curiosity Obstacle Crossing on SCM");
+            vis_vsg->SetWindowTitle("Robodyna | Curiosity Obstacle Crossing on SCM");
             vis_vsg->SetBackgroundColor(ChColor(0.2f, 0.2f, 0.2f));
             vis_vsg->SetLightIntensity(1.0f);
             vis_vsg->SetLightDirection(-1.5 * CH_PI_2, CH_PI_4);

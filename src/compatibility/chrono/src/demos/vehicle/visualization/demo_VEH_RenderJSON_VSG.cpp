@@ -153,7 +153,7 @@ class KeyboardHandlerVSG : public ChEventHandlerVSG {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Peek in vehicle JSON file and infer type
     rapidjson::Document d;
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     double factor = (is_wheeled ? 3.0 : 5.0);
     ChVisualSystemVSG vis;
     vis.AttachSystem(&sys);
-    vis.SetWindowTitle("JSON visualization - " + setup.VehicleJSON());
+    vis.SetWindowTitle("Robodyna | JSON visualization - " + setup.VehicleJSON());
     vis.AddCamera(factor * ChVector3d(-1.75, -1.75, 1.0), ChVector3d(0, 0, 0.5));
     vis.SetWindowSize(1280, 800);
     vis.SetWindowPosition(100, 100);

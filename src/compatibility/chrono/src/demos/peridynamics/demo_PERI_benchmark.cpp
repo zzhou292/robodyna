@@ -191,7 +191,7 @@ int test_cantilever_push(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht FEM visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht FEM visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -310,7 +310,7 @@ int test_cantilever_push(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -470,7 +470,7 @@ int test_cantilever_torsion(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht FEM visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht FEM visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -589,7 +589,7 @@ int test_cantilever_torsion(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -817,7 +817,7 @@ int test_cantilever_crack(int argc, char* argv[], bool do_collisiononly, bool do
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -1073,7 +1073,7 @@ int test_cantilever_fracture(int argc, char* argv[], bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -1292,7 +1292,7 @@ int test_cantilever_fracture_explicit(int argc, char* argv[], bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -1540,7 +1540,7 @@ int test_peristaltic(int argc, char* argv[], bool do_peri) {
         // Create the visualization system
         ChVisualSystemIrrlicht vis;
         vis.SetWindowSize(800, 600);
-        vis.SetWindowTitle("Irrlicht Peridynamics visualization");
+        vis.SetWindowTitle("Robodyna | Irrlicht Peridynamics visualization");
         vis.Initialize();
         vis.AddLogo();
         vis.AddSkyBox();
@@ -1619,7 +1619,7 @@ int test_peristaltic(int argc, char* argv[], bool do_peri) {
 
 int main(int argc, char* argv[]) {
 
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
 
     test_cantilever_push(argc, argv, false, false);

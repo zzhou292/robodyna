@@ -65,7 +65,7 @@ render_step_size = 1.0 / 50  # FPS = 50
 
 # =============================================================================
 
-#print ( "Copyright (c) 2017 projectchrono.org\nChrono version: ", chrono.CHRONO_VERSION , "\n\n")
+#print ( "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", chrono.CHRONO_VERSION , "\n\n")
 
 # --------------
 # Create systems
@@ -120,11 +120,11 @@ driver.Initialize()
 
 # Create the vehicle Irrlicht interface
 vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-vis.SetWindowTitle('MAN 10t')
+vis.SetWindowTitle('Robodyna | MAN 10t')
 vis.SetWindowSize(1280, 1024)
 vis.SetChaseCamera(trackPoint, 10.0, 0.5)
 vis.Initialize()
-vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+vis.AddLogo()
 vis.AddLightDirectional()
 vis.AddSkyBox()
 vis.AttachVehicle(truck.GetVehicle())

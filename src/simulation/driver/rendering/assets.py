@@ -7,7 +7,7 @@ from viewer.file_integrity import sha256_file
 from ..jsonio import fields, integer, require, resolve
 from ..runtime import runtime_file
 
-ANCHOR = "logo_chrono_alpha.png"
+ANCHOR = "logo_robodyna_alpha.png"
 FONT = "vsg/fonts/OpenSans-Bold.vsgb"
 MAX_FILES = 4096
 MAX_BYTES = 256 << 20
@@ -50,7 +50,7 @@ def load_assets(value, base):
         path = runtime_file(anchor["runfile"])
     else:
         path = resolve(base, anchor["path"])
-    require(path.name == ANCHOR and path.is_file(), "visualization anchor must be logo_chrono_alpha.png")
+    require(path.name == ANCHOR and path.is_file(), "visualization anchor must be logo_robodyna_alpha.png")
     # Resolve the file anchor rather than requiring a directory entry in the
     # runfiles manifest. All declared files must form this actual data tree.
     root = path.resolve(strict=True).parent

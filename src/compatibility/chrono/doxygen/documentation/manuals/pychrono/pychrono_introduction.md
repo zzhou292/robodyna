@@ -1,7 +1,7 @@
 PyChrono {#pychrono_introduction}
 ==========================
 
-![](http://projectchrono.org/assets/manual/logo_pychrono_h90.png)
+![Robodyna](logo_robodyna.png)
 
 <br>
 <br>

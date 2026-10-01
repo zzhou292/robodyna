@@ -23,7 +23,7 @@ import pychrono.irrlicht as chronoirr
 import math
 
 
-#print(["Copyright (c) 2017 projectchrono.org\nChrono version: ", chrono.CHRONO_VERSION , "\n\n"])
+#print(["Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", chrono.CHRONO_VERSION , "\n\n"])
 
 def CastNode(nb):
 
@@ -165,9 +165,9 @@ mesh.AddVisualShapeFEA(visualizemeshD)
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(sys)
 vis.SetWindowSize(1024,768)
-vis.SetWindowTitle('ANCF shells')
+vis.SetWindowTitle('Robodyna | ANCF shells')
 vis.Initialize()
-vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+vis.AddLogo()
 vis.AddSkyBox()
 vis.AddCamera(chrono.ChVector3d(-0.4, -1.3, 0.0), chrono.ChVector3d(0.0, 0.5, -0.1))
 vis.AddTypicalLights()

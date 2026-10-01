@@ -93,7 +93,7 @@ bool img_output = false;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // -----------------------------
     // Construct the Tracked vehicle
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
 
     // Create the vehicle run-time application
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("JSON Band-Tracked Vehicle Demo");
+    vis->SetWindowTitle("Robodyna | JSON Band-Tracked Vehicle Demo");
     vis->SetWindowSize(1200, 800);
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->SetChaseCamera(ChVector3d(0, 0, 0), 7.0, 0.5);

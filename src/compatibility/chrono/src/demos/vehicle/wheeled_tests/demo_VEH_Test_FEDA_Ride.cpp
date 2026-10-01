@@ -143,7 +143,7 @@ class MyDriver {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     const double mph_to_mps = 0.44704;
     const double mps_to_mph = 1.0 / mph_to_mps;
@@ -270,7 +270,7 @@ int main(int argc, char* argv[]) {
     // -------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("FEDA RMS Test");
+    vis->SetWindowTitle("Robodyna | FEDA RMS Test");
     vis->SetWindowSize(1200, 800);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 10.0, 0.5);
     vis->AttachVehicle(&my_feda.GetVehicle());

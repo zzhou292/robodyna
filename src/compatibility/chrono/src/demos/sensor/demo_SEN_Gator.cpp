@@ -172,7 +172,7 @@ ChVector3d gps_reference(-89.400, 43.070, 260.0);
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create vehicle
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
     // -------------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemIrrlicht>();
-    vis->SetWindowTitle("Gator Demo");
+    vis->SetWindowTitle("Robodyna | Gator Demo");
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 2.0), 5.0, 0.05);
     vis->Initialize();
     vis->AddTypicalLights();

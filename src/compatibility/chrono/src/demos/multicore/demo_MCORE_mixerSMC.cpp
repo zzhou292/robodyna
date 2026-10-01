@@ -127,7 +127,7 @@ void AddFallingBalls(ChSystemMulticoreSMC* sys) {
 // Create the system, specify simulation parameters, and run simulation loop.
 // -----------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Simulation parameters
     // ---------------------
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
 
     auto vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("Mixer SMC");
+    vis->SetWindowTitle("Robodyna | Mixer SMC");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0.6, -2, 3), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

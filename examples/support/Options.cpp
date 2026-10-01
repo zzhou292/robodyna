@@ -67,7 +67,7 @@ CaptureOptions ReadCaptureOptions(int argc, char** argv, const std::string& sour
         else options.capture_every = Count(value);
     }
     ValidateCaptureOptions(options);
-    Require(std::filesystem::is_directory(options.chrono_data), "Chrono demo asset directory is missing");
+    Require(std::filesystem::is_directory(options.chrono_data), "Robodyna demo asset directory is missing");
     options.chrono_data = std::filesystem::canonical(options.chrono_data);
     Require(source_demo.rfind("src/compatibility/chrono/src/demos/", 0) == 0 &&
             source_demo.find("..") == std::string::npos, "Demo source identity must be an owned source runfile");

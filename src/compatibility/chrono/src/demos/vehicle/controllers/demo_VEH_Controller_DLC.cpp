@@ -173,7 +173,7 @@ bool GetProblemSpecs(int argc, char** argv, int& target_speed, bool& left_turn, 
 }
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2019 projectchrono.org\nChrono version: " << CHRONO_VERSION << "\n" << endl;
+    cout << "Copyright (c) 2019 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n" << endl;
 
     // ----------------------------
     // Parse command line arguments
@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
     vis->AttachVehicle(&hmmwv.GetVehicle());
-    vis->SetWindowTitle(title);
+    vis->SetWindowTitle("Robodyna | " + title);
     vis->SetWindowSize(1280, 800);
     CreateSceneObjects(vis, dlc, sentinelID, targetID);
     vis->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

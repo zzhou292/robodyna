@@ -30,7 +30,7 @@ using namespace chrono;
 using namespace chrono::irrlicht;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     ChSystemNSC sys;
     sys.SetGravitationalAcceleration(ChVector3d(1, -1, 1));
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("ChLinkRevoluteSpherical demo");
+    vis->SetWindowTitle("Robodyna | Revolute-spherical joint");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

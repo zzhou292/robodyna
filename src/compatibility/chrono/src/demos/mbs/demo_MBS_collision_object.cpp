@@ -292,7 +292,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Collision test");
+    vis->SetWindowTitle("Robodyna | Collision test");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

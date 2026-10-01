@@ -1,13 +1,13 @@
 {
-  "schema": "robodyna.readme_media.v1",
+  "schema": "robodyna.readme_media.v2",
   "videos": [
     {
       "case": "spring",
-      "attachment_url": "https://github.com/user-attachments/assets/c71d3a4b-5407-471d-889e-eb5fec439729",
-      "name": "robodyna-spring.mp4",
+      "attachment_url": "https://github.com/user-attachments/assets/46613fa4-a2e5-4cc0-8014-0b2ec49d1b1c",
+      "name": "robodyna-spring-transparent.mp4",
       "video": {
-        "bytes": 102334,
-        "sha256": "752afd99faaaf616f270c7d5f883dfb660648c973efed7d2d58dfecfb0b98cd9",
+        "bytes": 125019,
+        "sha256": "996ff6f0d84a09b80c020464e5bcf9be2723a418bdf820e9f9eaec5f191804c4",
         "frames": 151,
         "fps": 25,
         "duration_s": 6.04
@@ -15,24 +15,45 @@
       "physical_duration_s": 6.000000000000338,
       "poster": {
         "path": "docs/verification/images/spring.png",
-        "sha256": "e5a61f77499d14f5764efbca54fc834932610bd01320f347d660ef1c673fc65b",
+        "sha256": "49bf1dea55f48a6ae4a68fe362851b1e8fda642914d58b6a9249fae5a4b53a7c",
         "video_frame": 20
       },
-      "original_video_sha256": "0867e91f7da554703bc5c5208c38156f7141b9cfebc81b8006eca0ec982457eb",
-      "original_manifest_sha256": "d77bae6f364007058eeeb552a17654228ba8aa475bb0b409761b397874862e81",
-      "derivative_manifest": "crash-work/renders/robodyna-readme-branded-1/spring/manifest.json",
-      "derivative_manifest_sha256": "307668a41df7d7b6c6e5b1e7da3ae61e55f3160f266e0574daa8ec42e8d3abf5",
-      "upload_receipt": "crash-work/reports/robodyna-readme-spring-upload-1.json",
-      "upload_receipt_sha256": "3c9d185a9124ec376b9f07cff02330c84f7a6f1134bac95eaeb603be3e2cf699",
-      "anonymous_playback_bytes_verified": true
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/spring-video/manifest.json",
+        "sha256": "d0364e98eca2649f625f623f4baa859f5eeceaa075ea9afdf7fd6cbe335a8bb6",
+        "bytes": 52584
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/delivery/spring/manifest.json",
+        "sha256": "8a12381b5eaefa5ada6d9dcc3fb6ceb6323a119775520e662499a62ef2ac1036",
+        "bytes": 5461
+      },
+      "upload_receipt": {
+        "path": "crash-work/reports/robodyna-transparent-spring-upload-1.json",
+        "sha256": "6b104ac8fba1c141b4876927e6e6b832d3c316a4f092f3be5608f461d46558d8",
+        "bytes": 1059
+      },
+      "encoding": {
+        "operation": "byte_copy",
+        "lossy_reencode": false,
+        "crf": null
+      },
+      "anonymous_playback_bytes_verified": true,
+      "markdown_rendering_authentication": "github_token",
+      "anonymous_markdown_api_verified": false,
+      "previous_publication": {
+        "attachment_url": "https://github.com/user-attachments/assets/c71d3a4b-5407-471d-889e-eb5fec439729",
+        "video_sha256": "752afd99faaaf616f270c7d5f883dfb660648c973efed7d2d58dfecfb0b98cd9",
+        "original_baseline_video_sha256": "0867e91f7da554703bc5c5208c38156f7141b9cfebc81b8006eca0ec982457eb"
+      }
     },
     {
       "case": "nsc",
-      "attachment_url": "https://github.com/user-attachments/assets/6491834e-1e89-4f9c-a13b-4791a51b063d",
-      "name": "robodyna-nsc.mp4",
+      "attachment_url": "https://github.com/user-attachments/assets/a906314f-778f-4fb5-9fcb-57b1420c00fe",
+      "name": "robodyna-nsc-transparent.mp4",
       "video": {
-        "bytes": 1128785,
-        "sha256": "9acd0f6375b162ba709aee69c6bc734b3a0fd466beb4fb220ede5835e3f03fdd",
+        "bytes": 1718760,
+        "sha256": "9716d20acc9587028e5667ff2ef4ebd90222a3a32d97060f37ce558f04934a38",
         "frames": 182,
         "fps": 30,
         "duration_s": 6.066666666666666
@@ -40,24 +61,45 @@
       "physical_duration_s": 6.000000000000116,
       "poster": {
         "path": "docs/verification/images/collision-nsc.png",
-        "sha256": "a8e2562803f7e61e37c9c702b9f0a7dfb78663ebf51f9ae59302f32bf7990f89",
+        "sha256": "6e774a58a340bd46ca5fea79c0e6c50380ce620b987eee08b3f4fc09bd2185b1",
         "video_frame": 91
       },
-      "original_video_sha256": "9a9eefbc7dac56535be062c871c9de0e0c11a9f480de4b682d728c84adc59ee0",
-      "original_manifest_sha256": "aaad0aba77365f94e814234bd6fee4f1f0a098f9f031fc06cad5ec6c5081da1f",
-      "derivative_manifest": "crash-work/renders/robodyna-readme-branded-1/nsc/manifest.json",
-      "derivative_manifest_sha256": "f666cb63b4711cb0f587fe844c42b748799cc253c34b96ba71db5ceec92ce0cf",
-      "upload_receipt": "crash-work/reports/robodyna-readme-nsc-upload-1.json",
-      "upload_receipt_sha256": "572cc6395f6110e2d26186de68c688233d0b1853935224d93df2055d8bcf070a",
-      "anonymous_playback_bytes_verified": true
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/nsc-video/manifest.json",
+        "sha256": "2292a6373b46ef73da15740f1c43e2b615cc4f757408c946ec55a180532bf1e0",
+        "bytes": 38000
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/delivery/nsc/manifest.json",
+        "sha256": "5e4ab0386b4277939f82810d46d71bb40f20d3a1b65122f6fec92bb5a0cfa4f3",
+        "bytes": 5455
+      },
+      "upload_receipt": {
+        "path": "crash-work/reports/robodyna-transparent-nsc-upload-1.json",
+        "sha256": "f0991d04f2d0c587e013d19eddcd88dd0fcf62f4ef869c017f565b4eaa74deb3",
+        "bytes": 1057
+      },
+      "encoding": {
+        "operation": "byte_copy",
+        "lossy_reencode": false,
+        "crf": null
+      },
+      "anonymous_playback_bytes_verified": true,
+      "markdown_rendering_authentication": "github_token",
+      "anonymous_markdown_api_verified": false,
+      "previous_publication": {
+        "attachment_url": "https://github.com/user-attachments/assets/6491834e-1e89-4f9c-a13b-4791a51b063d",
+        "video_sha256": "9acd0f6375b162ba709aee69c6bc734b3a0fd466beb4fb220ede5835e3f03fdd",
+        "original_baseline_video_sha256": "9a9eefbc7dac56535be062c871c9de0e0c11a9f480de4b682d728c84adc59ee0"
+      }
     },
     {
       "case": "scm",
-      "attachment_url": "https://github.com/user-attachments/assets/19331faa-c72e-47ab-8ea8-2d91613647d8",
-      "name": "robodyna-scm.mp4",
+      "attachment_url": "https://github.com/user-attachments/assets/c779247e-bded-46ad-a7aa-95077b73918c",
+      "name": "robodyna-scm-transparent.mp4",
       "video": {
-        "bytes": 9448563,
-        "sha256": "2ce286b5eb2efaee079abd73fb3d09340e1e5d688a8a037b20f5d26eb571c8a2",
+        "bytes": 9165957,
+        "sha256": "ae2c5a9684aa651e0e2213cfe7a16c30b5d5322caa9bb81ada17cf48d378bd9c",
         "frames": 151,
         "fps": 25,
         "duration_s": 6.04
@@ -65,24 +107,45 @@
       "physical_duration_s": 5.999999999999561,
       "poster": {
         "path": "docs/verification/images/scm.png",
-        "sha256": "266267da5bc121d82b3210b95f219c95b77838dd4a20acbe6673c4d054b23e6b",
+        "sha256": "f5ad604796c62f69d09857bb39f500771aad7749328cf5cb1999b1fe20a7b31a",
         "video_frame": 75
       },
-      "original_video_sha256": "fdf0c662d7014a281ac882e9fd8d7ff4865283b788fbfb2abdd77faf844fa09d",
-      "original_manifest_sha256": "03f5f36d3f76f3fa3d4199595683b1918b3d23365a71fab718ee15d4634a944b",
-      "derivative_manifest": "crash-work/renders/robodyna-readme-branded-1/scm/manifest.json",
-      "derivative_manifest_sha256": "a9aec2919b2939fc3a48abca1bf64cd093429ec655aa9195cc758ad850a17a57",
-      "upload_receipt": "crash-work/reports/robodyna-readme-scm-upload-1.json",
-      "upload_receipt_sha256": "7a489d776fa1bbf8830660f31938da2d58b529cb595509bc92602ed98d102867",
-      "anonymous_playback_bytes_verified": true
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/scm-video/manifest.json",
+        "sha256": "5339b1f6d699668c963e0a55757cb1f3fd8fcddd93f71692fa58c1823d0f6267",
+        "bytes": 52722
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/delivery/scm/manifest.json",
+        "sha256": "c491a2c04b2b506af6e483d93ac8b5a0cae2ebf8d7e9b6d7adb6ef67694c8a79",
+        "bytes": 6134
+      },
+      "upload_receipt": {
+        "path": "crash-work/reports/robodyna-transparent-scm-upload-1.json",
+        "sha256": "3d7292c62cd565142245da5e0591edbba4915482290247936aae57652a61d113",
+        "bytes": 1057
+      },
+      "encoding": {
+        "operation": "crf22_reencode",
+        "lossy_reencode": true,
+        "crf": 22
+      },
+      "anonymous_playback_bytes_verified": true,
+      "markdown_rendering_authentication": "github_token",
+      "anonymous_markdown_api_verified": false,
+      "previous_publication": {
+        "attachment_url": "https://github.com/user-attachments/assets/19331faa-c72e-47ab-8ea8-2d91613647d8",
+        "video_sha256": "2ce286b5eb2efaee079abd73fb3d09340e1e5d688a8a037b20f5d26eb571c8a2",
+        "original_baseline_video_sha256": "fdf0c662d7014a281ac882e9fd8d7ff4865283b788fbfb2abdd77faf844fa09d"
+      }
     },
     {
       "case": "yaris-front",
-      "attachment_url": "https://github.com/user-attachments/assets/4cfb21e2-523d-4213-b972-0cd51a54cb23",
-      "name": "robodyna-yaris-front.mp4",
+      "attachment_url": "https://github.com/user-attachments/assets/71270cf4-bf3e-41bf-9e55-e940a0b763a2",
+      "name": "robodyna-yaris-front-transparent.mp4",
       "video": {
-        "bytes": 6332834,
-        "sha256": "4dd1e7d94fedaf84ec5d466488f6d890b67468109f4fade5ddc3aa3945c65ccb",
+        "bytes": 6320755,
+        "sha256": "c6df1e536833878f653dc08effac1acfb9dd38ef55f883ec05efb63ae50b07e6",
         "frames": 1806,
         "fps": 30,
         "duration_s": 60.2
@@ -90,24 +153,45 @@
       "physical_duration_s": 0.10000005000066203,
       "poster": {
         "path": "docs/verification/images/yaris-front.png",
-        "sha256": "c9904159466f7e8880f7bc10f15b0d61e7a77d2cfd451dd7f9cbbba9c2bca725",
+        "sha256": "a0c6435e52b5e05a2229424ad4ed286cee1ffbcedc564cabdc4c5f6bff8c7e2f",
         "video_frame": 900
       },
-      "original_video_sha256": "060e7286e8c26790c7db300127c2a523b0e41e0c7e15b5c8d59b1f01931b5be5",
-      "original_manifest_sha256": "54ead01b78646d991193cdc919695a070a4a5f7d3b05b18e0c61e8e7d4a9e06e",
-      "derivative_manifest": "crash-work/renders/robodyna-readme-branded-1/yaris-front/manifest.json",
-      "derivative_manifest_sha256": "bd30ae06409c4b40deae13ea5be30b9d75cb4601d9d1c01be28d8bb3d087e383",
-      "upload_receipt": "crash-work/reports/robodyna-readme-yaris-front-upload-1.json",
-      "upload_receipt_sha256": "edff0ba7190a35f872de465d0bf3d7d003d4d50e647f0f456c885926208579d0",
-      "anonymous_playback_bytes_verified": true
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/yaris/front-video/manifest.json",
+        "sha256": "e0563135438c75b7e2b446de91a5fde91a70febe26f6a4b4e7882d8df26c6482",
+        "bytes": 208691
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/delivery/yaris-front/manifest.json",
+        "sha256": "bdb9738f96f3c9c132c86e07975c1533a4ec4edb2facabd3e5c492396f8a3d2c",
+        "bytes": 111989
+      },
+      "upload_receipt": {
+        "path": "crash-work/reports/robodyna-transparent-yaris-front-upload-1.json",
+        "sha256": "fe6789c6ba5241d9df58da3f2e5cc56e598e717a00700906cc6f7b30ed299c27",
+        "bytes": 1065
+      },
+      "encoding": {
+        "operation": "crf22_reencode",
+        "lossy_reencode": true,
+        "crf": 22
+      },
+      "anonymous_playback_bytes_verified": true,
+      "markdown_rendering_authentication": "github_token",
+      "anonymous_markdown_api_verified": false,
+      "previous_publication": {
+        "attachment_url": "https://github.com/user-attachments/assets/4cfb21e2-523d-4213-b972-0cd51a54cb23",
+        "video_sha256": "4dd1e7d94fedaf84ec5d466488f6d890b67468109f4fade5ddc3aa3945c65ccb",
+        "original_baseline_video_sha256": "060e7286e8c26790c7db300127c2a523b0e41e0c7e15b5c8d59b1f01931b5be5"
+      }
     },
     {
       "case": "yaris-overview",
-      "attachment_url": "https://github.com/user-attachments/assets/1a967b5f-5ec1-4625-b6d5-8f6fbb1c0480",
-      "name": "robodyna-yaris-overview.mp4",
+      "attachment_url": "https://github.com/user-attachments/assets/16654165-39e5-437b-879e-b314db5bfd45",
+      "name": "robodyna-yaris-overview-transparent.mp4",
       "video": {
-        "bytes": 2092580,
-        "sha256": "2812cfb323524f3a3a3b3d3e8a829e61d30d51f2a99a23791b19cf19f967d15d",
+        "bytes": 3171222,
+        "sha256": "2e85fb40b3e007fc1aaa4c243ed5a79b4980e73b1a47f5c0ea65fd908af9549a",
         "frames": 1806,
         "fps": 30,
         "duration_s": 60.2
@@ -115,34 +199,56 @@
       "physical_duration_s": 0.10000005000066203,
       "poster": {
         "path": "docs/verification/images/yaris-overview.png",
-        "sha256": "23e5bd31020e184ecece5a1b9a8f21e9306a70cdc0923ca912e7b24a7e0ca23b",
+        "sha256": "187aef881234106d3868361925cc0bd17f19000161fa0d18ab26d60ae40dccbc",
         "video_frame": 900
       },
-      "original_video_sha256": "f5ed6f8c17414aee82b9e1135ab6e1309efc525027dade3480ab845117e2b98d",
-      "original_manifest_sha256": "30a6cad168d282cafdccfe6e1b023ed8439746e530ccc6a2f18682e45abe3e68",
-      "derivative_manifest": "crash-work/renders/robodyna-readme-branded-1/yaris-overview/manifest.json",
-      "derivative_manifest_sha256": "a05124baa3c84dac78bff9e6bb69b88eeec96cb75bafea05219d287854c16dae",
-      "upload_receipt": "crash-work/reports/robodyna-readme-yaris-overview-upload-1.json",
-      "upload_receipt_sha256": "fa98878b9a042b715ec5eca76d431949ff718d68f4a25f580622139e46ea7c66",
-      "anonymous_playback_bytes_verified": true
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/yaris/overview-video/manifest.json",
+        "sha256": "2f772e8e20df049573d66de5c2ef9013b66fedc054cbc2cf4017f1554a33705e",
+        "bytes": 208789
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-readme-transparent-2/delivery/yaris-overview/manifest.json",
+        "sha256": "f69211f725bfc858754455bd8f5b97693f89fc6a29c1bf74418a8de4cf1be068",
+        "bytes": 111417
+      },
+      "upload_receipt": {
+        "path": "crash-work/reports/robodyna-transparent-yaris-overview-upload-1.json",
+        "sha256": "8d26d45cebb1d59eeffe16f6f673381e25209d3f5a32f3f7ae9409af84b4d018",
+        "bytes": 1068
+      },
+      "encoding": {
+        "operation": "byte_copy",
+        "lossy_reencode": false,
+        "crf": null
+      },
+      "anonymous_playback_bytes_verified": true,
+      "markdown_rendering_authentication": "github_token",
+      "anonymous_markdown_api_verified": false,
+      "previous_publication": {
+        "attachment_url": "https://github.com/user-attachments/assets/1a967b5f-5ec1-4625-b6d5-8f6fbb1c0480",
+        "video_sha256": "2812cfb323524f3a3a3b3d3e8a829e61d30d51f2a99a23791b19cf19f967d15d",
+        "original_baseline_video_sha256": "f5ed6f8c17414aee82b9e1135ab6e1309efc525027dade3480ab845117e2b98d"
+      }
     }
   ],
   "branding": {
     "logo": "assets/brand/robodyna-logo-primary.png",
-    "logo_sha256": "c35dfbc9e0a6f98ee6b0c0e0e69fda11999cad46a756e32c7f21e8a10d611e53",
-    "panel": {
-      "position": "top right",
-      "width": 240,
-      "height": 106,
-      "margin_right": 8,
-      "margin_top": 8
-    },
-    "encoding": "H264 CRF22; original canvas, frame count, frame rate and exact track duration retained",
-    "lossy_reencode": true,
-    "simulation_rerun": false
+    "logo_sha256": "83d6d0e289bae5f31ebf1a99754bdc653500440dc6dfa54fa8fdc4cfb556560a",
+    "transparent_rgba": true,
+    "source": "native renderer",
+    "opaque_cover_panel": false,
+    "post_render_overlay": false,
+    "generation_record": "assets/brand/generation.json"
   },
-  "scope": "Presentation derivatives. Original videos, captures, simulation archives and their qualification receipts remain unchanged. This is not new numerical qualification.",
-  "hosting": "Repository-scoped GitHub attachment markers rendered into native players; anonymous rendered-media SHA-256 readback verified. Canonical marker URLs need Markdown rendering, not direct downloads.",
+  "capture_scope": {
+    "demos": "Repeat the original six-second CPU models; every summary field identical except authenticated source hash after presentation edits",
+    "yaris": "Replay the preserved 100 ms accepted trajectory in both views; no crash-solver rerun; complete before/after archive inventories identical"
+  },
+  "verification_record": "docs/verification/TRANSPARENT_BRANDING.json",
+  "scope": "Fresh native presentation captures and checked delivery copies. Historical numerical qualification and previous artifacts remain unchanged. This is not full inherited-module qualification.",
+  "hosting": "Repository-scoped GitHub attachments. Markdown API rendering used authenticated requests after anonymous API quota exhaustion; every actual CDN video byte stream was read and SHA-verified without credentials.",
+  "previous_media_record_sha256": "1bf3ec7f964c9445a3f165350c8015cc50a404d06f140a0a0cbfbb859a96403f",
   "chrono_cutoff": {
     "source_commit": "a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38",
     "source_commit_date": "2026-09-11T10:59:31-07:00",

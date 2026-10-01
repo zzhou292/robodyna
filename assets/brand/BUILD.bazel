@@ -1,0 +1,2 @@
+# Master brand asset; the runtime copy is qualified against these exact bytes.
+exports_files(["robodyna-logo-primary.png"], visibility = ["//visibility:public"])

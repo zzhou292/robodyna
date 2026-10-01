@@ -10,7 +10,7 @@ class Overlay final:public chrono::vsg3d::ChGuiComponentVSG {
         ImGui::SetNextWindowPos(ImVec2(12,12),ImGuiCond_Always);
         const auto flags=ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse|
             ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoSavedSettings;
-        if(ImGui::Begin("robo-dyna | Physical simulation replay",nullptr,flags)) {
+        if(ImGui::Begin("Robodyna | Physical simulation replay",nullptr,flags)) {
             const auto& replay=*scene.samples();const auto& stamp=*scene.stamp();
             ImGui::Text("Time %.3f us (%.6f ms) | sample %zu / %zu",stamp.time*1e6,stamp.time*1000,stamp.index+1,replay.frames().size());
             if (replay.recovered()) {

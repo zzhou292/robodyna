@@ -92,7 +92,7 @@ class MarkerPositionVisibilityCallback : public ChSphVisualizationVSG::MarkerVis
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << "\n\n";
+    cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n\n";
 
     double step_size = 5e-4;
     double time_end = 1;
@@ -283,7 +283,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Couette Flow");
+        visVSG->SetWindowTitle("Robodyna | Couette Flow");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->SetCameraVertical(CameraVerticalDir::Y);

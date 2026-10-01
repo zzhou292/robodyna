@@ -251,7 +251,7 @@ void ANCFBeamTest::SimulateVis() {
     auto vis = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
     vis->AttachSystem(m_system);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("ANCF Beam 3242");
+    vis->SetWindowTitle("Robodyna | ANCF Beam 3242");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

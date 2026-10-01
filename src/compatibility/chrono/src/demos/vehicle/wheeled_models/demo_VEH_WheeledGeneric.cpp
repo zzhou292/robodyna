@@ -86,7 +86,7 @@ bool debug_log = false;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // -----------------------------
     // Create the vehicle subsystems
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     // ----------------------------------------------------------------------
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Generic Vehicle Demo");
+    vis->SetWindowTitle("Robodyna | Generic Vehicle Demo");
     vis->AttachVehicle(&vehicle);
     vis->AttachDriver(&driver);
     vis->SetChaseCamera(trackPoint, 8.0, 0.5);

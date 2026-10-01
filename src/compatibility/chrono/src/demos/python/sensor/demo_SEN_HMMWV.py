@@ -86,11 +86,11 @@ def main():
 
     # Create the vehicle Irrlicht interface
     vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-    vis.SetWindowTitle('HMMWV')
+    vis.SetWindowTitle('Robodyna | HMMWV')
     vis.SetWindowSize(1280, 1024)
     vis.SetChaseCamera(trackPoint, 6.0, 0.5)
     vis.Initialize()
-    vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+    vis.AddLogo()
     vis.AddLightDirectional()
     vis.AddSkyBox()
     vis.AttachVehicle(hmmwv.GetVehicle())

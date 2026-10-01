@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->SetWindowSize(ChVector2i(1200, 900));
     vis->SetWindowPosition(ChVector2i(100, 300));
-    vis->SetWindowTitle("Chrono VSG Assets");
+    vis->SetWindowTitle("Robodyna | Visual assets");
     vis->AddCamera(ChVector3d(0.4, -1, 0.5), ChVector3d(0, 0, 0.4));
     vis->SetCameraAngleDeg(40);
     vis->SetLightIntensity(1.0f);

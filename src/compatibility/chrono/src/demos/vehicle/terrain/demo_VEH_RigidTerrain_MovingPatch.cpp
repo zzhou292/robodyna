@@ -36,7 +36,7 @@ using namespace chrono::vehicle::hmmwv;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Simulation step sizes
     double step_size = 3e-3;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
     auto vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     vis->AttachSystem(hmmwv.GetSystem());
-    vis->SetWindowTitle("Rigid Terrain Demo");
+    vis->SetWindowTitle("Robodyna | Rigid Terrain Demo");
     vis->SetWindowSize(1200, 800);
 
     vis->AddCamera(cam_pos, hmmwv.GetVehicle().GetPos());

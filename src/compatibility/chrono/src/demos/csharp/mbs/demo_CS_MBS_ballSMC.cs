@@ -29,7 +29,7 @@ namespace ChronoDemo
 #if CHRONO_VSG
             ChVisualSystemVSG vis = new ChVisualSystemVSG();
             vis.AttachSystem(sys);
-            vis.SetWindowTitle("[C#] SMC demonstration - VSG");
+            vis.SetWindowTitle("Robodyna | [C#] SMC demonstration - VSG");
             vis.SetWindowSize(new ChVector2i(800, 600));
             vis.SetWindowPosition(new ChVector2i(100, 100));
             vis.AddCamera(new ChVector3d(0, 3, -6), new ChVector3d(0, 0, 0));
@@ -44,7 +44,7 @@ namespace ChronoDemo
 #elif CHRONO_IRRLICHT
             ChVisualSystemIrrlicht vis = new ChVisualSystemIrrlicht();
             vis.SetWindowSize(800, 600);
-            vis.SetWindowTitle("[C#] SMC demonstration - Irrlicht");
+            vis.SetWindowTitle("Robodyna | [C#] SMC demonstration - Irrlicht");
             vis.Initialize();
             vis.AddLogo();
             vis.AddSkyBox();
@@ -79,7 +79,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             ChCollisionSystem.Type coll_type = ChCollisionSystem.Type.BULLET;
 

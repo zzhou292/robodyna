@@ -99,11 +99,11 @@ For the native viewer, add `chrono_data` to the tool file. It contains an `ancho
 object with either a `path` or `runfile`, and a `files` array of
 `{ "file": "relative/name", "bytes": 123, "sha256": "..." }` records.
 The packaged anchor runfile is
-`_main/src/compatibility/chrono/data/logo_chrono_alpha.png`.
+`_main/src/compatibility/chrono/data/logo_robodyna_alpha.png`.
 
 The anchor is a file, so resolution does not depend on runfiles having a directory
 entry. Its actual parent is the data directory passed as `--chrono-data` to the
-existing C++ resolver. The manifest must cover `logo_chrono_alpha.png`, all files
+existing C++ resolver. The manifest must cover `logo_robodyna_alpha.png`, all files
 under `vsg/` and `colormaps/`, including fonts and textures. Missing, unexpected,
 changed, duplicated or escaping assets reject. Admission is bounded to 4,096 files
 and 256 MiB. Other Chrono model-data directories are neither hashed nor copied.

@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Poiseuille Flow");
+        visVSG->SetWindowTitle("Robodyna | Poiseuille Flow");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->AddCamera(ChVector3d(0, -5 * byDim, 0.5 * bzDim), ChVector3d(0, 0, 0.5 * bzDim));

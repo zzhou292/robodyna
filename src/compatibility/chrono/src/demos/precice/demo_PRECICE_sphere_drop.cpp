@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     cin >> foo;
 #endif
 
-    cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Problem settings
     std::string precice_config_filename = GetChronoDataFile("precice/sphere_drop/precice_config_explicit.xml");

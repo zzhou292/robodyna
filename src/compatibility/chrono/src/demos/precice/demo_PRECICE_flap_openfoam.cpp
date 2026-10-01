@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     ////    cin >> foo;
     ////#endif
 
-    cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Ensure the program is run from the correct directory
     auto crt_path = std::filesystem::current_path().string();

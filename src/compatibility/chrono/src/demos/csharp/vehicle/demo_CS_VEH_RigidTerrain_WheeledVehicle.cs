@@ -35,10 +35,10 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             // TODO: correct CHRONO_VERSION call
-            //Console.WriteLine(chrono.GetLog() + "Copyright (c) 2017 projectchrono.org\nChrono version: " + CHRONO_VERSION + "\n\n");
+            //Console.WriteLine(chrono.GetLog() + "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " + CHRONO_VERSION + "\n\n");
 
             // Set the path to the Chrono data files and Chrono::Vehicle data files
             chrono.SetChronoDataPath(CHRONO_DATA_DIR);
@@ -154,7 +154,7 @@ namespace ChronoDemo
 
             // Create the VSG vehicle interface
             ChWheeledVehicleVisualSystemVSG vis = new ChWheeledVehicleVisualSystemVSG();
-            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Rigid Terrain Demo");
+            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Robodyna | Rigid Terrain Demo");
             vis.SetChaseCamera(new ChVector3d(0.0, 0.0, 0.75), 6.0, 0.75);
             chrono_vsg.CastToChVisualSystemVSG(vis).SetLightIntensity(1.0f);
             chrono_vsg.CastToChVisualSystemVSG(vis).SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

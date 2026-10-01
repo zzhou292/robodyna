@@ -36,7 +36,7 @@ namespace ChronoDemo
             vis.SetCameraVertical(CameraVerticalDir.Z);
             vis.SetWindowSize(new ChVector2i(800, 600));
             vis.SetWindowPosition(new ChVector2i(100, 100));
-            vis.SetWindowTitle("ChLinkBushing");
+            vis.SetWindowTitle("Robodyna | Bushing dynamics");
             vis.AddCamera(new ChVector3d(3, 3, 0), new ChVector3d(0, 0, 0));
             vis.SetLightIntensity(1.0f);
             vis.SetLightDirection(1.5 * chrono.CH_PI_2, chrono.CH_PI_4);
@@ -51,7 +51,7 @@ namespace ChronoDemo
             vis.AttachSystem(sys);
             vis.SetCameraVertical(CameraVerticalDir.Z);
             vis.SetWindowSize(800, 600);
-            vis.SetWindowTitle("ChLinkBushing");
+            vis.SetWindowTitle("Robodyna | Bushing dynamics");
             vis.Initialize();
             vis.AddLogo();
             vis.AddSkyBox();
@@ -70,7 +70,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + ChronoGlobals.CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + ChronoGlobals.CHRONO_VERSION);
 
             // Select one of the following examples:
             //

@@ -91,7 +91,7 @@ std::shared_ptr<ChTriangleMeshConnected> CreateMesh(double L, int n) {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create the system
     ChSystemSMC sys;
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
     vis->AttachSystem(&sys);
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
-    vis->SetWindowTitle("2D wave");
+    vis->SetWindowTitle("Robodyna | 2D wave");
     vis->SetBackgroundColor(ChColor(18.0f / 255, 26.0f / 255, 32.0f / 255));
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0, -15, 3));

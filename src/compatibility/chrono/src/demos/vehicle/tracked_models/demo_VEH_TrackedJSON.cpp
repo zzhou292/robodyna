@@ -254,7 +254,7 @@ bool ReportTrackFailure(ChTrackedVehicle& veh, double threshold = 1e-2) {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create the vehicle system
     cout << "VEHICLE: " << vehicle_model.ModelName() << endl;
@@ -371,7 +371,7 @@ int main(int argc, char* argv[]) {
 
     std::string title = "JSON tracked vehicle demo - " + vehicle_model.ModelName();
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
-    vis->SetWindowTitle(title);
+    vis->SetWindowTitle("Robodyna | " + title);
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
     vis->EnableSkyTexture(SkyMode::DOME);

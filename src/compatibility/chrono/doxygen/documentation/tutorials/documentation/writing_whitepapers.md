@@ -7,7 +7,7 @@ In order to maintain some sense of uniformity between these white paper document
 
 ## Finding the chrono.cls LaTeX class
 
-- you can find ```chrono.cls``` and ```logo_projectchrono_h200.png``` in the ```docs\latex_white_papers``` directory of the repository.
+- Use the Robodyna logo from `assets/brand/robodyna-logo-primary.png` in this repository. Retain the source and license acknowledgements appropriate to your document.
   
 - copy those files to a directory where you generate your LaTeX document (say ```mywhitepaper.tex```)
 

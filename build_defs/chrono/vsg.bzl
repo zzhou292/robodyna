@@ -35,6 +35,6 @@ def chrono_native_vsg(name):
     )
     native.filegroup(
         name = "vsg_assets",
-        srcs = native.glob(["data/vsg/**", "data/colormaps/**", "data/logo_chrono_alpha.png"]),
+        srcs = native.glob(["data/vsg/**", "data/colormaps/**", "data/logo_robodyna_alpha.png"]),
         visibility = ["//visibility:public"],
     )

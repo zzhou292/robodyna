@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
 
     vis->SetWindowSize(ChVector2i(1200, 800));
     vis->SetWindowPosition(ChVector2i(100, 300));
-    vis->SetWindowTitle("Chrono VSG Assets");
+    vis->SetWindowTitle("Robodyna | Visual assets");
     vis->EnableSkyTexture(SkyMode::DOME);
 
     vis->SetCameraVertical(CameraVerticalDir::Y);

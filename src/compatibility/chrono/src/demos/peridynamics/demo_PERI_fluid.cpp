@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     assert(false); // ***THE PERIDYNAMIC FLUID FEATURE IS NOT YET TESTED***
     return 0;
 
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a ChronoENGINE physical system
     ChSystemNSC mphysicalSystem;
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
     auto vsys = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vsys->AttachSystem(&mphysicalSystem);
     vsys->SetWindowSize(1024, 768);
-    vsys->SetWindowTitle("Peridynamics test");
+    vsys->SetWindowTitle("Robodyna | Peridynamics test");
     vsys->Initialize();
     vsys->AddLogo();
     vsys->AddSkyBox();

@@ -387,7 +387,7 @@ bool CompareResults(const ChMatrixDynamic<>& ref_mat, const ChMatrixDynamic<>& m
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << "\n\n";
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n\n";
 
     bool verbose = true;
 

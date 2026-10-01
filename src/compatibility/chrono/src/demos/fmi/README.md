@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://github.com/projectchrono/chrono/blob/main/contrib/logo/Chrono_alpha.png" width="200">
+<img src="../../../../../../assets/brand/robodyna-logo-primary.png" width="200">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://github.com/projectchrono/fmu-forge/blob/main/fmu-forge.png" width="150">
 </p>

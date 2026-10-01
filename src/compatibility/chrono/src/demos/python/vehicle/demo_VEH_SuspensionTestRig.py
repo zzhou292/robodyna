@@ -35,7 +35,7 @@ import math as m
 # =============================================================================
 
 def main() : 
-    #print("Copyright (c) 2017 projectchrono.org\nChrono version: ", CHRONO_VERSION , "\n\n")
+    #print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", CHRONO_VERSION , "\n\n")
 
     # Create the rig from a JSON specification file
     rig = veh.ChSuspensionTestRigPushrod(str_file)
@@ -66,7 +66,7 @@ def main() :
     # Create the test rig Irrlicht application
     cam_loc = (rig.GetSpindlePos(0, veh.LEFT) + rig.GetSpindlePos(0, veh.RIGHT)) * 0.5
     vis = veh.ChSuspensionTestRigVisualSystemIRR()
-    vis.SetWindowTitle('Suspension Test Rig')
+    vis.SetWindowTitle('Robodyna | Suspension Test Rig')
     vis.SetWindowSize(1280, 1024)
     vis.AttachSTR(rig)
     vis.Initialize()

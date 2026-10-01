@@ -15,6 +15,7 @@
 //// RADU TODO
 //// Allow attaching more than one ChSystem to the same Irrlicht visualization
 
+#include <algorithm>
 #include <codecvt>
 #include <filesystem>
 #include <locale>
@@ -45,7 +46,7 @@ ChVisualSystemIrrlicht::ChVisualSystemIrrlicht()
       m_device(nullptr),
       m_monospace_font(nullptr),
       m_container(nullptr),
-      m_win_title(""),
+      m_win_title("Robodyna | Simulation"),
       m_yup(true),
       m_draw_colorbar(false),
       m_use_effects(false),
@@ -97,7 +98,7 @@ ChVisualSystemIrrlicht::ChVisualSystemIrrlicht()
 ChVisualSystemIrrlicht::ChVisualSystemIrrlicht(ChSystem* sys, const ChVector3d& camera_pos, const ChVector3d& camera_targ) : ChVisualSystemIrrlicht() {
     AttachSystem(sys);
     SetWindowSize(800, 600);
-    SetWindowTitle("Chrono");
+    SetWindowTitle("Robodyna | Simulation");
     Initialize();
 
     AddLogo();
@@ -393,7 +394,25 @@ void ChVisualSystemIrrlicht::AddLogo(const std::string& logo_filename) {
     if (!m_device)
         return;
 
-    GetGUIEnvironment()->addImage(GetVideoDriver()->getTexture(logo_filename.c_str()), core::position2d<irr::s32>(10, 10));
+    const bool use_default = logo_filename.empty();
+    const auto filename = use_default ? GetChronoDataFile("logo_robodyna_alpha.png") : logo_filename;
+    auto* texture = GetVideoDriver()->getTexture(filename.c_str());
+    if (!texture)
+        return;
+    auto* image = GetGUIEnvironment()->addImage(texture, core::position2d<irr::s32>(10, 10));
+    if (!use_default || !image)
+        return;
+
+    // GUI image scaling preserves alpha and accepts arbitrary source resolution.
+    // Keep explicit custom-file behavior unchanged; only the default is scaled.
+    const auto size = texture->getOriginalSize();
+    if (size.Height == 0)
+        return;
+    const irr::s32 height = 64;
+    const irr::s32 width = std::max<irr::s32>(1, static_cast<irr::s32>(height * double(size.Width) / size.Height + 0.5));
+    image->setRelativePosition(core::rect<irr::s32>(10, 10, 10 + width, 10 + height));
+    image->setScaleImage(true);
+    image->setUseAlphaChannel(true);
 }
 
 void ChVisualSystemIrrlicht::AddTypicalLights() {

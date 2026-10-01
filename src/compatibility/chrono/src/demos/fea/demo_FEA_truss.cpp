@@ -34,7 +34,7 @@ using namespace chrono::fea;
 using namespace chrono::irrlicht;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create (if needed) output directory
     const std::string out_dir = GetChronoOutputPath() + "FEA_TRUSS";
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
     // Create the Irrlicht visualization system
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->SetWindowSize(1024, 768);
-    vis->SetWindowTitle("Truss FEA test: use ChElementSpring and ChElementBar");
+    vis->SetWindowTitle("Robodyna | Spring and bar finite elements");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

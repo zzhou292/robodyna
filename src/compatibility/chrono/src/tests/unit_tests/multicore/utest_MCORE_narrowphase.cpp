@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
         auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
         vis->AttachSystem(msystem_mpr);
-        vis->SetWindowTitle("Unit test");
+        vis->SetWindowTitle("Robodyna | Unit test");
         vis->SetCameraVertical(CameraVerticalDir::Z);
         vis->AddCamera(ChVector3d(6, -6, 1), ChVector3d(0, 0, 0));
         vis->SetWindowSize(1280, 720);

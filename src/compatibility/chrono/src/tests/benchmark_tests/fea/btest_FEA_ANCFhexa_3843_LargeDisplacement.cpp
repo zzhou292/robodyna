@@ -276,7 +276,7 @@ void ANCFHexaTest::SimulateVis() {
     auto vis = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
     vis->AttachSystem(m_system);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("ANCF Hexa 3843");
+    vis->SetWindowTitle("Robodyna | ANCF Hexa 3843");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

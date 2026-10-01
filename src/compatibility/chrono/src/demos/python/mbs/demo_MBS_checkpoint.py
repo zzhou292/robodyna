@@ -99,7 +99,7 @@ def main():
     vis.SetCameraVertical(chrono.CameraVerticalDir_Y)
     vis.SetWindowSize(chrono.ChVector2i(1280, 800))
     vis.SetWindowPosition(chrono.ChVector2i(100, 100))
-    vis.SetWindowTitle("Slider-crank checkpointing")
+    vis.SetWindowTitle("Robodyna | Slider-crank checkpointing")
     vis.AddCamera(chrono.ChVector3d(2, 0, 6), chrono.ChVector3d(2, 0, 0))
     vis.SetCameraAngleDeg(40)
     vis.SetLightIntensity(1.0)

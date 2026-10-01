@@ -50,7 +50,7 @@ def main():
         vis.AttachSystem(sys)
         vis.SetWindowSize(chrono.ChVector2i(1200, 800))
         vis.SetWindowPosition(chrono.ChVector2i(100, 300))
-        vis.SetWindowTitle("YAML model - " + model_name)
+        vis.SetWindowTitle("Robodyna | YAML model - " + model_name)
         vis.SetCameraVertical(camera_vertical)
         vis.AddCamera(camera_location, camera_target)
         vis.SetCameraAngleDeg(40)

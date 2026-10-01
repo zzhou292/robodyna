@@ -41,7 +41,7 @@ ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,robodyna::simulat
     visual.SetTargetRenderFPS(0);
     visual.SetWindowSize(1280,720);
     visual.SetWindowPosition(60,60);
-    visual.SetWindowTitle("robo-dyna | accepted simulation replay");
+    visual.SetWindowTitle("Robodyna | Accepted simulation replay");
     visual.SetBackgroundColor(chrono::ChColor(.06f,.08f,.11f));
     const bool y_up=camera.vertical==visual::ReplayVertical::Y;
     visual.SetCameraVertical(y_up?chrono::CameraVerticalDir::Y:chrono::CameraVerticalDir::Z);

@@ -601,7 +601,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Chrono::CRM single wheel test");
+        visVSG->SetWindowTitle("Robodyna | Wheel on deformable terrain");
         visVSG->SetWindowSize(1280, 960);
         visVSG->AddCamera(ChVector3d(-bxDim / 2. + 1, -5 * byDim, 5 * bzDim), ChVector3d(-bxDim / 2. + 1, 0., 0));
         visVSG->SetLightIntensity(0.9f);

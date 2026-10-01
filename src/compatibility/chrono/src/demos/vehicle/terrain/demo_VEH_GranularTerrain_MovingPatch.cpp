@@ -31,7 +31,7 @@ using namespace chrono::vehicle;
 using namespace chrono::vsg3d;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Simulation parameters
     double time_step = 5e-3;  // Integration time step (s)
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(sys);
-    vis->SetWindowTitle("Granular terrain demo");
+    vis->SetWindowTitle("Robodyna | Granular terrain demo");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(center - ChVector3d(0, 3, 0), center);
     vis->SetWindowSize(1280, 720);

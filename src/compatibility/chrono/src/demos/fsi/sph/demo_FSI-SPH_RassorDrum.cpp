@@ -567,7 +567,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Chrono::FSI single drum RASSOR demo");
+        visVSG->SetWindowTitle("Robodyna | RASSOR excavation drum");
         visVSG->SetWindowSize(1280, 960);
         visVSG->AddCamera(ChVector3d(0, -5 * byDim, 5 * bzDim), ChVector3d(0, 0, 0));
         visVSG->SetLightIntensity(0.9f);

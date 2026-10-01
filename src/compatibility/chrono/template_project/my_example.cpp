@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     // 4 - Create the Irrlicht visualization system
     ChVisualSystemIrrlicht vis;
     vis.SetWindowSize(800, 600);
-    vis.SetWindowTitle("A simple project template");
+    vis.SetWindowTitle("Robodyna | A simple project template");
     vis.Initialize();
     vis.AddLogo();
     vis.AddSkyBox();

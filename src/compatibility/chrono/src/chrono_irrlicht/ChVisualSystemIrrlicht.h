@@ -99,9 +99,10 @@ class ChApiIrr ChVisualSystemIrrlicht : virtual public ChVisualSystem {
     /// This creates the Irrlicht device using the current values for the optional device parameters.
     virtual void Initialize() override;
 
-    /// Add a logo in a 3D scene.
-    /// Has no effect, unless called after Initialize().
-    void AddLogo(const std::string& logo_filename = GetChronoDataFile("logo_chrono_alpha.png"));
+    /// Add a logo in a 3D scene, after Initialize().
+    /// An empty filename selects the Robodyna logo, scaled to 64 pixels high with
+    /// its original aspect ratio. Explicit custom files retain their native size.
+    void AddLogo(const std::string& logo_filename = "");
 
     /// Add a camera in an Irrlicht 3D scene.
     /// The camera rotation/pan is controlled by mouse left and right buttons, the zoom is controlled by mouse wheel or

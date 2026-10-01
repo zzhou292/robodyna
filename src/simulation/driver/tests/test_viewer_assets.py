@@ -55,7 +55,7 @@ class ViewerAssetTests(unittest.TestCase):
     def test_duplicate_or_escaping_asset_names_reject(self):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             load_assets(dict(anchor=self.spec["anchor"], files=[*self.records, self.records[0]]), self.root)
-        altered = [{**self.records[0], "file": "../logo_chrono_alpha.png"}, *self.records[1:]]
+        altered = [{**self.records[0], "file": "../logo_robodyna_alpha.png"}, *self.records[1:]]
         with self.assertRaisesRegex(ValueError, "declared visualization roots"):
             load_assets(dict(anchor=self.spec["anchor"], files=altered), self.root)
 

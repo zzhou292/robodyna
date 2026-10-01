@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
     if (visualize) {
         vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemIrrlicht>();
         vis->AttachVehicle(&hmmwv.GetVehicle());
-        vis->SetWindowTitle("Chrono SCM test");
+        vis->SetWindowTitle("Robodyna | Deformable soil");
         vis->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5);
         vis->Initialize();
         vis->AddTypicalLights();

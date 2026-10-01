@@ -1,0 +1,82 @@
+{
+  "schema": "robodyna.transparent_branding_qualification.v1",
+  "base_commit": "bcf1753bc15a1d78e41503b3b7d3efca414217b2",
+  "scope": "Transparent native branding, descriptive presentation labels, unchanged selected simulation evidence, and honest retained-source discovery",
+  "final_bazel_test_targets_passed": 16,
+  "final_test_guard": {
+    "path": "crash-work/reports/robodyna-transparent-final-tests-1.json",
+    "sha256": "a544fd21ce3496750dcefdb2033598618215a38f1e9a0a53284e370e836fec72",
+    "bytes": 9961
+  },
+  "source_proof": {
+    "schema": "robodyna.branding_verification.v1",
+    "passed": true,
+    "changed_text_files": 472,
+    "imported_source_histories": 464,
+    "retired_assets": 25,
+    "replacement_copies": 3,
+    "scope": "Live file/hash and exact-source-inverse verification; no optional-backend runtime claim",
+    "source_inverse_entries": 547,
+    "source_manifest_sha256": "032c3323de7423aeb0aaf5f812b1dac674928ec72d89479565a1b3118bd0e0d4",
+    "branding_manifest_sha256": "0e6d26342512c8083b23aeb016223fcd09ca02ec41a4ab1ab59fb52bc290080f",
+    "receipt": {
+      "path": "crash-work/reports/robodyna-transparent-source-inverse-2.json",
+      "sha256": "38793bfe78234632f7108eb37bf2a133606de9717087a08a08934579916d9b0a",
+      "bytes": 515
+    }
+  },
+  "demo_comparison": {
+    "path": "crash-work/renders/robodyna-readme-transparent-2/demo-comparison.json",
+    "sha256": "807b4a89d5a4019d5a166bc6e5b64af63262df98f91e06a71d69a2a810bd9104",
+    "bytes": 2350
+  },
+  "pixel_comparison": {
+    "path": "crash-work/renders/robodyna-readme-transparent-2/pixel-comparison.json",
+    "sha256": "23e851c7e1ed857faca5ccb3c8f28b77e46124d5ac76dd5b140bc2b6f1ed9de9",
+    "bytes": 2469
+  },
+  "pixel_comparison_samples": 15,
+  "yaris_render": {
+    "path": "crash-work/renders/robodyna-readme-transparent-2/yaris/render-result.json",
+    "sha256": "09eb14c8fa8444f8be1807867d849410dc8d4ea38e83e8700a9584d7c08dee04",
+    "bytes": 3773
+  },
+  "yaris_accepted_archive_unchanged": true,
+  "visual_review": {
+    "passed": true,
+    "scope": "Delivered posters and native preview frames; transparent logo and corrected Robodyna replay label inspected. Automated initial/middle/final comparison separately records exact pixels outside branding rectangles."
+  },
+  "live_window_title_observed": "Robodyna | Spring dynamics",
+  "inventory": {
+    "path": "robodyna/docs/verification/CHRONO_DEMOS_TESTS_INVENTORY.json",
+    "sha256": "0f8e1aec4cc9a3e0293b2b0c2c41fe540545f326c8a33c6f37f25561cbac64fb",
+    "bytes": 1756758
+  },
+  "retained_files": {
+    "standard_demo_test_trees": 739,
+    "additional_fmi_example": 1,
+    "missing": 0,
+    "named_demos": 425,
+    "named_unit_test_sources": 143
+  },
+  "direct_root_bazel_exposure": {
+    "original_demos": 3,
+    "original_unit_test_sources": 1
+  },
+  "licenses_unchanged": [
+    "src/compatibility/chrono/LICENSE",
+    "src/fea/legacy/lib_src/collision/radioss_type25/LICENSE.md"
+  ],
+  "media_record": "docs/verification/README_MEDIA.json",
+  "limits_preserved": true,
+  "preserved_diagnostics": [
+    "crash-work/reports/robodyna-transparent-spring-upload-guard-1.json",
+    "crash-work/renders/robodyna-readme-transparent-2/comparison-initial.json"
+  ],
+  "limitations": [
+    "Most original demos and tests still require root Bazel exposure and optional SDK qualification.",
+    "The deeper C++ API, binding and module migration remains partial.",
+    "Irrlicht source changes and Doxygen configuration were reviewed; those optional runtimes/documentation generation were not executed.",
+    "Historical screenshot and original import history intentionally retain original branding and attribution."
+  ]
+}

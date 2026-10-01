@@ -151,7 +151,7 @@ bool sensor_vis = true;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create systems
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
 
     // Create the vehicle Irrlicht interface
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemIrrlicht>();
-    vis->SetWindowTitle("HMMWV Demo");
+    vis->SetWindowTitle("Robodyna | HMMWV Demo");
     vis->SetChaseCamera(trackPoint, 6.0, 0.5);
     vis->Initialize();
     vis->AddTypicalLights();

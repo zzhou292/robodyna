@@ -30,7 +30,7 @@ namespace ChronoDemo
             chrono.SetChronoDataPath(CHRONO_DATA_DIR);
 
             Console.WriteLine("Copyright (c) 2025 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
             Console.WriteLine();
 
             // Create the system

@@ -38,7 +38,7 @@ using namespace chrono::fea;
 using namespace chrono::vsg3d;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono system
     ChSystemSMC sys;
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
     vis.AttachSystem(&sys);
     vis.SetWindowSize(1280, 800);
     vis.SetWindowPosition(100, 100);
-    vis.SetWindowTitle("VSG FEA visualization");
+    vis.SetWindowTitle("Robodyna | VSG FEA visualization");
     vis.EnableSkyTexture(SkyMode::BOX);
     vis.SetLightIntensity(1.0f);
     vis.SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

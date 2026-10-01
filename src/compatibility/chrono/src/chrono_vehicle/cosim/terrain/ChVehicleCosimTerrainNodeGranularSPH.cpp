@@ -477,7 +477,7 @@ void ChVehicleCosimTerrainNodeGranularSPH::OnInitialize(unsigned int num_objects
 
         m_vsys->AttachPlugin(visFSI);
         m_vsys->AttachSystem(m_system);
-        m_vsys->SetWindowTitle("Terrain Node (GranularSPH)");
+        m_vsys->SetWindowTitle("Robodyna | Terrain Node (GranularSPH)");
         m_vsys->SetVerbose(false);
         m_vsys->SetWindowSize(1280, 720);
         m_vsys->AddCamera(m_cam_pos, ChVector3d(0, 0, 0));

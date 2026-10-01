@@ -54,7 +54,7 @@ double initYaw = 20 * CH_DEG_TO_RAD;
 double step_size = 2e-3;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl << std::endl;
 
     // Wheeled vehicle from JSON.
     WheeledVehicle vehicle(GetVehicleDataFile(vehicle_json), ChContactMethod::SMC);

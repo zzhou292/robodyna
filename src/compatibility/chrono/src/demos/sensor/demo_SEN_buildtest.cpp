@@ -60,7 +60,7 @@ float time_step = 0.002f;
 float end_time = 30.0f;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2019 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2019 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // -----------------
     // Create the system

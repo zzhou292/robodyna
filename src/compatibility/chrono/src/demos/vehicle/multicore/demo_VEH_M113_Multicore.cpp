@@ -190,7 +190,7 @@ void progressbar(unsigned int x, unsigned int n, unsigned int w = 50) {
 
 // =============================================================================
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // -----------------
     // Initialize output
@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(sys);
-    vis->SetWindowTitle("M113");
+    vis->SetWindowTitle("Robodyna | M113");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0, -10, 0), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

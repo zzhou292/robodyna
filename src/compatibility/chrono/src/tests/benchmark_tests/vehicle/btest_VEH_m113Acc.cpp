@@ -163,7 +163,7 @@ void M113AccTest<EnumClass, SHOE_TYPE>::SimulateVis() {
 #ifdef CHRONO_IRRLICHT
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemIrrlicht>();
     vis->AttachVehicle(&m_m113->GetVehicle());
-    vis->SetWindowTitle("M113 acceleration test");
+    vis->SetWindowTitle("Robodyna | M113 acceleration test");
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 0.0), 6.0, 0.5);
     vis->Initialize();
     vis->AddTypicalLights();

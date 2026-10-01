@@ -112,7 +112,7 @@ class MyCustomCollisionDetection : public ChSystem::CustomCollisionCallback {
 };
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     ChContactMethod contact_method = ChContactMethod::SMC;
 
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Custom contact demo");
+            vis_irr->SetWindowTitle("Robodyna | Custom contact demo");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->AttachSystem(sys);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("Custom contact demo");
+            vis_vsg->SetWindowTitle("Robodyna | Custom contact demo");
             vis_vsg->SetBackgroundColor(ChColor(0.8f, 0.85f, 0.9f));
             vis_vsg->EnableSkyTexture(SkyMode::BOX);
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);

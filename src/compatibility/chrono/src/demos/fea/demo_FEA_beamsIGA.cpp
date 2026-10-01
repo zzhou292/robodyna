@@ -603,7 +603,7 @@ void MakeAndRunDemo4(ChSystem& sys, std::shared_ptr<ChVisualSystemIrrlicht> vis,
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Initialize output
     const std::string out_dir = GetChronoOutputPath() + "FEA_BEAMS_IGA";
@@ -629,7 +629,7 @@ int main(int argc, char* argv[]) {
     // Create the Irrlicht visualization system
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle(models[which - 1]);
+    vis->SetWindowTitle("Robodyna | " + models[which - 1]);
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

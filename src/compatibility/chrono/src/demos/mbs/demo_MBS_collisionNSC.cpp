@@ -145,7 +145,7 @@ std::shared_ptr<ChBody> AddContainer(ChSystemNSC& sys) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
 #ifdef ROBODYNA_CAPTURE_DEMO
     try {
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("NSC collision demo");
+            vis_irr->SetWindowTitle("Robodyna | Rigid-body collisions");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
 #endif
             vis_vsg->AttachSystem(&sys);
-            vis_vsg->SetWindowTitle("NSC collision demo");
+            vis_vsg->SetWindowTitle("Robodyna | Rigid-body collisions");
             vis_vsg->AddCamera(ChVector3d(0, 18, -20));
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);

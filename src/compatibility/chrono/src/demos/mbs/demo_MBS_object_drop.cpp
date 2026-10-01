@@ -35,7 +35,7 @@ ChVisualShape::Type object_type = ChVisualShape::Type::SPHERE;
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Simulation parameters
     double gravity = -9.81;
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 
     vis->AttachSystem(sys.get());
 
-    vis->SetWindowTitle("Object drop");
+    vis->SetWindowTitle("Robodyna | Object drop");
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
 

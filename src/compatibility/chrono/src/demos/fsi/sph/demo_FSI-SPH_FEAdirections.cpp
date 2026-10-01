@@ -206,7 +206,7 @@ int main(int argc, char* argv[]) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachPlugin(visFSI);
         visVSG->AttachSystem(&sysMBS);
-        visVSG->SetWindowTitle("Flexible Cable");
+        visVSG->SetWindowTitle("Robodyna | Flexible Cable");
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);
         visVSG->AddCamera(ChVector3d(0, -2.0, 0.3), ChVector3d(0, 0, 0.3));

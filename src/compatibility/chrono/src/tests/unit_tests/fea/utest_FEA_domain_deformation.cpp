@@ -176,7 +176,7 @@ bool test_box_uniaxial_pressure(std::shared_ptr<ChMaterial3DStress> test_materia
         auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
         vis->AttachSystem(&sys);
         vis->SetWindowSize(800, 600);
-        vis->SetWindowTitle("Test FEA");
+        vis->SetWindowTitle("Robodyna | Test FEA");
         vis->Initialize();
         vis->AddLogo();
         vis->AddSkyBox();

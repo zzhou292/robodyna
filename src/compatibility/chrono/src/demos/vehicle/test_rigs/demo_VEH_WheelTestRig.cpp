@@ -260,7 +260,7 @@ int main() {
     vis->AttachSystem(sys);
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->SetWindowSize(1280, 800);
-    vis->SetWindowTitle("Tire Test Rig");
+    vis->SetWindowTitle("Robodyna | Tire Test Rig");
     vis->AddCamera(ChVector3d(1.0, 2.5, 1.0));
     vis->SetLightDirection(1.5 * CH_PI_2, CH_PI_4);
     vis->EnableShadows();

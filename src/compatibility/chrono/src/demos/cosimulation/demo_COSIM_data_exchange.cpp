@@ -26,7 +26,7 @@ using namespace chrono::utils;
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\n"
-              << "Chrono version: " << CHRONO_VERSION << std::endl;
+              << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     std::cout << "CHRONO demo about cosimulation\n" << std::endl;
     std::cout << "NOTE! This requires that you also run a copy of Simulink.\n" << std::endl;

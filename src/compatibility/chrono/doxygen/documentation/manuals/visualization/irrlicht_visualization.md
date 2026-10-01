@@ -13,7 +13,7 @@ A typical usage of \ref chrono::irrlicht::ChVisualSystemIrrlicht "irrlicht::ChVi
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(1024, 768);
-    vis->SetWindowTitle("Irrlicht Demo");
+    vis->SetWindowTitle("Robodyna | Irrlicht Demo");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();
@@ -27,5 +27,7 @@ Refer to @ref chrono::irrlicht::ChVisualSystemIrrlicht "irrlicht::ChVisualSystem
 
 [Chrono::Irrlicht Install Guide](module_irrlicht_installation.html) 
 
-<img src="http://www.projectchrono.org/assets/manual/irrlicht_visualization.png" class="img-responsive">
+<img src="irrlicht_visualization.png" class="img-responsive">
+
+Historical upstream interface screenshot, retained as documentation evidence. Its original branding is unchanged; new Robodyna runs use the transparent Robodyna default logo.
 

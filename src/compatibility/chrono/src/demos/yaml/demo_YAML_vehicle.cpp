@@ -36,7 +36,7 @@ using namespace chrono;
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Extract filename from command-line arguments
     std::string yaml_filename = GetChronoDataFile("yaml/vehicle/vehicle.yaml");
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
             vis_vsg = chrono_types::make_shared<vehicle::ChWheeledVehicleVisualSystemVSG>();
         else
             vis_vsg = chrono_types::make_shared<vehicle::ChTrackedVehicleVisualSystemVSG>();
-        vis_vsg->SetWindowTitle("Vehicle YAML demo - " + model_name);
+        vis_vsg->SetWindowTitle("Robodyna | Vehicle YAML demo - " + model_name);
         vis_vsg->AttachVehicle(vehicle.get());
         vis_vsg->AttachDriver(driver.get());
         vis_vsg->SetCameraVertical(CameraVerticalDir::Z);

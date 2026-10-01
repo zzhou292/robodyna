@@ -76,3 +76,34 @@ re-encodes H.264; it preserves the canvas, frame count, rate and exact track dur
 It verifies source/tool identities, fully decodes the movie and poster, and records
 `robodyna.branded_video.v1` separately from numerical qualification. Original movies,
 PNGs and simulation archives remain unchanged. It does not advance a simulation.
+
+## Overlay-free native-render delivery
+
+When branding is already part of the native render, export it without adding a
+second logo or opaque panel:
+
+```sh
+bazel-bin/apps/media/export_video NATIVE_VIDEO_DIR NEW_DELIVERY_DIR \
+  --ffmpeg /path/to/ffmpeg --poster-frame 900
+```
+
+The source must have a completed `robo_dyna.chrono_capture_video.v1` encoder
+manifest and its retained capture directory. Export authenticates the native
+movie, capture metadata, PNGs and exact state-hold plan before running media tools.
+It copies movies at or below 10,000,000 bytes byte for byte; larger movies receive
+one CRF22 H.264 re-encode. No overlay, crop, rescale, frame-rate conversion or
+geometric interpolation is applied. If that re-encode still exceeds the limit,
+export rejects and retains diagnostics without a success manifest. A smaller
+`--max-bytes` limit may be supplied; the portable maximum cannot be raised here.
+
+Both paths verify frame count, dimensions, rate and exact track duration, decode
+the complete output and poster, and recheck source/tool identities. The create-only
+delivery records `robodyna.publication_video.v1`, whether bytes were copied or
+re-encoded, and the original capture's physics/horizon claims without promoting
+them to new numerical qualification. Existing opaque-panel branding remains a
+separate, unchanged operation. Neither tool performs a network upload.
+
+Run through the existing CPU-only workstation guard. Focused host coverage is
+`//build_defs/app/viewer/tests:video_publication_test`; these tests mock media
+processes and include altered provenance, output timing, byte admission and failure
+atomicity. Actual encode/decode and visual review remain delivery-time gates.

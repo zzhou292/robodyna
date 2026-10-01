@@ -120,7 +120,7 @@ std::shared_ptr<ChLoadableU> PopulateMesh_beamANCF_3243(std::shared_ptr<ChMesh> 
     return last_element;
 }
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select element type
     std::cout << "Options:" << std::endl;

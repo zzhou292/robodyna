@@ -1,0 +1,2 @@
+# Source evidence consumed by the lightweight discovery command, not executable cases.
+exports_files(["CHRONO_DEMOS_TESTS_INVENTORY.json"], visibility = ["//visibility:public"])

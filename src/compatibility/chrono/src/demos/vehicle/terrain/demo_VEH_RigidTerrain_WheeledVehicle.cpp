@@ -39,7 +39,7 @@ using namespace chrono::vehicle::hmmwv;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select terrain type
     std::string input;
@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 
     // Create the vehicle run-time visualization interface
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Rigid Terrain Demo");
+    vis->SetWindowTitle("Robodyna | Rigid Terrain Demo");
     vis->SetWindowSize(1280, 800);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 8.0, 0.75);
     vis->AttachVehicle(&hmmwv.GetVehicle());

@@ -3,8 +3,10 @@
 The source integration began on `work/initial-integration`. The user subsequently
 authorized implementation of the Chrono API naming plan with regression tests and
 preserved license notices. Current work is on `work/robodyna-api-renaming`;
-destination is https://github.com/zzhou292/robodyna.git. No publication of this
-rename series has been requested.
+destination is https://github.com/zzhou292/robodyna.git. The user authorized
+publication of the rename series; checkpoint `bcf1753` was pushed to the same
+remote branch. The current follow-up replaces presentation branding and audits
+retained demo/test exposure.
 The user subsequently authorized initial publication to this repository after
 retained Chrono demonstrations and a Robodyna logo are complete. Those tasks
 passed their runtime/media gates and publication completed. The subsequent branded
@@ -37,6 +39,39 @@ README/media checkpoint is `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
 Review the plan after each checkpoint or unexpected dependency/physics difference.
 A source import is not a successful build; an aggregate compatibility target is not
 FEA/MBD independence. Preserve every old source tree, checkpoint and failure receipt.
+
+## Transparent branding and inherited example audit
+
+The current follow-up replaces the opaque logo with a real RGBA asset, retires
+dedicated Chrono logos from the working tree, and captures all five README views
+again with the logo supplied by the native renderer. The user's review exposed
+an inherited `ChLinkTSDA demo` window title; the presentation audit now includes
+window captions, viewer overlays, startup labels and documentation navigation.
+Required copyright notices and truthful backend/API references remain.
+
+This presentation pass does not finish the C++ definition migration. Only the
+qualified definition families listed below have moved; remaining Chrono API,
+binding and compatibility paths must continue through their separate tests.
+Do not describe the entire naming migration as complete.
+
+The [demo/test audit](../verification/CHRONO_DEMOS_TESTS.md) confirms retention of
+all 739 files in the pinned demo and unit-test trees, plus the separate FMI
+example. Its catalog exposes source locations, existing CMake gates, actual root
+Bazel targets and pending cases. Most inherited cases still lack root Bazel
+targets; the empty inherited GoogleTest checkout also disables that CMake test
+tree. Follow the report's module-by-module exposure sequence after this media
+checkpoint instead of silently claiming the complete inherited suite passed.
+
+This checkpoint is complete: 25 dedicated Chrono branding assets were retired,
+547 exact inverse source histories verified, and all 16 focused Bazel test targets
+passed, including real-image alpha validation. The three fresh demo captures
+preserve every physics/control summary field; only the authenticated presentation
+source hash changes. Both Yaris views replay the unchanged 100 ms archive. All five
+delivery videos passed full decoding and anonymous CDN byte verification. The
+[qualification record](../verification/TRANSPARENT_BRANDING.json) gives receipts,
+scope and optional-runtime limitations. The next functional integration step is
+the catalog's module-by-module demo/test exposure sequence; deeper API/module
+migration remains governed by the separate checkpoints below.
 
 ## Resource policy
 
@@ -114,8 +149,8 @@ complete standalone FEA/MBD dependency separation.
 ## Active Robodyna API naming migration
 
 The current verified checkpoint implements the initial public API and the first
-real definition families on `work/robodyna-api-renaming`. No remote publication
-is authorized for this series. Original Chrono notices and exact BSD license text
+real definition families on `work/robodyna-api-renaming`. Remote publication
+was authorized and completed for checkpoint `bcf1753`. Original Chrono notices and exact BSD license text
 remain; OpenRadioss removal is deferred.
 
 The following are actual definitions, with reverse aliases in legacy headers:

@@ -133,7 +133,7 @@ void ChainTest<N>::SimulateVis() {
     auto vis = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
     vis->AttachSystem(m_system);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Pendulum chain");
+    vis->SetWindowTitle("Robodyna | Pendulum chain");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

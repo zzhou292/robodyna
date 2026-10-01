@@ -64,7 +64,7 @@ bool RunFSI(const std::string& yaml_filename, std::string& out_dir, bool disable
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Process command line arguments
     bool disable_verbose = false;
@@ -172,7 +172,7 @@ bool RunMBS(const std::string& yaml_filename, std::string& out_dir, bool disable
     if (render) {
         auto vis_vsg = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         vis_vsg->AttachSystem(sys.get());
-        vis_vsg->SetWindowTitle("YAML model - " + model_name);
+        vis_vsg->SetWindowTitle("Robodyna | YAML model - " + model_name);
         vis_vsg->AddCamera(camera_location, camera_target);
         vis_vsg->SetWindowSize(1280, 800);
         vis_vsg->SetWindowPosition(100, 100);
@@ -272,7 +272,7 @@ bool RunVEHICLE(const std::string& yaml_filename, std::string& out_dir, bool dis
             vis_vsg = chrono_types::make_shared<vehicle::ChWheeledVehicleVisualSystemVSG>();
         else
             vis_vsg = chrono_types::make_shared<vehicle::ChTrackedVehicleVisualSystemVSG>();
-        vis_vsg->SetWindowTitle("Vehicle YAML demo - " + model_name);
+        vis_vsg->SetWindowTitle("Robodyna | Vehicle YAML demo - " + model_name);
         vis_vsg->AttachVehicle(vehicle.get());
         vis_vsg->AttachDriver(driver.get());
         vis_vsg->SetCameraVertical(CameraVerticalDir::Z);
@@ -383,7 +383,7 @@ bool RunFSI(const std::string& yaml_filename, std::string& out_dir, bool disable
     if (render) {
         auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         visVSG->AttachSystem(sysMBS.get());
-        visVSG->SetWindowTitle("YAML FSI model - " + model_name);
+        visVSG->SetWindowTitle("Robodyna | YAML FSI model - " + model_name);
         visVSG->AddCamera(camera_location, camera_target);
         visVSG->SetWindowSize(1280, 800);
         visVSG->SetWindowPosition(100, 100);

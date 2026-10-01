@@ -297,7 +297,7 @@ class CraneTelemetryHandler : public ChROSHandler {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     if (argc > 1)
         render = false;
@@ -349,7 +349,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_IRRLICHT
                 auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
                 vis_irr->SetWindowSize(800, 600);
-                vis_irr->SetWindowTitle("ROS Hydraulic Crane Co-Simulation");
+                vis_irr->SetWindowTitle("Robodyna | ROS Hydraulic Crane Co-Simulation");
                 vis_irr->SetCameraVertical(CameraVerticalDir::Z);
                 vis_irr->SetBackgroundColor(ChColor(0.37f, 0.50f, 0.60f));
                 vis_irr->Initialize();
@@ -367,7 +367,7 @@ int main(int argc, char* argv[]) {
                 auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
                 vis_vsg->AttachSystem(&sysMBS);
                 vis_vsg->AttachSystem(&sysHYD);
-                vis_vsg->SetWindowTitle("ROS Hydraulic Crane Co-Simulation");
+                vis_vsg->SetWindowTitle("Robodyna | ROS Hydraulic Crane Co-Simulation");
                 vis_vsg->SetBackgroundColor(ChColor(0.37f, 0.50f, 0.60f));
                 vis_vsg->SetCameraVertical(CameraVerticalDir::Z);
                 vis_vsg->AddCamera(ChVector3d(0.5, -2, 0.5), ChVector3d(0.5, 0, 0.5));

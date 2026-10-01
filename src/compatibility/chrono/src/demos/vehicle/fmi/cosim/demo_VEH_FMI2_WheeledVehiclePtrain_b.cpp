@@ -193,7 +193,7 @@ void CreateTireFMU(FmuChronoUnit& tire_fmu,
 
 int main(int argc, char* argv[]) {
     std::cout << std::filesystem::path(argv[0]).filename() << std::endl;
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << "\n" << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n" << std::endl;
 
 #ifdef FMU_EXPORT_SUPPORT
     // FMUs generated in current build

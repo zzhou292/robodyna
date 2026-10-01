@@ -30,7 +30,7 @@ capability/configuration API remains platform migration work.
 The frontend accepts `--chrono-data ASSET_DIR`. Its library receives the path as an
 explicit context and does not know about Bazel or search the working directory.
 The product launcher can resolve the runfile
-`_main/src/compatibility/chrono/data/logo_chrono_alpha.png` and pass its parent.
+`_main/src/compatibility/chrono/data/logo_robodyna_alpha.png` and pass its parent.
 `//build_defs/chrono/vsg:assets` includes VSG fonts/textures, colormaps and that logo.
 Non-Bazel builds retain only their declared CMake data-directory fallback.
 

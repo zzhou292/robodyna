@@ -72,7 +72,7 @@ bool blender_output = false;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2024 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2024 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select vehicle model (see WheeledVehicleModels.h)
     auto models = WheeledVehicleModel::List();
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
     std::string title = "Vehicle demo - " + vehicle_model->ModelName();
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle(title);
+    vis->SetWindowTitle("Robodyna | " + title);
     vis->AttachVehicle(&vehicle);
     vis->AttachDriver(&driver);
     vis->SetChaseCamera(vehicle_model->TrackPoint(), vehicle_model->CameraDistance(), vehicle_model->CameraHeight());

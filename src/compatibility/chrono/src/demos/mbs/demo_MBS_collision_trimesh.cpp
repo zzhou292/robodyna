@@ -62,7 +62,7 @@ std::shared_ptr<ChTriangleMeshConnected> CreateBox() {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     int which_model = 1;
     std::string input;
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(sys.get());
             vis_irr->SetWindowSize(1280, 800);
-            vis_irr->SetWindowTitle("Collisions between meshes");
+            vis_irr->SetWindowTitle("Robodyna | Collisions between meshes");
             vis_irr->SetCameraVertical(CameraVerticalDir::Y);
             vis_irr->Initialize();
             vis_irr->AddLogo();
@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
             auto vis_vsg = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
             vis_vsg->AttachSystem(sys.get());
-            vis_vsg->SetWindowTitle("Collisions between meshes");
+            vis_vsg->SetWindowTitle("Robodyna | Collisions between meshes");
             vis_vsg->AddCamera(ChVector3d(-2.5, 1.0, 2.5));
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);

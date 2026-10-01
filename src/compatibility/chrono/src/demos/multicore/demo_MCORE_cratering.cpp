@@ -368,7 +368,7 @@ bool CheckSettled(ChSystem* sys, double threshold) {
 
 // -----------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2020 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2020 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Create system
 #ifdef USE_SMC
@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(sys);
-    vis->SetWindowTitle("Crater Test");
+    vis->SetWindowTitle("Robodyna | Crater Test");
     vis->SetWindowSize(1280, 720);
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0, -5 * sizeY, sizeZ / 2), ChVector3d(0, 0, sizeZ / 2));

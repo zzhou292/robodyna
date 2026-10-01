@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Model loaded from ADAMS file");
+    vis->SetWindowTitle("Robodyna | Model loaded from ADAMS file");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

@@ -21,7 +21,7 @@ import pychrono.vehicle as veh
 import pychrono.irrlicht as irr
 
 def main():
-    #print("Copyright (c) 2017 projectchrono.org\nChrono version: ", CHRONO_VERSION , "\n\n")
+    #print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", CHRONO_VERSION , "\n\n")
 
     step_size = 0.005
 
@@ -91,14 +91,14 @@ def main():
 
     # Create the vehicle Irrlicht interface
     vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-    vis.SetWindowTitle('Two Car Demo')
+    vis.SetWindowTitle('Robodyna | Two Car Demo')
     vis.SetWindowSize(1280, 1024)
     vis.SetChaseCamera(chrono.ChVector3d(0.0, 0.0, 0.75), 6.0, 0.5)
     vis.SetChaseCameraState(veh.ChChaseCamera.Track)
     vis.SetChaseCameraPosition(chrono.ChVector3d(-10, 0, 2.0))
     vis.Initialize()
     vis.AddLightDirectional()
-    vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+    vis.AddLogo()
     vis.AddSkyBox()
     vis.AttachVehicle(hmmwv_1.GetVehicle())
 

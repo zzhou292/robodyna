@@ -35,7 +35,7 @@ using namespace chrono;
 using namespace chrono::irrlicht;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     //
     // HERE YOU CREATE THE MECHANICAL SYSTEM OF CHRONO...
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->AttachSystem(&sys);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Simple slider-crank example");
+    vis->SetWindowTitle("Robodyna | Simple slider-crank example");
     vis->Initialize();
     vis->AddLogo();
     vis->AddCamera(ChVector3d(0, 0, -7));

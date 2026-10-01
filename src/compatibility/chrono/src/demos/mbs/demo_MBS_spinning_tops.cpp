@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_IRRLICHT
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
-            vis_irr->SetWindowTitle("Spinning tops");
+            vis_irr->SetWindowTitle("Robodyna | Spinning tops");
             vis_irr->SetCameraVertical(CameraVerticalDir::Z);
             vis_irr->SetWindowSize(1280, 800);
             vis_irr->Initialize();
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
             vis_vsg->AttachSystem(&sys);
-            vis_vsg->SetWindowTitle("Spinning tops");
+            vis_vsg->SetWindowTitle("Robodyna | Spinning tops");
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetCameraVertical(CameraVerticalDir::Z);
             vis_vsg->SetCameraAngleDeg(40.0);

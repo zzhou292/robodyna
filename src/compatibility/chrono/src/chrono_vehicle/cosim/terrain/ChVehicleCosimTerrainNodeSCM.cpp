@@ -371,7 +371,7 @@ void ChVehicleCosimTerrainNodeSCM::OnInitialize(unsigned int num_objects) {
         m_vsys = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
 
         m_vsys->AttachSystem(m_system);
-        m_vsys->SetWindowTitle("Terrain Node (SCM)");
+        m_vsys->SetWindowTitle("Robodyna | Terrain Node (SCM)");
         m_vsys->SetWindowSize(ChVector2i(1280, 720));
         m_vsys->SetWindowPosition(ChVector2i(100, 100));
         ////m_vsys->SetBackgroundColor(ChColor(0.455f, 0.525f, 0.640f));

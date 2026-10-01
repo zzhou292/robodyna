@@ -35,7 +35,7 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             // Local variables for C# 7.3 compatability
             // Set the path to the Chrono data files and Chrono::Vehicle data files
@@ -174,7 +174,7 @@ namespace ChronoDemo
             // Create the VSG vehicle interface
             // ----------------------------
             ChWheeledVehicleVisualSystemVSG vis = new ChWheeledVehicleVisualSystemVSG();
-            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("UAZBUS Demo :: CSharp");
+            chrono_vsg.CastToChVisualSystemVSG(vis).SetWindowTitle("Robodyna | UAZBUS Demo :: CSharp");
             vis.SetChaseCamera(trackPoint, 6, 0.5);
             chrono_vsg.CastToChVisualSystemVSG(vis).SetLightIntensity(1.0f);
             chrono_vsg.CastToChVisualSystemVSG(vis).SetLightDirection(1.5 * CH_PI_2, CH_PI_4);

@@ -163,7 +163,7 @@ ChVector3d CalculateCOM(std::shared_ptr<ChParticleContainer> snow_ball) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create system
     ChSystemMulticoreNSC sys;
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
     // Create run-time visualization
     auto vis = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("Snow");
+    vis->SetWindowTitle("Robodyna | Snow");
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->AddCamera(ChVector3d(0.1, -2, 0.0), ChVector3d(0, 0, 0));
     vis->SetWindowSize(1280, 720);

@@ -222,7 +222,7 @@ void test_pendulum() {
     vis->AttachSystem(&sys);
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->SetWindowSize(800, 800);
-    vis->SetWindowTitle("Test demo: Pendulum");
+    vis->SetWindowTitle("Robodyna | Test demo: Pendulum");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();
@@ -651,7 +651,7 @@ void test_anchorchain() {
             vis->AttachSystem(&sys);
             vis->SetCameraVertical(CameraVerticalDir::Z);
             vis->SetWindowSize(1000, 800);
-            vis->SetWindowTitle("Test demo: AnchorChain");
+            vis->SetWindowTitle("Robodyna | Test demo: AnchorChain");
             vis->Initialize();
             vis->AddLogo();
             vis->AddSkyBox();
@@ -733,7 +733,7 @@ void test_anchorchain() {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Select test
     int test = 0;

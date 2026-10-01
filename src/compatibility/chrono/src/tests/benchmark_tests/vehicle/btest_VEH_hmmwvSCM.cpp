@@ -209,7 +209,7 @@ void HmmwvScmTest<TIRE_TYPE, OBJECTS>::SimulateVis() {
 #ifdef CHRONO_IRRLICHT
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemIrrlicht>();
     vis->AttachVehicle(&m_hmmwv->GetVehicle());
-    vis->SetWindowTitle("HMMWV SMC benchmark");
+    vis->SetWindowTitle("Robodyna | HMMWV SMC benchmark");
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5);
     vis->Initialize();
     vis->AddLightDirectional();

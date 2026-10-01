@@ -48,7 +48,7 @@ using namespace chrono::ros;
 ChVisualSystem::Type vis_type = ChVisualSystem::Type::VSG;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl << std::endl;
 
     ChSystemNSC sys;
     sys.SetGravitationalAcceleration(ChVector3d(0, 0, -9.81));
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
             vis_irr->AttachSystem(&sys);
             vis_irr->SetCameraVertical(CameraVerticalDir::Z);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Viper Rover on Rigid Terrain");
+            vis_irr->SetWindowTitle("Robodyna | Viper Rover on Rigid Terrain");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
             auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
             vis_vsg->AttachSystem(&sys);
             vis_vsg->AddCamera(ChVector3d(3, 3, 1));
-            vis_vsg->SetWindowTitle("Viper Rover on Rigid Terrain");
+            vis_vsg->SetWindowTitle("Robodyna | Viper Rover on Rigid Terrain");
             vis_vsg->Initialize();
             vis = vis_vsg;
 #endif

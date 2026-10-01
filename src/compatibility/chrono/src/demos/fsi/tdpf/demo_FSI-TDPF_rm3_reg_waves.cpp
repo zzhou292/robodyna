@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
     auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     visVSG->AttachPlugin(visFSI);
     visVSG->AttachSystem(&sysMBS);
-    visVSG->SetWindowTitle("FSI-TDPF RM3 regular waves");
+    visVSG->SetWindowTitle("Robodyna | FSI-TDPF RM3 regular waves");
     visVSG->SetWindowSize(1280, 720);
     visVSG->SetBackgroundColor(ChColor(0.04f, 0.11f, 0.18f));
     visVSG->AddCamera(ChVector3d(58, -65, 18), ChVector3d(2, -1, -6));

@@ -487,7 +487,7 @@ void test_4(const std::string& out_dir) {
 
 int main(int argc, char* argv[]) {
     std::cout << "Copyright (c) 2017 projectchrono.org\n"
-              << "Chrono version: " << CHRONO_VERSION << std::endl;
+              << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create (if needed) output directory
     const std::string out_dir = GetChronoOutputPath() + "DEMO_SOLVER";

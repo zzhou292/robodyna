@@ -1,7 +1,7 @@
 Chrono::Solidworks {#manual_chrono_solidworks}
 ==========================
 
-![](http://projectchrono.org/assets/manual/carousel_chronosolidworks.jpg)
+![Robodyna](logo_robodyna.png)
 
 Chrono::SolidWorks is an add-in for [SolidWorks](http://www.solidworks.com) that allows exporting SolidWorks models directly into Chrono.
 
@@ -24,7 +24,7 @@ The fastest way to consume the output of the SolidWorks add-in is by using the [
 
 # Usage
 
-Once installed (see the [dedicated installation guide](@ref chrono_solidworks_installation)) a new icon with the Chrono logo should appear in the SolidWorks *Task Pane* (i.e. the vertical set of icons on the right side of the SolidWorks display). All the following actions are performed through this panel.
+Once installed (see the [dedicated installation guide](@ref chrono_solidworks_installation)) the retained add-in icon should appear in the SolidWorks *Task Pane* (i.e. the vertical set of icons on the right side of the SolidWorks display). All the following actions are performed through this panel.
 
 ![chrono_solidworks_panel_1](http://projectchrono.org/assets/manual/chrono_solidworks_panel_1.png) ![chrono_solidworks_panel_2](http://projectchrono.org/assets/manual/chrono_solidworks_panel_2.png)
 

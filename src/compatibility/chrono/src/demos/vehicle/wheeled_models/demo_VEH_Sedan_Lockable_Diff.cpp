@@ -39,7 +39,7 @@ const double step_size = 1e-3;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     bool lock_diff = (argc > 1) ? true : false;
 
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
     // Create the vehicle run-time interface
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
     vis->AttachVehicle(&sedan.GetVehicle());
-    vis->SetWindowTitle("Sedan Demo Locked Diff");
+    vis->SetWindowTitle("Robodyna | Sedan Demo Locked Diff");
     vis->SetWindowSize(1280, 800);
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->SetLightIntensity(1.0f);

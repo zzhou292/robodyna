@@ -84,7 +84,7 @@ double xend = 400.0;  // end logging here, this also the end of our world
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2018 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2018 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     int iTire = 1;
     int iTerrain = 1;
@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_VSG
     // Create the vehicle VSG interface
     auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis_vsg->SetWindowTitle(title);
+    vis_vsg->SetWindowTitle("Robodyna | " + title);
     vis_vsg->AttachVehicle(&vehicle);
     vis_vsg->SetChaseCamera(ChVector3d(0.0, 0.0, 1.75), 6.0, 0.5);
     vis_vsg->SetWindowSize(1280, 800);

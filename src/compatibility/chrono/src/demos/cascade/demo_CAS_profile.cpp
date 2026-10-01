@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(1024, 768);
-            vis_irr->SetWindowTitle("Use 2D profiles with OpenCASCADE for mass, inertia, meshing");
+            vis_irr->SetWindowTitle("Robodyna | Use 2D profiles with OpenCASCADE for mass, inertia, meshing");
             vis_irr->SetCameraVertical(CameraVerticalDir::Y);
             vis_irr->Initialize();
             vis_irr->AddLogo();
@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->AttachSystem(&sys);
             vis_vsg->SetWindowSize(1024, 768);
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
-            vis_vsg->SetWindowTitle("Use 2D profiles with OpenCASCADE for mass, inertia, meshing");
+            vis_vsg->SetWindowTitle("Robodyna | Use 2D profiles with OpenCASCADE for mass, inertia, meshing");
             vis_vsg->AddCamera(ChVector3d(0.2, 0.2, -4.3));
             vis_vsg->SetLightIntensity(0.8f);
             vis_vsg->SetLightDirection(-CH_PI_2, -CH_PI_4);

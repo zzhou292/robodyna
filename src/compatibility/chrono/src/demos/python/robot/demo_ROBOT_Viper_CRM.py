@@ -202,7 +202,7 @@ if render:
     visVSG: vsg3d.ChVisualSystemVSG = vsg3d.ChVisualSystemVSG()
     visVSG.AttachPlugin(visFSI)
     visVSG.AttachSystem(system)
-    visVSG.SetWindowTitle("Viper rover on CRM deformable terrain")
+    visVSG.SetWindowTitle("Robodyna | Viper rover on CRM deformable terrain")
     visVSG.SetWindowSize(1280, 800)
     visVSG.SetWindowPosition(100, 100)
     visVSG.AddCamera(init_loc + chrono.ChVector3d(0, 6, 0.5), init_loc)

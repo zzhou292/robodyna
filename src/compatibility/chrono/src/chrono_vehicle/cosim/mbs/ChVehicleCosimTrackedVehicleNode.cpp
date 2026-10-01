@@ -110,7 +110,7 @@ void ChVehicleCosimTrackedVehicleNode::InitializeMBS(const ChVector2d& terrain_s
 #ifdef CHRONO_VSG
         m_vsys = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
         m_vsys->AttachVehicle(m_vehicle.get());
-        m_vsys->SetWindowTitle("Tracked Vehicle Node");
+        m_vsys->SetWindowTitle("Robodyna | Tracked Vehicle Node");
         m_vsys->SetWindowSize(ChVector2i(1280, 720));
         m_vsys->SetWindowPosition(ChVector2i(100, 300));
         m_vsys->SetChaseCamera(ChVector3d(0, 0, 1.5), 6.0, 0.5);

@@ -38,7 +38,7 @@ double step_size = 0.005;
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create systems
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
     // Create the vehicle run-time visualization interface and the interactive driver
 
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Two cars demo");
+    vis->SetWindowTitle("Robodyna | Two cars demo");
     vis->SetWindowSize(1280, 800);
     vis->SetWindowPosition(100, 100);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 6.0, 0.5);

@@ -36,7 +36,7 @@ using namespace chrono::vsg3d;
 using namespace chrono;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Extract filename from command-line arguments
     std::string yaml_filename = GetChronoDataFile("yaml/fea/mbs.yaml");
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     if (render) {
         auto vis_vsg = chrono_types::make_shared<ChVisualSystemVSG>();
         vis_vsg->AttachSystem(sys.get());
-        vis_vsg->SetWindowTitle("YAML model - " + model_name);
+        vis_vsg->SetWindowTitle("Robodyna | YAML model - " + model_name);
         vis_vsg->AddCamera(camera_location, camera_target);
         vis_vsg->SetWindowSize(1280, 800);
         vis_vsg->SetWindowPosition(100, 100);

@@ -282,7 +282,7 @@ ChVisualSystemVSG::ChVisualSystemVSG(int num_divs)
     : m_show_logo(true),
       m_logo_pos({10, 10}),
       m_logo_height(64),
-      m_logo_filename(GetChronoDataFile("logo_chrono_alpha.png")),
+      m_logo_filename(GetChronoDataFile("logo_robodyna_alpha.png")),
       //
       m_yup(false),
       m_camera_up_vector(vsg::dvec3(0, 0, 1)),
@@ -406,7 +406,7 @@ ChVisualSystemVSG::ChVisualSystemVSG(int num_divs)
     m_vsgBuilder->options = m_options;
 
     // default settings
-    SetWindowTitle("");
+    SetWindowTitle("Robodyna | Simulation");
     SetWindowSize(ChVector2i(800, 600));
     SetWindowPosition(ChVector2i(50, 50));
     SetCameraAngleDeg(40);
@@ -818,7 +818,7 @@ void ChVisualSystemVSG::Initialize() {
 
     if (m_verbose) {
         cout << "----------------------------------------------------" << endl;
-        cout << "* Chrono::VSG Vulkan Scene Graph 3D-Visualization" << endl;
+        cout << "* Robodyna | Vulkan Scene Graph visualization" << endl;
         cout << "* GPU Name: " << prop.deviceName << endl;
         switch (prop.deviceType) {
             default:

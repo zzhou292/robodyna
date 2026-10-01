@@ -33,7 +33,7 @@ using namespace chrono::vehicle;
 using namespace chrono::vehicle::sedan;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // --------------
     // Create systems
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     // Create the vehicle run-time interface
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
     vis->AttachVehicle(&sedan.GetVehicle());
-    vis->SetWindowTitle("Sedan AI Demo");
+    vis->SetWindowTitle("Robodyna | Sedan AI Demo");
     vis->SetWindowSize(1280, 800);
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->SetLightIntensity(1.0f);

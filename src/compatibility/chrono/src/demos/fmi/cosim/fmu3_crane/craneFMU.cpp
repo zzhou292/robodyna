@@ -236,7 +236,7 @@ fmi3Status FmuComponent::exitInitializationModeIMPL() {
         sendToLog("Enable run-time visualization", fmi3Status::fmi3OK, "logAll");
         vis_sys->AttachSystem(&sys);
         vis_sys->SetWindowSize(800, 600);
-        vis_sys->SetWindowTitle("Hydraulic crane FMU (FMI 3.0)");
+        vis_sys->SetWindowTitle("Robodyna | Hydraulic crane FMU (FMI 3.0)");
         vis_sys->SetCameraVertical(CameraVerticalDir::Z);
         vis_sys->SetBackgroundColor(ChColor(0.37f, 0.50f, 0.60f));
         vis_sys->Initialize();

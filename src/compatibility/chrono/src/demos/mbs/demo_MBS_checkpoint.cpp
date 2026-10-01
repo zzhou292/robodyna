@@ -70,7 +70,7 @@ void ConstructModel(ChSystem& sys, int id) {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create output directory
     std::string out_dir = GetChronoOutputPath() + "DEMO_CHECKPOINT";
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(&sys1);
     vis->AttachSystem(&sys2);
-    vis->SetWindowTitle("Slider-crank checkpointing");
+    vis->SetWindowTitle("Robodyna | Slider-crank checkpointing");
     vis->SetCameraVertical(CameraVerticalDir::Y);
     vis->AddCamera(ChVector3d(2, 0, 6), ChVector3d(2, 0, 0));
     vis->SetWindowSize(1280, 800);

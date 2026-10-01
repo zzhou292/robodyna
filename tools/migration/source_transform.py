@@ -35,7 +35,12 @@ def original_bytes(root, entry):
     fail. The original manifest is never repinned to accept transformed content.
     """
     current = relative_file(root, entry["canonical_path"])
-    text = current.read_text(encoding="utf-8")
+    encoding = entry.get("encoding", "utf-8")
+    if encoding not in ("utf-8", "latin-1"):
+        raise ValueError("Unsupported reviewed source encoding")
+    # A few retained source comments use Latin-1. Require that explicit recipe
+    # choice and preserve bytes exactly; never decode with replacement/ignore.
+    text = current.read_bytes().decode(encoding)
     for replacement in reversed(entry["replacements"]):
         before, after, count = (replacement[name] for name in ("before", "after", "count"))
         if not before or not after or type(count) is not int or count <= 0:
@@ -53,7 +58,7 @@ def original_bytes(root, entry):
             if text.count(after) != count:
                 raise ValueError(f"Reviewed replacement count differs: {current}: {after}")
             text = text.replace(after, before)
-    restored = text.encode("utf-8")
+    restored = text.encode(encoding)
     if hashlib.sha256(restored).hexdigest() != entry["original_sha256"]:
         raise ValueError(f"Source differs beyond its reviewed transformation: {current}")
     old = relative_file(root, entry["original_path"])

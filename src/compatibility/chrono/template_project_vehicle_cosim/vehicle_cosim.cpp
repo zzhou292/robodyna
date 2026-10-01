@@ -165,7 +165,7 @@ void MyTerrain::OnInitialize(unsigned int num_tires) {
     if (m_renderRT) {
         m_vis = new irrlicht::ChVisualSystemIrrlicht;
         m_vis->SetWindowSize(1280, 720);
-        m_vis->SetWindowTitle("Custom terrain node");
+        m_vis->SetWindowTitle("Robodyna | Custom terrain node");
         m_vis->SetCameraVertical(CameraVerticalDir::Z);
         m_vis->Initialize();
         m_vis->AddLogo();

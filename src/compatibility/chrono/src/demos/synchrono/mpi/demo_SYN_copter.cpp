@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
         vis->AttachSystem(&sys);
         vis->SetCameraVertical(CameraVerticalDir::Z);
         vis->SetWindowSize(800, 600);
-        vis->SetWindowTitle("HexaCopter Test");
+        vis->SetWindowTitle("Robodyna | HexaCopter Test");
         vis->Initialize();
         vis->AddLogo();
         vis->AddSkyBox();
@@ -284,7 +284,7 @@ void LogCopyright(bool show) {
         return;
 
     SynLog() << "Copyright (c) 2020 projectchrono.org\n";
-    SynLog() << "Chrono version: " << CHRONO_VERSION << "\n\n";
+    SynLog() << "Robodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n\n";
 }
 
 void AddCommandLineOptions(ChCLI& cli) {

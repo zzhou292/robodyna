@@ -14,7 +14,8 @@ Robodyna-branded videos from recorded simulations. **Yaris uses CUDA FEA**;
 the retained **spring, rigid-body contact and SCM examples use CPU physics**.
 All five views use Vulkan GPU rendering. See the linked qualification records
 for the tested scope and source provenance. The [media record](docs/verification/README_MEDIA.json)
-links these branding-only derivatives to the unchanged original recordings.
+records native captures with the transparent Robodyna logo, playback validation
+and the preserved numerical evidence.
 
 ### Yaris wall crash — front view
 
@@ -22,7 +23,7 @@ links these branding-only derivatives to the unchanged original recordings.
 slow-motion playback. The selected vehicle assembly includes elastic/plastic
 deformation; inflated tires remain outside this profile.
 
-https://github.com/user-attachments/assets/4cfb21e2-523d-4213-b972-0cd51a54cb23
+https://github.com/user-attachments/assets/71270cf4-bf3e-41bf-9e55-e940a0b763a2
 
 <details>
 <summary>Robodyna poster</summary>
@@ -36,7 +37,7 @@ https://github.com/user-attachments/assets/4cfb21e2-523d-4213-b972-0cd51a54cb23
 The same 100 ms trajectory, with the complete selected assembly and mesh wall
 visible. Parts keep their own colors and deformation is shown at physical scale.
 
-https://github.com/user-attachments/assets/1a967b5f-5ec1-4625-b6d5-8f6fbb1c0480
+https://github.com/user-attachments/assets/16654165-39e5-437b-879e-b314db5bfd45
 
 <details>
 <summary>Robodyna poster</summary>
@@ -50,7 +51,7 @@ https://github.com/user-attachments/assets/1a967b5f-5ec1-4625-b6d5-8f6fbb1c0480
 Six seconds of the retained spring–mass example. Its native and callback force
 models produce matching motion. [Evidence](docs/verification/CHRONO_DEMOS.md).
 
-https://github.com/user-attachments/assets/c71d3a4b-5407-471d-889e-eb5fec439729
+https://github.com/user-attachments/assets/46613fa4-a2e5-4cc0-8014-0b2ec49d1b1c
 
 <details>
 <summary>Robodyna poster</summary>
@@ -64,7 +65,7 @@ https://github.com/user-attachments/assets/c71d3a4b-5407-471d-889e-eb5fec439729
 Six seconds with all 87 falling objects and the rotating mixer, using the retained
 Bullet/NSC contact model. [Evidence](docs/verification/CHRONO_DEMOS.md).
 
-https://github.com/user-attachments/assets/6491834e-1e89-4f9c-a13b-4791a51b063d
+https://github.com/user-attachments/assets/a906314f-778f-4fb5-9fcb-57b1420c00fe
 
 <details>
 <summary>Robodyna poster</summary>
@@ -78,7 +79,7 @@ https://github.com/user-attachments/assets/6491834e-1e89-4f9c-a13b-4791a51b063d
 Six seconds of the retained lugged-wheel example, with soil deformation and a
 visible rut. [Evidence](docs/verification/CHRONO_DEMOS.md).
 
-https://github.com/user-attachments/assets/19331faa-c72e-47ab-8ea8-2d91613647d8
+https://github.com/user-attachments/assets/c779247e-bded-46ad-a7aa-95077b73918c
 
 <details>
 <summary>Robodyna poster</summary>
@@ -110,6 +111,13 @@ The original MBD/SCM setups run through this repository's Bazel build. Their
 complete telemetry matched between headless and captured runs, and their videos
 passed full decoding. [Qualification and commands](docs/verification/CHRONO_DEMOS.md)
 record timesteps, measured behavior and reproducible entry points.
+
+All imported Chrono demo and unit-test source files are retained. The
+[complete catalog](docs/verification/CHRONO_DEMOS_TESTS.md) separates CMake
+declarations, Python scripts, direct Bazel targets and runtime qualification.
+Most inherited examples and tests still need Bazel integration; source retention
+does not mean every optional module has been built or run. List available entries
+with `bazel run --config=host //tools/verification:chrono_catalog -- --help`.
 
 ## Robodyna C++ API migration
 

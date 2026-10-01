@@ -67,7 +67,7 @@ render_step_size = 1.0 / 50  # FPS = 50
 
 # =============================================================================
 
-#print ( "Copyright (c) 2017 projectchrono.org\nChrono version: ", chrono.CHRONO_VERSION , "\n\n")
+#print ( "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", chrono.CHRONO_VERSION , "\n\n")
 
 # --------------
 # Create systems
@@ -124,18 +124,18 @@ driver.Initialize()
 # Create run-time visualization
 if vis_type == chrono.ChVisualSystem.Type_IRRLICHT:
     vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
-    vis.SetWindowTitle('Citybus')
+    vis.SetWindowTitle('Robodyna | Citybus')
     vis.SetWindowSize(1280, 1024)
     vis.SetChaseCamera(trackPoint, 15.0, 0.5)
     vis.Initialize()
-    vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+    vis.AddLogo()
     vis.AddLightDirectional()
     vis.AddSkyBox()
     vis.AttachVehicle(bus.GetVehicle())
     vis.AttachDriver(driver)
 elif vis_type == chrono.ChVisualSystem.Type_VSG:
     vis = veh.ChWheeledVehicleVisualSystemVSG()
-    vis.SetWindowTitle('Citybus')
+    vis.SetWindowTitle('Robodyna | Citybus')
     vis.SetWindowSize(1280, 1024)
     vis.EnableSkyTexture()
     vis.SetLightIntensity(1.0)

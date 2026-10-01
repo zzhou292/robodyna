@@ -29,7 +29,7 @@ using namespace chrono;
 using namespace chrono::vsg3d;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono physical system
     ChSystemNSC sys;
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
     // Create the Irrlicht visualization system
     auto vis = chrono_types::make_shared<ChVisualSystemVSG>();
     vis->AttachSystem(&sys);
-    vis->SetWindowTitle("Paths");
+    vis->SetWindowTitle("Robodyna | Paths");
     vis->AddCamera(ChVector3d(0, 8, -10));
     vis->Initialize();
 

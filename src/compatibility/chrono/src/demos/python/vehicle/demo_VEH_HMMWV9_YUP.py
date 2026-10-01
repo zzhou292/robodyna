@@ -26,7 +26,7 @@ import math as m
 # =============================================================================
 
 def main():
-    #print("Copyright (c) 2017 projectchrono.org\nChrono version: ", CHRONO_VERSION , "\n\n")
+    #print("Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: ", CHRONO_VERSION , "\n\n")
 
     veh.ChWorldFrame.SetYUP()
 
@@ -73,11 +73,11 @@ def main():
     # Create the vehicle Irrlicht interface
     vis = veh.ChWheeledVehicleVisualSystemIrrlicht()
     vis.SetCameraVertical(chrono.CameraVerticalDir_Y)
-    vis.SetWindowTitle('HMMWV-9 YUP world frame')
+    vis.SetWindowTitle('Robodyna | HMMWV-9 YUP world frame')
     vis.SetWindowSize(1280, 1024)
     vis.SetChaseCamera(chrono.ChVector3d(0.0, 0.0, 0.75), 6.0, 0.5)
     vis.Initialize()
-    vis.AddLogo(chrono.GetChronoDataFile('logo_chrono_alpha.png'))
+    vis.AddLogo()
     vis.AddLightDirectional(-60, 300)
     vis.AddSkyBox()
     vis.AttachVehicle(hmmwv.GetVehicle())

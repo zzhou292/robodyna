@@ -76,7 +76,7 @@ void create_column(ChSystemNSC& sys,
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono physical system
     ChSystemNSC sys;
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Earthquake simulation");
+            vis_irr->SetWindowTitle("Robodyna | Earthquake simulation");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->AddSkyBox();
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("Earthquake simulation");
+            vis_vsg->SetWindowTitle("Robodyna | Earthquake simulation");
             vis_vsg->EnableSkyTexture(SkyMode::BOX);
             vis_vsg->AddCamera(ChVector3d(1, 8, -15));
             vis_vsg->SetCameraAngleDeg(50);

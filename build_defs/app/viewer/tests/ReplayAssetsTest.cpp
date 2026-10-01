@@ -14,7 +14,7 @@ class ReplayAssets : public ::testing::Test {
         ASSERT_NE(temp, nullptr);
         directory = std::filesystem::path(temp) / "replay-assets";
         std::filesystem::create_directories(directory / "vsg/fonts");
-        std::ofstream(directory / "logo_chrono_alpha.png") << "test fixture";
+        std::ofstream(directory / "logo_robodyna_alpha.png") << "test fixture";
         std::ofstream(directory / "vsg/fonts/OpenSans-Bold.vsgb") << "test fixture";
     }
     void TearDown() override { std::filesystem::remove_all(directory); }

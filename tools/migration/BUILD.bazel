@@ -4,6 +4,15 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(name = "import_library", srcs = ["import_tree.py"])
 py_library(name = "source_transform", srcs = ["source_transform.py"])
+py_library(name = "branding_verification", srcs = ["verify_branding.py"], deps = [":source_transform"])
+py_binary(name = "verify_branding", srcs = ["verify_branding.py"], deps = [":source_transform"])
+py_test(
+    name = "verify_branding_test",
+    srcs = ["tests/test_verify_branding.py"],
+    main = "tests/test_verify_branding.py",
+    deps = [":branding_verification"],
+    size = "small",
+)
 py_test(
     name = "source_transform_test",
     srcs = ["tests/test_source_transform.py"],

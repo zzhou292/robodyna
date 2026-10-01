@@ -18,13 +18,13 @@
 #   in the while() simulation loop). See demo_POST_blender1.cpp for an example.
 # - run the chrono app,  this will generate files on disk: a single
 #   xxx.assets.py file and many state00001.py, state00002.py, ..., in an output/ dir.
-# - Open Blender, use menu "File/Import/Chrono import" to load the xxx.assets.py file.
+# - Open Blender, use menu "File/Import/Robodyna import" to load the xxx.assets.py file.
 #
 # Tips:
 # - When scrubbing the timeline, the animation should happen. This may be a bit slower than 
 #   expected because the Chrono add-on loads and unloads from disk the content of each time
 #   step, for optimizing memory requirements.
-# - use the "Chrono" sidebar at the right border of the 3D view to enable/disable the
+# - use the "Robodyna" sidebar at the right border of the 3D view to enable/disable the
 #   showing of coordinate systems of Chrono bodies and assets, and other view settings.
 # - when possible, the Chrono Blender postprocessor and this add-on tend to optimize memory
 #   by sharing identical assets. More in detail, assets for whom myasset->IsMutable() is false
@@ -35,17 +35,17 @@
 # - if no material is added to a visual shape in Chrono, you can add by hand in Blender to 
 #   the asset object available in "chrono_assets" collection. (link to data, not to object);
 #   if a material is added to a visual shape in Chrono, it overrides the material you add to
-#   the asset object available in "chrono_assets" collection (unless you disable "Chrono materials" in
+#   the asset object available in "chrono_assets" collection (unless you disable "Robodyna materials" in
 #   the Chrono sidebar panel).
 
 
 
 bl_info = {
-    "name": "Chrono import",
+    "name": "Robodyna import",
     "blender": (4, 4, 3),
     "category": "Import-Export",
     "location": "File > Import-Export",
-    "description": "Import ProjectChrono simulations",
+    "description": "Import Robodyna simulations",
     "author": "Alessandro Tasora",
     "version": (0, 1, 0),
     "wiki_url": "https://api.projectchrono.org/development/introduction_chrono_blender.html",
@@ -1447,7 +1447,7 @@ def callback_post(self):
 #
     
 def read_chrono_simulation(context, filepath, setting_materials, setting_merge):
-    print("Loading Chrono simulation...")
+    print("Loading Robodyna simulation...")
     
     # PREPARE SCENE
     global chrono_frame_objects
@@ -1786,10 +1786,10 @@ class GUI_meshsettins(UIList):
     
 class Chrono_sidebar(Panel):
     """Chrono settings for 3D view"""
-    bl_label = "Chrono view"
+    bl_label = "Robodyna view"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Chrono"
+    bl_category = "Robodyna"
 
     def draw(self, context):
         col = self.layout.column(align=True)
@@ -2063,7 +2063,7 @@ from bpy.types import Operator
 class ImportChrono(Operator, ImportHelper):
     """Import a Chrono simulation from files saved by Chrono postprocessing module"""
     bl_idname = "import_chrono.data"  # important since its how bpy.ops.import_chrono.data is constructed
-    bl_label = "Import Chrono simulation"
+    bl_label = "Import Robodyna simulation"
 
     # ImportHelper mixin class uses this
     filename_ext = ".py"
@@ -2078,12 +2078,12 @@ class ImportChrono(Operator, ImportHelper):
     # to the class instance from the operator settings before calling.
     setting_materials: BoolProperty(
         name="Create materials",
-        description="Turn off if you want to skip all materials assigned from Chrono side",
+        description="Turn off to skip materials assigned by the simulation",
         default=True,
     )
     setting_merge: BoolProperty(
         name="Merge",
-        description="If true, does not delete last imported Chrono simulation. Useful for merging results from parallel simulations, or cosimulations.",
+        description="Keep the last imported simulation when merging parallel or coupled results.",
         default=False,
     )
     setting_automerge: BoolProperty(
@@ -2152,7 +2152,7 @@ class ImportChrono(Operator, ImportHelper):
 
 # Only needed if you want to add into a dynamic menu.
 def menu_func_import(self, context):
-    self.layout.operator(ImportChrono.bl_idname, text="Chrono import")
+    self.layout.operator(ImportChrono.bl_idname, text="Robodyna import")
 
 
 
@@ -2206,7 +2206,7 @@ def register():
         update=UpdatedFunction
     )
     bpy.types.Scene.chrono_show_materials = bpy.props.BoolProperty(
-        name='Use Chrono materials',
+        name='Use Robodyna materials',
         default=True,
         update=UpdatedFunction
     )
@@ -2218,7 +2218,7 @@ def register():
     
     bpy.types.Scene.chrono_filenames = bpy.props.CollectionProperty(
         type=CUSTOM_filenamesCollection, 
-        description = "Projects exported from Chrono postprocesor",
+        description = "Projects exported by the Robodyna postprocessor",
     )
     
     # Custom mesh properties

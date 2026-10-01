@@ -97,7 +97,7 @@ using namespace irr::scene; // This is inserted for the extend functions that us
     }
 
     %extend chrono::vehicle::ChWheeledVehicleVisualSystemIrrlicht {
-        void AddLogo(const std::string& logo_filename = GetChronoDataFile("logo_chrono_alpha.png")) {
+        void AddLogo(const std::string& logo_filename = "") {
             $self->chrono::irrlicht::ChVisualSystemIrrlicht::AddLogo(logo_filename);
         }
     }

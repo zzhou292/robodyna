@@ -88,7 +88,7 @@ void runBallDrop(ChSystemDemMesh& dem_sys, ChDemSimulationParameters& params) {
     // VSG visual system (attach visDEM as plugin)
     auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     visVSG->AttachPlugin(visDEM);
-    visVSG->SetWindowTitle("Chrono::Dem ball cosim demo");
+    visVSG->SetWindowTitle("Robodyna | Granular ball co-simulation");
     visVSG->SetWindowSize(1280, 800);
     visVSG->SetWindowPosition(100, 100);
     visVSG->AddCamera(ChVector3d(0, -200, 100), ChVector3d(0, 0, 0));

@@ -167,7 +167,7 @@ class ChExternalDriverFmu : public ChDriver, public ChExternalFmu {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << "\n" << endl;
+    cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << "\n" << endl;
 
     // -----------------------
     // Model exchange FMU
@@ -280,7 +280,7 @@ int main(int argc, char* argv[]) {
     auto vis = chrono_types::make_shared<ChVehicleVisualSystem>();
     if (render) {
         auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-        vis_vsg->SetWindowTitle("Double lane change with driver FMU");
+        vis_vsg->SetWindowTitle("Robodyna | Double lane change with driver FMU");
         vis_vsg->SetWindowSize(1280, 800);
         vis_vsg->SetWindowPosition(100, 100);
         vis_vsg->SetBackgroundColor(ChColor(0.37f, 0.50f, 0.60f));

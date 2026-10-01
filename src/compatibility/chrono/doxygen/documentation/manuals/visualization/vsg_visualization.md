@@ -12,7 +12,7 @@ A typical usage of \ref chrono::vsg3d::ChVisualSystemVSG "vsg3d::ChVisualSystemV
     vis->AttachSystem(&sys);
     vis->SetWindowSize(ChVector2i(1200, 800));
     vis->SetWindowPosition(ChVector2i(100, 300));
-    vis->SetWindowTitle("VSG Demo");
+    vis->SetWindowTitle("Robodyna | VSG Demo");
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->AddCamera(ChVector3d(-8, 8, -16));
     vis->SetCameraAngleDeg(40);

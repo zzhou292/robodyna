@@ -66,7 +66,7 @@ TEST(VSGMutableMeshRender, ActualColoredFacesDisappearAndReturnWithoutRebinding)
     visual.AttachSystem(&system);
     visual.SetLoadingThreadCount(1);
     visual.SetWindowSize(640,480);
-    visual.SetWindowTitle("robo-dyna renderer qualification | synthetic faces");
+    visual.SetWindowTitle("Robodyna | Renderer qualification | Synthetic faces");
     visual.SetCameraVertical(chrono::CameraVerticalDir::Y);
     visual.AddCamera({0,0,3},{0,0,0});
     visual.SetCameraAngleDeg(45);

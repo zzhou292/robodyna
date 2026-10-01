@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
     // VSG visual system (attach visDEM as plugin)
     auto visVSG = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
     visVSG->AttachPlugin(visDEM);
-    visVSG->SetWindowTitle("Chrono::Dem mixer demo");
+    visVSG->SetWindowTitle("Robodyna | Granular mixer");
     visVSG->SetWindowSize(1280, 800);
     visVSG->SetWindowPosition(100, 100);
     visVSG->AddCamera(ChVector3d(0, -100, 75), ChVector3d(0, 0, 0));

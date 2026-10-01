@@ -156,7 +156,7 @@ void SimulateSingle(std::shared_ptr<WheeledVehicleModel> vehicle_model, const Ch
 
 #ifdef CHRONO_VSG
     auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis_vsg->SetWindowTitle(vehicle_model->ModelName());
+    vis_vsg->SetWindowTitle("Robodyna | " + vehicle_model->ModelName());
     vis_vsg->AttachVehicle(&vehicle);
     vis_vsg->AttachDriver(&driver);
     vis_vsg->SetChaseCamera(vehicle_model->TrackPoint(), vehicle_model->CameraDistance(), vehicle_model->CameraHeight());
@@ -327,7 +327,7 @@ void SimulateBoth(std::shared_ptr<WheeledVehicleModel> vehicle_model_1, std::sha
 
 #ifdef CHRONO_VSG
     auto vis_vsg = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis_vsg->SetWindowTitle(vehicle_model_1->ModelName() + " and " + vehicle_model_2->ModelName());
+    vis_vsg->SetWindowTitle("Robodyna | " + vehicle_model_1->ModelName() + " and " + vehicle_model_2->ModelName());
     vis_vsg->AttachVehicle(&vehicle_1);
     vis_vsg->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 6.0, 0.5);
     vis_vsg->SetChaseCameraState(utils::ChChaseCamera::Track);
@@ -416,7 +416,7 @@ void SimulateBoth(std::shared_ptr<WheeledVehicleModel> vehicle_model_1, std::sha
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << endl;
+    cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << endl;
 
     // Vehicle models
     auto v1 = chrono_types::make_shared<HMMWV_Model>();

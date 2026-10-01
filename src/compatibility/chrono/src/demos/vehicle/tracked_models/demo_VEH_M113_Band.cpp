@@ -103,7 +103,7 @@ void WriteMeshVTK(const std::string& vtk_dir, int frame, std::shared_ptr<fea::Ch
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // -----------------
     // Initialize output
@@ -278,7 +278,7 @@ int main(int argc, char* argv[]) {
 
     // Create the vehicle VSG interface
     auto vis = chrono_types::make_shared<ChTrackedVehicleVisualSystemVSG>();
-    vis->SetWindowTitle(title);
+    vis->SetWindowTitle("Robodyna | " + title);
     vis->SetWindowSize(1200, 800);
     vis->EnableSkyTexture(SkyMode::DOME);
     vis->SetChaseCamera(ChVector3d(0, 0, 0), 7.0, 0.5);

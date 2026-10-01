@@ -262,7 +262,7 @@ void ChPreciceAdapterSph::InitializeParticipant() {
         // VSG visual system (attach visFSI as plugin)
         m_vsg = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         m_vsg->AttachPlugin(visFSI);
-        m_vsg->SetWindowTitle("Chrono preCICE SPH participant - " + m_participant_name);
+        m_vsg->SetWindowTitle("Robodyna | preCICE SPH participant - " + m_participant_name);
         m_vsg->SetWindowSize(1280, 800);
         m_vsg->SetWindowPosition(100, 100);
         m_vsg->AddCamera(m_vis_settings.camera_location, m_vis_settings.camera_target);

@@ -33,7 +33,7 @@ using namespace chrono::particlefactory;
 using namespace chrono::irrlicht;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create a Chrono system and set the associated collision system
     ChSystemNSC sys;
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     // Create the Irrlicht visualization system
     auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("Particle emitter, remover, processor");
+    vis->SetWindowTitle("Robodyna | Particle emitter, remover, processor");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

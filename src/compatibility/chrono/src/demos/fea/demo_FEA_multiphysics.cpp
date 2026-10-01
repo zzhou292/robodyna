@@ -51,7 +51,7 @@ using namespace chrono;
 using namespace chrono::fea;
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2017 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     if (true) {
         // Introduction to the multiphysics FEA system of Chrono.
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
         auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
         vis->AttachSystem(&sys);
         vis->SetWindowSize(800, 600);
-        vis->SetWindowTitle("Multiphysics example.1: elasticity");
+        vis->SetWindowTitle("Robodyna | Multiphysics example.1: elasticity");
         vis->Initialize();
         vis->AddLogo();
         vis->AddSkyBox();
@@ -326,7 +326,7 @@ int main(int argc, char* argv[]) {
         auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
         vis->AttachSystem(&sys);
         vis->SetWindowSize(800, 600);
-        vis->SetWindowTitle("Multiphysics example.2: thermal problem");
+        vis->SetWindowTitle("Robodyna | Multiphysics example.2: thermal problem");
         vis->Initialize();
         vis->AddLogo();
         vis->AddSkyBox();
@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
         auto vis = chrono_types::make_shared<ChVisualSystemIrrlicht>();
         vis->AttachSystem(&sys);
         vis->SetWindowSize(800, 600);
-        vis->SetWindowTitle("Multiphysics example.3: thermoelastic problem");
+        vis->SetWindowTitle("Robodyna | Multiphysics example.3: thermoelastic problem");
         vis->Initialize();
         vis->AddLogo();
         vis->AddSkyBox();

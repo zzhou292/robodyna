@@ -216,7 +216,7 @@ void ANCFshell<N>::SimulateVis() {
     auto vis = chrono_types::make_shared<irrlicht::ChVisualSystemIrrlicht>();
     vis->AttachSystem(m_system);
     vis->SetWindowSize(800, 600);
-    vis->SetWindowTitle("ANCF shells");
+    vis->SetWindowTitle("Robodyna | ANCF shells");
     vis->Initialize();
     vis->AddLogo();
     vis->AddSkyBox();

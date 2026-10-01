@@ -11,7 +11,7 @@ int Failure(const std::filesystem::path& directory,const std::string& message) {
     if(!directory.empty()) {
         try {crash::output::WriteBytes(directory/"failure.txt",message+'\n');} catch(...) {}
     }
-    std::cerr<<"robo-dyna physical replay: "<<message<<'\n';return 1;
+    std::cerr<<"Robodyna physical replay: "<<message<<'\n';return 1;
 }
 }
 int main(int argc,char** argv) {

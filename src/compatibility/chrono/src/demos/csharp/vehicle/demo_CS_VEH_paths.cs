@@ -29,10 +29,10 @@ namespace ChronoDemo
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2017 projectchrono.org");
-            Console.WriteLine("Chrono version: " + CHRONO_VERSION);
+            Console.WriteLine("Robodyna demo; inherited Chrono version: " + CHRONO_VERSION);
 
             // TODO: correct CHRONO_VERSION call
-            // Console.WriteLine(chrono.GetLog() + "Copyright (c) 2017 projectchrono.org\nChrono version: " + CHRONO_VERSION + "\n\n");
+            // Console.WriteLine(chrono.GetLog() + "Copyright (c) 2017 projectchrono.org\nRobodyna demo; inherited Chrono version: " + CHRONO_VERSION + "\n\n");
 
             // Set the path to the Chrono data files and Chrono::Vehicle data files
             chrono.SetChronoDataPath(CHRONO_DATA_DIR);

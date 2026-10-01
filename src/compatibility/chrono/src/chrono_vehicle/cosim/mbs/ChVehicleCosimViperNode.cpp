@@ -125,7 +125,7 @@ void ChVehicleCosimViperNode::InitializeMBS(const ChVector2d& terrain_size, doub
 #ifdef CHRONO_VSG
         m_vsys = chrono_types::make_shared<vsg3d::ChVisualSystemVSG>();
         m_vsys->AttachSystem(m_system);
-        m_vsys->SetWindowTitle("Viper Rover Node");
+        m_vsys->SetWindowTitle("Robodyna | Viper Rover Node");
         m_vsys->SetWindowSize(ChVector2i(1280, 720));
         m_vsys->SetWindowPosition(ChVector2i(100, 300));
         m_vsys->AddCamera(m_cam_pos, m_cam_target);

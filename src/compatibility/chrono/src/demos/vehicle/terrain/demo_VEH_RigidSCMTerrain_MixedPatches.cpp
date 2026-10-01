@@ -81,7 +81,7 @@ bool render_sinkage = true;    // use false coloring for sinkage visualization
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2025 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2025 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // ------------------------
     // Create the HMMWV vehicle
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
 
     // Create the vehicle VSG interface
     auto vis = chrono_types::make_shared<ChWheeledVehicleVisualSystemVSG>();
-    vis->SetWindowTitle("Mixed Terrain Demo");
+    vis->SetWindowTitle("Robodyna | Mixed Terrain Demo");
     vis->SetWindowSize(1280, 800);
     vis->SetChaseCamera(ChVector3d(0.0, 0.0, .75), 8.0, 0.75);
     vis->AttachVehicle(&hmmwv.GetVehicle());

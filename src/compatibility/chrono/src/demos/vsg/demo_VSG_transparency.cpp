@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     vis->AttachSystem(&sys);
     vis->SetCameraVertical(CameraVerticalDir::Z);
     vis->SetWindowSize(1400, 900);
-    vis->SetWindowTitle("Chrono::VSG Transparency + Shadow Demo");
+    vis->SetWindowTitle("Robodyna | Transparency and shadows");
 
     // Camera: angled view to see shadows on ground
     vis->AddCamera(ChVector3d(6, -6, 5), ChVector3d(0, 0, 0.5));

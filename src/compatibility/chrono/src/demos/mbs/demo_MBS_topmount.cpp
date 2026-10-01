@@ -152,7 +152,7 @@ class TopmountDamperODE : public ChLinkTSDA::ODE {
 // =============================================================================
 
 int main(int argc, char* argv[]) {
-    std::cout << "Copyright (c) 2026 projectchrono.org\nChrono version: " << CHRONO_VERSION << std::endl;
+    std::cout << "Copyright (c) 2026 projectchrono.org\nRobodyna demo; inherited Chrono version: " << CHRONO_VERSION << std::endl;
 
     // Create (if needed) output directory
     const std::string out_dir = GetChronoOutputPath() + "DEMO_TOPMOUNT";
@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
             auto vis_irr = chrono_types::make_shared<ChVisualSystemIrrlicht>();
             vis_irr->AttachSystem(&sys);
             vis_irr->SetWindowSize(800, 600);
-            vis_irr->SetWindowTitle("Chrono IRR Topmount Damper");
+            vis_irr->SetWindowTitle("Robodyna | Top-mount damper");
             vis_irr->Initialize();
             vis_irr->AddLogo();
             vis_irr->SetBackgroundColor(ChColor(18.0f / 255, 26.0f / 255, 32.0f / 255));
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
             vis_vsg->SetCameraVertical(CameraVerticalDir::Y);
             vis_vsg->SetWindowSize(1280, 800);
             vis_vsg->SetWindowPosition(100, 100);
-            vis_vsg->SetWindowTitle("Chrono VSG Topmount Damper");
+            vis_vsg->SetWindowTitle("Robodyna | Top-mount damper");
             vis_vsg->SetBackgroundColor(ChColor(18.0f / 255, 26.0f / 255, 32.0f / 255));
             vis_vsg->AddCamera(ChVector3d(0, -vpos / 2, 1));
             vis_vsg->SetCameraAngleDeg(40);
