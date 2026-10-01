@@ -1,0 +1,52 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "fixture",
+    srcs = ["BodyFixture.cpp"],
+    hdrs = ["BodyFixture.h"],
+    deps = ["//build_defs/chrono:native_core_fea"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_binary(
+    name = "write_baseline",
+    srcs = ["WriteBaseline.cpp"],
+    deps = [":fixture", "//tests/archive_support:streams"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+# The root operator freezes these files from the pre-body-rename producer before
+# running this target. Tests never update their expected archive bytes.
+cc_test(
+    name = "frozen_archive_test",
+    srcs = ["FrozenArchiveTest.cpp"],
+    args = ["$(location fixtures/baseline.json)"],
+    data = ["fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    deps = [":fixture", "//tests/archive_support:streams", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+cc_test(
+    name = "upcast_test",
+    srcs = ["UpcastTest.cpp"],
+    deps = ["//include/robodyna/mbd:api", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+py_test(
+    name = "fixture_integrity_test",
+    srcs = ["//tests/serialization_compat:FixtureIntegrityTest.py"],
+    main = "//tests/serialization_compat:FixtureIntegrityTest.py",
+    args = ["$(location fixtures/manifest.json)"],
+    data = ["fixtures/manifest.json", "fixtures/producer.json", "fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+test_suite(name = "body_tests", tests = [":frozen_archive_test", ":upcast_test", ":fixture_integrity_test"])

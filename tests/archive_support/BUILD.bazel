@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "streams",
+    hdrs = ["StreamArchive.h"],
+    deps = ["//src/core:foundation"],
+    visibility = ["//tests:__subpackages__"],
+)

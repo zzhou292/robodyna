@@ -1,0 +1,32 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "fixture",
+    hdrs = ["Fixture.h"],
+    deps = ["//build_defs/chrono:native_core_fea"],
+    testonly = True,
+)
+
+cc_test(
+    name = "lifecycle_test",
+    srcs = ["LifecycleTest.cpp"],
+    deps = [":fixture", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "mesh-compatibility"],
+)
+
+cc_test(
+    name = "coupled_spring_test",
+    srcs = ["CoupledSpringTest.cpp"],
+    deps = [":fixture", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "mesh-compatibility"],
+)
+
+test_suite(
+    name = "baseline_tests",
+    tests = [":lifecycle_test", ":coupled_spring_test"],
+    tags = ["manual", "mesh-compatibility"],
+)

@@ -1,0 +1,8 @@
+{ 
+	"compiler"	: "11.4.0",
+	"language"	: 201703,
+	"pointer_bytes"	: 8,
+	"size_t_bytes"	: 8,
+	"body_rtti"	: "N6chrono6ChBodyE",
+	"scope"	: "Pre-base-body rename: BodyEasyBox constructor and marker/force ownership"
+}

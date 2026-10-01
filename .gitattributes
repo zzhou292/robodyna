@@ -5,3 +5,5 @@ tests/serialization_compat/fixtures/baseline.json -whitespace
 tests/serialization_compat/fixtures/producer.json -whitespace
 tests/serialization_compat/rename_probe/fixtures/baseline.json -whitespace
 tests/serialization_compat/rename_probe/fixtures/producer.json -whitespace
+tests/body_compat/fixtures/baseline.json -whitespace
+tests/body_compat/fixtures/producer.json -whitespace

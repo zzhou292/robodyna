@@ -1,0 +1,185 @@
+{
+  "baseline_head": "07da644581cd5762699ed7150ad30b0c5f13b82f",
+  "files": {
+    "baseline.bin": {
+      "bytes": 3847,
+      "sha256": "10ccf3a873ff9b7b24c551f1feba03f1dc6079081d3fa97273306bd6e1e1dbd6"
+    },
+    "baseline.json": {
+      "bytes": 11354,
+      "sha256": "79c7595c533a996aa6f2befd9a8d3e6509c7a44515109e9d8e7cbc2d419c3056"
+    },
+    "baseline.xml": {
+      "bytes": 11197,
+      "sha256": "d4292210d1cb69b34198faf62c83935f1d41090bc1f0b63da4d3b03b89af4d41"
+    },
+    "producer.json": {
+      "bytes": 215,
+      "sha256": "957abf2521d66f21fb2931ef0b83c3bdb07ebe58b8c4a1022d9147fab5680692"
+    }
+  },
+  "observed_producer": {
+    "body_rtti": "N6chrono6ChBodyE",
+    "compiler": "11.4.0",
+    "language": 201703,
+    "pointer_bytes": 8,
+    "scope": "Pre-base-body rename: BodyEasyBox constructor and marker/force ownership",
+    "size_t_bytes": 8
+  },
+  "platform": "Linux x86_64 GCC/Itanium ABI; native archive sizes/version identities are toolchain-specific",
+  "producer_binary": {
+    "bytes": 9639248,
+    "sha256": "2326610964909173e7a67de2a2782d0ac924b86a4b56d3ffe0abcb66e5d7c276"
+  },
+  "producer_inputs": {
+    "tests/archive_support/BUILD.bazel": {
+      "bytes": 198,
+      "sha256": "9a9e00f2f016d3ac0339b5c671ed9d0439a943f8dee35af2b4d77931ab163d8d"
+    },
+    "tests/archive_support/StreamArchive.h": {
+      "bytes": 845,
+      "sha256": "0e735826a25db78f63bbf4a149d09c1dc8a5e1c3c99fdb9960b2d5ade1ea9911"
+    },
+    "tests/body_compat/BUILD.bazel": {
+      "bytes": 1979,
+      "sha256": "b8490a17c18f069ede1e48e3cb70ba4eee250687f58567f5de7496ff1e8e5992"
+    },
+    "tests/body_compat/BodyFixture.cpp": {
+      "bytes": 4083,
+      "sha256": "d1aabfef4589a64eace98f04bb6644341290ed25c31f31eb873695e561148cf4"
+    },
+    "tests/body_compat/BodyFixture.h": {
+      "bytes": 635,
+      "sha256": "dc85a3e91f6bd94b772bc6fe588de611369c1e44171e16f9f2967438e61e59fc"
+    },
+    "tests/body_compat/WriteBaseline.cpp": {
+      "bytes": 3135,
+      "sha256": "5575a8c918a8f974c5af40fa3b83addb24a0bd21a4b891a7f3adc2c26b4891f4"
+    }
+  },
+  "production_inputs": {
+    "src/compatibility/chrono/src/chrono/core/ChClassFactory.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "16154309c0985d13d8164d92fec0d9eb1d85888284c6aa83a96120ff61ddfbc5"
+    },
+    "src/compatibility/chrono/src/chrono/core/ChClassFactory.h": {
+      "matches_recorded_head": true,
+      "sha256": "a743815e0e26efe703a1db1587595496977e16112e9ae2312c7bf6c859d6c76a"
+    },
+    "src/compatibility/chrono/src/chrono/core/ChFrame.h": {
+      "matches_recorded_head": true,
+      "sha256": "147d96b72482884b517a130ecca50044539c1d27b3299b4870624069718bb314"
+    },
+    "src/compatibility/chrono/src/chrono/core/ChFrameMoving.h": {
+      "matches_recorded_head": true,
+      "sha256": "82476c8dcc6bf8bc0494036be35957c2051feeec203f1ac51a0c112e887bda4c"
+    },
+    "src/compatibility/chrono/src/chrono/core/ChQuaternion.h": {
+      "matches_recorded_head": true,
+      "sha256": "b57b207950dc4d7ddc81c1d952bbcbb7d0db1b318f2919d51f87606acc06a9b7"
+    },
+    "src/compatibility/chrono/src/chrono/core/ChVector3.h": {
+      "matches_recorded_head": true,
+      "sha256": "204995ee135dcc0fdf9d788b001e02a99cb2f9a6e9dbdaa2adac12a85fb3cd42"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBody.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "bf05c5152568de7b7b0032a82d85a28eb7b5f55c76204d3e209dd9fa3f8296ed"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBody.h": {
+      "matches_recorded_head": true,
+      "sha256": "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "ccc579629e7b33d2e4a10ef2210c67cd21cd72cd8f04bdbf0f55f7e81a83a69a"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h": {
+      "matches_recorded_head": true,
+      "sha256": "e81fbff1442238c5f05d3e147a508291cb5f96494ae935e05f27cfdb1ee80bc4"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "601088e55c0409eb14364170f71a3d62c7f33c4825c74b7d9775aba4c1e14bbd"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h": {
+      "matches_recorded_head": true,
+      "sha256": "0a399a32cbabb3710f674fe7583230df52d9e8e0a1f161cb74791156b056191b"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyFrame.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "30eda2f2966901db292222906b0b958819555f8a41a33ed8344a6b45f2f2f4c3"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChBodyFrame.h": {
+      "matches_recorded_head": true,
+      "sha256": "0b739034f2d081106ebb9061ff112e34de9a6258507307f783a3056b380a5b81"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChForce.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "922c387ce1015b428a9be0484f5ee99aef3d3a752438ad2155558bd1fbeea195"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChForce.h": {
+      "matches_recorded_head": true,
+      "sha256": "d462f2e4ca866d9a396be96792c1f1c3524868dd4bac81a68cad46e323a3c38c"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChMarker.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "eef428bb6a1a891d36de0228264f47ef36a8d1148d7110441e4732402fa6063e"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChMarker.h": {
+      "matches_recorded_head": true,
+      "sha256": "1218383cafb894f6b1d0f6f92aa96b2263b9ac951716346d7534e3fb4b1fa429"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChObject.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "e593e5fa36d30fb3fe7a2cdd11cc891179f5f518418f4f8f3bbdf0b9e7ebdadc"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChObject.h": {
+      "matches_recorded_head": true,
+      "sha256": "3a20a0d01909ee04fec1b442178acc31f1bac86be518616c9f67021df9eca7d4"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "dc32b634bcaf7c74142dbb2094d3f9f889c9ffeb3a810f14661fb705907d9c87"
+    },
+    "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.h": {
+      "matches_recorded_head": true,
+      "sha256": "19dd99b80f367c0f085070fb5a1affe2e70699d903fdd8746be0989aeab52287"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "bb304a50de2d70fa88f8d507909a7276bb0f14d7bbede3c06f4823d0ede378e9"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchive.h": {
+      "matches_recorded_head": true,
+      "sha256": "e59d152cb0f0d2fee0951ddfe70e9e72dd8bc850ed0735b616f3aae926eff928"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveBinary.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "a4f14a8ac29876bfa0f90daf9ffb38b5b1ff331aa40a8fab36960cb85cf8b536"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveBinary.h": {
+      "matches_recorded_head": true,
+      "sha256": "d897da2f71e1195d03e9d5e0139dbf11e6011a384c7edb800157fc3b79420301"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveJSON.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "fd46cfa54455870838fa7f258c43803b1f0c7d9c6ff8e3cc2c9451d9a7af170e"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveJSON.h": {
+      "matches_recorded_head": true,
+      "sha256": "b80c569d77b74d186582fd793b8b15f7e97885afb62ff7f1618b273fd512d607"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveXML.cpp": {
+      "matches_recorded_head": true,
+      "sha256": "0022709d27e5685830702cbd331175d2c1d1e7ebbb03775b9f3257f30fab9570"
+    },
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveXML.h": {
+      "matches_recorded_head": true,
+      "sha256": "4fac07076f9c9360e89e0f040abd6faaccd161e5bd7119c824bd41455df45479"
+    }
+  },
+  "profile": "body",
+  "schema": "robodyna.serialization-compatibility-baseline.v1",
+  "scope": "Pre-rename object archives; individual archive/type inputs match HEAD. This is not a physical restart or whole-tree cleanliness claim."
+}

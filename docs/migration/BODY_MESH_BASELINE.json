@@ -1,0 +1,19 @@
+{
+  "schema": "robodyna.body_mesh_baseline.v1",
+  "source_head": "07da644581cd5762699ed7150ad30b0c5f13b82f",
+  "body_fixture_manifest": "tests/body_compat/fixtures/manifest.json",
+  "test_receipt": {
+    "path": "crash-work/reports/robodyna-body-mesh-baseline-1.json",
+    "sha256": "8d83e233796ae813ad4d0c8404afde5cdf4d856f108e1bae99ffa4b538e94813",
+    "passed_targets": 5
+  },
+  "inertia_binding_generation": {
+    "path": "crash-work/reports/robodyna-swig-inertia-compatibility-1.json",
+    "sha256": "ef1e96bc8f0940f9b4c8178033cd67e222bf86a82a350c9bb7c25e6c607b8dfc",
+    "python_public_ast_entries": 949,
+    "csharp_files": 610,
+    "historical_baseline": "26ef28a9d68adf9d170a78ef1e796bff4ef09d30",
+    "scope": "Generation comparison only; not compiled or loaded wrapper qualification"
+  },
+  "scope": "Pre-body/mesh-rename behavioral gates and immutable archived constructor/child ownership data. No body or mesh definition move in this checkpoint."
+}

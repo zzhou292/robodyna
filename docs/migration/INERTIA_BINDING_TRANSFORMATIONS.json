@@ -1,0 +1,17 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChMassProperties.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChMassProperties.i",
+      "original_sha256": "213f10cb70523093e1eaf87ed2a431423ea12db265eb3b30002230e0ab54c5c3",
+      "replacements": [
+        {
+          "before": "%{\n#include \"chrono/physics/ChMassProperties.h\"\n%}\n\n%shared_ptr(chrono::ChMassProperties)\n\n%include \"../../../chrono/physics/ChMassProperties.h\"\n",
+          "after": "%{\n#include \"chrono/physics/ChMassProperties.h\"\n%}\n\n// Parse the canonical definitions once while retaining existing binding names.\n%rename(ChMassProperties) robodyna::mechanics::RbMassProperties;\n%rename(ChInertiaUtils) robodyna::mechanics::RbInertiaUtils;\n%rename(CompositeInertia) robodyna::mechanics::CompositeInertia;\n%shared_ptr(robodyna::mechanics::RbMassProperties)\n%include \"robodyna/mechanics/RbMassProperties.h\"\n\n// The reverse aliases are real C++ declarations used by other inherited APIs.\n%include \"../../../chrono/physics/ChMassProperties.h\"\n",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

@@ -42,7 +42,12 @@ def freeze(repo, generated, destination, binary, profile):
         raise ValueError("fixture destination already exists; refusing overwrite")
     baseline = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
     production = {}
-    for relative in PRODUCTION_INPUTS:
+    production_inputs = PRODUCTION_INPUTS
+    if profile == "body":
+        production_inputs += ("physics/ChBodyEasy.h", "physics/ChBodyEasy.cpp",
+                              "physics/ChMarker.h", "physics/ChMarker.cpp",
+                              "physics/ChForce.h", "physics/ChForce.cpp")
+    for relative in production_inputs:
         relative = CHRONO + relative
         actual = (repo / relative).read_bytes()
         committed = subprocess.check_output(["git", "show", f"{baseline}:{relative}"], cwd=repo)
@@ -58,6 +63,11 @@ def freeze(repo, generated, destination, binary, profile):
     if profile == "rename-probe":
         tests = tests / "rename_probe"
         producer_inputs = ("LegacyTypes.h", "LegacyTypes.cpp", "WriteLegacyProbe.cpp", "BUILD.bazel")
+    if profile == "body":
+        tests = repo
+        producer_inputs = ("tests/body_compat/BodyFixture.h", "tests/body_compat/BodyFixture.cpp",
+                           "tests/body_compat/WriteBaseline.cpp", "tests/body_compat/BUILD.bazel",
+                           "tests/archive_support/StreamArchive.h", "tests/archive_support/BUILD.bazel")
     manifest = {
         "schema": "robodyna.serialization-compatibility-baseline.v1",
         "baseline_head": baseline,
@@ -83,6 +93,6 @@ if __name__ == "__main__":
     parser.add_argument("--generated-dir", type=Path, required=True)
     parser.add_argument("--destination", type=Path, required=True)
     parser.add_argument("--producer-binary", type=Path, required=True)
-    parser.add_argument("--profile", choices=("actual-types", "rename-probe"), default="actual-types")
+    parser.add_argument("--profile", choices=("actual-types", "rename-probe", "body"), default="actual-types")
     args = parser.parse_args()
     freeze(args.repo_root.resolve(), args.generated_dir.resolve(), args.destination.resolve(), args.producer_binary.resolve(), args.profile)
