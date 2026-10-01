@@ -16,6 +16,7 @@
 #define CH_PHYSICSITEM_H
 
 #include "chrono/physics/ChSystemFwd.h"
+#include "chrono/physics/ChAssemblyFwd.h"
 #include "chrono/core/ChFrame.h"
 #include "chrono/core/ChRotation.h"
 
@@ -379,7 +380,7 @@ class ChApi ChPhysicsItem : public ChObj {
     virtual void SetupInitial() {}
 
     friend class ::robodyna::simulation::RbSystem;
-    friend class ChAssembly;
+    friend class ::robodyna::simulation::RbAssembly;
     friend class modal::ChModalAssembly;
 };
 

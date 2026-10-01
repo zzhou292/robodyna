@@ -13,9 +13,10 @@
     "N4_system": "passed actual System/NSC/SMC, frozen archives, callbacks and integrated build/binding/product gates; domain service extraction pending",
     "N4_body_family": "passed actual AuxRef and eight Easy types, constructor/factory/archive and integrated binding/product gates",
     "N5_consumers": "passed maintained capture/replay consumers with canonical Body/Simulation/value APIs and installed used headers",
-    "N5_bindings": "passed core/FE Python runtime, both core native wrappers, one shared backend, historical core/FE/vehicle surfaces, and configured CMake packaging; managed C# and full optional module runtime remain pending"
+    "N5_bindings": "passed core/FE Python runtime, both core native wrappers, one shared backend, historical core/FE/vehicle surfaces, and configured CMake packaging; managed C# and full optional module runtime remain pending",
+    "N4_assembly": "passed actual Assembly, all 51 native/product targets, five original lifecycle cases, CMake, core/FE runtime, historical bindings, GPU archive, exact rendering and six-second demo regression"
   },
-  "test_targets_passed": 49,
+  "test_targets_passed": 51,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -334,6 +335,42 @@
       "path": "crash-work/renders/robodyna-api-consumers-101-1/render-result.json",
       "sha256": "c5189e183064a95bc39de2a3b852b314bab440cf4d39cf3c6cf1ce7194b2cc96",
       "status": "media_verified"
+    },
+    "robodyna-canonical-assembly-native-1": {
+      "path": "crash-work/reports/robodyna-canonical-assembly-native-1.json",
+      "sha256": "2b7fc239b4efc7411244b3ea22359c18e116e02e8a647abb881b85b8b3a5f287",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 539.426,
+      "peak_sampled_rss_bytes": 4608057344
+    },
+    "robodyna-assembly-cpu-qualification-1": {
+      "path": "crash-work/reports/robodyna-assembly-cpu-qualification-1.json",
+      "sha256": "5df6c3e7a6dd78323b17cd3412a0266615b0cba669b42f3db1ad2cfeffa8451c",
+      "passed": true
+    },
+    "robodyna-assembly-yaris-101-1": {
+      "path": "crash-work/investigations/robodyna-assembly-yaris-101-1/guard.json",
+      "sha256": "245739e7014f0d0c25dd3b957bdd25b382b7c34fe7406ff752a9369677a74369",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 22.335,
+      "peak_sampled_rss_bytes": 5405089792
+    },
+    "robodyna-assembly-yaris-independent-1": {
+      "path": "crash-work/reports/robodyna-assembly-yaris-independent-1.json",
+      "sha256": "9a34141562468e168e8e8003b4261bd362db13559183b1bbe4a9f52da6218750",
+      "passed": true
+    },
+    "robodyna-assembly-render-comparison-1": {
+      "path": "crash-work/reports/robodyna-assembly-render-comparison-1.json",
+      "sha256": "0075f276cf2ac829f0829880c89a381cd9035b97c40b419945a7d436741e0df0",
+      "passed": true
+    },
+    "robodyna-assembly-demo-comparison-1": {
+      "path": "crash-work/reports/robodyna-assembly-demo-comparison-1.json",
+      "sha256": "6bc6877933910faf67185017dacff1c6fe94906fc77462ad62db5d995c5edc15",
+      "passed": true
     }
   },
   "limits": {
@@ -352,7 +389,7 @@
     }
   },
   "claim_boundary": [
-    "The whole Chrono API migration is not complete; Assembly, shared participant/frame, math, nodes/elements, numerical and optional families still have legacy definitions",
+    "The whole Chrono API migration is not complete; shared participant/frame, math, nodes/elements, numerical and optional families still have legacy definitions",
     "No independent full FEA/MBD build yet; actual definitions may still compile in the explicit mixed aggregate",
     "Core and FEA Python runtime and core Python/C# native wrappers qualified; managed C# and full optional-module runtimes remain unqualified",
     "No new CUDA physics, physical restart, CPU-reference accuracy or 100 ms trajectory rerun",
@@ -365,7 +402,7 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Integrated native/product suite; separate retained CMake 3/3, binding runtime/ELF 3/3, and final binding-tool 3/3 suites also pass. Counts are not summed as unique tests.",
+  "test_targets_scope": "Latest Assembly native/product suite; separate CMake, binding/runtime and packaging gates also pass.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",
@@ -393,8 +430,8 @@
     "scope": "Stored fields and existing frozen bytes exact; only the pre-existing recomputed inverse frame uses the measured four-ULP bound"
   },
   "integrated_regression": {
-    "source_inverse_rows": 77,
-    "declaration_views": 7,
+    "source_inverse_rows": 81,
+    "declaration_views": 8,
     "python_fe_steps": 1000,
     "python_fe_time_s": 0.1,
     "python_fe_max_attachment_error": 0.0,

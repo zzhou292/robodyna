@@ -139,6 +139,21 @@
           "before": "#include <cstdlib>",
           "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include <cstdlib>",
           "count": 1
+        },
+        {
+          "before": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include \"robodyna/simulation/RbAssemblyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by its explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "friend class chrono::ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
         }
       ],
       "forwarding_sha256": "eabc9d24bd1d7e2c438c6594d599fbf8b955289a532188f52868de5d7a89081c"

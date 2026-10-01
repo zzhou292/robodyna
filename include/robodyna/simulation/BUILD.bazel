@@ -2,18 +2,18 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["RbSystem.h", "RbSystemNSC.h", "RbSystemSMC.h", "RbSystemFwd.h"])
+exports_files(["RbAssembly.h", "RbAssemblyFwd.h", "RbSystem.h", "RbSystemNSC.h", "RbSystemSMC.h", "RbSystemFwd.h"])
 
 cc_library(
     name = "forward",
-    hdrs = ["RbSystemFwd.h"],
+    hdrs = ["RbSystemFwd.h", "RbAssemblyFwd.h"],
     strip_include_prefix = "/include",
 )
 
 # The aggregate supplies inherited mechanics headers; this is not standalone composition.
 cc_library(
     name = "implementation_headers",
-    hdrs = ["RbSystem.h", "RbSystemNSC.h", "RbSystemSMC.h"],
+    hdrs = ["RbSystem.h", "RbSystemNSC.h", "RbSystemSMC.h", "RbAssembly.h"],
     strip_include_prefix = "/include",
     deps = [":forward"],
     visibility = ["//src/compatibility/chrono:__pkg__"],
@@ -28,7 +28,8 @@ cc_library(
         "RbSystemFwd.h",
         "RbSystemNSC.h",
         "RbSystemSMC.h",
-        "RbAssembly.h"
+        "RbAssembly.h",
+        "RbAssemblyFwd.h"
     ],
     strip_include_prefix = "/include",
     deps = ["//build_defs/chrono:native_core_fea"],

@@ -22,6 +22,6 @@ using namespace chrono::fea;
 
 
 /* Parse the header file to generate wrappers */
-%include "../../../chrono/physics/ChAssembly.h"    
+%include "robodyna_swig/AssemblyDeclarations.h"    
 
 

@@ -2,6 +2,6 @@
   "schema": "robodyna.swig_body_view_contract.v1",
   "original_path": "src/compatibility/chrono/src/chrono/physics/ChBody.h",
   "expected_original_sha256": "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2",
-  "expected_ledger_sha256": "ef7c02501c88959067e4b79b875c793a865540cc67e8886bb65c266f9f23134e",
+  "expected_ledger_sha256": "b5cecf5ed12a547bc9260013f905a37f9e8f6d1d375f9941d9f4d1beb8470021",
   "output": "robodyna_swig/BodyDeclarations.h"
 }

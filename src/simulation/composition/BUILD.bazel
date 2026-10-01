@@ -1,2 +1,2 @@
 # Canonical mixed-system implementations remain compiled once by the retained aggregate.
-exports_files(["RbSystem.cpp", "RbSystemNSC.cpp", "RbSystemSMC.cpp"], visibility = ["//visibility:public"])
+exports_files(["RbAssembly.cpp", "RbSystem.cpp", "RbSystemNSC.cpp", "RbSystemSMC.cpp"], visibility = ["//visibility:public"])

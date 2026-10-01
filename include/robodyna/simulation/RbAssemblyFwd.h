@@ -12,9 +12,8 @@
 // Authors: Alessandro Tasora, Radu Serban
 // =============================================================================
 
-// Compatibility header; implementation remains owned by the mixed backend.
-#ifndef CHASSEMBLY_H
-#define CHASSEMBLY_H
-#include "chrono/physics/ChAssemblyFwd.h"
-#include "robodyna/simulation/RbAssembly.h"
-#endif
+// One canonical type; declarations do not acquire the mixed backend.
+#pragma once
+namespace robodyna::simulation {
+class RbAssembly;
+}

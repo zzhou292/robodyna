@@ -4,7 +4,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json", "body_auxref_view_contract.json", "body_easy_view_contract.json"])
+exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json", "body_auxref_view_contract.json", "body_easy_view_contract.json", "assembly_view_contract.json"])
 exports_files(["declaration_views.json"])
 
 # Pins are reviewed separately from the mutable generator inputs. Keep in sync
@@ -18,7 +18,7 @@ declaration_view(
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChBody.h",
     ledger = "//docs/migration:BODY_TRANSFORMATIONS.json",
     original_sha256 = "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2",
-    ledger_sha256 = "ef7c02501c88959067e4b79b875c793a865540cc67e8886bb65c266f9f23134e",
+    ledger_sha256 = "b5cecf5ed12a547bc9260013f905a37f9e8f6d1d375f9941d9f4d1beb8470021",
 )
 
 filegroup(name = "body_header", srcs = [":body_declarations"], output_group = "header")
@@ -32,7 +32,7 @@ declaration_view(
     view_name = "MeshDeclarations.h",
     ledger = "//docs/migration:MESH_TRANSFORMATIONS.json",
     original_sha256 = "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
-    ledger_sha256 = "4b0753493995387a7bc0d6fbbeff9253631bcb634b157c4dd03f775084a8e67b",
+    ledger_sha256 = "48746148100fbe352429a99c5d35b86ebdfc88edd78ec5acec6e66f073b9ca26",
 )
 
 filegroup(name = "mesh_header", srcs = [":mesh_declarations"], output_group = "header")
@@ -114,7 +114,7 @@ declaration_view(
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystem.h",
     ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
     original_sha256 = "6ec07bf072e7a1fc409e618c894b3a15ecb748c2bfccb4eb8f00d3862bce086b",
-    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+    ledger_sha256 = "cfbf546c9b8d918cd2e52d4b913565dc90b5c9012f9aa9956aa08e1518ae3003",
 )
 filegroup(name = "system_header", srcs = [":system_declarations"], output_group = "header")
 
@@ -127,7 +127,7 @@ declaration_view(
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystemNSC.h",
     ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
     original_sha256 = "787173c0f36566dc0fdc34e1843c003f499e8a5f72985c316b72855d11f62d19",
-    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+    ledger_sha256 = "cfbf546c9b8d918cd2e52d4b913565dc90b5c9012f9aa9956aa08e1518ae3003",
 )
 filegroup(name = "system_nsc_header", srcs = [":system_nsc_declarations"], output_group = "header")
 
@@ -140,7 +140,7 @@ declaration_view(
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystemSMC.h",
     ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
     original_sha256 = "414e56d0def6f60329346b70018900614fa21816f9a1e84fd0895da4cff8fe3f",
-    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+    ledger_sha256 = "cfbf546c9b8d918cd2e52d4b913565dc90b5c9012f9aa9956aa08e1518ae3003",
 )
 filegroup(name = "system_smc_header", srcs = [":system_smc_declarations"], output_group = "header")
 
@@ -196,3 +196,16 @@ cc_shared_library(
     shared_lib_name = "_fea.so",
     tags = ["manual", "native-bindings", "cpu-only"],
 )
+
+declaration_view(
+    name = "assembly_declarations",
+    canonical = "//include/robodyna/simulation:RbAssembly.h",
+    canonical_path = "include/robodyna/simulation/RbAssembly.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+    view_name = "AssemblyDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChAssembly.h",
+    ledger = "//docs/migration:ASSEMBLY_TRANSFORMATIONS.json",
+    original_sha256 = "c76f89fa3fa6bd6e46bef60eac60cef1d9c9303873e9ce2b54f69a05d455e050",
+    ledger_sha256 = "4b3aa579b2efd7213a0d4b3201c4e82b42a5d8f6df2650df3e4019ab5ff8478f",
+)
+filegroup(name = "assembly_header", srcs = [":assembly_declarations"], output_group = "header")

@@ -20,6 +20,7 @@
 #ifndef CH_COLLISION_SYSTEM_MULTICORE_H
 #define CH_COLLISION_SYSTEM_MULTICORE_H
 
+#include "chrono/physics/ChAssemblyFwd.h"
 #include "chrono/core/ChTimer.h"
 
 #include "chrono/collision/ChCollisionSystem.h"
@@ -31,7 +32,7 @@
 namespace chrono {
 
 // forward references
-class ChAssembly;
+// Assembly type is declared by the compatibility forward header.
 class ChParticleCloud;
 
 /// @addtogroup collision_mc

@@ -115,7 +115,7 @@ record timesteps, measured behavior and reproducible entry points.
 
 The first public headers expose `robodyna::mbd::RbBody`,
 `robodyna::fea::RbMesh`, and `robodyna::simulation::RbSystemNSC`, with supporting
-math, contact and solver types. `RbBody`, `RbMesh`, the System/NSC/SMC family, and
+math, contact and solver types. `RbBody`, `RbMesh`, the System/NSC/SMC/Assembly family, and
 the inertia utilities now have actual canonical definitions under their modules; their legacy
 names alias those same types. The remaining initial names are aliases while their
 implementation families migrate. No wrapper objects or alternate physics are added.

@@ -116,7 +116,7 @@ set(Chrono_physics_SOURCES
     physics/ChFeeder.cpp
     physics/ChExternalDynamicsODE.cpp
     physics/ChExternalDynamicsDAE.cpp
-    physics/ChAssembly.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbAssembly.cpp
     ${ROBODYNA_SOURCE_ROOT}/src/mechanics/inertia/RbMassProperties.cpp
     )
 set(Chrono_physics_HEADERS
@@ -145,6 +145,7 @@ set(Chrono_physics_HEADERS
     physics/ChExternalDynamicsODE.h
     physics/ChExternalDynamicsDAE.h
     physics/ChAssembly.h
+    physics/ChAssemblyFwd.h
     physics/ChMassProperties.h
     )
 source_group(physics FILES ${Chrono_physics_SOURCES} ${Chrono_physics_HEADERS})
@@ -1535,7 +1536,9 @@ install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyAuxRef.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyEasy.h"
         DESTINATION include/robodyna/mbd)
-install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h"
+install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssembly.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssemblyFwd.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemNSC.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemSMC.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemFwd.h"

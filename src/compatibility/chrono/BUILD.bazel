@@ -42,6 +42,8 @@ filegroup(
         "//include/robodyna/simulation:RbSystemNSC.h",
         "//include/robodyna/simulation:RbSystemSMC.h",
         "//include/robodyna/simulation:RbSystemFwd.h",
+        "//include/robodyna/simulation:RbAssembly.h",
+        "//include/robodyna/simulation:RbAssemblyFwd.h",
         "//include/robodyna/fea:RbMesh.h",
         "//include/robodyna/fea:RbMeshFwd.h",
     ],
@@ -167,6 +169,8 @@ filegroup(
         "//include/robodyna/mbd:RbBody.h",
         "//include/robodyna/simulation:RbSystem.h",
         "//include/robodyna/simulation:RbSystemFwd.h",
+        "//include/robodyna/simulation:RbAssembly.h",
+        "//include/robodyna/simulation:RbAssemblyFwd.h",
         "//include/robodyna/simulation:RbSystemNSC.h",
         "//include/robodyna/simulation:RbSystemSMC.h",
         "//src/simulation/composition:RbSystem.cpp",
@@ -212,6 +216,27 @@ filegroup(
         "//include/robodyna/mbd:RbBodyEasy.h",
         "//src/mbd/bodies:RbBodyAuxRef.cpp",
         "//src/mbd/bodies:RbBodyEasy.cpp",
+    ],
+    visibility = ["//tests/chrono:__pkg__"],
+)
+
+exports_files(["src/chrono/physics/ChAssembly.h", "src/chrono/physics/ChAssemblyFwd.h"])
+
+# Exact assembly inverse-proof inputs; optional collision declarations are source-only.
+filegroup(
+    name = "assembly_source_inputs",
+    srcs = [
+        "src/chrono/physics/ChAssembly.h", "src/chrono/physics/ChAssemblyFwd.h",
+        "src/chrono/physics/ChPhysicsItem.h",
+        "src/chrono/collision/ChCollisionSystem.h",
+        "src/chrono/collision/bullet/ChCollisionSystemBullet.h",
+        "src/chrono/collision/multicore/ChCollisionSystemMulticore.h",
+        "src/chrono_swig/interface/core/ChAssembly.i",
+        "//include/robodyna/simulation:RbAssembly.h",
+        "//include/robodyna/simulation:RbAssemblyFwd.h",
+        "//src/simulation/composition:RbAssembly.cpp",
+        "//include/robodyna/simulation:RbSystem.h",
+        "//include/robodyna/mbd:RbBody.h", "//include/robodyna/fea:RbMesh.h",
     ],
     visibility = ["//tests/chrono:__pkg__"],
 )

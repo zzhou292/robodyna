@@ -15,6 +15,7 @@
 #ifndef CH_COLLISIONSYSTEM_H
 #define CH_COLLISIONSYSTEM_H
 
+#include "chrono/physics/ChAssemblyFwd.h"
 #include "chrono/physics/ChSystemFwd.h"
 #include "chrono/collision/ChCollisionModel.h"
 #include "chrono/collision/ChCollisionInfo.h"
@@ -30,7 +31,7 @@ namespace chrono {
 // forward references
 // System type is declared by the explicit forward header.
 // ChBody is declared by the compatibility forward header.
-class ChAssembly;
+// Assembly type is declared by the compatibility forward header.
 class ChParticleCloud;
 class ChConveyor;
 class ChVariablesBody;

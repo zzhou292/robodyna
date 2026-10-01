@@ -215,6 +215,21 @@
           "before": "# Install the canonical definition required by the legacy forwarding header.\n",
           "after": "# Public facade used by maintained replay geometry consumers.\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)\n\n# Install the canonical definition required by the legacy forwarding header.\n",
           "count": 1
+        },
+        {
+          "before": "    physics/ChAssembly.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbAssembly.cpp",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChAssembly.h",
+          "after": "    physics/ChAssembly.h\n    physics/ChAssemblyFwd.h",
+          "count": 1
+        },
+        {
+          "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"",
+          "after": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssembly.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssemblyFwd.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"",
+          "count": 1
         }
       ],
       "subsequent_stages": [
@@ -633,6 +648,21 @@
           "before": "#include <cmath>",
           "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include <cmath>",
           "count": 1
+        },
+        {
+          "before": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include \"robodyna/simulation/RbAssemblyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by its explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "friend class chrono::ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
         }
       ],
       "forwarding_sha256": "91218797b23ed188a0c33363fc4804e779b485c50ee9689ef745ff74503e62e7"
@@ -703,6 +733,16 @@
         {
           "before": "#include \"chrono/collision/ChCollisionModel.h\"",
           "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/collision/ChCollisionModel.h\"",
+          "count": 1
+        },
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by the compatibility forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemFwd.h\"",
+          "after": "#include \"chrono/physics/ChAssemblyFwd.h\"\n#include \"chrono/physics/ChSystemFwd.h\"",
           "count": 1
         }
       ]
@@ -1111,6 +1151,11 @@
           "before": "#include <cfloat>",
           "after": "#include <cfloat>\n#include \"robodyna/simulation/RbSystemFwd.h\"",
           "count": 1
+        },
+        {
+          "before": "friend class chrono::ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
         }
       ],
       "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"
@@ -1469,6 +1514,21 @@
         {
           "before": "#include <cstdlib>",
           "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include <cstdlib>",
+          "count": 1
+        },
+        {
+          "before": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include \"robodyna/simulation/RbAssemblyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by its explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "friend class chrono::ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
           "count": 1
         }
       ],
@@ -2069,7 +2129,7 @@
     {
       "original_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
       "original_sha256": "c76f89fa3fa6bd6e46bef60eac60cef1d9c9303873e9ce2b54f69a05d455e050",
-      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+      "canonical_path": "include/robodyna/simulation/RbAssembly.h",
       "replacements": [
         {
           "before": "friend class ChSystem;",
@@ -2080,8 +2140,200 @@
           "before": "#include <cmath>",
           "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <cmath>",
           "count": 1
+        },
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical mixed assembly; inherited ownership and numerical behavior retained.\n",
+          "count": 1
+        },
+        {
+          "before": "CHASSEMBLY_H",
+          "after": "ROBODYNA_SIMULATION_RBASSEMBLY_H",
+          "count": 2
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemFwd.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"robodyna/simulation/RbAssemblyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChAssembly",
+          "after": "RbAssembly",
+          "count": 12,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "chrono::ChBody",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChCollisionSystem",
+          "after": "chrono::ChCollisionSystem",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChLink",
+          "after": "chrono::ChLink",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkBase",
+          "after": "chrono::ChLinkBase",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkMotorLinear",
+          "after": "chrono::ChLinkMotorLinear",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkMotorRotation",
+          "after": "chrono::ChLinkMotorRotation",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkRSDA",
+          "after": "chrono::ChLinkRSDA",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkTSDA",
+          "after": "chrono::ChLinkTSDA",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLoadBodyBody",
+          "after": "chrono::ChLoadBodyBody",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLoadCustom",
+          "after": "chrono::ChLoadCustom",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChMarker",
+          "after": "chrono::ChMarker",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChPhysicsItem",
+          "after": "chrono::ChPhysicsItem",
+          "count": 11,
+          "code_token": true
+        },
+        {
+          "before": "ChShaft",
+          "after": "chrono::ChShaft",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChShaftBodyRotation",
+          "after": "chrono::ChShaftBodyRotation",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChShaftBodyTranslation",
+          "after": "chrono::ChShaftBodyTranslation",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChShaftsCouple",
+          "after": "chrono::ChShaftsCouple",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChState",
+          "after": "chrono::ChState",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChStateDelta",
+          "after": "chrono::ChStateDelta",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChSystem",
+          "after": "chrono::ChSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemDescriptor",
+          "after": "chrono::ChSystemDescriptor",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemMulticore",
+          "after": "chrono::ChSystemMulticore",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChVectorDynamic",
+          "after": "chrono::ChVectorDynamic",
+          "count": 14,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "fea::ChMesh",
+          "after": "::chrono::fea::ChMesh",
+          "count": 5
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono { class ChSystemMulticore; }\n\nnamespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbAssembly, 0)\n\n}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbAssembly, 0)\n}",
+          "count": 1
         }
-      ]
+      ],
+      "forwarding_sha256": "c365d3063b256356e46ef5fcc176929c65359ab9ce1abf3d78b7d72a758d18b7"
     },
     {
       "original_path": "src/compatibility/chrono/src/chrono/physics/ChContactContainerNSC.h",
@@ -2169,6 +2421,16 @@
         {
           "before": "friend class ChSystem;",
           "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemFwd.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/physics/ChAssemblyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "friend class ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
           "count": 1
         }
       ]
@@ -2980,6 +3242,95 @@
           "after": "robodyna::simulation::RbSystem",
           "count": 1,
           "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.cpp",
+      "canonical_path": "src/simulation/composition/RbAssembly.cpp",
+      "original_sha256": "a23d2e7df3bbdb138e9290356e3692884f1e6c0c0f07ef8ebf63fa81f5ba19d3",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical mixed assembly; inherited ownership and numerical behavior retained.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChAssembly.h\"",
+          "after": "#include \"robodyna/simulation/RbAssembly.h\"\n#include \"chrono/physics/ChAssembly.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChAssembly",
+          "after": "RbAssembly",
+          "count": 93,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {\n\n// Register into the object factory, to enable run-time dynamic creation and persistence\nCH_FACTORY_REGISTER(RbAssembly)",
+          "after": "namespace chrono {\n// Keep the inherited registered identity through the reverse alias.\nCH_FACTORY_REGISTER(ChAssembly)\n}\n\nnamespace robodyna::simulation {\n// Translation-unit-only lookup preserves the inherited helper expressions.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "fea::ChMesh",
+          "after": "::chrono::fea::ChMesh",
+          "count": 8
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/collision/bullet/ChCollisionSystemBullet.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/collision/bullet/ChCollisionSystemBullet.h",
+      "original_sha256": "7f316af4f216bb8c73fba07d5d2bd4771a226d323e80ac49228e309464139894",
+      "replacements": [
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by the compatibility forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/collision/ChCollisionSystem.h\"",
+          "after": "#include \"chrono/physics/ChAssemblyFwd.h\"\n#include \"chrono/collision/ChCollisionSystem.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/collision/multicore/ChCollisionSystemMulticore.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/collision/multicore/ChCollisionSystemMulticore.h",
+      "original_sha256": "c0832fa9d4b40887c0582365f36b124c0d2b60d0c8c6381493d8260f6b8f10c4",
+      "replacements": [
+        {
+          "before": "\nclass ChAssembly;\n",
+          "after": "\n// Assembly type is declared by the compatibility forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/core/ChTimer.h\"",
+          "after": "#include \"chrono/physics/ChAssemblyFwd.h\"\n#include \"chrono/core/ChTimer.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChAssembly.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChAssembly.i",
+      "original_sha256": "56c0b8e77553c1fb7d4f092c6989c50a784298dfaa3ab7269db15583468bc6be",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChAssembly.h\"",
+          "after": "%include \"robodyna_swig/AssemblyDeclarations.h\"",
+          "count": 1
         }
       ]
     }

@@ -126,7 +126,7 @@ The following are actual definitions, with reverse aliases in legacy headers:
 - `robodyna::mechanics`: mass properties, inertia utilities and composite inertia.
 - `robodyna::mbd`: Body, BodyAuxRef and all eight Easy-body types.
 - `robodyna::fea`: Mesh.
-- `robodyna::simulation`: System, SystemNSC and SystemSMC, including compatibility
+- `robodyna::simulation`: System, SystemNSC, SystemSMC and Assembly, including compatibility
   for the nested SMC force-algorithm interface.
 
 These source families live in their owning directories and compile exactly once.
@@ -145,14 +145,14 @@ C++ symbols; saved archive compatibility does not promise old binary ABI.
 
 ### Completed verification
 
-- 49 native/product test targets passed, including CLI, viewer, demos, API probes,
+- 51 native/product test targets passed, including CLI, viewer, demos, API probes,
   frozen archives, source ownership and declared binding generation.
 - Three separate retained-CMake build/runtime targets passed.
 - Three binding runtime/ELF targets passed: core and FE Python use one native
   backend; FE ran 1000 coupled steps (0.1 s), with zero attachment error, common
   time and consistent reactions. Both core native wrappers compiled. Managed C#
   runtime and full optional-module runtime remain unqualified.
-- Seven explicit declaration views share one authenticated generator and registry.
+- Eight explicit declaration views share one authenticated generator and registry.
   Four CMake language/FEA configurations and 13 incorrect-pin rejection/recovery
   checks passed. Historical core/FE/vehicle generated APIs match. Only proven
   diagnostic source locations are normalized; raw failed receipts are retained.
@@ -164,17 +164,18 @@ C++ symbols; saved archive compatibility does not promise old binary ABI.
   for byte; the final frame was inspected visually.
 
 `RENAME_QUALIFICATION.json` records the receipts, hashes, resources and exact
-boundaries. `SOURCE_TRANSFORMATIONS.json` contains 77 reviewed inverse recipes
+boundaries. `SOURCE_TRANSFORMATIONS.json` contains 81 reviewed inverse recipes
 without repinning original source. Parser ledgers hold only their owning public
 header recipes; complete implementation history remains in the global ledger.
 Existing archive/partial-binding limitations remain in `PREEXISTING_ISSUES.md`.
 
 ### Next execution batches
 
-1. Qualify the staged mixed-assembly lifecycle baselines, then move the actual
-   Assembly family with its ADL swap, old archive identity and ownership rules.
-   Preparation is in the outer `crash-work/staging/rename-assembly-1` directory;
-   it has not executed or changed production Assembly code.
+1. Assembly is now canonical and qualified, including ADL swap, old archive
+   identity and its five original lifecycle cases. Next, qualify the staged
+   participant-service baseline before introducing the four-method interface.
+   The interface will remain in the explicitly mixed backend; it does not by
+   itself establish independent-domain linkage.
 2. Extract the specific system services needed by FE and rigid participants,
    then mixed assembly, contact reporting and coupled load boundaries. Require
    actual independent-domain link/runtime gates and the richer beam/body test
@@ -191,3 +192,8 @@ render commands manage their own guard. Preserve frozen runs and failed receipts
 keep other GPU jobs running, and do not repeat the 100 ms physical trajectory for
 name-only changes. No numerical optimization or OpenRadioss removal belongs in
 this naming series.
+
+The Assembly checkpoint also repeated the GPU archive, short-render and six-second
+demo comparisons successfully. All recorded physics fields, both PNGs and the
+short MP4 remain exact. Existing copy/assignment/batch quirks were preserved,
+not repaired as part of the type migration.

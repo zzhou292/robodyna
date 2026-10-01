@@ -17,6 +17,7 @@
 #define ROBODYNA_MBD_RBBODY_H
 
 #include "robodyna/simulation/RbSystemFwd.h"
+#include "robodyna/simulation/RbAssemblyFwd.h"
 #include <cmath>
 #include "robodyna/mbd/RbBodyFwd.h"
 
@@ -34,7 +35,7 @@ namespace chrono {
 // System type is declared by the explicit forward header.
 class ChSystemMulticore;
 class ChSystemMulticoreNSC;
-class ChAssembly;
+// Assembly type is declared by its explicit forward header.
 class ChConveyor;
 namespace modal { class ChModalAssembly; }
 }
@@ -669,7 +670,7 @@ class ChApi RbBody : public chrono::ChPhysicsItem, public chrono::ChBodyFrame, p
     friend class ::robodyna::simulation::RbSystem;
     friend class chrono::ChSystemMulticore;
     friend class chrono::ChSystemMulticoreNSC;
-    friend class chrono::ChAssembly;
+    friend class ::robodyna::simulation::RbAssembly;
     friend class chrono::modal::ChModalAssembly;
     friend class chrono::ChConveyor;
 };

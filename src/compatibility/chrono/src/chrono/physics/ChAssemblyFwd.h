@@ -12,9 +12,9 @@
 // Authors: Alessandro Tasora, Radu Serban
 // =============================================================================
 
-// Compatibility header; implementation remains owned by the mixed backend.
-#ifndef CHASSEMBLY_H
-#define CHASSEMBLY_H
-#include "chrono/physics/ChAssemblyFwd.h"
-#include "robodyna/simulation/RbAssembly.h"
-#endif
+// Compatibility name for the one canonical mixed assembly.
+#pragma once
+#include "robodyna/simulation/RbAssemblyFwd.h"
+namespace chrono {
+using ChAssembly = ::robodyna::simulation::RbAssembly;
+}

@@ -316,8 +316,11 @@
           "canonical": "robodyna::simulation::RbAssembly"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse alias",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/simulation/composition/RbAssembly.cpp",
+      "archive_identity": "ChAssembly",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_assembly"
     },
     {
       "module": "contact",

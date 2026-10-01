@@ -15,6 +15,7 @@
 #ifndef CH_COLLISION_SYSTEM_BULLET_H
 #define CH_COLLISION_SYSTEM_BULLET_H
 
+#include "chrono/physics/ChAssemblyFwd.h"
 #include "chrono/collision/ChCollisionSystem.h"
 #include "chrono/collision/bullet/ChCollisionModelBullet.h"
 #include "chrono/collision/bullet/cbtBulletCollisionCommon.h"
@@ -22,7 +23,7 @@
 namespace chrono {
 
 // forward references
-class ChAssembly;
+// Assembly type is declared by the compatibility forward header.
 class ChParticleCloud;
 
 /// @addtogroup collision_bullet

@@ -16,6 +16,7 @@
 #define ROBODYNA_FEA_RBMESH_H
 
 #include "robodyna/simulation/RbSystemFwd.h"
+#include "robodyna/simulation/RbAssemblyFwd.h"
 #include <cstdlib>
 #include <cmath>
 #include <set>
@@ -30,7 +31,7 @@
 #include "chrono/fea/ChNodeFEAbase.h"
 
 namespace chrono {
-class ChAssembly;
+// Assembly type is declared by its explicit forward header.
 }
 
 namespace robodyna::fea {
@@ -305,7 +306,7 @@ class ChApi RbMesh : public chrono::ChIndexedNodes {
     unsigned int ncalls_KRMload;
 
     friend class ::robodyna::simulation::RbSystem;
-    friend class chrono::ChAssembly;
+    friend class ::robodyna::simulation::RbAssembly;
     friend class chrono::modal::ChModalAssembly;
 };
 

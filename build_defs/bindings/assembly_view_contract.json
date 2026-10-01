@@ -1,0 +1,7 @@
+{
+  "schema": "robodyna.swig_assembly_view_contract.v1",
+  "original_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+  "expected_original_sha256": "c76f89fa3fa6bd6e46bef60eac60cef1d9c9303873e9ce2b54f69a05d455e050",
+  "output": "robodyna_swig/AssemblyDeclarations.h",
+  "expected_ledger_sha256": "4b3aa579b2efd7213a0d4b3201c4e82b42a5d8f6df2650df3e4019ab5ff8478f"
+}

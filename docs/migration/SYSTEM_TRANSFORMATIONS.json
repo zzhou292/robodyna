@@ -254,6 +254,11 @@
           "before": "#include <cfloat>",
           "after": "#include <cfloat>\n#include \"robodyna/simulation/RbSystemFwd.h\"",
           "count": 1
+        },
+        {
+          "before": "friend class chrono::ChAssembly;",
+          "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
         }
       ],
       "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"

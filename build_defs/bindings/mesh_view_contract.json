@@ -2,6 +2,6 @@
   "schema": "robodyna.swig_mesh_view_contract.v1",
   "original_path": "src/compatibility/chrono/src/chrono/fea/ChMesh.h",
   "expected_original_sha256": "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
-  "expected_ledger_sha256": "4b0753493995387a7bc0d6fbbeff9253631bcb634b157c4dd03f775084a8e67b",
+  "expected_ledger_sha256": "48746148100fbe352429a99c5d35b86ebdfc88edd78ec5acec6e66f073b9ca26",
   "output": "robodyna_swig/MeshDeclarations.h"
 }

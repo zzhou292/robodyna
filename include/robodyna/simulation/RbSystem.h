@@ -904,7 +904,7 @@ class ChApi RbSystem : public chrono::ChIntegrableIIorder {
 
     // Friend class declarations
 
-    friend class chrono::ChAssembly;
+    friend class ::robodyna::simulation::RbAssembly;
     friend class ::robodyna::mbd::RbBody;
 #ifdef CHRONO_FEA
     friend class ::robodyna::fea::RbMesh;
