@@ -1,7 +1,7 @@
 {
   "schema": "robodyna.api_alias_map.v1",
-  "status": "qualified initial public surface; canonical body/inertia and native mesh/system implementations qualified separately",
-  "scope": "N1 initial useful closure, not all retained Chrono APIs",
+  "status": "qualified initial native API: canonical inertia/body/mesh/system/assembly definitions, retained aliases, and native time/IO forwarders",
+  "scope": "Explicit initial public families and forwarding additions; not a complete inventory or whole-repository migration percentage",
   "headers": [
     {
       "module": "core",
@@ -100,8 +100,31 @@
       "header": "include/robodyna/core/RbTypes.h",
       "legacy_header": "chrono/core/ChTypes.h",
       "symbols": [],
-      "implementation": "alias",
+      "implementation": "overload imports",
       "backend": "neutral"
+    },
+    {
+      "module": "mechanics",
+      "header": "include/robodyna/mechanics/RbMassProperties.h",
+      "legacy_header": "chrono/physics/ChMassProperties.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChMassProperties",
+          "canonical": "robodyna::mechanics::RbMassProperties"
+        },
+        {
+          "legacy": "chrono::ChInertiaUtils",
+          "canonical": "robodyna::mechanics::RbInertiaUtils"
+        },
+        {
+          "legacy": "chrono::CompositeInertia",
+          "canonical": "robodyna::mechanics::CompositeInertia"
+        }
+      ],
+      "implementation": "canonical definition; legacy reverse aliases",
+      "backend": "neutral",
+      "source": "src/mechanics/inertia/RbMassProperties.cpp",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N3"
     },
     {
       "module": "mechanics",
@@ -320,7 +343,8 @@
       "backend": "native_core_fea_aggregate",
       "source": "src/simulation/composition/RbAssembly.cpp",
       "archive_identity": "ChAssembly",
-      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_assembly"
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_assembly",
+      "ownership": "Mixed participant composition above FEA and MBD; one actual implementation, retaining existing child ownership and stepping semantics."
     },
     {
       "module": "contact",
@@ -437,15 +461,77 @@
       ],
       "implementation": "alias",
       "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "io",
+      "header": "include/robodyna/io/RbPaths.h",
+      "legacy_header": "chrono/core/ChDataPath.h",
+      "symbols": [
+        {
+          "legacy": "chrono::SetChronoDataPath",
+          "canonical": "robodyna::io::SetDataPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::GetChronoDataPath",
+          "canonical": "robodyna::io::GetDataPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::GetChronoDataFile",
+          "canonical": "robodyna::io::GetDataFile",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::SetChronoOutputPath",
+          "canonical": "robodyna::io::SetOutputPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::GetChronoOutputPath",
+          "canonical": "robodyna::io::GetOutputPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::SetChronoTestOutputPath",
+          "canonical": "robodyna::io::SetTestOutputPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::GetChronoTestOutputPath",
+          "canonical": "robodyna::io::GetTestOutputPath",
+          "implementation": "inline forwarder"
+        },
+        {
+          "legacy": "chrono::CreateOutputDirectory(const std::filesystem::path&)",
+          "canonical": "robodyna::io::CreateOutputDirectory(const std::filesystem::path&)",
+          "implementation": "overload import"
+        },
+        {
+          "legacy": "chrono::CreateOutputDirectory(const std::string&)",
+          "canonical": "robodyna::io::CreateOutputDirectory(const std::string&)",
+          "implementation": "overload import"
+        }
+      ],
+      "implementation": "inline function forwarders and overload imports",
+      "backend": "neutral",
+      "target": "//include/robodyna/io:api",
+      "implementation_owner": "//src/core:foundation",
+      "source": "src/compatibility/chrono/src/chrono/core/ChDataPath.cpp",
+      "behavior": "Shares the existing distinct data/demo-output/test-output stores and getter references. Data-file lookup remains literal concatenation; output getters retain directory creation and exceptions; setters only assign.",
+      "binding_exposure": "Native C++ only; the existing legacy helper bindings remain unchanged.",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N5_native_names"
     }
   ],
   "qualification": {
     "build_receipt": "crash-work/reports/robodyna-rename-checkpoint-1.json",
-    "receipt_scope": "All 19 checkpoint targets passed through native Bazel and the retained CMake bridge.",
+    "receipt_scope": "Historical initial alias checkpoint only: all 19 targets passed through native Bazel and the retained CMake bridge. Counts below describe that checkpoint, not every subsequently added header or method.",
     "api_behavior_tests": 8,
     "header_include_order_probes": 52,
     "example_execution_receipt": "crash-work/reports/robodyna-rename-baseline-run-1.json",
-    "physics_backend": "retained CPU mechanics; no new CUDA port or independent FEA/MBD claim"
+    "physics_backend": "retained CPU mechanics; no new CUDA port or independent FEA/MBD claim",
+    "current_family_records": "docs/migration/RENAME_QUALIFICATION.json",
+    "native_name_forwarding": "N5_native_names: 41 native targets passed, including five time-forwarding and four IO cases. Combined binding/CMake qualification is tracked separately."
   },
   "helper_imports": [
     {
@@ -464,5 +550,68 @@
       "legacy": "chrono::Vcross",
       "canonical": "robodyna::core::Vcross"
     }
-  ]
+  ],
+  "implementation_notes": {
+    "canonical_definition": "The actual definition lives in the named Robodyna header; the legacy type spelling is a reverse alias to that same type.",
+    "alias": "The Robodyna spelling is an alias to the retained inherited definition; no implementation move is claimed.",
+    "inline_forwarder": "A new function or method delegates to an existing owner without adding state or changing the existing operation.",
+    "overload_import": "A using-declaration makes the existing overloads available in the Robodyna namespace.",
+    "domain_ownership": "The body, mesh, system and assembly implementations still compile in the explicit native_core_fea aggregate; names and folders do not establish independent FEA/MBD linkage."
+  },
+  "method_forwarders": [
+    {
+      "owner": "chrono::ChObj",
+      "header": "src/compatibility/chrono/src/chrono/physics/ChObject.h",
+      "inherited_by": "Existing ChPhysicsItem hierarchy, including RbBody, RbMesh and RbAssembly; no new object type alias is introduced.",
+      "methods": [
+        {
+          "existing": "GetChTime() const",
+          "new": "GetTime() const"
+        },
+        {
+          "existing": "SetChTime(double)",
+          "new": "SetTime(double)"
+        }
+      ],
+      "implementation": "nonvirtual inline forwarders",
+      "storage": "Existing per-object ChTime member",
+      "behavior": "Setter assigns only this timestamp; it does not call Update or change any other owner.",
+      "binding_exposure": "Native C++ only; ChObject.i explicitly excludes the two additions from the legacy binding surface.",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N5_native_names"
+    },
+    {
+      "owner": "robodyna::simulation::RbSystem",
+      "header": "include/robodyna/simulation/RbSystem.h",
+      "methods": [
+        {
+          "existing": "GetChTime() const",
+          "new": "GetTime() const"
+        },
+        {
+          "existing": "SetChTime(double)",
+          "new": "SetTime(double)"
+        }
+      ],
+      "implementation": "nonvirtual inline forwarders",
+      "storage": "Existing system ch_time member",
+      "behavior": "Setter assigns only system time; it does not advance, update participants or synchronize timestepper workspace.",
+      "binding_exposure": "Native C++ only; authenticated original System declaration views preserve the legacy binding surface.",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N5_native_names"
+    }
+  ],
+  "remaining_initial_families": {
+    "retained_aliases": [
+      "Core vector/quaternion/frame/matrix types",
+      "Shared BodyFrame and PhysicsItem declarations",
+      "TSDA link, FE xyz node and spring element",
+      "Contact materials/method, solver classes and timestepper classes"
+    ],
+    "separate_work": [
+      "Move additional actual definition families with preserved archive identities and focused qualification.",
+      "Finish concrete system-service/contact/load/assembly dependencies and prove independent FEA-only and MBD-only linkage.",
+      "Expose branded names intentionally in binding packages; native-only forwarders do not imply a new Python or C# API.",
+      "Extend the public inventory and qualify retained optional modules using the capability matrix."
+    ],
+    "progress_reporting": "Report named families, dependency boundaries and passed gates; this initial map is not a whole-repository completion percentage."
+  }
 }

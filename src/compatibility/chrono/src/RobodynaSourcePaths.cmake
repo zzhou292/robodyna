@@ -24,7 +24,8 @@ foreach(required IN ITEMS
     include/robodyna/mbd/RbBody.h
     include/robodyna/mbd/RbBodyFwd.h
     src/mechanics/inertia/RbMassProperties.cpp
-    include/robodyna/mechanics/RbMassProperties.h)
+    include/robodyna/mechanics/RbMassProperties.h
+    include/robodyna/mechanics/RbParticipantServices.h)
   if(NOT EXISTS "${ROBODYNA_SOURCE_ROOT}/${required}")
     message(FATAL_ERROR "Missing owned Robodyna source: ${ROBODYNA_SOURCE_ROOT}/${required}")
   endif()

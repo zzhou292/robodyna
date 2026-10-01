@@ -15,9 +15,10 @@
     "N5_consumers": "passed maintained capture/replay consumers with canonical Body/Simulation/value APIs and installed used headers",
     "N5_bindings": "passed core/FE Python runtime, both core native wrappers, one shared backend, historical core/FE/vehicle surfaces, and configured CMake packaging; managed C# and full optional module runtime remain pending",
     "N4_assembly": "passed actual Assembly, all 51 native/product targets, five original lifecycle cases, CMake, core/FE runtime, historical bindings, GPU archive, exact rendering and six-second demo regression",
-    "N5_native_names": "passed 41 native targets including five time-forwarding and four IO cases; same original clocks/path stores, frozen archives and legacy names; combined binding/CMake gates follow service integration"
+    "N5_native_names": "passed native time/IO forwards, same clocks and three path stores, frozen archives, unchanged legacy bindings, CMake installation and integrated product behavior",
+    "N4_participant_services": "passed stateless four-service interface, twelve pre-change behavior cases, real declaration boundary, 57 native/product targets, CMake, actual bindings, historical surfaces, GPU archive and exact demo/render comparisons; implementation remains in mixed backend"
   },
-  "test_targets_passed": 51,
+  "test_targets_passed": 57,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -380,6 +381,42 @@
       "exit_code": 0,
       "elapsed_seconds": 149.515,
       "peak_sampled_rss_bytes": 4705419264
+    },
+    "robodyna-participant-services-native-1": {
+      "path": "crash-work/reports/robodyna-participant-services-native-1.json",
+      "sha256": "38aa696abc340d3f10dc8ffe13f4093d2b43f70a2200370e3d2c27c4478fe7a7",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 544.75,
+      "peak_sampled_rss_bytes": 5007192064
+    },
+    "robodyna-services-cpu-qualification-1": {
+      "path": "crash-work/reports/robodyna-services-cpu-qualification-1.json",
+      "sha256": "75ea89612b377503659fd8e64d2aa406eedd5a4366cfd3bd8b3bdd051109f3c3",
+      "passed": true
+    },
+    "robodyna-services-yaris-101-1": {
+      "path": "crash-work/investigations/robodyna-services-yaris-101-1/guard.json",
+      "sha256": "621c979aa7f9706fa08b3ecdf90ebf66f1ea07795e54263d9d5833ae5329b1e5",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 22.18,
+      "peak_sampled_rss_bytes": 5299826688
+    },
+    "robodyna-services-yaris-independent-1": {
+      "path": "crash-work/reports/robodyna-services-yaris-independent-1.json",
+      "sha256": "c5f6cad1d5a4b8398593d74be10d3017f38c699a85d4577d34b483c703c1f813",
+      "passed": true
+    },
+    "robodyna-services-render-comparison-1": {
+      "path": "crash-work/reports/robodyna-services-render-comparison-1.json",
+      "sha256": "809f46522cbaa041fd30367cc8d5fe0e38b2be4c516c25c257c8554a8add7d1a",
+      "passed": true
+    },
+    "robodyna-services-demo-comparison-1": {
+      "path": "crash-work/reports/robodyna-services-demo-comparison-1.json",
+      "sha256": "ce6efa00748c777368d7d58cfa07b110d8ac4a5d8b35f23492f46ff83b39cea6",
+      "passed": true
     }
   },
   "limits": {
@@ -406,12 +443,12 @@
     "Existing archive and partial binding limitations are documented separately"
   ],
   "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text.",
-  "abi": "Real namespace moves and transient archive/visual members require a coordinated rebuild; saved archive bytes are preserved, old binary ABI is not promised.",
+  "abi": "Real namespace changes, earlier archive/visual members and the System service base require coordinated rebuilds. Frozen archive bytes remain preserved on the qualified Linux/GCC profile; old binary ABI is not promised.",
   "interrupted_attempt": {
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest Assembly native/product suite; separate CMake, binding/runtime and packaging gates also pass.",
+  "test_targets_scope": "Latest combined native/product/service/time/IO suite. Separate CMake 3/3 and binding runtime/ELF 3/3 plus configured generation/install profiles pass; totals are not summed as unique tests.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",
@@ -439,7 +476,7 @@
     "scope": "Stored fields and existing frozen bytes exact; only the pre-existing recomputed inverse frame uses the measured four-ULP bound"
   },
   "integrated_regression": {
-    "source_inverse_rows": 81,
+    "source_inverse_rows": 84,
     "declaration_views": 8,
     "python_fe_steps": 1000,
     "python_fe_time_s": 0.1,
@@ -464,5 +501,21 @@
     "BodyFamily attempt1: API comparison test needed the explicit legacy Easy header; final34-target gate passed",
     "FE runtime attempt1: used an inherited partial core-only Mesh proxy; historical/current wrapper bytes prove the same limitation; supported FE route passes",
     "Raw generation-matrix comparison rejected known temporary/origin file labels; exact authenticated source/line mapping and negative tests establish reviewed parity; raw failure retained"
-  ]
+  ],
+  "participant_service_boundary": {
+    "owns_state": false,
+    "cached_participant_owner_added": false,
+    "clock_added": false,
+    "declaration_header_closure": "interface plus existing foundation only",
+    "implementation_owner": "existing mixed backend; PhysicsItem.cpp includes full System",
+    "independent_fea_mbd_implementation": false,
+    "preserved_operations": [
+      "direct SetSystem and raw-parent identity",
+      "copy/assignment/archive/remove behavior",
+      "exact invalidation scopes",
+      "gravity and thread sampling points",
+      "Body virtual report/contact paths",
+      "FE SetupInitial System pointer"
+    ]
+  }
 }

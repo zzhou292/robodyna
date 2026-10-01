@@ -3,8 +3,9 @@
 Status: implementation active on `work/robodyna-api-renaming`. Public API,
 archive identity, inertia, generic visualization, actual Body/AuxRef/Easy/Mesh/
 System families, maintained consumers and named core/FE binding profiles are
-qualified, including the mixed Assembly definition. Remaining domain service
-boundaries and the branded time/IO forwards are next. Audited repository
+qualified, including the mixed Assembly definition. The incremental participant-service interface and native time/IO forwards also
+passed their combined gates. Thin-owner storage/header separation and the remaining
+type/module families are next. Audited repository
 baseline: `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
 
 Current scope: execute the Chrono-to-Robodyna naming migration. OpenRadioss removal

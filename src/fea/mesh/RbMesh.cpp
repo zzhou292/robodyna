@@ -22,7 +22,7 @@
 #include "chrono/core/ChFrame.h"
 #include "chrono/physics/ChLoad.h"
 #include "chrono/physics/ChObject.h"
-#include "chrono/physics/ChSystem.h"
+#include "robodyna/mechanics/RbParticipantServices.h"
 
 #include "chrono/fea/ChElementTetraCorot_4.h"
 #include "robodyna/fea/RbMesh.h"
@@ -92,8 +92,7 @@ void RbMesh::AddNode(std::shared_ptr<ChNodeFEAbase> node) {
 
     // If the mesh is already added to a system, mark the system uninitialized and out-of-date
     if (system) {
-        system->is_initialized = false;
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();
     }
 }
 
@@ -102,8 +101,7 @@ void RbMesh::AddElement(std::shared_ptr<ChElementBase> elem) {
 
     // If the mesh is already added to a system, mark the system uninitialized and out-of-date
     if (system) {
-        system->is_initialized = false;
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();
     }
 }
 
@@ -113,7 +111,7 @@ void RbMesh::ClearElements() {
 
     // If the mesh is already added to a system, mark the system out-of-date
     if (system) {
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantUpdate();
     }
 }
 
@@ -124,7 +122,7 @@ void RbMesh::ClearNodes() {
 
     // If the mesh is already added to a system, mark the system out-of-date
     if (system) {
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantUpdate();
     }
 }
 
@@ -297,7 +295,7 @@ void RbMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, con
         }
     }
 
-    int nthreads = GetSystem()->nthreads_chrono;
+    int nthreads = GetParticipantServices()->GetParticipantAssemblyThreads();
 
     // elements internal forces
     timer_internal_forces.start();
@@ -314,7 +312,7 @@ void RbMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, con
         //// PARALLEL FOR, must use omp atomic to avoid race condition in writing to R
 #pragma omp parallel for schedule(dynamic, 4) num_threads(nthreads)
         for (int ie = 0; ie < velements.size(); ie++) {
-            velements[ie]->EleIntLoadResidual_F_gravity(R, GetSystem()->GetGravitationalAcceleration(), c);
+            velements[ie]->EleIntLoadResidual_F_gravity(R, GetParticipantServices()->GetParticipantGravity(), c);
         }
     }
 
@@ -326,12 +324,12 @@ void RbMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, con
         for (int in = 0; in < vnodes.size(); in++) {
             if (!vnodes[in]->IsFixed()) {
                 if (auto mnode = std::dynamic_pointer_cast<ChNodeFEAxyz>(vnodes[in])) {
-                    ChVector3d fg = c * mnode->GetMass() * system->GetGravitationalAcceleration();
+                    ChVector3d fg = c * mnode->GetMass() * GetParticipantServices()->GetParticipantGravity();
                     R.segment(off + local_off_v, 3) += fg.eigen();
                 }
                 // ChNodeFEAxyzrot is not inherited from ChNodeFEAxyz, so must deal with it too
                 if (auto mnode = std::dynamic_pointer_cast<ChNodeFEAxyzrot>(vnodes[in])) {
-                    ChVector3d fg = c * mnode->GetMass() * system->GetGravitationalAcceleration();
+                    ChVector3d fg = c * mnode->GetMass() * GetParticipantServices()->GetParticipantGravity();
                     R.segment(off + local_off_v, 3) += fg.eigen();
                 }
                 local_off_v += vnodes[in]->GetNumCoordsVelLevelActive();
@@ -490,7 +488,7 @@ void RbMesh::InjectKRMMatrices(ChSystemDescriptor& descriptor) {
 }
 
 void RbMesh::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
-    int nthreads = GetSystem()->nthreads_chrono;
+    int nthreads = GetParticipantServices()->GetParticipantAssemblyThreads();
 
     timer_KRMload.start();
 #pragma omp parallel for num_threads(nthreads)

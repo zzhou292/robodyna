@@ -15,7 +15,7 @@ cc_library(
     name = "implementation_headers",
     hdrs = ["RbSystem.h", "RbSystemNSC.h", "RbSystemSMC.h", "RbAssembly.h"],
     strip_include_prefix = "/include",
-    deps = [":forward"],
+    deps = [":forward", "//include/robodyna/mechanics:participant_services"],
     visibility = ["//src/compatibility/chrono:__pkg__"],
 )
 

@@ -464,8 +464,7 @@ void RbBody::AddMarker(std::shared_ptr<ChMarker> amarker) {
 
     // If the body is already added to a system, mark the system uninitialized and out-of-date
     if (system) {
-        system->is_initialized = false;
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();
     }
 }
 
@@ -479,8 +478,7 @@ void RbBody::AddForce(std::shared_ptr<ChForce> aforce) {
 
     // If the body is already added to a system, mark the system uninitialized and out-of-date
     if (system) {
-        system->is_initialized = false;
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();
     }
 }
 
@@ -497,7 +495,7 @@ void RbBody::RemoveForce(std::shared_ptr<ChForce> mforce) {
 
     // If the body is already added to a system, mark the system out-of-date
     if (system) {
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantUpdate();
     }
 }
 
@@ -514,7 +512,7 @@ void RbBody::RemoveMarker(std::shared_ptr<ChMarker> mmarker) {
 
     // If the body is already added to a system, mark the system out-of-date
     if (system) {
-        system->is_updated = false;
+        GetParticipantServices()->InvalidateParticipantUpdate();
     }
 }
 
@@ -560,7 +558,7 @@ void RbBody::UpdateMarkers(double time, UpdateFlags update_flags) {
 
 void RbBody::UpdateForces(double time, UpdateFlags update_flags) {
     // Initialize body forces with gravitational forces (if included in a system)
-    Xforce = system ? system->GetGravitationalAcceleration() * GetMass() : VNULL;
+    Xforce = system ? GetParticipantServices()->GetParticipantGravity() * GetMass() : VNULL;
     Xtorque = VNULL;
 
     // Add forces and torques from body accumulators (if any)

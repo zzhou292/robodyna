@@ -1,7 +1,8 @@
 # Robodyna module architecture: FEA, multibody and shared systems
 
-Date: 2026-09-30. Status: proposed architecture after tracing local Chrono classes,
-assembly, integration, contact and build dependencies. Source import and native aggregate builds have now executed; independent domain
+Updated: 2026-10-01. Status: target architecture with qualified incremental
+extractions. Source imports, native aggregate builds, generic visual ownership
+and the first participant-service seam have executed; independent domain
 separation is still pending. See `../migration/EXECUTION.md` for current gates. This is the canonical detailed layout; it replaces the earlier shorthand
 `physics/solid` versus `physics/rigid` layout in the platform proposal.
 
@@ -30,7 +31,7 @@ including all 20 test targets and a byte-identical short vehicle regression.
 
 | Target | Owns | Relationship to the retained sources |
 | --- | --- | --- |
-| `//src/core:foundation` | Math, class factory and archive primitives | 16 unchanged implementation files |
+| `//src/core:foundation` | Math, class factory and archive primitives | 16 retained implementation files |
 | `//src/numerics/variables:mass_blocks` | Six-DOF mass/inertia variable blocks | 3 unchanged implementation files; no concrete body |
 | `//src/mechanics/kinematics:frames` | Moving frames and applied wrench transformations | Existing `ChBodyFrame` implementation |
 | `//src/mechanics/inertia:inertia` | Composite inertia and mass properties | Existing `ChMassProperties` implementation |
@@ -52,11 +53,10 @@ standalone runtime tests exercise frame power/wrenches, inertia, archives and cl
 factory retention. These checks are prerequisites for independent FEA/MBD, not a
 claim that those larger domains have already been separated.
 
-Source files retain their inherited paths for now so the CMake reference build,
-class names and archive identity remain intact. `NEUTRAL_OWNERSHIP.json` in the
-migration directory records their current owners and unchanged hashes. Physical
-source relocation can follow tested dependency boundaries instead of obscuring
-changes to equations inside mass renames.
+At that first checkpoint, sources retained their inherited paths and original
+hashes. `NEUTRAL_OWNERSHIP.json` records those original identities and compile
+owners. Subsequent canonical relocations and reviewed changes are authenticated
+through `SOURCE_TRANSFORMATIONS.json`; the original identities remain pinned.
 
 ## What the source establishes
 
@@ -75,7 +75,8 @@ implementations. FE attachment and update definitions live in one explicit adapt
 under `src/fea/visualization`, still compiled by the transitional combined backend.
 The total is the original 482 units plus that adapter; none of the original
 implementations is compiled twice. This completes the visual dependency split,
-while mesh/system services, contact reporting and mixed assembly still require work.
+while the complete System owner, contact reporting and mixed assembly still
+require dependency extraction.
 
 The inertia definitions have moved to `robodyna::mechanics`, and the actual
 body definition/implementation now belongs to `robodyna::mbd::RbBody` under the
@@ -83,21 +84,56 @@ public MBD header and `src/mbd/bodies`. The legacy body name is a reverse alias.
 Its implementation still compiles exactly once in the explicit combined backend;
 it is not yet an independent MBD library. The actual mesh definition now lives
 at `include/robodyna/fea/RbMesh.h` with its implementation in `src/fea/mesh` and a
-reverse legacy alias. Its 31-target native gate passed; optional integration is
-tracked separately. The mesh still uses concrete mixed-system services, so it
-also remains in the explicit aggregate. `RbSystem`, `RbSystemNSC` and `RbSystemSMC`
+reverse legacy alias. Its initial 31-target native gate passed; subsequent
+integration is recorded separately. Its environment reads now use the service
+contract described below, but its implementation remains in the explicit
+aggregate. `RbSystem`, `RbSystemNSC` and `RbSystemSMC`
 are now actual definitions in `robodyna::simulation`; their three implementations
 live in `src/simulation/composition`, with one compile owner in that aggregate.
 The dedicated `//include/robodyna/simulation:forward` target provides declarations
 without a mechanics implementation dependency. The 33-target native gate preserves
 mixed stepping and captured archive identities; broader integration gates remain
 explicit in the qualification record.
+
+The actual `RbAssembly` definition and implementation also live in
+`robodyna::simulation` / `src/simulation/composition`, with a reverse legacy
+alias. This preserves its mixed body/link/shaft/mesh composition; relocation
+does not make those collections independent domain services.
+
+The first participant service contract is now implemented at
+`//include/robodyna/mechanics:participant_services`. Its four operations expose
+current gravity, the CPU assembly thread setting, initialization-plus-update
+invalidation, and update-only invalidation. `RbSystem` implements them through a
+stateless service base using its existing fields. Body and Mesh call the service
+at the previous read/write sites; no environment snapshot, state owner or clock
+was added. PhysicsItem keeps only its original raw System pointer and converts
+it through a protected nonvirtual accessor when needed. Existing setters,
+copy/assignment, archive attachment and removal retain their behavior.
+
+The combined native/product test gate passed **57/57 targets**, including 12
+participant behavior cases, self-contained compilation of the service header,
+and inspection of its actual dependency closure. That header-only target reaches
+only the existing 16-unit foundation; it imports no concrete System, FE or MBD
+implementation. This is the **declaration boundary**, not independent participant
+or domain execution. The accessor in `ChPhysicsItem.cpp` explicitly includes the
+complete System header, and its implementation still compiles in the mixed
+backend. Body force/contact reporting and node/element `SetupInitial(System*)`
+remain unchanged. The receipt is
+`crash-work/reports/robodyna-participant-services-native-1.json` in the enclosing
+workspace; separately rebuilt CMake, SDK and product gates are recorded in the
+active qualification documents.
+
+The service base changes System's layout/vtables even though it stores no data.
+Owned consumers must be rebuilt; no old binary ABI is promised. The next steps
+are a thin System owner/storage boundary and explicit Body reporting/contact
+adapters, as detailed in [NEXT_SEAMS.md](../migration/NEXT_SEAMS.md).
+
 `SOURCE_TRANSFORMATIONS.json` in the
 migration directory records reviewed edits against the immutable original hashes.
 Archive identity helpers preserve captured file formats across actual type renames;
 this is distinct from preserving old binary ABI. See `RENAME_QUALIFICATION.json`.
 
-| Current source | Observation | Consequence |
+| Imported source audit | Observation | Consequence |
 | --- | --- | --- |
 | `chrono/physics/ChBody.h:52` | A body derives physics-item, moving-frame, contactable and loadable interfaces | Concrete body state belongs to MBD; supporting interfaces can be shared |
 | `chrono/fea/ChMesh.h:41`, `physics/ChIndexedNodes.h:26` | FE meshes derive indexed nodes/physics item, not rigid bodies | FEA is a distinct mechanics participant |
@@ -110,10 +146,11 @@ this is distinct from preserving old binary ABI. See `RENAME_QUALIFICATION.json`
 | `chrono_modal/ChModalAssembly.h:39–50` | Modal assembly includes bodies, links and FE meshes | Mixed modal analysis/reduction belongs above individual domains |
 | `chrono_peridynamics/ChNodePeri.h:38` | Nonlocal-solid node currently inherits an FE node | Retain the dependency during migration; extract shared node contracts before claiming independence |
 
-Paths in this table are beneath `chrono/src/` (core paths begin beneath
-`chrono/src/chrono/`). The inspected Chrono HEAD is `a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38`;
-existing dirty third-party state remains untouched. Qualified TL remains
-`f0cdeffaef85ea1f97c2162790dbd091fb2e4853`.
+This table records the original import audit, with paths beneath `chrono/src/`
+(core paths beneath `chrono/src/chrono/`). Its Chrono source was
+`a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38` and its qualified TL source was
+`f0cdeffaef85ea1f97c2162790dbd091fb2e4853`. Current ownership and later
+qualification are described above and in the active migration records.
 
 ## Target source layout
 
@@ -211,7 +248,9 @@ law/API where appropriate without duplicating the FE infrastructure.
 
 ## Dependency rules
 
-Consumers depend downward on services. The essential rules are:
+These are the target dependency rules. Transitional implementations described
+above still include the mixed backend; current package names alone do not
+establish conformance. Consumers should depend downward on services:
 
 - Core/execution/numerics have no dependence on concrete FEA or MBD types.
 - Archive primitives, class registration and version support remain low-level:
@@ -250,23 +289,30 @@ standalone FEA/MBD dependency tests.
 
 ## Specific extraction work found in Chrono
 
-1. `ChMesh.cpp` reads concrete ChSystem gravity/thread/setup services. Extract a
-   narrow environment/execution context; do not pull a mixed system into pure FEA.
-2. `ChAssembly` dispatches concrete body/shaft/link/mesh lists and serializes those
+1. The four-operation service contract is implemented, but its PhysicsItem
+   accessor still requires the full System. Extract a thin owner/storage boundary
+   while preserving raw parent identity, protected access, lifecycle and the
+   addresses of Assembly collections retained by Multicore. Do not substitute a
+   global resolver or layout cast for that dependency change.
+2. Body applied-force/torque calls must retain System virtual dispatch and lazy
+   cache behavior. Multicore uses distinct arrays, indices and step scaling;
+   a residual-offset accessor would not preserve those overrides. Extract typed
+   reporting/collision adapters with explicit frame, NSC/SMC and lifetime gates.
+3. `RbAssembly` dispatches concrete body/shaft/link/mesh lists and serializes those
    typed lists. Preserve ordering, offsets and archive identity while introducing
    participant contributions below and typed convenience assembly above domains.
-3. `ChContactContainer.h` includes/downcasts bodies for reporting torque. Put that
+4. `ChContactContainer.h` includes/downcasts bodies for reporting torque. Put that
    body-specific reporting in an adapter or use a neutral wrench-origin interface.
-4. `ChContactable` and `ChConstraintTwoTuples` contain a numerics/contact back edge.
+5. `ChContactable` and `ChConstraintTwoTuples` contain a numerics/contact back edge.
    Keep tuple algebra low-level and move contactable-to-tuple helpers upward; do
    not duplicate constraint classes to hide the cycle.
-5. `ChLoadsNodeXYZRot.h` mixes FE nodal loads with concrete node-body loads;
+6. `ChLoadsNodeXYZRot.h` mixes FE nodal loads with concrete node-body loads;
    `ChBuilderBeam.h` mixes pure FE builders with body/motor-driven extruders.
    Separate features by actual dependencies, not by the current filename alone.
-6. `ChLinkNodeFrame` accepts a neutral ChBodyFrame, which can also be a rotational
+7. `ChLinkNodeFrame` accepts a neutral ChBodyFrame, which can also be a rotational
    FE node. Generic node-to-frame constraints can remain FE plus shared mechanics.
    Only concrete body-specific construction/loads must require the FEA–MBD adapter.
-7. Peridynamics currently inherits an FE node. Keep a declared temporary dependency
+8. Peridynamics currently inherits an FE node. Keep a declared temporary dependency
    until the needed common node/DOF contract is extracted and validated.
 
 These are targeted seam extractions, not a request to rewrite the physics or add
@@ -345,8 +391,9 @@ Required tests as the respective interfaces become real:
   profile the real CUDA/CPU stages. No speed claim follows from the module split.
 
 Use focused tests and existing frozen archives for each seam. An 11-hour vehicle
-rerun is not needed to approve a documentation/layout change. All commands, tests
-and target labels above describe future implementation gates, not tests run here.
+rerun is not needed to approve a documentation/layout change. The migration gates
+in this section describe remaining work; earlier sections explicitly identify
+implemented targets and completed qualification.
 
 ## Execution
 

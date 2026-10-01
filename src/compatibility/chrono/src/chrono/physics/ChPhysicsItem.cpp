@@ -13,6 +13,8 @@
 // =============================================================================
 
 #include "chrono/physics/ChPhysicsItem.h"
+// Transitional binding: this unit still compiles against the complete mixed owner.
+#include "robodyna/simulation/RbSystem.h"
 
 namespace chrono {
 
@@ -33,6 +35,12 @@ ChPhysicsItem::~ChPhysicsItem() {
 
 void ChPhysicsItem::SetSystem(ChSystem* m_system) {
     system = m_system;
+}
+
+robodyna::mechanics::RbParticipantServices* ChPhysicsItem::GetParticipantServices() const {
+    // Standard typed derived-to-base conversion also preserves nullptr. The
+    // compiler performs any required base adjustment; there is no layout cast.
+    return system;
 }
 
 ChAABB ChPhysicsItem::GetTotalAABB() const {

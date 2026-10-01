@@ -235,6 +235,11 @@
           "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)",
           "after": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/io/RbPaths.h\"\n        DESTINATION include/robodyna/io)",
           "count": 1
+        },
+        {
+          "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h\"\n",
+          "after": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbParticipantServices.h\"\n",
+          "count": 1
         }
       ],
       "subsequent_stages": [
@@ -712,6 +717,21 @@
           "before": "#include \"chrono/physics/ChBody.h\"",
           "after": "#include \"robodyna/mbd/RbBody.h\"\n#include \"chrono/physics/ChBody.h\"",
           "count": 1
+        },
+        {
+          "before": "        system->is_initialized = false;\n        system->is_updated = false;",
+          "after": "        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();",
+          "count": 2
+        },
+        {
+          "before": "        system->is_updated = false;",
+          "after": "        GetParticipantServices()->InvalidateParticipantUpdate();",
+          "count": 2
+        },
+        {
+          "before": "system->GetGravitationalAcceleration() * GetMass()",
+          "after": "GetParticipantServices()->GetParticipantGravity() * GetMass()",
+          "count": 1
         }
       ]
     },
@@ -1166,6 +1186,21 @@
           "before": "    void SetChTime(double time) { ch_time = time; }",
           "after": "    void SetChTime(double time) { ch_time = time; }\n\n    /// Get the simulation time through the existing system time owner.\n    double GetTime() const { return GetChTime(); }\n\n    /// Assign only system time; this does not advance or update participants or the timestepper.\n    void SetTime(double time) { SetChTime(time); }",
           "count": 1
+        },
+        {
+          "before": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include \"robodyna/mechanics/RbParticipantServices.h\"",
+          "count": 1
+        },
+        {
+          "before": "class ChApi RbSystem : public chrono::ChIntegrableIIorder {",
+          "after": "class ChApi RbSystem : public chrono::ChIntegrableIIorder, public mechanics::RbParticipantServices {",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    /// Collect all variables and constraints",
+          "after": "  protected:\n    // Stateless participant-service implementation. Use this owner's existing fields;\n    // do not capture another System or duplicate its environment and invalidation state.\n    const chrono::ChVector3d& GetParticipantGravity() const final { return G_acc; }\n    int GetParticipantAssemblyThreads() const final { return nthreads_chrono; }\n    void InvalidateParticipantInitializationAndUpdate() final {\n        is_initialized = false;\n        is_updated = false;\n    }\n    void InvalidateParticipantUpdate() final { is_updated = false; }\n\n    /// Collect all variables and constraints",
+          "count": 1
         }
       ],
       "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"
@@ -1574,6 +1609,36 @@
           "before": "}  // end namespace fea\n}  // end namespace chrono",
           "after": "}  // namespace robodyna::fea",
           "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/mechanics/RbParticipantServices.h\"",
+          "count": 1
+        },
+        {
+          "before": "        system->is_initialized = false;\n        system->is_updated = false;",
+          "after": "        GetParticipantServices()->InvalidateParticipantInitializationAndUpdate();",
+          "count": 2
+        },
+        {
+          "before": "        system->is_updated = false;",
+          "after": "        GetParticipantServices()->InvalidateParticipantUpdate();",
+          "count": 2
+        },
+        {
+          "before": "GetSystem()->nthreads_chrono",
+          "after": "GetParticipantServices()->GetParticipantAssemblyThreads()",
+          "count": 2
+        },
+        {
+          "before": "velements[ie]->EleIntLoadResidual_F_gravity(R, GetSystem()->GetGravitationalAcceleration(), c);",
+          "after": "velements[ie]->EleIntLoadResidual_F_gravity(R, GetParticipantServices()->GetParticipantGravity(), c);",
+          "count": 1
+        },
+        {
+          "before": "mnode->GetMass() * system->GetGravitationalAcceleration()",
+          "after": "mnode->GetMass() * GetParticipantServices()->GetParticipantGravity()",
+          "count": 2
         }
       ]
     },
@@ -2441,6 +2506,16 @@
         {
           "before": "friend class ChAssembly;",
           "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {\n",
+          "after": "namespace robodyna::mechanics {\nclass RbParticipantServices;\n}\n\nnamespace chrono {\n",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    ChSystem* system;",
+          "after": "  protected:\n    /// Borrow the current parent's services, or return null for a detached item.\n    /// Resolve through the original parent pointer; no second owner is cached.\n    robodyna::mechanics::RbParticipantServices* GetParticipantServices() const;\n\n    ChSystem* system;",
           "count": 1
         }
       ]
@@ -3364,6 +3439,23 @@
         {
           "before": "%ignore chrono::ChObj::ArchiveContainerName;",
           "after": "%ignore chrono::ChObj::ArchiveContainerName;\n\n// Native-only additions; retain the qualified legacy binding surface.\n%ignore chrono::ChObj::GetTime;\n%ignore chrono::ChObj::SetTime;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.cpp",
+      "original_sha256": "dc32b634bcaf7c74142dbb2094d3f9f889c9ffeb3a810f14661fb705907d9c87",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.cpp",
+      "replacements": [
+        {
+          "before": "#include \"chrono/physics/ChPhysicsItem.h\"",
+          "after": "#include \"chrono/physics/ChPhysicsItem.h\"\n// Transitional binding: this unit still compiles against the complete mixed owner.\n#include \"robodyna/simulation/RbSystem.h\"",
+          "count": 1
+        },
+        {
+          "before": "void ChPhysicsItem::SetSystem(ChSystem* m_system) {\n    system = m_system;\n}\n",
+          "after": "void ChPhysicsItem::SetSystem(ChSystem* m_system) {\n    system = m_system;\n}\n\nrobodyna::mechanics::RbParticipantServices* ChPhysicsItem::GetParticipantServices() const {\n    // Standard typed derived-to-base conversion also preserves nullptr. The\n    // compiler performs any required base adjustment; there is no layout cast.\n    return system;\n}\n",
           "count": 1
         }
       ]

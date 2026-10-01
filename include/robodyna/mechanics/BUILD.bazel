@@ -2,7 +2,16 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["RbMassProperties.h"])
+exports_files(["RbMassProperties.h", "RbParticipantServices.h"])
+
+# The interface has no runtime state. Its first implementation remains in the
+# retained mixed System; this target does not claim independent domain execution.
+cc_library(
+    name = "participant_services",
+    hdrs = ["RbParticipantServices.h"],
+    strip_include_prefix = "/include",
+    deps = ["//src/core:foundation"],
+)
 
 cc_library(
     name = "body_frame",

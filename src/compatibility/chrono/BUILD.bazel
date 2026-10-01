@@ -185,6 +185,7 @@ filegroup(
         "src/chrono/physics/ChLink.h",
         "src/chrono/physics/ChParticleCloud.h",
         "src/chrono/physics/ChPhysicsItem.h",
+        "src/chrono/physics/ChPhysicsItem.cpp",
         "src/chrono/physics/ChShaft.h",
         "src/chrono/physics/ChSystem.h",
         "src/chrono/physics/ChSystemFwd.h",

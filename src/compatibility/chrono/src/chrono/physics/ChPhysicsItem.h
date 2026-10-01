@@ -25,6 +25,10 @@
 #include "chrono/solver/ChSystemDescriptor.h"
 #include "chrono/timestepper/ChState.h"
 
+namespace robodyna::mechanics {
+class RbParticipantServices;
+}
+
 namespace chrono {
 
 // Forward references
@@ -370,6 +374,10 @@ class ChApi ChPhysicsItem : public ChObj {
     virtual void ArchiveIn(ChArchiveIn& archive_in) override;
 
   protected:
+    /// Borrow the current parent's services, or return null for a detached item.
+    /// Resolve through the original parent pointer; no second owner is cached.
+    robodyna::mechanics::RbParticipantServices* GetParticipantServices() const;
+
     ChSystem* system;  ///< parent system
 
     unsigned int offset_x;  ///< offset in vector of state (position part)

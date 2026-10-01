@@ -1532,6 +1532,7 @@ install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/io/RbPaths.h"
 
 # Install the canonical definition required by the legacy forwarding header.
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbParticipantServices.h"
         DESTINATION include/robodyna/mechanics)
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h"

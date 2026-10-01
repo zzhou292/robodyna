@@ -18,6 +18,7 @@
 
 #include <cfloat>
 #include "robodyna/simulation/RbSystemFwd.h"
+#include "robodyna/mechanics/RbParticipantServices.h"
 #include <memory>
 #include <cstdlib>
 #include <cmath>
@@ -71,7 +72,7 @@ namespace robodyna::simulation {
 ///
 /// Consult the @ref simulation_system manual page for additional details.
 ///
-class ChApi RbSystem : public chrono::ChIntegrableIIorder {
+class ChApi RbSystem : public chrono::ChIntegrableIIorder, public mechanics::RbParticipantServices {
   public:
     /// Create a physical system.
     RbSystem(const std::string& name = "");
@@ -814,6 +815,16 @@ class ChApi RbSystem : public chrono::ChIntegrableIIorder {
     void DescriptorPrepareInject();
 
   protected:
+    // Stateless participant-service implementation. Use this owner's existing fields;
+    // do not capture another System or duplicate its environment and invalidation state.
+    const chrono::ChVector3d& GetParticipantGravity() const final { return G_acc; }
+    int GetParticipantAssemblyThreads() const final { return nthreads_chrono; }
+    void InvalidateParticipantInitializationAndUpdate() final {
+        is_initialized = false;
+        is_updated = false;
+    }
+    void InvalidateParticipantUpdate() final { is_updated = false; }
+
     /// Collect all variables and constraints for physical components into the specified system descriptor.
     virtual void DescriptorPrepareInject(chrono::ChSystemDescriptor& sys_descriptor);
 

@@ -74,6 +74,7 @@ def chrono_host_bridge(name, source, compile_jobs = 4):
                       "//include/robodyna/simulation:RbSystemFwd.h",
                       "//src/mechanics/inertia:RbMassProperties.cpp",
                       "//include/robodyna/mechanics:RbMassProperties.h",
+                      "//include/robodyna/mechanics:RbParticipantServices.h",
                       "//src/mbd/bodies:RbBody.cpp",
                       "//src/mbd/bodies:RbBodyAuxRef.cpp",
                       "//src/mbd/bodies:RbBodyEasy.cpp",

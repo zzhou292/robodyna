@@ -87,18 +87,15 @@ Source review also found a visualization dependency through `ChObj` and
 dependency would hide FEA inside a supposedly neutral package. Treat visual adapters,
 mesh/system services, contact reporting and mixed assembly as explicit later seams.
 
-## Qualified checkpoint and continuation
+## Earlier integration checkpoint
 
-Source imports, root native builds, normal CLI execution/rendering, the first
-neutral mechanics ownership split and all current regression gates are complete.
-This is a staged restructuring checkpoint, not complete FEA/MBD independence.
-The requested naming migration adds the N0/N1 API/fixture batch described below
-as the next proposed code work. The next dependency extraction still follows
-`NEXT_SEAMS.md`: remove the generic visual model's FE implementation dependency
-before extracting participant/system services. Its design can proceed in parallel
-with the API batch; keep their executable changes separately reviewed.
-Do not reopen completed imports or rerun the 11-hour physical trajectory merely
-to resume this migration. `OPERATING.md` records tested operator entry points.
+Source imports, root native builds, normal CLI execution/rendering and the first
+neutral mechanics split were qualified before the API migration. The generic
+visual separation has since passed too. Current naming/service progress and its
+remaining boundaries are recorded in the active section below and NEXT_SEAMS.md.
+Preserve the earlier evidence; neither a source import nor a namespace change
+establishes independent FEA/MBD execution. OPERATING.md records the operator entry
+points, and the retained 100 ms trajectory needs no rerun for naming changes.
 
 ## Retained demonstrations and first publication
 
@@ -145,7 +142,7 @@ C++ symbols; saved archive compatibility does not promise old binary ABI.
 
 ### Completed verification
 
-- 51 native/product test targets passed, including CLI, viewer, demos, API probes,
+- 57 native/product test targets passed, including CLI, viewer, demos, API probes,
   frozen archives, source ownership and declared binding generation.
 - Three separate retained-CMake build/runtime targets passed.
 - Three binding runtime/ELF targets passed: core and FE Python use one native
@@ -153,7 +150,7 @@ C++ symbols; saved archive compatibility does not promise old binary ABI.
   time and consistent reactions. Both core native wrappers compiled. Managed C#
   runtime and full optional-module runtime remain unqualified.
 - Eight explicit declaration views share one authenticated generator and registry.
-  Four CMake language/FEA configurations and 13 incorrect-pin rejection/recovery
+  Four CMake language/FEA configurations and 15 incorrect-pin rejection/recovery
   checks passed. Historical core/FE/vehicle generated APIs match. Only proven
   diagnostic source locations are normalized; raw failed receipts are retained.
 - A fresh 101-step GPU Yaris run passed. All 50 archive files, viewer input and
@@ -164,18 +161,19 @@ C++ symbols; saved archive compatibility does not promise old binary ABI.
   for byte; the final frame was inspected visually.
 
 `RENAME_QUALIFICATION.json` records the receipts, hashes, resources and exact
-boundaries. `SOURCE_TRANSFORMATIONS.json` contains 81 reviewed inverse recipes
+boundaries. `SOURCE_TRANSFORMATIONS.json` contains 84 reviewed inverse recipes
 without repinning original source. Parser ledgers hold only their owning public
 header recipes; complete implementation history remains in the global ledger.
 Existing archive/partial-binding limitations remain in `PREEXISTING_ISSUES.md`.
 
 ### Next execution batches
 
-1. Assembly is now canonical and qualified, including ADL swap, old archive
-   identity and its five original lifecycle cases. Next, qualify the staged
-   participant-service baseline before introducing the four-method interface.
-   The interface will remain in the explicitly mixed backend; it does not by
-   itself establish independent-domain linkage.
+1. Assembly and the four-method participant-service seam are now qualified.
+   The interface owns no state; participants retain their original raw owner.
+   Its declaration has a verified foundation-only boundary while its implementation
+   remains in the explicitly mixed backend. Next, design and qualify the thin
+   System storage/header boundary with the protected-access and Multicore
+   collection-address obligations documented in NEXT_SEAMS.md.
 2. Extract the specific system services needed by FE and rigid participants,
    then mixed assembly, contact reporting and coupled load boundaries. Require
    actual independent-domain link/runtime gates and the richer beam/body test
@@ -203,4 +201,13 @@ to the existing System and object methods without updating other clocks or
 advancing state. `robodyna/io/RbPaths.h` forwards to the existing three distinct
 path stores and preserves literal concatenation and directory side effects.
 Legacy binding exposure is intentionally retained; combined binding/CMake/product
-qualification follows the service-interface integration.
+qualification subsequently passed with the service interface.
+
+The combined participant-service/time/IO checkpoint passed 57 native/product
+targets, three separate CMake targets, three actual binding runtime/ELF targets,
+the complete historical binding surface matrix and four configured install
+profiles. A fresh GPU run still matches all 50 saved files and non-timing fields;
+all six-second demo summaries and the short rendered frames/movie remain exact.
+The service's extra System base requires rebuilding binary consumers, but no
+new participant-side pointer, environment state, clock or physics formulation
+was introduced. Full independent-domain implementation remains later work.

@@ -264,6 +264,21 @@
           "before": "    void SetChTime(double time) { ch_time = time; }",
           "after": "    void SetChTime(double time) { ch_time = time; }\n\n    /// Get the simulation time through the existing system time owner.\n    double GetTime() const { return GetChTime(); }\n\n    /// Assign only system time; this does not advance or update participants or the timestepper.\n    void SetTime(double time) { SetChTime(time); }",
           "count": 1
+        },
+        {
+          "before": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include \"robodyna/mechanics/RbParticipantServices.h\"",
+          "count": 1
+        },
+        {
+          "before": "class ChApi RbSystem : public chrono::ChIntegrableIIorder {",
+          "after": "class ChApi RbSystem : public chrono::ChIntegrableIIorder, public mechanics::RbParticipantServices {",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    /// Collect all variables and constraints",
+          "after": "  protected:\n    // Stateless participant-service implementation. Use this owner's existing fields;\n    // do not capture another System or duplicate its environment and invalidation state.\n    const chrono::ChVector3d& GetParticipantGravity() const final { return G_acc; }\n    int GetParticipantAssemblyThreads() const final { return nthreads_chrono; }\n    void InvalidateParticipantInitializationAndUpdate() final {\n        is_initialized = false;\n        is_updated = false;\n    }\n    void InvalidateParticipantUpdate() final { is_updated = false; }\n\n    /// Collect all variables and constraints",
+          "count": 1
         }
       ],
       "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"

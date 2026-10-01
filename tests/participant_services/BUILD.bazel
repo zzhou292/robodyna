@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
+load(":interface_boundary.bzl", "interface_boundary_test")
 
 # Baseline tests deliberately use only the existing public API and virtual hooks.
 # Run before and after introducing the participant-service interface.
@@ -13,4 +14,27 @@ cc_test(
     copts = ["-fno-fast-math", "-ffp-contract=off"],
     size = "small",
     tags = ["manual", "cpu-only", "participant-services"],
+)
+
+# These two gates qualify only the service declaration. The real System-backed
+# implementation and the twelve behavioral cases still use the mixed backend.
+cc_test(
+    name = "interface_header_test",
+    srcs = ["HeaderCompileTest.cpp"],
+    deps = ["//include/robodyna/mechanics:participant_services"],
+    size = "small",
+    tags = ["manual", "cpu-only", "participant-services"],
+)
+
+interface_boundary_test(
+    name = "interface_boundary_test",
+    interface = "//include/robodyna/mechanics:participant_services",
+    size = "small",
+    tags = ["manual", "cpu-only", "participant-services"],
+)
+
+test_suite(
+    name = "service_tests",
+    tests = [":baseline_test", ":interface_header_test", ":interface_boundary_test"],
+    tags = ["manual"],
 )
