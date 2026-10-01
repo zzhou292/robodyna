@@ -55,7 +55,7 @@ swig_core = rule(
         "language": attr.string(values = ["python", "csharp"], mandatory = True),
         "interface": attr.label(allow_single_file = True, mandatory = True),
         "canonical_anchor": attr.label(allow_single_file = True, default = "//include/robodyna/mbd:RbBody.h"),
-        "declarations": attr.label_list(allow_files = [".h"], default = ["//build_defs/bindings:body_header", "//build_defs/bindings:mesh_header", "//build_defs/bindings:system_header", "//build_defs/bindings:system_nsc_header", "//build_defs/bindings:system_smc_header"]),
+        "declarations": attr.label_list(allow_files = [".h"], default = ["//build_defs/bindings:body_header", "//build_defs/bindings:mesh_header", "//build_defs/bindings:system_header", "//build_defs/bindings:system_nsc_header", "//build_defs/bindings:system_smc_header", "//build_defs/bindings:body_auxref_header", "//build_defs/bindings:body_easy_header"]),
         "sources": attr.label_list(allow_files = True),
         "_runner": attr.label(default = "//tools/bindings:run_swig", executable = True, cfg = "exec"),
         "_swig": attr.label(default = "@swig_sdk//:swig", executable = True, cfg = "exec"),

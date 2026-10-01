@@ -195,6 +195,21 @@
           "before": "        DESTINATION include/robodyna/mbd)",
           "after": "        DESTINATION include/robodyna/mbd)\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemNSC.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemSMC.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemFwd.h\"\n        DESTINATION include/robodyna/simulation)",
           "count": 1
+        },
+        {
+          "before": "    physics/ChBodyAuxRef.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBodyAuxRef.cpp",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChBodyEasy.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBodyEasy.cpp",
+          "count": 1
+        },
+        {
+          "before": "              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h\"",
+          "after": "              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyAuxRef.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyEasy.h\"",
+          "count": 1
         }
       ],
       "subsequent_stages": [
@@ -1114,6 +1129,11 @@
         {
           "before": "namespace chrono { class ChBody; }",
           "after": "namespace chrono { class ChBody; class ChSystem; class ChSystemNSC; class ChSystemSMC; }",
+          "count": 1
+        },
+        {
+          "before": "%include \"../../../chrono/physics/ChBodyEasy.h\"",
+          "after": "%include \"robodyna_swig/BodyEasyDeclarations.h\"",
           "count": 1
         }
       ]
@@ -2282,6 +2302,447 @@
         {
           "before": "%include \"../../../chrono/physics/ChSystemSMC.h\"",
           "after": "%include \"robodyna_swig/SystemSMCDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h",
+      "canonical_path": "include/robodyna/mbd/RbBodyAuxRef.h",
+      "original_sha256": "e81fbff1442238c5f05d3e147a508291cb5f96494ae935e05f27cfdb1ee80bc4",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical body-family ownership; inherited behavior and identities retained.\n",
+          "count": 1
+        },
+        {
+          "before": "CHBODYAUXREF_H",
+          "after": "ROBODYNA_MBD_RBBODYAUXREF_H",
+          "count": 2
+        },
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChFramed",
+          "after": "chrono::ChFramed",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChFrameMoving",
+          "after": "chrono::ChFrameMoving",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3",
+          "after": "chrono::ChVector3",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33",
+          "after": "chrono::ChMatrix33",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChQuaternion",
+          "after": "chrono::ChQuaternion",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChCoordsysd",
+          "after": "chrono::ChCoordsysd",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mbd {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbBodyAuxRef, 0)\n\n}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::mbd::RbBodyAuxRef, 0)\n}",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "8734bfd58dd938a0a8d517a03aad8425c69c30b2772a8dd2440e6419bb05d201"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h",
+      "canonical_path": "include/robodyna/mbd/RbBodyEasy.h",
+      "original_sha256": "0a399a32cbabb3710f674fe7583230df52d9e8e0a1f161cb74791156b056191b",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n// Robodyna adaptation: canonical body-family ownership; inherited behavior and identities retained.\n",
+          "count": 1
+        },
+        {
+          "before": "CHBODYEASY_H",
+          "after": "ROBODYNA_MBD_RBBODYEASY_H",
+          "count": 2
+        },
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyAuxRef.h\"",
+          "after": "#include \"robodyna/mbd/RbBodyAuxRef.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasySphere",
+          "after": "RbBodyEasySphere",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyEllipsoid",
+          "after": "RbBodyEasyEllipsoid",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyCylinder",
+          "after": "RbBodyEasyCylinder",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyBox",
+          "after": "RbBodyEasyBox",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHull",
+          "after": "RbBodyEasyConvexHull",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHullAuxRef",
+          "after": "RbBodyEasyConvexHullAuxRef",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyMesh",
+          "after": "RbBodyEasyMesh",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyClusterOfSpheres",
+          "after": "RbBodyEasyClusterOfSpheres",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterial",
+          "after": "chrono::ChContactMaterial",
+          "count": 26,
+          "code_token": true
+        },
+        {
+          "before": "ChAxis",
+          "after": "chrono::ChAxis",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 12,
+          "code_token": true
+        },
+        {
+          "before": "ChTriangleMeshConnected",
+          "after": "chrono::ChTriangleMeshConnected",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mbd {",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "ef93f6a27b4f7805398691c80a990acc1bf72cef7137744ea5900dbfbab5ac87"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.cpp",
+      "canonical_path": "src/mbd/bodies/RbBodyAuxRef.cpp",
+      "original_sha256": "ccc579629e7b33d2e4a10ef2210c67cd21cd72cd8f04bdbf0f55f7e81a83a69a",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical body-family implementation; legacy archive tags and equations retained.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyAuxRef.h\"",
+          "after": "#include \"robodyna/mbd/RbBodyAuxRef.h\"\n#include \"chrono/physics/ChBodyAuxRef.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 24,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 15,
+          "code_token": true
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyAuxRef)\nCH_UPCASTING(RbBodyAuxRef, RbBody)\n\nRbBodyAuxRef::RbBodyAuxRef(const RbBodyAuxRef& other) : RbBody(other) {",
+          "after": "RbBodyAuxRef::RbBodyAuxRef(const RbBodyAuxRef& other) : RbBody(other) {",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\n// Keep the exact inherited factory and casting identities through reverse aliases.\nCH_FACTORY_REGISTER(ChBodyAuxRef)\nCH_UPCASTING(ChBodyAuxRef, ChBody)\n}\n\nnamespace robodyna::mbd {\n// Implementation-only lookup keeps inherited helper resolution and arithmetic unchanged.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd",
+          "count": 1
+        },
+        {
+          "before": "// Register into the object factory, to enable run-time dynamic creation and persistence",
+          "after": "// The legacy registration block above preserves dynamic creation and persistence.",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.cpp",
+      "canonical_path": "src/mbd/bodies/RbBodyEasy.cpp",
+      "original_sha256": "601088e55c0409eb14364170f71a3d62c7f33c4825c74b7d9775aba4c1e14bbd",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n// Robodyna adaptation: canonical body-family implementation; legacy archive tags and equations retained.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyEasy.h\"",
+          "after": "#include \"robodyna/mbd/RbBodyEasy.h\"\n#include \"chrono/physics/ChBodyEasy.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasySphere",
+          "after": "RbBodyEasySphere",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyEllipsoid",
+          "after": "RbBodyEasyEllipsoid",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyCylinder",
+          "after": "RbBodyEasyCylinder",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyBox",
+          "after": "RbBodyEasyBox",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHull",
+          "after": "RbBodyEasyConvexHull",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHullAuxRef",
+          "after": "RbBodyEasyConvexHullAuxRef",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyMesh",
+          "after": "RbBodyEasyMesh",
+          "count": 17,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyClusterOfSpheres",
+          "after": "RbBodyEasyClusterOfSpheres",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 18,
+          "code_token": true
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasySphere)\nCH_UPCASTING(RbBodyEasySphere, RbBody)\n\nRbBodyEasySphere::RbBodyEasySphere(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) : RbBody() {",
+          "after": "RbBodyEasySphere::RbBodyEasySphere(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyEllipsoid)\nCH_UPCASTING(RbBodyEasyEllipsoid, RbBody)\n\nRbBodyEasyEllipsoid::RbBodyEasyEllipsoid(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "after": "RbBodyEasyEllipsoid::RbBodyEasyEllipsoid(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyCylinder)\nCH_UPCASTING(RbBodyEasyCylinder, RbBody)\n\nRbBodyEasyCylinder::RbBodyEasyCylinder(ChAxis direction,\n                                       double radius,\n                                       double height,\n                                       double density,\n                                       bool create_visualization,\n                                       bool create_collision,\n                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "after": "RbBodyEasyCylinder::RbBodyEasyCylinder(ChAxis direction,\n                                       double radius,\n                                       double height,\n                                       double density,\n                                       bool create_visualization,\n                                       bool create_collision,\n                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyBox)\nCH_UPCASTING(RbBodyEasyBox, RbBody)\n\nRbBodyEasyBox::RbBodyEasyBox(double Xsize,\n                             double Ysize,\n                             double Zsize,\n                             double density,\n                             bool create_visualization,\n                             bool create_collision,\n                             std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "after": "RbBodyEasyBox::RbBodyEasyBox(double Xsize,\n                             double Ysize,\n                             double Zsize,\n                             double density,\n                             bool create_visualization,\n                             bool create_collision,\n                             std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyConvexHull)\nCH_UPCASTING(RbBodyEasyConvexHull, RbBody)\n\nRbBodyEasyConvexHull::RbBodyEasyConvexHull(const std::vector<ChVector3d>& points,\n                                           double density,\n                                           bool create_visualization,\n                                           bool create_collision,\n                                           std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "after": "RbBodyEasyConvexHull::RbBodyEasyConvexHull(const std::vector<ChVector3d>& points,\n                                           double density,\n                                           bool create_visualization,\n                                           bool create_collision,\n                                           std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyConvexHullAuxRef)\nCH_UPCASTING(RbBodyEasyConvexHullAuxRef, RbBodyAuxRef)\n\nRbBodyEasyConvexHullAuxRef::RbBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points,\n                                                       double density,\n                                                       bool create_visualization,\n                                                       bool create_collision,\n                                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBodyAuxRef() {",
+          "after": "RbBodyEasyConvexHullAuxRef::RbBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points,\n                                                       double density,\n                                                       bool create_visualization,\n                                                       bool create_collision,\n                                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBodyAuxRef() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyMesh)\nCH_UPCASTING(RbBodyEasyMesh, RbBodyAuxRef)\n\nRbBodyEasyMesh::RbBodyEasyMesh(const std::string& filename,\n                               double density,\n                               bool compute_mass,\n                               bool create_visualization,\n                               bool create_collision,\n                               std::shared_ptr<ChContactMaterial> material,\n                               double sphere_swept)\n    : RbBodyAuxRef() {",
+          "after": "RbBodyEasyMesh::RbBodyEasyMesh(const std::string& filename,\n                               double density,\n                               bool compute_mass,\n                               bool create_visualization,\n                               bool create_collision,\n                               std::shared_ptr<ChContactMaterial> material,\n                               double sphere_swept)\n    : RbBodyAuxRef() {",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(RbBodyEasyClusterOfSpheres)\nCH_UPCASTING(RbBodyEasyClusterOfSpheres, RbBody)\n\nRbBodyEasyClusterOfSpheres::RbBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,\n                                                       const std::vector<double>& radii,\n                                                       double density,\n                                                       bool create_visualization,\n                                                       bool create_collision,\n                                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "after": "RbBodyEasyClusterOfSpheres::RbBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,\n                                                       const std::vector<double>& radii,\n                                                       double density,\n                                                       bool create_visualization,\n                                                       bool create_collision,\n                                                       std::shared_ptr<ChContactMaterial> material)\n    : RbBody() {",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\n// Keep the exact inherited factory and casting identities through reverse aliases.\nCH_FACTORY_REGISTER(ChBodyEasySphere)\nCH_UPCASTING(ChBodyEasySphere, ChBody)\nCH_FACTORY_REGISTER(ChBodyEasyEllipsoid)\nCH_UPCASTING(ChBodyEasyEllipsoid, ChBody)\nCH_FACTORY_REGISTER(ChBodyEasyCylinder)\nCH_UPCASTING(ChBodyEasyCylinder, ChBody)\nCH_FACTORY_REGISTER(ChBodyEasyBox)\nCH_UPCASTING(ChBodyEasyBox, ChBody)\nCH_FACTORY_REGISTER(ChBodyEasyConvexHull)\nCH_UPCASTING(ChBodyEasyConvexHull, ChBody)\nCH_FACTORY_REGISTER(ChBodyEasyConvexHullAuxRef)\nCH_UPCASTING(ChBodyEasyConvexHullAuxRef, ChBodyAuxRef)\nCH_FACTORY_REGISTER(ChBodyEasyMesh)\nCH_UPCASTING(ChBodyEasyMesh, ChBodyAuxRef)\nCH_FACTORY_REGISTER(ChBodyEasyClusterOfSpheres)\nCH_UPCASTING(ChBodyEasyClusterOfSpheres, ChBody)\n}\n\nnamespace robodyna::mbd {\n// Implementation-only lookup keeps inherited helper resolution and arithmetic unchanged.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChBodyAuxRef.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChBodyAuxRef.i",
+      "original_sha256": "e3e7f17ce97a7bfef6bb989cce41191e4c6c2c6ed2128f750ce22882d685cc8f",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChBodyAuxRef.h\"",
+          "after": "%include \"robodyna_swig/BodyAuxRefDeclarations.h\"",
           "count": 1
         }
       ]

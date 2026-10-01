@@ -2,13 +2,13 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["RbBody.h", "RbBodyFwd.h"])
+exports_files(["RbBody.h", "RbBodyFwd.h", "RbBodyAuxRef.h", "RbBodyEasy.h"])
 
 # Private part of the transitional aggregate's header set. The aggregate supplies
 # the inherited mechanics header closure; this is not a standalone body library.
 cc_library(
     name = "implementation_headers",
-    hdrs = ["RbBody.h", "RbBodyFwd.h"],
+    hdrs = ["RbBody.h", "RbBodyFwd.h", "RbBodyAuxRef.h", "RbBodyEasy.h"],
     strip_include_prefix = "/include",
     deps = ["//include/robodyna/simulation:forward"],
     visibility = ["//src/compatibility/chrono:__pkg__"],

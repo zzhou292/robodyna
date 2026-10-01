@@ -1,0 +1,249 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Parser-only authenticated public declaration recipes. Complete implementation and consumer history remains in SOURCE_TRANSFORMATIONS.json.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h",
+      "canonical_path": "include/robodyna/mbd/RbBodyAuxRef.h",
+      "original_sha256": "e81fbff1442238c5f05d3e147a508291cb5f96494ae935e05f27cfdb1ee80bc4",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical body-family ownership; inherited behavior and identities retained.\n",
+          "count": 1
+        },
+        {
+          "before": "CHBODYAUXREF_H",
+          "after": "ROBODYNA_MBD_RBBODYAUXREF_H",
+          "count": 2
+        },
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChFramed",
+          "after": "chrono::ChFramed",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChFrameMoving",
+          "after": "chrono::ChFrameMoving",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3",
+          "after": "chrono::ChVector3",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33",
+          "after": "chrono::ChMatrix33",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChQuaternion",
+          "after": "chrono::ChQuaternion",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChCoordsysd",
+          "after": "chrono::ChCoordsysd",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mbd {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbBodyAuxRef, 0)\n\n}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::mbd::RbBodyAuxRef, 0)\n}",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "8734bfd58dd938a0a8d517a03aad8425c69c30b2772a8dd2440e6419bb05d201"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h",
+      "canonical_path": "include/robodyna/mbd/RbBodyEasy.h",
+      "original_sha256": "0a399a32cbabb3710f674fe7583230df52d9e8e0a1f161cb74791156b056191b",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban, Arman Pazouki\n// Robodyna adaptation: canonical body-family ownership; inherited behavior and identities retained.\n",
+          "count": 1
+        },
+        {
+          "before": "CHBODYEASY_H",
+          "after": "ROBODYNA_MBD_RBBODYEASY_H",
+          "count": 2
+        },
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyAuxRef.h\"",
+          "after": "#include \"robodyna/mbd/RbBodyAuxRef.h\"",
+          "count": 1
+        },
+        {
+          "before": "ChBodyAuxRef",
+          "after": "RbBodyAuxRef",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasySphere",
+          "after": "RbBodyEasySphere",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyEllipsoid",
+          "after": "RbBodyEasyEllipsoid",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyCylinder",
+          "after": "RbBodyEasyCylinder",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyBox",
+          "after": "RbBodyEasyBox",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHull",
+          "after": "RbBodyEasyConvexHull",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyConvexHullAuxRef",
+          "after": "RbBodyEasyConvexHullAuxRef",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyMesh",
+          "after": "RbBodyEasyMesh",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyEasyClusterOfSpheres",
+          "after": "RbBodyEasyClusterOfSpheres",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterial",
+          "after": "chrono::ChContactMaterial",
+          "count": 26,
+          "code_token": true
+        },
+        {
+          "before": "ChAxis",
+          "after": "chrono::ChAxis",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 12,
+          "code_token": true
+        },
+        {
+          "before": "ChTriangleMeshConnected",
+          "after": "chrono::ChTriangleMeshConnected",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mbd {",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "ef93f6a27b4f7805398691c80a990acc1bf72cef7137744ea5900dbfbab5ac87"
+    }
+  ]
+}

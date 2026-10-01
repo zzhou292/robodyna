@@ -14,3 +14,13 @@ cc_test(
     size = "small",
     tags = ["manual", "cpu-only", "body-family-compatibility"],
 )
+
+# Compile the real canonical public definitions first, then the reverse aliases.
+cc_test(
+    name = "canonical_test",
+    srcs = ["CanonicalIdentityTest.cpp"],
+    deps = ["//include/robodyna/mbd:api", "@googletest//:gtest_main"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    size = "small",
+    tags = ["manual", "cpu-only", "body-family-compatibility"],
+)

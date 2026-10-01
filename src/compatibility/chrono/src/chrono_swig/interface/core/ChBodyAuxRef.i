@@ -31,5 +31,5 @@ using namespace chrono;
 
 /* Parse the header file to generate wrappers */
 %include "../../../chrono/core/ChFrame.h"
-%include "../../../chrono/physics/ChBodyAuxRef.h"    
+%include "robodyna_swig/BodyAuxRefDeclarations.h"    
 

@@ -16,3 +16,4 @@ src/compatibility/chrono/src/chrono_swig/interface/core/ChBody.i -whitespace
 src/compatibility/chrono/src/chrono_swig/interface/core/ChSystem.i -whitespace
 src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemNSC.i -whitespace
 src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemSMC.i -whitespace
+src/compatibility/chrono/src/chrono_swig/interface/core/ChBodyAuxRef.i -whitespace

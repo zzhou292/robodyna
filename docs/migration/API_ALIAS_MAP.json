@@ -155,8 +155,10 @@
           "canonical": "robodyna::mbd::RbBodyAuxRef"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse aliases",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/mbd/bodies/RbBodyAuxRef.cpp",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_body_family"
     },
     {
       "module": "mbd",
@@ -177,16 +179,42 @@
       "legacy_header": "chrono/physics/ChBodyEasy.h",
       "symbols": [
         {
+          "legacy": "chrono::ChBodyEasySphere",
+          "canonical": "robodyna::mbd::RbBodyEasySphere"
+        },
+        {
+          "legacy": "chrono::ChBodyEasyEllipsoid",
+          "canonical": "robodyna::mbd::RbBodyEasyEllipsoid"
+        },
+        {
+          "legacy": "chrono::ChBodyEasyCylinder",
+          "canonical": "robodyna::mbd::RbBodyEasyCylinder"
+        },
+        {
           "legacy": "chrono::ChBodyEasyBox",
           "canonical": "robodyna::mbd::RbBodyEasyBox"
         },
         {
-          "legacy": "chrono::ChBodyEasySphere",
-          "canonical": "robodyna::mbd::RbBodyEasySphere"
+          "legacy": "chrono::ChBodyEasyConvexHull",
+          "canonical": "robodyna::mbd::RbBodyEasyConvexHull"
+        },
+        {
+          "legacy": "chrono::ChBodyEasyConvexHullAuxRef",
+          "canonical": "robodyna::mbd::RbBodyEasyConvexHullAuxRef"
+        },
+        {
+          "legacy": "chrono::ChBodyEasyMesh",
+          "canonical": "robodyna::mbd::RbBodyEasyMesh"
+        },
+        {
+          "legacy": "chrono::ChBodyEasyClusterOfSpheres",
+          "canonical": "robodyna::mbd::RbBodyEasyClusterOfSpheres"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse aliases",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/mbd/bodies/RbBodyEasy.cpp",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_body_family"
     },
     {
       "module": "fea",

@@ -10,9 +10,10 @@
     "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending",
     "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending",
     "N4_mesh": "passed 31 native targets, 3 retained-CMake targets, four CMake binding-generation/install profiles and declaration-pin rejection/recovery; integrated binding runtime pending",
-    "N4_system": "passed 33 native targets for actual System/NSC/SMC implementations, frozen archives, callbacks, contact profiles and common FE/body clock; combined CMake/binding/product gates pending"
+    "N4_system": "passed 33 native targets for actual System/NSC/SMC implementations, frozen archives, callbacks, contact profiles and common FE/body clock; combined CMake/binding/product gates pending",
+    "N4_body_family": "passed 34 native targets for actual AuxRef and eight Easy-body types; constructor baseline, factory/alias identities and frozen archives preserved; combined binding/CMake/product gates pending"
   },
-  "test_targets_passed": 33,
+  "test_targets_passed": 34,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -230,6 +231,14 @@
       "exit_code": 0,
       "elapsed_seconds": 4.783,
       "peak_sampled_rss_bytes": 901906432
+    },
+    "robodyna-canonical-body-family-native-2": {
+      "path": "crash-work/reports/robodyna-canonical-body-family-native-2.json",
+      "sha256": "1af90f20d70125940d9750617b11f972ab63773d09e6ac3a8f5e763cc9fdf01d",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.86,
+      "peak_sampled_rss_bytes": 1046855680
     }
   },
   "limits": {
@@ -261,7 +270,7 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest broad System native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative count.",
+  "test_targets_scope": "Latest broad body-family native suite; separate integration suites are recorded by receipt, not a cumulative count.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",

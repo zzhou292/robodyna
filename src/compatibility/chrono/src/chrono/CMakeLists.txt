@@ -100,8 +100,8 @@ set(Chrono_physics_SOURCES
     physics/ChForce.cpp
     physics/ChBodyFrame.cpp
     ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBody.cpp
-    physics/ChBodyAuxRef.cpp
-    physics/ChBodyEasy.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBodyAuxRef.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBodyEasy.cpp
     ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystem.cpp
     ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemNSC.cpp
     ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemSMC.cpp
@@ -1528,6 +1528,8 @@ install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperti
         DESTINATION include/robodyna/mechanics)
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyAuxRef.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyEasy.h"
         DESTINATION include/robodyna/mbd)
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemNSC.h"

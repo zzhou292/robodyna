@@ -28,6 +28,7 @@
 // Intentional legacy consumer: compatibility is part of this test's contract.
 #include "chrono/core/ChClassFactory.h"
 #include "chrono/physics/ChBody.h"
+#include "chrono/physics/ChBodyEasy.h"
 #include <gtest/gtest.h>
 
 #include <cmath>

@@ -222,3 +222,11 @@ runtime. Production C++/CUDA ports and their notices remain; verification-only
 Fortran fixtures require a separately reviewed relocation if moved out of tree.
 The user has explicitly deferred that removal work. Keep it outside the naming
 migration; no source, fixture or notice removal is part of the next API batch.
+
+The derived-body family now passes 34 native targets: actual `RbBodyAuxRef` and
+eight `RbBodyEasy*` definitions, two relocated implementations, unchanged factory
+and cast identities, constructor/mass/inertia baselines and frozen archive bytes.
+The alias identity test explicitly includes the legacy Easy-body header; canonical
+headers need not expose unrelated compatibility spellings transitively. Seven
+authenticated declaration views are available. Combined bindings, CMake and product
+checks follow the maintained-consumer integration.

@@ -435,7 +435,7 @@ inline const char* ChUtils_GetFilename() {
 %include "ChForce.i"
 %include "ChBody.i"
 %include "ChBodyAuxRef.i"
-%include "../../../chrono/physics/ChBodyEasy.h"
+%include "robodyna_swig/BodyEasyDeclarations.h"
 %include "ChConveyor.i"
 %include "ChFeeder.i"
 %include "ChIndexedParticles.i"

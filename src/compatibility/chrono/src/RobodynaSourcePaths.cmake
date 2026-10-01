@@ -11,6 +11,10 @@ foreach(required IN ITEMS
     src/simulation/composition/RbSystemSMC.cpp
     include/robodyna/simulation/RbSystemSMC.h
     include/robodyna/simulation/RbSystemFwd.h
+    src/mbd/bodies/RbBodyAuxRef.cpp
+    src/mbd/bodies/RbBodyEasy.cpp
+    include/robodyna/mbd/RbBodyAuxRef.h
+    include/robodyna/mbd/RbBodyEasy.h
     src/mbd/bodies/RbBody.cpp
     include/robodyna/mbd/RbBody.h
     include/robodyna/mbd/RbBodyFwd.h

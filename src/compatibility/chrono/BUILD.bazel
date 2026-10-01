@@ -20,7 +20,8 @@ exports_files(["data/logo_chrono_alpha.png"])
 exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
 exports_files(["src/chrono_swig/interface/core/ChMassProperties.i"])
-exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h"])
+exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h",
+               "src/chrono/physics/ChBodyAuxRef.h", "src/chrono/physics/ChBodyEasy.h"])
 exports_files(["src/chrono/fea/ChMesh.h", "src/chrono/fea/ChMeshFwd.h"])
 exports_files(["src/chrono/assets/ChVisualShapeFEA.cpp"])
 exports_files([
@@ -34,6 +35,8 @@ filegroup(
         "//include/robodyna/mechanics:RbMassProperties.h",
         "//include/robodyna/mbd:RbBody.h",
         "//include/robodyna/mbd:RbBodyFwd.h",
+        "//include/robodyna/mbd:RbBodyAuxRef.h",
+        "//include/robodyna/mbd:RbBodyEasy.h",
         "//include/robodyna/simulation:RbSystem.h",
         "//include/robodyna/simulation:RbSystemNSC.h",
         "//include/robodyna/simulation:RbSystemSMC.h",
@@ -194,4 +197,20 @@ filegroup(
         "src/chrono_swig/interface/core/ChSystemNSC.i",
         "src/chrono_swig/interface/core/ChSystemSMC.i",
     ],
+)
+
+# Canonical family sources and legacy parser inputs for the exact inverse proof.
+filegroup(
+    name = "body_family_source_inputs",
+    srcs = [
+        "src/chrono/physics/ChBodyAuxRef.h",
+        "src/chrono/physics/ChBodyEasy.h",
+        "src/chrono_swig/interface/core/ChBodyAuxRef.i",
+        "src/chrono_swig/interface/core/ChModuleCore.i",
+        "//include/robodyna/mbd:RbBodyAuxRef.h",
+        "//include/robodyna/mbd:RbBodyEasy.h",
+        "//src/mbd/bodies:RbBodyAuxRef.cpp",
+        "//src/mbd/bodies:RbBodyEasy.cpp",
+    ],
+    visibility = ["//tests/chrono:__pkg__"],
 )

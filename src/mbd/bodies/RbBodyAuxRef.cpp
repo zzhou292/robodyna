@@ -5,36 +5,43 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban
+// Robodyna adaptation: canonical body-family implementation; legacy archive tags and equations retained.
 // =============================================================================
 
+#include "robodyna/mbd/RbBodyAuxRef.h"
 #include "chrono/physics/ChBodyAuxRef.h"
 
 namespace chrono {
-
-// Register into the object factory, to enable run-time dynamic creation and persistence
+// Keep the exact inherited factory and casting identities through reverse aliases.
 CH_FACTORY_REGISTER(ChBodyAuxRef)
 CH_UPCASTING(ChBodyAuxRef, ChBody)
+}
 
-ChBodyAuxRef::ChBodyAuxRef(const ChBodyAuxRef& other) : ChBody(other) {
+namespace robodyna::mbd {
+// Implementation-only lookup keeps inherited helper resolution and arithmetic unchanged.
+using namespace ::chrono;
+
+// The legacy registration block above preserves dynamic creation and persistence.
+RbBodyAuxRef::RbBodyAuxRef(const RbBodyAuxRef& other) : RbBody(other) {
     ref_to_com = other.ref_to_com;
     ref_to_abs = other.ref_to_abs;
 }
 
-void ChBodyAuxRef::SetFrameCOMToRef(const ChFramed& frame) {
+void RbBodyAuxRef::SetFrameCOMToRef(const ChFramed& frame) {
     ChFrameMoving<> old_com_to_abs = *this;
 
     ref_to_abs = TransformLocalToParent(ref_to_com);
 
     ChFrameMoving<> new_com_to_abs = ref_to_abs.TransformLocalToParent(ChFrameMoving<>(frame));
 
-    ChBody::SetCoordsys(new_com_to_abs.GetCoordsys());
-    ChBody::SetCoordsysDt(new_com_to_abs.GetCoordsysDt());
-    ChBody::SetCoordsysDt2(new_com_to_abs.GetCoordsysDt2());
+    RbBody::SetCoordsys(new_com_to_abs.GetCoordsys());
+    RbBody::SetCoordsysDt(new_com_to_abs.GetCoordsysDt());
+    RbBody::SetCoordsysDt2(new_com_to_abs.GetCoordsysDt2());
 
     ref_to_com = frame.GetInverse();
     ref_to_abs = TransformLocalToParent(ref_to_com);
@@ -48,20 +55,20 @@ void ChBodyAuxRef::SetFrameCOMToRef(const ChFramed& frame) {
     }
 }
 
-void ChBodyAuxRef::SetFrameRefToAbs(const ChFramed& frame) {
+void RbBodyAuxRef::SetFrameRefToAbs(const ChFramed& frame) {
     auto cog_to_abs = frame.TransformLocalToParent(ref_to_com.GetInverse());
-    ChBody::SetCoordsys(cog_to_abs.GetCoordsys());
+    RbBody::SetCoordsys(cog_to_abs.GetCoordsys());
     ref_to_abs = frame;
 }
 
-void ChBodyAuxRef::SetFrameCOMToAbs(const ChFramed& frame) {
-    ChBody::SetCoordsys(frame.GetCoordsys());
+void RbBodyAuxRef::SetFrameCOMToAbs(const ChFramed& frame) {
+    RbBody::SetCoordsys(frame.GetCoordsys());
     ref_to_abs = frame.TransformLocalToParent(ref_to_com);
 }
 
-void ChBodyAuxRef::Update(double time, UpdateFlags update_flags) {
+void RbBodyAuxRef::Update(double time, UpdateFlags update_flags) {
     // update parent class
-    ChBody::Update(time, update_flags);
+    RbBody::Update(time, update_flags);
 
     // update own data
     ref_to_abs = TransformLocalToParent(ref_to_com);
@@ -69,68 +76,68 @@ void ChBodyAuxRef::Update(double time, UpdateFlags update_flags) {
 
 // -----------------------------------------------------------------------------
 
-void ChBodyAuxRef::SetPos(const ChVector3<>& pos) {
+void RbBodyAuxRef::SetPos(const ChVector3<>& pos) {
     SetFrameCOMToAbs(ChFramed(pos, GetRot()));
 }
 
-void ChBodyAuxRef::SetRot(const ChMatrix33<>& R) {
+void RbBodyAuxRef::SetRot(const ChMatrix33<>& R) {
     SetFrameCOMToAbs(ChFramed(GetPos(), R));
 }
 
-void ChBodyAuxRef::SetRot(const ChQuaternion<>& q) {
+void RbBodyAuxRef::SetRot(const ChQuaternion<>& q) {
     SetFrameCOMToAbs(ChFramed(GetPos(), q));
 }
 
-void ChBodyAuxRef::SetCoordsys(const ChCoordsysd& C) {
+void RbBodyAuxRef::SetCoordsys(const ChCoordsysd& C) {
     SetFrameCOMToAbs(ChFramed(C));
 }
 
-void ChBodyAuxRef::SetCoordsys(const ChVector3<>& v, const ChQuaternion<>& q) {
+void RbBodyAuxRef::SetCoordsys(const ChVector3<>& v, const ChQuaternion<>& q) {
     SetFrameCOMToAbs(ChFramed(v, q));
 }
 
-void ChBodyAuxRef::SetPosDt(const ChVector3<>& p_dt) {
-    ChBody::SetPosDt(p_dt);
+void RbBodyAuxRef::SetPosDt(const ChVector3<>& p_dt) {
+    RbBody::SetPosDt(p_dt);
     ref_to_abs.SetPosDt(GetPosDt());
     ref_to_abs.SetRotDt(GetRotDt());
 }
 
-void ChBodyAuxRef::SetLinVel(const ChVector3<>& p_dt) {
+void RbBodyAuxRef::SetLinVel(const ChVector3<>& p_dt) {
     SetPosDt(p_dt);
 }
 
-void ChBodyAuxRef::SetRotDt(const ChQuaternion<>& q_dt) {
-    ChBody::SetRotDt(q_dt);
+void RbBodyAuxRef::SetRotDt(const ChQuaternion<>& q_dt) {
+    RbBody::SetRotDt(q_dt);
     ref_to_abs.SetPosDt(GetPosDt());
     ref_to_abs.SetRotDt(GetRotDt());
 }
 
-void ChBodyAuxRef::SetAngVelLocal(const ChVector3<>& w) {
-    ChBody::SetAngVelLocal(w);
+void RbBodyAuxRef::SetAngVelLocal(const ChVector3<>& w) {
+    RbBody::SetAngVelLocal(w);
     ref_to_abs.SetPosDt(GetPosDt());
     ref_to_abs.SetRotDt(GetRotDt());
 }
 
-void ChBodyAuxRef::SetAngVelParent(const ChVector3<>& w) {
-    ChBody::SetAngVelParent(w);
+void RbBodyAuxRef::SetAngVelParent(const ChVector3<>& w) {
+    RbBody::SetAngVelParent(w);
     ref_to_abs.SetPosDt(GetPosDt());
     ref_to_abs.SetRotDt(GetRotDt());
 }
 
-void ChBodyAuxRef::SetCoordsysDt(const ChCoordsysd& csys_dt) {
-    ChBody::SetCoordsysDt(csys_dt);
+void RbBodyAuxRef::SetCoordsysDt(const ChCoordsysd& csys_dt) {
+    RbBody::SetCoordsysDt(csys_dt);
     ref_to_abs.SetPosDt(GetPosDt());
     ref_to_abs.SetRotDt(GetRotDt());
 }
 
 // -----------------------------------------------------------------------------
 
-void ChBodyAuxRef::ArchiveOut(ChArchiveOut& archive_out) {
+void RbBodyAuxRef::ArchiveOut(ChArchiveOut& archive_out) {
     // version number
-    archive_out.VersionWrite<ChBodyAuxRef>();
+    archive_out.VersionWrite<RbBodyAuxRef>();
 
     // serialize parent class
-    ChBody::ArchiveOut(archive_out);
+    RbBody::ArchiveOut(archive_out);
 
     // serialize all member data:
     archive_out << CHNVP(ref_to_com);
@@ -138,16 +145,16 @@ void ChBodyAuxRef::ArchiveOut(ChArchiveOut& archive_out) {
 }
 
 /// Method to allow de serialization of transient data from archives.
-void ChBodyAuxRef::ArchiveIn(ChArchiveIn& archive_in) {
+void RbBodyAuxRef::ArchiveIn(ChArchiveIn& archive_in) {
     // version number
-    /*int version =*/archive_in.VersionRead<ChBodyAuxRef>();
+    /*int version =*/archive_in.VersionRead<RbBodyAuxRef>();
 
     // deserialize parent class
-    ChBody::ArchiveIn(archive_in);
+    RbBody::ArchiveIn(archive_in);
 
     // stream in all member data:
     archive_in >> CHNVP(ref_to_com);
     archive_in >> CHNVP(ref_to_abs);
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::mbd

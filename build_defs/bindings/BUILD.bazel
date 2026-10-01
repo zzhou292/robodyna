@@ -4,7 +4,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json"])
+exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json", "body_auxref_view_contract.json", "body_easy_view_contract.json"])
 
 # Pins are reviewed separately from the mutable generator inputs. Keep in sync
 # with the CMake contract; a source/API edit must not silently refresh these.
@@ -142,3 +142,29 @@ declaration_view(
     ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
 )
 filegroup(name = "system_smc_header", srcs = [":system_smc_declarations"], output_group = "header")
+
+declaration_view(
+    name = "body_auxref_declarations",
+    canonical = "//include/robodyna/mbd:RbBodyAuxRef.h",
+    canonical_path = "include/robodyna/mbd/RbBodyAuxRef.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h",
+    view_name = "BodyAuxRefDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChBodyAuxRef.h",
+    ledger = "//docs/migration:BODY_FAMILY_TRANSFORMATIONS.json",
+    original_sha256 = "e81fbff1442238c5f05d3e147a508291cb5f96494ae935e05f27cfdb1ee80bc4",
+    ledger_sha256 = "a87ca6cea0ec4b848fe00dd82f10747a4af42ec329622358aa28ada361a1d9fa",
+)
+filegroup(name = "body_auxref_header", srcs = [":body_auxref_declarations"], output_group = "header")
+
+declaration_view(
+    name = "body_easy_declarations",
+    canonical = "//include/robodyna/mbd:RbBodyEasy.h",
+    canonical_path = "include/robodyna/mbd/RbBodyEasy.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h",
+    view_name = "BodyEasyDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChBodyEasy.h",
+    ledger = "//docs/migration:BODY_FAMILY_TRANSFORMATIONS.json",
+    original_sha256 = "0a399a32cbabb3710f674fe7583230df52d9e8e0a1f161cb74791156b056191b",
+    ledger_sha256 = "a87ca6cea0ec4b848fe00dd82f10747a4af42ec329622358aa28ada361a1d9fa",
+)
+filegroup(name = "body_easy_header", srcs = [":body_easy_declarations"], output_group = "header")

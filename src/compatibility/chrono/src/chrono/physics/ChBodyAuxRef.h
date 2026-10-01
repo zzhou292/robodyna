@@ -5,101 +5,21 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban
 // =============================================================================
 
+// Robodyna compatibility route; canonical definitions have one compile owner.
 #ifndef CHBODYAUXREF_H
 #define CHBODYAUXREF_H
-
 #include "chrono/physics/ChBody.h"
+#include "robodyna/mbd/RbBodyAuxRef.h"
 
 namespace chrono {
-
-/// Class for rigid bodies defined with respect to a non-centroidal reference frame.
-///
-/// An auxiliary reference frame is added to the base ChBody class offering the flexibility of placing collision
-/// and visual shapes, as well as markers, relative to a potentially more convenient frame than relative to the
-/// centroidal reference frame. The caller is responsible for specifying the location and orientation of the
-/// centroidal frame at the body Center Of Mass (COM).
-///
-/// Additional information can be found in the @ref rigid_bodies manual page.
-class ChApi ChBodyAuxRef : public ChBody {
-  public:
-    ChBodyAuxRef() : ChBody() {}
-    ChBodyAuxRef(const ChBodyAuxRef& other);
-    ~ChBodyAuxRef() {}
-
-    /// "Virtual" copy constructor (covariant return type).
-    virtual ChBodyAuxRef* Clone() const override { return new ChBodyAuxRef(*this); }
-
-    /// Set the auxiliary reference frame with respect to the absolute frame.
-    /// This moves the entire body; the body COM is rigidly moved as well.
-    void SetFrameRefToAbs(const ChFramed& frame);
-
-    /// Get the auxiliary reference frame with respect to the absolute frame.
-    /// Note that, in general, this is different from GetFrameCOMToAbs().
-    virtual const ChFrameMoving<>& GetFrameRefToAbs() const override { return ref_to_abs; }
-
-    /// Set the body COM frame with respect to the absolute frame.
-    /// This moves the entire body; the body REF is rigidly moved as well.
-    void SetFrameCOMToAbs(const ChFramed& frame);
-
-    /// Set the COM frame with respect to the auxiliary reference frame.
-    /// Note that this also moves the body absolute COM (the REF is fixed).
-    /// The position of contained ChMarker objects, if any, is not changed with respect to the reference.
-    void SetFrameCOMToRef(const ChFramed& frame);
-
-    /// Get the COM frame with respect to the auxiliary reference frame.
-    ChFramed GetFrameCOMToRef() const { return ref_to_com.GetInverse(); }
-
-    /// Set the auxiliary reference frame with respect to the COM frame.
-    /// Note that this does not move the body absolute COM (the COM is fixed).
-    void SetFrameRefToCOM(const ChFramed& frame) { ref_to_com = frame; }
-
-    /// Get the auxiliary reference frame with respect to the COM frame.
-    const ChFramed& GetFrameRefToCOM() const { return ref_to_com; }
-
-    /// Update all auxiliary data of the rigid body and of
-    /// its children (markers, forces..)
-    virtual void Update(double time, UpdateFlags update_flags) override;
-
-    // SERIALIZATION
-
-    /// Method to allow serialization of transient data to archives.
-    virtual void ArchiveOut(ChArchiveOut& archive_out) override;
-
-    /// Method to allow deserialization of transient data from archives.
-    virtual void ArchiveIn(ChArchiveIn& archive_in) override;
-
-  public:
-    // These functions override the ChBodyFrame (ChFrame) functions for setting position and rotation.
-    // In addition to setting the COM frame, they also must adjust ref_to_abs. Indeed, any of these
-    // functions move the entire body and as such the body REF frame must also be moved.
-
-    virtual void SetPos(const ChVector3<>& pos) override;
-    virtual void SetRot(const ChMatrix33<>& R) override;
-    virtual void SetRot(const ChQuaternion<>& q) override;
-    virtual void SetCoordsys(const ChCoordsysd& C) override;
-    virtual void SetCoordsys(const ChVector3<>& v, const ChQuaternion<>& q) override;
-
-    virtual void SetPosDt(const ChVector3<>& p_dt) override;
-    virtual void SetLinVel(const ChVector3<>& p_dt) override;
-    virtual void SetRotDt(const ChQuaternion<>& q_dt) override;
-    virtual void SetAngVelLocal(const ChVector3<>& w) override;
-    virtual void SetAngVelParent(const ChVector3<>& w) override;
-    virtual void SetCoordsysDt(const ChCoordsysd& csys_dt) override;
-
-  private:
-    ChFrameMoving<> ref_to_com;  ///< auxiliary REF location, relative to COM
-    ChFrameMoving<> ref_to_abs;  ///< auxiliary REF location, relative to abs coordinates
-};
-
-CH_CLASS_VERSION(ChBodyAuxRef, 0)
-
-}  // end namespace chrono
+using ChBodyAuxRef = ::robodyna::mbd::RbBodyAuxRef;
+}  // namespace chrono
 
 #endif

@@ -5,11 +5,12 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban, Arman Pazouki
+// Robodyna adaptation: canonical body-family implementation; legacy archive tags and equations retained.
 // =============================================================================
 //
 // Classes for creating easy-to-use bodies that optionally include contact and
@@ -17,6 +18,7 @@
 //
 // =============================================================================
 
+#include "robodyna/mbd/RbBodyEasy.h"
 #include "chrono/physics/ChBodyEasy.h"
 #include "chrono/physics/ChMassProperties.h"
 
@@ -30,18 +32,37 @@
 #include "chrono/collision/bullet/ChCollisionUtilsBullet.h"
 
 namespace chrono {
+// Keep the exact inherited factory and casting identities through reverse aliases.
 CH_FACTORY_REGISTER(ChBodyEasySphere)
 CH_UPCASTING(ChBodyEasySphere, ChBody)
+CH_FACTORY_REGISTER(ChBodyEasyEllipsoid)
+CH_UPCASTING(ChBodyEasyEllipsoid, ChBody)
+CH_FACTORY_REGISTER(ChBodyEasyCylinder)
+CH_UPCASTING(ChBodyEasyCylinder, ChBody)
+CH_FACTORY_REGISTER(ChBodyEasyBox)
+CH_UPCASTING(ChBodyEasyBox, ChBody)
+CH_FACTORY_REGISTER(ChBodyEasyConvexHull)
+CH_UPCASTING(ChBodyEasyConvexHull, ChBody)
+CH_FACTORY_REGISTER(ChBodyEasyConvexHullAuxRef)
+CH_UPCASTING(ChBodyEasyConvexHullAuxRef, ChBodyAuxRef)
+CH_FACTORY_REGISTER(ChBodyEasyMesh)
+CH_UPCASTING(ChBodyEasyMesh, ChBodyAuxRef)
+CH_FACTORY_REGISTER(ChBodyEasyClusterOfSpheres)
+CH_UPCASTING(ChBodyEasyClusterOfSpheres, ChBody)
+}
 
-ChBodyEasySphere::ChBodyEasySphere(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+namespace robodyna::mbd {
+// Implementation-only lookup keeps inherited helper resolution and arithmetic unchanged.
+using namespace ::chrono;
+RbBodyEasySphere::RbBodyEasySphere(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(radius, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasySphere::ChBodyEasySphere(double radius, double density, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+RbBodyEasySphere::RbBodyEasySphere(double radius, double density, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(radius, density, true, true, material);
 }
 
-void ChBodyEasySphere::SetupBody(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) {
+void RbBodyEasySphere::SetupBody(double radius, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) {
     double mmass = density * (CH_4_3 * CH_PI * std::pow(radius, 3));
     double inertia = (2.0 / 5.0) * mmass * std::pow(radius, 2);
 
@@ -60,32 +81,29 @@ void ChBodyEasySphere::SetupBody(double radius, double density, bool create_visu
     }
 }
 
-void ChBodyEasySphere::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasySphere>();
+void RbBodyEasySphere::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasySphere>();
 }
 
-void* ChBodyEasySphere::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasySphere>();
+void* RbBodyEasySphere::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasySphere>();
 
-    ChBodyEasySphere* new_obj = new ChBodyEasySphere();
+    RbBodyEasySphere* new_obj = new RbBodyEasySphere();
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
-CH_FACTORY_REGISTER(ChBodyEasyEllipsoid)
-CH_UPCASTING(ChBodyEasyEllipsoid, ChBody)
-
-ChBodyEasyEllipsoid::ChBodyEasyEllipsoid(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+RbBodyEasyEllipsoid::RbBodyEasyEllipsoid(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material)
+    : RbBody() {
     SetupBody(axes, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyEllipsoid::ChBodyEasyEllipsoid(const ChVector3d& axes, double density, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+RbBodyEasyEllipsoid::RbBodyEasyEllipsoid(const ChVector3d& axes, double density, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(axes, density, true, true, material);
 }
 
-void ChBodyEasyEllipsoid::SetupBody(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) {
+void RbBodyEasyEllipsoid::SetupBody(const ChVector3d& axes, double density, bool create_visualization, bool create_collision, std::shared_ptr<ChContactMaterial> material) {
     double mmass = density * ((1 / 6.0) * CH_PI * axes.x() * axes.y() * axes.z());
     double inertiax = (1 / 20.0) * mmass * (std::pow(axes.y(), 2) + std::pow(axes.z(), 2));
     double inertiay = (1 / 20.0) * mmass * (std::pow(axes.x(), 2) + std::pow(axes.z(), 2));
@@ -106,38 +124,35 @@ void ChBodyEasyEllipsoid::SetupBody(const ChVector3d& axes, double density, bool
     }
 }
 
-void ChBodyEasyEllipsoid::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyEllipsoid>();
+void RbBodyEasyEllipsoid::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyEllipsoid>();
 }
 
-void* ChBodyEasyEllipsoid::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyEllipsoid>();
+void* RbBodyEasyEllipsoid::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyEllipsoid>();
 
-    ChBodyEasyEllipsoid* new_obj = new ChBodyEasyEllipsoid();
+    RbBodyEasyEllipsoid* new_obj = new RbBodyEasyEllipsoid();
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
-CH_FACTORY_REGISTER(ChBodyEasyCylinder)
-CH_UPCASTING(ChBodyEasyCylinder, ChBody)
-
-ChBodyEasyCylinder::ChBodyEasyCylinder(ChAxis direction,
+RbBodyEasyCylinder::RbBodyEasyCylinder(ChAxis direction,
                                        double radius,
                                        double height,
                                        double density,
                                        bool create_visualization,
                                        bool create_collision,
                                        std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+    : RbBody() {
     SetupBody(direction, radius, height, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyCylinder::ChBodyEasyCylinder(ChAxis direction, double radius, double height, double density, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+RbBodyEasyCylinder::RbBodyEasyCylinder(ChAxis direction, double radius, double height, double density, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(direction, radius, height, density, true, true, material);
 }
 
-void ChBodyEasyCylinder::SetupBody(ChAxis direction,
+void RbBodyEasyCylinder::SetupBody(ChAxis direction,
                                    double radius,
                                    double height,
                                    double density,
@@ -179,39 +194,36 @@ void ChBodyEasyCylinder::SetupBody(ChAxis direction,
     }
 }
 
-void ChBodyEasyCylinder::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyCylinder>();
+void RbBodyEasyCylinder::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyCylinder>();
 }
 
-void* ChBodyEasyCylinder::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyCylinder>();
+void* RbBodyEasyCylinder::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyCylinder>();
 
-    ChBodyEasyCylinder* new_obj = new ChBodyEasyCylinder();
+    RbBodyEasyCylinder* new_obj = new RbBodyEasyCylinder();
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
 
-CH_FACTORY_REGISTER(ChBodyEasyBox)
-CH_UPCASTING(ChBodyEasyBox, ChBody)
-
-ChBodyEasyBox::ChBodyEasyBox(double Xsize,
+RbBodyEasyBox::RbBodyEasyBox(double Xsize,
                              double Ysize,
                              double Zsize,
                              double density,
                              bool create_visualization,
                              bool create_collision,
                              std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+    : RbBody() {
     SetupBody(Xsize, Ysize, Zsize, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyBox::ChBodyEasyBox(double Xsize, double Ysize, double Zsize, double density, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+RbBodyEasyBox::RbBodyEasyBox(double Xsize, double Ysize, double Zsize, double density, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(Xsize, Ysize, Zsize, density, true, true, material);
 }
 
-void ChBodyEasyBox::SetupBody(double Xsize,
+void RbBodyEasyBox::SetupBody(double Xsize,
                               double Ysize,
                               double Zsize,
                               double density,
@@ -235,41 +247,38 @@ void ChBodyEasyBox::SetupBody(double Xsize,
     }
 }
 
-void ChBodyEasyBox::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyBox>();
+void RbBodyEasyBox::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyBox>();
 
     // ChBodyEasy do not hold any variables; only parent classes have.
     // by archiving the ChVariables, ChVisualModel and ChCollisionModel
     // all the properties will be retrieved
 }
 
-void* ChBodyEasyBox::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyBox>();
+void* RbBodyEasyBox::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyBox>();
 
-    ChBodyEasyBox* new_obj = new ChBodyEasyBox();
+    RbBodyEasyBox* new_obj = new RbBodyEasyBox();
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
 
-CH_FACTORY_REGISTER(ChBodyEasyConvexHull)
-CH_UPCASTING(ChBodyEasyConvexHull, ChBody)
-
-ChBodyEasyConvexHull::ChBodyEasyConvexHull(const std::vector<ChVector3d>& points,
+RbBodyEasyConvexHull::RbBodyEasyConvexHull(const std::vector<ChVector3d>& points,
                                            double density,
                                            bool create_visualization,
                                            bool create_collision,
                                            std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+    : RbBody() {
     SetupBody(points, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyConvexHull::ChBodyEasyConvexHull(const std::vector<ChVector3d>& points, double density, std::shared_ptr<ChContactMaterial> material) : ChBody() {
+RbBodyEasyConvexHull::RbBodyEasyConvexHull(const std::vector<ChVector3d>& points, double density, std::shared_ptr<ChContactMaterial> material) : RbBody() {
     SetupBody(points, density, true, true, material);
 }
 
-void ChBodyEasyConvexHull::SetupBody(const std::vector<ChVector3d>& points,
+void RbBodyEasyConvexHull::SetupBody(const std::vector<ChVector3d>& points,
                                      double density,
                                      bool create_visualization,
                                      bool create_collision,
@@ -317,42 +326,39 @@ void ChBodyEasyConvexHull::SetupBody(const std::vector<ChVector3d>& points,
     m_mesh = vshape->GetMesh();
 }
 
-void ChBodyEasyConvexHull::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyConvexHull>();
+void RbBodyEasyConvexHull::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyConvexHull>();
 
     archive_out << CHNVP(m_mesh);
 }
 
-void* ChBodyEasyConvexHull::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyConvexHull>();
+void* RbBodyEasyConvexHull::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyConvexHull>();
 
     std::shared_ptr<ChTriangleMeshConnected> mesh;
     archive_in >> CHNVP(mesh);
 
-    ChBodyEasyConvexHull* new_obj = new ChBodyEasyConvexHull(mesh);
+    RbBodyEasyConvexHull* new_obj = new RbBodyEasyConvexHull(mesh);
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
 
-CH_FACTORY_REGISTER(ChBodyEasyConvexHullAuxRef)
-CH_UPCASTING(ChBodyEasyConvexHullAuxRef, ChBodyAuxRef)
-
-ChBodyEasyConvexHullAuxRef::ChBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points,
+RbBodyEasyConvexHullAuxRef::RbBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points,
                                                        double density,
                                                        bool create_visualization,
                                                        bool create_collision,
                                                        std::shared_ptr<ChContactMaterial> material)
-    : ChBodyAuxRef() {
+    : RbBodyAuxRef() {
     SetupBody(points, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyConvexHullAuxRef::ChBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points, double density, std::shared_ptr<ChContactMaterial> material) : ChBodyAuxRef() {
+RbBodyEasyConvexHullAuxRef::RbBodyEasyConvexHullAuxRef(const std::vector<ChVector3d>& points, double density, std::shared_ptr<ChContactMaterial> material) : RbBodyAuxRef() {
     SetupBody(points, density, true, true, material);
 }
 
-void ChBodyEasyConvexHullAuxRef::SetupBody(const std::vector<ChVector3d>& points,
+void RbBodyEasyConvexHullAuxRef::SetupBody(const std::vector<ChVector3d>& points,
                                            double density,
                                            bool create_visualization,
                                            bool create_collision,
@@ -406,61 +412,58 @@ void ChBodyEasyConvexHullAuxRef::SetupBody(const std::vector<ChVector3d>& points
     m_mesh = vshape->GetMesh();
 }
 
-void ChBodyEasyConvexHullAuxRef::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyConvexHullAuxRef>();
+void RbBodyEasyConvexHullAuxRef::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyConvexHullAuxRef>();
 
     archive_out << CHNVP(m_mesh);
 }
 
-void* ChBodyEasyConvexHullAuxRef::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyConvexHullAuxRef>();
+void* RbBodyEasyConvexHullAuxRef::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyConvexHullAuxRef>();
 
     std::shared_ptr<ChTriangleMeshConnected> mesh;
     archive_in >> CHNVP(mesh);
 
-    ChBodyEasyConvexHullAuxRef* new_obj = new ChBodyEasyConvexHullAuxRef(mesh);
+    RbBodyEasyConvexHullAuxRef* new_obj = new RbBodyEasyConvexHullAuxRef(mesh);
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
 
-CH_FACTORY_REGISTER(ChBodyEasyMesh)
-CH_UPCASTING(ChBodyEasyMesh, ChBodyAuxRef)
-
-ChBodyEasyMesh::ChBodyEasyMesh(const std::string& filename,
+RbBodyEasyMesh::RbBodyEasyMesh(const std::string& filename,
                                double density,
                                bool compute_mass,
                                bool create_visualization,
                                bool create_collision,
                                std::shared_ptr<ChContactMaterial> material,
                                double sphere_swept)
-    : ChBodyAuxRef() {
+    : RbBodyAuxRef() {
     auto trimesh = ChTriangleMeshConnected::CreateFromWavefrontFile(filename, true, true);
     SetupBody(trimesh, filename, density, compute_mass, create_visualization, create_collision, material, sphere_swept);
 }
 
-ChBodyEasyMesh::ChBodyEasyMesh(std::shared_ptr<ChTriangleMeshConnected> mesh,
+RbBodyEasyMesh::RbBodyEasyMesh(std::shared_ptr<ChTriangleMeshConnected> mesh,
                                double density,
                                bool compute_mass,
                                bool create_visualization,
                                bool create_collision,
                                std::shared_ptr<ChContactMaterial> material,
                                double sphere_swept)
-    : ChBodyAuxRef() {
+    : RbBodyAuxRef() {
     SetupBody(mesh, "EasyMesh", density, compute_mass, create_visualization, create_collision, material, sphere_swept);
 }
 
-ChBodyEasyMesh::ChBodyEasyMesh(const std::string& filename, double density, std::shared_ptr<ChContactMaterial> material, double sphere_swept) : ChBodyAuxRef() {
+RbBodyEasyMesh::RbBodyEasyMesh(const std::string& filename, double density, std::shared_ptr<ChContactMaterial> material, double sphere_swept) : RbBodyAuxRef() {
     auto trimesh = ChTriangleMeshConnected::CreateFromWavefrontFile(filename, true, true);
     SetupBody(trimesh, filename, density, true, true, true, material, sphere_swept);
 }
 
-ChBodyEasyMesh::ChBodyEasyMesh(std::shared_ptr<ChTriangleMeshConnected> mesh, double density, std::shared_ptr<ChContactMaterial> material, double sphere_swept) : ChBodyAuxRef() {
+RbBodyEasyMesh::RbBodyEasyMesh(std::shared_ptr<ChTriangleMeshConnected> mesh, double density, std::shared_ptr<ChContactMaterial> material, double sphere_swept) : RbBodyAuxRef() {
     SetupBody(mesh, "EasyMesh", density, true, true, true, material, sphere_swept);
 }
 
-void ChBodyEasyMesh::SetupBody(std::shared_ptr<ChTriangleMeshConnected> trimesh,
+void RbBodyEasyMesh::SetupBody(std::shared_ptr<ChTriangleMeshConnected> trimesh,
                                const std::string& name,
                                double density,
                                bool compute_mass,
@@ -503,46 +506,43 @@ void ChBodyEasyMesh::SetupBody(std::shared_ptr<ChTriangleMeshConnected> trimesh,
     }
 }
 
-void ChBodyEasyMesh::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyMesh>();
+void RbBodyEasyMesh::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyMesh>();
 
     // ChBodyEasy do not hold any variables; only parent classes have.
     // by archiving the ChVariables, ChVisualModel and ChCollisionModel
     // all the properties will be retrieved
 }
 
-void* ChBodyEasyMesh::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyMesh>();
+void* RbBodyEasyMesh::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyMesh>();
 
-    ChBodyEasyMesh* new_obj = new ChBodyEasyMesh();
+    RbBodyEasyMesh* new_obj = new RbBodyEasyMesh();
 
     return new_obj;
 }
 
 // -----------------------------------------------------------------------------
 
-CH_FACTORY_REGISTER(ChBodyEasyClusterOfSpheres)
-CH_UPCASTING(ChBodyEasyClusterOfSpheres, ChBody)
-
-ChBodyEasyClusterOfSpheres::ChBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,
+RbBodyEasyClusterOfSpheres::RbBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,
                                                        const std::vector<double>& radii,
                                                        double density,
                                                        bool create_visualization,
                                                        bool create_collision,
                                                        std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+    : RbBody() {
     SetupBody(positions, radii, density, create_visualization, create_collision, material);
 }
 
-ChBodyEasyClusterOfSpheres::ChBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,
+RbBodyEasyClusterOfSpheres::RbBodyEasyClusterOfSpheres(const std::vector<ChVector3d>& positions,
                                                        const std::vector<double>& radii,
                                                        double density,
                                                        std::shared_ptr<ChContactMaterial> material)
-    : ChBody() {
+    : RbBody() {
     SetupBody(positions, radii, density, true, true, material);
 }
 
-void ChBodyEasyClusterOfSpheres::SetupBody(const std::vector<ChVector3d>& positions,
+void RbBodyEasyClusterOfSpheres::SetupBody(const std::vector<ChVector3d>& positions,
                                            const std::vector<double>& radii,
                                            double density,
                                            bool create_visualization,
@@ -604,20 +604,20 @@ void ChBodyEasyClusterOfSpheres::SetupBody(const std::vector<ChVector3d>& positi
     }
 }
 
-void ChBodyEasyClusterOfSpheres::ArchiveOutConstructor(ChArchiveOut& archive_out) {
-    archive_out.VersionWrite<ChBodyEasyClusterOfSpheres>();
+void RbBodyEasyClusterOfSpheres::ArchiveOutConstructor(ChArchiveOut& archive_out) {
+    archive_out.VersionWrite<RbBodyEasyClusterOfSpheres>();
 
     // ChBodyEasy do not hold any variables; only parent classes have.
     // by archiving the ChVariables, ChVisualModel and ChCollisionModel
     // all the properties will be retrieved
 }
 
-void* ChBodyEasyClusterOfSpheres::ArchiveInConstructor(ChArchiveIn& archive_in) {
-    /*int version =*/archive_in.VersionRead<ChBodyEasyClusterOfSpheres>();
+void* RbBodyEasyClusterOfSpheres::ArchiveInConstructor(ChArchiveIn& archive_in) {
+    /*int version =*/archive_in.VersionRead<RbBodyEasyClusterOfSpheres>();
 
-    ChBodyEasyClusterOfSpheres* new_obj = new ChBodyEasyClusterOfSpheres();
+    RbBodyEasyClusterOfSpheres* new_obj = new RbBodyEasyClusterOfSpheres();
 
     return new_obj;
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::mbd
