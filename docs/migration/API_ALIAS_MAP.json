@@ -1,6 +1,6 @@
 {
   "schema": "robodyna.api_alias_map.v1",
-  "status": "qualified initial alias surface; canonical inertia implementation qualified separately",
+  "status": "qualified initial public surface; actual canonical body and inertia implementations qualified separately",
   "scope": "N1 initial useful closure, not all retained Chrono APIs",
   "headers": [
     {
@@ -139,8 +139,11 @@
           "canonical": "robodyna::mbd::RbBody"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse alias",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/mbd/bodies/RbBody.cpp",
+      "archive_identity": "ChBody",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_body"
     },
     {
       "module": "mbd",

@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["openssl.bzl", "vsg.bzl"])
+exports_files(["openssl.bzl", "vsg.bzl", "swig.bzl", "python_bindings.bzl"])
 
 cc_test(
     name = "openssl_sdk_test",

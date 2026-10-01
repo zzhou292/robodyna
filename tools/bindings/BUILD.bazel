@@ -1,0 +1,37 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "declaration_library",
+    srcs = ["declaration_view.py"],
+    deps = ["//tools/migration:source_transform"],
+)
+
+py_binary(
+    name = "declaration_view",
+    srcs = ["declaration_view.py"],
+    main = "declaration_view.py",
+    deps = [":declaration_library"],
+)
+
+py_test(
+    name = "declaration_view_test",
+    srcs = ["tests/test_declaration_view.py"],
+    main = "tests/test_declaration_view.py",
+    deps = [":declaration_library"],
+    size = "small",
+)
+
+exports_files(["declaration_view.py"])
+
+py_binary(name = "run_swig", srcs = ["run_swig.py"], main = "run_swig.py")
+
+py_library(name = "swig_runner_library", srcs = ["run_swig.py"])
+py_test(
+    name = "tool_environment_test",
+    srcs = ["tests/test_tool_environment.py"],
+    main = "tests/test_tool_environment.py",
+    deps = [":swig_runner_library"],
+    size = "small",
+)

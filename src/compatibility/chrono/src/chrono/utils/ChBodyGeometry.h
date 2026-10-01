@@ -37,9 +37,11 @@
 #include "chrono/assets/ChVisualShape.h"
 #include "chrono/geometry/ChGeometry.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 class ChLinkTSDA;
 
 /// Body visualization mode.

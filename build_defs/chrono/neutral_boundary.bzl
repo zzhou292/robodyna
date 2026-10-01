@@ -1,20 +1,17 @@
 """Bazel-analysis assertions for the actual neutral header/link/source closure."""
 
 load(":dependency_closure.bzl", "NativeClosure", "native_closure_aspect")
-load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS", "NEUTRAL_SOURCE_RELOCATIONS", "NEUTRAL_CANONICAL_HEADERS", "NEUTRAL_HEADER_TARGETS")
+load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS", "NEUTRAL_CANONICAL_HEADERS", "NEUTRAL_HEADER_TARGETS")
+load(":source_paths.bzl", "current_source_path")
 load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
 load(":visual_sources.bzl", "VISUAL_ADAPTER_SOURCES", "VISUAL_SOURCES", "VISUAL_TARGETS")
-
-def _current_source(path):
-    relocated = NEUTRAL_SOURCE_RELOCATIONS.get(path)
-    return relocated[2:].replace(":", "/") if relocated else "src/compatibility/chrono/" + path
 
 def _boundary_impl(ctx):
     expected = {}
     allowed_headers = {}
     for component, paths in NEUTRAL_SOURCES.items():
         for path in paths:
-            expected[_current_source(path)] = str(Label(NEUTRAL_TARGETS[component]))
+            expected[current_source_path(path)] = str(Label(NEUTRAL_TARGETS[component]))
     for paths in NEUTRAL_HEADERS.values():
         for path in paths:
             allowed_headers["src/compatibility/chrono/" + path] = True
@@ -56,7 +53,7 @@ def _boundary_impl(ctx):
         fail("Neutral closure does not contain the exact 21 reviewed translation units")
     # Check the composed aggregate as well: proving the lower libraries are
     # narrow would not detect a leftover second compilation in the aggregate.
-    original = {_current_source(path): True for paths in NATIVE_SOURCE_GROUPS.values() for path in paths}
+    original = {current_source_path(path): True for paths in NATIVE_SOURCE_GROUPS.values() for path in paths}
     for label in VISUAL_ADAPTER_SOURCES:
         original[label[2:].replace(":", "/")] = True
     composed_owners = dict(expected)

@@ -47,7 +47,8 @@ class NeutralOwnership(unittest.TestCase):
                 else:
                     contents = (SOURCE / path).read_bytes()
                 self.assertEqual(hashlib.sha256(contents).hexdigest(), digest, path)
-        for original, label in owners["NEUTRAL_SOURCE_RELOCATIONS"].items():
+        for original, label in assignments(LOCATIONS)["SOURCE_RELOCATIONS"].items():
+            self.assertIn(original, all_sources)
             entry = transformations["src/compatibility/chrono/" + original]
             self.assertEqual(label.removeprefix("//").replace(":", "/"), entry["canonical_path"])
         for entry in transformations.values():
@@ -60,7 +61,7 @@ class NeutralOwnership(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    MANIFEST, NEUTRAL, NATIVE, ANCHOR, TRANSFORMATIONS = [Path(arg) for arg in sys.argv[1:6]]
+    MANIFEST, NEUTRAL, NATIVE, ANCHOR, TRANSFORMATIONS, LOCATIONS = [Path(arg) for arg in sys.argv[1:7]]
     SOURCE = ANCHOR.parent
-    del sys.argv[1:6]
+    del sys.argv[1:7]
     unittest.main()

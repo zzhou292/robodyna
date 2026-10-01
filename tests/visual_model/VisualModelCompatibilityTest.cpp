@@ -64,6 +64,17 @@ void ExpectPoint(const chrono::ChVector3d& value, const chrono::ChVector3d& expe
     EXPECT_DOUBLE_EQ(value.z(), expected.z());
 }
 
+TEST(VisualModelCompatibility, PublicSettingsPrintingDoesNotRequireYaml) {
+    chrono::ChVisualShapeFEA::Settings settings;
+    settings.smooth_faces = true;
+    settings.wireframe = true;
+    ::testing::internal::CaptureStdout();
+    settings.PrintInfo();
+    const auto output = ::testing::internal::GetCapturedStdout();
+    EXPECT_NE(output.find("smooth faces:  1"), std::string::npos);
+    EXPECT_NE(output.find("wireframe:     1"), std::string::npos);
+}
+
 TEST(VisualModelCompatibility, UpdatesOrdinaryShapesBeforeFeaAndPreservesWorldCoordinates) {
     MeshVisual fixture({1, 2, 3});
     auto model = fixture.mesh->GetVisualModel();

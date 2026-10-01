@@ -1,10 +1,11 @@
 # Chrono to Robodyna: public API and implementation migration
 
-Status: implementation authorized; first API, compatibility-fixture and inertia
-batches are in progress on `work/robodyna-api-renaming`. Audited repository
+Status: implementation active on `work/robodyna-api-renaming`. Public API,
+archive identity, inertia, generic visualization and actual body checkpoints
+are qualified; mesh/system implementation moves are next. Audited repository
 baseline: `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
 
-Current scope: plan the Chrono-to-Robodyna naming migration. OpenRadioss removal
+Current scope: execute the Chrono-to-Robodyna naming migration. OpenRadioss removal
 is explicitly deferred by the user; the boundary discussion below records future
 work and does not authorize source, fixture or attribution removal in this series.
 
@@ -50,6 +51,14 @@ independent MBD or FEA linkage.
 All Chrono modules are retained, but only the named build/runtime gates in
 [CAPABILITIES.md](CAPABILITIES.md) are qualified. Optional SDKs, Python/C# binding
 builds, full vehicle subsystems and independent FEA/MBD builds remain separate work.
+
+The subsequent body checkpoint qualifies the optional core Python runtime and
+both native binding wrappers, with one shared backend. It does not qualify
+managed C# execution or every optional module. See `RENAME_QUALIFICATION.json`.
+The current plan preserves explicit aggregate dependencies while real types move;
+full domain independence still requires the service/contact/assembly seams in N4.
+This ordering allows source-compatible implementation progress without pretending
+that the existing domain cycles have disappeared.
 
 ## 2. Naming decisions
 

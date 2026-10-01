@@ -1,7 +1,8 @@
 """Real native ownership for unchanged, domain-neutral Chrono implementation."""
 
 load(":native_component.bzl", "native_component_library")
-load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_SOURCE_RELOCATIONS", "NEUTRAL_HEADER_TARGETS")
+load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_HEADER_TARGETS")
+load(":source_paths.bzl", "current_source_label")
 
 _SOURCE_ROOT = "//src/compatibility/chrono:"
 
@@ -15,7 +16,7 @@ def neutral_library(name, component, deps):
     """
     native_component_library(
         name = name,
-        srcs = [NEUTRAL_SOURCE_RELOCATIONS.get(path, _SOURCE_ROOT + path) for path in NEUTRAL_SOURCES[component]],
+        srcs = [current_source_label(path) for path in NEUTRAL_SOURCES[component]],
         hdrs = [_SOURCE_ROOT + path for path in NEUTRAL_HEADERS[component]],
         deps = deps + NEUTRAL_HEADER_TARGETS.get(component, []),
         tags = ["manual", "neutral-mechanics", "cpu-only"],

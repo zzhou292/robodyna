@@ -23,10 +23,12 @@
 #include "chrono/functions/ChFunction.h"
 #include "chrono/physics/ChObject.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // Forward reference
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 
 /// Markers are auxiliary reference frames attached to a rigid body and moving with the body.
 /// Most often, markers are used as references to build ChLink() constraints between two rigid bodies.

@@ -56,3 +56,10 @@ system_openssl(name = "openssl")
 # owned source; this repository imports no Chrono implementation library.
 local_vsg = use_repo_rule("//build_defs/sdk:vsg.bzl", "local_vsg")
 local_vsg(name = "vsg_sdk")
+
+# Optional binding build SDKs are explicitly selected local installations.
+# These repositories neither download tools nor install system packages.
+local_swig = use_repo_rule("//build_defs/sdk:swig.bzl", "local_swig")
+local_swig(name = "swig_sdk")
+python_bindings_sdk = use_repo_rule("//build_defs/sdk:python_bindings.bzl", "python_bindings_sdk")
+python_bindings_sdk(name = "python_sdk")

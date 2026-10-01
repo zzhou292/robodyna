@@ -1,0 +1,472 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBody.h",
+      "original_sha256": "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2",
+      "canonical_path": "include/robodyna/mbd/RbBody.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical body ownership and spelling; equations unchanged.\n",
+          "count": 1
+        },
+        {
+          "before": "CHBODY_H",
+          "after": "ROBODYNA_MBD_RBBODY_H",
+          "count": 2
+        },
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System and friend declarations precede the canonical namespace below.\n",
+          "count": 1
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "modal::ChModalAssembly",
+          "after": "chrono::modal::ChModalAssembly",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChAABB",
+          "after": "chrono::ChAABB",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChAssembly",
+          "after": "chrono::ChAssembly",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChBodyFrame",
+          "after": "chrono::ChBodyFrame",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChCollisionSystem",
+          "after": "chrono::ChCollisionSystem",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChConstraintTuple",
+          "after": "chrono::ChConstraintTuple",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChConstraintTuple_1vars",
+          "after": "chrono::ChConstraintTuple_1vars",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactable",
+          "after": "chrono::ChContactable",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChConveyor",
+          "after": "chrono::ChConveyor",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChForce",
+          "after": "chrono::ChForce",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChFrame",
+          "after": "chrono::ChFrame",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChFrameMoving",
+          "after": "chrono::ChFrameMoving",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChLoadableUVW",
+          "after": "chrono::ChLoadableUVW",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChMarker",
+          "after": "chrono::ChMarker",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33",
+          "after": "chrono::ChMatrix33",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix44",
+          "after": "chrono::ChMatrix44",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChPhysicsItem",
+          "after": "chrono::ChPhysicsItem",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChState",
+          "after": "chrono::ChState",
+          "count": 15,
+          "code_token": true
+        },
+        {
+          "before": "ChStateDelta",
+          "after": "chrono::ChStateDelta",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemDescriptor",
+          "after": "chrono::ChSystemDescriptor",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemMulticore",
+          "after": "chrono::ChSystemMulticore",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemMulticoreNSC",
+          "after": "chrono::ChSystemMulticoreNSC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChVariables",
+          "after": "chrono::ChVariables",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChVariablesBodyOwnMass",
+          "after": "chrono::ChVariablesBodyOwnMass",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 32,
+          "code_token": true
+        },
+        {
+          "before": "ChVectorDynamic",
+          "after": "chrono::ChVectorDynamic",
+          "count": 14,
+          "code_token": true
+        },
+        {
+          "before": "ChWrenchd",
+          "after": "chrono::ChWrenchd",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChSystem",
+          "after": "chrono::ChSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\nclass ChSystem;\nclass ChSystemMulticore;\nclass ChSystemMulticoreNSC;\nclass ChAssembly;\nclass ChConveyor;\nnamespace modal { class ChModalAssembly; }\n}\n\nnamespace robodyna::mbd {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbBody, 0)",
+          "after": "// The inherited class-version specialization follows in its required namespace.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::mbd::RbBody, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include <cmath>",
+          "after": "#include <cmath>\n#include \"robodyna/mbd/RbBodyFwd.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "91218797b23ed188a0c33363fc4804e779b485c50ee9689ef745ff74503e62e7"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChBody.cpp",
+      "original_sha256": "bf05c5152568de7b7b0032a82d85a28eb7b5f55c76204d3e209dd9fa3f8296ed",
+      "canonical_path": "src/mbd/bodies/RbBody.cpp",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban\n",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical body implementation; legacy archive identities retained.\n",
+          "count": 1
+        },
+        {
+          "before": "// Register into the object factory, to enable run-time dynamic creation and persistence\nCH_FACTORY_REGISTER(ChBody)\nCH_UPCASTING(ChBody, ChPhysicsItem)\nCH_UPCASTING(ChBody, ChBodyFrame)\nCH_UPCASTING(ChBody, ChContactable)\nCH_UPCASTING(ChBody, ChLoadableUVW)",
+          "after": "// Registration stays in the legacy namespace before the implementation below.",
+          "count": 1
+        },
+        {
+          "before": "ChBody",
+          "after": "RbBody",
+          "count": 94,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\n// Register into the object factory, to enable run-time dynamic creation and persistence\nCH_FACTORY_REGISTER(ChBody)\nCH_UPCASTING(ChBody, ChPhysicsItem)\nCH_UPCASTING(ChBody, ChBodyFrame)\nCH_UPCASTING(ChBody, ChContactable)\nCH_UPCASTING(ChBody, ChLoadableUVW)\n}\n\nnamespace robodyna::mbd {\n\n// Implementation-only lookup preserves existing expressions and ADL helper names.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mbd",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"\n#include \"chrono/physics/ChBody.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/collision/ChCollisionSystem.h",
+      "original_sha256": "22ba13849b817c7c56a9dda5a36b70e2ecdf493c9f22e99436616e36708074e1",
+      "canonical_path": "src/compatibility/chrono/src/chrono/collision/ChCollisionSystem.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISIONSYSTEM_H\n#define CH_COLLISIONSYSTEM_H\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/ChCollisionInfo.h\"\n#include \"chrono/core/ChApiCE.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n#include \"chrono/assets/ChColor.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISIONSYSTEM_H\n#define CH_COLLISIONSYSTEM_H\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/ChCollisionInfo.h\"\n#include \"chrono/core/ChApiCE.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n#include \"chrono/assets/ChColor.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/collision/bullet/ChCollisionModelBullet.h",
+      "original_sha256": "e00ed0de4b641709cb0c363bf935458a35bd614587c502077413e4181884c69d",
+      "canonical_path": "src/compatibility/chrono/src/chrono/collision/bullet/ChCollisionModelBullet.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISION_MODEL_BULLET_H\n#define CH_COLLISION_MODEL_BULLET_H\n\n#include <memory>\n#include <vector>\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/bullet/BulletCollision/CollisionShapes/cbtCompoundShape.h\"\n\n// forward references\nclass cbtCollisionObject;\nclass cbtTriangleMesh;\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISION_MODEL_BULLET_H\n#define CH_COLLISION_MODEL_BULLET_H\n\n#include <memory>\n#include <vector>\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/bullet/BulletCollision/CollisionShapes/cbtCompoundShape.h\"\n\n// forward references\nclass cbtCollisionObject;\nclass cbtTriangleMesh;\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/collision/multicore/ChCollisionModelMulticore.h",
+      "original_sha256": "a81cabbf59bdd2466402788e63fa72ede7526f2e80be554e3cfbe62d82685a6a",
+      "canonical_path": "src/compatibility/chrono/src/chrono/collision/multicore/ChCollisionModelMulticore.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2021 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Radu Serban, Hammad Mazhar\n// =============================================================================\n// Geometric model for the custom multicore Chrono collision system\n// =============================================================================\n\n#ifndef CH_COLLISION_MODEL_MULTICORE_H\n#define CH_COLLISION_MODEL_MULTICORE_H\n\n#include \"chrono/multicore_math/types.h\"\n\n#include \"chrono/collision/ChCollisionModel.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2021 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Radu Serban, Hammad Mazhar\n// =============================================================================\n// Geometric model for the custom multicore Chrono collision system\n// =============================================================================\n\n#ifndef CH_COLLISION_MODEL_MULTICORE_H\n#define CH_COLLISION_MODEL_MULTICORE_H\n\n#include \"chrono/multicore_math/types.h\"\n\n#include \"chrono/collision/ChCollisionModel.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChForce.h",
+      "original_sha256": "d462f2e4ca866d9a396be96792c1f1c3524868dd4bac81a68cad46e323a3c38c",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChForce.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CHFORCE_H\n#define CHFORCE_H\n\n#include <cfloat>\n#include <memory.h>\n#include <cmath>\n#include <cstdlib>\n#include <iostream>\n#include <string>\n\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/functions/ChFunction.h\"\n#include \"chrono/physics/ChObject.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CHFORCE_H\n#define CHFORCE_H\n\n#include <cfloat>\n#include <memory.h>\n#include <cmath>\n#include <cstdlib>\n#include <iostream>\n#include <string>\n\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/functions/ChFunction.h\"\n#include \"chrono/physics/ChObject.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChMarker.h",
+      "original_sha256": "1218383cafb894f6b1d0f6f92aa96b2263b9ac951716346d7534e3fb4b1fa429",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChMarker.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CHMARKER_H\n#define CHMARKER_H\n\n#include <cstdlib>\n#include <iostream>\n\n#include \"chrono/core/ChFrameMoving.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/functions/ChFunction.h\"\n#include \"chrono/physics/ChObject.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CHMARKER_H\n#define CHMARKER_H\n\n#include <cstdlib>\n#include <iostream>\n\n#include \"chrono/core/ChFrameMoving.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/functions/ChFunction.h\"\n#include \"chrono/physics/ChObject.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/utils/ChBodyGeometry.h",
+      "original_sha256": "ff9e719c3e2f5a87450b31489187fd22778face4f5d487f47038e459bc5e39c9",
+      "canonical_path": "src/compatibility/chrono/src/chrono/utils/ChBodyGeometry.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2024 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Radu Serban\n// =============================================================================\n//\n// Geometry definition for a body collision and visualization models\n//\n// =============================================================================\n\n#ifndef CH_BODY_GEOMETRY_H\n#define CH_BODY_GEOMETRY_H\n\n#include <string>\n#include <vector>\n\n#include \"chrono/core/ChApiCE.h\"\n\n#include \"chrono/geometry/ChBox.h\"\n#include \"chrono/geometry/ChSphere.h\"\n#include \"chrono/geometry/ChCone.h\"\n#include \"chrono/geometry/ChCylinder.h\"\n#include \"chrono/geometry/ChLine.h\"\n#include \"chrono/geometry/ChTriangleMeshConnected.h\"\n\n#include \"chrono/physics/ChContactMaterial.h\"\n\n#include \"chrono/assets/ChColor.h\"\n#include \"chrono/assets/ChVisualShape.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2024 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Radu Serban\n// =============================================================================\n//\n// Geometry definition for a body collision and visualization models\n//\n// =============================================================================\n\n#ifndef CH_BODY_GEOMETRY_H\n#define CH_BODY_GEOMETRY_H\n\n#include <string>\n#include <vector>\n\n#include \"chrono/core/ChApiCE.h\"\n\n#include \"chrono/geometry/ChBox.h\"\n#include \"chrono/geometry/ChSphere.h\"\n#include \"chrono/geometry/ChCone.h\"\n#include \"chrono/geometry/ChCylinder.h\"\n#include \"chrono/geometry/ChLine.h\"\n#include \"chrono/geometry/ChTriangleMeshConnected.h\"\n\n#include \"chrono/physics/ChContactMaterial.h\"\n\n#include \"chrono/assets/ChColor.h\"\n#include \"chrono/assets/ChVisualShape.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_multicore/ChDataManager.h",
+      "original_sha256": "894ece5616dbfd25ea47bd7dec1a59c3b4c91b7797dd7f82b2f3f64f546b782a",
+      "canonical_path": "src/compatibility/chrono/src/chrono_multicore/ChDataManager.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2016 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Hammad Mazhar, Radu Serban\n// =============================================================================\n//\n// Description: This class contains manages all data associated with a multicore\n// system. Rather than passing in individual data parameters to different parts\n// of the code like the collision detection and the solver, passing a pointer to\n// a data manager is more convenient from a development perspective.\n//\n// =============================================================================\n\n#pragma once\n\n#include <Eigen/Core>\n#include <memory>\n\n#include \"chrono/physics/ChContactContainer.h\"\n#include \"chrono/collision/multicore/ChCollisionData.h\"\n\n#include \"chrono_multicore/ChTimerMulticore.h\"\n#include \"chrono_multicore/ChMulticoreDefines.h\"\n#include \"chrono_multicore/ChSettings.h\"\n#include \"chrono_multicore/ChMeasures.h\"\n\n// ATTENTION: It is important for these to be included after sse.h!\n#include <Eigen/Sparse>\n#include <Eigen/Dense>\n\nusing Eigen::SparseMatrix;\nusing Eigen::Matrix;\nusing Eigen::VectorBlock;\nusing custom_vector;\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2016 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Hammad Mazhar, Radu Serban\n// =============================================================================\n//\n// Description: This class contains manages all data associated with a multicore\n// system. Rather than passing in individual data parameters to different parts\n// of the code like the collision detection and the solver, passing a pointer to\n// a data manager is more convenient from a development perspective.\n//\n// =============================================================================\n\n#pragma once\n\n#include <Eigen/Core>\n#include <memory>\n\n#include \"chrono/physics/ChContactContainer.h\"\n#include \"chrono/collision/multicore/ChCollisionData.h\"\n\n#include \"chrono_multicore/ChTimerMulticore.h\"\n#include \"chrono_multicore/ChMulticoreDefines.h\"\n#include \"chrono_multicore/ChSettings.h\"\n#include \"chrono_multicore/ChMeasures.h\"\n\n// ATTENTION: It is important for these to be included after sse.h!\n#include <Eigen/Sparse>\n#include <Eigen/Dense>\n\nusing Eigen::SparseMatrix;\nusing Eigen::Matrix;\nusing Eigen::VectorBlock;\nusing custom_vector;\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_sensor/metal/ChMetalSceneBuilder.h",
+      "original_sha256": "5ae72dddf4b7f1b642b62863bd7073ed50b1f6aaec9d46db283b4b9d436155b4",
+      "canonical_path": "src/compatibility/chrono/src/chrono_sensor/metal/ChMetalSceneBuilder.h",
+      "replacements": [
+        {
+          "before": "class ChBody;",
+          "after": "// ChBody is declared by the compatibility forward header.",
+          "count": 1
+        },
+        {
+          "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2026 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Kyle Sha\n// =============================================================================\n//\n// Bridge from a Chrono ChSystem to a MetalRenderScene.\n// Plain cross-platform C++: depends on Chrono and the standard library only, with no\n// GPU or platform code, so the extraction can be read and tested without a Metal device.\n//\n// =============================================================================\n\n#ifndef CH_METAL_SCENE_BUILDER_H\n#define CH_METAL_SCENE_BUILDER_H\n\n#include <map>\n#include <memory>\n#include <string>\n\n#include \"chrono_sensor/metal/ChMetalRenderTypes.h\"\n\n",
+          "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2026 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Kyle Sha\n// =============================================================================\n//\n// Bridge from a Chrono ChSystem to a MetalRenderScene.\n// Plain cross-platform C++: depends on Chrono and the standard library only, with no\n// GPU or platform code, so the extraction can be read and tested without a Metal device.\n//\n// =============================================================================\n\n#ifndef CH_METAL_SCENE_BUILDER_H\n#define CH_METAL_SCENE_BUILDER_H\n\n#include <map>\n#include <memory>\n#include <string>\n\n#include \"chrono_sensor/metal/ChMetalRenderTypes.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/ReplayVisuals.h",
+      "original_sha256": "889e2e6a61a82e546ff5630b624a60afaab449404223e2f302b03744abc54d33",
+      "canonical_path": "src/compatibility/app/chrono/ReplayVisuals.h",
+      "replacements": [
+        {
+          "before": "namespace chrono { class ChBody; }",
+          "after": "#include \"chrono/physics/ChBodyFwd.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "original_sha256": "6ec07bf072e7a1fc409e618c894b3a15ecb748c2bfccb4eb8f00d3862bce086b",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "replacements": [
+        {
+          "before": "friend class ChBody;",
+          "after": "friend class ::robodyna::mbd::RbBody;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChBody.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChBody.i",
+      "original_sha256": "74fcb02bd7d4e360024c0c09f31354aa8b4b0a70fde86502c02b9acfb75fc59f",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChBody.h\"",
+          "after": "%include \"robodyna_swig/BodyDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
+      "original_sha256": "35505b3513cffc678e1925a159e822deac0d19a4fcd1ff8dc96cfd02f48e7a69",
+      "replacements": [
+        {
+          "before": "%include <std_shared_ptr.i>",
+          "after": "%include <std_shared_ptr.i>\n\n// SWIG does not follow the compatibility forward-header #include.\n// This is parser metadata; generated C++ sees the real canonical type alias.\nnamespace chrono { class ChBody; }",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

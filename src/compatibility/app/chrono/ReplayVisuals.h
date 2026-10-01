@@ -1,6 +1,6 @@
 #pragma once
 #include "AcceptedReplayScene.h"
-namespace chrono { class ChBody; }
+#include "chrono/physics/ChBodyFwd.h"
 namespace crash::visual {
 std::shared_ptr<chrono::ChTriangleMeshConnected> CopyReplayGeometry(const chrono::ChTriangleMeshConnected&);
 std::shared_ptr<chrono::ChVisualShapeTriangleMesh> MakeReplayShape(

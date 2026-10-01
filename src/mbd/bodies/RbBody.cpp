@@ -5,32 +5,41 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban
+// Robodyna adaptation: canonical body implementation; legacy archive identities retained.
 // =============================================================================
 
 #include <cstdlib>
 #include <algorithm>
 
 #include "chrono/core/ChDataPath.h"
+#include "robodyna/mbd/RbBody.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChForce.h"
 #include "chrono/physics/ChMarker.h"
 #include "chrono/physics/ChSystem.h"
 
 namespace chrono {
-
 // Register into the object factory, to enable run-time dynamic creation and persistence
 CH_FACTORY_REGISTER(ChBody)
 CH_UPCASTING(ChBody, ChPhysicsItem)
 CH_UPCASTING(ChBody, ChBodyFrame)
 CH_UPCASTING(ChBody, ChContactable)
 CH_UPCASTING(ChBody, ChLoadableUVW)
+}
 
-ChBody::ChBody()
+namespace robodyna::mbd {
+
+// Implementation-only lookup preserves existing expressions and ADL helper names.
+using namespace ::chrono;
+
+// Registration stays in the legacy namespace before the implementation below.
+
+RbBody::RbBody()
     : index(0),
       fixed(false),
       collide(false),
@@ -58,7 +67,7 @@ ChBody::ChBody()
     m_contactable_variables.push_back(&variables);
 }
 
-ChBody::ChBody(const ChBody& other) : ChPhysicsItem(other), ChBodyFrame(other) {
+RbBody::RbBody(const RbBody& other) : ChPhysicsItem(other), ChBodyFrame(other) {
     fixed = other.fixed;
     collide = other.collide;
     limit_speed = other.limit_speed;
@@ -93,14 +102,14 @@ ChBody::ChBody(const ChBody& other) : ChPhysicsItem(other), ChBodyFrame(other) {
     sleep_minwvel = other.sleep_minwvel;
 }
 
-ChBody::~ChBody() {
+RbBody::~RbBody() {
     RemoveAllForces();
     RemoveAllMarkers();
 }
 
 //// STATE BOOKKEEPING FUNCTIONS
 
-void ChBody::IntStateGather(const unsigned int off_x,  // offset in x state vector
+void RbBody::IntStateGather(const unsigned int off_x,  // offset in x state vector
                             ChState& x,                // state vector, position part
                             const unsigned int off_v,  // offset in v state vector
                             ChStateDelta& v,           // state vector, speed part
@@ -113,7 +122,7 @@ void ChBody::IntStateGather(const unsigned int off_x,  // offset in x state vect
     T = GetChTime();
 }
 
-void ChBody::IntStateScatter(const unsigned int off_x,  // offset in x state vector
+void RbBody::IntStateScatter(const unsigned int off_x,  // offset in x state vector
                              const ChState& x,          // state vector, position part
                              const unsigned int off_v,  // offset in v state vector
                              const ChStateDelta& v,     // state vector, speed part
@@ -128,17 +137,17 @@ void ChBody::IntStateScatter(const unsigned int off_x,  // offset in x state vec
     Update(T, update_flags);
 }
 
-void ChBody::IntStateGatherAcceleration(const unsigned int off_a, ChStateDelta& a) {
+void RbBody::IntStateGatherAcceleration(const unsigned int off_a, ChStateDelta& a) {
     a.segment(off_a + 0, 3) = GetPosDt2().eigen();
     a.segment(off_a + 3, 3) = GetAngAccLocal().eigen();
 }
 
-void ChBody::IntStateScatterAcceleration(const unsigned int off_a, const ChStateDelta& a) {
+void RbBody::IntStateScatterAcceleration(const unsigned int off_a, const ChStateDelta& a) {
     SetPosDt2(a.segment(off_a + 0, 3));
     SetAngAccLocal(a.segment(off_a + 3, 3));
 }
 
-void ChBody::IntStateIncrement(const unsigned int off_x,  // offset in x state vector
+void RbBody::IntStateIncrement(const unsigned int off_x,  // offset in x state vector
                                ChState& x_new,            // state vector, position part, incremented result
                                const ChState& x,          // state vector, initial position part
                                const unsigned int off_v,  // offset in v state vector
@@ -158,7 +167,7 @@ void ChBody::IntStateIncrement(const unsigned int off_x,  // offset in x state v
     x_new.segment(off_x + 3, 4) = q_new.eigen();
 }
 
-void ChBody::IntStateGetIncrement(const unsigned int off_x,  // offset in x state vector
+void RbBody::IntStateGetIncrement(const unsigned int off_x,  // offset in x state vector
                                   const ChState& x_new,      // state vector, position part, incremented result
                                   const ChState& x,          // state vector, initial position part
                                   const unsigned int off_v,  // offset in v state vector
@@ -177,7 +186,7 @@ void ChBody::IntStateGetIncrement(const unsigned int off_x,  // offset in x stat
     Dv.segment(off_v + 3, 3) = rel_q.GetRotVec().eigen();
 }
 
-void ChBody::IntLoadResidual_F(const unsigned int off,  // offset in R residual
+void RbBody::IntLoadResidual_F(const unsigned int off,  // offset in R residual
                                ChVectorDynamic<>& R,    // result: the R residual, R += c*F
                                const double c           // a scaling factor
 ) {
@@ -191,7 +200,7 @@ void ChBody::IntLoadResidual_F(const unsigned int off,  // offset in R residual
         R.segment(off + 3, 3) += c * (Xtorque - gyro).eigen();
 }
 
-void ChBody::IntLoadResidual_Mv(const unsigned int off,      // offset in R residual
+void RbBody::IntLoadResidual_Mv(const unsigned int off,      // offset in R residual
                                 ChVectorDynamic<>& R,        // result: the R residual, R += c*M*v
                                 const ChVectorDynamic<>& w,  // the w vector
                                 const double c               // a scaling factor
@@ -204,7 +213,7 @@ void ChBody::IntLoadResidual_Mv(const unsigned int off,      // offset in R resi
     R.segment(off + 3, 3) += Iw.eigen();
 }
 
-void ChBody::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md, double& err, const double c) {
+void RbBody::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md, double& err, const double c) {
     Md(off + 0) += c * GetMass();
     Md(off + 1) += c * GetMass();
     Md(off + 2) += c * GetMass();
@@ -215,7 +224,7 @@ void ChBody::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md,
     err += GetInertia()(0, 1) + GetInertia()(0, 2) + GetInertia()(1, 2);
 }
 
-void ChBody::IntToDescriptor(const unsigned int off_v,
+void RbBody::IntToDescriptor(const unsigned int off_v,
                              const ChStateDelta& v,
                              const ChVectorDynamic<>& R,
                              const unsigned int off_L,
@@ -225,7 +234,7 @@ void ChBody::IntToDescriptor(const unsigned int off_v,
     variables.Force() = R.segment(off_v, 6);
 }
 
-void ChBody::IntFromDescriptor(const unsigned int off_v,  // offset in v
+void RbBody::IntFromDescriptor(const unsigned int off_v,  // offset in v
                                ChStateDelta& v,
                                const unsigned int off_L,  // offset in L
                                ChVectorDynamic<>& L) {
@@ -234,17 +243,17 @@ void ChBody::IntFromDescriptor(const unsigned int off_v,  // offset in v
 
 ////
 
-void ChBody::InjectVariables(ChSystemDescriptor& descriptor) {
+void RbBody::InjectVariables(ChSystemDescriptor& descriptor) {
     variables.SetDisabled(!IsActive());
 
     descriptor.InsertVariables(&variables);
 }
 
-void ChBody::VariablesFbReset() {
+void RbBody::VariablesFbReset() {
     variables.Force().setZero();
 }
 
-void ChBody::VariablesFbLoadForces(double factor) {
+void RbBody::VariablesFbLoadForces(double factor) {
     // add applied forces to 'fb' vector
     variables.Force().segment(0, 3) += factor * Xforce.eigen();
 
@@ -255,17 +264,17 @@ void ChBody::VariablesFbLoadForces(double factor) {
         variables.Force().segment(3, 3) += factor * (Xtorque - gyro).eigen();
 }
 
-void ChBody::VariablesFbIncrementMq() {
+void RbBody::VariablesFbIncrementMq() {
     variables.AddMassTimesVector(variables.Force(), variables.State());
 }
 
-void ChBody::VariablesQbLoadSpeed() {
+void RbBody::VariablesQbLoadSpeed() {
     // set current speed in 'qb', it can be used by the solver when working in incremental mode
     variables.State().segment(0, 3) = GetCoordsysDt().pos.eigen();
     variables.State().segment(3, 3) = GetAngVelLocal().eigen();
 }
 
-void ChBody::VariablesQbSetSpeed(double step) {
+void RbBody::VariablesQbSetSpeed(double step) {
     ChCoordsys<> old_coord_dt = GetCoordsysDt();
 
     // from 'qb' vector, sets body speed, and updates auxiliary data
@@ -285,7 +294,7 @@ void ChBody::VariablesQbSetSpeed(double step) {
     }
 }
 
-void ChBody::VariablesQbIncrementPosition(double dt_step) {
+void RbBody::VariablesQbIncrementPosition(double dt_step) {
     if (!IsActive())
         return;
 
@@ -309,14 +318,14 @@ void ChBody::VariablesQbIncrementPosition(double dt_step) {
     SetRot(mnewrot);
 }
 
-void ChBody::ForceToRest() {
+void RbBody::ForceToRest() {
     SetPosDt(VNULL);
     SetAngVelLocal(VNULL);
     SetPosDt2(VNULL);
     SetRotDt2(QNULL);
 }
 
-void ChBody::ClampSpeed() {
+void RbBody::ClampSpeed() {
     if (limit_speed) {
         double w = 2.0 * GetRotDt().Length();
         if (w > max_wvel)
@@ -330,18 +339,18 @@ void ChBody::ClampSpeed() {
 
 // The inertia tensor functions
 
-void ChBody::SetInertia(const ChMatrix33<>& newXInertia) {
+void RbBody::SetInertia(const ChMatrix33<>& newXInertia) {
     variables.SetBodyInertia(newXInertia);
 }
 
-void ChBody::SetInertiaXX(const ChVector3d& iner) {
+void RbBody::SetInertiaXX(const ChVector3d& iner) {
     variables.GetBodyInertia()(0, 0) = iner.x();
     variables.GetBodyInertia()(1, 1) = iner.y();
     variables.GetBodyInertia()(2, 2) = iner.z();
     variables.GetBodyInvInertia() = variables.GetBodyInertia().inverse();
 }
 
-void ChBody::SetInertiaXY(const ChVector3d& iner) {
+void RbBody::SetInertiaXY(const ChVector3d& iner) {
     variables.GetBodyInertia()(0, 1) = iner.x();
     variables.GetBodyInertia()(0, 2) = iner.y();
     variables.GetBodyInertia()(1, 2) = iner.z();
@@ -351,7 +360,7 @@ void ChBody::SetInertiaXY(const ChVector3d& iner) {
     variables.GetBodyInvInertia() = variables.GetBodyInertia().inverse();
 }
 
-ChVector3d ChBody::GetInertiaXX() const {
+ChVector3d RbBody::GetInertiaXX() const {
     ChVector3d iner;
     iner.x() = variables.GetBodyInertia()(0, 0);
     iner.y() = variables.GetBodyInertia()(1, 1);
@@ -359,7 +368,7 @@ ChVector3d ChBody::GetInertiaXX() const {
     return iner;
 }
 
-ChVector3d ChBody::GetInertiaXY() const {
+ChVector3d RbBody::GetInertiaXY() const {
     ChVector3d iner;
     iner.x() = variables.GetBodyInertia()(0, 1);
     iner.y() = variables.GetBodyInertia()(0, 2);
@@ -367,7 +376,7 @@ ChVector3d ChBody::GetInertiaXY() const {
     return iner;
 }
 
-void ChBody::ComputeQInertia(ChMatrix44<>& mQInertia) {
+void RbBody::ComputeQInertia(ChMatrix44<>& mQInertia) {
     // [Iq]=[G'][Ix][G]
     ChGlMatrix34<> Gl(GetRot());
     mQInertia = Gl.transpose() * GetInertia() * Gl;
@@ -375,41 +384,41 @@ void ChBody::ComputeQInertia(ChMatrix44<>& mQInertia) {
 
 // -----------------------------------------------------------------------------
 
-unsigned int ChBody::AddAccumulator() {
+unsigned int RbBody::AddAccumulator() {
     auto idx = accumulators.size();
     accumulators.push_back(WrenchAccumulator());
     return (unsigned int)idx;
 }
 
-void ChBody::EmptyAccumulator(unsigned int idx) {
+void RbBody::EmptyAccumulator(unsigned int idx) {
     accumulators[idx].force = VNULL;
     accumulators[idx].torque = VNULL;
 }
 
-void ChBody::AccumulateForce(unsigned int idx, const ChVector3d& force, const ChVector3d& appl_point, bool local) {
+void RbBody::AccumulateForce(unsigned int idx, const ChVector3d& force, const ChVector3d& appl_point, bool local) {
     ChWrenchd w_abs = local ? AppliedForceLocalToWrenchParent(force, appl_point)
                             : AppliedForceParentToWrenchParent(force, appl_point);
     accumulators[idx].force += w_abs.force;
     accumulators[idx].torque += TransformDirectionParentToLocal(w_abs.torque);
 }
 
-void ChBody::AccumulateTorque(unsigned int idx, const ChVector3d& torque, bool local) {
+void RbBody::AccumulateTorque(unsigned int idx, const ChVector3d& torque, bool local) {
     if (local)
         accumulators[idx].torque += torque;
     else
         accumulators[idx].torque += TransformDirectionParentToLocal(torque);
 }
 
-const ChVector3d& ChBody::GetAccumulatedForce(unsigned int idx) const {
+const ChVector3d& RbBody::GetAccumulatedForce(unsigned int idx) const {
     return accumulators[idx].force;
 }
 
-const ChVector3d& ChBody::GetAccumulatedTorque(unsigned int idx) const {
+const ChVector3d& RbBody::GetAccumulatedTorque(unsigned int idx) const {
     return accumulators[idx].torque;
 }
 
 //// TODO - get rid of this as soon as ChModalAssembly is dealt with (fixed or removed)
-const ChWrenchd ChBody::GetAccumulatorWrench() const {
+const ChWrenchd RbBody::GetAccumulatorWrench() const {
     ChWrenchd wrench;
     for (const auto& a : accumulators) {
         wrench.force += a.force;
@@ -420,12 +429,12 @@ const ChWrenchd ChBody::GetAccumulatorWrench() const {
 
 // -----------------------------------------------------------------------------
 
-void ChBody::ComputeGyro() {
+void RbBody::ComputeGyro() {
     ChVector3d Wvel = GetAngVelLocal();
     gyro = Vcross(Wvel, variables.GetBodyInertia() * Wvel);
 }
 
-bool ChBody::TrySleeping() {
+bool RbBody::TrySleeping() {
     candidate_sleeping = false;
 
     if (IsSleepingAllowed()) {
@@ -445,7 +454,7 @@ bool ChBody::TrySleeping() {
     return false;
 }
 
-void ChBody::AddMarker(std::shared_ptr<ChMarker> amarker) {
+void RbBody::AddMarker(std::shared_ptr<ChMarker> amarker) {
     // don't allow double insertion of same object
     assert(std::find<std::vector<std::shared_ptr<ChMarker>>::iterator>(marklist.begin(), marklist.end(), amarker) ==
            marklist.end());
@@ -460,7 +469,7 @@ void ChBody::AddMarker(std::shared_ptr<ChMarker> amarker) {
     }
 }
 
-void ChBody::AddForce(std::shared_ptr<ChForce> aforce) {
+void RbBody::AddForce(std::shared_ptr<ChForce> aforce) {
     // don't allow double insertion of same object
     assert(std::find<std::vector<std::shared_ptr<ChForce>>::iterator>(forcelist.begin(), forcelist.end(), aforce) ==
            forcelist.end());
@@ -475,7 +484,7 @@ void ChBody::AddForce(std::shared_ptr<ChForce> aforce) {
     }
 }
 
-void ChBody::RemoveForce(std::shared_ptr<ChForce> mforce) {
+void RbBody::RemoveForce(std::shared_ptr<ChForce> mforce) {
     // trying to remove objects not previously added?
     assert(std::find<std::vector<std::shared_ptr<ChForce>>::iterator>(forcelist.begin(), forcelist.end(), mforce) !=
            forcelist.end());
@@ -492,7 +501,7 @@ void ChBody::RemoveForce(std::shared_ptr<ChForce> mforce) {
     }
 }
 
-void ChBody::RemoveMarker(std::shared_ptr<ChMarker> mmarker) {
+void RbBody::RemoveMarker(std::shared_ptr<ChMarker> mmarker) {
     // trying to remove objects not previously added?
     assert(std::find<std::vector<std::shared_ptr<ChMarker>>::iterator>(marklist.begin(), marklist.end(), mmarker) !=
            marklist.end());
@@ -509,33 +518,33 @@ void ChBody::RemoveMarker(std::shared_ptr<ChMarker> mmarker) {
     }
 }
 
-void ChBody::RemoveAllForces() {
+void RbBody::RemoveAllForces() {
     for (auto& force : forcelist) {
         force->SetBody(NULL);
     }
     forcelist.clear();
 }
 
-void ChBody::RemoveAllMarkers() {
+void RbBody::RemoveAllMarkers() {
     for (auto& marker : marklist) {
         marker->SetBody(NULL);
     }
     marklist.clear();
 }
 
-std::shared_ptr<ChMarker> ChBody::SearchMarker(const std::string& name) const {
+std::shared_ptr<ChMarker> RbBody::SearchMarker(const std::string& name) const {
     auto marker = std::find_if(std::begin(marklist), std::end(marklist),
                                [name](std::shared_ptr<ChMarker> marker) { return marker->GetName() == name; });
     return (marker != std::end(marklist)) ? *marker : nullptr;
 }
 
-std::shared_ptr<ChMarker> ChBody::SearchMarker(int id) const {
+std::shared_ptr<ChMarker> RbBody::SearchMarker(int id) const {
     auto marker = std::find_if(std::begin(marklist), std::end(marklist),
                                [id](std::shared_ptr<ChMarker> marker) { return marker->GetIdentifier() == id; });
     return (marker != std::end(marklist)) ? *marker : nullptr;
 }
 
-std::shared_ptr<ChForce> ChBody::SearchForce(const std::string& name) const {
+std::shared_ptr<ChForce> RbBody::SearchForce(const std::string& name) const {
     auto force = std::find_if(std::begin(forcelist), std::end(forcelist),
                               [name](std::shared_ptr<ChForce> force) { return force->GetName() == name; });
     return (force != std::end(forcelist)) ? *force : nullptr;
@@ -543,13 +552,13 @@ std::shared_ptr<ChForce> ChBody::SearchForce(const std::string& name) const {
 
 // -----------------------------------------------------------------------------
 
-void ChBody::UpdateMarkers(double time, UpdateFlags update_flags) {
+void RbBody::UpdateMarkers(double time, UpdateFlags update_flags) {
     for (auto& marker : marklist) {
         marker->Update(time, update_flags);
     }
 }
 
-void ChBody::UpdateForces(double time, UpdateFlags update_flags) {
+void RbBody::UpdateForces(double time, UpdateFlags update_flags) {
     // Initialize body forces with gravitational forces (if included in a system)
     Xforce = system ? system->GetGravitationalAcceleration() * GetMass() : VNULL;
     Xtorque = VNULL;
@@ -573,7 +582,7 @@ void ChBody::UpdateForces(double time, UpdateFlags update_flags) {
     }
 }
 
-void ChBody::Update(double time, UpdateFlags update_flags) {
+void RbBody::Update(double time, UpdateFlags update_flags) {
     // Update time and assets
     ChObj::Update(time, update_flags);
 
@@ -595,51 +604,51 @@ void ChBody::Update(double time, UpdateFlags update_flags) {
 
 // -----------------------------------------------------------------------------
 
-void ChBody::SetFixed(bool state) {
+void RbBody::SetFixed(bool state) {
     variables.SetDisabled(state);
     fixed = state;
 }
 
-bool ChBody::IsFixed() const {
+bool RbBody::IsFixed() const {
     return fixed;
 }
 
-void ChBody::SetLimitSpeed(bool state) {
+void RbBody::SetLimitSpeed(bool state) {
     limit_speed = state;
 }
 
-void ChBody::SetUseGyroTorque(bool state) {
+void RbBody::SetUseGyroTorque(bool state) {
     disable_gyrotorque = !state;
 }
 
-bool ChBody::IsUsingGyroTorque() const {
+bool RbBody::IsUsingGyroTorque() const {
     return !disable_gyrotorque;
 }
 
-void ChBody::SetSleepingAllowed(bool state) {
+void RbBody::SetSleepingAllowed(bool state) {
     allow_sleeping = state;
 }
 
-bool ChBody::IsSleepingAllowed() const {
+bool RbBody::IsSleepingAllowed() const {
     return allow_sleeping;
 }
 
-void ChBody::SetSleeping(bool state) {
+void RbBody::SetSleeping(bool state) {
     is_sleeping = state;
 }
 
-bool ChBody::IsSleeping() const {
+bool RbBody::IsSleeping() const {
     return is_sleeping;
 }
 
-bool ChBody::IsActive() const {
+bool RbBody::IsActive() const {
     return !is_sleeping && !fixed;
 }
 
 // ---------------------------------------------------------------------------
 // Collision-related functions
 
-void ChBody::EnableCollision(bool state) {
+void RbBody::EnableCollision(bool state) {
     // Nothing to do if no change in state
     if (state == collide)
         return;
@@ -673,21 +682,21 @@ void ChBody::EnableCollision(bool state) {
     }
 }
 
-bool ChBody::IsCollisionEnabled() const {
+bool RbBody::IsCollisionEnabled() const {
     return collide;
 }
 
-void ChBody::AddCollisionModelsToSystem(ChCollisionSystem* coll_sys) const {
+void RbBody::AddCollisionModelsToSystem(ChCollisionSystem* coll_sys) const {
     if (collide && collision_model)
         coll_sys->Add(collision_model);
 }
 
-void ChBody::RemoveCollisionModelsFromSystem(ChCollisionSystem* coll_sys) const {
+void RbBody::RemoveCollisionModelsFromSystem(ChCollisionSystem* coll_sys) const {
     if (collision_model)
         coll_sys->Remove(collision_model);
 }
 
-void ChBody::SyncCollisionModels() {
+void RbBody::SyncCollisionModels() {
     // Sync model only if
     //    (1) a collision model was specified for the body
     //    (2) the body is set to participate in collisions
@@ -700,33 +709,33 @@ void ChBody::SyncCollisionModels() {
 
 // ---------------------------------------------------------------------------
 
-ChAABB ChBody::GetTotalAABB() const {
+ChAABB RbBody::GetTotalAABB() const {
     if (GetCollisionModel())
         return GetCollisionModel()->GetBoundingBox();
 
     return ChAABB();  // default: inverted bounding box
 }
 
-void ChBody::ContactableGetStateBlockPosLevel(ChState& x) {
+void RbBody::ContactableGetStateBlockPosLevel(ChState& x) {
     x.segment(0, 3) = GetCoordsys().pos.eigen();
     x.segment(3, 4) = GetCoordsys().rot.eigen();
 }
 
-void ChBody::ContactableGetStateBlockVelLevel(ChStateDelta& w) {
+void RbBody::ContactableGetStateBlockVelLevel(ChStateDelta& w) {
     w.segment(0, 3) = GetPosDt().eigen();
     w.segment(3, 3) = GetAngVelLocal().eigen();
 }
 
-void ChBody::ContactableIncrementState(const ChState& x, const ChStateDelta& dw, ChState& x_new) {
+void RbBody::ContactableIncrementState(const ChState& x, const ChStateDelta& dw, ChState& x_new) {
     IntStateIncrement(0, x_new, x, 0, dw);
 }
 
-ChVector3d ChBody::GetContactPoint(const ChVector3d& loc_point, const ChState& state_x) {
+ChVector3d RbBody::GetContactPoint(const ChVector3d& loc_point, const ChState& state_x) {
     ChCoordsys<> csys(state_x.segment(0, 7));
     return csys.TransformPointLocalToParent(loc_point);
 }
 
-ChVector3d ChBody::GetContactPointSpeed(const ChVector3d& loc_point,
+ChVector3d RbBody::GetContactPointSpeed(const ChVector3d& loc_point,
                                         const ChState& state_x,
                                         const ChStateDelta& state_w) {
     ChCoordsys<> csys(state_x.segment(0, 7));
@@ -737,16 +746,16 @@ ChVector3d ChBody::GetContactPointSpeed(const ChVector3d& loc_point,
     return abs_vel + Vcross(abs_omg, loc_point);
 }
 
-ChVector3d ChBody::GetContactPointSpeed(const ChVector3d& abs_point) {
+ChVector3d RbBody::GetContactPointSpeed(const ChVector3d& abs_point) {
     ChVector3d point_loc = TransformPointParentToLocal(abs_point);
     return PointSpeedLocalToParent(point_loc);
 }
 
-ChFrame<> ChBody::GetCollisionModelFrame() {
+ChFrame<> RbBody::GetCollisionModelFrame() {
     return GetFrameRefToAbs();
 }
 
-void ChBody::ContactForceLoadResidual_F(const ChVector3d& F,
+void RbBody::ContactForceLoadResidual_F(const ChVector3d& F,
                                         const ChVector3d& T,
                                         const ChVector3d& abs_point,
                                         ChVectorDynamic<>& R) {
@@ -759,7 +768,7 @@ void ChBody::ContactForceLoadResidual_F(const ChVector3d& F,
     R.segment(this->GetOffset_w() + 3, 3) += torque1_loc.eigen();
 }
 
-void ChBody::ContactComputeQ(const ChVector3d& F,
+void RbBody::ContactComputeQ(const ChVector3d& F,
                              const ChVector3d& T,
                              const ChVector3d& point,
                              const ChState& state_x,
@@ -775,7 +784,7 @@ void ChBody::ContactComputeQ(const ChVector3d& F,
     Q.segment(offset + 3, 3) = torque_loc.eigen();
 }
 
-void ChBody::ComputeJacobianForContactPart(const ChVector3d& abs_point,
+void RbBody::ComputeJacobianForContactPart(const ChVector3d& abs_point,
                                            ChMatrix33<>& contact_plane,
                                            ChConstraintTuple* jacobian_tuple_N,
                                            ChConstraintTuple* jacobian_tuple_U,
@@ -884,7 +893,7 @@ void ChBody::ComputeJacobianForContactPart(const ChVector3d& abs_point,
     }
 }
 
-void ChBody::ComputeJacobianForRollingContactPart(const ChVector3d& abs_point,
+void RbBody::ComputeJacobianForRollingContactPart(const ChVector3d& abs_point,
                                                   ChMatrix33<>& contact_plane,
                                                   ChConstraintTuple* jacobian_tuple_N,
                                                   ChConstraintTuple* jacobian_tuple_U,
@@ -911,29 +920,29 @@ void ChBody::ComputeJacobianForRollingContactPart(const ChVector3d& abs_point,
     Cq_V.segment(3, 3) = Jr1.row(2);
 }
 
-ChVector3d ChBody::GetAppliedForce() {
+ChVector3d RbBody::GetAppliedForce() {
     return GetSystem()->GetBodyAppliedForce(this);
 }
 
-ChVector3d ChBody::GetAppliedTorque() {
+ChVector3d RbBody::GetAppliedTorque() {
     return GetSystem()->GetBodyAppliedTorque(this);
 }
 
-ChVector3d ChBody::GetContactForce() {
+ChVector3d RbBody::GetContactForce() {
     return GetSystem()->GetContactContainer()->GetContactableForce(this);
 }
 
-ChVector3d ChBody::GetContactTorque() {
+ChVector3d RbBody::GetContactTorque() {
     return GetSystem()->GetContactContainer()->GetContactableTorque(this);
 }
 
 // ---------------------------------------------------------------------------
 
-void ChBody::LoadableGetVariables(std::vector<ChVariables*>& mvars) {
+void RbBody::LoadableGetVariables(std::vector<ChVariables*>& mvars) {
     mvars.push_back(&Variables());
 }
 
-void ChBody::LoadableStateIncrement(const unsigned int off_x,
+void RbBody::LoadableStateIncrement(const unsigned int off_x,
                                     ChState& x_new,
                                     const ChState& x,
                                     const unsigned int off_v,
@@ -941,17 +950,17 @@ void ChBody::LoadableStateIncrement(const unsigned int off_x,
     IntStateIncrement(off_x, x_new, x, off_v, Dv);
 }
 
-void ChBody::LoadableGetStateBlockPosLevel(int block_offset, ChState& mD) {
+void RbBody::LoadableGetStateBlockPosLevel(int block_offset, ChState& mD) {
     mD.segment(block_offset + 0, 3) = GetCoordsys().pos.eigen();
     mD.segment(block_offset + 3, 4) = GetCoordsys().rot.eigen();
 }
 
-void ChBody::LoadableGetStateBlockVelLevel(int block_offset, ChStateDelta& mD) {
+void RbBody::LoadableGetStateBlockVelLevel(int block_offset, ChStateDelta& mD) {
     mD.segment(block_offset + 0, 3) = GetPosDt().eigen();
     mD.segment(block_offset + 3, 3) = GetAngVelLocal().eigen();
 }
 
-void ChBody::ComputeNF(
+void RbBody::ComputeNF(
     const double U,              // x coordinate of application point in absolute space
     const double V,              // y coordinate of application point in absolute space
     const double W,              // z coordinate of application point in absolute space
@@ -983,9 +992,9 @@ void ChBody::ComputeNF(
 // ---------------------------------------------------------------------------
 // FILE I/O
 
-void ChBody::ArchiveOut(ChArchiveOut& archive_out) {
+void RbBody::ArchiveOut(ChArchiveOut& archive_out) {
     // version number
-    archive_out.VersionWrite<ChBody>();
+    archive_out.VersionWrite<RbBody>();
 
     // serialize parent class
     ChPhysicsItem::ArchiveOut(archive_out);
@@ -1020,9 +1029,9 @@ void ChBody::ArchiveOut(ChArchiveOut& archive_out) {
 }
 
 /// Method to allow de serialization of transient data from archives.
-void ChBody::ArchiveIn(ChArchiveIn& archive_in) {
+void RbBody::ArchiveIn(ChArchiveIn& archive_in) {
     // version number
-    /*int version =*/archive_in.VersionRead<ChBody>();
+    /*int version =*/archive_in.VersionRead<RbBody>();
 
     // deserialize parent class
     ChPhysicsItem::ArchiveIn(archive_in);
@@ -1071,4 +1080,4 @@ void ChBody::ArchiveIn(ChArchiveIn& archive_in) {
     archive_in >> CHNVP(sleep_starttime);
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::mbd

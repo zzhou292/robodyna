@@ -21,10 +21,12 @@
 
 #include "chrono/collision/ChCollisionModel.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // Forward references
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 
 /// @addtogroup collision_mc
 /// @{

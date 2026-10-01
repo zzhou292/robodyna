@@ -27,9 +27,11 @@
 
 #include "chrono_sensor/metal/ChMetalRenderTypes.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 class ChSystem;
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 class ChTriangleMeshConnected;
 }  // namespace chrono
 

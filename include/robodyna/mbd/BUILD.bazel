@@ -2,12 +2,24 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["RbBody.h", "RbBodyFwd.h"])
+
+# Private part of the transitional aggregate's header set. The aggregate supplies
+# the inherited mechanics header closure; this is not a standalone body library.
+cc_library(
+    name = "implementation_headers",
+    hdrs = ["RbBody.h", "RbBodyFwd.h"],
+    strip_include_prefix = "/include",
+    visibility = ["//src/compatibility/chrono:__pkg__"],
+)
+
 # This facade still uses the combined native mechanics backend.
 # It does not establish independent FEA or MBD linkage.
 cc_library(
     name = "api",
     hdrs = [
         "RbBody.h",
+        "RbBodyFwd.h",
         "RbBodyAuxRef.h",
         "RbLinkTSDA.h",
         "RbBodyEasy.h"

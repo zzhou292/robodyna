@@ -25,10 +25,12 @@
 class cbtCollisionObject;
 class cbtTriangleMesh;
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // forward references
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 namespace fea {
 class ChContactSurfaceMesh;
 }

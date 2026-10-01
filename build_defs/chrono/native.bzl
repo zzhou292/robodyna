@@ -6,6 +6,7 @@ not numerical algorithms, state ownership or the FEA/MBD coupling method.
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
+load(":source_paths.bzl", "current_source_label")
 load(":neutral_sources.bzl", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS")
 load(":visual_sources.bzl", "VISUAL_ADAPTER_SOURCES", "VISUAL_SOURCES", "VISUAL_TARGETS")
 
@@ -51,7 +52,8 @@ def chrono_native_host(name):
         hdrs = headers,
         includes = ["src", "src/chrono/collision/bullet", "src/chrono_thirdparty", "src/chrono_thirdparty/HACDv2"],
         defines = ["CH_STATIC", "CH_IGNORE_DEPRECATED", "EIGEN_DONT_PARALLELIZE", "_ENABLE_EXTENDED_ALIGNED_STORAGE", "NDEBUG"],
-        deps = [":" + name + "_configuration_headers", "@eigen//:eigen", "//include/robodyna/mechanics:inertia_headers"],
+        deps = [":" + name + "_configuration_headers", "@eigen//:eigen",
+                "//include/robodyna/mechanics:inertia_headers", "//include/robodyna/mbd:implementation_headers"],
         tags = _TAGS,
     )
     common = {
@@ -68,7 +70,7 @@ def chrono_native_host(name):
         if group in _VENDOR_GROUPS:
             vendor_sources.extend(paths)
         else:
-            core_sources.extend([path for path in paths if path not in extracted])
+            core_sources.extend([current_source_label(path) for path in paths if path not in extracted])
     cc_library(
         name = name + "_implementation",
         srcs = core_sources + VISUAL_ADAPTER_SOURCES,

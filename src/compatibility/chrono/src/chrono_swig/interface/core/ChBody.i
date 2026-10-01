@@ -107,7 +107,7 @@ std::shared_ptr<ChCollisionModel> GetCollisionModel()                           
 
 // Parse the header file to generate wrappers
 %include "../../../chrono/physics/ChContactable.h"  
-%include "../../../chrono/physics/ChBody.h"  
+%include "robodyna_swig/BodyDeclarations.h"  
 
 
 

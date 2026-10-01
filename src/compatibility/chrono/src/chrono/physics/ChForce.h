@@ -26,10 +26,12 @@
 #include "chrono/functions/ChFunction.h"
 #include "chrono/physics/ChObject.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // Forward reference
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 
 /// Forces are objects which must be attached to rigid bodies in order
 /// to apply torque or force to such body. ChForce objects are able to

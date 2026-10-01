@@ -56,6 +56,7 @@ endif()
 set(SWIG_USE_SWIG_DEPENDENCIES TRUE)
 
 include(${SWIG_USE_FILE})
+include("${ROBODYNA_SOURCE_ROOT}/build_defs/bindings/declaration_view.cmake")
 
 # Set location of SWIG-generated files.
 set(CHRONO_SWIG_OUTDIR "${PROJECT_BINARY_DIR}/chrono_csharp")
@@ -174,6 +175,7 @@ set_source_files_properties(${INTERFACE_FILE_CORE} PROPERTIES CPLUSPLUS ON)
 
 # Create the SWIG module.
 swig_add_library(Chrono_csharp_core LANGUAGE csharp SOURCES ${INTERFACE_FILE_CORE})
+robodyna_bind_swig_body(Chrono_csharp_core)
 
 target_link_libraries(Chrono_csharp_core PRIVATE Chrono_core)
 
@@ -231,6 +233,7 @@ if(CH_ENABLE_MODULE_POSTPROCESS)
 
   # Create the SWIG module.
   swig_add_library(Chrono_csharp_postprocess LANGUAGE csharp SOURCES ${INTERFACE_FILE_POSTPROCESS})
+  robodyna_bind_swig_body(Chrono_csharp_postprocess)
   target_link_libraries(Chrono_csharp_postprocess PRIVATE Chrono_core Chrono_postprocess)
 
 
@@ -303,6 +306,7 @@ if(CH_ENABLE_MODULE_IRRLICHT)
 
   # Create the SWIG module.
   swig_add_library(Chrono_csharp_irrlicht LANGUAGE csharp SOURCES ${INTERFACE_FILE_IRRLICHT})
+  robodyna_bind_swig_body(Chrono_csharp_irrlicht)
   find_package(Irrlicht QUIET REQUIRED)
   target_link_libraries(Chrono_csharp_irrlicht PRIVATE Chrono_core Chrono_irrlicht Irrlicht::Irrlicht)
 
@@ -364,6 +368,7 @@ if(CH_ENABLE_MODULE_VSG)
 
   # Create the SWIG module
   swig_add_library(Chrono_csharp_vsg LANGUAGE csharp SOURCES ${INTERFACE_FILE_VSG})
+  robodyna_bind_swig_body(Chrono_csharp_vsg)
   target_link_libraries(Chrono_csharp_vsg PRIVATE Chrono_core Chrono_vsg)
 
   # Ensure that the library file is generated in the bin/ directory
@@ -423,6 +428,7 @@ if(CH_ENABLE_MODULE_VEHICLE AND CH_ENABLE_MODULE_VEHICLE_MODELS)
 
   # Create the SWIG module.
   swig_add_library(Chrono_csharp_vehicle LANGUAGE csharp SOURCES ${INTERFACE_FILE_VEHICLE})
+  robodyna_bind_swig_body(Chrono_csharp_vehicle)
   target_link_libraries(Chrono_csharp_vehicle PRIVATE Chrono_core Chrono_vehicle ChronoModels_vehicle)
 
   if(CH_ENABLE_MODULE_IRRLICHT)
@@ -514,6 +520,7 @@ if(CH_ENABLE_MODULE_SENSOR)
 
   # Create the SWIG module
   swig_add_library(Chrono_csharp_sensor LANGUAGE csharp SOURCES ${INTERFACE_FILE_SENSOR})
+  robodyna_bind_swig_body(Chrono_csharp_sensor)
   target_link_libraries(Chrono_csharp_sensor PRIVATE Chrono_core Chrono_sensor)
 
   # Ensure that the library file is generated in the bin/ directory
@@ -574,6 +581,7 @@ endif()
 
 # Create the SWIG module
 swig_add_library(Chrono_csharp_robot LANGUAGE csharp SOURCES ${INTERFACE_FILE_ROBOT})
+robodyna_bind_swig_body(Chrono_csharp_robot)
 target_link_libraries(Chrono_csharp_robot PRIVATE Chrono_core ChronoModels_robot)
 
 # Ensure that the library file is generated in the bin/ directory
@@ -631,6 +639,7 @@ if(CH_ENABLE_MODULE_ROS)
 
   # Create the SWIG module
   swig_add_library(Chrono_csharp_ros LANGUAGE csharp SOURCES ${INTERFACE_FILE_ROS})
+  robodyna_bind_swig_body(Chrono_csharp_ros)
   target_link_libraries(Chrono_csharp_ros PRIVATE Chrono_core Chrono_ros)
 
   # Ensure that the library file is generated in the bin/ directory

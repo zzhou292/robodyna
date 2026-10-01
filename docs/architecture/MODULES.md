@@ -77,8 +77,13 @@ The total is the original 482 units plus that adapter; none of the original
 implementations is compiled twice. This completes the visual dependency split,
 while mesh/system services, contact reporting and mixed assembly still require work.
 
-The inertia definitions have moved to `robodyna::mechanics`; the initial body,
-mesh and system public names remain aliases. `SOURCE_TRANSFORMATIONS.json` in the
+The inertia definitions have moved to `robodyna::mechanics`, and the actual
+body definition/implementation now belongs to `robodyna::mbd::RbBody` under the
+public MBD header and `src/mbd/bodies`. The legacy body name is a reverse alias.
+Its implementation still compiles exactly once in the explicit combined backend;
+it is not yet an independent MBD library. Mesh and system public names remain
+forward aliases pending their next implementation batches.
+`SOURCE_TRANSFORMATIONS.json` in the
 migration directory records reviewed edits against the immutable original hashes.
 Archive identity helpers preserve captured file formats across actual type renames;
 this is distinct from preserving old binary ABI. See `RENAME_QUALIFICATION.json`.

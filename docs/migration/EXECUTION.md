@@ -154,11 +154,38 @@ whose own build remains at four compiler workers. This prevents nested worker
 pools from exceeding the total compiler allowance. The interrupted mixed attempt
 and its complete cleanup remain recorded in `RENAME_QUALIFICATION.json`.
 
-Next: qualify Python/C# parser compatibility, freeze the already executed body
-constructor/child-ownership archives, then migrate actual body/mesh/system definitions
-in bounded families. Their public
-aliases already work, but they are not yet independently owned domain libraries.
-The full product/short Yaris check remains an integrated checkpoint after those edits.
+Third naming checkpoint: the actual body definition and implementation now live at
+`include/robodyna/mbd/RbBody.h` and `src/mbd/bodies/RbBody.cpp`. Legacy headers alias
+that single type. Original archive tags, four base conversions, constructor data,
+child attachment and shared ownership pass the frozen pre-move fixtures.
+The implementation still compiles in the explicitly transitional aggregate;
+this is not independent MBD linkage.
+
+Qualification passed 26 native targets, three separately built retained-CMake
+targets, 25 product targets, and the 101-step GPU Yaris regression. Every one of
+its 50 archive files, viewer input and non-timing summary fields matches the
+pre-rename baseline exactly. The short run also passed full C++ replay. No
+materials, equations, integration policy or timestep changed.
+
+The optional core bindings now compile both native wrappers against one shared
+backend. Python imports and exercises constructors, derived casts, containers,
+child lifetime and inertia; ELF checks reject duplicated body/factory definitions.
+The generated interface retains 949 public Python AST entries and 610 exact C#
+files from the pre-inertia baseline. Managed C# execution is still unqualified.
+SWIG uses a generated, source-authenticated legacy declaration view because its
+parser does not preserve these aliases reliably; C++ uses the canonical type.
+See `build_defs/bindings/README.md` and `RENAME_QUALIFICATION.json` for this boundary.
+
+One inherited YAML-off link error was exposed by the binding runtime and fixed:
+the unchanged `ChVisualShapeFEA::Settings::PrintInfo` definition is now available
+under the same conditions as its declaration. A focused test covers that profile.
+Other inherited limitations remain documented in `PREEXISTING_ISSUES.md`.
+
+Next: commit this qualified body checkpoint, freeze system archives against that
+commit, then migrate the mesh and mixed-system definitions in separate batches.
+Reuse the new source, archive and binding gates. Complete the remaining domain
+service seams before claiming independent FEA/MBD libraries. Namespace changes
+and physical ownership separation are tracked separately.
 
 OpenRadioss remains an optional external reference solver, not a required product
 runtime. Production C++/CUDA ports and their notices remain; verification-only

@@ -1,0 +1,38 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["runtime_check.py"])
+
+py_test(
+    name = "python_core_runtime_test",
+    srcs = ["run_python_sdk_test.py"],
+    main = "run_python_sdk_test.py",
+    args = [
+        "$(rlocationpath @python_sdk//:bin/python3.10)",
+        "$(rlocationpath :runtime_check.py)",
+        "$(rlocationpath //build_defs/bindings:python_proxy)",
+        "$(rlocationpath //build_defs/bindings:python_core)",
+        "$(rlocationpath //build_defs/bindings:native_core)",
+    ],
+    data = [":runtime_check.py", "@python_sdk//:bin/python3.10", "@python_sdk//:sdk.json",
+            "//build_defs/bindings:python_proxy", "//build_defs/bindings:python_core", "//build_defs/bindings:native_core"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "medium",
+    tags = ["manual", "local", "cpu-only", "native-bindings"],
+)
+
+py_test(
+    name = "elf_link_test",
+    srcs = ["elf_link_test.py"],
+    main = "elf_link_test.py",
+    args = ["$(rlocationpath //build_defs/bindings:native_core)",
+            "$(rlocationpath //build_defs/bindings:python_core)",
+            "$(rlocationpath //build_defs/bindings:csharp_core)"],
+    data = ["//build_defs/bindings:native_core", "//build_defs/bindings:python_core", "//build_defs/bindings:csharp_core"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "small",
+    tags = ["manual", "local", "cpu-only", "native-bindings", "requires-binutils"],
+)
+
+test_suite(name = "runtime_tests", tests = [":elf_link_test", ":python_core_runtime_test"], tags = ["manual"])

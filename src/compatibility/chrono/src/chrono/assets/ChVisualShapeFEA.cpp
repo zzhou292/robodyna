@@ -1333,13 +1333,13 @@ ChVisualShapeFEA::Settings ChVisualShapeFEA::Settings::Read(const YAML::Node& a)
     return params;
 }
 
+#endif
+
 void ChVisualShapeFEA::Settings::PrintInfo() const {
     cout << "SPH visualization" << endl;
     cout << "  smooth faces:  " << smooth_faces << endl;
     cout << "  wireframe:     " << wireframe << endl;
     //// TODO
 }
-
-#endif
 
 }  // end namespace chrono

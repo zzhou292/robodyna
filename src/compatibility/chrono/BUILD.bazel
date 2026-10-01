@@ -1,6 +1,7 @@
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
 load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
-load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_SOURCE_RELOCATIONS")
+load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
+load("//build_defs/chrono:source_paths.bzl", "SOURCE_RELOCATIONS", "current_source_label")
 load("//build_defs/chrono:visual_sources.bzl", "VISUAL_ADAPTER_SOURCES", "VISUAL_EXTRA_HEADERS", "VISUAL_HEADERS", "VISUAL_SOURCES")
 load("//build_defs/chrono:scm.bzl", "chrono_native_scm")
 load("//build_defs/chrono:stb.bzl", "chrono_native_stb")
@@ -18,6 +19,46 @@ chrono_native_scm(name = "native_scm")
 exports_files(["data/logo_chrono_alpha.png"])
 exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
+exports_files(["src/chrono_swig/interface/core/ChMassProperties.i"])
+exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h"])
+exports_files(["src/chrono/assets/ChVisualShapeFEA.cpp"])
+exports_files([
+    "src/chrono_swig/chrono_python/ChModuleCore_python.i",
+    "src/chrono_swig/chrono_csharp/ChModuleCore_csharp.i",
+])
+
+filegroup(
+    name = "swig_source_inputs",
+    srcs = glob(["src/chrono/**/*.h", "src/chrono/**/*.inl", "src/chrono_swig/**/*.i", "src/chrono_swig/**/*.h"], allow_empty = True) + [
+        "//include/robodyna/mechanics:RbMassProperties.h",
+        "//include/robodyna/mbd:RbBody.h",
+        "//include/robodyna/mbd:RbBodyFwd.h",
+    ],
+)
+
+# Exact source-only inputs for the body rename proof, including retained optional
+# consumers. This does not link or claim to qualify their optional SDK backends.
+filegroup(
+    name = "body_source_inputs",
+    srcs = [
+        "src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h",
+        "src/chrono/physics/ChForce.h", "src/chrono/physics/ChMarker.h",
+        "src/chrono/physics/ChSystem.h", "src/chrono/utils/ChBodyGeometry.h",
+        "src/chrono/collision/ChCollisionSystem.h",
+        "src/chrono/collision/bullet/ChCollisionModelBullet.h",
+        "src/chrono/collision/multicore/ChCollisionModelMulticore.h",
+        "src/chrono_multicore/ChDataManager.h",
+        "src/chrono_sensor/metal/ChMetalSceneBuilder.h",
+        "src/chrono_swig/interface/core/ChBody.i",
+        "src/chrono_swig/interface/core/ChModuleCore.i",
+        "src/chrono_swig/CMakeLists.txt",
+        "src/chrono_swig/chrono_python/CMakeLists.txt",
+        "src/chrono_swig/chrono_csharp/CMakeLists.txt",
+        "//include/robodyna/mbd:RbBody.h", "//include/robodyna/mbd:RbBodyFwd.h",
+        "//src/mbd/bodies:RbBody.cpp",
+    ],
+    visibility = ["//tests/chrono:__pkg__"],
+)
 
 exports_files([
     "src/demos/mbs/demo_MBS_spring.cpp",
@@ -41,7 +82,7 @@ filegroup(
 
 # Export unchanged source bytes to their real neutral native compile owners.
 exports_files(
-    [path for paths in NEUTRAL_SOURCES.values() for path in paths if path not in NEUTRAL_SOURCE_RELOCATIONS] +
+    [path for paths in NEUTRAL_SOURCES.values() for path in paths if path not in SOURCE_RELOCATIONS] +
     [path for paths in NEUTRAL_HEADERS.values() for path in paths] +
     ["src/tests/unit_tests/physics/utest_CH_composite_inertia.cpp"],
 )
@@ -66,7 +107,7 @@ filegroup(
 
 filegroup(
     name = "neutral_source_inputs",
-    srcs = [NEUTRAL_SOURCE_RELOCATIONS.get(path, path) for paths in NEUTRAL_SOURCES.values() for path in paths] +
+    srcs = [current_source_label(path) for paths in NEUTRAL_SOURCES.values() for path in paths] +
            [path for paths in NEUTRAL_HEADERS.values() for path in paths] +
            ["//include/robodyna/mechanics:RbMassProperties.h"],
 )

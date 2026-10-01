@@ -7,9 +7,10 @@
     "N1": "passed initial public alias surface and two executed examples",
     "N3": "passed actual inertia implementation move; one compile owner, preserved arithmetic/source notices",
     "N2": "passed actual old archives, genuinely renamed-type fixtures and explicit version-policy tests",
-    "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending"
+    "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending",
+    "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending"
   },
-  "test_targets_passed": 24,
+  "test_targets_passed": 26,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -59,6 +60,66 @@
       "exit_code": 0,
       "elapsed_seconds": 0.032,
       "peak_sampled_rss_bytes": 0
+    },
+    "robodyna-canonical-body-native-1": {
+      "path": "crash-work/reports/robodyna-canonical-body-native-1.json",
+      "sha256": "a957dfa5d248fcfbee6b14a379003e07be5d87fa36d2494904b8477a40cae57f",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 370.632,
+      "peak_sampled_rss_bytes": 4519493632
+    },
+    "robodyna-canonical-body-cmake-1": {
+      "path": "crash-work/reports/robodyna-canonical-body-cmake-1.json",
+      "sha256": "4a69a3522106c24f8be88a5904d3a951858401f3cc5f518220a974c1bd072ef3",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 149.073,
+      "peak_sampled_rss_bytes": 5812731904
+    },
+    "robodyna-body-product-1": {
+      "path": "crash-work/reports/robodyna-body-product-1.json",
+      "sha256": "f93f5d0154945a40ee70bccc419db7fc252db9e45eac328a07f2adb365d8e0c6",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 158.327,
+      "peak_sampled_rss_bytes": 3619778560
+    },
+    "robodyna-body-bindings-runtime-5": {
+      "path": "crash-work/reports/robodyna-body-bindings-runtime-5.json",
+      "sha256": "fdfa919160605665eb918af6d3a59a472f2d8e7ccef707108d549c7eb56b9e3e",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.312,
+      "peak_sampled_rss_bytes": 853270528
+    },
+    "robodyna-body-python-runtime-1": {
+      "path": "crash-work/reports/robodyna-body-python-runtime-1.json",
+      "sha256": "d844c6a9e2654e13542194c0e7106e9799a80eda2b28bd23a7b45bc246f312dc",
+      "passed": true
+    },
+    "robodyna-body-binding-elf-1": {
+      "path": "crash-work/reports/robodyna-body-binding-elf-1.json",
+      "sha256": "b7a4500fcff91cb9e442706154a684602758fdc4c4e8c6ce80336fdc057b1717",
+      "passed": true
+    },
+    "robodyna-swig-body-view-compatibility-2": {
+      "path": "crash-work/reports/robodyna-swig-body-view-compatibility-2.json",
+      "sha256": "ef1e96bc8f0940f9b4c8178033cd67e222bf86a82a350c9bb7c25e6c607b8dfc",
+      "passed": true
+    },
+    "robodyna-body-yaris-101-independent-1": {
+      "path": "crash-work/reports/robodyna-body-yaris-101-independent-1.json",
+      "sha256": "56270e60480cc6fb40ad53b57d3156edc16ee7f9ad0725ac9a34e93ea408a58d",
+      "passed": true
+    },
+    "robodyna-body-yaris-101-1": {
+      "path": "crash-work/investigations/robodyna-body-yaris-101-1/guard.json",
+      "sha256": "4cf7a4ad6438a7dfa1c296fc0efc49dc57392ecd5400367b06de241f08874746",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 21.972,
+      "peak_sampled_rss_bytes": 5489594368
     }
   },
   "limits": {
@@ -67,20 +128,28 @@
     "build_rss_gib": 16,
     "example_affinity_cpus": 2,
     "example_rss_gib": 4,
-    "gpu_used": false,
-    "scheduling": "Native Bazel phases use jobs=4; retained CMake phases run separately with Bazel jobs=1 and CMake parallel=4."
+    "gpu_used": true,
+    "scheduling": "Native Bazel phases use jobs=4; retained CMake phases run separately with Bazel jobs=1 and CMake parallel=4.",
+    "gpu_profile": {
+      "cpus": 4,
+      "rss_gib": 18,
+      "free_reserve_gib": 8,
+      "whole_device_growth_gib": 9
+    }
   },
   "claim_boundary": [
     "No independent full FEA/MBD build yet",
-    "Body, mesh and system implementations retain legacy names behind aliases",
+    "Body and inertia definitions are canonical; mesh/system implementations retain legacy names behind aliases",
+    "Core Python runtime and both native wrappers qualified; managed C# and optional module runtimes remain unqualified",
     "No new CUDA physics or 100 ms rerun",
-    "Populated glyph-property archive limitation recorded separately",
-    "Product Yaris integration test remains required after the next integrated source changes"
+    "Populated glyph-property archive and unsafe Python parent-ownership helper limitations recorded separately",
+    "101-step GPU comparison covers saved output at epochs 0 and 101, not unsaved state or physical restart"
   ],
   "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text.",
-  "abi": "ChArchive and ChVisualModel gain transient members; rebuild all native consumers and bindings together. Archived bytes are preserved, old binary ABI is not promised.",
+  "abi": "Real namespace moves and transient archive/visual members require a coordinated rebuild; saved archive bytes are preserved, old binary ABI is not promised.",
   "interrupted_attempt": {
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
-  }
+  },
+  "test_targets_scope": "Latest broad body native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count."
 }

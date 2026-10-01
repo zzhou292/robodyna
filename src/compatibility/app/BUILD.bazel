@@ -28,6 +28,12 @@ exports_files(
 # the consuming library still declares every header through its dependencies.
 cc_library(name = "include_root", includes = ["."])
 
+filegroup(
+    name = "renamed_type_source_inputs",
+    srcs = ["chrono/ReplayVisuals.h"],
+    visibility = ["//tests/chrono:__pkg__"],
+)
+
 # Focused inherited viewer-value regressions; frozen model fixtures remain private.
 exports_files(
     [

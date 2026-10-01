@@ -31,6 +31,10 @@
 // For supporting shared pointers:
 %include <std_shared_ptr.i>
 
+// SWIG does not follow the compatibility forward-header #include.
+// This is parser metadata; generated C++ sees the real canonical type alias.
+namespace chrono { class ChBody; }
+
 
 // Include C++ headers this way...
 

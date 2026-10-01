@@ -91,7 +91,8 @@ class NativeSourceInventory(unittest.TestCase):
         paths = [path for group in manifest["NATIVE_SOURCE_GROUPS"].values() for path in group]
         self.assertEqual(len(paths), len(set(paths)), "A translation unit is listed more than once")
         self.assertEqual(set(paths), selected_cmake_sources(original.decode()))
-        relocations = read_manifest(NEUTRAL)["NEUTRAL_SOURCE_RELOCATIONS"]
+        relocations = read_manifest(LOCATIONS)["SOURCE_RELOCATIONS"]
+        self.assertTrue(set(relocations).issubset(paths), "Relocation does not identify an imported implementation")
         current = {"@workspace/" + relocations[path].removeprefix("//").replace(":", "/")
                    if path in relocations else path for path in paths}
         additions = read_manifest(VISUAL)["VISUAL_ADAPTER_SOURCES"]
@@ -106,6 +107,6 @@ if __name__ == "__main__":
     MANIFEST = Path(sys.argv.pop(1))
     CMAKE = Path(sys.argv.pop(1))
     TRANSFORMATIONS = Path(sys.argv.pop(1))
-    NEUTRAL = Path(sys.argv.pop(1))
+    LOCATIONS = Path(sys.argv.pop(1))
     VISUAL = Path(sys.argv.pop(1))
     unittest.main()

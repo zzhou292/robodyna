@@ -99,7 +99,7 @@ set(Chrono_physics_SOURCES
     physics/ChMarker.cpp
     physics/ChForce.cpp
     physics/ChBodyFrame.cpp
-    physics/ChBody.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBody.cpp
     physics/ChBodyAuxRef.cpp
     physics/ChBodyEasy.cpp
     physics/ChSystem.cpp
@@ -122,6 +122,7 @@ set(Chrono_physics_SOURCES
 set(Chrono_physics_HEADERS
     physics/ChBodyFrame.h
     physics/ChBody.h
+    physics/ChBodyFwd.h
     physics/ChBodyAuxRef.h
     physics/ChBodyEasy.h
     physics/ChConveyor.h
@@ -1523,6 +1524,9 @@ target_link_libraries(Chrono_core PUBLIC Eigen3::Eigen)
 # Install the canonical definition required by the legacy forwarding header.
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h"
         DESTINATION include/robodyna/mechanics)
+install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h"
+        DESTINATION include/robodyna/mbd)
 install(FILES "${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt"
         DESTINATION LICENSES)
 

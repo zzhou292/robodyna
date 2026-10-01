@@ -41,11 +41,13 @@ using Eigen::Matrix;
 using Eigen::VectorBlock;
 using custom_vector;
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // Forward declarations
 
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 class ChLink;
 class ChPhysicsItem;
 class real2;

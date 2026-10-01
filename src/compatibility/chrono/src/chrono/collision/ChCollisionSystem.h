@@ -22,11 +22,13 @@
 #include "chrono/geometry/ChGeometry.h"
 #include "chrono/assets/ChColor.h"
 
+#include "chrono/physics/ChBodyFwd.h"
+
 namespace chrono {
 
 // forward references
 class ChSystem;
-class ChBody;
+// ChBody is declared by the compatibility forward header.
 class ChAssembly;
 class ChParticleCloud;
 class ChConveyor;

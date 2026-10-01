@@ -31,3 +31,27 @@ properties are populated, populated glyph coordinates/colors/update behavior, an
 the existing omission of FE attachments from serialized visual models. They do
 not assert that populated glyph properties or physical FE state can restart.
 Repairing the inherited clone/registration behavior belongs in a separate change.
+
+## Public visualization reporting with YAML disabled
+
+Compiling the full Python core wrapper exposed an undefined symbol at import:
+`ChVisualShapeFEA::Settings::PrintInfo() const`. Its public declaration was
+unconditional, but its definition was inside `CHRONO_HAS_YAML`. The qualified
+native profile disables YAML. This existed in the imported source and was not
+exercised by the earlier C++ demos.
+
+The binding integration moves the unchanged printing function outside that
+conditional. It reads only existing settings and writes to `std::cout`; no
+equations or model data change. A focused visual-model test calls the public
+method in the YAML-disabled native profile. Failed import evidence is retained
+in `crash-work/reports/robodyna-body-bindings-build-2.json`.
+
+## Borrowed Python references
+
+The inherited SWIG frame binding returns a borrowed position-vector reference.
+`ChBodyAuxRef::GetFrameCOMToRef()` returns a frame value, so Python callers must
+retain that frame proxy while reading its position. Chaining
+`body.GetFrameCOMToRef().GetPos()[0]` can destroy the temporary owning frame
+before indexing the borrowed vector. The binding smoke test now retains the
+frame explicitly; its numerical expectations are unchanged. No ownership policy
+or physics was changed to accommodate this test.

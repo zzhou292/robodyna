@@ -901,7 +901,7 @@ class ChApi ChSystem : public ChIntegrableIIorder {
     // Friend class declarations
 
     friend class ChAssembly;
-    friend class ChBody;
+    friend class ::robodyna::mbd::RbBody;
 #ifdef CHRONO_FEA
     friend class fea::ChMesh;
 #endif
