@@ -164,8 +164,9 @@ this is not independent MBD linkage.
 Qualification passed 26 native targets, three separately built retained-CMake
 targets, 25 product targets, and the 101-step GPU Yaris regression. Every one of
 its 50 archive files, viewer input and non-timing summary fields matches the
-pre-rename baseline exactly. The short run also passed full C++ replay. No
-materials, equations, integration policy or timestep changed.
+pre-rename baseline exactly. The short run also passed full C++ replay. The original six-second spring, NSC
+collision and SCM headless runs also reproduced their entire recorded summaries
+exactly. No materials, equations, integration policy or timestep changed.
 
 The optional core bindings now compile both native wrappers against one shared
 backend. Python imports and exercises constructors, derived casts, containers,

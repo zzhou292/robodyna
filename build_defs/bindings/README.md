@@ -70,3 +70,31 @@ Retained CMake targets use the same declaration generator with explicit SWIG
 include directories and dependencies. The SWIG parent resolves the owned source
 root for both language subdirectories; the contract is a configure dependency so
 updated reviewed pins cannot leave stale command arguments behind.
+
+The reusable checkout probe is `//tools/bindings:cmake_probe`, also runnable as:
+
+```sh
+python3 tools/bindings/cmake_probe.py \
+  --repo /absolute/path/to/robodyna \
+  --sdk /absolute/path/to/swig-r0 \
+  --eigen /absolute/path/to/eigen-source \
+  --ninja /absolute/path/to/qualified/ninja \
+  --output /absolute/path/to/new-probe-directory
+```
+
+Run it through the shared workstation guard with two CPUs, 4 GiB RSS, at least
+32 GiB available RAM and a 300-second timeout. Output is create-only. The current
+profile uses the installed `/usr/bin/cmake` and CPython 3.10; no packages are
+installed. It exercises both-language and true C#-only configuration without a
+supplied Robodyna root variable, checks declared generator dependencies and runs
+the exact emitted SWIG commands. It runs the owning SWIG install script locally
+to check interface/view/receipt packaging, without installing unbuilt child
+libraries. A copied-contract negative test verifies automatic reconfiguration,
+rejection of an incorrect ledger pin and recovery after restoring that pin.
+
+The retained C# recipe currently declares its robot wrapper unconditionally, so
+this probe enables the existing robot-model target as a configuration prerequisite.
+It does not compile that target or the native core. Generation is executed from
+configured commands rather than building the full Ninja wrapper target, whose
+inherited order-only dependency would compile the whole core. This smoke is
+separate from the qualified native wrapper compilation and runtime tests.

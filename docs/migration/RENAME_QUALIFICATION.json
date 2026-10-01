@@ -149,6 +149,35 @@
       "exit_code": 0,
       "elapsed_seconds": 3.243,
       "peak_sampled_rss_bytes": 900812800
+    },
+    "robodyna-body-demo-comparison-1": {
+      "path": "crash-work/reports/robodyna-body-demo-comparison-1.json",
+      "sha256": "cb6cdff5734885364e12a27e276c0d6ab165501616bba485c751022ce293b2c7",
+      "passed": true
+    },
+    "robodyna-body-spring-headless-1": {
+      "path": "crash-work/reports/robodyna-body-spring-headless-1.json",
+      "sha256": "745b33c7d9a82530542c5f4ab05cf393d35d0ae93e8109acaf45b2081e16d7d7",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 0.306,
+      "peak_sampled_rss_bytes": 983040
+    },
+    "robodyna-body-nsc-headless-1": {
+      "path": "crash-work/reports/robodyna-body-nsc-headless-1.json",
+      "sha256": "0825cc412cbe987df3b0e2892035b890ab3c6baf86fd4be35ef8b414eca73138",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 1.616,
+      "peak_sampled_rss_bytes": 33423360
+    },
+    "robodyna-body-scm-headless-1": {
+      "path": "crash-work/reports/robodyna-body-scm-headless-1.json",
+      "sha256": "7f4c0aad163a817b4dc9b36a36d08350d4342a5a036c1b09614245e55593e141",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 3.974,
+      "peak_sampled_rss_bytes": 48783360
     }
   },
   "limits": {
@@ -189,5 +218,6 @@
     "base_version_identity": "N6chrono8ChSystemE",
     "test_targets_passed": 6,
     "scope": "Pre-system move metadata/ownership, represented archive fields and common FE/body clock; no physical restart"
-  }
+  },
+  "body_demo_regression": "Original six-second spring, NSC collision and SCM headless runs passed; complete recorded summaries match pre-rename baseline exactly. Retained CPU dynamics, no CUDA or new rendering claim."
 }

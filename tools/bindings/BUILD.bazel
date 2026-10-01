@@ -27,6 +27,15 @@ exports_files(["declaration_view.py"])
 
 py_binary(name = "run_swig", srcs = ["run_swig.py"], main = "run_swig.py")
 
+# Run explicitly against a checkout and declared SDKs through the shared guard.
+# This checks configured commands/install data, not a complete native SDK build.
+py_binary(
+    name = "cmake_probe",
+    srcs = ["cmake_probe.py"],
+    main = "cmake_probe.py",
+    tags = ["manual", "local", "cpu-only"],
+)
+
 py_library(name = "swig_runner_library", srcs = ["run_swig.py"])
 py_test(
     name = "tool_environment_test",
