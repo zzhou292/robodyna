@@ -111,6 +111,21 @@ complete telemetry matched between headless and captured runs, and their videos
 passed full decoding. [Qualification and commands](docs/verification/CHRONO_DEMOS.md)
 record timesteps, measured behavior and reproducible entry points.
 
+## Robodyna C++ API migration
+
+The first public headers expose `robodyna::mbd::RbBody`,
+`robodyna::fea::RbMesh`, and `robodyna::simulation::RbSystemNSC`, with supporting
+math, contact and solver types. These initial names alias the retained CPU
+implementations; they add no wrapper objects. The inertia utilities already have
+canonical implementations under `robodyna::mechanics` with legacy compatibility.
+
+Build the small headless examples with
+`bazel build --config=host //examples/api:rigid_spring //examples/api:fea_spring`.
+Their [source and usage](examples/api/README.md) use Robodyna public includes.
+The [rename qualification](docs/migration/RENAME_QUALIFICATION.json) records the
+passed API, archive, mechanics and build checks. Full independent FEA/MBD ownership
+and the remaining module/binding migrations are still in progress.
+
 ## Chrono acknowledgement and source cutoff
 
 We thank the [Project Chrono Development Team and contributors](https://projectchrono.org/)

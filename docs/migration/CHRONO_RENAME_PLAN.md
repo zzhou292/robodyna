@@ -1,6 +1,7 @@
 # Chrono to Robodyna: public API and implementation migration
 
-Status: source-audited proposal; no C++ rename has executed. Audited repository
+Status: implementation authorized; first API, compatibility-fixture and inertia
+batches are in progress on `work/robodyna-api-renaming`. Audited repository
 baseline: `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
 
 Current scope: plan the Chrono-to-Robodyna naming migration. OpenRadioss removal

@@ -3,6 +3,14 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 package(default_visibility = ["//visibility:public"])
 
 py_library(name = "import_library", srcs = ["import_tree.py"])
+py_library(name = "source_transform", srcs = ["source_transform.py"])
+py_test(
+    name = "source_transform_test",
+    srcs = ["tests/test_source_transform.py"],
+    main = "tests/test_source_transform.py",
+    deps = [":source_transform"],
+    size = "small",
+)
 py_library(
     name = "comparison_library",
     srcs = ["verify_run.py"],
@@ -37,7 +45,7 @@ py_test(
     main = "tests/test_verify_run.py",
     deps = [":comparison_library"],
 )
-test_suite(name = "behavior_tests", tests = [":import_tree_test", ":verify_run_test"])
+test_suite(name = "behavior_tests", tests = [":import_tree_test", ":verify_run_test", ":source_transform_test"])
 
 # Run these deliberately against the checkout. They check live metadata/source
 # declarations and are distinct from the small fixture unit tests above.

@@ -1,7 +1,7 @@
 """Bazel-analysis assertions for the actual neutral header/link/source closure."""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS")
+load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS", "NEUTRAL_SOURCE_RELOCATIONS", "NEUTRAL_CANONICAL_HEADERS", "NEUTRAL_HEADER_TARGETS")
 load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
 
 _Closure = provider(fields = ["owners", "headers", "labels", "imports", "link_owners", "link_flags"])
@@ -31,18 +31,30 @@ def _closure_impl(target, ctx):
 
 _closure_aspect = aspect(implementation = _closure_impl, attr_aspects = ["deps", "implementation_deps"])
 
+def _current_source(path):
+    relocated = NEUTRAL_SOURCE_RELOCATIONS.get(path)
+    return relocated[2:].replace(":", "/") if relocated else "src/compatibility/chrono/" + path
+
 def _boundary_impl(ctx):
     expected = {}
     allowed_headers = {}
     for component, paths in NEUTRAL_SOURCES.items():
         for path in paths:
-            expected["src/compatibility/chrono/" + path] = str(Label(NEUTRAL_TARGETS[component]))
+            expected[_current_source(path)] = str(Label(NEUTRAL_TARGETS[component]))
     for paths in NEUTRAL_HEADERS.values():
         for path in paths:
             allowed_headers["src/compatibility/chrono/" + path] = True
+    for paths in NEUTRAL_CANONICAL_HEADERS.values():
+        for path in paths:
+            allowed_headers[path] = True
+    # strip_include_prefix creates this declared symlink artifact in CcInfo.
+    allowed_headers["include/robodyna/mechanics/_virtual_includes/inertia_headers/robodyna/mechanics/RbMassProperties.h"] = True
     allowed_labels = {str(Label(label)): True for label in NEUTRAL_TARGETS.values() + [
         "//src/core/configuration:host_headers", "//src/compatibility/chrono:neutral_include_root", "@eigen//:eigen",
     ]}
+    for targets in NEUTRAL_HEADER_TARGETS.values():
+        for label in targets:
+            allowed_labels[str(Label(label))] = True
     actual = {}
     for target in ctx.attr.components:
         closure = target[_Closure]
@@ -70,7 +82,7 @@ def _boundary_impl(ctx):
         fail("Neutral closure does not contain the exact 21 reviewed translation units")
     # Check the composed aggregate as well: proving the lower libraries are
     # narrow would not detect a leftover second compilation in the aggregate.
-    original = {"src/compatibility/chrono/" + path: True for paths in NATIVE_SOURCE_GROUPS.values() for path in paths}
+    original = {_current_source(path): True for paths in NATIVE_SOURCE_GROUPS.values() for path in paths}
     compiled = {}
     for entry in ctx.attr.aggregate[_Closure].owners.to_list():
         path, owner = entry.split("|", 1)

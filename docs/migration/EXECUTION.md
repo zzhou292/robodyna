@@ -1,7 +1,10 @@
 # Active restructuring plan
 
-The user authorized implementation on 2026-09-30. Work on local branch
-`work/initial-integration`; destination is https://github.com/zzhou292/robodyna.git.
+The source integration began on `work/initial-integration`. The user subsequently
+authorized implementation of the Chrono API naming plan with regression tests and
+preserved license notices. Current work is on `work/robodyna-api-renaming`;
+destination is https://github.com/zzhou292/robodyna.git. No publication of this
+rename series has been requested.
 The user subsequently authorized initial publication to this repository after
 retained Chrono demonstrations and a Robodyna logo are complete. Those tasks
 passed their runtime/media gates and publication completed. The subsequent branded
@@ -111,20 +114,38 @@ passed 24 test targets. The selected Robodyna logo is in `assets/brand/`.
 The next architecture seams remain in `NEXT_SEAMS.md`; demo qualification did not
 complete standalone FEA/MBD dependency separation.
 
-## Proposed Robodyna API naming migration
+## Active Robodyna API naming migration
 
 The requested Chrono API rename has been probed against repository baseline
-`26ef28a9d68adf9d170a78ef1e796bff4ef09d30`. No implementation names have changed.
+`26ef28a9d68adf9d170a78ef1e796bff4ef09d30`. Implementation is now authorized.
 See [CHRONO_RENAME_PLAN.md](CHRONO_RENAME_PLAN.md) for module ownership, compatibility
 risks, implementation milestones and tests; [CHRONO_RENAME_SCOPE.json](CHRONO_RENAME_SCOPE.json)
 records the lexical inventory and its limitations.
 
-The proposed next batch is a bounded public API and compatibility-fixture layer:
+The first active batch is a bounded public API and compatibility-fixture layer:
 `robodyna::mbd::RbBody`, `robodyna::fea::RbMesh` and
 `robodyna::simulation::RbSystemNSC`, plus the supporting types needed by small
 working examples. Stable archive identities precede real registered-class renames.
 The already extracted inertia family is the proposed first real implementation
 rename; the visual/system-service seams still gate independent FEA/MBD ownership.
+
+Parallel source work is bounded to public aliases/examples, archive fixtures and
+identity support, and the inertia implementation pilot. Builds and qualification
+remain serialized through the workstation guard. Freeze baseline archive fixtures
+before changing production serialization. Preserve the original Chrono copyright
+and author headers; relocated files reference `LICENSES/Chrono-BSD-3-Clause.txt`.
+
+First naming checkpoint PASSED: 26 public alias headers, 52 independent include-order
+compilation probes, both executed CPU spring examples, frozen JSON/XML/binary
+archive compatibility, and the actual canonical inertia implementation. All 19
+checkpoint test targets passed through native Bazel and the retained CMake bridge.
+See `RENAME_QUALIFICATION.json` for receipts, scope and resource usage.
+
+Next: implement explicit stable archive identities against the frozen fixtures;
+extract the generic visual-model dependency using the passed baseline tests;
+then migrate actual body/mesh/system definitions in bounded families. Their public
+aliases already work, but they are not yet independently owned domain libraries.
+The full product/short Yaris check remains an integrated checkpoint after those edits.
 
 OpenRadioss remains an optional external reference solver, not a required product
 runtime. Production C++/CUDA ports and their notices remain; verification-only

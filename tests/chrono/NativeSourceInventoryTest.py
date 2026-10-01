@@ -6,12 +6,14 @@ file. Unknown conditions fail closed; it is not a general CMake interpreter.
 
 import ast
 import hashlib
+import json
 from pathlib import Path
 import posixpath
 import re
 import sys
 import unittest
 
+from tools.migration.source_transform import index_entries, original_bytes
 
 def read_manifest(path):
     assignments = {}
@@ -69,7 +71,9 @@ def selected_cmake_sources(text):
     if stack:
         raise ValueError("Unclosed CMake source-declaration condition")
     return {
-        posixpath.normpath("src/chrono/" + path)
+        ("@workspace/" + path.removeprefix("${ROBODYNA_SOURCE_ROOT}/")
+         if path.startswith("${ROBODYNA_SOURCE_ROOT}/")
+         else posixpath.normpath("src/chrono/" + path))
         for path in values["Chrono_FILES"]
         if path.endswith((".cpp", ".cc", ".c"))
     }
@@ -79,13 +83,23 @@ class NativeSourceInventory(unittest.TestCase):
     def test_matches_reviewed_enabled_cmake_sources(self):
         manifest = read_manifest(MANIFEST)
         contents = CMAKE.read_bytes()
-        self.assertEqual(hashlib.sha256(contents).hexdigest(), manifest["CORE_CMAKE_SHA256"])
+        entries = index_entries(json.loads(TRANSFORMATIONS.read_text()))
+        entry = entries["src/compatibility/chrono/src/chrono/CMakeLists.txt"]
+        self.assertEqual(entry["original_sha256"], manifest["CORE_CMAKE_SHA256"])
+        original = original_bytes(TRANSFORMATIONS.parent.parent.parent, entry)
+        self.assertEqual(hashlib.sha256(original).hexdigest(), manifest["CORE_CMAKE_SHA256"])
         paths = [path for group in manifest["NATIVE_SOURCE_GROUPS"].values() for path in group]
         self.assertEqual(len(paths), len(set(paths)), "A translation unit is listed more than once")
-        self.assertEqual(set(paths), selected_cmake_sources(contents.decode()))
+        self.assertEqual(set(paths), selected_cmake_sources(original.decode()))
+        relocations = read_manifest(NEUTRAL)["NEUTRAL_SOURCE_RELOCATIONS"]
+        current = {"@workspace/" + relocations[path].removeprefix("//").replace(":", "/")
+                   if path in relocations else path for path in paths}
+        self.assertEqual(current, selected_cmake_sources(contents.decode()))
 
 
 if __name__ == "__main__":
     MANIFEST = Path(sys.argv.pop(1))
     CMAKE = Path(sys.argv.pop(1))
+    TRANSFORMATIONS = Path(sys.argv.pop(1))
+    NEUTRAL = Path(sys.argv.pop(1))
     unittest.main()

@@ -1,0 +1,62 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load(":header_pairs.bzl", "HEADER_PAIRS")
+load(":header_probes.bzl", "header_compilation")
+
+package(default_visibility = ["//visibility:public"])
+
+_API = [
+    "//include/robodyna/contact:api",
+    "//include/robodyna/core:api",
+    "//include/robodyna/fea:api",
+    "//include/robodyna/mbd:api",
+    "//include/robodyna/mechanics:body_frame",
+    "//include/robodyna/mechanics:participants",
+    "//include/robodyna/numerics:api",
+    "//include/robodyna/simulation:api",
+]
+
+_CORE_HEADERS = [pair[0] for pair in HEADER_PAIRS if pair[0].startswith("robodyna/core/")]
+_FRAME_HEADERS = ["robodyna/mechanics/RbBodyFrame.h"]
+
+# Neutral headers must compile with their narrow owners alone; the aggregate
+# cannot supply undeclared header dependencies to these probes.
+header_compilation(
+    name = "core_header_compilation",
+    headers = _CORE_HEADERS,
+    deps = ["//include/robodyna/core:api"],
+)
+header_compilation(
+    name = "frame_header_compilation",
+    headers = _FRAME_HEADERS,
+    deps = ["//include/robodyna/mechanics:body_frame"],
+)
+header_compilation(
+    name = "header_compilation",
+    headers = [pair[0] for pair in HEADER_PAIRS if pair[0] not in _CORE_HEADERS + _FRAME_HEADERS],
+    deps = _API,
+)
+
+cc_test(
+    name = "aliases_test",
+    srcs = ["AliasesTest.cpp"],
+    deps = _API + [
+        ":core_header_compilation", ":frame_header_compilation", ":header_compilation",
+        "@googletest//:gtest_main",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "public-api"],
+)
+
+cc_test(
+    name = "spring_dynamics_test",
+    srcs = ["SpringDynamicsTest.cpp"],
+    deps = _API + ["@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "public-api"],
+)
+
+test_suite(
+    name = "api_tests",
+    tests = [":aliases_test", ":spring_dynamics_test"],
+    tags = ["manual", "public-api"],
+)

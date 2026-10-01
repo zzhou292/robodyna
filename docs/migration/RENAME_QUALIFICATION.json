@@ -1,0 +1,54 @@
+{
+  "schema": "robodyna.rename_qualification.v1",
+  "source_baseline": "26ef28a9d68adf9d170a78ef1e796bff4ef09d30",
+  "branch": "work/robodyna-api-renaming",
+  "checkpoints": {
+    "N0": "passed initial naming map and frozen archive fixtures",
+    "N1": "passed initial public alias surface and two executed examples",
+    "N3": "passed actual inertia implementation move; one compile owner, preserved arithmetic/source notices"
+  },
+  "test_targets_passed": 19,
+  "header_include_order_probes": 52,
+  "receipts": {
+    "robodyna-rename-checkpoint-1": {
+      "path": "crash-work/reports/robodyna-rename-checkpoint-1.json",
+      "sha256": "98ad21d60e61edacf54948887eeb64ee4e402f25b5c967cea50ca11232588729",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 145.992,
+      "peak_sampled_rss_bytes": 5253480448
+    },
+    "robodyna-rename-baseline-run-1": {
+      "path": "crash-work/reports/robodyna-rename-baseline-run-1.json",
+      "sha256": "86da7b65bb1a60d3d70c222e7254b7ce7357d0eb03a4ab4dbf6da494b8a3e921",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 0.299,
+      "peak_sampled_rss_bytes": 7667712
+    },
+    "robodyna-rename-frozen-archives-1": {
+      "path": "crash-work/reports/robodyna-rename-frozen-archives-1.json",
+      "sha256": "c4cd498772ba495d8669f23f0d64ee59662a6d722d062bdf68069554235bcef5",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.321,
+      "peak_sampled_rss_bytes": 1690169344
+    }
+  },
+  "limits": {
+    "build_affinity_cpus": 8,
+    "compiler_workers": 4,
+    "build_rss_gib": 16,
+    "example_affinity_cpus": 2,
+    "example_rss_gib": 4,
+    "gpu_used": false
+  },
+  "claim_boundary": [
+    "No independent full FEA/MBD build yet",
+    "Body, mesh and system implementations retain legacy names behind aliases",
+    "No new CUDA physics or 100 ms rerun",
+    "Populated glyph-property archive limitation recorded separately",
+    "Product Yaris integration test remains required after the next integrated source changes"
+  ],
+  "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text."
+}

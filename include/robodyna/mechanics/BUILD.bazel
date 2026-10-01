@@ -1,0 +1,39 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["RbMassProperties.h"])
+
+cc_library(
+    name = "body_frame",
+    hdrs = ["RbBodyFrame.h"],
+    strip_include_prefix = "/include",
+    deps = ["//src/mechanics/kinematics:frames"],
+)
+
+# PhysicsItem still reaches the combined backend through visualization. This is
+# an API facade, not a claim that participant ownership is already neutral.
+cc_library(
+    name = "participants",
+    hdrs = ["RbPhysicsItem.h"],
+    strip_include_prefix = "/include",
+    deps = ["//build_defs/chrono:native_core_fea"],
+)
+
+# The implementation depends on these headers; consumers depend on :inertia.
+cc_library(
+    name = "inertia_headers",
+    hdrs = ["RbMassProperties.h"],
+    strip_include_prefix = "/include",
+    deps = ["//src/core:foundation"],
+)
+
+cc_library(
+    name = "inertia",
+    deps = ["//src/mechanics/inertia:inertia"],
+)
+
+cc_library(
+    name = "api",
+    deps = [":body_frame", ":inertia", ":participants"],
+)

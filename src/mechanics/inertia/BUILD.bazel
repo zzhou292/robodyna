@@ -3,6 +3,8 @@ load("//build_defs/chrono:neutral.bzl", "neutral_library")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["RbMassProperties.cpp"])
+
 neutral_library(
     name = "inertia",
     component = "inertia",
@@ -13,6 +15,7 @@ cc_test(
     name = "inertia_test",
     srcs = [
         "InertiaTest.cpp",
+        "CanonicalInertiaTest.cpp",
         "//src/compatibility/chrono:src/tests/unit_tests/physics/utest_CH_composite_inertia.cpp",
     ],
     deps = [":inertia", "@googletest//:gtest_main"],

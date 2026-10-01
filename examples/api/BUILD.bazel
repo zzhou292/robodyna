@@ -1,0 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "spring_check",
+    hdrs = ["SpringCheck.h"],
+)
+
+cc_binary(
+    name = "rigid_spring",
+    srcs = ["RigidSpring.cpp"],
+    deps = [
+        ":spring_check",
+        "//include/robodyna/core:api",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/numerics:api",
+        "//include/robodyna/simulation:api",
+    ],
+    tags = ["manual", "cpu-only", "public-api"],
+)
+
+cc_binary(
+    name = "fea_spring",
+    srcs = ["FeSpring.cpp"],
+    deps = [
+        ":spring_check",
+        "//include/robodyna/core:api",
+        "//include/robodyna/fea:api",
+        "//include/robodyna/numerics:api",
+        "//include/robodyna/simulation:api",
+    ],
+    tags = ["manual", "cpu-only", "public-api"],
+)

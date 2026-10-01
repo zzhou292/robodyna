@@ -1,6 +1,6 @@
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
 load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
-load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
+load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_SOURCE_RELOCATIONS")
 load("//build_defs/chrono:scm.bzl", "chrono_native_scm")
 load("//build_defs/chrono:stb.bzl", "chrono_native_stb")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -15,6 +15,7 @@ chrono_native_vsg(name = "native_vsg")
 chrono_native_scm(name = "native_scm")
 
 exports_files(["data/logo_chrono_alpha.png"])
+exports_files(["data/colormaps/jet-table-float-0512.csv"])
 
 exports_files([
     "src/demos/mbs/demo_MBS_spring.cpp",
@@ -38,7 +39,7 @@ filegroup(
 
 # Export unchanged source bytes to their real neutral native compile owners.
 exports_files(
-    [path for paths in NEUTRAL_SOURCES.values() for path in paths] +
+    [path for paths in NEUTRAL_SOURCES.values() for path in paths if path not in NEUTRAL_SOURCE_RELOCATIONS] +
     [path for paths in NEUTRAL_HEADERS.values() for path in paths] +
     ["src/tests/unit_tests/physics/utest_CH_composite_inertia.cpp"],
 )
@@ -49,8 +50,9 @@ cc_library(name = "neutral_include_root", includes = ["src"])
 
 filegroup(
     name = "neutral_source_inputs",
-    srcs = [path for paths in NEUTRAL_SOURCES.values() for path in paths] +
-           [path for paths in NEUTRAL_HEADERS.values() for path in paths],
+    srcs = [NEUTRAL_SOURCE_RELOCATIONS.get(path, path) for paths in NEUTRAL_SOURCES.values() for path in paths] +
+           [path for paths in NEUTRAL_HEADERS.values() for path in paths] +
+           ["//include/robodyna/mechanics:RbMassProperties.h"],
 )
 
 # All absorbed first-party source remains available during native package

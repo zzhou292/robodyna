@@ -1,7 +1,14 @@
 #include <gtest/gtest.h>
 #include "chrono/core/ChRotation.h"
 #include "chrono/physics/ChMassProperties.h"
+#include "robodyna/mechanics/RbMassProperties.h"
 #include "chrono/utils/ChConstants.h"
+#include <type_traits>
+
+// Legacy-first inclusion must expose the canonical types, not replacement wrappers.
+static_assert(std::is_same_v<chrono::ChMassProperties, robodyna::mechanics::RbMassProperties>);
+static_assert(std::is_same_v<chrono::ChInertiaUtils, robodyna::mechanics::RbInertiaUtils>);
+static_assert(std::is_same_v<chrono::CompositeInertia, robodyna::mechanics::CompositeInertia>);
 
 TEST(NeutralInertia, ParallelAxisAndRotationMatchAnalyticValues) {
     const chrono::ChMatrix33<> diagonal(chrono::ChVector3d(2, 3, 4));

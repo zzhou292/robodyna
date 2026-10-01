@@ -1,0 +1,12 @@
+<object _type="ChRenameProbe" _object_ID="1">
+	<_version_ChRenameProbe>5</_version_ChRenameProbe>
+	<_version_N6chrono17ChRenameProbeBaseE>3</_version_N6chrono17ChRenameProbeBaseE>
+	<base_value>17</base_value>
+	<value>2.5</value>
+</object>
+<base_alias _type="ChRenameProbe" _reference_ID="1">
+</base_alias>
+<repeated _type="ChRenameProbe" _reference_ID="1">
+</repeated>
+<null_object _reference_ID="0">
+</null_object>

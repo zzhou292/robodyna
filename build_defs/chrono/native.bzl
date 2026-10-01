@@ -50,7 +50,7 @@ def chrono_native_host(name):
         hdrs = headers,
         includes = ["src", "src/chrono/collision/bullet", "src/chrono_thirdparty", "src/chrono_thirdparty/HACDv2"],
         defines = ["CH_STATIC", "CH_IGNORE_DEPRECATED", "EIGEN_DONT_PARALLELIZE", "_ENABLE_EXTENDED_ALIGNED_STORAGE", "NDEBUG"],
-        deps = [":" + name + "_configuration_headers", "@eigen//:eigen"],
+        deps = [":" + name + "_configuration_headers", "@eigen//:eigen", "//include/robodyna/mechanics:inertia_headers"],
         tags = _TAGS,
     )
     common = {

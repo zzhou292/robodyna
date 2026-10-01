@@ -1,0 +1,10 @@
+{ 
+	"compiler"	: "11.4.0",
+	"language"	: 201703,
+	"pointer_bytes"	: 8,
+	"size_t_bytes"	: 8,
+	"vector_rtti"	: "N6chrono9ChVector3IdEE",
+	"frame_rtti"	: "N6chrono7ChFrameIdEE",
+	"moving_frame_rtti"	: "N6chrono13ChFrameMovingIdEE",
+	"body_frame_rtti"	: "N6chrono11ChBodyFrameE"
+}

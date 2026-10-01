@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Value/allocator facades use the already extracted neutral foundation.
+cc_library(
+    name = "api",
+    hdrs = [
+        "RbVector3.h",
+        "RbQuaternion.h",
+        "RbFrame.h",
+        "RbMatrix33.h",
+        "RbTypes.h"
+    ],
+    strip_include_prefix = "/include",
+    deps = ["//src/core:foundation"],
+)

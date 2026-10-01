@@ -113,3 +113,17 @@ NEUTRAL_TARGETS = {
     "frames": "//src/mechanics/kinematics:frames",
     "inertia": "//src/mechanics/inertia:inertia"
 }
+
+# Original identities above remain pinned to the immutable source import.
+# These explicit mappings select current compile owners after reviewed moves.
+NEUTRAL_SOURCE_RELOCATIONS = {
+    "src/chrono/physics/ChMassProperties.cpp": "//src/mechanics/inertia:RbMassProperties.cpp",
+}
+
+NEUTRAL_CANONICAL_HEADERS = {
+    "inertia": ["include/robodyna/mechanics/RbMassProperties.h"],
+}
+
+NEUTRAL_HEADER_TARGETS = {
+    "inertia": ["//include/robodyna/mechanics:inertia_headers"],
+}

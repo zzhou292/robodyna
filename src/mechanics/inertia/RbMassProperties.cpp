@@ -5,18 +5,26 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Radu Serban
+// Robodyna adaptation: canonical inertia ownership and names; numerical operations unchanged.
 // =============================================================================
 
-#include "chrono/physics/ChMassProperties.h"
+#include "robodyna/mechanics/RbMassProperties.h"
 
-namespace chrono {
+namespace robodyna::mechanics {
 
-void ChInertiaUtils::InertiaFromCluster(const std::vector<ChVector3d>& positions,
+// Private implementation aliases preserve the original arithmetic expressions.
+using chrono::ChFrame;
+using chrono::ChMatrix33;
+using chrono::ChVector3d;
+using chrono::ChVectorN;
+using chrono::VNULL;
+
+void RbInertiaUtils::InertiaFromCluster(const std::vector<ChVector3d>& positions,
                                         const std::vector<ChMatrix33<> >& rotations,
                                         const std::vector<ChMatrix33<> >& Jlocal,
                                         const std::vector<double>& masses,
@@ -65,19 +73,19 @@ void ChInertiaUtils::InertiaFromCluster(const std::vector<ChVector3d>& positions
     }
 }
 
-void ChInertiaUtils::RotateInertia(const ChMatrix33<> inertiaIn, const ChMatrix33<> R, ChMatrix33<>& inertiaOut) {
+void RbInertiaUtils::RotateInertia(const ChMatrix33<> inertiaIn, const ChMatrix33<> R, ChMatrix33<>& inertiaOut) {
     ChMatrix33<> Rt = R;
     Rt.transposeInPlace();
     inertiaOut = R * inertiaIn * Rt;
 }
 
-ChMatrix33<> ChInertiaUtils::RotateInertia(const ChMatrix33<> inertiaIn, const ChMatrix33<> R) {
+ChMatrix33<> RbInertiaUtils::RotateInertia(const ChMatrix33<> inertiaIn, const ChMatrix33<> R) {
     ChMatrix33<> inertiaOut;
     RotateInertia(inertiaIn, R, inertiaOut);
     return inertiaOut;
 }
 
-void ChInertiaUtils::TranslateInertia(const ChMatrix33<> inertiaIn,
+void RbInertiaUtils::TranslateInertia(const ChMatrix33<> inertiaIn,
                                       const ChVector3d dist,
                                       const double mass,
                                       ChMatrix33<>& inertiaOut) {
@@ -95,13 +103,13 @@ void ChInertiaUtils::TranslateInertia(const ChMatrix33<> inertiaIn,
     inertiaOut(2, 1) = inertiaOut(1, 2);
 }
 
-ChMatrix33<> ChInertiaUtils::TranslateInertia(const ChMatrix33<> inertiaIn, const ChVector3d dist, const double mass) {
+ChMatrix33<> RbInertiaUtils::TranslateInertia(const ChMatrix33<> inertiaIn, const ChVector3d dist, const double mass) {
     ChMatrix33<> inertiaOut;
     TranslateInertia(inertiaIn, dist, mass, inertiaOut);
     return inertiaOut;
 }
 
-void ChInertiaUtils::PrincipalInertia(const ChMatrix33<>& inertia,
+void RbInertiaUtils::PrincipalInertia(const ChMatrix33<>& inertia,
                                       ChVector3d& principal_inertia,
                                       ChMatrix33<>& principal_axes) {
     ChVectorN<double, 3> principal_I;
@@ -180,4 +188,4 @@ void CompositeInertia::AddComponent(
         m_inertia += increment;
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::mechanics

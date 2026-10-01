@@ -1,0 +1,7 @@
+# Preserve the exact upstream license and frozen archive bytes, including spaces
+# emitted at line endings by the historical JSON writer. Hash tests protect them.
+LICENSES/Chrono-BSD-3-Clause.txt -whitespace
+tests/serialization_compat/fixtures/baseline.json -whitespace
+tests/serialization_compat/fixtures/producer.json -whitespace
+tests/serialization_compat/rename_probe/fixtures/baseline.json -whitespace
+tests/serialization_compat/rename_probe/fixtures/producer.json -whitespace

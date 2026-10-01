@@ -1,7 +1,7 @@
 """Real native ownership for unchanged, domain-neutral Chrono implementation."""
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
+load(":neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES", "NEUTRAL_SOURCE_RELOCATIONS", "NEUTRAL_HEADER_TARGETS")
 
 _SOURCE_ROOT = "//src/compatibility/chrono:"
 
@@ -15,9 +15,9 @@ def neutral_library(name, component, deps):
     """
     cc_library(
         name = name,
-        srcs = [_SOURCE_ROOT + path for path in NEUTRAL_SOURCES[component]],
+        srcs = [NEUTRAL_SOURCE_RELOCATIONS.get(path, _SOURCE_ROOT + path) for path in NEUTRAL_SOURCES[component]],
         hdrs = [_SOURCE_ROOT + path for path in NEUTRAL_HEADERS[component]],
-        deps = deps + [
+        deps = deps + NEUTRAL_HEADER_TARGETS.get(component, []) + [
             "//src/core/configuration:host_headers",
             "//src/compatibility/chrono:neutral_include_root",
             "@eigen//:eigen",

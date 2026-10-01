@@ -26,6 +26,8 @@ cmake_dependent_option(CH_ENABLE_MODULE_FEA_MULTIPHYSICS "Enable the Chrono FEA-
 
 # Core group
 
+include("${CMAKE_CURRENT_LIST_DIR}/../RobodynaSourcePaths.cmake")
+
 set(Chrono_core_SOURCES
     core/ChClassFactory.cpp
     core/ChQuaternion.cpp
@@ -115,7 +117,7 @@ set(Chrono_physics_SOURCES
     physics/ChExternalDynamicsODE.cpp
     physics/ChExternalDynamicsDAE.cpp
     physics/ChAssembly.cpp
-    physics/ChMassProperties.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/mechanics/inertia/RbMassProperties.cpp
     )
 set(Chrono_physics_HEADERS
     physics/ChBodyFrame.h
@@ -1489,6 +1491,7 @@ endif()
 
 # TODO DARIOM: CH_INCLUDES_BUILD can be removed, used only here now
 list(APPEND CH_INCLUDES_BUILD "${CMAKE_SOURCE_DIR}/src")
+list(APPEND CH_INCLUDES_BUILD "${ROBODYNA_SOURCE_ROOT}/include")
 list(APPEND CH_INCLUDES_BUILD "${PROJECT_BINARY_DIR}")
 
 list(APPEND CH_INCLUDES_INSTALL "include")
@@ -1515,6 +1518,12 @@ target_include_directories(Chrono_core ${CH_SYSTEM_INCLUDE_KEYWORD} PUBLIC
 )
 
 target_link_libraries(Chrono_core PUBLIC Eigen3::Eigen)
+
+# Install the canonical definition required by the legacy forwarding header.
+install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h"
+        DESTINATION include/robodyna/mechanics)
+install(FILES "${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt"
+        DESTINATION LICENSES)
 
 # -----------------------------------------------------------------------------
 # Precompiled header

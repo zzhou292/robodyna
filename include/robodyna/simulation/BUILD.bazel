@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# This facade still uses the combined native mechanics backend.
+# It does not establish independent FEA or MBD linkage.
+cc_library(
+    name = "api",
+    hdrs = [
+        "RbSystem.h",
+        "RbSystemNSC.h",
+        "RbSystemSMC.h",
+        "RbAssembly.h"
+    ],
+    strip_include_prefix = "/include",
+    deps = ["//build_defs/chrono:native_core_fea"],
+)

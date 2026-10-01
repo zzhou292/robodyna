@@ -1,0 +1,418 @@
+{ 
+	"fixture"	: 
+	{
+		"vector"	: 
+		{
+			"_version_N6chrono9ChVector3IdEE"	: 0,
+			"x"	: 1.25,
+			"y"	: -2.5,
+			"z"	: 0.125
+		},
+		"frame"	: 
+		{
+			"_version_N6chrono7ChFrameIdEE"	: 0,
+			"m_csys"	: 
+			{
+				"_version_N6chrono10ChCoordsysIdEE"	: 0,
+				"pos"	: 
+				{
+					"x"	: -1,
+					"y"	: 4,
+					"z"	: 0.5
+				},
+				"rot"	: 
+				{
+					"_version_N6chrono12ChQuaternionIdEE"	: 0,
+					"e0"	: 0.5,
+					"e1"	: 0.5,
+					"e2"	: 0.5,
+					"e3"	: 0.5
+				}
+			}
+		},
+		"plain_body"	: 
+		{
+			"_version_ChBody"	: 0,
+			"_version_ChPhysicsItem"	: 0,
+			"_version_N6chrono5ChObjE"	: 0,
+			"m_name"	: "plain legacy body",
+			"m_tag"	: 17,
+			"ChTime"	: 0,
+			"visual_model"	: 
+			{ 
+				"_reference_ID"	: 0
+			},
+			"cameras"	: 
+			[ 
+			],
+			"_version_N6chrono11ChBodyFrameE"	: 0,
+			"_version_N6chrono13ChFrameMovingIdEE"	: 0,
+			"m_csys"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 2.5,
+					"y"	: -1,
+					"z"	: 4
+				},
+				"rot"	: 
+				{
+					"e0"	: 1,
+					"e1"	: 0,
+					"e2"	: 0,
+					"e3"	: 0
+				}
+			},
+			"m_csys_dt"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 0,
+					"y"	: 0,
+					"z"	: 0
+				},
+				"rot"	: 
+				{
+					"e0"	: 0,
+					"e1"	: 0,
+					"e2"	: 0,
+					"e3"	: 0
+				}
+			},
+			"m_csys_dtdt"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 0,
+					"y"	: 0,
+					"z"	: 0
+				},
+				"rot"	: 
+				{
+					"e0"	: 0,
+					"e1"	: 0,
+					"e2"	: 0,
+					"e3"	: 0
+				}
+			},
+			"fixed"	: true,
+			"collide"	: false,
+			"limit_speed"	: false,
+			"disable_gyrotorque"	: false,
+			"is_sleeping"	: false,
+			"allow_sleeping"	: true,
+			"candidate_sleeping"	: false,
+			"markers"	: 
+			[ 
+			],
+			"forces"	: 
+			[ 
+			],
+			"collision_model"	: 
+			{ 
+				"_reference_ID"	: 0
+			},
+			"gyro"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"Xforce"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"Xtorque"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"variables"	: 
+			{
+				"_version_ChVariablesBodyOwnMass"	: 0,
+				"_version_N6chrono11ChVariablesE"	: 0,
+				"ndof"	: 6,
+				"disabled"	: true,
+				"offset"	: 0,
+				"mass"	: 7.25,
+				"inertia"	: 
+				{
+					"_version_N6chrono26ChMatrix_dense_version_tagE"	: 1,
+					"rows"	: 3,
+					"columns"	: 3,
+					"data"	: 
+					[ 
+						2,
+						0,
+						0,
+						0,
+						3,
+						0,
+						0,
+						0,
+						4
+					]
+				}
+			},
+			"max_speed"	: 0.5,
+			"max_wvel"	: 6.2831855,
+			"sleep_time"	: 0.6,
+			"sleep_minspeed"	: 0.1,
+			"sleep_minwvel"	: 0.04,
+			"sleep_starttime"	: 0
+		},
+		"body"	: 
+		{ 
+			"_type"	: "ChBodyAuxRef",
+			"_object_ID"	: 1,
+			"_version_ChBodyAuxRef"	: 0,
+			"m_name"	: "shared auxiliary body",
+			"m_tag"	: 23,
+			"ChTime"	: 0.125,
+			"visual_model"	: 
+			{ 
+				"_reference_ID"	: 0
+			},
+			"cameras"	: 
+			[ 
+			],
+			"m_csys"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 4.25,
+					"y"	: 4.5,
+					"z"	: 6.75
+				},
+				"rot"	: 
+				{
+					"e0"	: 1,
+					"e1"	: 0,
+					"e2"	: 0,
+					"e3"	: 0
+				}
+			},
+			"m_csys_dt"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 0.125,
+					"y"	: -0.25,
+					"z"	: 0.5
+				},
+				"rot"	: 
+				{
+					"e0"	: 0,
+					"e1"	: 0.125,
+					"e2"	: -0.0625,
+					"e3"	: 0.25
+				}
+			},
+			"m_csys_dtdt"	: 
+			{
+				"pos"	: 
+				{
+					"x"	: 0,
+					"y"	: 0,
+					"z"	: 0
+				},
+				"rot"	: 
+				{
+					"e0"	: 0,
+					"e1"	: 0,
+					"e2"	: 0,
+					"e3"	: 0
+				}
+			},
+			"fixed"	: false,
+			"collide"	: false,
+			"limit_speed"	: false,
+			"disable_gyrotorque"	: false,
+			"is_sleeping"	: false,
+			"allow_sleeping"	: true,
+			"candidate_sleeping"	: false,
+			"markers"	: 
+			[ 
+			],
+			"forces"	: 
+			[ 
+			],
+			"collision_model"	: 
+			{ 
+				"_reference_ID"	: 0
+			},
+			"gyro"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"Xforce"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"Xtorque"	: 
+			{
+				"x"	: 0,
+				"y"	: 0,
+				"z"	: 0
+			},
+			"variables"	: 
+			{
+				"ndof"	: 6,
+				"disabled"	: false,
+				"offset"	: 0,
+				"mass"	: 12.5,
+				"inertia"	: 
+				{
+					"rows"	: 3,
+					"columns"	: 3,
+					"data"	: 
+					[ 
+						3,
+						0,
+						0,
+						0,
+						4,
+						0,
+						0,
+						0,
+						5
+					]
+				}
+			},
+			"max_speed"	: 0.5,
+			"max_wvel"	: 6.2831855,
+			"sleep_time"	: 0.6,
+			"sleep_minspeed"	: 0.1,
+			"sleep_minwvel"	: 0.04,
+			"sleep_starttime"	: 0,
+			"ref_to_com"	: 
+			{
+				"m_csys"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: -0.25,
+						"y"	: 0.5,
+						"z"	: -0.75
+					},
+					"rot"	: 
+					{
+						"e0"	: 1,
+						"e1"	: -0,
+						"e2"	: -0,
+						"e3"	: -0
+					}
+				},
+				"m_csys_dt"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: 0,
+						"y"	: 0,
+						"z"	: 0
+					},
+					"rot"	: 
+					{
+						"e0"	: 0,
+						"e1"	: 0,
+						"e2"	: 0,
+						"e3"	: 0
+					}
+				},
+				"m_csys_dtdt"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: 0,
+						"y"	: 0,
+						"z"	: 0
+					},
+					"rot"	: 
+					{
+						"e0"	: 0,
+						"e1"	: 0,
+						"e2"	: 0,
+						"e3"	: 0
+					}
+				}
+			},
+			"ref_to_abs"	: 
+			{
+				"m_csys"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: 4,
+						"y"	: 5,
+						"z"	: 6
+					},
+					"rot"	: 
+					{
+						"e0"	: 1,
+						"e1"	: 0,
+						"e2"	: 0,
+						"e3"	: 0
+					}
+				},
+				"m_csys_dt"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: 0.125,
+						"y"	: -0.25,
+						"z"	: 0.5
+					},
+					"rot"	: 
+					{
+						"e0"	: 0,
+						"e1"	: 0.125,
+						"e2"	: -0.0625,
+						"e3"	: 0.25
+					}
+				},
+				"m_csys_dtdt"	: 
+				{
+					"pos"	: 
+					{
+						"x"	: 0,
+						"y"	: 0,
+						"z"	: 0
+					},
+					"rot"	: 
+					{
+						"e0"	: 0,
+						"e1"	: 0,
+						"e2"	: 0,
+						"e3"	: 0
+					}
+				}
+			}
+		},
+		"alias"	: 
+		{ 
+			"_type"	: "ChBodyAuxRef",
+			"_reference_ID"	: 1
+		},
+		"frame_alias"	: 
+		{ 
+			"_type"	: "ChBodyAuxRef",
+			"_reference_ID"	: 1
+		},
+		"item_alias"	: 
+		{ 
+			"_type"	: "ChBodyAuxRef",
+			"_reference_ID"	: 1
+		},
+		"null_body"	: 
+		{ 
+			"_reference_ID"	: 0
+		}
+	}
+}

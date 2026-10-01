@@ -1,0 +1,8 @@
+{ 
+	"compiler"	: "11.4.0",
+	"language"	: 201703,
+	"pointer_bytes"	: 8,
+	"size_t_bytes"	: 8,
+	"base_rtti"	: "N6chrono17ChRenameProbeBaseE",
+	"derived_rtti"	: "N6chrono13ChRenameProbeE"
+}

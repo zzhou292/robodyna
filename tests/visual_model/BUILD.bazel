@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "compatibility_test",
+    srcs = ["VisualModelCompatibilityTest.cpp"],
+    args = ["$(location //src/compatibility/chrono:data/colormaps/jet-table-float-0512.csv)"],
+    data = ["//src/compatibility/chrono:data/colormaps/jet-table-float-0512.csv"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "visual-model-compatibility"],
+)

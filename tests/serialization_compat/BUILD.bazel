@@ -1,0 +1,42 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "fixture_model",
+    srcs = ["ArchiveFormats.cpp", "FixtureModel.cpp"],
+    hdrs = ["ArchiveFormats.h", "FixtureModel.h"],
+    deps = ["//build_defs/chrono:native_core_fea"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+)
+
+# Build/run this against the unchanged archive/factory before freezing fixtures.
+cc_binary(
+    name = "write_baseline",
+    srcs = ["WriteBaseline.cpp"],
+    deps = [":fixture_model"],
+    tags = ["manual", "cpu-only"],
+)
+
+cc_test(
+    name = "compatibility_test",
+    srcs = ["CompatibilityTest.cpp"],
+    args = ["$(location fixtures/baseline.json)"],
+    data = ["fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    deps = [":fixture_model", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+py_test(
+    name = "fixture_integrity_test",
+    srcs = ["FixtureIntegrityTest.py"],
+    main = "FixtureIntegrityTest.py",
+    args = ["$(location fixtures/manifest.json)"],
+    data = ["fixtures/manifest.json", "fixtures/producer.json", "fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+test_suite(name = "baseline_tests", tests = [":compatibility_test", ":fixture_integrity_test"])

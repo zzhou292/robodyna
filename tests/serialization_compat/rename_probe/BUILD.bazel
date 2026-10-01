@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# This target continues compiling the genuine pre-rename test identities. The
+# later renamed reader must never link it: that would mask factory/tag mistakes.
+cc_binary(
+    name = "write_legacy_probe",
+    srcs = ["LegacyTypes.cpp", "LegacyTypes.h", "WriteLegacyProbe.cpp"],
+    deps = ["//src/core:foundation"],
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)

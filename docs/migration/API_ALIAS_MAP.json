@@ -1,0 +1,422 @@
+{
+  "schema": "robodyna.api_alias_map.v1",
+  "status": "qualified initial alias surface; canonical inertia implementation qualified separately",
+  "scope": "N1 initial useful closure, not all retained Chrono APIs",
+  "headers": [
+    {
+      "module": "core",
+      "header": "include/robodyna/core/RbVector3.h",
+      "legacy_header": "chrono/core/ChVector3.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChVector3<Real>",
+          "canonical": "robodyna::core::RbVector3<Real>"
+        },
+        {
+          "legacy": "chrono::ChVector3d",
+          "canonical": "robodyna::core::RbVector3d"
+        },
+        {
+          "legacy": "chrono::ChVector3f",
+          "canonical": "robodyna::core::RbVector3f"
+        },
+        {
+          "legacy": "chrono::ChVector3i",
+          "canonical": "robodyna::core::RbVector3i"
+        },
+        {
+          "legacy": "chrono::ChVector3b",
+          "canonical": "robodyna::core::RbVector3b"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "core",
+      "header": "include/robodyna/core/RbQuaternion.h",
+      "legacy_header": "chrono/core/ChQuaternion.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChQuaternion<Real>",
+          "canonical": "robodyna::core::RbQuaternion<Real>"
+        },
+        {
+          "legacy": "chrono::ChQuaterniond",
+          "canonical": "robodyna::core::RbQuaterniond"
+        },
+        {
+          "legacy": "chrono::ChQuaternionf",
+          "canonical": "robodyna::core::RbQuaternionf"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "core",
+      "header": "include/robodyna/core/RbFrame.h",
+      "legacy_header": "chrono/core/ChFrame.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChFrame<Real>",
+          "canonical": "robodyna::core::RbFrame<Real>"
+        },
+        {
+          "legacy": "chrono::ChFramed",
+          "canonical": "robodyna::core::RbFramed"
+        },
+        {
+          "legacy": "chrono::ChFramef",
+          "canonical": "robodyna::core::RbFramef"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "core",
+      "header": "include/robodyna/core/RbMatrix33.h",
+      "legacy_header": "chrono/core/ChMatrix33.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChMatrix33<Real>",
+          "canonical": "robodyna::core::RbMatrix33<Real>"
+        },
+        {
+          "legacy": "chrono::ChMatrix33d",
+          "canonical": "robodyna::core::RbMatrix33d"
+        },
+        {
+          "legacy": "chrono::ChMatrix33f",
+          "canonical": "robodyna::core::RbMatrix33f"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "core",
+      "header": "include/robodyna/core/RbTypes.h",
+      "legacy_header": "chrono/core/ChTypes.h",
+      "symbols": [],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "mechanics",
+      "header": "include/robodyna/mechanics/RbBodyFrame.h",
+      "legacy_header": "chrono/physics/ChBodyFrame.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChBodyFrame",
+          "canonical": "robodyna::mechanics::RbBodyFrame"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "neutral"
+    },
+    {
+      "module": "mechanics",
+      "header": "include/robodyna/mechanics/RbPhysicsItem.h",
+      "legacy_header": "chrono/physics/ChPhysicsItem.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChPhysicsItem",
+          "canonical": "robodyna::mechanics::RbPhysicsItem"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "mbd",
+      "header": "include/robodyna/mbd/RbBody.h",
+      "legacy_header": "chrono/physics/ChBody.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChBody",
+          "canonical": "robodyna::mbd::RbBody"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "mbd",
+      "header": "include/robodyna/mbd/RbBodyAuxRef.h",
+      "legacy_header": "chrono/physics/ChBodyAuxRef.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChBodyAuxRef",
+          "canonical": "robodyna::mbd::RbBodyAuxRef"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "mbd",
+      "header": "include/robodyna/mbd/RbLinkTSDA.h",
+      "legacy_header": "chrono/physics/ChLinkTSDA.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChLinkTSDA",
+          "canonical": "robodyna::mbd::RbLinkTSDA"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "mbd",
+      "header": "include/robodyna/mbd/RbBodyEasy.h",
+      "legacy_header": "chrono/physics/ChBodyEasy.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChBodyEasyBox",
+          "canonical": "robodyna::mbd::RbBodyEasyBox"
+        },
+        {
+          "legacy": "chrono::ChBodyEasySphere",
+          "canonical": "robodyna::mbd::RbBodyEasySphere"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "fea",
+      "header": "include/robodyna/fea/RbMesh.h",
+      "legacy_header": "chrono/fea/ChMesh.h",
+      "symbols": [
+        {
+          "legacy": "chrono::fea::ChMesh",
+          "canonical": "robodyna::fea::RbMesh"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "fea",
+      "header": "include/robodyna/fea/RbNodeFEAxyz.h",
+      "legacy_header": "chrono/fea/ChNodeFEAxyz.h",
+      "symbols": [
+        {
+          "legacy": "chrono::fea::ChNodeFEAxyz",
+          "canonical": "robodyna::fea::RbNodeFEAxyz"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "fea",
+      "header": "include/robodyna/fea/RbElementSpring.h",
+      "legacy_header": "chrono/fea/ChElementSpring.h",
+      "symbols": [
+        {
+          "legacy": "chrono::fea::ChElementSpring",
+          "canonical": "robodyna::fea::RbElementSpring"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "simulation",
+      "header": "include/robodyna/simulation/RbSystem.h",
+      "legacy_header": "chrono/physics/ChSystem.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSystem",
+          "canonical": "robodyna::simulation::RbSystem"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "simulation",
+      "header": "include/robodyna/simulation/RbSystemNSC.h",
+      "legacy_header": "chrono/physics/ChSystemNSC.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSystemNSC",
+          "canonical": "robodyna::simulation::RbSystemNSC"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "simulation",
+      "header": "include/robodyna/simulation/RbSystemSMC.h",
+      "legacy_header": "chrono/physics/ChSystemSMC.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSystemSMC",
+          "canonical": "robodyna::simulation::RbSystemSMC"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "simulation",
+      "header": "include/robodyna/simulation/RbAssembly.h",
+      "legacy_header": "chrono/physics/ChAssembly.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChAssembly",
+          "canonical": "robodyna::simulation::RbAssembly"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "contact",
+      "header": "include/robodyna/contact/RbContactMaterial.h",
+      "legacy_header": "chrono/physics/ChContactMaterial.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChContactMethod",
+          "canonical": "robodyna::contact::RbContactMethod"
+        },
+        {
+          "legacy": "chrono::ChContactMaterial",
+          "canonical": "robodyna::contact::RbContactMaterial"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "contact",
+      "header": "include/robodyna/contact/RbContactMaterialNSC.h",
+      "legacy_header": "chrono/physics/ChContactMaterialNSC.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChContactMaterialNSC",
+          "canonical": "robodyna::contact::RbContactMaterialNSC"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "contact",
+      "header": "include/robodyna/contact/RbContactMaterialSMC.h",
+      "legacy_header": "chrono/physics/ChContactMaterialSMC.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChContactMaterialSMC",
+          "canonical": "robodyna::contact::RbContactMaterialSMC"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "numerics",
+      "header": "include/robodyna/numerics/RbSolver.h",
+      "legacy_header": "chrono/solver/ChSolver.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSolver",
+          "canonical": "robodyna::numerics::RbSolver"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "numerics",
+      "header": "include/robodyna/numerics/RbSolverPSOR.h",
+      "legacy_header": "chrono/solver/ChSolverPSOR.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSolverPSOR",
+          "canonical": "robodyna::numerics::RbSolverPSOR"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "numerics",
+      "header": "include/robodyna/numerics/RbSolverMINRES.h",
+      "legacy_header": "chrono/solver/ChIterativeSolverLS.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChSolverMINRES",
+          "canonical": "robodyna::numerics::RbSolverMINRES"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "numerics",
+      "header": "include/robodyna/numerics/RbTimestepper.h",
+      "legacy_header": "chrono/timestepper/ChTimestepper.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChTimestepper",
+          "canonical": "robodyna::numerics::RbTimestepper"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    },
+    {
+      "module": "numerics",
+      "header": "include/robodyna/numerics/RbTimestepperEulerImplicit.h",
+      "legacy_header": "chrono/timestepper/ChTimestepperImplicit.h",
+      "symbols": [
+        {
+          "legacy": "chrono::ChTimestepperEulerImplicit",
+          "canonical": "robodyna::numerics::RbTimestepperEulerImplicit"
+        },
+        {
+          "legacy": "chrono::ChTimestepperEulerImplicitLinearized",
+          "canonical": "robodyna::numerics::RbTimestepperEulerImplicitLinearized"
+        },
+        {
+          "legacy": "chrono::ChTimestepperEulerImplicitProjected",
+          "canonical": "robodyna::numerics::RbTimestepperEulerImplicitProjected"
+        }
+      ],
+      "implementation": "alias",
+      "backend": "native_core_fea_aggregate"
+    }
+  ],
+  "qualification": {
+    "build_receipt": "crash-work/reports/robodyna-rename-checkpoint-1.json",
+    "receipt_scope": "All 19 checkpoint targets passed through native Bazel and the retained CMake bridge.",
+    "api_behavior_tests": 8,
+    "header_include_order_probes": 52,
+    "example_execution_receipt": "crash-work/reports/robodyna-rename-baseline-run-1.json",
+    "physics_backend": "retained CPU mechanics; no new CUDA port or independent FEA/MBD claim"
+  },
+  "helper_imports": [
+    {
+      "legacy": "chrono_types::make_shared",
+      "canonical": "robodyna::core::make_shared"
+    },
+    {
+      "legacy": "chrono_types::make_unique",
+      "canonical": "robodyna::core::make_unique"
+    },
+    {
+      "legacy": "chrono::Vdot",
+      "canonical": "robodyna::core::Vdot"
+    },
+    {
+      "legacy": "chrono::Vcross",
+      "canonical": "robodyna::core::Vcross"
+    }
+  ]
+}
