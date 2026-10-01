@@ -1,0 +1,61 @@
+{
+  "schema": "robodyna.swig_declaration_views.v1",
+  "views": [
+    {
+      "name": "body",
+      "contract": "build_defs/bindings/body_view_contract.json",
+      "ledger": "docs/migration/BODY_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/mbd/RbBody.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChBody.h",
+      "requires_fea": false
+    },
+    {
+      "name": "mesh",
+      "contract": "build_defs/bindings/mesh_view_contract.json",
+      "ledger": "docs/migration/MESH_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/fea/RbMesh.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/fea/ChMesh.h",
+      "requires_fea": true
+    },
+    {
+      "name": "system",
+      "contract": "build_defs/bindings/system_view_contract.json",
+      "ledger": "docs/migration/SYSTEM_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/simulation/RbSystem.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "requires_fea": false
+    },
+    {
+      "name": "system_nsc",
+      "contract": "build_defs/bindings/system_nsc_view_contract.json",
+      "ledger": "docs/migration/SYSTEM_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/simulation/RbSystemNSC.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h",
+      "requires_fea": false
+    },
+    {
+      "name": "system_smc",
+      "contract": "build_defs/bindings/system_smc_view_contract.json",
+      "ledger": "docs/migration/SYSTEM_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/simulation/RbSystemSMC.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h",
+      "requires_fea": false
+    },
+    {
+      "name": "body_auxref",
+      "contract": "build_defs/bindings/body_auxref_view_contract.json",
+      "ledger": "docs/migration/BODY_FAMILY_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/mbd/RbBodyAuxRef.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h",
+      "requires_fea": false
+    },
+    {
+      "name": "body_easy",
+      "contract": "build_defs/bindings/body_easy_view_contract.json",
+      "ledger": "docs/migration/BODY_FAMILY_TRANSFORMATIONS.json",
+      "canonical": "include/robodyna/mbd/RbBodyEasy.h",
+      "forwarder": "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h",
+      "requires_fea": false
+    }
+  ]
+}

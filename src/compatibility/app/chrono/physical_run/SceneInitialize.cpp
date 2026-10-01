@@ -3,7 +3,7 @@
 #include "chrono/ReplayDisplayGeometry.h"
 #include "chrono/ReplayPartColors.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
-#include "chrono/physics/ChBody.h"
+#include "robodyna/mbd/RbBody.h"
 namespace crash::visual::physical_run {
 ReplaySceneReport Scene::Initialize(const output::physical_run::Replay& replay,SceneOptions options) {
     return Initialize(SampleSource(replay), options);

@@ -9,11 +9,13 @@
     "N2": "passed actual old archives, genuinely renamed-type fixtures and explicit version-policy tests",
     "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending",
     "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending",
-    "N4_mesh": "passed 31 native targets, 3 retained-CMake targets, four CMake binding-generation/install profiles and declaration-pin rejection/recovery; integrated binding runtime pending",
-    "N4_system": "passed 33 native targets for actual System/NSC/SMC implementations, frozen archives, callbacks, contact profiles and common FE/body clock; combined CMake/binding/product gates pending",
-    "N4_body_family": "passed 34 native targets for actual AuxRef and eight Easy-body types; constructor baseline, factory/alias identities and frozen archives preserved; combined binding/CMake/product gates pending"
+    "N4_mesh": "passed native/CMake, core/FE bindings and integrated product gates; independent FE linkage pending",
+    "N4_system": "passed actual System/NSC/SMC, frozen archives, callbacks and integrated build/binding/product gates; domain service extraction pending",
+    "N4_body_family": "passed actual AuxRef and eight Easy types, constructor/factory/archive and integrated binding/product gates",
+    "N5_consumers": "passed maintained capture/replay consumers with canonical Body/Simulation/value APIs and installed used headers",
+    "N5_bindings": "passed core/FE Python runtime, both core native wrappers, one shared backend, historical core/FE/vehicle surfaces, and configured CMake packaging; managed C# and full optional module runtime remain pending"
   },
-  "test_targets_passed": 34,
+  "test_targets_passed": 49,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -239,6 +241,99 @@
       "exit_code": 0,
       "elapsed_seconds": 5.86,
       "peak_sampled_rss_bytes": 1046855680
+    },
+    "robodyna-rename-integrated-native-1": {
+      "path": "crash-work/reports/robodyna-rename-integrated-native-1.json",
+      "sha256": "733452269a4186ff8aee45f811fbce1df2fce6e4132a81bdb8d6691a9b1a1097",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 339.919,
+      "peak_sampled_rss_bytes": 5626580992
+    },
+    "robodyna-rename-integrated-cmake-1": {
+      "path": "crash-work/reports/robodyna-rename-integrated-cmake-1.json",
+      "sha256": "1d8ffc346bd0c5da51ffb660e18e67f2549bf4902a6824ba50f95681d3e2086d",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 148.428,
+      "peak_sampled_rss_bytes": 5774274560
+    },
+    "robodyna-rename-bindings-runtime-2": {
+      "path": "crash-work/reports/robodyna-rename-bindings-runtime-2.json",
+      "sha256": "47cf01239af2f35621965536eb2c43c912bf35b10c0ba6f35827e7eb8528fe58",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 4.002,
+      "peak_sampled_rss_bytes": 947335168
+    },
+    "robodyna-rename-python-core-runtime-2": {
+      "path": "crash-work/reports/robodyna-rename-python-core-runtime-2.json",
+      "sha256": "d844c6a9e2654e13542194c0e7106e9799a80eda2b28bd23a7b45bc246f312dc",
+      "passed": true
+    },
+    "robodyna-rename-python-fea-runtime-2": {
+      "path": "crash-work/reports/robodyna-rename-python-fea-runtime-2.json",
+      "sha256": "e8d76077180a74537cb1b85a619be548f1d1b58dfbfa8bd1813e393cda79f286",
+      "passed": true
+    },
+    "robodyna-rename-binding-elf-2": {
+      "path": "crash-work/reports/robodyna-rename-binding-elf-2.json",
+      "sha256": "f308fd4ca5a631f583887b3000700171ed4ccc6ca8e32cfa9a0341979d6789a6",
+      "passed": true
+    },
+    "robodyna-rename-binding-tools-1": {
+      "path": "crash-work/reports/robodyna-rename-binding-tools-1.json",
+      "sha256": "1ec91d7fd1f6d5a7fc91c6756f93e363b23b20863485951f8b4bc87d714addfc",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.308,
+      "peak_sampled_rss_bytes": 795262976
+    },
+    "robodyna-rename-cmake-swig-1": {
+      "path": "crash-work/reports/robodyna-rename-cmake-swig-1.json",
+      "sha256": "707f1910b353bdacc7e0b87ae5e45057b3f64e16e72bd8ae80f523e5e9b2ffd5",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 59.44,
+      "peak_sampled_rss_bytes": 1294004224
+    },
+    "robodyna-rename-swig-matrix-authenticated-1": {
+      "path": "crash-work/investigations/robodyna-rename-swig-matrix-1/comparison-authenticated.json",
+      "sha256": "61e0fc5b365c6090c48d97c9953466f98c825ccc5c48efaef2b17d535188bc72",
+      "passed": true
+    },
+    "robodyna-rename-yaris-101-1": {
+      "path": "crash-work/investigations/robodyna-rename-yaris-101-1/guard.json",
+      "sha256": "2a1343bb9a7609c338ef77e9d1f7e59a37e538a6fe1995fbf5158cd0d887e1b3",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 22.176,
+      "peak_sampled_rss_bytes": 5501378560
+    },
+    "robodyna-rename-yaris-101-independent-1": {
+      "path": "crash-work/reports/robodyna-rename-yaris-101-independent-1.json",
+      "sha256": "a92e9ee4072599fc1807c8d4c0577116f4459c5f193049b962761e584d87a360",
+      "passed": true
+    },
+    "robodyna-rename-demo-comparison-1": {
+      "path": "crash-work/reports/robodyna-rename-demo-comparison-1.json",
+      "sha256": "055962d7fc359008d2e1167e3dc5388051533f25e8f2578926f76cccc2e0d149",
+      "passed": true
+    },
+    "robodyna-rename-render-comparison-1": {
+      "path": "crash-work/reports/robodyna-rename-render-comparison-1.json",
+      "sha256": "f189e800b639a583569a6ed5829d726f0f4c14739464c4396b6f80ab0ec27c68",
+      "passed": true
+    },
+    "robodyna-rename-render-visual-review-1": {
+      "path": "crash-work/reports/robodyna-rename-render-visual-review-1.json",
+      "sha256": "163f62096e865c06aed258197ea01ef01c17c4dda725b7ab0822305d81e05ab8",
+      "passed": true
+    },
+    "robodyna-api-consumers-101-1": {
+      "path": "crash-work/renders/robodyna-api-consumers-101-1/render-result.json",
+      "sha256": "c5189e183064a95bc39de2a3b852b314bab440cf4d39cf3c6cf1ce7194b2cc96",
+      "status": "media_verified"
     }
   },
   "limits": {
@@ -257,12 +352,12 @@
     }
   },
   "claim_boundary": [
-    "No independent full FEA/MBD build yet",
-    "Body, mesh, System/NSC/SMC and inertia definitions are canonical; other initial APIs remain aliases",
-    "Body checkpoint core Python runtime and both native wrappers qualified; integrated mesh bindings pending; managed C# and optional module runtimes remain unqualified",
-    "No new CUDA physics or 100 ms rerun",
-    "Populated glyph-property archive and unsafe Python parent-ownership helper limitations recorded separately",
-    "101-step GPU comparison covers saved output at epochs 0 and 101, not unsaved state or physical restart"
+    "The whole Chrono API migration is not complete; Assembly, shared participant/frame, math, nodes/elements, numerical and optional families still have legacy definitions",
+    "No independent full FEA/MBD build yet; actual definitions may still compile in the explicit mixed aggregate",
+    "Core and FEA Python runtime and core Python/C# native wrappers qualified; managed C# and full optional-module runtimes remain unqualified",
+    "No new CUDA physics, physical restart, CPU-reference accuracy or 100 ms trajectory rerun",
+    "101-step GPU comparison covers all recorded output and non-timing fields at saved epochs 0 and 101",
+    "Existing archive and partial binding limitations are documented separately"
   ],
   "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text.",
   "abi": "Real namespace moves and transient archive/visual members require a coordinated rebuild; saved archive bytes are preserved, old binary ABI is not promised.",
@@ -270,7 +365,7 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest broad body-family native suite; separate integration suites are recorded by receipt, not a cumulative count.",
+  "test_targets_scope": "Integrated native/product suite; separate retained CMake 3/3, binding runtime/ELF 3/3, and final binding-tool 3/3 suites also pass. Counts are not summed as unique tests.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",
@@ -289,12 +384,39 @@
     "vehicle_csharp_files": 510,
     "all_equal": true,
     "diagnostics": "Only explicitly declared absolute snapshot roots normalized; relative paths, line numbers, warning codes and messages unchanged. Original failed comparison receipt retained.",
-    "runtime_qualified": false
+    "runtime_qualified": true
   },
   "body_family_baseline": {
     "before_source_move": true,
     "constructor_archive_test_cases_passed": 10,
     "comparison_tool_test_cases_passed": 7,
     "scope": "Stored fields and existing frozen bytes exact; only the pre-existing recomputed inverse frame uses the measured four-ULP bound"
-  }
+  },
+  "integrated_regression": {
+    "source_inverse_rows": 77,
+    "declaration_views": 7,
+    "python_fe_steps": 1000,
+    "python_fe_time_s": 0.1,
+    "python_fe_max_attachment_error": 0.0,
+    "shared_native_backends": 1,
+    "gpu_intervals": 101,
+    "fixed_dt_s": 1.5e-07,
+    "saved_archive_files_exact": 50,
+    "saved_archive_bytes": 177167032,
+    "all_nontiming_summary_fields_exact": true,
+    "six_second_demo_summaries_exact": [
+      "spring",
+      "nsc",
+      "scm"
+    ],
+    "short_render_png_and_mp4_exact": true,
+    "physical_restart": false
+  },
+  "preserved_integration_failures": [
+    "System attempt1: four relative namespace references and incomplete proof data; corrected without arithmetic edits",
+    "System attempt2: runtime checks passed while source-proof metadata was still incomplete; final33-target gate passed",
+    "BodyFamily attempt1: API comparison test needed the explicit legacy Easy header; final34-target gate passed",
+    "FE runtime attempt1: used an inherited partial core-only Mesh proxy; historical/current wrapper bytes prove the same limitation; supported FE route passes",
+    "Raw generation-matrix comparison rejected known temporary/origin file labels; exact authenticated source/line mapping and negative tests establish reviewed parity; raw failure retained"
+  ]
 }

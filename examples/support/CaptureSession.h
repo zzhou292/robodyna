@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Options.h"
+#include "robodyna/simulation/RbSystemFwd.h"
 #include "output/ArtifactIO.h"
 #include "chrono_vsg/ChVisualSystemVSG.h"
 #include <memory>
@@ -28,10 +29,10 @@ class CaptureSession {
     // The real system clock/step counter is checked on every call. At the sample
     // cadence, two renders of the same state capture Chrono's preceding image.
     // Never advances dynamics. Pass nullptr only in explicit headless mode.
-    void State(std::uint64_t completed_step, chrono::ChSystem&, chrono::ChVisualSystem*);
+    void State(std::uint64_t completed_step, robodyna::simulation::RbSystem&, chrono::ChVisualSystem*);
     // Model-specific finite telemetry is supplied by each original example adapter.
     // Headless completion emits a run summary, never a completed PNG manifest.
-    void Finish(chrono::ChSystem&, const crash::output::Document& telemetry);
+    void Finish(robodyna::simulation::RbSystem&, const crash::output::Document& telemetry);
 
   private:
     struct Impl;

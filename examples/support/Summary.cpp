@@ -1,5 +1,5 @@
 #include "SessionState.h"
-#include "chrono/physics/ChSystem.h"
+#include "robodyna/simulation/RbSystem.h"
 #include <cmath>
 #include <set>
 
@@ -25,13 +25,13 @@ void CheckTelemetry(const crash::output::Value& value, unsigned depth,
 }
 
 namespace robodyna::examples {
-void CaptureSession::Impl::CheckEndpoint(chrono::ChSystem& system) const {
+void CaptureSession::Impl::CheckEndpoint(robodyna::simulation::RbSystem& system) const {
     Require(!options.headless || system.GetVisualSystem() == nullptr,
             "Headless demo must not attach a visual system");
     Require(observed && step == options.steps && system.GetNumSteps() == step && system.GetChTime() == time &&
             CaptureTimeMatches(step, time, options.time_step_s), "Demo stopped before its declared physical endpoint");
 }
-crash::output::Document CaptureSession::Impl::Summary(chrono::ChSystem& system,
+crash::output::Document CaptureSession::Impl::Summary(robodyna::simulation::RbSystem& system,
                                                     const crash::output::Document& telemetry) const {
     namespace io = crash::output;
     CheckEndpoint(system);
@@ -57,7 +57,7 @@ crash::output::Document CaptureSession::Impl::Summary(chrono::ChSystem& system,
     document.AddMember("telemetry", metrics, document.GetAllocator());
     return document;
 }
-void CaptureSession::Finish(chrono::ChSystem& system, const crash::output::Document& telemetry) {
+void CaptureSession::Finish(robodyna::simulation::RbSystem& system, const crash::output::Document& telemetry) {
     namespace io = crash::output;
     auto& state = *impl_;
     Require(!state.finished, "Demo completion was already published");

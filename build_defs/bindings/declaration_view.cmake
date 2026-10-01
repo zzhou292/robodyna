@@ -1,9 +1,9 @@
 # Generated declarations are SWIG inputs only, never native class definitions.
 include_guard(GLOBAL)
 
-function(_robodyna_bind_swig_view target family ledger_relative canonical_relative forwarder_relative)
+function(_robodyna_bind_swig_view target family contract_relative ledger_relative canonical_relative forwarder_relative)
   set(view_target "robodyna_swig_${family}_declarations")
-  set(contract "${ROBODYNA_SOURCE_ROOT}/build_defs/bindings/${family}_view_contract.json")
+  set(contract "${ROBODYNA_SOURCE_ROOT}/${contract_relative}")
   # Reconfigure command arguments when the reviewed pins/output contract change.
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${contract}")
   file(READ "${contract}" contract_json)
@@ -18,6 +18,29 @@ function(_robodyna_bind_swig_view target family ledger_relative canonical_relati
     string(JSON original_sha GET "${contract_json}" expected_original_sha256)
     string(JSON ledger_sha GET "${contract_json}" expected_ledger_sha256)
     set(ledger "${ROBODYNA_SOURCE_ROOT}/${ledger_relative}")
+    # The dependency edge must name the same canonical source that the generator
+    # will authenticate from its ledger. Pins themselves remain action-time
+    # checks, preserving rejection/cleanup on a changed copied contract.
+    if(NOT original_path STREQUAL forwarder_relative)
+      message(FATAL_ERROR "Registry forwarder differs from the declaration contract")
+    endif()
+    file(READ "${ledger}" ledger_json)
+    string(JSON entry_count LENGTH "${ledger_json}" files)
+    math(EXPR entry_last "${entry_count} - 1")
+    set(found_entry FALSE)
+    foreach(entry_index RANGE 0 ${entry_last})
+      string(JSON entry_original GET "${ledger_json}" files ${entry_index} original_path)
+      if(entry_original STREQUAL original_path)
+        string(JSON entry_canonical GET "${ledger_json}" files ${entry_index} canonical_path)
+        if(NOT entry_canonical STREQUAL canonical_relative OR found_entry)
+          message(FATAL_ERROR "Registry canonical dependency differs from the source ledger")
+        endif()
+        set(found_entry TRUE)
+      endif()
+    endforeach()
+    if(NOT found_entry)
+      message(FATAL_ERROR "Registry original header is absent from the source ledger")
+    endif()
     set(generator "${ROBODYNA_SOURCE_ROOT}/tools/bindings/declaration_view.py")
     set(helper "${ROBODYNA_SOURCE_ROOT}/tools/migration/source_transform.py")
     get_filename_component(view_dir "${view}" DIRECTORY)
@@ -49,37 +72,28 @@ function(_robodyna_bind_swig_view target family ledger_relative canonical_relati
 endfunction()
 
 function(robodyna_bind_swig_declarations target)
-  # These belong to SWIG's action, never the native C++ include closure.
+  # Parser inputs only; none of these directories joins the native C++ closure.
   set_property(TARGET ${target} APPEND PROPERTY SWIG_INCLUDE_DIRECTORIES
                "${ROBODYNA_SOURCE_ROOT}/include" "${PROJECT_BINARY_DIR}")
-  _robodyna_bind_swig_view(${target} body
-    "docs/migration/BODY_TRANSFORMATIONS.json"
-    "include/robodyna/mbd/RbBody.h"
-    "src/compatibility/chrono/src/chrono/physics/ChBody.h")
-  _robodyna_bind_swig_view(${target} system
-    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
-    "include/robodyna/simulation/RbSystem.h"
-    "src/compatibility/chrono/src/chrono/physics/ChSystem.h")
-  _robodyna_bind_swig_view(${target} system_nsc
-    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
-    "include/robodyna/simulation/RbSystemNSC.h"
-    "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h")
-  _robodyna_bind_swig_view(${target} system_smc
-    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
-    "include/robodyna/simulation/RbSystemSMC.h"
-    "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h")
-  _robodyna_bind_swig_view(${target} body_auxref
-    "docs/migration/BODY_FAMILY_TRANSFORMATIONS.json"
-    "include/robodyna/mbd/RbBodyAuxRef.h"
-    "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h")
-  _robodyna_bind_swig_view(${target} body_easy
-    "docs/migration/BODY_FAMILY_TRANSFORMATIONS.json"
-    "include/robodyna/mbd/RbBodyEasy.h"
-    "src/compatibility/chrono/src/chrono/physics/ChBodyEasy.h")
-  if(CH_ENABLE_MODULE_FEA)
-    _robodyna_bind_swig_view(${target} mesh
-      "docs/migration/MESH_TRANSFORMATIONS.json"
-      "include/robodyna/fea/RbMesh.h"
-      "src/compatibility/chrono/src/chrono/fea/ChMesh.h")
+  set(registry "${ROBODYNA_SOURCE_ROOT}/build_defs/bindings/declaration_views.json")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${registry}")
+  file(READ "${registry}" registry_json)
+  string(JSON schema GET "${registry_json}" schema)
+  if(NOT schema STREQUAL "robodyna.swig_declaration_views.v1")
+    message(FATAL_ERROR "Unsupported parser declaration registry")
   endif()
+  string(JSON count LENGTH "${registry_json}" views)
+  if(count LESS 1)
+    message(FATAL_ERROR "Parser declaration registry must not be empty")
+  endif()
+  math(EXPR last "${count} - 1")
+  foreach(index RANGE 0 ${last})
+    foreach(key name contract ledger canonical forwarder requires_fea)
+      string(JSON ${key} GET "${registry_json}" views ${index} ${key})
+    endforeach()
+    if(requires_fea AND NOT CH_ENABLE_MODULE_FEA)
+      continue()
+    endif()
+    _robodyna_bind_swig_view(${target} "${name}" "${contract}" "${ledger}" "${canonical}" "${forwarder}")
+  endforeach()
 endfunction()

@@ -1,6 +1,6 @@
 #include "SessionState.h"
 #include "viewer/VsgImageCapture.h"
-#include "chrono/physics/ChSystem.h"
+#include "robodyna/simulation/RbSystem.h"
 #include <iomanip>
 #include <locale>
 
@@ -36,7 +36,7 @@ void CaptureSession::ConfigureVisual(chrono::ChVisualSystem& base) {
     state.visual = visual;
     state.configured = true;
 }
-void CaptureSession::State(std::uint64_t step, chrono::ChSystem& system, chrono::ChVisualSystem* base) {
+void CaptureSession::State(std::uint64_t step, robodyna::simulation::RbSystem& system, chrono::ChVisualSystem* base) {
     auto& state = *impl_;
     Require(!state.finished && step <= state.options.steps &&
             ((!state.observed && step == 0) || (state.observed && step == state.step + 1)),

@@ -30,7 +30,20 @@ cc_library(name = "include_root", includes = ["."])
 
 filegroup(
     name = "renamed_type_source_inputs",
-    srcs = ["chrono/ReplayVisuals.h", "chrono/AcceptedReplayScene.h"],
+    srcs = [
+        "chrono/AcceptedReplayScene.cpp",
+        "chrono/AcceptedReplayScene.h",
+        "chrono/ReplayDisplayGeometry.cpp",
+        "chrono/ReplayDisplayGeometry.h",
+        "chrono/ReplayVisuals.cpp",
+        "chrono/ReplayVisuals.h",
+        "chrono/physical_run/Scene.cpp",
+        "chrono/physical_run/Scene.h",
+        "chrono/physical_run/SceneInitialize.cpp",
+        "chrono/physical_run/SceneState.h",
+        "viewer/ReplayVsg.cpp",
+        "viewer/ReplayVsg.h",
+    ],
     visibility = ["//tests/chrono:__pkg__"],
 )
 

@@ -34,7 +34,7 @@ std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::pat
     chrono::SetChronoDataPath(assets.string() + '/');
     return std::make_shared<FixedReplayVisual>();
 }
-ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,chrono::ChSystem& system,
+ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,robodyna::simulation::RbSystem& system,
         const visual::ReplayCamera& camera) {
     visual.AttachSystem(&system);
     visual.SetLoadingThreadCount(1);

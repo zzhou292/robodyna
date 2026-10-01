@@ -26,6 +26,7 @@ exports_files(["src/chrono/fea/ChMesh.h", "src/chrono/fea/ChMeshFwd.h"])
 exports_files(["src/chrono/assets/ChVisualShapeFEA.cpp"])
 exports_files([
     "src/chrono_swig/chrono_python/ChModuleCore_python.i",
+    "src/chrono_swig/chrono_python/ChModuleFea_python.i",
     "src/chrono_swig/chrono_csharp/ChModuleCore_csharp.i",
 ])
 

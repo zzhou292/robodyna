@@ -18,7 +18,7 @@ ReplaySceneReport Scene::Publish(std::size_t sample) {
         return {ReplaySceneStatus::InvalidFrame,"Physical seek failed before display publication"};
     }
 }
-chrono::ChSystem& Scene::system() {
+robodyna::simulation::RbSystem& Scene::system() {
     if(!impl_) throw std::logic_error("Physical scene is not initialized");
     return impl_->system;
 }

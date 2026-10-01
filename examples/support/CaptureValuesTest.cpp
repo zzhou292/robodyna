@@ -1,6 +1,7 @@
 #include "CaptureSession.h"
-#include "chrono/physics/ChBody.h"
-#include "chrono/physics/ChSystemNSC.h"
+#include "robodyna/mbd/RbBody.h"
+#include "robodyna/core/RbTypes.h"
+#include "robodyna/simulation/RbSystemNSC.h"
 #include <gtest/gtest.h>
 #include <atomic>
 #include <chrono>
@@ -57,12 +58,12 @@ class DemoHeadlessTest : public ::testing::Test {
         options = Options(); options.output = root / "run"; options.chrono_data = root / "assets";
         options.steps = 2; options.capture_every = 1; options.headless = true;
         system.SetGravitationalAcceleration(chrono::VNULL);
-        system.AddBody(chrono_types::make_shared<chrono::ChBody>());
+        system.AddBody(robodyna::core::make_shared<robodyna::mbd::RbBody>());
     }
     void TearDown() override { std::filesystem::remove_all(root); }
     std::filesystem::path root;
     CaptureOptions options;
-    chrono::ChSystemNSC system;
+    robodyna::simulation::RbSystemNSC system;
 };
 // No VSG construction or initialization: exercise the actual system attachment
 // contract through the existing CPU-only visual base.
@@ -71,7 +72,7 @@ class AttachmentOnlyVisual : public chrono::ChVisualSystem {
     AttachmentOnlyVisual() = default;
     bool setup_called = false;
   protected:
-    void OnSetup(chrono::ChSystem*) override { setup_called = true; }
+    void OnSetup(robodyna::simulation::RbSystem*) override { setup_called = true; }
 };
 TEST_F(DemoHeadlessTest, RejectsAttachedVisualBeforeFirstDynamicsStep) {
     CaptureSession capture(options);

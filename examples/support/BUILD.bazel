@@ -19,6 +19,7 @@ cc_library(
     hdrs = ["CaptureSession.h", "SessionState.h"],
     deps = [
         ":options",
+        "//include/robodyna/simulation:api",
         "//build_defs/chrono/vsg:vsg",
         "//build_defs/app/viewer:vsg_image_capture",
         "//build_defs/app:artifact_io",
@@ -30,7 +31,8 @@ alias(name = "capture_session", actual = ":capture")
 cc_test(
     name = "capture_values_test",
     srcs = ["CaptureValuesTest.cpp"],
-    deps = [":capture", "@googletest//:gtest_main"],
+    deps = [":capture", "//include/robodyna/mbd:api", "//include/robodyna/core:api",
+            "//include/robodyna/simulation:api", "@googletest//:gtest_main"],
     size = "small",
     tags = ["manual", "cpu-only", "bounded-examples"],
 )

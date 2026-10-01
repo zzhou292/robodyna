@@ -1523,6 +1523,10 @@ target_include_directories(Chrono_core ${CH_SYSTEM_INCLUDE_KEYWORD} PUBLIC
 
 target_link_libraries(Chrono_core PUBLIC Eigen3::Eigen)
 
+# Public facade used by maintained replay geometry consumers.
+install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h"
+        DESTINATION include/robodyna/core)
+
 # Install the canonical definition required by the legacy forwarding header.
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h"
         DESTINATION include/robodyna/mechanics)

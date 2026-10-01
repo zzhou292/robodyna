@@ -20,8 +20,9 @@ declared executable uses its own runfiles rather than its caller's bundle.
 
 ## Ownership
 
-- `:body_declarations` authenticates canonical body source and the separately
-  pinned migration ledger, producing SWIG-only declarations and a receipt.
+- `declaration_views.json` lists seven explicit Body/Mesh/System-family views.
+  Each declaration action authenticates its canonical header and separately pinned
+  inverse recipe. Registry checks keep Bazel/CMake dependencies and pins aligned.
 - `:python_generated` and `:csharp_generated` use the actual retained core
   interfaces. Outputs include wrapper C++, director headers, proxies and
   diagnostics. The generated declaration view is not a native header provider.
@@ -30,6 +31,9 @@ declared executable uses its own runfiles rather than its caller's bundle.
 - `:python_core` produces `_core.so`; `:csharp_core` produces `libchrono.so`.
   Both use `dynamic_deps` on `:native_core`, so they do not each link a static
   copy of the mechanics engine.
+- `:python_fea` produces `_fea.so` against that same backend. Its runtime test
+  exercises core/FEA object exchange, shared lifetime and 1,000 actual coupled
+  spring steps, including constraint, analytic-displacement and reaction checks.
 
 The public C++ body header defines `robodyna::mbd::RbBody`; the old header exposes
 the compatibility alias. SWIG's declaration view preserves the established
@@ -65,6 +69,12 @@ pointer. That existing issue is excluded from the safe runtime probe and must be
 investigated separately; native C++ parent rebinding is covered by frozen archive
 tests. C# native wrapper compilation and proxy comparison do not qualify a managed
 C# runtime. No managed runtime SDK is installed by these rules.
+
+Construct finite-element meshes through the FEA module. The historical core-only
+Mesh proxy lacks the qualified FE node argument descriptor for `AddNode`; comparing
+the original and current generated functions confirmed identical metadata. This
+is not a new rename defect. The runtime test uses `fea.ChMesh()` and still crosses
+the core System boundary through `AddMesh`/`GetMeshes` and the explicit FE casts.
 
 Retained CMake targets use the same declaration generator with explicit SWIG
 include directories and dependencies. The SWIG parent resolves the owned source

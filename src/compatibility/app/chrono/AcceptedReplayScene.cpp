@@ -8,8 +8,9 @@
 #include "chrono/assets/ChVisualMaterial.h"
 #include "chrono/assets/ChVisualModel.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
-#include "chrono/physics/ChBody.h"
-#include "chrono/physics/ChSystemNSC.h"
+#include "robodyna/mbd/RbBody.h"
+#include "robodyna/core/RbVector3.h"
+#include "robodyna/simulation/RbSystemNSC.h"
 #include <algorithm>
 #include <cmath>
 #include <new>
@@ -44,11 +45,11 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayView view, ReplayCamera& c
 }  // namespace
 
 struct AcceptedReplayScene::Impl {
-    chrono::ChSystemNSC system;
+    robodyna::simulation::RbSystemNSC system;
     output::ReplayInfo info;
     std::shared_ptr<chrono::ChTriangleMeshConnected> moving, wall;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
-    std::vector<chrono::ChVector3d> staged, reference;
+    std::vector<robodyna::core::RbVector3d> staged, reference;
     ReplayParentScalarColors parent_colors;
     ReplayPartColors part_colors;
     ReplayColorMode color_mode = ReplayColorMode::Uniform;
@@ -175,7 +176,7 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
     state.system.SetChTime(frame.time);
     return {ReplaySceneStatus::Ok, "Replay frame published without rebinding"};
 }
-chrono::ChSystem& AcceptedReplayScene::system() {
+robodyna::simulation::RbSystem& AcceptedReplayScene::system() {
     if (!impl_) throw std::logic_error("Replay scene is not initialized");
     return impl_->system;
 }

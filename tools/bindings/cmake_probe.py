@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -22,16 +23,14 @@ def run(command, log, env, succeeds=True, cwd=None):
     return result.stdout
 
 
-def declaration_families(fea_enabled):
-    return ("body", "mesh") if fea_enabled else ("body",)
-
-
-def declaration_name(family):
-    return {"body": "BodyDeclarations.h", "mesh": "MeshDeclarations.h"}[family]
+_spec = importlib.util.spec_from_file_location("_robodyna_declaration_registry", Path(__file__).with_name("declaration_registry.py"))
+registry = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(registry)
 
 
 def real_project(repo, output, sdk, eigen, ninja, python_enabled, fea_enabled=True):
     output.mkdir()
+    specs = registry.enabled(repo, fea_enabled)
     build, prefix = output / "build", output / "install"
     env = dict(os.environ, SWIG_LIB=str(sdk / "usr/share/swig4.0"))
     command = ["/usr/bin/cmake", "-S", str(repo / "src/compatibility/chrono"), "-B", str(build), "-GNinja",
@@ -73,11 +72,12 @@ def real_project(repo, output, sdk, eigen, ninja, python_enabled, fea_enabled=Tr
         numpy = numpy or "-DCHRONO_PYTHON_NUMPY" in swig_lines[0]
         edges = [line for line in (build / "build.ninja").read_text().splitlines()
                  if line.startswith("build ") and target in line and ": CUSTOM_COMMAND" in line]
-        expected = ["robodyna_swig/" + declaration_name(family) for family in declaration_families(fea_enabled)]
+        expected = [entry["output"] for entry in specs]
         if len(edges) != 1 or any(name not in edges[0] for name in expected):
             raise RuntimeError("Configured SWIG action lacks a declared generated-header dependency")
-        if not fea_enabled and "robodyna_swig/MeshDeclarations.h" in edges[0]:
-            raise RuntimeError("FE-disabled action unexpectedly requires a Mesh declaration view")
+        disabled = [entry["output"] for entry in registry.read(repo) if entry not in specs]
+        if any(name in edges[0] for name in disabled):
+            raise RuntimeError("Disabled declaration view still appears in the SWIG dependency edge")
         # The retained target has an order-only dependency on the whole native
         # core. Execute its exact emitted SWIG command after its declared view
         # inputs; do not claim this is a complete Ninja target/backend build.
@@ -89,19 +89,22 @@ def real_project(repo, output, sdk, eigen, ninja, python_enabled, fea_enabled=Tr
     script = build / "src/chrono_swig/cmake_install.cmake"
     run(["/usr/bin/cmake", "-DCMAKE_INSTALL_PREFIX=" + str(prefix), "-DCMAKE_INSTALL_LOCAL_ONLY=1", "-P", str(script)],
         output / "install.log", env)
-    for family in declaration_families(fea_enabled):
+    expected_installed = set()
+    for entry in specs:
         for suffix in ("", ".json"):
-            name = declaration_name(family) + suffix
-            source = build / "robodyna_swig" / name
-            installed = prefix / "include/robodyna_swig" / name
+            relative = entry["output"] + suffix
+            source = build / relative
+            installed = prefix / "include" / relative
+            expected_installed.add(str(Path(relative).name))
             if not installed.is_file() or installed.read_bytes() != source.read_bytes():
-                raise RuntimeError("Installed declaration view or receipt differs from generated input: " + name)
-    if not fea_enabled and (prefix / "include/robodyna_swig/MeshDeclarations.h").exists():
-        raise RuntimeError("FE-disabled installation unexpectedly publishes a Mesh view")
+                raise RuntimeError("Installed declaration view or receipt differs: " + relative)
+    actual_installed = {path.name for path in (prefix / "include/robodyna_swig").iterdir() if path.is_file()}
+    if actual_installed != expected_installed:
+        raise RuntimeError("Installed declaration set differs from the enabled registry")
     if not (prefix / "include/chrono_swig/core/ChBody.i").is_file():
         raise RuntimeError("Retained body interface was not installed")
     return {"python_enabled": python_enabled, "fea_enabled": fea_enabled,
-            "declaration_families": list(declaration_families(fea_enabled)),
+            "declaration_families": [entry["name"] for entry in specs],
             "source_root_supplied_on_command_line": False,
             "retained_cmake_detected_numpy": numpy,
             "robot_models_declared_for_existing_csharp_dependency": True,
@@ -116,22 +119,21 @@ def contract_regeneration(repo, output, ninja, fea_enabled=True):
     fixture.mkdir()
     inputs = ["tools/bindings/declaration_view.py", "tools/migration/source_transform.py"]
     originals = {}
-    for family in declaration_families(fea_enabled):
-        original = (repo / f"build_defs/bindings/{family}_view_contract.json").read_bytes()
-        contract_data = json.loads(original)
-        ledger_relative = f"docs/migration/{family.upper()}_TRANSFORMATIONS.json"
-        entries = json.loads((repo / ledger_relative).read_text())["files"]
-        entry = next(row for row in entries if row["original_path"] == contract_data["original_path"])
-        inputs += [ledger_relative, entry["canonical_path"], entry["original_path"]]
-        originals[family] = original
+    specs = registry.enabled(repo, fea_enabled)
+    for entry in specs:
+        original = (repo / entry["contract"]).read_bytes()
+        inputs += [entry["ledger"], entry["canonical"], entry["forwarder"]]
+        originals[entry["name"]] = (entry, original)
     for name in dict.fromkeys(inputs):
         target = fixture / name
         target.parent.mkdir(parents=True, exist_ok=True)
         target.symlink_to(repo / name)
     contracts = fixture / "build_defs/bindings"
     contracts.mkdir(parents=True)
-    for family, original in originals.items():
-        (contracts / f"{family}_view_contract.json").write_bytes(original)
+    (fixture / registry.REGISTRY).write_bytes((repo / registry.REGISTRY).read_bytes())
+    # Copy all contracts for registry validation; mutate only enabled owned copies.
+    for entry in registry.read(repo):
+        (fixture / entry["contract"]).write_bytes((repo / entry["contract"]).read_bytes())
     (fixture / "CMakeLists.txt").write_text(
         'cmake_minimum_required(VERSION 3.22)\nproject(DeclarationContractRegeneration NONE)\n'
         f'set(ROBODYNA_SOURCE_ROOT "{fixture}")\n'
@@ -143,13 +145,13 @@ def contract_regeneration(repo, output, ninja, fea_enabled=True):
     command = ["/usr/bin/cmake", "--build", str(build), "--target", "binding_probe", "--parallel", "1"]
     run(command, output / "initial.log", env)
     checks = []
-    for family, original in originals.items():
-        contract = contracts / f"{family}_view_contract.json"
+    for family, (entry, original) in originals.items():
+        contract = fixture / entry["contract"]
         corrupt = json.loads(original)
         corrupt["expected_ledger_sha256"] = "0" * 64
         contract.write_text(json.dumps(corrupt))
         error = run(command, output / (family + "-bad-contract.log"), env, succeeds=False)
-        view = build / "robodyna_swig" / declaration_name(family)
+        view = build / entry["output"]
         if "reviewed ledger pin" not in error or view.exists():
             raise RuntimeError("CMake retained stale configured pins or stale generated output: " + family)
         contract.write_bytes(original)
@@ -171,6 +173,7 @@ if __name__ == "__main__":
     parser.add_argument("--fea", choices=("on", "off", "both"), default="on",
                         help="Qualify enabled/disabled Mesh declaration dependencies and installation")
     args = parser.parse_args()
+    registry.verify_bazel(args.repo)
     args.output.mkdir()
     modes = (True, False) if args.fea == "both" else (args.fea == "on",)
     results, regeneration = [], []

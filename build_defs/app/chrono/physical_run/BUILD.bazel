@@ -18,6 +18,8 @@ app_library(
         "//build_defs/app/output/recovered_frames:recovered_frames",
         "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
         "//build_defs/app/chrono/replay:replay_visual_values",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/simulation:api",
     ],
     copts = [
         "-fno-fast-math",

@@ -54,13 +54,15 @@ def diagnostic_text(text, source_root):
 
 
 def compare(baseline, candidate, module="core", languages=("python", "csharp"),
-            baseline_inputs=None, candidate_inputs=None):
+            baseline_inputs=None, candidate_inputs=None, authenticate_declarations=False):
     if module not in ("core", "fea", "vehicle") or not languages or not set(languages) <= {"python", "csharp"}:
         raise ValueError("Select a declared module and at least one language")
     if module == "fea" and "csharp" in languages:
         raise ValueError("The retained sources do not provide a separate C# FEA module")
     if (baseline_inputs is None) != (candidate_inputs is None):
         raise ValueError("Both diagnostic input roots must be declared together")
+    if authenticate_declarations and baseline_inputs is None:
+        raise ValueError("Authenticated declaration locations require both input snapshots")
     result = {"schema": "robodyna.swig_surface_comparison.v1", "module": module,
               "languages": list(languages), "passed": True,
               "scope": "Entire public Python AST excluding docstrings, exact C# files, generation diagnostics; not compilation/runtime"}
@@ -84,15 +86,26 @@ def compare(baseline, candidate, module="core", languages=("python", "csharp"),
     for profile, directory in (("baseline", baseline), ("candidate", candidate)):
         warnings[profile] = {language: (directory / language / "stderr.log").read_text() for language in languages}
     result["diagnostics"] = warnings
-    normalized = {
-        profile: {language: diagnostic_text(warnings[profile][language], root) for language in languages}
-        for profile, root in (("baseline", baseline_inputs), ("candidate", candidate_inputs))
-    }
+    if authenticate_declarations:
+        from tools.bindings.diagnostic_origins import authenticated_views, map_diagnostics
+        origins = authenticated_views(candidate_inputs, baseline_inputs)
+        normalized = {
+            "baseline": {language: map_diagnostics(warnings["baseline"][language], baseline_inputs) for language in languages},
+            "candidate": {language: map_diagnostics(warnings["candidate"][language], candidate_inputs, origins) for language in languages},
+        }
+        result["authenticated_declaration_origins"] = origins
+    else:
+        normalized = {
+            profile: {language: diagnostic_text(warnings[profile][language], root) for language in languages}
+            for profile, root in (("baseline", baseline_inputs), ("candidate", candidate_inputs))
+        }
     result["compared_diagnostics"] = normalized
     result["diagnostic_root_mapping"] = {
         "baseline": str(baseline_inputs) if baseline_inputs else None,
         "candidate": str(candidate_inputs) if candidate_inputs else None,
-        "scope": "Only exact leading snapshot roots; preserve relative paths, line numbers, codes and messages",
+        "scope": ("Snapshot roots and authenticated exact-original view locations; warning codes/messages preserved"
+                  if authenticate_declarations else
+                  "Only exact leading snapshot roots; preserve relative paths, line numbers, codes and messages"),
     }
     result["passed"] = result["passed"] and normalized["baseline"] == normalized["candidate"]
     return result
@@ -107,9 +120,10 @@ if __name__ == "__main__":
     parser.add_argument("--languages", nargs="+", choices=("python", "csharp"), default=["python", "csharp"])
     parser.add_argument("--baseline-inputs", type=Path)
     parser.add_argument("--candidate-inputs", type=Path)
+    parser.add_argument("--authenticate-declarations", action="store_true")
     args = parser.parse_args()
     result = compare(args.baseline, args.candidate, args.module, args.languages,
-                     args.baseline_inputs, args.candidate_inputs)
+                     args.baseline_inputs, args.candidate_inputs, args.authenticate_declarations)
     with args.report.open("x") as stream:
         json.dump(result, stream, indent=2, sort_keys=True)
         stream.write("\n")

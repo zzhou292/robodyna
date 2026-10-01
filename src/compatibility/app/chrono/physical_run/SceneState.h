@@ -1,6 +1,6 @@
 #pragma once
 #include "Scene.h"
-#include "chrono/physics/ChSystemNSC.h"
+#include "robodyna/simulation/RbSystemNSC.h"
 namespace crash::visual::physical_run {
 struct ScanValues {
     std::array<double,3> low,high,vehicle_low,vehicle_high;
@@ -11,7 +11,7 @@ struct Scene::Impl {
     explicit Impl(const SampleSource& r):reader(r) {}
     SampleSource reader;
     full_shell::FullShellFrameGeometry geometry;
-    chrono::ChSystemNSC system;
+    robodyna::simulation::RbSystemNSC system;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
     ReplayCamera camera;
     ReplayBounds bounds; // stored values fit the existing fixed bookkeeping reserve

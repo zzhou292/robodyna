@@ -16,10 +16,12 @@
       ],
       "bazel_dependencies": [
         "//build_defs/chrono:native_core_fea",
+        "//include/robodyna/core:api",
         ":replay_part_colors"
       ],
       "copts": [],
-      "split_target": "//build_defs/app/chrono/replay:replay_part_colors"
+      "split_target": "//build_defs/app/chrono/replay:replay_part_colors",
+      "canonical_api_scope": "Mapped Body/value facades share the existing implementation; source paths and arithmetic are unchanged."
     },
     "robo_dyna_replay_visual_values": {
       "bazel_target": "//build_defs/app/chrono/replay:replay_visual_values",
@@ -34,9 +36,11 @@
         "robo_dyna_replay_geometry_values"
       ],
       "bazel_dependencies": [
-        "//build_defs/app/chrono/replay:replay_geometry_values"
+        ":replay_scene_contracts",
+        "//include/robodyna/mbd:api"
       ],
-      "copts": []
+      "copts": [],
+      "canonical_api_scope": "Mapped Body/value facades share the existing implementation; source paths and arithmetic are unchanged."
     },
     "robo_dyna_replay_scene": {
       "bazel_target": "//build_defs/app/chrono/replay:replay_scene",
@@ -49,9 +53,13 @@
         "robo_dyna_replay_visual_values"
       ],
       "bazel_dependencies": [
-        "//build_defs/app/chrono/replay:replay_visual_values"
+        "//build_defs/app/chrono/replay:replay_visual_values",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/core:api",
+        "//include/robodyna/simulation:api"
       ],
-      "copts": []
+      "copts": [],
+      "canonical_api_scope": "Canonical simulation/Body and mapped value APIs share the existing backend; method calls, clocks and wire identifiers are unchanged."
     },
     "robo_dyna_full_shell_frame_geometry": {
       "bazel_target": "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
@@ -125,12 +133,15 @@
         "//build_defs/app/output/physical_run:physical_run_records",
         "//build_defs/app/output/recovered_frames:recovered_frames",
         "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
-        "//build_defs/app/chrono/replay:replay_visual_values"
+        "//build_defs/app/chrono/replay:replay_visual_values",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/simulation:api"
       ],
       "copts": [
         "-fno-fast-math",
         "-ffp-contract=off"
-      ]
+      ],
+      "canonical_api_scope": "Canonical simulation/Body and mapped value APIs share the existing backend; method calls, clocks and wire identifiers are unchanged."
     },
     "robo_dyna_physical_viewer_values": {
       "bazel_target": "//build_defs/app/viewer/physical_run:physical_viewer_values",
@@ -167,10 +178,13 @@
         "//build_defs/chrono/vsg:vsg",
         "//build_defs/app/output:artifact_io",
         "//build_defs/app/chrono/replay:replay_visual_values",
-        ":replay_assets"
+        "//include/robodyna/simulation:forward",
+        ":replay_assets",
+        ":vsg_image_capture"
       ],
       "copts": [],
-      "split_target": "//build_defs/app/viewer:replay_assets"
+      "split_target": "//build_defs/app/viewer:replay_assets",
+      "canonical_api_scope": "System pointers/references use the canonical thin forward target; unmapped visual/VSG/geometry APIs remain explicit backend dependencies."
     }
   }
 }

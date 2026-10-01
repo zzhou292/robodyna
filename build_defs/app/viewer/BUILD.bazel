@@ -35,6 +35,7 @@ app_library(
         "//build_defs/chrono/vsg:vsg",
         "//build_defs/app/output:artifact_io",
         "//build_defs/app/chrono/replay:replay_visual_values",
+        "//include/robodyna/simulation:forward",
         ":replay_assets",
         ":vsg_image_capture",
     ],

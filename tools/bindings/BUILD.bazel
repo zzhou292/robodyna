@@ -32,6 +32,7 @@ py_binary(name = "run_swig", srcs = ["run_swig.py"], main = "run_swig.py")
 py_binary(
     name = "cmake_probe",
     srcs = ["cmake_probe.py"],
+    deps = [":registry_library"],
     main = "cmake_probe.py",
     tags = ["manual", "local", "cpu-only"],
 )
@@ -45,7 +46,15 @@ py_test(
     size = "small",
 )
 
-py_library(name = "surface_library", srcs = ["compare_surface.py"])
+py_library(name = "diagnostic_origins_library", srcs = ["diagnostic_origins.py"])
+py_test(
+    name = "diagnostic_origins_test",
+    srcs = ["tests/test_diagnostic_origins.py"],
+    main = "tests/test_diagnostic_origins.py",
+    deps = [":diagnostic_origins_library"],
+    size = "small",
+)
+py_library(name = "surface_library", srcs = ["compare_surface.py"], deps = [":diagnostic_origins_library"])
 
 py_binary(
     name = "compare_surface",
@@ -60,4 +69,27 @@ py_test(
     main = "tests/test_compare_surface.py",
     deps = [":surface_library"],
     size = "small",
+)
+
+py_library(name = "registry_library", srcs = ["declaration_registry.py"])
+
+py_test(
+    name = "declaration_registry_test",
+    srcs = ["tests/test_declaration_registry.py"],
+    main = "tests/test_declaration_registry.py",
+    deps = [":registry_library"],
+    size = "small",
+)
+
+py_library(
+    name = "parser_inputs_library",
+    srcs = ["snapshot_inputs.py"],
+    deps = [":registry_library", ":declaration_library"],
+)
+py_binary(
+    name = "generate_matrix",
+    srcs = ["generate_matrix.py"],
+    main = "generate_matrix.py",
+    deps = [":parser_inputs_library", ":surface_library", ":swig_runner_library"],
+    tags = ["manual", "local", "cpu-only"],
 )

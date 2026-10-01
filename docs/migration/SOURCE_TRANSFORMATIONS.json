@@ -210,6 +210,11 @@
           "before": "              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h\"",
           "after": "              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyAuxRef.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyEasy.h\"",
           "count": 1
+        },
+        {
+          "before": "# Install the canonical definition required by the legacy forwarding header.\n",
+          "after": "# Public facade used by maintained replay geometry consumers.\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)\n\n# Install the canonical definition required by the legacy forwarding header.\n",
+          "count": 1
         }
       ],
       "subsequent_stages": [
@@ -840,6 +845,17 @@
           "before": "namespace chrono { class ChBody; }",
           "after": "#include \"chrono/physics/ChBodyFwd.h\"",
           "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyFwd.h\"",
+          "after": "#include \"robodyna/mbd/RbBodyFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChBody",
+          "after": "robodyna::mbd::RbBody",
+          "count": 1,
+          "code_token": true
         }
       ]
     },
@@ -2002,6 +2018,17 @@
           "before": "#pragma once",
           "after": "#pragma once\n#include \"chrono/physics/ChSystemFwd.h\"",
           "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemFwd.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
         }
       ]
     },
@@ -2744,6 +2771,215 @@
           "before": "%include \"../../../chrono/physics/ChBodyAuxRef.h\"",
           "after": "%include \"robodyna_swig/BodyAuxRefDeclarations.h\"",
           "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/AcceptedReplayScene.cpp",
+      "canonical_path": "src/compatibility/app/chrono/AcceptedReplayScene.cpp",
+      "original_sha256": "206f5be97bd2db76d39e7cfeaeaaf42c1a532542ff80515a6530d0da8ba09131",
+      "replacements": [
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"\n#include \"robodyna/core/RbVector3.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChVector3d",
+          "after": "robodyna::core::RbVector3d",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemNSC.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemNSC.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystemNSC",
+          "after": "robodyna::simulation::RbSystemNSC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/ReplayDisplayGeometry.cpp",
+      "canonical_path": "src/compatibility/app/chrono/ReplayDisplayGeometry.cpp",
+      "original_sha256": "adef681c8a920c36559e0f60e6d800f76ebaf026e1a43be9eb42d287dae7cbd4",
+      "replacements": [
+        {
+          "before": "chrono::ChVector3d",
+          "after": "robodyna::core::RbVector3d",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "chrono::ChVector3i",
+          "after": "robodyna::core::RbVector3i",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "chrono::Vcross",
+          "after": "robodyna::core::Vcross",
+          "count": 2,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/ReplayDisplayGeometry.h",
+      "canonical_path": "src/compatibility/app/chrono/ReplayDisplayGeometry.h",
+      "original_sha256": "fd4e42d26388af8a1e684b86617fc06dad74db76cb4f0b36958c6b4af7d2dd2b",
+      "replacements": [
+        {
+          "before": "#include \"chrono/core/ChVector3.h\"",
+          "after": "#include \"robodyna/core/RbVector3.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChVector3d",
+          "after": "robodyna::core::RbVector3d",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "chrono::ChVector3i",
+          "after": "robodyna::core::RbVector3i",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/ReplayVisuals.cpp",
+      "canonical_path": "src/compatibility/app/chrono/ReplayVisuals.cpp",
+      "original_sha256": "2dfc6d05043e5b90d7805f9a4f8caf8f2f77b55fa18235ae34b5586ba81fdb87",
+      "replacements": [
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChBody",
+          "after": "robodyna::mbd::RbBody",
+          "count": 2,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/physical_run/Scene.cpp",
+      "canonical_path": "src/compatibility/app/chrono/physical_run/Scene.cpp",
+      "original_sha256": "ccc33286150af79b3846cb4ff5488699586cdb524a585f9ad7d0b287a0b2d446",
+      "replacements": [
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/physical_run/Scene.h",
+      "canonical_path": "src/compatibility/app/chrono/physical_run/Scene.h",
+      "original_sha256": "04f22db247aed6a5bb6bf8589884bd4cd567447b2365c987520b525833b19d6c",
+      "replacements": [
+        {
+          "before": "#pragma once",
+          "after": "#pragma once\n#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/physical_run/SceneInitialize.cpp",
+      "canonical_path": "src/compatibility/app/chrono/physical_run/SceneInitialize.cpp",
+      "original_sha256": "c42319c3df691cfc01b606447cced11b6b5a960da4073a1c3c535b830496d048",
+      "replacements": [
+        {
+          "before": "#include \"chrono/physics/ChBody.h\"",
+          "after": "#include \"robodyna/mbd/RbBody.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/physical_run/SceneState.h",
+      "canonical_path": "src/compatibility/app/chrono/physical_run/SceneState.h",
+      "original_sha256": "5ec4edb4d4bbdef66ef2e064e07e70b0b47378ab4ccfee65dd6f7a7b9e9c1fb7",
+      "replacements": [
+        {
+          "before": "#include \"chrono/physics/ChSystemNSC.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemNSC.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystemNSC",
+          "after": "robodyna::simulation::RbSystemNSC",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/viewer/ReplayVsg.cpp",
+      "canonical_path": "src/compatibility/app/viewer/ReplayVsg.cpp",
+      "original_sha256": "fcedf14aaf345eb630351fdc44d1d6c9ca5938d5f3fcf99d5167d035c5bb7b33",
+      "replacements": [
+        {
+          "before": "#include \"ReplayVsg.h\"\n",
+          "after": "#include \"ReplayVsg.h\"\n#include \"ReplayAssets.h\"\n",
+          "count": 1
+        },
+        {
+          "before": "std::shared_ptr<FixedReplayVisual> CreateReplayVisual() {\n#ifdef ROBO_DYNA_CHRONO_DATA_DIR\n    chrono::SetChronoDataPath(ROBO_DYNA_CHRONO_DATA_DIR);\n#endif\n    output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile(\"logo_chrono_alpha.png\")),\n        \"Chrono visualization data directory is missing its logo\");\n    output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile(\"vsg/fonts/OpenSans-Bold.vsgb\")),\n        \"Chrono visualization data directory is missing its VSG font\");\n    return std::make_shared<FixedReplayVisual>();\n}",
+          "after": "std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::path& asset_directory) {\n    std::filesystem::path configured_directory;\n#ifdef ROBO_DYNA_CHRONO_DATA_DIR\n    configured_directory = ROBO_DYNA_CHRONO_DATA_DIR;\n#endif\n    const auto assets = ResolveReplayAssets(asset_directory, configured_directory);\n    chrono::SetChronoDataPath(assets.string() + '/');\n    return std::make_shared<FixedReplayVisual>();\n}",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/viewer/ReplayVsg.h",
+      "canonical_path": "src/compatibility/app/viewer/ReplayVsg.h",
+      "original_sha256": "cbc13908a358388c5be17226bbef4d438394fd36150977d07f895362c29d1be1",
+      "replacements": [
+        {
+          "before": "std::shared_ptr<FixedReplayVisual> CreateReplayVisual();",
+          "after": "std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::path& asset_directory = {});",
+          "count": 1
+        },
+        {
+          "before": "#pragma once",
+          "after": "#pragma once\n#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "count": 1
+        },
+        {
+          "before": "chrono::ChSystem",
+          "after": "robodyna::simulation::RbSystem",
+          "count": 1,
+          "code_token": true
         }
       ]
     }

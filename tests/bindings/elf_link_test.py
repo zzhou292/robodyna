@@ -14,6 +14,9 @@ FORBIDDEN_DEFINITIONS = (
     "robodyna::mbd::RbBody::~RbBody(",
     "robodyna::mbd::RbBody::Update(",
     "chrono::ChClassFactory::GetGlobalClassFactory(",
+    "robodyna::fea::RbMesh::AddNode(",
+    "robodyna::fea::RbMesh::SetupInitial(",
+    "chrono::fea::ChElementSpring::SetNodes(",
 )
 
 
@@ -31,22 +34,23 @@ def inspect(path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise RuntimeError("Expected backend, Python wrapper and C# wrapper runfile paths")
+    if len(sys.argv) != 5:
+        raise RuntimeError("Expected backend, Python core, C# core and Python FEA wrapper paths")
     resolver = runfiles.Create()
     paths = [Path(resolver.Rlocation(name)).resolve(strict=True) for name in sys.argv[1:]]
-    backend, python, csharp = [inspect(path) for path in paths]
+    backend, python, csharp, fea = [inspect(path) for path in paths]
     if backend["soname"] != ["librobodyna_core.so"] or set(backend["core_definitions"]) != set(FORBIDDEN_DEFINITIONS):
         raise RuntimeError("Declared native backend lacks its expected SONAME or owning core definitions")
-    for wrapper in (python, csharp):
+    for wrapper in (python, csharp, fea):
         if wrapper["needed"].count("librobodyna_core.so") != 1:
             raise RuntimeError("Wrapper does not require the one declared shared core: " + wrapper["path"])
         if wrapper["core_definitions"]:
             raise RuntimeError("Wrapper embeds out-of-line core implementation symbols: " + repr(wrapper))
-        if "robodyna::mbd::RbBody::RbBody(" not in wrapper["core_references"]:
-            raise RuntimeError("Wrapper does not resolve body construction externally")
+        required = "robodyna::fea::RbMesh::AddNode(" if wrapper is fea else "robodyna::mbd::RbBody::RbBody("
+        if required not in wrapper["core_references"]:
+            raise RuntimeError("Wrapper does not resolve its expected native operation externally: " + required)
     tools = {name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
              for name in ("/usr/bin/readelf", "/usr/bin/nm")}
     print(json.dumps({"schema": "robodyna.binding_elf_ownership.v1", "passed": True,
-                      "backend": backend, "wrappers": [python, csharp], "tools": tools,
-                      "scope": "Out-of-line body/factory ownership; normal weak inline/template symbols are permitted"}, indent=2))
+                      "backend": backend, "wrappers": [python, csharp, fea], "tools": tools,
+                      "scope": "Out-of-line body/mesh/FE/factory ownership; normal weak inline/template symbols are permitted"}, indent=2))

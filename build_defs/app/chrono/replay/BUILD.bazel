@@ -28,6 +28,7 @@ app_library(
     ],
     deps = [
         "//build_defs/chrono:native_core_fea",
+        "//include/robodyna/core:api",
         ":replay_part_colors",
     ],
     copts = [
@@ -50,6 +51,8 @@ app_library(
     ],
     deps = [
         "//build_defs/app/chrono/replay:replay_geometry_values",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/simulation:forward",
     ],
     copts = [
     ],
@@ -59,7 +62,7 @@ app_library(
     name = "replay_visual_values",
     srcs = ["chrono/ReplayVisuals.cpp", "chrono/ReplayCamera.cpp", "chrono/ReplayClipping.cpp"],
     hdrs = [],
-    deps = [":replay_scene_contracts"],
+    deps = [":replay_scene_contracts", "//include/robodyna/mbd:api"],
 )
 
 app_library(
@@ -71,6 +74,9 @@ app_library(
     ],
     deps = [
         "//build_defs/app/chrono/replay:replay_visual_values",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/core:api",
+        "//include/robodyna/simulation:api",
     ],
     copts = [
     ],

@@ -2,6 +2,9 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+# Declared retained-CMake installation input for the maintained replay consumer.
+exports_files(["RbVector3.h"])
+
 # Value/allocator facades use the already extracted neutral foundation.
 cc_library(
     name = "api",

@@ -1,5 +1,5 @@
 #pragma once
-#include "chrono/physics/ChSystemFwd.h"
+#include "robodyna/simulation/RbSystemFwd.h"
 
 #include "ReplayView.h"
 #include "ReplayColorMode.h"
@@ -70,7 +70,7 @@ class AcceptedReplayScene {
     // rejection preserves both, visual handles, stamp and presentation time.
     // No per-frame allocation or rebinding.
     ReplaySceneReport Publish(const output::ReplayFrame&);
-    chrono::ChSystem& system();  // Borrow for AttachSystem only; throws before Initialize.
+    robodyna::simulation::RbSystem& system();  // Borrow for AttachSystem only; throws before Initialize.
     const ReplayStamp* stamp() const noexcept;
     const ReplayCamera* camera() const noexcept;
     double deformation_scale() const noexcept;

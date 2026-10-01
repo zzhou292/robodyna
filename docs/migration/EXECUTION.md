@@ -27,10 +27,10 @@ README/media checkpoint is `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
    Native viewer execution and rendering passed on the short run and the preserved
    100 ms archive. The new 60.2-second MP4 is byte-identical to the original
    qualified video, fully decoded and visually reviewed; inputs remain unchanged.
-4. IN PROGRESS — 21 unchanged source files now compile in neutral foundation,
-   mass-block, frame and inertia libraries. Actual header/link and 482-source
-   ownership gates and all 20 runtime/build test targets passed;
-   FEA-only/MBD-only closures and a coupled flexible-beam/body gate remain next.
+4. API/MODULE MIGRATION ACTIVE — neutral and generic visual owners are qualified,
+   and actual Body/Mesh/System families now use canonical Robodyna definitions.
+   The current integrated gates are recorded below. Independent full FEA/MBD
+   closures and the richer coupled beam/body gate remain pending.
 5. PENDING — migrate remaining Chrono modules and supporting APIs against a complete
    capability matrix, then qualify CUDA coverage by module.
 
@@ -116,117 +116,78 @@ complete standalone FEA/MBD dependency separation.
 
 ## Active Robodyna API naming migration
 
-The requested Chrono API rename has been probed against repository baseline
-`26ef28a9d68adf9d170a78ef1e796bff4ef09d30`. Implementation is now authorized.
-See [CHRONO_RENAME_PLAN.md](CHRONO_RENAME_PLAN.md) for module ownership, compatibility
-risks, implementation milestones and tests; [CHRONO_RENAME_SCOPE.json](CHRONO_RENAME_SCOPE.json)
-records the lexical inventory and its limitations.
+The current verified checkpoint implements the initial public API and the first
+real definition families on `work/robodyna-api-renaming`. No remote publication
+is authorized for this series. Original Chrono notices and exact BSD license text
+remain; OpenRadioss removal is deferred.
 
-The first active batch is a bounded public API and compatibility-fixture layer:
-`robodyna::mbd::RbBody`, `robodyna::fea::RbMesh` and
-`robodyna::simulation::RbSystemNSC`, plus the supporting types needed by small
-working examples. Stable archive identities precede real registered-class renames.
-The already extracted inertia family is the proposed first real implementation
-rename; the visual/system-service seams still gate independent FEA/MBD ownership.
+The following are actual definitions, with reverse aliases in legacy headers:
 
-Parallel source work is bounded to public aliases/examples, archive fixtures and
-identity support, and the inertia implementation pilot. Builds and qualification
-remain serialized through the workstation guard. Freeze baseline archive fixtures
-before changing production serialization. Preserve the original Chrono copyright
-and author headers; relocated files reference `LICENSES/Chrono-BSD-3-Clause.txt`.
+- `robodyna::mechanics`: mass properties, inertia utilities and composite inertia.
+- `robodyna::mbd`: Body, BodyAuxRef and all eight Easy-body types.
+- `robodyna::fea`: Mesh.
+- `robodyna::simulation`: System, SystemNSC and SystemSMC, including compatibility
+  for the nested SMC force-algorithm interface.
 
-First naming checkpoint PASSED: 26 public alias headers, 52 independent include-order
-compilation probes, both executed CPU spring examples, frozen JSON/XML/binary
-archive compatibility, and the actual canonical inertia implementation. All 19
-checkpoint test targets passed through native Bazel and the retained CMake bridge.
-See `RENAME_QUALIFICATION.json` for receipts, scope and resource usage.
+These source families live in their owning directories and compile exactly once.
+The domain implementations still use the explicit mixed backend; namespace/file
+moves do not establish independent FEA/MBD libraries. The first neutral ownership
+split and generic visualization/object split are qualified, including the explicit
+FE attachment adapter. The remaining services/assembly/contact/load boundaries
+are described in `NEXT_SEAMS.md`.
 
-Second naming checkpoint PASSED: stable archive identities preserve both actual
-pre-change object archives and a genuinely renamed test class with multiple
-inheritance. Generic objects and visualization now own nine additional original
-translation units without FE implementation dependencies, with FEA enabled. One
-explicit FE attachment adapter preserves the existing geometry/update behavior.
-All 21 native and three separate retained-CMake test targets passed.
+Maintained capture/replay consumers now use canonical Body, Simulation and mapped
+value APIs. Pointer-only System contracts use its thin public forward target.
+The used public headers are installed by the retained CMake build. Stable archive
+identities preserve the frozen JSON/XML/binary fixtures, including the captured
+Linux/GCC unregistered System key. Rebuild native consumers/plugins for the new
+C++ symbols; saved archive compatibility does not promise old binary ABI.
 
-Run native Bazel and foreign CMake compilation in separate phases. Use Bazel
-`--jobs=4` for native builds; use `--jobs=1` when invoking the retained CMake bridge,
-whose own build remains at four compiler workers. This prevents nested worker
-pools from exceeding the total compiler allowance. The interrupted mixed attempt
-and its complete cleanup remain recorded in `RENAME_QUALIFICATION.json`.
+### Completed verification
 
-Third naming checkpoint: the actual body definition and implementation now live at
-`include/robodyna/mbd/RbBody.h` and `src/mbd/bodies/RbBody.cpp`. Legacy headers alias
-that single type. Original archive tags, four base conversions, constructor data,
-child attachment and shared ownership pass the frozen pre-move fixtures.
-The implementation still compiles in the explicitly transitional aggregate;
-this is not independent MBD linkage.
+- 49 native/product test targets passed, including CLI, viewer, demos, API probes,
+  frozen archives, source ownership and declared binding generation.
+- Three separate retained-CMake build/runtime targets passed.
+- Three binding runtime/ELF targets passed: core and FE Python use one native
+  backend; FE ran 1000 coupled steps (0.1 s), with zero attachment error, common
+  time and consistent reactions. Both core native wrappers compiled. Managed C#
+  runtime and full optional-module runtime remain unqualified.
+- Seven explicit declaration views share one authenticated generator and registry.
+  Four CMake language/FEA configurations and 13 incorrect-pin rejection/recovery
+  checks passed. Historical core/FE/vehicle generated APIs match. Only proven
+  diagnostic source locations are normalized; raw failed receipts are retained.
+- A fresh 101-step GPU Yaris run passed. All 50 archive files, viewer input and
+  every non-timing summary field match the pre-rename baseline exactly. Full C++
+  replay passed; physical timestep remains 150 ns and numerical settings unchanged.
+- The three original six-second spring/NSC/SCM summaries match exactly. Rebuilt
+  rendering also matches both saved PNGs, frame index and fully decoded MP4 byte
+  for byte; the final frame was inspected visually.
 
-Qualification passed 26 native targets, three separately built retained-CMake
-targets, 25 product targets, and the 101-step GPU Yaris regression. Every one of
-its 50 archive files, viewer input and non-timing summary fields matches the
-pre-rename baseline exactly. The short run also passed full C++ replay. The original six-second spring, NSC
-collision and SCM headless runs also reproduced their entire recorded summaries
-exactly. No materials, equations, integration policy or timestep changed.
+`RENAME_QUALIFICATION.json` records the receipts, hashes, resources and exact
+boundaries. `SOURCE_TRANSFORMATIONS.json` contains 77 reviewed inverse recipes
+without repinning original source. Parser ledgers hold only their owning public
+header recipes; complete implementation history remains in the global ledger.
+Existing archive/partial-binding limitations remain in `PREEXISTING_ISSUES.md`.
 
-The optional core bindings now compile both native wrappers against one shared
-backend. Python imports and exercises constructors, derived casts, containers,
-child lifetime and inertia; ELF checks reject duplicated body/factory definitions.
-The generated interface retains 949 public Python AST entries and 610 exact C#
-files from the pre-inertia baseline. Managed C# execution is still unqualified.
-SWIG uses a generated, source-authenticated legacy declaration view because its
-parser does not preserve these aliases reliably; C++ uses the canonical type.
-See `build_defs/bindings/README.md` and `RENAME_QUALIFICATION.json` for this boundary.
+### Next execution batches
 
-One inherited YAML-off link error was exposed by the binding runtime and fixed:
-the unchanged `ChVisualShapeFEA::Settings::PrintInfo` definition is now available
-under the same conditions as its declaration. A focused test covers that profile.
-Other inherited limitations remain documented in `PREEXISTING_ISSUES.md`.
+1. Qualify the staged mixed-assembly lifecycle baselines, then move the actual
+   Assembly family with its ADL swap, old archive identity and ownership rules.
+   Preparation is in the outer `crash-work/staging/rename-assembly-1` directory;
+   it has not executed or changed production Assembly code.
+2. Extract the specific system services needed by FE and rigid participants,
+   then mixed assembly, contact reporting and coupled load boundaries. Require
+   actual independent-domain link/runtime gates and the richer beam/body test
+   before declaring full FEA/MBD separation.
+3. Continue coherent shared-frame/participant, math, node/element, material and
+   numerical naming families. Freeze affected identities before their moves.
+4. Finish application-owned directory ownership, public binding package naming,
+   documentation input roots and optional-module qualification from the capability
+   matrix. Retain compatibility paths while those capabilities remain pending.
 
-Body checkpoint is committed locally as `9581daa03f`. The optional CMake binding
-probe also passed Python+C# and C#-only configuration, execution of the exact
-configured SWIG commands, interface installation and rejection/recovery after a
-copied contract pin changes. It does not claim a complete native wrapper build
-through CMake; native wrapper compilation is covered separately by Bazel.
-
-System archives are now frozen against that commit after two fresh producer
-processes emitted identical bytes. All six focused fixture, runtime, shared
-FE/body coupling, freezer and source-ownership targets passed. Next, migrate the
-mesh and mixed-system definitions in separate batches.
-Reuse the new source, archive and binding gates. Complete the remaining domain
-service seams before claiming independent FEA/MBD libraries. Namespace changes
-and physical ownership separation are tracked separately.
-
-The actual `robodyna::fea::RbMesh` implementation has now passed 31 native targets
-and three separate retained-CMake targets. Node offsets, shallow clone ownership,
-clear operations, setup invalidation and the mixed FE/body spring remain unchanged.
-Its old header aliases the canonical type; the original implementation is compiled
-once from `src/fea/mesh`. The declaration-view helper now handles Body and Mesh
-through the same generator. Full current binding integration remains a separate
-gate before this larger rename batch is accepted as a product checkpoint.
-
-The actual `RbSystem`, `RbSystemNSC` and `RbSystemSMC` definitions now live under
-`robodyna::simulation`, with implementations in `src/simulation/composition`.
-All 33 native targets passed, including frozen System archives and common-clock
-FE/body dynamics. One captured legacy base-version key preserves the qualified
-Linux/GCC archive identity. Registered NSC/SMC tags and compatibility aliases
-remain unchanged. The thin public forward target does not link the aggregate.
-Current CMake, binding and product qualification will follow the derived-body and
-maintained-consumer integration as a combined checkpoint.
-
-Parser ledgers now contain only their public-header inverse recipes; the global
-source ledger retains complete implementation history. This avoids stale copies
-of other families' edits when their headers move later.
-
-OpenRadioss remains an optional external reference solver, not a required product
-runtime. Production C++/CUDA ports and their notices remain; verification-only
-Fortran fixtures require a separately reviewed relocation if moved out of tree.
-The user has explicitly deferred that removal work. Keep it outside the naming
-migration; no source, fixture or notice removal is part of the next API batch.
-
-The derived-body family now passes 34 native targets: actual `RbBodyAuxRef` and
-eight `RbBodyEasy*` definitions, two relocated implementations, unchanged factory
-and cast identities, constructor/mass/inertia baselines and frozen archive bytes.
-The alias identity test explicitly includes the legacy Easy-body header; canonical
-headers need not expose unrelated compatibility spellings transitively. Seven
-authenticated declaration views are available. Combined bindings, CMake and product
-checks follow the maintained-consumer integration.
+Run native and retained CMake compilation in separate guarded phases. Native
+builds use at most four compiler workers; large wrapper units use one. GPU and
+render commands manage their own guard. Preserve frozen runs and failed receipts,
+keep other GPU jobs running, and do not repeat the 100 ms physical trajectory for
+name-only changes. No numerical optimization or OpenRadioss removal belongs in
+this naming series.

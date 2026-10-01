@@ -1,18 +1,21 @@
 """One native wrapper generation action with explicit source and SDK inputs."""
 
 def _swig_impl(ctx):
-    wrapper = ctx.actions.declare_file(ctx.label.name + "/core_wrap.cpp")
-    directors = ctx.actions.declare_file(ctx.label.name + "/core_wrap.h")
+    wrapper = ctx.actions.declare_file(ctx.label.name + "/" + ctx.attr.module + "_wrap.cpp")
+    directors = ctx.actions.declare_file(ctx.label.name + "/" + ctx.attr.module + "_wrap.h")
     report = ctx.actions.declare_file(ctx.label.name + "/generation.json")
     if ctx.attr.language == "python":
-        proxy = ctx.actions.declare_file(ctx.label.name + "/core.py")
+        proxy = ctx.actions.declare_file(ctx.label.name + "/" + ctx.attr.module + ".py")
         proxy_dir = proxy.dirname
     else:
         proxy = ctx.actions.declare_directory(ctx.label.name + "/proxies")
         proxy_dir = proxy.path
-    anchor_suffix = "src/chrono_swig/chrono_" + ctx.attr.language + "/ChModuleCore_" + ctx.attr.language + ".i"
+    if ctx.attr.module == "fea" and ctx.attr.language != "python":
+        fail("The retained sources do not provide a separate C# FEA module")
+    stem = {"core": "Core", "fea": "Fea", "vehicle": "Vehicle"}[ctx.attr.module]
+    anchor_suffix = "src/chrono_swig/chrono_" + ctx.attr.language + "/ChModule" + stem + "_" + ctx.attr.language + ".i"
     if not ctx.file.interface.path.endswith(anchor_suffix):
-        fail("Expected the actual retained core interface")
+        fail("Expected the actual retained module interface")
     source_root = ctx.file.interface.path[:-len(anchor_suffix)] + "src"
     canonical = ctx.file.canonical_anchor.path
     canonical_suffix = "robodyna/mbd/RbBody.h"
@@ -43,15 +46,16 @@ def _swig_impl(ctx):
         arguments = [args],
         outputs = [wrapper, directors, proxy, report],
         mnemonic = "RobodynaSwigCore",
-        progress_message = "Generate retained " + ctx.attr.language + " core wrappers (NumPy disabled)",
+        progress_message = "Generate retained " + ctx.attr.language + " " + ctx.attr.module + " wrappers (NumPy disabled)",
     )
     return [DefaultInfo(files = depset([wrapper, directors, proxy, report])),
             OutputGroupInfo(wrapper = depset([wrapper]), directors = depset([directors]),
                             proxy = depset([proxy]), report = depset([report]))]
 
-swig_core = rule(
+swig_module = rule(
     implementation = _swig_impl,
     attrs = {
+        "module": attr.string(values = ["core", "fea", "vehicle"], default = "core"),
         "language": attr.string(values = ["python", "csharp"], mandatory = True),
         "interface": attr.label(allow_single_file = True, mandatory = True),
         "canonical_anchor": attr.label(allow_single_file = True, default = "//include/robodyna/mbd:RbBody.h"),

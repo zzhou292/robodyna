@@ -1,4 +1,5 @@
 #pragma once
+#include "robodyna/simulation/RbSystemFwd.h"
 #include "chrono/AcceptedReplayScene.h"
 #include "chrono/ReplayClipping.h"
 #include <optional>
@@ -19,7 +20,7 @@ class FixedReplayVisual : public chrono::vsg3d::ChVisualSystemVSG {
 struct ReplayLighting {double azimuth=0,elevation=0;};
 // Chrono captures asset search paths in its visual-system constructor.
 std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::path& asset_directory = {});
-ReplayLighting ConfigureReplayVisual(FixedReplayVisual&,chrono::ChSystem&,const visual::ReplayCamera&);
+ReplayLighting ConfigureReplayVisual(FixedReplayVisual&,robodyna::simulation::RbSystem&,const visual::ReplayCamera&);
 void InitializeReplayVisual(FixedReplayVisual&);
 void RenderReplayFrame(FixedReplayVisual&);
 void WarmupReplayCapture(FixedReplayVisual&);

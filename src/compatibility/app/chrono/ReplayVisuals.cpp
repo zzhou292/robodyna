@@ -3,7 +3,7 @@
 #include "chrono/assets/ChVisualMaterial.h"
 #include "chrono/assets/ChVisualModel.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
-#include "chrono/physics/ChBody.h"
+#include "robodyna/mbd/RbBody.h"
 #include <algorithm>
 #include <cmath>
 #include <new>
@@ -36,9 +36,9 @@ std::shared_ptr<chrono::ChVisualShapeTriangleMesh> MakeReplayShape(
     shape->AddMaterial(material);
     return shape;
 }
-std::shared_ptr<chrono::ChBody> MakeReplayCarrier(const char* name,
+std::shared_ptr<robodyna::mbd::RbBody> MakeReplayCarrier(const char* name,
                                       const std::shared_ptr<chrono::ChVisualShapeTriangleMesh>& shape) {
-    auto body = std::make_shared<chrono::ChBody>();
+    auto body = std::make_shared<robodyna::mbd::RbBody>();
     body->SetName(name);
     body->SetFixed(true);
     body->SetPos(chrono::VNULL);

@@ -1,10 +1,11 @@
 load(":declaration.bzl", "declaration_view")
-load(":swig.bzl", "swig_core")
+load(":swig.bzl", "swig_module")
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json", "body_auxref_view_contract.json", "body_easy_view_contract.json"])
+exports_files(["declaration_views.json"])
 
 # Pins are reviewed separately from the mutable generator inputs. Keep in sync
 # with the CMake contract; a source/API edit must not silently refresh these.
@@ -46,14 +47,14 @@ cc_shared_library(
     tags = ["manual", "native-bindings", "cpu-only"],
 )
 
-swig_core(
+swig_module(
     name = "python_generated",
     language = "python",
     interface = "//src/compatibility/chrono:src/chrono_swig/chrono_python/ChModuleCore_python.i",
     sources = ["//src/compatibility/chrono:swig_source_inputs"],
 )
 
-swig_core(
+swig_module(
     name = "csharp_generated",
     language = "csharp",
     interface = "//src/compatibility/chrono:src/chrono_swig/chrono_csharp/ChModuleCore_csharp.i",
@@ -168,3 +169,30 @@ declaration_view(
     ledger_sha256 = "a87ca6cea0ec4b848fe00dd82f10747a4af42ec329622358aa28ada361a1d9fa",
 )
 filegroup(name = "body_easy_header", srcs = [":body_easy_declarations"], output_group = "header")
+
+# FEA extends the same owned native implementation; no second static core.
+swig_module(
+    name = "python_fea_generated",
+    module = "fea",
+    language = "python",
+    interface = "//src/compatibility/chrono:src/chrono_swig/chrono_python/ChModuleFea_python.i",
+    sources = ["//src/compatibility/chrono:swig_source_inputs"],
+)
+filegroup(name = "python_fea_wrapper_source", srcs = [":python_fea_generated"], output_group = "wrapper")
+filegroup(name = "python_fea_director_header", srcs = [":python_fea_generated"], output_group = "directors")
+filegroup(name = "python_fea_proxy", srcs = [":python_fea_generated"], output_group = "proxy")
+cc_library(
+    name = "python_fea_wrapper",
+    srcs = [":python_fea_wrapper_source"],
+    hdrs = [":python_fea_director_header"],
+    deps = ["//build_defs/chrono:native_core_fea", "@python_sdk//:headers"],
+    copts = _WRAPPER_COPTS,
+    tags = ["manual", "native-bindings", "cpu-only"],
+)
+cc_shared_library(
+    name = "python_fea",
+    deps = [":python_fea_wrapper"],
+    dynamic_deps = [":native_core"],
+    shared_lib_name = "_fea.so",
+    tags = ["manual", "native-bindings", "cpu-only"],
+)

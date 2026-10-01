@@ -1,4 +1,5 @@
 #pragma once
+#include "robodyna/simulation/RbSystemFwd.h"
 #include "chrono/full_shell/FullShellFrameGeometry.h"
 #include "chrono/ReplayFixedCamera.h"
 #include "chrono/ReplayClipping.h"
@@ -31,7 +32,7 @@ class Scene {
     ReplaySceneReport Initialize(const output::physical_run::Replay&,SceneOptions={});
     ReplaySceneReport Initialize(const SampleSource&,SceneOptions={});
     ReplaySceneReport Publish(std::size_t sample);
-    chrono::ChSystem& system();
+    robodyna::simulation::RbSystem& system();
     const ReplayCamera* camera() const noexcept;
     const ReplayBounds* bounds() const noexcept; // complete archive motion plus optional wall
     const ReplayStamp* stamp() const noexcept;

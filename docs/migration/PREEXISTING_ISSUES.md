@@ -55,3 +55,14 @@ retain that frame proxy while reading its position. Chaining
 before indexing the borrowed vector. The binding smoke test now retains the
 frame explicitly; its numerical expectations are unchanged. No ownership policy
 or physics was changed to accommodate this test.
+
+## Core-only Mesh proxy and FEA nodes
+
+The inherited core-only Python `ChMesh.AddNode` descriptor names an unqualified
+`ChNodeFEAbase`; the FEA module uses the qualified FE node type. Historical and
+current generated functions are byte-identical. Construct meshes through
+`pychrono.fea.ChMesh`, then use the existing System and cast interfaces for object
+exchange. The qualified core/FEA runtime test follows that supported route.
+Evidence is in the outer workspace at
+`crash-work/investigations/robodyna-fea-core-mesh-metadata-1/evidence.json`.
+No production binding or solver code was changed for this issue.
