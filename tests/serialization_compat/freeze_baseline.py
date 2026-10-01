@@ -27,6 +27,72 @@ PRODUCER_INPUTS = (
     "ArchiveFormats.h", "ArchiveFormats.cpp", "FixtureModel.h", "FixtureModel.cpp", "WriteBaseline.cpp", "BUILD.bazel",
 )
 
+# This new checkpoint uses the actual post-Body-move locations. Keep the older
+# profiles above tied to their historical source layout; never silently retarget
+# or regenerate their frozen fixtures after a rename.
+SYSTEM_PRODUCTION_INPUTS = (
+    "src/compatibility/chrono/src/chrono/core/ChClassFactory.h",
+    "src/compatibility/chrono/src/chrono/core/ChClassFactory.cpp",
+    "src/compatibility/chrono/src/chrono/core/ChVector3.h",
+    "src/compatibility/chrono/src/chrono/core/ChQuaternion.h",
+    "src/compatibility/chrono/src/chrono/core/ChFrame.h",
+    "src/compatibility/chrono/src/chrono/core/ChFrameMoving.h",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchive.h",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveJSON.h",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveJSON.cpp",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveXML.h",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveXML.cpp",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveBinary.h",
+    "src/compatibility/chrono/src/chrono/serialization/ChArchiveBinary.cpp",
+    "include/robodyna/mbd/RbBody.h",
+    "src/mbd/bodies/RbBody.cpp",
+    "include/robodyna/mbd/RbBodyFwd.h",
+    "src/compatibility/chrono/src/chrono/physics/ChBody.h",
+    "src/compatibility/chrono/src/chrono/physics/ChBodyFwd.h",
+    "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.h",
+    "src/compatibility/chrono/src/chrono/physics/ChBodyAuxRef.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChBodyFrame.h",
+    "src/compatibility/chrono/src/chrono/physics/ChBodyFrame.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChObject.h",
+    "src/compatibility/chrono/src/chrono/physics/ChObject.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.h",
+    "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+    "src/compatibility/chrono/src/chrono/physics/ChSystem.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h",
+    "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h",
+    "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+    "src/compatibility/chrono/src/chrono/physics/ChAssembly.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChContactContainerNSC.h",
+    "src/compatibility/chrono/src/chrono/physics/ChContactContainerNSC.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChContactContainerSMC.h",
+    "src/compatibility/chrono/src/chrono/physics/ChContactContainerSMC.cpp",
+    "src/compatibility/chrono/src/chrono/solver/ChSystemDescriptor.h",
+    "src/compatibility/chrono/src/chrono/solver/ChSolverPSOR.h",
+    "src/compatibility/chrono/src/chrono/solver/ChSolverPSOR.cpp",
+    "src/compatibility/chrono/src/chrono/physics/ChContactMaterial.h",
+    "src/compatibility/chrono/src/chrono/physics/ChContactMaterial.cpp",
+)
+SYSTEM_PRODUCER_INPUTS = (
+    "tests/system_compat/SystemFixture.h", "tests/system_compat/SystemFixture.cpp",
+    "tests/system_compat/WriteBaseline.cpp", "tests/system_compat/BUILD.bazel",
+    "tests/archive_support/StreamArchive.h", "tests/archive_support/BUILD.bazel",
+)
+
+
+def production_paths(profile):
+    if profile == "system":
+        return SYSTEM_PRODUCTION_INPUTS
+    inputs = PRODUCTION_INPUTS
+    if profile == "body":
+        inputs += ("physics/ChBodyEasy.h", "physics/ChBodyEasy.cpp",
+                   "physics/ChMarker.h", "physics/ChMarker.cpp",
+                   "physics/ChForce.h", "physics/ChForce.cpp")
+    return tuple(CHRONO + path for path in inputs)
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -42,13 +108,7 @@ def freeze(repo, generated, destination, binary, profile):
         raise ValueError("fixture destination already exists; refusing overwrite")
     baseline = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
     production = {}
-    production_inputs = PRODUCTION_INPUTS
-    if profile == "body":
-        production_inputs += ("physics/ChBodyEasy.h", "physics/ChBodyEasy.cpp",
-                              "physics/ChMarker.h", "physics/ChMarker.cpp",
-                              "physics/ChForce.h", "physics/ChForce.cpp")
-    for relative in production_inputs:
-        relative = CHRONO + relative
+    for relative in production_paths(profile):
         actual = (repo / relative).read_bytes()
         committed = subprocess.check_output(["git", "show", f"{baseline}:{relative}"], cwd=repo)
         if actual != committed:
@@ -68,6 +128,9 @@ def freeze(repo, generated, destination, binary, profile):
         producer_inputs = ("tests/body_compat/BodyFixture.h", "tests/body_compat/BodyFixture.cpp",
                            "tests/body_compat/WriteBaseline.cpp", "tests/body_compat/BUILD.bazel",
                            "tests/archive_support/StreamArchive.h", "tests/archive_support/BUILD.bazel")
+    if profile == "system":
+        tests = repo
+        producer_inputs = SYSTEM_PRODUCER_INPUTS
     manifest = {
         "schema": "robodyna.serialization-compatibility-baseline.v1",
         "baseline_head": baseline,
@@ -93,6 +156,6 @@ if __name__ == "__main__":
     parser.add_argument("--generated-dir", type=Path, required=True)
     parser.add_argument("--destination", type=Path, required=True)
     parser.add_argument("--producer-binary", type=Path, required=True)
-    parser.add_argument("--profile", choices=("actual-types", "rename-probe", "body"), default="actual-types")
+    parser.add_argument("--profile", choices=("actual-types", "rename-probe", "body", "system"), default="actual-types")
     args = parser.parse_args()
     freeze(args.repo_root.resolve(), args.generated_dir.resolve(), args.destination.resolve(), args.producer_binary.resolve(), args.profile)

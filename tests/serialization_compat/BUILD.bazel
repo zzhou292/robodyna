@@ -43,6 +43,15 @@ py_test(
 
 test_suite(name = "baseline_tests", tests = [":compatibility_test", ":fixture_integrity_test"])
 
+py_test(
+    name = "freeze_baseline_test",
+    srcs = ["FreezeBaselineTest.py", "freeze_baseline.py"],
+    main = "FreezeBaselineTest.py",
+    imports = ["."],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
 cc_test(
     name = "version_policy_test",
     srcs = ["VersionPolicyTest.cpp"],
@@ -53,5 +62,5 @@ cc_test(
 
 test_suite(
     name = "all_tests",
-    tests = [":baseline_tests", ":version_policy_test", "//tests/serialization_compat/rename_probe:renamed_tests"],
+    tests = [":baseline_tests", ":version_policy_test", ":freeze_baseline_test", "//tests/serialization_compat/rename_probe:renamed_tests"],
 )

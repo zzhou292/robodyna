@@ -120,6 +120,35 @@
       "exit_code": 0,
       "elapsed_seconds": 21.972,
       "peak_sampled_rss_bytes": 5489594368
+    },
+    "robodyna-cmake-swig-install-5": {
+      "path": "crash-work/reports/robodyna-cmake-swig-install-5.json",
+      "sha256": "751f0105b8e2a9903cf74092e13c5d847ccd3c9eb24c0e93ec383400c902c3cc",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 27.083,
+      "peak_sampled_rss_bytes": 1293099008
+    },
+    "robodyna-cmake-swig-boundary-5": {
+      "path": "crash-work/investigations/robodyna-cmake-swig-install-5/receipt.json",
+      "sha256": "6340acb8562cfbc30654e0abe2374d9549fbc78fdcbb2164884278981e2a5598",
+      "passed": true
+    },
+    "robodyna-system-baseline-run-1": {
+      "path": "crash-work/reports/robodyna-system-baseline-run-1.json",
+      "sha256": "3c4df4648a9491271d6d7a69a9d0e0f9b0525356fdc8b55c2ba5a9d46bd9e1ff",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 0.299,
+      "peak_sampled_rss_bytes": 7471104
+    },
+    "robodyna-system-baseline-tests-2": {
+      "path": "crash-work/reports/robodyna-system-baseline-tests-2.json",
+      "sha256": "f402223cd54bb5a3e8059b895d6fae4d50566c6c04cfab8573437275641bbc2f",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 3.243,
+      "peak_sampled_rss_bytes": 900812800
     }
   },
   "limits": {
@@ -151,5 +180,14 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest broad body native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count."
+  "test_targets_scope": "Latest broad body native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count.",
+  "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
+  "system_fixture_checkpoint": {
+    "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",
+    "production_inputs_pinned": 44,
+    "fresh_process_output_equal": true,
+    "base_version_identity": "N6chrono8ChSystemE",
+    "test_targets_passed": 6,
+    "scope": "Pre-system move metadata/ownership, represented archive fields and common FE/body clock; no physical restart"
+  }
 }

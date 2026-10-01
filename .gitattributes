@@ -7,6 +7,8 @@ tests/serialization_compat/rename_probe/fixtures/baseline.json -whitespace
 tests/serialization_compat/rename_probe/fixtures/producer.json -whitespace
 tests/body_compat/fixtures/baseline.json -whitespace
 tests/body_compat/fixtures/producer.json -whitespace
+tests/system_compat/fixtures/baseline.json -whitespace
+tests/system_compat/fixtures/producer.json -whitespace
 # Reviewed mechanical body moves retain inherited spacing; inverse-source checks
 # authenticate their exact bytes rather than mixing formatting into the rename.
 include/robodyna/mbd/RbBody.h -whitespace

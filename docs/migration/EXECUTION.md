@@ -181,8 +181,16 @@ the unchanged `ChVisualShapeFEA::Settings::PrintInfo` definition is now availabl
 under the same conditions as its declaration. A focused test covers that profile.
 Other inherited limitations remain documented in `PREEXISTING_ISSUES.md`.
 
-Next: commit this qualified body checkpoint, freeze system archives against that
-commit, then migrate the mesh and mixed-system definitions in separate batches.
+Body checkpoint is committed locally as `9581daa03f`. The optional CMake binding
+probe also passed Python+C# and C#-only configuration, execution of the exact
+configured SWIG commands, interface installation and rejection/recovery after a
+copied contract pin changes. It does not claim a complete native wrapper build
+through CMake; native wrapper compilation is covered separately by Bazel.
+
+System archives are now frozen against that commit after two fresh producer
+processes emitted identical bytes. All six focused fixture, runtime, shared
+FE/body coupling, freezer and source-ownership targets passed. Next, migrate the
+mesh and mixed-system definitions in separate batches.
 Reuse the new source, archive and binding gates. Complete the remaining domain
 service seams before claiming independent FEA/MBD libraries. Namespace changes
 and physical ownership separation are tracked separately.

@@ -76,3 +76,21 @@ The original test producers remain separate; the renamed probe does not link
 their types. The inherited `CHNVP` macro uses an unqualified helper, so tests in
 new namespaces deliberately use `using chrono::make_ChNameValue` for primitive
 and standard-library fields instead of changing its behavior during this stage.
+
+## System checkpoint after the body move
+
+`freeze_baseline.py --profile system` uses a reviewed list of current paths:
+the canonical body definition/implementation and both forward routes, inherited
+archive/base definitions, system/NSC/SMC/assembly files and represented
+contact/solver dependencies. It must run after the body checkpoint is committed;
+every named production file must match the recorded HEAD exactly. It pins the
+`tests/system_compat` producer and the shared archive stream helper.
+
+The original three profiles retain their historical source-path contract. Their
+existing fixtures and manifests are not regenerated or retargeted. The new
+profile copies archive bytes verbatim, including actual automatic assembly
+names; it does not rewrite labels or claim a physical restart format.
+
+`//tests/serialization_compat:freeze_baseline_test` covers current body paths,
+uncommitted source rejection, preservation of existing evidence, unchanged old
+profiles and opaque archive-byte copying.

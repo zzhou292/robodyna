@@ -1,0 +1,61 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "fixture",
+    srcs = ["SystemFixture.cpp"],
+    hdrs = ["SystemFixture.h"],
+    deps = ["//build_defs/chrono:native_core_fea"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    testonly = True,
+)
+
+cc_binary(
+    name = "write_baseline",
+    srcs = ["WriteBaseline.cpp"],
+    deps = [":fixture", "//tests/archive_support:streams"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    testonly = True,
+    tags = ["manual", "cpu-only", "system-compatibility"],
+)
+
+cc_test(
+    name = "runtime_test",
+    srcs = ["RuntimeTest.cpp"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "system-compatibility"],
+)
+
+# Root freezes the producer output before selecting these archive targets.
+# No test generates or rewrites the expected bytes.
+cc_test(
+    name = "frozen_archive_test",
+    srcs = ["FrozenArchiveTest.cpp"],
+    args = ["$(location fixtures/baseline.json)"],
+    data = ["fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    deps = [":fixture", "//tests/archive_support:streams", "@googletest//:gtest"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    size = "small",
+    tags = ["manual", "cpu-only", "system-compatibility"],
+)
+
+py_test(
+    name = "fixture_integrity_test",
+    srcs = ["//tests/serialization_compat:FixtureIntegrityTest.py"],
+    main = "//tests/serialization_compat:FixtureIntegrityTest.py",
+    args = ["$(location fixtures/manifest.json)"],
+    data = ["fixtures/manifest.json", "fixtures/producer.json", "fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    size = "small",
+    tags = ["manual", "cpu-only", "system-compatibility"],
+)
+
+test_suite(
+    name = "system_tests",
+    tests = [":runtime_test", ":frozen_archive_test", ":fixture_integrity_test", "//tests/mesh_compat:coupled_spring_test"],
+    # Non-manual suite tags filter members; the shared coupling test belongs to
+    # the mesh package and must not be silently omitted here.
+    tags = ["manual"],
+)

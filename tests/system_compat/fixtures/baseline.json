@@ -1,0 +1,424 @@
+{ 
+	"fixture"	: 
+	{
+		"nsc"	: 
+		{ 
+			"_type"	: "ChSystemNSC",
+			"_object_ID"	: 1,
+			"_version_ChSystemNSC"	: 0,
+			"_version_N6chrono8ChSystemE"	: 0,
+			"assembly"	: 
+			{
+				"_version_ChAssembly"	: 0,
+				"_version_ChPhysicsItem"	: 0,
+				"_version_N6chrono5ChObjE"	: 0,
+				"m_name"	: "_obj_1",
+				"m_tag"	: -1,
+				"ChTime"	: 0,
+				"visual_model"	: 
+				{ 
+					"_reference_ID"	: 0
+				},
+				"cameras"	: 
+				[ 
+				],
+				"bodies"	: 
+				[ 
+					{ 
+						"_type"	: "ChBody",
+						"_object_ID"	: 2,
+						"_version_ChBody"	: 0,
+						"m_name"	: "archived system body",
+						"m_tag"	: 31,
+						"ChTime"	: 0.125,
+						"visual_model"	: 
+						{ 
+							"_reference_ID"	: 0
+						},
+						"cameras"	: 
+						[ 
+						],
+						"_version_N6chrono11ChBodyFrameE"	: 0,
+						"_version_N6chrono13ChFrameMovingIdEE"	: 0,
+						"_version_N6chrono7ChFrameIdEE"	: 0,
+						"m_csys"	: 
+						{
+							"_version_N6chrono10ChCoordsysIdEE"	: 0,
+							"pos"	: 
+							{
+								"_version_N6chrono9ChVector3IdEE"	: 0,
+								"x"	: 1,
+								"y"	: -2,
+								"z"	: 0.5
+							},
+							"rot"	: 
+							{
+								"_version_N6chrono12ChQuaternionIdEE"	: 0,
+								"e0"	: 1,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"m_csys_dt"	: 
+						{
+							"pos"	: 
+							{
+								"x"	: 0.125,
+								"y"	: -0.25,
+								"z"	: 0.5
+							},
+							"rot"	: 
+							{
+								"e0"	: 0,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"m_csys_dtdt"	: 
+						{
+							"pos"	: 
+							{
+								"x"	: 0,
+								"y"	: 0,
+								"z"	: 0
+							},
+							"rot"	: 
+							{
+								"e0"	: 0,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"fixed"	: false,
+						"collide"	: false,
+						"limit_speed"	: false,
+						"disable_gyrotorque"	: false,
+						"is_sleeping"	: false,
+						"allow_sleeping"	: true,
+						"candidate_sleeping"	: false,
+						"markers"	: 
+						[ 
+						],
+						"forces"	: 
+						[ 
+						],
+						"collision_model"	: 
+						{ 
+							"_reference_ID"	: 0
+						},
+						"gyro"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"Xforce"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"Xtorque"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"variables"	: 
+						{
+							"_version_ChVariablesBodyOwnMass"	: 0,
+							"_version_N6chrono11ChVariablesE"	: 0,
+							"ndof"	: 6,
+							"disabled"	: false,
+							"offset"	: 0,
+							"mass"	: 2.5,
+							"inertia"	: 
+							{
+								"_version_N6chrono26ChMatrix_dense_version_tagE"	: 1,
+								"rows"	: 3,
+								"columns"	: 3,
+								"data"	: 
+								[ 
+									1,
+									0,
+									0,
+									0,
+									2,
+									0,
+									0,
+									0,
+									3
+								]
+							}
+						},
+						"max_speed"	: 0.5,
+						"max_wvel"	: 6.2831855,
+						"sleep_time"	: 0.6,
+						"sleep_minspeed"	: 0.1,
+						"sleep_minwvel"	: 0.04,
+						"sleep_starttime"	: 0
+					}
+				],
+				"shafts"	: 
+				[ 
+				],
+				"links"	: 
+				[ 
+				],
+				"meshes"	: 
+				[ 
+				],
+				"other_physics_items"	: 
+				[ 
+				]
+			},
+			"G_acc"	: 
+			{
+				"x"	: 0.5,
+				"y"	: -1.25,
+				"z"	: 0.125
+			},
+			"ch_time"	: 0.125,
+			"step"	: 0.04,
+			"stepcount"	: 0,
+			"write_matrix"	: false,
+			"use_sleeping"	: true,
+			"descriptor"	: 
+			{ 
+				"_type"	: "ChSystemDescriptor",
+				"_object_ID"	: 3,
+				"_version_ChSystemDescriptor"	: 0
+			},
+			"solver"	: 
+			{ 
+				"_type"	: "ChSolverPSOR",
+				"_object_ID"	: 4,
+				"_version_N6chrono19ChIterativeSolverVIE"	: 0,
+				"_version_N6chrono8ChSolverE"	: 0,
+				"solver_type"	: "Type::PSOR",
+				"verbose"	: false,
+				"m_max_iterations"	: 50,
+				"m_warm_start"	: false,
+				"m_tolerance"	: 0,
+				"m_omega"	: 1,
+				"m_shlambda"	: 1
+			},
+			"max_penetration_recovery_speed"	: 0.625,
+			"composition_strategy"	: 
+			{
+			}
+		},
+		"smc"	: 
+		{ 
+			"_type"	: "ChSystemSMC",
+			"_object_ID"	: 5,
+			"_version_ChSystemSMC"	: 0,
+			"assembly"	: 
+			{
+				"m_name"	: "_obj_3",
+				"m_tag"	: -1,
+				"ChTime"	: 0,
+				"visual_model"	: 
+				{ 
+					"_reference_ID"	: 0
+				},
+				"cameras"	: 
+				[ 
+				],
+				"bodies"	: 
+				[ 
+					{ 
+						"_type"	: "ChBody",
+						"_object_ID"	: 6,
+						"m_name"	: "archived system body",
+						"m_tag"	: 47,
+						"ChTime"	: 0.25,
+						"visual_model"	: 
+						{ 
+							"_reference_ID"	: 0
+						},
+						"cameras"	: 
+						[ 
+						],
+						"m_csys"	: 
+						{
+							"pos"	: 
+							{
+								"x"	: 1,
+								"y"	: -2,
+								"z"	: 0.5
+							},
+							"rot"	: 
+							{
+								"e0"	: 1,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"m_csys_dt"	: 
+						{
+							"pos"	: 
+							{
+								"x"	: 0.125,
+								"y"	: -0.25,
+								"z"	: 0.5
+							},
+							"rot"	: 
+							{
+								"e0"	: 0,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"m_csys_dtdt"	: 
+						{
+							"pos"	: 
+							{
+								"x"	: 0,
+								"y"	: 0,
+								"z"	: 0
+							},
+							"rot"	: 
+							{
+								"e0"	: 0,
+								"e1"	: 0,
+								"e2"	: 0,
+								"e3"	: 0
+							}
+						},
+						"fixed"	: false,
+						"collide"	: false,
+						"limit_speed"	: false,
+						"disable_gyrotorque"	: false,
+						"is_sleeping"	: false,
+						"allow_sleeping"	: true,
+						"candidate_sleeping"	: false,
+						"markers"	: 
+						[ 
+						],
+						"forces"	: 
+						[ 
+						],
+						"collision_model"	: 
+						{ 
+							"_reference_ID"	: 0
+						},
+						"gyro"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"Xforce"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"Xtorque"	: 
+						{
+							"x"	: 0,
+							"y"	: 0,
+							"z"	: 0
+						},
+						"variables"	: 
+						{
+							"ndof"	: 6,
+							"disabled"	: false,
+							"offset"	: 0,
+							"mass"	: 2.5,
+							"inertia"	: 
+							{
+								"rows"	: 3,
+								"columns"	: 3,
+								"data"	: 
+								[ 
+									1,
+									0,
+									0,
+									0,
+									2,
+									0,
+									0,
+									0,
+									3
+								]
+							}
+						},
+						"max_speed"	: 0.5,
+						"max_wvel"	: 6.2831855,
+						"sleep_time"	: 0.6,
+						"sleep_minspeed"	: 0.1,
+						"sleep_minwvel"	: 0.04,
+						"sleep_starttime"	: 0
+					}
+				],
+				"shafts"	: 
+				[ 
+				],
+				"links"	: 
+				[ 
+				],
+				"meshes"	: 
+				[ 
+				],
+				"other_physics_items"	: 
+				[ 
+				]
+			},
+			"G_acc"	: 
+			{
+				"x"	: 0.5,
+				"y"	: -1.25,
+				"z"	: 0.125
+			},
+			"ch_time"	: 0.25,
+			"step"	: 0.04,
+			"stepcount"	: 0,
+			"write_matrix"	: false,
+			"use_sleeping"	: true,
+			"descriptor"	: 
+			{ 
+				"_type"	: "ChSystemDescriptor",
+				"_object_ID"	: 7
+			},
+			"solver"	: 
+			{ 
+				"_type"	: "ChSolverPSOR",
+				"_object_ID"	: 8,
+				"solver_type"	: "Type::PSOR",
+				"verbose"	: false,
+				"m_max_iterations"	: 50,
+				"m_warm_start"	: false,
+				"m_tolerance"	: 0,
+				"m_omega"	: 1,
+				"m_shlambda"	: 1
+			},
+			"max_penetration_recovery_speed"	: 0.625,
+			"composition_strategy"	: 
+			{
+			},
+			"m_use_mat_props"	: false,
+			"m_minSlipVelocity"	: 0.02,
+			"m_characteristicVelocity"	: 4,
+			"contact_model"	: "Hooke",
+			"adhesion_model"	: "AdhesionForceModel::DMT",
+			"tangential_model"	: "MultiStep"
+		},
+		"nsc_body"	: 
+		{ 
+			"_type"	: "ChBody",
+			"_reference_ID"	: 2
+		},
+		"smc_body"	: 
+		{ 
+			"_type"	: "ChBody",
+			"_reference_ID"	: 6
+		}
+	}
+}

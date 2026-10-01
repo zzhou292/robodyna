@@ -1,0 +1,11 @@
+{ 
+	"compiler"	: "11.4.0",
+	"language"	: 201703,
+	"pointer_bytes"	: 8,
+	"size_t_bytes"	: 8,
+	"system_rtti"	: "N6chrono8ChSystemE",
+	"system_version_key"	: "_version_N6chrono8ChSystemE",
+	"nsc_rtti"	: "N6chrono11ChSystemNSCE",
+	"smc_rtti"	: "N6chrono11ChSystemSMCE",
+	"scope"	: "Pre-system rename: represented metadata/settings and body ownership; no contact/history/timestepper restart"
+}
