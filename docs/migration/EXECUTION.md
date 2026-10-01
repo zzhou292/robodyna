@@ -4,7 +4,8 @@ The user authorized implementation on 2026-09-30. Work on local branch
 `work/initial-integration`; destination is https://github.com/zzhou292/robodyna.git.
 The user subsequently authorized initial publication to this repository after
 retained Chrono demonstrations and a Robodyna logo are complete. Those tasks
-have passed their runtime/media gates; final publication is being prepared.
+passed their runtime/media gates and publication completed. The subsequent branded
+README/media checkpoint is `26ef28a9d68adf9d170a78ef1e796bff4ef09d30`.
 
 ## Checkpoints
 
@@ -70,12 +71,13 @@ source and short native coupons; run longer physics only when a change warrants 
 - Independent FEA/MBD gates remain pending; `NEXT_SEAMS.md` records the next
   source-audited visual, system-service, contact and assembly extractions.
 
-## Next architectural extraction
+## Completed neutral extraction and remaining seams
 
-The first small dependency split will own the existing moving-frame and inertia
-implementations under neutral mechanics, with only core/archive and variable-block
-support. Standalone wrench and inertia tests must link without the aggregate.
-This changes ownership, not equations. Preserve inherited include and archive names.
+The first dependency split now owns the existing moving-frame and inertia
+implementations under neutral mechanics, with core/archive and variable-block
+support. Its standalone wrench and inertia gates passed without the aggregate.
+This changed ownership, not equations. The inherited include and archive names
+remain intact at this checkpoint.
 
 Source review also found a visualization dependency through `ChObj` and
 `ChVisualShapeFEA`. Moving the entire participant hierarchy without resolving that
@@ -87,8 +89,11 @@ mesh/system services, contact reporting and mixed assembly as explicit later sea
 Source imports, root native builds, normal CLI execution/rendering, the first
 neutral mechanics ownership split and all current regression gates are complete.
 This is a staged restructuring checkpoint, not complete FEA/MBD independence.
-The next code change should follow `NEXT_SEAMS.md`: remove the generic visual
-model's FE implementation dependency before extracting participant/system services.
+The requested naming migration adds the N0/N1 API/fixture batch described below
+as the next proposed code work. The next dependency extraction still follows
+`NEXT_SEAMS.md`: remove the generic visual model's FE implementation dependency
+before extracting participant/system services. Its design can proceed in parallel
+with the API batch; keep their executable changes separately reviewed.
 Do not reopen completed imports or rerun the 11-hour physical trajectory merely
 to resume this migration. `OPERATING.md` records tested operator entry points.
 
@@ -105,3 +110,24 @@ MP4 remains byte-identical after the extraction. The final product/example suite
 passed 24 test targets. The selected Robodyna logo is in `assets/brand/`.
 The next architecture seams remain in `NEXT_SEAMS.md`; demo qualification did not
 complete standalone FEA/MBD dependency separation.
+
+## Proposed Robodyna API naming migration
+
+The requested Chrono API rename has been probed against repository baseline
+`26ef28a9d68adf9d170a78ef1e796bff4ef09d30`. No implementation names have changed.
+See [CHRONO_RENAME_PLAN.md](CHRONO_RENAME_PLAN.md) for module ownership, compatibility
+risks, implementation milestones and tests; [CHRONO_RENAME_SCOPE.json](CHRONO_RENAME_SCOPE.json)
+records the lexical inventory and its limitations.
+
+The proposed next batch is a bounded public API and compatibility-fixture layer:
+`robodyna::mbd::RbBody`, `robodyna::fea::RbMesh` and
+`robodyna::simulation::RbSystemNSC`, plus the supporting types needed by small
+working examples. Stable archive identities precede real registered-class renames.
+The already extracted inertia family is the proposed first real implementation
+rename; the visual/system-service seams still gate independent FEA/MBD ownership.
+
+OpenRadioss remains an optional external reference solver, not a required product
+runtime. Production C++/CUDA ports and their notices remain; verification-only
+Fortran fixtures require a separately reviewed relocation if moved out of tree.
+The user has explicitly deferred that removal work. Keep it outside the naming
+migration; no source, fixture or notice removal is part of the next API batch.

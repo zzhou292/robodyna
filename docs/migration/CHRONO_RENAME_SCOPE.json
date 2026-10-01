@@ -1,0 +1,495 @@
+{
+  "kind": "robodyna.chrono_rename_scope.v1",
+  "baseline_commit": "26ef28a9d68adf9d170a78ef1e796bff4ef09d30",
+  "method": {
+    "selection": "Git-tracked files only; imported src/compatibility/chrono/src; code/interface suffixes listed below; external consumers separately scoped to native source, tests, examples, apps and build_defs.",
+    "suffixes": [
+      ".cc",
+      ".cpp",
+      ".cs",
+      ".cu",
+      ".cuh",
+      ".cxx",
+      ".fbs",
+      ".h",
+      ".hpp",
+      ".hxx",
+      ".i",
+      ".inl",
+      ".py"
+    ],
+    "excluded_imported_prefixes": [
+      "chrono_thirdparty/",
+      "chrono/collision/bullet/",
+      "chrono/collision/gimpact/"
+    ],
+    "token_pattern": "\\bCh[A-Z][A-Za-z0-9_]*\\b",
+    "count_interpretation": "Lexical counts include comments and string literals. Ch class/struct names include forward declarations, are unique by unqualified spelling, and are not a semantic public API census. Template instantiations, full signatures, generated outputs and transitive compilation impact are not counted. Macro counts include definitions and examples. No code generation or build performed."
+  },
+  "imported_totals": {
+    "scanned_files": 3767,
+    "files_with_Ch_tokens": 3596,
+    "Ch_token_occurrences": 123955,
+    "headers": 1571,
+    "Ch_prefixed_filenames": 1883,
+    "translation_units": 1875
+  },
+  "unique_Ch_token_spellings": 1925,
+  "unique_class_struct_Ch_spellings": 1098,
+  "unique_production_class_struct_Ch_spellings": 1078,
+  "imported_by_module": {
+    "chrono/(root)": {
+      "scanned_files": 1,
+      "files_with_Ch_tokens": 1,
+      "Ch_token_occurrences": 4,
+      "translation_units": 0,
+      "headers": 1,
+      "Ch_prefixed_filenames": 1
+    },
+    "chrono/assets": {
+      "scanned_files": 52,
+      "files_with_Ch_tokens": 51,
+      "Ch_token_occurrences": 1643,
+      "translation_units": 25,
+      "headers": 27,
+      "Ch_prefixed_filenames": 52
+    },
+    "chrono/collision": {
+      "scanned_files": 68,
+      "files_with_Ch_tokens": 68,
+      "Ch_token_occurrences": 1738,
+      "translation_units": 34,
+      "headers": 34,
+      "Ch_prefixed_filenames": 68
+    },
+    "chrono/core": {
+      "scanned_files": 38,
+      "files_with_Ch_tokens": 36,
+      "Ch_token_occurrences": 2756,
+      "translation_units": 10,
+      "headers": 28,
+      "Ch_prefixed_filenames": 38
+    },
+    "chrono/fea": {
+      "scanned_files": 224,
+      "files_with_Ch_tokens": 224,
+      "Ch_token_occurrences": 15226,
+      "translation_units": 104,
+      "headers": 120,
+      "Ch_prefixed_filenames": 224
+    },
+    "chrono/functions": {
+      "scanned_files": 64,
+      "files_with_Ch_tokens": 64,
+      "Ch_token_occurrences": 1499,
+      "translation_units": 31,
+      "headers": 33,
+      "Ch_prefixed_filenames": 64
+    },
+    "chrono/geometry": {
+      "scanned_files": 58,
+      "files_with_Ch_tokens": 58,
+      "Ch_token_occurrences": 1916,
+      "translation_units": 28,
+      "headers": 30,
+      "Ch_prefixed_filenames": 58
+    },
+    "chrono/gpu": {
+      "scanned_files": 2,
+      "files_with_Ch_tokens": 1,
+      "Ch_token_occurrences": 1,
+      "translation_units": 0,
+      "headers": 2,
+      "Ch_prefixed_filenames": 2
+    },
+    "chrono/input_output": {
+      "scanned_files": 18,
+      "files_with_Ch_tokens": 18,
+      "Ch_token_occurrences": 885,
+      "translation_units": 9,
+      "headers": 9,
+      "Ch_prefixed_filenames": 18
+    },
+    "chrono/multicore_math": {
+      "scanned_files": 17,
+      "files_with_Ch_tokens": 11,
+      "Ch_token_occurrences": 331,
+      "translation_units": 5,
+      "headers": 12,
+      "Ch_prefixed_filenames": 0
+    },
+    "chrono/particlefactory": {
+      "scanned_files": 9,
+      "files_with_Ch_tokens": 9,
+      "Ch_token_occurrences": 406,
+      "translation_units": 0,
+      "headers": 9,
+      "Ch_prefixed_filenames": 9
+    },
+    "chrono/physics": {
+      "scanned_files": 206,
+      "files_with_Ch_tokens": 206,
+      "Ch_token_occurrences": 12172,
+      "translation_units": 100,
+      "headers": 106,
+      "Ch_prefixed_filenames": 206
+    },
+    "chrono/serialization": {
+      "scanned_files": 12,
+      "files_with_Ch_tokens": 12,
+      "Ch_token_occurrences": 863,
+      "translation_units": 6,
+      "headers": 6,
+      "Ch_prefixed_filenames": 12
+    },
+    "chrono/solver": {
+      "scanned_files": 77,
+      "files_with_Ch_tokens": 76,
+      "Ch_token_occurrences": 2065,
+      "translation_units": 38,
+      "headers": 39,
+      "Ch_prefixed_filenames": 76
+    },
+    "chrono/timestepper": {
+      "scanned_files": 15,
+      "files_with_Ch_tokens": 15,
+      "Ch_token_occurrences": 955,
+      "translation_units": 7,
+      "headers": 8,
+      "Ch_prefixed_filenames": 15
+    },
+    "chrono/utils": {
+      "scanned_files": 32,
+      "files_with_Ch_tokens": 31,
+      "Ch_token_occurrences": 1965,
+      "translation_units": 14,
+      "headers": 18,
+      "Ch_prefixed_filenames": 32
+    },
+    "chrono_cascade": {
+      "scanned_files": 12,
+      "files_with_Ch_tokens": 12,
+      "Ch_token_occurrences": 246,
+      "translation_units": 5,
+      "headers": 7,
+      "Ch_prefixed_filenames": 12
+    },
+    "chrono_dem": {
+      "scanned_files": 25,
+      "files_with_Ch_tokens": 22,
+      "Ch_token_occurrences": 761,
+      "translation_units": 6,
+      "headers": 18,
+      "Ch_prefixed_filenames": 24
+    },
+    "chrono_fmi": {
+      "scanned_files": 7,
+      "files_with_Ch_tokens": 7,
+      "Ch_token_occurrences": 527,
+      "translation_units": 1,
+      "headers": 6,
+      "Ch_prefixed_filenames": 7
+    },
+    "chrono_fsi": {
+      "scanned_files": 69,
+      "files_with_Ch_tokens": 61,
+      "Ch_token_occurrences": 1849,
+      "translation_units": 28,
+      "headers": 41,
+      "Ch_prefixed_filenames": 35
+    },
+    "chrono_irrlicht": {
+      "scanned_files": 19,
+      "files_with_Ch_tokens": 17,
+      "Ch_token_occurrences": 803,
+      "translation_units": 8,
+      "headers": 11,
+      "Ch_prefixed_filenames": 19
+    },
+    "chrono_modal": {
+      "scanned_files": 20,
+      "files_with_Ch_tokens": 20,
+      "Ch_token_occurrences": 1372,
+      "translation_units": 9,
+      "headers": 11,
+      "Ch_prefixed_filenames": 20
+    },
+    "chrono_models": {
+      "scanned_files": 821,
+      "files_with_Ch_tokens": 819,
+      "Ch_token_occurrences": 10435,
+      "translation_units": 406,
+      "headers": 415,
+      "Ch_prefixed_filenames": 34
+    },
+    "chrono_multicore": {
+      "scanned_files": 45,
+      "files_with_Ch_tokens": 45,
+      "Ch_token_occurrences": 1035,
+      "translation_units": 27,
+      "headers": 18,
+      "Ch_prefixed_filenames": 45
+    },
+    "chrono_mumps": {
+      "scanned_files": 5,
+      "files_with_Ch_tokens": 5,
+      "Ch_token_occurrences": 66,
+      "translation_units": 2,
+      "headers": 3,
+      "Ch_prefixed_filenames": 5
+    },
+    "chrono_pardisomkl": {
+      "scanned_files": 3,
+      "files_with_Ch_tokens": 3,
+      "Ch_token_occurrences": 42,
+      "translation_units": 1,
+      "headers": 2,
+      "Ch_prefixed_filenames": 3
+    },
+    "chrono_parsers": {
+      "scanned_files": 28,
+      "files_with_Ch_tokens": 28,
+      "Ch_token_occurrences": 1688,
+      "translation_units": 14,
+      "headers": 14,
+      "Ch_prefixed_filenames": 27
+    },
+    "chrono_peridynamics": {
+      "scanned_files": 17,
+      "files_with_Ch_tokens": 17,
+      "Ch_token_occurrences": 760,
+      "translation_units": 8,
+      "headers": 9,
+      "Ch_prefixed_filenames": 17
+    },
+    "chrono_postprocess": {
+      "scanned_files": 7,
+      "files_with_Ch_tokens": 7,
+      "Ch_token_occurrences": 382,
+      "translation_units": 2,
+      "headers": 5,
+      "Ch_prefixed_filenames": 7
+    },
+    "chrono_precice": {
+      "scanned_files": 8,
+      "files_with_Ch_tokens": 8,
+      "Ch_token_occurrences": 324,
+      "translation_units": 4,
+      "headers": 4,
+      "Ch_prefixed_filenames": 7
+    },
+    "chrono_ros": {
+      "scanned_files": 68,
+      "files_with_Ch_tokens": 61,
+      "Ch_token_occurrences": 856,
+      "translation_units": 31,
+      "headers": 37,
+      "Ch_prefixed_filenames": 63
+    },
+    "chrono_sensor": {
+      "scanned_files": 218,
+      "files_with_Ch_tokens": 171,
+      "Ch_token_occurrences": 4375,
+      "translation_units": 94,
+      "headers": 124,
+      "Ch_prefixed_filenames": 158
+    },
+    "chrono_swig": {
+      "scanned_files": 169,
+      "files_with_Ch_tokens": 166,
+      "Ch_token_occurrences": 4750,
+      "translation_units": 0,
+      "headers": 1,
+      "Ch_prefixed_filenames": 155
+    },
+    "chrono_synchrono": {
+      "scanned_files": 79,
+      "files_with_Ch_tokens": 30,
+      "Ch_token_occurrences": 317,
+      "translation_units": 34,
+      "headers": 37,
+      "Ch_prefixed_filenames": 0
+    },
+    "chrono_vehicle": {
+      "scanned_files": 558,
+      "files_with_Ch_tokens": 549,
+      "Ch_token_occurrences": 17311,
+      "translation_units": 278,
+      "headers": 280,
+      "Ch_prefixed_filenames": 357
+    },
+    "chrono_vsg": {
+      "scanned_files": 25,
+      "files_with_Ch_tokens": 17,
+      "Ch_token_occurrences": 804,
+      "translation_units": 8,
+      "headers": 17,
+      "Ch_prefixed_filenames": 13
+    },
+    "demos": {
+      "scanned_files": 489,
+      "files_with_Ch_tokens": 472,
+      "Ch_token_occurrences": 22817,
+      "translation_units": 331,
+      "headers": 26,
+      "Ch_prefixed_filenames": 0
+    },
+    "importer_blender": {
+      "scanned_files": 2,
+      "files_with_Ch_tokens": 0,
+      "Ch_token_occurrences": 0,
+      "translation_units": 0,
+      "headers": 0,
+      "Ch_prefixed_filenames": 0
+    },
+    "tests": {
+      "scanned_files": 180,
+      "files_with_Ch_tokens": 178,
+      "Ch_token_occurrences": 8010,
+      "translation_units": 167,
+      "headers": 3,
+      "Ch_prefixed_filenames": 0
+    }
+  },
+  "external_consumers": {
+    "native_product_and_build": {
+      "scanned_files": 78,
+      "files_with_Ch_tokens": 26,
+      "Ch_token_occurrences": 538,
+      "translation_units": 28,
+      "headers": 8,
+      "Ch_prefixed_filenames": 0
+    },
+    "application": {
+      "scanned_files": 2263,
+      "files_with_Ch_tokens": 124,
+      "Ch_token_occurrences": 489,
+      "translation_units": 1362,
+      "headers": 725,
+      "Ch_prefixed_filenames": 1
+    },
+    "TL-FEA": {
+      "scanned_files": 4349,
+      "files_with_Ch_tokens": 13,
+      "Ch_token_occurrences": 29,
+      "translation_units": 2012,
+      "headers": 1995,
+      "Ch_prefixed_filenames": 6
+    }
+  },
+  "selected_type_references": {
+    "ChBody": {
+      "files": 710,
+      "occurrences": 2686,
+      "occurrences_by_module": {
+        "application": 15,
+        "chrono/collision": 12,
+        "chrono/core": 7,
+        "chrono/fea": 37,
+        "chrono/input_output": 15,
+        "chrono/particlefactory": 34,
+        "chrono/physics": 423,
+        "chrono/serialization": 2,
+        "chrono/utils": 69,
+        "chrono_dem": 1,
+        "chrono_fsi": 48,
+        "chrono_irrlicht": 2,
+        "chrono_modal": 23,
+        "chrono_models": 83,
+        "chrono_multicore": 70,
+        "chrono_parsers": 6,
+        "chrono_peridynamics": 1,
+        "chrono_postprocess": 2,
+        "chrono_ros": 16,
+        "chrono_sensor": 113,
+        "chrono_swig": 82,
+        "chrono_synchrono": 7,
+        "chrono_vehicle": 674,
+        "chrono_vsg": 11,
+        "demos": 718,
+        "native_product_and_build": 30,
+        "tests": 185
+      }
+    },
+    "ChMesh": {
+      "files": 157,
+      "occurrences": 539,
+      "occurrences_by_module": {
+        "application": 6,
+        "chrono/assets": 4,
+        "chrono/collision": 1,
+        "chrono/fea": 138,
+        "chrono/physics": 24,
+        "chrono_fsi": 15,
+        "chrono_modal": 18,
+        "chrono_parsers": 11,
+        "chrono_postprocess": 2,
+        "chrono_precice": 4,
+        "chrono_swig": 14,
+        "chrono_vehicle": 24,
+        "chrono_vsg": 5,
+        "demos": 159,
+        "native_product_and_build": 2,
+        "tests": 112
+      }
+    },
+    "ChSystemNSC": {
+      "files": 301,
+      "occurrences": 648,
+      "occurrences_by_module": {
+        "application": 7,
+        "chrono/physics": 24,
+        "chrono_models": 3,
+        "chrono_parsers": 9,
+        "chrono_sensor": 1,
+        "chrono_swig": 6,
+        "chrono_vehicle": 8,
+        "demos": 377,
+        "native_product_and_build": 8,
+        "tests": 205
+      }
+    },
+    "ChBodyFrame": {
+      "files": 54,
+      "occurrences": 224,
+      "occurrences_by_module": {
+        "chrono/core": 4,
+        "chrono/fea": 41,
+        "chrono/physics": 135,
+        "chrono_models": 4,
+        "chrono_swig": 25,
+        "chrono_vehicle": 8,
+        "demos": 5,
+        "native_product_and_build": 2
+      }
+    },
+    "ChAssembly": {
+      "files": 48,
+      "occurrences": 254,
+      "occurrences_by_module": {
+        "chrono/collision": 3,
+        "chrono/fea": 2,
+        "chrono/input_output": 13,
+        "chrono/physics": 124,
+        "chrono_fmi": 6,
+        "chrono_irrlicht": 6,
+        "chrono_modal": 62,
+        "chrono_parsers": 1,
+        "chrono_precice": 1,
+        "chrono_swig": 9,
+        "chrono_vehicle": 4,
+        "chrono_vsg": 11,
+        "demos": 6,
+        "native_product_and_build": 1,
+        "tests": 5
+      }
+    }
+  },
+  "factory_and_version_macro_text_matches": {
+    "CLASS_VERSION": 196,
+    "FACTORY_REGISTER": 282,
+    "FACTORY_REGISTER_CUSTOMNAME": 1,
+    "UPCASTING": 81,
+    "UPCASTING_SANITIZED": 4
+  }
+}
