@@ -1,5 +1,7 @@
 # Robodyna
 
+<p align="center"><img src="assets/brand/robodyna-logo-primary.png" alt="Robodyna" width="680"></p>
+
 Robodyna is being consolidated into one source-owned CUDA multiphysics repository
 with Bazel as the product build. It absorbs the qualified TL structural solver,
 application and all inherited Chrono capabilities. FEA and multibody dynamics are being separated into sibling modules with shared
@@ -24,6 +26,20 @@ recorded output. See [the evidence](docs/migration/QUALIFICATION.json) for the
 exact scope; full domain independence and optional-module coverage remain work
 in progress. [Operating the product](docs/migration/OPERATING.md) gives the build,
 run, inspect and render commands; [build notes](build_defs/README.md) describe SDKs.
+
+## Retained simulation demonstrations
+
+The original Chrono examples run through this repository's Bazel build. The
+spring, rigid-body collision and SCM soil cases each completed six seconds;
+headless and rendered dynamics measurements matched exactly. Their videos passed
+full decoding. These examples use CPU dynamics and Vulkan GPU rendering.
+
+| Spring–mass dynamics | Rigid-body contact | SCM wheel and soil |
+| --- | --- | --- |
+| ![Spring example](docs/verification/images/spring.png) | ![NSC collision example](docs/verification/images/collision-nsc.png) | ![SCM terrain example](docs/verification/images/scm.png) |
+
+See [qualification and commands](docs/verification/CHRONO_DEMOS.md) for source
+provenance, timestep choices, measured behavior and reproducible entry points.
 
 ## Source and data policy
 

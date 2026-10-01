@@ -1,0 +1,14 @@
+{
+  "asset": "robodyna-logo-primary.png",
+  "generator": "built-in image_gen",
+  "background": "opaque white",
+  "dimensions": [
+    1983,
+    793
+  ],
+  "mode": "RGB",
+  "bytes": 743422,
+  "sha256": "c35dfbc9e0a6f98ee6b0c0e0e69fda11999cad46a756e32c7f21e8a10d611e53",
+  "post_generation_pixel_edits": false,
+  "prompt_file": "logo-prompt.txt"
+}
