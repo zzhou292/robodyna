@@ -1,7 +1,31 @@
 
 #include "chrono/serialization/ChArchive.h"
 
+#include <stdexcept>
+
 namespace chrono {
+
+ChArchive::VersionNameScope::VersionNameScope(ChArchive& archive, std::type_index type, const char* name)
+    : owner(archive), previous_type(archive.version_name_type) {
+    if (!name || !*name)
+        throw std::invalid_argument("An explicit archive version identity must not be empty");
+    // Allocate before mutating the owner; all subsequent swaps are nonthrowing.
+    std::string explicit_name(name);
+    previous_name.swap(owner.version_name_override);
+    explicit_name.swap(owner.version_name_override);
+    owner.version_name_type = type;
+}
+
+ChArchive::VersionNameScope::~VersionNameScope() noexcept {
+    previous_name.swap(owner.version_name_override);
+    owner.version_name_type = previous_type;
+}
+
+std::string ChArchive::VersionClassName(std::type_index type) const {
+    if (!version_name_override.empty() && version_name_type == type)
+        return version_name_override;
+    return ChClassFactory::IsClassRegistered(type) ? ChClassFactory::GetClassTagName(type) : std::string(type.name());
+}
 
 ChArchive::ChArchive() {
     use_versions = true;
@@ -33,8 +57,7 @@ void ChArchiveOut::PutPointer(void* object, bool& already_stored, size_t& obj_ID
 
 void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {
     if (use_versions) {
-        std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)
-                                                                            : std::string(mtypeid.name());
+        std::string class_name = this->VersionClassName(mtypeid);
         // avoid issues with XML format
         std::replace(class_name.begin(), class_name.end(), '<', '_');
         std::replace(class_name.begin(), class_name.end(), '>', '_');
@@ -54,8 +77,7 @@ ChArchiveIn::ChArchiveIn() : can_tolerate_missing_tokens(false) {
 
 int ChArchiveIn::in_version(const std::type_index mtypeid) {
     int mver;
-    std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)
-                                                                        : std::string(mtypeid.name());
+    std::string class_name = this->VersionClassName(mtypeid);
     // avoid issues with XML format
     std::replace(class_name.begin(), class_name.end(), '<', '_');
     std::replace(class_name.begin(), class_name.end(), '>', '_');

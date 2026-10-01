@@ -60,6 +60,29 @@ changes to equations inside mass renames.
 
 ## What the source establishes
 
+The subsequent API migration has also qualified these generic owners:
+
+| Target | Existing implementation ownership |
+| --- | --- |
+| `//src/geometry:base` | AABB and base geometry |
+| `//src/visualization/material:values` | Color, texture and visual material |
+| `//src/visualization/model:model` | Camera, visual shape and visual model |
+| `//src/mechanics/object:object` | Generic object identity and visualization attachment |
+
+They own nine additional original translation units. Their actual header/link/
+compile closure passes with FEA enabled and without concrete FE or rigid-body
+implementations. FE attachment and update definitions live in one explicit adapter
+under `src/fea/visualization`, still compiled by the transitional combined backend.
+The total is the original 482 units plus that adapter; none of the original
+implementations is compiled twice. This completes the visual dependency split,
+while mesh/system services, contact reporting and mixed assembly still require work.
+
+The inertia definitions have moved to `robodyna::mechanics`; the initial body,
+mesh and system public names remain aliases. `SOURCE_TRANSFORMATIONS.json` in the
+migration directory records reviewed edits against the immutable original hashes.
+Archive identity helpers preserve captured file formats across actual type renames;
+this is distinct from preserving old binary ABI. See `RENAME_QUALIFICATION.json`.
+
 | Current source | Observation | Consequence |
 | --- | --- | --- |
 | `chrono/physics/ChBody.h:52` | A body derives physics-item, moving-frame, contactable and loadable interfaces | Concrete body state belongs to MBD; supporting interfaces can be shared |

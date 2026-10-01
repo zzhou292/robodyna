@@ -1,0 +1,9 @@
+load("//build_defs/chrono:visual.bzl", "visual_library")
+
+package(default_visibility = ["//visibility:public"])
+
+visual_library(
+    name = "base",
+    component = "geometry",
+    deps = ["//src/core:foundation"],
+)

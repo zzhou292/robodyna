@@ -797,6 +797,25 @@ class ChApi ChArchive {
 
     bool use_versions;
 
+    // Transient per-call wire name. Owned values avoid borrowed stack pointers
+    // in archive copies. Neither field is part of the serialized representation.
+    std::string version_name_override;
+    std::type_index version_name_type = std::type_index(typeid(void));
+
+    struct ChApi VersionNameScope {
+        VersionNameScope(ChArchive& archive, std::type_index type, const char* name);
+        ~VersionNameScope() noexcept;
+        VersionNameScope(const VersionNameScope&) = delete;
+        VersionNameScope& operator=(const VersionNameScope&) = delete;
+
+      private:
+        ChArchive& owner;
+        std::string previous_name;
+        std::type_index previous_type;
+    };
+
+    std::string VersionClassName(std::type_index type) const;
+
   public:
     ChArchive();
 
@@ -1120,6 +1139,17 @@ class ChApi ChArchiveOut : public ChArchive {
         }
     }
 
+    /// Preserve a captured version identity for a renamed, unregistered type.
+    /// Registered types normally use their canonical factory tag instead.
+    /// Version policy and format-specific virtual hooks are unchanged.
+    template <class T>
+    void VersionWrite(const char* archive_type_name) {
+        if (!use_versions)
+            return;
+        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);
+        this->VersionWrite<T>();
+    }
+
   protected:
     virtual void out_version(int mver, const std::type_index mtypeid);
 };
@@ -1441,6 +1471,16 @@ class ChApi ChArchiveIn : public ChArchive {
             return this->in_version(typeid(T));
         }
         return iv;
+    }
+
+    /// Read the same captured identity used by the named VersionWrite overload.
+    /// The existing clustering, disabled-version and virtual-hook policy applies.
+    template <class T>
+    int VersionRead(const char* archive_type_name) {
+        if (!use_versions)
+            return 99999;
+        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);
+        return this->VersionRead<T>();
     }
 
   protected:

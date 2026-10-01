@@ -94,6 +94,11 @@ class NativeSourceInventory(unittest.TestCase):
         relocations = read_manifest(NEUTRAL)["NEUTRAL_SOURCE_RELOCATIONS"]
         current = {"@workspace/" + relocations[path].removeprefix("//").replace(":", "/")
                    if path in relocations else path for path in paths}
+        additions = read_manifest(VISUAL)["VISUAL_ADAPTER_SOURCES"]
+        added_paths = {"@workspace/" + label.removeprefix("//").replace(":", "/") for label in additions}
+        self.assertEqual(len(additions), len(added_paths), "An adapter is compiled more than once")
+        self.assertFalse(current & added_paths, "Added adapter duplicates a retained source")
+        current.update(added_paths)
         self.assertEqual(current, selected_cmake_sources(contents.decode()))
 
 
@@ -102,4 +107,5 @@ if __name__ == "__main__":
     CMAKE = Path(sys.argv.pop(1))
     TRANSFORMATIONS = Path(sys.argv.pop(1))
     NEUTRAL = Path(sys.argv.pop(1))
+    VISUAL = Path(sys.argv.pop(1))
     unittest.main()

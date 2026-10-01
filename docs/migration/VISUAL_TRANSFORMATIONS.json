@@ -1,0 +1,103 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "baseline": "d68b9805ef",
+  "scope": "N4 visual seam only; CMake recipe composes after the stage1 inertia recipe, not instead of it.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.h",
+      "original_sha256": "d4b408552aec68768348fb4cc99a8389cb92590fd09adf47d9a89a2c7244f409",
+      "replacements": [
+        {
+          "before": "#ifdef CHRONO_FEA\n    #include \"chrono/assets/ChVisualShapeFEA.h\"\n#endif\n\nnamespace chrono {",
+          "after": "\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "// Forward declaration\nclass ChObj;",
+          "after": "// Forward declaration\nclass ChObj;\n#ifdef CHRONO_FEA\nclass ChVisualShapeFEA;\n#endif",
+          "count": 1
+        },
+        {
+          "before": "    std::vector<std::shared_ptr<ChVisualShapeFEA>> m_shapesFEA;\n#endif",
+          "after": "    std::vector<std::shared_ptr<ChVisualShapeFEA>> m_shapesFEA;\n\n    // Installed by the FE attachment adapter; copied with the shared FE shapes.\n    // Generic models stay independent of the concrete FE visualization code.\n    using FeaUpdater = void (*)(ChVisualModel&, ChObj*);\n    static void UpdateFEAShapes(ChVisualModel& model, ChObj* owner);\n    FeaUpdater m_fea_updater = nullptr;\n#endif",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+      "original_sha256": "59d9213f8faa44dbd9a28f79b0d7758172fb81986c8cbca82e7327d2ec60bc4f",
+      "replacements": [
+        {
+          "before": "#include \"chrono/assets/ChVisualModel.h\"\n#include \"chrono/physics/ChObject.h\"",
+          "after": "#include \"chrono/assets/ChVisualModel.h\"",
+          "count": 1
+        },
+        {
+          "before": "#ifdef CHRONO_FEA\nvoid ChVisualModel::AddShapeFEA(std::shared_ptr<ChVisualShapeFEA> shapeFEA) {\n    m_shapesFEA.push_back(shapeFEA);\n    m_shapes.push_back({shapeFEA->m_trimesh_shape, ChFramed(), false});\n    m_shapes.push_back({shapeFEA->m_glyphs_shape, ChFramed(), false});\n}\n#endif\n\nvoid ChVisualModel::EnableWireframe",
+          "after": "void ChVisualModel::EnableWireframe",
+          "count": 1
+        },
+        {
+          "before": "    m_shapesFEA.clear();\n#endif",
+          "after": "    m_shapesFEA.clear();\n    m_fea_updater = nullptr;\n#endif",
+          "count": 1
+        },
+        {
+          "before": "#ifdef CHRONO_FEA\n    for (auto& shapeFEA : m_shapesFEA) {\n        shapeFEA->Update(owner, ChFrame<>());\n    }\n#endif",
+          "after": "#ifdef CHRONO_FEA\n    if (m_fea_updater)\n        m_fea_updater(*this, owner);\n#endif",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChObject.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChObject.cpp",
+      "original_sha256": "4f3b80f1db365549230576ef5a1c0eb15ac7e22ae02624ea87c40463b52123fd",
+      "replacements": [
+        {
+          "before": "#ifdef CHRONO_FEA\nvoid ChObj::AddVisualShapeFEA(std::shared_ptr<ChVisualShapeFEA> shape) {\n    shape->obj = this;\n    if (!vis_model_instance) {\n        auto model = chrono_types::make_shared<ChVisualModel>();\n        AddVisualModel(model);\n    }\n    vis_model_instance->GetModel()->AddShapeFEA(shape);\n}\n\nstd::shared_ptr<ChVisualShapeFEA> ChObj::GetVisualShapeFEA",
+          "after": "#ifdef CHRONO_FEA\nstd::shared_ptr<ChVisualShapeFEA> ChObj::GetVisualShapeFEA",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShape.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShape.cpp",
+      "original_sha256": "06d8911f72903bf55af6ce225e0440b142148cebaf3a0bf10ba967588b2d3701",
+      "replacements": [
+        {
+          "before": "#include \"chrono/assets/ChVisualShape.h\"\n#include \"chrono/physics/ChPhysicsItem.h\"",
+          "after": "#include \"chrono/assets/ChVisualShape.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "original_sha256": "c52879284f8654a120771b92208d444be40c4fbb033dcecb44126c2121caa027",
+      "replacements": [
+        {
+          "before": "        assets/ChVisualShapeFEA.cpp\n    )",
+          "after": "        assets/ChVisualShapeFEA.cpp\n        \"${ROBODYNA_SOURCE_ROOT}/src/fea/visualization/LegacyVisualAdapter.cpp\"\n    )",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "added_sources": [
+    {
+      "path": "src/fea/visualization/LegacyVisualAdapter.cpp",
+      "sha256": "677de34d493f3e725e16e54305afcb71dfb3b98abd8053dd5ce765f45b52a86c",
+      "origins": [
+        "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+        "src/compatibility/chrono/src/chrono/physics/ChObject.cpp"
+      ],
+      "description": "Extracted FE attachment methods and nonvirtual FE updater; compiled by existing aggregate."
+    }
+  ]
+}

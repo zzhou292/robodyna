@@ -64,15 +64,6 @@ std::shared_ptr<ChVisualShape> ChObj::GetVisualShape(unsigned int i) const {
 }
 
 #ifdef CHRONO_FEA
-void ChObj::AddVisualShapeFEA(std::shared_ptr<ChVisualShapeFEA> shape) {
-    shape->obj = this;
-    if (!vis_model_instance) {
-        auto model = chrono_types::make_shared<ChVisualModel>();
-        AddVisualModel(model);
-    }
-    vis_model_instance->GetModel()->AddShapeFEA(shape);
-}
-
 std::shared_ptr<ChVisualShapeFEA> ChObj::GetVisualShapeFEA(unsigned int i) const {
     if (!vis_model_instance)
         return nullptr;

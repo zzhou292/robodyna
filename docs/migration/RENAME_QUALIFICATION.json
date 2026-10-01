@@ -5,9 +5,11 @@
   "checkpoints": {
     "N0": "passed initial naming map and frozen archive fixtures",
     "N1": "passed initial public alias surface and two executed examples",
-    "N3": "passed actual inertia implementation move; one compile owner, preserved arithmetic/source notices"
+    "N3": "passed actual inertia implementation move; one compile owner, preserved arithmetic/source notices",
+    "N2": "passed actual old archives, genuinely renamed-type fixtures and explicit version-policy tests",
+    "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending"
   },
-  "test_targets_passed": 19,
+  "test_targets_passed": 24,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -33,6 +35,30 @@
       "exit_code": 0,
       "elapsed_seconds": 5.321,
       "peak_sampled_rss_bytes": 1690169344
+    },
+    "robodyna-rename-archive-visual-native-2": {
+      "path": "crash-work/reports/robodyna-rename-archive-visual-native-2.json",
+      "sha256": "b0cf745f252845655e0679e1a8a474a713cb874ba8045da63acbde2d3dafcb37",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 246.461,
+      "peak_sampled_rss_bytes": 4858605568
+    },
+    "robodyna-rename-archive-visual-cmake-1": {
+      "path": "crash-work/reports/robodyna-rename-archive-visual-cmake-1.json",
+      "sha256": "0d99dec11b386efa9d68da5e7f9c077c1186293b12686db8968396b67dc6f4ae",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 7.713,
+      "peak_sampled_rss_bytes": 1409441792
+    },
+    "robodyna-body-baseline-run-1": {
+      "path": "crash-work/reports/robodyna-body-baseline-run-1.json",
+      "sha256": "2078e258a154cfabcfa602a2cbe0bc9bc4e28a2f12576ea80fb66c88300b2878",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 0.032,
+      "peak_sampled_rss_bytes": 0
     }
   },
   "limits": {
@@ -41,7 +67,8 @@
     "build_rss_gib": 16,
     "example_affinity_cpus": 2,
     "example_rss_gib": 4,
-    "gpu_used": false
+    "gpu_used": false,
+    "scheduling": "Native Bazel phases use jobs=4; retained CMake phases run separately with Bazel jobs=1 and CMake parallel=4."
   },
   "claim_boundary": [
     "No independent full FEA/MBD build yet",
@@ -50,5 +77,10 @@
     "Populated glyph-property archive limitation recorded separately",
     "Product Yaris integration test remains required after the next integrated source changes"
   ],
-  "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text."
+  "licensing": "Original Chrono copyrights/authors retained; relocated header and retained CMake SDK reference/install exact copied BSD text.",
+  "abi": "ChArchive and ChVisualModel gain transient members; rebuild all native consumers and bindings together. Archived bytes are preserved, old binary ABI is not promised.",
+  "interrupted_attempt": {
+    "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
+    "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
+  }
 }

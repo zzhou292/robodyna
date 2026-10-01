@@ -1,4 +1,5 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -10,3 +11,25 @@ cc_binary(
     deps = ["//src/core:foundation"],
     tags = ["manual", "cpu-only", "serialization-compatibility"],
 )
+
+cc_test(
+    name = "renamed_probe_test",
+    srcs = ["RenamedTypes.h", "RenamedTypes.cpp", "RenamedProbeTest.cpp"],
+    args = ["$(location fixtures/baseline.json)"],
+    data = ["fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    deps = ["//src/core:foundation", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+py_test(
+    name = "fixture_integrity_test",
+    srcs = ["//tests/serialization_compat:FixtureIntegrityTest.py"],
+    main = "//tests/serialization_compat:FixtureIntegrityTest.py",
+    args = ["$(location fixtures/manifest.json)"],
+    data = ["fixtures/manifest.json", "fixtures/producer.json", "fixtures/baseline.json", "fixtures/baseline.xml", "fixtures/baseline.bin"],
+    size = "small",
+    tags = ["manual", "cpu-only", "serialization-compatibility"],
+)
+
+test_suite(name = "renamed_tests", tests = [":renamed_probe_test", ":fixture_integrity_test"])

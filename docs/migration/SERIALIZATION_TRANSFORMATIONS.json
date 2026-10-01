@@ -1,0 +1,75 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "N2 opt-in stable archive, factory and casting identities; existing default paths and physics unchanged",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/core/ChClassFactory.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/core/ChClassFactory.h",
+      "original_sha256": "c97becce5efbda59ba250b2b233271e46993870bf3f22e543ae79d4a8e5d0971",
+      "canonical_sha256": "a743815e0e26efe703a1db1587595496977e16112e9ae2312c7bf6c859d6c76a",
+      "replacements": [
+        {
+          "before": "/// \\brief Initialization of pointer up-casting functions",
+          "after": "/// Register one canonical wire tag independently of the C++ type spelling.\n/// Use once in a .cpp. The unique identifier allows fully qualified type names;\n/// it is only a registration-variable name, not another serialization alias.\n#define CH_FACTORY_REGISTER_TAG(classname, archive_tag, uniquetag)                       \\\n    namespace class_factory {                                                            \\\n    static ::chrono::ChClassRegistration<classname> uniquetag##_factory_registration(archive_tag); \\\n    }\n\n/// \\brief Initialization of pointer up-casting functions",
+          "count": 1
+        },
+        {
+          "before": "// Class version registration",
+          "after": "/// Preserve source/destination wire identities when their C++ types are renamed.\n/// Use once per conversion in a .cpp; both tags must match the canonical graph.\n#define CH_UPCASTING_TAGGED(FROM, TO, FROM_TAG, TO_TAG, UNIQUETAG)                                      \\\n    namespace class_factory {                                                                         \\\n    static ::chrono::ChCastingMap convfun_from_##UNIQUETAG(                                             \\\n        std::string(FROM_TAG), std::type_index(typeid(FROM*)),                                          \\\n        std::string(TO_TAG), std::type_index(typeid(TO*)),                                              \\\n        [](void* vptr) { return static_cast<void*>(static_cast<TO*>(reinterpret_cast<FROM*>(vptr))); }, \\\n        [](std::shared_ptr<void> vptr) {                                                               \\\n            return std::static_pointer_cast<void>(std::static_pointer_cast<TO>(std::static_pointer_cast<FROM>(vptr))); \\\n        });                                                                                           \\\n    }\n\n// Class version registration",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.h",
+      "original_sha256": "c40f7ef7fee3ef92e4f0fd0de47558e47a1fe94c59e3245fdd7a41a6ba810073",
+      "canonical_sha256": "e59d152cb0f0d2fee0951ddfe70e9e72dd8bc850ed0735b616f3aae926eff928",
+      "replacements": [
+        {
+          "before": "    bool use_versions;\n",
+          "after": "    bool use_versions;\n\n    // Transient per-call wire name. Owned values avoid borrowed stack pointers\n    // in archive copies. Neither field is part of the serialized representation.\n    std::string version_name_override;\n    std::type_index version_name_type = std::type_index(typeid(void));\n\n    struct ChApi VersionNameScope {\n        VersionNameScope(ChArchive& archive, std::type_index type, const char* name);\n        ~VersionNameScope() noexcept;\n        VersionNameScope(const VersionNameScope&) = delete;\n        VersionNameScope& operator=(const VersionNameScope&) = delete;\n\n      private:\n        ChArchive& owner;\n        std::string previous_name;\n        std::type_index previous_type;\n    };\n\n    std::string VersionClassName(std::type_index type) const;\n",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    virtual void out_version(int mver, const std::type_index mtypeid);",
+          "after": "    /// Preserve a captured version identity for a renamed, unregistered type.\n    /// Registered types normally use their canonical factory tag instead.\n    /// Version policy and format-specific virtual hooks are unchanged.\n    template <class T>\n    void VersionWrite(const char* archive_type_name) {\n        if (!use_versions)\n            return;\n        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);\n        this->VersionWrite<T>();\n    }\n\n  protected:\n    virtual void out_version(int mver, const std::type_index mtypeid);",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    virtual int in_version(const std::type_index mtypeid);",
+          "after": "    /// Read the same captured identity used by the named VersionWrite overload.\n    /// The existing clustering, disabled-version and virtual-hook policy applies.\n    template <class T>\n    int VersionRead(const char* archive_type_name) {\n        if (!use_versions)\n            return 99999;\n        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);\n        return this->VersionRead<T>();\n    }\n\n  protected:\n    virtual int in_version(const std::type_index mtypeid);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "original_sha256": "c876d5716617abe50dfb53759b4f8dd970793621237e31df74c10a1cd0159d00",
+      "canonical_sha256": "bb304a50de2d70fa88f8d507909a7276bb0f14d7bbede3c06f4823d0ede378e9",
+      "replacements": [
+        {
+          "before": "#include \"chrono/serialization/ChArchive.h\"\n",
+          "after": "#include \"chrono/serialization/ChArchive.h\"\n\n#include <stdexcept>\n",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {\n\nChArchive::ChArchive()",
+          "after": "namespace chrono {\n\nChArchive::VersionNameScope::VersionNameScope(ChArchive& archive, std::type_index type, const char* name)\n    : owner(archive), previous_type(archive.version_name_type) {\n    if (!name || !*name)\n        throw std::invalid_argument(\"An explicit archive version identity must not be empty\");\n    // Allocate before mutating the owner; all subsequent swaps are nonthrowing.\n    std::string explicit_name(name);\n    previous_name.swap(owner.version_name_override);\n    explicit_name.swap(owner.version_name_override);\n    owner.version_name_type = type;\n}\n\nChArchive::VersionNameScope::~VersionNameScope() noexcept {\n    previous_name.swap(owner.version_name_override);\n    owner.version_name_type = previous_type;\n}\n\nstd::string ChArchive::VersionClassName(std::type_index type) const {\n    if (!version_name_override.empty() && version_name_type == type)\n        return version_name_override;\n    return ChClassFactory::IsClassRegistered(type) ? ChClassFactory::GetClassTagName(type) : std::string(type.name());\n}\n\nChArchive::ChArchive()",
+          "count": 1
+        },
+        {
+          "before": "void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {\n    if (use_versions) {\n        std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)\n                                                                            : std::string(mtypeid.name());\n        // avoid issues with XML format\n        std::replace(class_name.begin(), class_name.end(), '<', '_');\n        std::replace(class_name.begin(), class_name.end(), '>', '_');\n        std::replace(class_name.begin(), class_name.end(), ' ', '_');\n        // avoid issues with FMU variable naming format\n        std::replace(class_name.begin(), class_name.end(), ':', '_');\n        this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    }\n}",
+          "after": "void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {\n    if (use_versions) {\n        std::string class_name = this->VersionClassName(mtypeid);\n        // avoid issues with XML format\n        std::replace(class_name.begin(), class_name.end(), '<', '_');\n        std::replace(class_name.begin(), class_name.end(), '>', '_');\n        std::replace(class_name.begin(), class_name.end(), ' ', '_');\n        // avoid issues with FMU variable naming format\n        std::replace(class_name.begin(), class_name.end(), ':', '_');\n        this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    }\n}",
+          "count": 1
+        },
+        {
+          "before": "int ChArchiveIn::in_version(const std::type_index mtypeid) {\n    int mver;\n    std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)\n                                                                        : std::string(mtypeid.name());\n    // avoid issues with XML format\n    std::replace(class_name.begin(), class_name.end(), '<', '_');\n    std::replace(class_name.begin(), class_name.end(), '>', '_');\n    std::replace(class_name.begin(), class_name.end(), ' ', '_');\n    // avoid issues with FMU variable naming format\n    std::replace(class_name.begin(), class_name.end(), ':', '_');\n    this->in(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    return mver;\n}",
+          "after": "int ChArchiveIn::in_version(const std::type_index mtypeid) {\n    int mver;\n    std::string class_name = this->VersionClassName(mtypeid);\n    // avoid issues with XML format\n    std::replace(class_name.begin(), class_name.end(), '<', '_');\n    std::replace(class_name.begin(), class_name.end(), '>', '_');\n    std::replace(class_name.begin(), class_name.end(), ' ', '_');\n    // avoid issues with FMU variable naming format\n    std::replace(class_name.begin(), class_name.end(), ':', '_');\n    this->in(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    return mver;\n}",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

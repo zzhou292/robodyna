@@ -20,9 +20,6 @@
 #include "chrono/core/ChApiCE.h"
 #include "chrono/core/ChFrame.h"
 #include "chrono/assets/ChVisualShape.h"
-#ifdef CHRONO_FEA
-    #include "chrono/assets/ChVisualShapeFEA.h"
-#endif
 
 namespace chrono {
 
@@ -31,6 +28,9 @@ namespace chrono {
 
 // Forward declaration
 class ChObj;
+#ifdef CHRONO_FEA
+class ChVisualShapeFEA;
+#endif
 
 /// Definition of an instance of a visual shape in a visual model.
 struct ChApi ChVisualShapeInstance {
@@ -115,6 +115,12 @@ class ChApi ChVisualModel {
     std::vector<ChVisualShapeInstance> m_shapes;
 #ifdef CHRONO_FEA
     std::vector<std::shared_ptr<ChVisualShapeFEA>> m_shapesFEA;
+
+    // Installed by the FE attachment adapter; copied with the shared FE shapes.
+    // Generic models stay independent of the concrete FE visualization code.
+    using FeaUpdater = void (*)(ChVisualModel&, ChObj*);
+    static void UpdateFEAShapes(ChVisualModel& model, ChObj* owner);
+    FeaUpdater m_fea_updater = nullptr;
 #endif
 
     friend class ChVisualModelInstance;

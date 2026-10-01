@@ -13,7 +13,6 @@
 // =============================================================================
 
 #include "chrono/assets/ChVisualModel.h"
-#include "chrono/physics/ChObject.h"
 
 namespace chrono {
 CH_FACTORY_REGISTER(ChVisualModel)
@@ -21,14 +20,6 @@ CH_FACTORY_REGISTER(ChVisualModel)
 void ChVisualModel::AddShape(std::shared_ptr<ChVisualShape> shape, const ChFramed& frame, bool wireframe) {
     m_shapes.push_back({shape, frame, wireframe});
 }
-
-#ifdef CHRONO_FEA
-void ChVisualModel::AddShapeFEA(std::shared_ptr<ChVisualShapeFEA> shapeFEA) {
-    m_shapesFEA.push_back(shapeFEA);
-    m_shapes.push_back({shapeFEA->m_trimesh_shape, ChFramed(), false});
-    m_shapes.push_back({shapeFEA->m_glyphs_shape, ChFramed(), false});
-}
-#endif
 
 void ChVisualModel::EnableWireframe(bool val) {
     for (auto& shape : m_shapes)
@@ -39,6 +30,7 @@ void ChVisualModel::Clear() {
     m_shapes.clear();
 #ifdef CHRONO_FEA
     m_shapesFEA.clear();
+    m_fea_updater = nullptr;
 #endif
 }
 
@@ -55,9 +47,8 @@ void ChVisualModel::Update(ChObj* owner, const ChFrame<>& frame) {
         si.shape->Update(owner, xform);
     }
 #ifdef CHRONO_FEA
-    for (auto& shapeFEA : m_shapesFEA) {
-        shapeFEA->Update(owner, ChFrame<>());
-    }
+    if (m_fea_updater)
+        m_fea_updater(*this, owner);
 #endif
 }
 

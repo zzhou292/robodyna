@@ -759,6 +759,7 @@ set(Chrono_assets_HEADERS
 if(CH_ENABLE_MODULE_FEA)
     set(Chrono_assets_SOURCES ${Chrono_assets_SOURCES}
         assets/ChVisualShapeFEA.cpp
+        "${ROBODYNA_SOURCE_ROOT}/src/fea/visualization/LegacyVisualAdapter.cpp"
     )
     set(Chrono_assets_HEADERS ${Chrono_assets_HEADERS}
         assets/ChVisualShapeFEA.h

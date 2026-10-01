@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 import unittest
 
-from tools.migration.source_transform import index_entries, original_bytes
+from tools.migration.source_transform import index_entries, original_bytes, relative_file
 
 def assignments(path):
     return {
@@ -22,7 +22,8 @@ class NeutralOwnership(unittest.TestCase):
         owners = assignments(NEUTRAL)
         inventory = assignments(NATIVE)["NATIVE_SOURCE_GROUPS"]
         document = json.loads(MANIFEST.read_text())
-        transformations = index_entries(json.loads(TRANSFORMATIONS.read_text()))
+        transformation_document = json.loads(TRANSFORMATIONS.read_text())
+        transformations = index_entries(transformation_document)
         workspace = TRANSFORMATIONS.parent.parent.parent
         all_sources = [path for group in inventory.values() for path in group]
         extracted = [path for group in owners["NEUTRAL_SOURCES"].values() for path in group]
@@ -51,6 +52,11 @@ class NeutralOwnership(unittest.TestCase):
             self.assertEqual(label.removeprefix("//").replace(":", "/"), entry["canonical_path"])
         for entry in transformations.values():
             original_bytes(workspace, entry)
+        additions = transformation_document.get("added_sources", [])
+        self.assertEqual(len(additions), len({entry["path"] for entry in additions}))
+        for entry in additions:
+            self.assertEqual(hashlib.sha256(relative_file(workspace, entry["path"]).read_bytes()).hexdigest(),
+                             entry["sha256"], entry["path"])
 
 
 if __name__ == "__main__":

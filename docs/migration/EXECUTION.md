@@ -141,9 +141,22 @@ archive compatibility, and the actual canonical inertia implementation. All 19
 checkpoint test targets passed through native Bazel and the retained CMake bridge.
 See `RENAME_QUALIFICATION.json` for receipts, scope and resource usage.
 
-Next: implement explicit stable archive identities against the frozen fixtures;
-extract the generic visual-model dependency using the passed baseline tests;
-then migrate actual body/mesh/system definitions in bounded families. Their public
+Second naming checkpoint PASSED: stable archive identities preserve both actual
+pre-change object archives and a genuinely renamed test class with multiple
+inheritance. Generic objects and visualization now own nine additional original
+translation units without FE implementation dependencies, with FEA enabled. One
+explicit FE attachment adapter preserves the existing geometry/update behavior.
+All 21 native and three separate retained-CMake test targets passed.
+
+Run native Bazel and foreign CMake compilation in separate phases. Use Bazel
+`--jobs=4` for native builds; use `--jobs=1` when invoking the retained CMake bridge,
+whose own build remains at four compiler workers. This prevents nested worker
+pools from exceeding the total compiler allowance. The interrupted mixed attempt
+and its complete cleanup remain recorded in `RENAME_QUALIFICATION.json`.
+
+Next: qualify Python/C# parser compatibility, freeze the already executed body
+constructor/child-ownership archives, then migrate actual body/mesh/system definitions
+in bounded families. Their public
 aliases already work, but they are not yet independently owned domain libraries.
 The full product/short Yaris check remains an integrated checkpoint after those edits.
 

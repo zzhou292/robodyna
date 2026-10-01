@@ -7,6 +7,7 @@ not numerical algorithms, state ownership or the FEA/MBD coupling method.
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
 load(":neutral_sources.bzl", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS")
+load(":visual_sources.bzl", "VISUAL_ADAPTER_SOURCES", "VISUAL_SOURCES", "VISUAL_TARGETS")
 
 _VENDOR_GROUPS = [
     "collision_bullet",
@@ -62,7 +63,7 @@ def chrono_native_host(name):
     }
     core_sources = []
     vendor_sources = []
-    extracted = {path: True for paths in NEUTRAL_SOURCES.values() for path in paths}
+    extracted = {path: True for paths in NEUTRAL_SOURCES.values() + VISUAL_SOURCES.values() for path in paths}
     for group, paths in NATIVE_SOURCE_GROUPS.items():
         if group in _VENDOR_GROUPS:
             vendor_sources.extend(paths)
@@ -70,7 +71,7 @@ def chrono_native_host(name):
             core_sources.extend([path for path in paths if path not in extracted])
     cc_library(
         name = name + "_implementation",
-        srcs = core_sources,
+        srcs = core_sources + VISUAL_ADAPTER_SOURCES,
         # The inherited PCH installs Eigen plugins before any other headers.
         # Preserve that include order without inventing a Bazel PCH toolchain.
         copts = [
@@ -92,7 +93,7 @@ def chrono_native_host(name):
     )
     cc_library(
         name = name,
-        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"] + NEUTRAL_TARGETS.values(),
+        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"] + NEUTRAL_TARGETS.values() + VISUAL_TARGETS.values(),
         linkopts = ["-pthread"],
         target_compatible_with = ["@platforms//os:linux"],
         tags = _TAGS,

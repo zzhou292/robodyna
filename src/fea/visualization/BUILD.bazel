@@ -1,0 +1,4 @@
+# The FE implementation still resides in the transitional combined backend.
+# This small source has a distinct module home without claiming independent FE
+# linkage; the aggregate lists it explicitly as an added adapter translation unit.
+exports_files(["LegacyVisualAdapter.cpp"])

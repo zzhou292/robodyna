@@ -1,0 +1,306 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Reviewed inertia relocation, stable archive identities and generic visual ownership; original import hashes remain unchanged.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChMassProperties.h",
+      "original_sha256": "a4583fda0d8c20f05247f3077527ca30c075e600d869dc2f6d6be1965bfe32b9",
+      "canonical_path": "include/robodyna/mechanics/RbMassProperties.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Radu Serban\n",
+          "after": "// Authors: Radu Serban\n// Robodyna adaptation: canonical inertia ownership and names; numerical operations unchanged.\n",
+          "count": 1
+        },
+        {
+          "before": "ChInertiaUtils",
+          "after": "RbInertiaUtils",
+          "count": 1
+        },
+        {
+          "before": "CH_MASS_PROPERTIES_H",
+          "after": "ROBODYNA_MECHANICS_MASS_PROPERTIES_H",
+          "count": 2
+        },
+        {
+          "before": "ChMassProperties",
+          "after": "RbMassProperties",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mechanics {",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mechanics",
+          "count": 1
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33d",
+          "after": "chrono::ChMatrix33d",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33",
+          "after": "chrono::ChMatrix33",
+          "count": 20,
+          "code_token": true
+        },
+        {
+          "before": "ChFrame",
+          "after": "chrono::ChFrame",
+          "count": 1,
+          "code_token": true
+        }
+      ],
+      "forwarding_sha256": "ed23e4539a0059031de6cfed2a4d05e579834338f29d85f71fc646c621960693"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChMassProperties.cpp",
+      "original_sha256": "2550dee20a105115106e9ce0f050cbcdd0c1f77152942e86f6cb7687adc0acaf",
+      "canonical_path": "src/mechanics/inertia/RbMassProperties.cpp",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Radu Serban\n",
+          "after": "// Authors: Radu Serban\n// Robodyna adaptation: canonical inertia ownership and names; numerical operations unchanged.\n",
+          "count": 1
+        },
+        {
+          "before": "ChInertiaUtils",
+          "after": "RbInertiaUtils",
+          "count": 6
+        },
+        {
+          "before": "#include \"chrono/physics/ChMassProperties.h\"",
+          "after": "#include \"robodyna/mechanics/RbMassProperties.h\"",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::mechanics {\n\n// Private implementation aliases preserve the original arithmetic expressions.\nusing chrono::ChFrame;\nusing chrono::ChMatrix33;\nusing chrono::ChVector3d;\nusing chrono::ChVectorN;\nusing chrono::VNULL;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::mechanics",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "original_sha256": "44318aa845b384f90a98efd2ef4f3fc1735a43bbd1253317a4ea37aaa7bbceb9",
+      "replacements": [
+        {
+          "before": "set(Chrono_core_SOURCES",
+          "after": "include(\"${CMAKE_CURRENT_LIST_DIR}/../RobodynaSourcePaths.cmake\")\n\nset(Chrono_core_SOURCES",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChMassProperties.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/mechanics/inertia/RbMassProperties.cpp",
+          "count": 1
+        },
+        {
+          "before": "list(APPEND CH_INCLUDES_BUILD \"${CMAKE_SOURCE_DIR}/src\")",
+          "after": "list(APPEND CH_INCLUDES_BUILD \"${CMAKE_SOURCE_DIR}/src\")\nlist(APPEND CH_INCLUDES_BUILD \"${ROBODYNA_SOURCE_ROOT}/include\")",
+          "count": 1
+        },
+        {
+          "before": "target_link_libraries(Chrono_core PUBLIC Eigen3::Eigen)",
+          "after": "target_link_libraries(Chrono_core PUBLIC Eigen3::Eigen)\n\n# Install the canonical definition required by the legacy forwarding header.\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperties.h\"\n        DESTINATION include/robodyna/mechanics)",
+          "count": 1
+        },
+        {
+          "before": "        DESTINATION include/robodyna/mechanics)",
+          "after": "        DESTINATION include/robodyna/mechanics)\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt\"\n        DESTINATION LICENSES)",
+          "count": 1
+        },
+        {
+          "before": "        assets/ChVisualShapeFEA.cpp\n    )",
+          "after": "        assets/ChVisualShapeFEA.cpp\n        \"${ROBODYNA_SOURCE_ROOT}/src/fea/visualization/LegacyVisualAdapter.cpp\"\n    )",
+          "count": 1
+        }
+      ],
+      "subsequent_stages": [
+        {
+          "name": "visual ownership",
+          "input_sha256": "c52879284f8654a120771b92208d444be40c4fbb033dcecb44126c2121caa027"
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/core/ChClassFactory.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/core/ChClassFactory.h",
+      "original_sha256": "c97becce5efbda59ba250b2b233271e46993870bf3f22e543ae79d4a8e5d0971",
+      "canonical_sha256": "a743815e0e26efe703a1db1587595496977e16112e9ae2312c7bf6c859d6c76a",
+      "replacements": [
+        {
+          "before": "/// \\brief Initialization of pointer up-casting functions",
+          "after": "/// Register one canonical wire tag independently of the C++ type spelling.\n/// Use once in a .cpp. The unique identifier allows fully qualified type names;\n/// it is only a registration-variable name, not another serialization alias.\n#define CH_FACTORY_REGISTER_TAG(classname, archive_tag, uniquetag)                       \\\n    namespace class_factory {                                                            \\\n    static ::chrono::ChClassRegistration<classname> uniquetag##_factory_registration(archive_tag); \\\n    }\n\n/// \\brief Initialization of pointer up-casting functions",
+          "count": 1
+        },
+        {
+          "before": "// Class version registration",
+          "after": "/// Preserve source/destination wire identities when their C++ types are renamed.\n/// Use once per conversion in a .cpp; both tags must match the canonical graph.\n#define CH_UPCASTING_TAGGED(FROM, TO, FROM_TAG, TO_TAG, UNIQUETAG)                                      \\\n    namespace class_factory {                                                                         \\\n    static ::chrono::ChCastingMap convfun_from_##UNIQUETAG(                                             \\\n        std::string(FROM_TAG), std::type_index(typeid(FROM*)),                                          \\\n        std::string(TO_TAG), std::type_index(typeid(TO*)),                                              \\\n        [](void* vptr) { return static_cast<void*>(static_cast<TO*>(reinterpret_cast<FROM*>(vptr))); }, \\\n        [](std::shared_ptr<void> vptr) {                                                               \\\n            return std::static_pointer_cast<void>(std::static_pointer_cast<TO>(std::static_pointer_cast<FROM>(vptr))); \\\n        });                                                                                           \\\n    }\n\n// Class version registration",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.h",
+      "original_sha256": "c40f7ef7fee3ef92e4f0fd0de47558e47a1fe94c59e3245fdd7a41a6ba810073",
+      "canonical_sha256": "e59d152cb0f0d2fee0951ddfe70e9e72dd8bc850ed0735b616f3aae926eff928",
+      "replacements": [
+        {
+          "before": "    bool use_versions;\n",
+          "after": "    bool use_versions;\n\n    // Transient per-call wire name. Owned values avoid borrowed stack pointers\n    // in archive copies. Neither field is part of the serialized representation.\n    std::string version_name_override;\n    std::type_index version_name_type = std::type_index(typeid(void));\n\n    struct ChApi VersionNameScope {\n        VersionNameScope(ChArchive& archive, std::type_index type, const char* name);\n        ~VersionNameScope() noexcept;\n        VersionNameScope(const VersionNameScope&) = delete;\n        VersionNameScope& operator=(const VersionNameScope&) = delete;\n\n      private:\n        ChArchive& owner;\n        std::string previous_name;\n        std::type_index previous_type;\n    };\n\n    std::string VersionClassName(std::type_index type) const;\n",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    virtual void out_version(int mver, const std::type_index mtypeid);",
+          "after": "    /// Preserve a captured version identity for a renamed, unregistered type.\n    /// Registered types normally use their canonical factory tag instead.\n    /// Version policy and format-specific virtual hooks are unchanged.\n    template <class T>\n    void VersionWrite(const char* archive_type_name) {\n        if (!use_versions)\n            return;\n        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);\n        this->VersionWrite<T>();\n    }\n\n  protected:\n    virtual void out_version(int mver, const std::type_index mtypeid);",
+          "count": 1
+        },
+        {
+          "before": "  protected:\n    virtual int in_version(const std::type_index mtypeid);",
+          "after": "    /// Read the same captured identity used by the named VersionWrite overload.\n    /// The existing clustering, disabled-version and virtual-hook policy applies.\n    template <class T>\n    int VersionRead(const char* archive_type_name) {\n        if (!use_versions)\n            return 99999;\n        VersionNameScope name_scope(*this, std::type_index(typeid(T)), archive_type_name);\n        return this->VersionRead<T>();\n    }\n\n  protected:\n    virtual int in_version(const std::type_index mtypeid);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "original_sha256": "c876d5716617abe50dfb53759b4f8dd970793621237e31df74c10a1cd0159d00",
+      "canonical_sha256": "bb304a50de2d70fa88f8d507909a7276bb0f14d7bbede3c06f4823d0ede378e9",
+      "replacements": [
+        {
+          "before": "#include \"chrono/serialization/ChArchive.h\"\n",
+          "after": "#include \"chrono/serialization/ChArchive.h\"\n\n#include <stdexcept>\n",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {\n\nChArchive::ChArchive()",
+          "after": "namespace chrono {\n\nChArchive::VersionNameScope::VersionNameScope(ChArchive& archive, std::type_index type, const char* name)\n    : owner(archive), previous_type(archive.version_name_type) {\n    if (!name || !*name)\n        throw std::invalid_argument(\"An explicit archive version identity must not be empty\");\n    // Allocate before mutating the owner; all subsequent swaps are nonthrowing.\n    std::string explicit_name(name);\n    previous_name.swap(owner.version_name_override);\n    explicit_name.swap(owner.version_name_override);\n    owner.version_name_type = type;\n}\n\nChArchive::VersionNameScope::~VersionNameScope() noexcept {\n    previous_name.swap(owner.version_name_override);\n    owner.version_name_type = previous_type;\n}\n\nstd::string ChArchive::VersionClassName(std::type_index type) const {\n    if (!version_name_override.empty() && version_name_type == type)\n        return version_name_override;\n    return ChClassFactory::IsClassRegistered(type) ? ChClassFactory::GetClassTagName(type) : std::string(type.name());\n}\n\nChArchive::ChArchive()",
+          "count": 1
+        },
+        {
+          "before": "void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {\n    if (use_versions) {\n        std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)\n                                                                            : std::string(mtypeid.name());\n        // avoid issues with XML format\n        std::replace(class_name.begin(), class_name.end(), '<', '_');\n        std::replace(class_name.begin(), class_name.end(), '>', '_');\n        std::replace(class_name.begin(), class_name.end(), ' ', '_');\n        // avoid issues with FMU variable naming format\n        std::replace(class_name.begin(), class_name.end(), ':', '_');\n        this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    }\n}",
+          "after": "void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {\n    if (use_versions) {\n        std::string class_name = this->VersionClassName(mtypeid);\n        // avoid issues with XML format\n        std::replace(class_name.begin(), class_name.end(), '<', '_');\n        std::replace(class_name.begin(), class_name.end(), '>', '_');\n        std::replace(class_name.begin(), class_name.end(), ' ', '_');\n        // avoid issues with FMU variable naming format\n        std::replace(class_name.begin(), class_name.end(), ':', '_');\n        this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    }\n}",
+          "count": 1
+        },
+        {
+          "before": "int ChArchiveIn::in_version(const std::type_index mtypeid) {\n    int mver;\n    std::string class_name = ChClassFactory::IsClassRegistered(mtypeid) ? ChClassFactory::GetClassTagName(mtypeid)\n                                                                        : std::string(mtypeid.name());\n    // avoid issues with XML format\n    std::replace(class_name.begin(), class_name.end(), '<', '_');\n    std::replace(class_name.begin(), class_name.end(), '>', '_');\n    std::replace(class_name.begin(), class_name.end(), ' ', '_');\n    // avoid issues with FMU variable naming format\n    std::replace(class_name.begin(), class_name.end(), ':', '_');\n    this->in(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    return mver;\n}",
+          "after": "int ChArchiveIn::in_version(const std::type_index mtypeid) {\n    int mver;\n    std::string class_name = this->VersionClassName(mtypeid);\n    // avoid issues with XML format\n    std::replace(class_name.begin(), class_name.end(), '<', '_');\n    std::replace(class_name.begin(), class_name.end(), '>', '_');\n    std::replace(class_name.begin(), class_name.end(), ' ', '_');\n    // avoid issues with FMU variable naming format\n    std::replace(class_name.begin(), class_name.end(), ':', '_');\n    this->in(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));\n    return mver;\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.h",
+      "original_sha256": "d4b408552aec68768348fb4cc99a8389cb92590fd09adf47d9a89a2c7244f409",
+      "replacements": [
+        {
+          "before": "#ifdef CHRONO_FEA\n    #include \"chrono/assets/ChVisualShapeFEA.h\"\n#endif\n\nnamespace chrono {",
+          "after": "\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "// Forward declaration\nclass ChObj;",
+          "after": "// Forward declaration\nclass ChObj;\n#ifdef CHRONO_FEA\nclass ChVisualShapeFEA;\n#endif",
+          "count": 1
+        },
+        {
+          "before": "    std::vector<std::shared_ptr<ChVisualShapeFEA>> m_shapesFEA;\n#endif",
+          "after": "    std::vector<std::shared_ptr<ChVisualShapeFEA>> m_shapesFEA;\n\n    // Installed by the FE attachment adapter; copied with the shared FE shapes.\n    // Generic models stay independent of the concrete FE visualization code.\n    using FeaUpdater = void (*)(ChVisualModel&, ChObj*);\n    static void UpdateFEAShapes(ChVisualModel& model, ChObj* owner);\n    FeaUpdater m_fea_updater = nullptr;\n#endif",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+      "original_sha256": "59d9213f8faa44dbd9a28f79b0d7758172fb81986c8cbca82e7327d2ec60bc4f",
+      "replacements": [
+        {
+          "before": "#include \"chrono/assets/ChVisualModel.h\"\n#include \"chrono/physics/ChObject.h\"",
+          "after": "#include \"chrono/assets/ChVisualModel.h\"",
+          "count": 1
+        },
+        {
+          "before": "#ifdef CHRONO_FEA\nvoid ChVisualModel::AddShapeFEA(std::shared_ptr<ChVisualShapeFEA> shapeFEA) {\n    m_shapesFEA.push_back(shapeFEA);\n    m_shapes.push_back({shapeFEA->m_trimesh_shape, ChFramed(), false});\n    m_shapes.push_back({shapeFEA->m_glyphs_shape, ChFramed(), false});\n}\n#endif\n\nvoid ChVisualModel::EnableWireframe",
+          "after": "void ChVisualModel::EnableWireframe",
+          "count": 1
+        },
+        {
+          "before": "    m_shapesFEA.clear();\n#endif",
+          "after": "    m_shapesFEA.clear();\n    m_fea_updater = nullptr;\n#endif",
+          "count": 1
+        },
+        {
+          "before": "#ifdef CHRONO_FEA\n    for (auto& shapeFEA : m_shapesFEA) {\n        shapeFEA->Update(owner, ChFrame<>());\n    }\n#endif",
+          "after": "#ifdef CHRONO_FEA\n    if (m_fea_updater)\n        m_fea_updater(*this, owner);\n#endif",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChObject.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChObject.cpp",
+      "original_sha256": "4f3b80f1db365549230576ef5a1c0eb15ac7e22ae02624ea87c40463b52123fd",
+      "replacements": [
+        {
+          "before": "#ifdef CHRONO_FEA\nvoid ChObj::AddVisualShapeFEA(std::shared_ptr<ChVisualShapeFEA> shape) {\n    shape->obj = this;\n    if (!vis_model_instance) {\n        auto model = chrono_types::make_shared<ChVisualModel>();\n        AddVisualModel(model);\n    }\n    vis_model_instance->GetModel()->AddShapeFEA(shape);\n}\n\nstd::shared_ptr<ChVisualShapeFEA> ChObj::GetVisualShapeFEA",
+          "after": "#ifdef CHRONO_FEA\nstd::shared_ptr<ChVisualShapeFEA> ChObj::GetVisualShapeFEA",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShape.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShape.cpp",
+      "original_sha256": "06d8911f72903bf55af6ce225e0440b142148cebaf3a0bf10ba967588b2d3701",
+      "replacements": [
+        {
+          "before": "#include \"chrono/assets/ChVisualShape.h\"\n#include \"chrono/physics/ChPhysicsItem.h\"",
+          "after": "#include \"chrono/assets/ChVisualShape.h\"",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "added_sources": [
+    {
+      "path": "src/fea/visualization/LegacyVisualAdapter.cpp",
+      "sha256": "677de34d493f3e725e16e54305afcb71dfb3b98abd8053dd5ce765f45b52a86c",
+      "origins": [
+        "src/compatibility/chrono/src/chrono/assets/ChVisualModel.cpp",
+        "src/compatibility/chrono/src/chrono/physics/ChObject.cpp"
+      ],
+      "description": "Extracted FE attachment methods and nonvirtual FE updater; compiled by existing aggregate."
+    }
+  ]
+}

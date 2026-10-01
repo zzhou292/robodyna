@@ -62,6 +62,7 @@ def chrono_host_bridge(name, source, compile_jobs = 4):
         build_data = ["//build_defs/chrono:check_inputs.cmake",
                       "//src/mechanics/inertia:RbMassProperties.cpp",
                       "//include/robodyna/mechanics:RbMassProperties.h",
+                      "//src/fea/visualization:LegacyVisualAdapter.cpp",
                       "//LICENSES:Chrono-BSD-3-Clause.txt"],
         cache_entries = cache,
         generate_args = ["-GNinja"],

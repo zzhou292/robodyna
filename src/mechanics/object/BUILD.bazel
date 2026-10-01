@@ -1,0 +1,28 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/chrono:visual_boundary.bzl", "visual_boundary_test")
+load("//build_defs/chrono:visual.bzl", "visual_library")
+
+package(default_visibility = ["//visibility:public"])
+
+visual_library(
+    name = "object",
+    component = "object",
+    deps = ["//src/core:foundation", "//src/visualization/model:model"],
+)
+
+cc_test(
+    name = "object_test",
+    srcs = ["ObjectVisualTest.cpp"],
+    args = ["$(location //src/compatibility/chrono:data/textures/bluewhite.png)"],
+    data = ["//src/compatibility/chrono:data/textures/bluewhite.png"],
+    deps = [":object", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "visual-boundary"],
+)
+
+visual_boundary_test(
+    name = "dependency_boundary_test",
+    component = ":object",
+    size = "small",
+    tags = ["manual", "cpu-only", "visual-boundary"],
+)

@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The existing 2-D vector is header-only. Texture values use it without pulling
+# the combined mechanics implementation into a neutral visualization owner.
+cc_library(
+    name = "vector2",
+    hdrs = ["//src/compatibility/chrono:src/chrono/core/ChVector2.h"],
+    deps = ["//src/core:foundation"],
+)

@@ -555,6 +555,14 @@ class ChClassRegistration : public ChClassRegistrationBase {
     static ChClassRegistration<classname> customname##_factory_registration(#classname); \
     }
 
+/// Register one canonical wire tag independently of the C++ type spelling.
+/// Use once in a .cpp. The unique identifier allows fully qualified type names;
+/// it is only a registration-variable name, not another serialization alias.
+#define CH_FACTORY_REGISTER_TAG(classname, archive_tag, uniquetag)                       \
+    namespace class_factory {                                                            \
+    static ::chrono::ChClassRegistration<classname> uniquetag##_factory_registration(archive_tag); \
+    }
+
 /// \brief Initialization of pointer up-casting functions
 /// A pointer of a parent-class type can safely points to an object of derived class;
 /// however, if the derived class has multiple parents it might happen that the pointer of the base class and of the
@@ -623,6 +631,19 @@ class ChClassRegistration : public ChClassRegistrationBase {
         [](std::shared_ptr<void> vptr) {                                                                               \
             return std::static_pointer_cast<void>(std::static_pointer_cast<TO>(std::static_pointer_cast<FROM>(vptr))); \
         });                                                                                                            \
+    }
+
+/// Preserve source/destination wire identities when their C++ types are renamed.
+/// Use once per conversion in a .cpp; both tags must match the canonical graph.
+#define CH_UPCASTING_TAGGED(FROM, TO, FROM_TAG, TO_TAG, UNIQUETAG)                                      \
+    namespace class_factory {                                                                         \
+    static ::chrono::ChCastingMap convfun_from_##UNIQUETAG(                                             \
+        std::string(FROM_TAG), std::type_index(typeid(FROM*)),                                          \
+        std::string(TO_TAG), std::type_index(typeid(TO*)),                                              \
+        [](void* vptr) { return static_cast<void*>(static_cast<TO*>(reinterpret_cast<FROM*>(vptr))); }, \
+        [](std::shared_ptr<void> vptr) {                                                               \
+            return std::static_pointer_cast<void>(std::static_pointer_cast<TO>(std::static_pointer_cast<FROM>(vptr))); \
+        });                                                                                           \
     }
 
 // Class version registration

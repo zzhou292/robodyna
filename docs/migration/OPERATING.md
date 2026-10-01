@@ -3,6 +3,9 @@
 Run commands from the `robodyna/` repository. Bazel is pinned to 9.2.0; this
 workstation's executable is `../crash-work/tools/bazel-9.2.0-linux-x86_64`.
 Use the enclosing workspace's bounded runner for builds and its shared lock.
+Keep native builds and the retained foreign CMake reference build in separate
+phases: native Bazel uses four jobs; the CMake bridge uses Bazel `--jobs=1` and
+its own four compiler workers. Mixing both can create nested compiler pools.
 The `run` and `render` commands own that guard internally: do not nest another
 workstation-lock guard around them.
 
