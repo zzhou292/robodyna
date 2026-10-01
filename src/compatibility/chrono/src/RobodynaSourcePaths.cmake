@@ -5,6 +5,7 @@ if(NOT DEFINED ROBODYNA_SOURCE_ROOT)
 endif()
 foreach(required IN ITEMS
     include/robodyna/core/RbVector3.h
+    include/robodyna/io/RbPaths.h
     src/simulation/composition/RbAssembly.cpp
     include/robodyna/simulation/RbAssembly.h
     include/robodyna/simulation/RbAssemblyFwd.h

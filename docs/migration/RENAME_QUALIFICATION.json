@@ -14,7 +14,8 @@
     "N4_body_family": "passed actual AuxRef and eight Easy types, constructor/factory/archive and integrated binding/product gates",
     "N5_consumers": "passed maintained capture/replay consumers with canonical Body/Simulation/value APIs and installed used headers",
     "N5_bindings": "passed core/FE Python runtime, both core native wrappers, one shared backend, historical core/FE/vehicle surfaces, and configured CMake packaging; managed C# and full optional module runtime remain pending",
-    "N4_assembly": "passed actual Assembly, all 51 native/product targets, five original lifecycle cases, CMake, core/FE runtime, historical bindings, GPU archive, exact rendering and six-second demo regression"
+    "N4_assembly": "passed actual Assembly, all 51 native/product targets, five original lifecycle cases, CMake, core/FE runtime, historical bindings, GPU archive, exact rendering and six-second demo regression",
+    "N5_native_names": "passed 41 native targets including five time-forwarding and four IO cases; same original clocks/path stores, frozen archives and legacy names; combined binding/CMake gates follow service integration"
   },
   "test_targets_passed": 51,
   "header_include_order_probes": 52,
@@ -371,6 +372,14 @@
       "path": "crash-work/reports/robodyna-assembly-demo-comparison-1.json",
       "sha256": "6bc6877933910faf67185017dacff1c6fe94906fc77462ad62db5d995c5edc15",
       "passed": true
+    },
+    "robodyna-time-io-native-1": {
+      "path": "crash-work/reports/robodyna-time-io-native-1.json",
+      "sha256": "882ccbf3b9635484bb5d1075e4b3ae9557b4344c8bec875d05b89949bd50119b",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 149.515,
+      "peak_sampled_rss_bytes": 4705419264
     }
   },
   "limits": {

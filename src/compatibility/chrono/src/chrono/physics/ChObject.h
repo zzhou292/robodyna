@@ -70,6 +70,12 @@ class ChApi ChObj {
     /// Sets the simulation time of this object.
     void SetChTime(double m_time) { ChTime = m_time; }
 
+    /// Get this object's timestamp through the inherited time owner.
+    double GetTime() const { return GetChTime(); }
+
+    /// Assign only this object's timestamp; this does not call Update().
+    void SetTime(double time) { SetChTime(time); }
+
     /// Add an (optional) visualization model.
     /// Not that an instance of the given visual model is associated with this object, thus allowing sharing the
     /// same model among multiple objects.

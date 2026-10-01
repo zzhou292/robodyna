@@ -197,3 +197,10 @@ The Assembly checkpoint also repeated the GPU archive, short-render and six-seco
 demo comparisons successfully. All recorded physics fields, both PNGs and the
 short MP4 remain exact. Existing copy/assignment/batch quirks were preserved,
 not repaired as part of the type migration.
+
+Native branded-name forwards passed a 41-target gate. `GetTime`/`SetTime` delegate
+to the existing System and object methods without updating other clocks or
+advancing state. `robodyna/io/RbPaths.h` forwards to the existing three distinct
+path stores and preserves literal concatenation and directory side effects.
+Legacy binding exposure is intentionally retained; combined binding/CMake/product
+qualification follows the service-interface integration.

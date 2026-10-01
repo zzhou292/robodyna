@@ -120,6 +120,7 @@ py_test(
         "//src/compatibility/chrono:src/chrono/assets/ChVisualShapeFEA.cpp",
         "//src/compatibility/app:renamed_type_source_inputs",
         "//src/compatibility/chrono:src/chrono_swig/interface/core/ChMassProperties.i",
+        "//src/compatibility/chrono:src/chrono_swig/interface/core/ChObject.i",
         "//docs/migration:SOURCE_TRANSFORMATIONS.json",
         "//build_defs/chrono:source_paths.bzl",
         "//src/compatibility/chrono:src/chrono/CMakeLists.txt",

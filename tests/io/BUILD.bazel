@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_test(
+    name = "paths_test",
+    srcs = ["PathsTest.cpp"],
+    deps = ["//include/robodyna/io:api", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "public-api"],
+)

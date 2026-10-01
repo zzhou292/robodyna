@@ -230,6 +230,11 @@
           "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"",
           "after": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssembly.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbAssemblyFwd.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"",
           "count": 1
+        },
+        {
+          "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)",
+          "after": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/core/RbVector3.h\"\n        DESTINATION include/robodyna/core)\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/io/RbPaths.h\"\n        DESTINATION include/robodyna/io)",
+          "count": 1
         }
       ],
       "subsequent_stages": [
@@ -1155,6 +1160,11 @@
         {
           "before": "friend class chrono::ChAssembly;",
           "after": "friend class ::robodyna::simulation::RbAssembly;",
+          "count": 1
+        },
+        {
+          "before": "    void SetChTime(double time) { ch_time = time; }",
+          "after": "    void SetChTime(double time) { ch_time = time; }\n\n    /// Get the simulation time through the existing system time owner.\n    double GetTime() const { return GetChTime(); }\n\n    /// Assign only system time; this does not advance or update participants or the timestepper.\n    void SetTime(double time) { SetChTime(time); }",
           "count": 1
         }
       ],
@@ -3330,6 +3340,30 @@
         {
           "before": "%include \"../../../chrono/physics/ChAssembly.h\"",
           "after": "%include \"robodyna_swig/AssemblyDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChObject.h",
+      "original_sha256": "3a20a0d01909ee04fec1b442178acc31f1bac86be518616c9f67021df9eca7d4",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChObject.h",
+      "replacements": [
+        {
+          "before": "    void SetChTime(double m_time) { ChTime = m_time; }",
+          "after": "    void SetChTime(double m_time) { ChTime = m_time; }\n\n    /// Get this object's timestamp through the inherited time owner.\n    double GetTime() const { return GetChTime(); }\n\n    /// Assign only this object's timestamp; this does not call Update().\n    void SetTime(double time) { SetChTime(time); }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChObject.i",
+      "original_sha256": "f59038c35b04f8ece4ff61d9df96e9a643da1d2ed5a4f05fde6f405a2635aabc",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChObject.i",
+      "replacements": [
+        {
+          "before": "%ignore chrono::ChObj::ArchiveContainerName;",
+          "after": "%ignore chrono::ChObj::ArchiveContainerName;\n\n// Native-only additions; retain the qualified legacy binding surface.\n%ignore chrono::ChObj::GetTime;\n%ignore chrono::ChObj::SetTime;",
           "count": 1
         }
       ]

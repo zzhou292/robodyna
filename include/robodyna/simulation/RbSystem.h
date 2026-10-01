@@ -183,6 +183,12 @@ class ChApi RbSystem : public chrono::ChIntegrableIIorder {
     /// Set (overwrite) the simulation time of this system.
     void SetChTime(double time) { ch_time = time; }
 
+    /// Get the simulation time through the existing system time owner.
+    double GetTime() const { return GetChTime(); }
+
+    /// Assign only system time; this does not advance or update participants or the timestepper.
+    void SetTime(double time) { SetChTime(time); }
+
   public:
     /// Gets the current time step used for integration (dynamic and kinematic simulation).
     /// The value is set automatically when a dynamic or kinematic simulation is run.

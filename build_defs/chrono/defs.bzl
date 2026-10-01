@@ -61,6 +61,7 @@ def chrono_host_bridge(name, source, compile_jobs = 4):
         deps = ["@eigen//:eigen"],
         build_data = ["//build_defs/chrono:check_inputs.cmake",
                       "//include/robodyna/core:RbVector3.h",
+                      "//include/robodyna/io:RbPaths.h",
                       "//src/simulation/composition:RbAssembly.cpp",
                       "//include/robodyna/simulation:RbAssembly.h",
                       "//include/robodyna/simulation:RbAssemblyFwd.h",

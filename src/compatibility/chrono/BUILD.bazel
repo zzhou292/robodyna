@@ -19,7 +19,7 @@ chrono_native_scm(name = "native_scm")
 exports_files(["data/logo_chrono_alpha.png"])
 exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
-exports_files(["src/chrono_swig/interface/core/ChMassProperties.i"])
+exports_files(["src/chrono_swig/interface/core/ChMassProperties.i", "src/chrono_swig/interface/core/ChObject.i"])
 exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h",
                "src/chrono/physics/ChBodyAuxRef.h", "src/chrono/physics/ChBodyEasy.h"])
 exports_files(["src/chrono/fea/ChMesh.h", "src/chrono/fea/ChMeshFwd.h"])

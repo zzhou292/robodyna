@@ -8,5 +8,9 @@ using namespace chrono;
 %ignore chrono::ChObj::Clone;
 %ignore chrono::ChObj::ArchiveContainerName;
 
+// Native-only additions; retain the qualified legacy binding surface.
+%ignore chrono::ChObj::GetTime;
+%ignore chrono::ChObj::SetTime;
+
 %include "../../../chrono/physics/ChObject.h"    
 

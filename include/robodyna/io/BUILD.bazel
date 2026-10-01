@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["RbPaths.h"])
+
+# No parser, multibody, FEA or system dependency; all stores have one foundation owner.
+cc_library(
+    name = "api",
+    hdrs = ["RbPaths.h"],
+    strip_include_prefix = "/include",
+    deps = ["//src/core:foundation"],
+)

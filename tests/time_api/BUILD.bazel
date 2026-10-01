@@ -1,0 +1,28 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+# This test cannot obtain concrete body, mesh or system symbols from an aggregate.
+cc_test(
+    name = "object_time_test",
+    srcs = ["ObjectTimeTest.cpp"],
+    deps = ["//src/mechanics/object:object", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "public-api"],
+)
+
+# The current composed system still explicitly uses the combined native backend.
+cc_test(
+    name = "system_time_test",
+    srcs = ["SystemTimeTest.cpp"],
+    deps = [
+        "//include/robodyna/fea:api",
+        "//include/robodyna/mbd:api",
+        "//include/robodyna/simulation:api",
+        "@googletest//:gtest_main",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "public-api"],
+)
+
+test_suite(name = "time_tests", tests = [":object_time_test", ":system_time_test"])
