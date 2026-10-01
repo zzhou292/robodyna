@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/chrono:neutral.bzl", "neutral_library")
+
+package(default_visibility = ["//visibility:public"])
+
+neutral_library(
+    name = "mass_blocks",
+    component = "mass_blocks",
+    deps = ["//src/core:foundation"],
+)
+
+cc_test(
+    name = "mass_blocks_test",
+    srcs = ["MassBlocksTest.cpp"],
+    deps = [":mass_blocks", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)
+
+cc_test(
+    name = "factory_retention_test",
+    srcs = ["FactoryRetentionTest.cpp"],
+    deps = [":mass_blocks", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)

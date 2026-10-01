@@ -1,10 +1,33 @@
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
+load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
+load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["CMakeLists.txt", "src/chrono/CMakeLists.txt", "src/ChConfig.h.in", "src/ChVersion.h.in"])
 
 chrono_native_host(name = "native_core_fea")
+chrono_native_vsg(name = "native_vsg")
+
+exports_files(["data/logo_chrono_alpha.png"])
+
+# Export unchanged source bytes to their real neutral native compile owners.
+exports_files(
+    [path for paths in NEUTRAL_SOURCES.values() for path in paths] +
+    [path for paths in NEUTRAL_HEADERS.values() for path in paths] +
+    ["src/tests/unit_tests/physics/utest_CH_composite_inertia.cpp"],
+)
+
+# Include-root compatibility only: no headers and no implementation are hidden
+# here. Neutral owners enumerate their own exact header closure.
+cc_library(name = "neutral_include_root", includes = ["src"])
+
+filegroup(
+    name = "neutral_source_inputs",
+    srcs = [path for paths in NEUTRAL_SOURCES.values() for path in paths] +
+           [path for paths in NEUTRAL_HEADERS.values() for path in paths],
+)
 
 # All absorbed first-party source remains available during native package
 # extraction. No external checkout or previously installed Chrono is referenced.

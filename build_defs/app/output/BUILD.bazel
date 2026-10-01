@@ -1,0 +1,31 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/ArtifactIO.cmake:robo_dyna_artifact_io
+app_library(
+    name = "artifact_io",
+    srcs = [
+        "output/ArtifactIO.cpp",
+        "output/ArtifactInventory.cpp",
+        "output/MeshArchive.cpp",
+        "output/GeometryMeshArchive.cpp",
+        "output/SurfaceBindingFields.cpp",
+        "output/CsvLedgerSegments.cpp",
+        "output/CsvLedgerWriter.cpp",
+    ],
+    hdrs = [
+        "chrono/SurfaceBinding.h",
+        "output/ArtifactIO.h",
+        "output/ArtifactInventory.h",
+        "output/BoundedArrayJson.h",
+        "output/CsvLedgerSegments.h",
+        "output/GeometryMeshArchive.h",
+        "output/MeshArchive.h",
+        "output/SurfaceBindingFields.h",
+    ],
+    deps = [
+        "//build_defs/chrono:native_core_fea",
+        "@openssl//:crypto",
+    ],
+    copts = [
+    ],
+)

@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/chrono:native_config.bzl", "native_configuration")
+
+package(default_visibility = ["//visibility:public"])
+
+# Same inherited templates and values as the qualified native aggregate.
+native_configuration(
+    name = "host_configuration",
+    config_template = "//src/compatibility/chrono:src/ChConfig.h.in",
+    version_template = "//src/compatibility/chrono:src/ChVersion.h.in",
+    config_header = "host/include/chrono/ChConfig.h",
+    version_header = "host/include/chrono/ChVersion.h",
+)
+
+cc_library(
+    name = "host_headers",
+    hdrs = [":host_configuration"],
+    strip_include_prefix = "host/include",
+)

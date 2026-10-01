@@ -1,0 +1,36 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/physical_scope/PhysicalScope.cmake:robo_dyna_physical_scope
+app_library(
+    name = "physical_scope",
+    srcs = [
+        "modelio/physical_scope/CanonicalDomain.cpp",
+        "modelio/physical_scope/DomainEmbedding.cpp",
+        "modelio/physical_scope/PhysicalScope.cpp",
+        "modelio/physical_scope/Budget.cpp",
+        "modelio/physical_scope/Connections.cpp",
+        "modelio/physical_scope/Groups.cpp",
+        "modelio/physical_scope/Roles.cpp",
+        "modelio/physical_scope/BeamRoles.cpp",
+        "modelio/physical_scope/Evidence.cpp",
+        "modelio/physical_scope/Report.cpp",
+    ],
+    hdrs = [
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/Internal.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/physical_scope/SourcePolicy.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/rigid_part/point_mass:rigid_point_mass_source",
+        "//build_defs/app/modelio/solid_source:vehicle_solid_source",
+        "//build_defs/app/modelio/type13:type13_source",
+        "//build_defs/app/modelio/beam18:beam18_source",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

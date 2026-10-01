@@ -1,0 +1,35 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_startup/physical_model/VehiclePhysicalModel.cmake:robo_dyna_vehicle_physical_model
+app_library(
+    name = "vehicle_physical_model",
+    srcs = [
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.cpp",
+        "case/vehicle_startup/physical_model/Budget.cpp",
+        "case/vehicle_startup/physical_model/Components.cpp",
+        "case/vehicle_startup/physical_model/StructuralBeams.cpp",
+        "case/vehicle_startup/physical_model/BeamModel.cpp",
+        "case/vehicle_startup/physical_model/SolidModel.cpp",
+        "case/vehicle_startup/physical_model/SolidControls.cpp",
+        "case/vehicle_startup/physical_model/PlainGroups.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/physical_model/Components.h",
+        "case/vehicle_startup/physical_model/Internal.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/solid_control_packets:native_solid_packets",
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_binding",
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+        "//build_defs/app/modelio/point_mass:vehicle_point_mass_source",
+        "//build_defs/app/modelio/type25:vehicle_type25_source",
+        "@legacy_fea//lib_src/elements/solids:model",
+        "@legacy_fea//lib_src/assembly:beam18_node_contributions",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_assembly_binding",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

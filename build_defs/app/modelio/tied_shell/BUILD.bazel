@@ -1,0 +1,121 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/tied_shell/TiedAuxiliaryConstraints.cmake:robo_dyna_tied_auxiliary_constraints
+app_library(
+    name = "tied_auxiliary_constraints",
+    srcs = [
+        "modelio/tied_shell/TiedAuxiliaryConstraints.cpp",
+        "modelio/tied_shell/auxiliary/Budget.cpp",
+        "modelio/tied_shell/auxiliary/Sources.cpp",
+        "modelio/tied_shell/auxiliary/Groups.cpp",
+        "modelio/tied_shell/auxiliary/Nodes.cpp",
+        "modelio/tied_shell/auxiliary/Boundary.cpp",
+    ],
+    hdrs = [
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/auxiliary/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From modelio/tied_shell/TiedClassificationContext.cmake:robo_dyna_tied_classification_context
+app_library(
+    name = "tied_classification_context",
+    srcs = [
+        "modelio/tied_shell/TiedClassificationContext.cpp",
+        "modelio/tied_shell/classification/Budget.cpp",
+        "modelio/tied_shell/classification/ReadSet.cpp",
+        "modelio/tied_shell/classification/SourceRoles.cpp",
+        "modelio/tied_shell/classification/Wall.cpp",
+    ],
+    hdrs = [
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/classification/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_auxiliary_constraints",
+        "//build_defs/app/modelio/rigid_part:rigid_part_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From modelio/tied_shell/TiedShellSearchGeometry.cmake:robo_dyna_tied_search_geometry
+app_library(
+    name = "tied_search_geometry",
+    srcs = [
+        "modelio/tied_shell/TiedShellSearchGeometry.cpp",
+        "modelio/tied_shell/search_geometry/Build.cpp",
+        "modelio/tied_shell/search_geometry/Budget.cpp",
+        "modelio/tied_shell/search_geometry/Association.cpp",
+        "modelio/tied_shell/search_geometry/Properties.cpp",
+        "modelio/tied_shell/search_geometry/WorkingCoordinates.cpp",
+        "modelio/tied_shell/search_geometry/Coefficients.cpp",
+    ],
+    hdrs = [
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/tied_shell/search_geometry/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_packing",
+        "//build_defs/app/modelio/source_assembly:source_native_coordinates",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From modelio/tied_shell/TiedShellDeclaration.cmake:robo_dyna_tied_shell_declaration
+app_library(
+    name = "tied_shell_declaration",
+    srcs = [
+        "modelio/tied_shell/TiedShellDeclaration.cpp",
+        "modelio/tied_shell/Budget.cpp",
+        "modelio/tied_shell/SourceCards.cpp",
+        "modelio/tied_shell/ScopeDeclarations.cpp",
+        "modelio/tied_shell/GeometryCensus.cpp",
+        "modelio/tied_shell/ConstraintEvidence.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/vehicle_source:vehicle_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From modelio/tied_shell/TiedShellPacking.cmake:robo_dyna_tied_shell_packing
+app_library(
+    name = "tied_shell_packing",
+    srcs = [
+        "modelio/tied_shell/TiedShellPacking.cpp",
+        "modelio/tied_shell/packing/Budget.cpp",
+        "modelio/tied_shell/packing/Policy.cpp",
+        "modelio/tied_shell/packing/Order.cpp",
+    ],
+    hdrs = [
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/packing/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+    ],
+    copts = [
+    ],
+)

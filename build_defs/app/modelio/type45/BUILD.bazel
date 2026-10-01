@@ -1,0 +1,31 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/type45/VehicleType45Source.cmake:robo_dyna_vehicle_type45_source
+app_library(
+    name = "vehicle_type45_source",
+    srcs = [
+        "modelio/type45/VehicleType45Source.cpp",
+        "modelio/type45/Fields.cpp",
+        "modelio/type45/Mapping.cpp",
+        "modelio/type45/Budget.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/type45/Internal.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/type45/VehicleType45Source.h",
+        "modelio/vehicle_source/SourceCards.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements/type45:values",
+    ],
+)

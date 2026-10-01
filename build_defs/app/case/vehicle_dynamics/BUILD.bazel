@@ -1,0 +1,41 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_dynamics/VehiclePhysicalDynamics.cmake:robo_dyna_vehicle_physical_dynamics
+app_library(
+    name = "vehicle_physical_dynamics",
+    srcs = [
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.cpp",
+        "case/vehicle_dynamics/NativeStageError.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Capture.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/CaptureValues.cpp",
+        "case/vehicle_dynamics/native_contact/Installation.cpp",
+        "case/vehicle_dynamics/Trial.cpp",
+        "case/vehicle_dynamics/MotionSummary.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_dynamics/ExecutionAccess.h",
+        "case/vehicle_dynamics/MotionSummary.h",
+        "case/vehicle_dynamics/NativeStageError.h",
+        "case/vehicle_dynamics/Reports.h",
+        "case/vehicle_dynamics/ScratchReceiptRoster.h",
+        "case/vehicle_dynamics/SelfContactContribution.h",
+        "case/vehicle_dynamics/SelfContactObservation.h",
+        "case/vehicle_dynamics/StepTiming.h",
+        "case/vehicle_dynamics/Storage.h",
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+        "case/vehicle_dynamics/WallContribution.h",
+        "case/vehicle_dynamics/WallObservation.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Capture.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Codec.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_runtime:vehicle_physical_startup",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_activity",
+        "//build_defs/app/benchmarks/stage_timing:stage_timing",
+        "//build_defs/app/case/vehicle_dynamics/native_contact:native_contact_contribution",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -1,0 +1,31 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/solid_control/SolidControlSource.cmake:robo_dyna_solid_control_source
+app_library(
+    name = "solid_control_source",
+    srcs = [
+        "modelio/solid_control/DirectSource.cpp",
+        "modelio/solid_control/DirectDeclarations.cpp",
+        "modelio/solid_control/EffectiveContext.cpp",
+        "modelio/solid_control/EffectiveSource.cpp",
+        "modelio/solid_control/Sharing.cpp",
+    ],
+    hdrs = [
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/InterfaceProfile.h",
+        "modelio/solid_control/Internal.h",
+        "modelio/solid_control/Members.h",
+        "modelio/solid_control/SourceIds.h",
+        "modelio/solid_control/Storage.h",
+        "modelio/solid_control/Types.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/modelio/self_contact:original_self_contact_selection",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

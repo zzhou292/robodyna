@@ -1,0 +1,27 @@
+load("//build_defs/chrono:neutral_boundary.bzl", "neutral_boundary_test")
+
+package(default_visibility = ["//visibility:public"])
+
+neutral_boundary_test(
+    name = "dependency_boundary_test",
+    components = [
+        "//src/core:foundation", "//src/numerics/variables:mass_blocks",
+        "//src/mechanics/kinematics:frames", "//src/mechanics/inertia:inertia",
+    ],
+    aggregate = "//src/compatibility/chrono:native_core_fea",
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)
+
+test_suite(
+    name = "neutral_tests",
+    tests = [
+        ":dependency_boundary_test",
+        "//src/mechanics/kinematics:frames_test",
+        "//src/mechanics/inertia:inertia_test",
+        "//src/numerics/variables:mass_blocks_test",
+        "//src/numerics/variables:factory_retention_test",
+        "//tests/chrono:neutral_ownership_test",
+    ],
+    tags = ["manual", "neutral-mechanics"],
+)

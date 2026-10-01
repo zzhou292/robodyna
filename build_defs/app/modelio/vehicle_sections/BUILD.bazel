@@ -1,0 +1,39 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/vehicle_sections/VehicleSectionResolution.cmake:robo_dyna_vehicle_sections
+app_library(
+    name = "vehicle_sections",
+    srcs = [
+        "modelio/vehicle_sections/VehicleSectionResolution.cpp",
+        "modelio/vehicle_sections/ResolutionDeclarations.cpp",
+        "modelio/vehicle_sections/ResolutionParents.cpp",
+        "modelio/vehicle_sections/ResolutionLimits.cpp",
+        "modelio/vehicle_sections/GlassDeclarations.cpp",
+        "modelio/vehicle_sections/GlassSourceCards.cpp",
+        "modelio/vehicle_sections/GlassPolicy.cpp",
+        "modelio/vehicle_sections/MidlayerDeclarations.cpp",
+        "modelio/vehicle_sections/MidlayerProfile.cpp",
+        "modelio/vehicle_sections/RigidProfile.cpp",
+        "modelio/vehicle_sections/NativeParentMapping.cpp",
+    ],
+    hdrs = [
+        "modelio/vehicle_sections/GlassDeclarations.h",
+        "modelio/vehicle_sections/Internal.h",
+        "modelio/vehicle_sections/MidlayerDeclarations.h",
+        "modelio/vehicle_sections/ResolutionData.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/vehicle_source:vehicle_source",
+        "//build_defs/app/modelio/rigid_part:rigid_part_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements:shell_batch_failure_binding",
+    ],
+)

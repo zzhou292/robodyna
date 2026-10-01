@@ -1,0 +1,22 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["defs.bzl", "production_targets.json"])
+
+py_library(
+    name = "audit_library",
+    srcs = ["check_port.py", "cmake_sources.py"],
+    deps = ["//build_defs:source_boundary"],
+)
+py_binary(
+    name = "check_port",
+    srcs = ["check_port.py"],
+    main = "check_port.py",
+    deps = [":audit_library"],
+)
+
+alias(name = "native_vehicle_run", actual = "//build_defs/app/case/vehicle_native_contact:native_vehicle_run")
+alias(name = "native_v6_sources", actual = "//build_defs/app/case/vehicle_native_contact/source:native_v6_sources")
+alias(name = "native_preview_controls", actual = "//build_defs/app/case/vehicle_native_contact/actual/controls:native_preview_controls")
+alias(name = "artifact_io", actual = "//build_defs/app/output:artifact_io")

@@ -1,0 +1,21 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/full_shell/interval_values/CMakeLists.txt:robo_dyna_interval_values
+app_library(
+    name = "interval_values",
+    srcs = [
+        "output/full_shell/IntervalValues.cpp",
+        "output/full_shell/IntervalChunkPlan.cpp",
+    ],
+    hdrs = [
+        "output/full_shell/IntervalChunkPlan.h",
+        "output/full_shell/IntervalValues.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

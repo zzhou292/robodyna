@@ -1,0 +1,138 @@
+{
+  "schema": "robodyna.migration.qualification.v1",
+  "stage": "neutral_ownership_and_native_product_parity",
+  "source_preservation": "docs/migration/SOURCES.json",
+  "receipts": {
+    "native_solver_build": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-native-backend-build-3.json",
+      "sha256": "f7b2af89df72eccf534e3719d5d1a513445b2047f6bd822847d19a424ff320e8",
+      "bytes": 87061,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 102.553,
+      "peak_sampled_rss_bytes": 2963976192
+    },
+    "native_viewer_build": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-viewer-native-tests-2.json",
+      "sha256": "a26f9baa9cf279829fcb7c7f2b64f17e137f005fc666ad61e32261be846e08d7",
+      "bytes": 363934,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 441.653,
+      "peak_sampled_rss_bytes": 5152849920
+    },
+    "product_host_tests": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-product-package-tests-3.json",
+      "sha256": "ae0d38c01089a9f52ceba24018b2dae5c3b432f4764266039276bb463047a656",
+      "bytes": 172833,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 208.441,
+      "peak_sampled_rss_bytes": 5605969920
+    },
+    "product_vehicle_run": {
+      "receipt_relative_to_outer_workspace": "crash-work/investigations/robodyna-yaris-101-3/guard.json",
+      "sha256": "ec537ca4bc6e927f993b4be700c2d99e5dd4af67a71127e7c09f001fe3a9d372",
+      "bytes": 49317,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 22.569,
+      "peak_sampled_rss_bytes": 5613756416
+    },
+    "recorded_physics_comparison": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-yaris-101-3-independent.json",
+      "sha256": "34e234dd16cf0efde8e591158cb02141bffb20dca5bf4f31a2aba994953d8dc6",
+      "bytes": 8709,
+      "status": "passed"
+    },
+    "native_product_and_neutral_tests": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-neutral-product-tests-2.json",
+      "sha256": "b87dfb64cdef750b56e3ec54eaffd5be3beda637702b96fc0f62c41c719a2f89",
+      "bytes": 7645,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 4.831,
+      "peak_sampled_rss_bytes": 1105223680
+    },
+    "post_extraction_vehicle_run": {
+      "receipt_relative_to_outer_workspace": "crash-work/investigations/robodyna-yaris-101-4/guard.json",
+      "sha256": "631a37e32da026857dfdba985ef7e2a9278945dc458ad0522cfa0e7ea3c4cbc0",
+      "bytes": 48450,
+      "status": "passed",
+      "exit_code": 0,
+      "cleanup": "complete",
+      "elapsed_seconds": 21.88,
+      "peak_sampled_rss_bytes": 5614497792
+    },
+    "post_extraction_physics_comparison": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-yaris-101-4-independent.json",
+      "sha256": "ce6c9fb415036ae221f5bfe9db953738d5443ed9157c840581210df6eb82afdf",
+      "bytes": 8709,
+      "status": "passed"
+    },
+    "product_short_render": {
+      "receipt_relative_to_outer_workspace": "crash-work/renders/robodyna-product-101-1/render-result.json",
+      "sha256": "68aa0164ebb82dd084462f51beb1441370d1967589a904704b9b97341d8b4152",
+      "bytes": 2781,
+      "status": "media_verified"
+    },
+    "product_100ms_render": {
+      "receipt_relative_to_outer_workspace": "crash-work/renders/robodyna-product-100ms-1/render-result.json",
+      "sha256": "a08a47ad72c11d8e2ff1cb9549a4abe4c74a16fc342e11691315cebf7e767e6d",
+      "bytes": 2803,
+      "status": "media_verified"
+    },
+    "native_media_visual_review": {
+      "receipt_relative_to_outer_workspace": "crash-work/reports/robodyna-native-render-visual-review-1.json",
+      "sha256": "ff2df60cb97200e910d1c64613b65c4ac524abea0d4faf3bd57a6e63d33b0ad7",
+      "bytes": 1751,
+      "status": "passed"
+    }
+  },
+  "comparison": {
+    "accepted_intervals": 101,
+    "fixed_dt_s": 1.5e-07,
+    "saved_epochs": [
+      0,
+      101
+    ],
+    "archive_files": 50,
+    "archive_bytes": 177167032,
+    "archive_files_byte_identical": true,
+    "viewer_receipt_byte_identical": true,
+    "all_nontiming_summary_fields_exact": true,
+    "all_saved_samples_cpp_replayed": true
+  },
+  "limits": [
+    "Independent FEA and MBD stepping/link separation remains pending.",
+    "No new long-duration crash or CPU-reference performance claim.",
+    "Optional inherited modules retain separate build/runtime/CUDA qualification status."
+  ],
+  "neutral_ownership": {
+    "unchanged_translation_units": 21,
+    "remaining_aggregate_translation_units": 461,
+    "total_unique_translation_units": 482,
+    "source_and_header_hashes_verified": 85,
+    "actual_header_and_link_boundary_passed": true,
+    "factory_retention_passed": true,
+    "full_product_test_targets_passed": 20
+  },
+  "media": {
+    "physical_duration_s": 0.10000005000066203,
+    "saved_states": 301,
+    "video_duration_s": 60.2,
+    "video_frames": 1806,
+    "full_decode_passed": true,
+    "root_visual_review_passed": true,
+    "mp4_byte_identical_to_original": true,
+    "mp4_sha256": "060e7286e8c26790c7db300127c2a523b0e41e0c7e15b5c8d59b1f01931b5be5",
+    "inputs_unchanged": true,
+    "physics_rerun": false,
+    "known_presentation_issue": "Inherited final sample-counter label clips one digit; physical time remains readable."
+  }
+}

@@ -1,8 +1,8 @@
 # Robodyna module architecture: FEA, multibody and shared systems
 
 Date: 2026-09-30. Status: proposed architecture after tracing local Chrono classes,
-assembly, integration, contact and build dependencies. No code/module migration has
-executed. This is the canonical detailed layout; it replaces the earlier shorthand
+assembly, integration, contact and build dependencies. Source import and native aggregate builds have now executed; independent domain
+separation is still pending. See `../migration/EXECUTION.md` for current gates. This is the canonical detailed layout; it replaces the earlier shorthand
 `physics/solid` versus `physics/rigid` layout in the platform proposal.
 
 User requirements: full first-party absorption of Chrono and TL-FEA functionality;
@@ -21,6 +21,42 @@ They share small mechanics and numerical interfaces. Mixed systems and concrete
 cross-domain attachments live above both modules. Separate modules can contribute
 to one assembled solve/integrator; they are not required to advance independently
 and exchange delayed forces. Partitioned FSI is another explicitly selected scheme.
+
+## First implemented ownership split
+
+The native product now uses one root Bazel graph. The first neutral extraction
+has the following concrete targets. The combined build and runtime gate passed,
+including all 20 test targets and a byte-identical short vehicle regression.
+
+| Target | Owns | Relationship to the retained sources |
+| --- | --- | --- |
+| `//src/core:foundation` | Math, class factory and archive primitives | 16 unchanged implementation files |
+| `//src/numerics/variables:mass_blocks` | Six-DOF mass/inertia variable blocks | 3 unchanged implementation files; no concrete body |
+| `//src/mechanics/kinematics:frames` | Moving frames and applied wrench transformations | Existing `ChBodyFrame` implementation |
+| `//src/mechanics/inertia:inertia` | Composite inertia and mass properties | Existing `ChMassProperties` implementation |
+| `//src/core/configuration:host_headers` | Declared release configuration | Same template values as the qualified aggregate |
+
+```mermaid
+flowchart TD
+    A[Retained combined mechanics] --> F[Shared moving frames]
+    A --> I[Shared inertia]
+    F --> V[Numerical mass blocks]
+    V --> C[Core math and archives]
+    I --> C
+```
+
+These are real compiling libraries. The combined mechanics library excludes their
+21 source files, preserving a total of 482 unique original compilation units.
+Bazel analysis inspects transitive headers, link owners and actual compile owners;
+standalone runtime tests exercise frame power/wrenches, inertia, archives and class
+factory retention. These checks are prerequisites for independent FEA/MBD, not a
+claim that those larger domains have already been separated.
+
+Source files retain their inherited paths for now so the CMake reference build,
+class names and archive identity remain intact. `NEUTRAL_OWNERSHIP.json` in the
+migration directory records their current owners and unchanged hashes. Physical
+source relocation can follow tested dependency boundaries instead of obscuring
+changes to equations inside mass renames.
 
 ## What the source establishes
 

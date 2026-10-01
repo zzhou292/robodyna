@@ -1,0 +1,20 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/arrays/CMakeLists.txt:robo_dyna_bounded_array_io
+app_library(
+    name = "bounded_array_io",
+    srcs = [
+        "output/BoundedArrayIO.cpp",
+        "output/BoundedArrayDescriptor.cpp",
+    ],
+    hdrs = [
+        "output/BoundedArrayIO.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

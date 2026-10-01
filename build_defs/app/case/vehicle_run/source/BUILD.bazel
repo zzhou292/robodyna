@@ -1,0 +1,20 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_run/source/OriginalSourceIO.cmake:robo_dyna_original_source_io
+app_library(
+    name = "original_source_io",
+    srcs = [
+        "case/vehicle_run/source/OriginalSourceIO.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_run/source/OriginalPaths.h",
+        "case/vehicle_run/source/OriginalSourceIO.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/vehicle_sections:vehicle_sections",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

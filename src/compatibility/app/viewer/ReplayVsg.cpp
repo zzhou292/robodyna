@@ -1,4 +1,5 @@
 #include "ReplayVsg.h"
+#include "ReplayAssets.h"
 #include "output/ArtifactIO.h"
 #include "chrono/core/ChDataPath.h"
 #include <cmath>
@@ -24,14 +25,13 @@ const visual::ReplayClipping& FixedReplayVisual::Clipping() const {
     output::Require(clipping_.has_value(),"Replay clipping was not configured");
     return *clipping_;
 }
-std::shared_ptr<FixedReplayVisual> CreateReplayVisual() {
+std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::path& asset_directory) {
+    std::filesystem::path configured_directory;
 #ifdef ROBO_DYNA_CHRONO_DATA_DIR
-    chrono::SetChronoDataPath(ROBO_DYNA_CHRONO_DATA_DIR);
+    configured_directory = ROBO_DYNA_CHRONO_DATA_DIR;
 #endif
-    output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile("logo_chrono_alpha.png")),
-        "Chrono visualization data directory is missing its logo");
-    output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile("vsg/fonts/OpenSans-Bold.vsgb")),
-        "Chrono visualization data directory is missing its VSG font");
+    const auto assets = ResolveReplayAssets(asset_directory, configured_directory);
+    chrono::SetChronoDataPath(assets.string() + '/');
     return std::make_shared<FixedReplayVisual>();
 }
 ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,chrono::ChSystem& system,

@@ -1,0 +1,38 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/CanonicalWall.cmake:crash_canonical_wall
+app_library(
+    name = "canonical_wall",
+    srcs = [
+        "case/CanonicalWall.cpp",
+    ],
+    hdrs = [
+        "case/CanonicalWall.h",
+    ],
+    deps = [
+        "//build_defs/chrono:native_core_fea",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/CanonicalWallArtifacts.cmake:robo_dyna_canonical_wall_artifacts
+app_library(
+    name = "canonical_wall_artifacts",
+    srcs = [
+        "case/CanonicalWallArtifacts.cpp",
+    ],
+    hdrs = [
+        "case/CanonicalWallArtifacts.h",
+    ],
+    deps = [
+        "//build_defs/app/case:canonical_wall",
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -1,0 +1,21 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/rigid_part/point_mass/Source.cmake:robo_dyna_rigid_point_mass_source
+app_library(
+    name = "rigid_point_mass_source",
+    srcs = [
+        "modelio/rigid_part/point_mass/Fields.cpp",
+        "modelio/rigid_part/point_mass/Source.cpp",
+    ],
+    hdrs = [
+        "modelio/rigid_part/point_mass/Fields.h",
+        "modelio/rigid_part/point_mass/Source.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/rigid_part:rigid_part_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

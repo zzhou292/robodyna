@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/chrono:neutral.bzl", "neutral_library")
+
+package(default_visibility = ["//visibility:public"])
+
+neutral_library(
+    name = "inertia",
+    component = "inertia",
+    deps = ["//src/core:foundation"],
+)
+
+cc_test(
+    name = "inertia_test",
+    srcs = [
+        "InertiaTest.cpp",
+        "//src/compatibility/chrono:src/tests/unit_tests/physics/utest_CH_composite_inertia.cpp",
+    ],
+    deps = [":inertia", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)

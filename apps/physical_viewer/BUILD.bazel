@@ -1,0 +1,7 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "physical_replay",
+    actual = "//build_defs/app/viewer/physical_run:physical_replay",
+    tags = ["manual", "native-viewer"],
+)

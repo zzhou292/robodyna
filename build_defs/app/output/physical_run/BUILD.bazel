@@ -1,0 +1,137 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/physical_run/PhysicalRun.cmake:robo_dyna_physical_run_environment
+app_library(
+    name = "physical_run_environment",
+    srcs = [
+        "output/physical_run/EnvironmentPrepare.cpp",
+    ],
+    hdrs = [
+        "output/MeshArchive.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/output/physical_frames:physical_accepted_frames",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From output/physical_run/PhysicalRun.cmake:robo_dyna_physical_run_live
+app_library(
+    name = "physical_run_live",
+    srcs = [
+        "output/physical_run/AcceptedDynamics.cpp",
+        "output/physical_run/AcceptedWall.cpp",
+        "output/physical_run/AcceptedWallValues.cpp",
+        "output/physical_run/AcceptedSelfContact.cpp",
+        "output/physical_run/AcceptedNativeGroup.cpp",
+    ],
+    hdrs = [
+        "case/PlacedCanonicalWall.h",
+        "case/WallTessellation.h",
+        "case/shell_collection/ShellCollectionContactGeometry.h",
+        "case/vehicle_self_contact/SelectedSelfContactSource.h",
+        "case/vehicle_self_contact/VehicleSelfContactSetup.h",
+        "case/vehicle_self_contact/VehicleSelfContactStartup.h",
+        "case/vehicle_wall/Settings.h",
+        "case/vehicle_wall/VehicleWallSetup.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "output/physical_run/AcceptedNativeGroup.h",
+        "output/physical_run/AcceptedSelfContact.h",
+        "output/physical_run/AcceptedWall.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/case/vehicle_dynamics/output:vehicle_accepted_frames",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From output/physical_run/PhysicalRun.cmake:robo_dyna_physical_run_records
+app_library(
+    name = "physical_run_records",
+    srcs = [
+        "output/physical_run/ViewerInput.cpp",
+        "output/physical_run/Profile.cpp",
+        "output/physical_run/Sequence.cpp",
+        "output/physical_run/NativeGroupValues.cpp",
+        "output/physical_run/SelfContactValues.cpp",
+        "output/physical_run/NativeContactValues.cpp",
+        "output/physical_run/Fields.cpp",
+        "output/physical_run/IntervalWriter.cpp",
+        "output/physical_run/IntervalReader.cpp",
+        "output/physical_run/Configuration.cpp",
+        "output/physical_run/IndexFields.cpp",
+        "output/physical_run/IndexChecks.cpp",
+        "output/physical_run/Manifest.cpp",
+        "output/physical_run/Inventory.cpp",
+        "output/physical_run/ReferencedInventory.cpp",
+        "output/physical_run/WallFields.cpp",
+        "output/physical_run/WallRead.cpp",
+        "output/physical_run/EnvironmentFields.cpp",
+        "output/physical_run/EnvironmentRead.cpp",
+        "output/physical_run/RunPrepare.cpp",
+        "output/physical_run/RunWrite.cpp",
+        "output/physical_run/ReplayBudget.cpp",
+        "output/physical_run/ReplayPreflight.cpp",
+        "output/physical_run/Replay.cpp",
+        "output/physical_run/ReplayRecords.cpp",
+    ],
+    hdrs = [
+        "case/CanonicalWall.h",
+        "case/CanonicalWallArtifacts.h",
+        "case/vehicle_wall/SetupIdentity.h",
+        "output/GeometryMeshArchive.h",
+        "output/full_shell/FullShellIdentityFields.h",
+        "output/full_shell/IntervalChunkPlan.h",
+        "output/full_shell/activity/Internal.h",
+        "output/full_shell/static_bundle/SourceAuthority.h",
+        "output/physical_run/AcceptedInterval.h",
+        "output/physical_run/EnvironmentArtifacts.h",
+        "output/physical_run/IntervalIO.h",
+        "output/physical_run/Metadata.h",
+        "output/physical_run/NativeContactValues.h",
+        "output/physical_run/NativeGroupValues.h",
+        "output/physical_run/Replay.h",
+        "output/physical_run/ReplayBudget.h",
+        "output/physical_run/RunArchive.h",
+        "output/physical_run/RunState.h",
+        "output/physical_run/SelfContactValues.h",
+        "output/physical_run/SourceInputFields.h",
+        "output/physical_run/Types.h",
+        "output/physical_run/ViewerInput.h",
+        "output/physical_run/WallArtifacts.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_frames:physical_frame_archive",
+        "//build_defs/app/output/physical_run:wall_composition",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From output/physical_run/WallComposition.cmake:robo_dyna_wall_composition
+app_library(
+    name = "wall_composition",
+    srcs = [
+        "output/physical_run/WallComposition.cpp",
+    ],
+    hdrs = [
+        "output/physical_run/WallComposition.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

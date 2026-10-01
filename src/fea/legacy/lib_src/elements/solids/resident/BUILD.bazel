@@ -16,6 +16,7 @@ cc_library(
         "//lib_src/elements:shell_physical_owner_values", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_startup", "//lib_src/solvers:explicit_nodal_state",
         "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
+        "//lib_src/solvers:nodal_repeated_force_assembly", "//lib_src/solvers:nodal_repeated_stiffness",
         "//lib_src/constraints:nodal_rigid_assembly_binding", "//lib_utils:bounded_arena", "//lib_utils:ordered_node_incidence",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],

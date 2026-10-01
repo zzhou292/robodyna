@@ -1,0 +1,36 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+app_library(
+    name = "replay_assets",
+    srcs = [
+        "viewer/ReplayAssets.cpp",
+    ],
+    hdrs = [
+        "viewer/ReplayAssets.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+    ],
+)
+
+app_library(
+    name = "replay_vsg",
+    srcs = [
+        "viewer/ReplayVsg.cpp",
+        "viewer/ReplayVsgCapture.cpp",
+    ],
+    hdrs = [
+        "viewer/ReplayVsg.h",
+    ],
+    deps = [
+        "//build_defs/chrono/vsg:vsg",
+        "//build_defs/app/output:artifact_io",
+        "//build_defs/app/chrono/replay:replay_visual_values",
+        ":replay_assets",
+    ],
+    copts = [
+    ],
+    header_deps = ["//build_defs/app/output/full_shell:full_shell_records"],
+)

@@ -1,0 +1,29 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "assets_test",
+    srcs = ["ReplayAssetsTest.cpp"],
+    deps = [
+        "//build_defs/app/viewer:replay_assets",
+        "//build_defs/app/viewer/physical_run:physical_viewer_values",
+        "@googletest//:gtest_main",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-viewer"],
+)
+
+cc_test(
+    name = "inherited_values_test",
+    srcs = [
+        "//src/compatibility/app:chrono/physical_run/tests/ViewerValuesTest.cpp",
+        "//src/compatibility/app:chrono/physical_run/tests/FixedCameraTest.cpp",
+        "//src/compatibility/app:chrono/physical_run/tests/ClippingTest.cpp",
+        "//src/compatibility/app:output/full_shell/tests/TestSupport.h",
+    ],
+    deps = [
+        "//build_defs/app/viewer/physical_run:physical_viewer_values",
+        "@googletest//:gtest_main",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-viewer"],
+)

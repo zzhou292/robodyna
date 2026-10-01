@@ -1,7 +1,11 @@
-"""Full V5 closure precheck; exact C++ replay owns complete record validation."""
+"""Native V5/V6 closure precheck; C++ replay owns complete record validation."""
 from .native_run import _count, _record, _time
 
 SCHEMA = 'robo_dyna.native_vehicle_contact_run.v1'
+PROFILE_LABELS = {
+    'selected_vehicle_supports_v5_with_declared_finite_mesh_wall': 'V5 vehicle + finite mesh wall',
+    'native_v6_raw8_heph_explicit_cin28_with_declared_finite_mesh_wall': 'Native V6 vehicle + finite mesh wall',
+}
 PARTICIPANTS = 'qeph,t3,qbat,type25,type13,solids,type45,beam18,native_type25_group'
 # Numeric values are the existing vehicle_run::StopKind contract. Output and
 # startup failures cannot claim a normal closed archive.
@@ -14,7 +18,8 @@ def closed_native_vehicle_run(run, report):
         raise ValueError('Vehicle producer guard has no normal typed completion')
     summary = read_json(run / 'summary.json')
     if (summary.get('schema') != SCHEMA
-            or summary.get('physical_profile') != 'selected_vehicle_supports_v5_with_declared_finite_mesh_wall'
+            or not isinstance(summary.get('physical_profile'), str)
+            or summary.get('physical_profile') not in PROFILE_LABELS
             or summary.get('contact_profile') != 'source_type25_self_and_all_retained_nodes_to_fixed_mesh'
             or summary.get('initial_state') != 'source_produced_starter_history_and_final_type2_removals'
             or summary.get('visualization_only_not_restart') is not True
@@ -101,5 +106,5 @@ def closed_native_vehicle_run(run, report):
     values = {**summary, 'valid_archive_manifest': True, 'reason': reason,
               'actual_completed_time_s': time, 'viewer_input_sha256': viewer_hash,
               'archive_manifest_sha256': manifest_hash, '_summary_file': 'summary.json',
-              '_display_profile': 'V5 vehicle + finite mesh wall'}
+              '_display_profile': PROFILE_LABELS[summary['physical_profile']]}
     return values, index, viewer_hash

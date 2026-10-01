@@ -1,0 +1,37 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+py_binary(
+    name = "robodyna",
+    srcs = ["main.py"],
+    main = "main.py",
+    deps = ["//src/simulation/driver:driver"],
+    data = [":robodyna_native", "//apps/physical_viewer:physical_replay", "//build_defs/chrono/vsg:assets"],
+)
+
+# Same CLI code, explicit package contents. Target selection does not change
+# global C++/CUDA configuration or invalidate all numerical compilation actions.
+py_binary(
+    name = "robodyna_headless",
+    srcs = ["main.py"],
+    main = "main.py",
+    deps = ["//src/simulation/driver:driver"],
+    data = [":robodyna_native"],
+)
+
+py_binary(
+    name = "robodyna_host",
+    srcs = ["main.py"],
+    main = "main.py",
+    deps = ["//src/simulation/driver:driver"],
+)
+
+# A normal production executable. GoogleTest is only a dependency of tests.
+cc_binary(
+    name = "robodyna_native",
+    srcs = ["native_main.cpp"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//src/simulation/driver:native_driver"],
+)

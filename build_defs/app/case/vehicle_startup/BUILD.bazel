@@ -1,0 +1,363 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_startup/TiedSearchAssessmentValues.cmake:robo_dyna_tied_assessment_values
+app_library(
+    name = "tied_assessment_values",
+    srcs = [
+        "case/vehicle_startup/tied_search/CanonicalPayload.cpp",
+        "case/vehicle_startup/tied_search/Budget.cpp",
+        "case/vehicle_startup/tied_search/Inputs.cpp",
+        "case/vehicle_startup/tied_search/Associations.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/tied_search/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_search_geometry",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedCinAttachments.cmake:robo_dyna_tied_cin_attachments
+app_library(
+    name = "tied_cin_attachments",
+    srcs = [
+        "case/vehicle_startup/TiedCinAttachments.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_search_post_kinchk",
+        "//build_defs/app/case/vehicle_startup:tied_cin_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedCinAttachmentValues.cmake:robo_dyna_tied_cin_values
+app_library(
+    name = "tied_cin_values",
+    srcs = [
+        "case/vehicle_startup/tied_cin/Inputs.cpp",
+        "case/vehicle_startup/tied_cin/Budget.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/tied_cin/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_post_kinchk_values",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_cin_attachment",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedCinWitnessActivity.cmake:robo_dyna_tied_cin_witness_activity
+app_library(
+    name = "tied_cin_witness_activity",
+    srcs = [
+        "case/vehicle_startup/TiedCinWitnessActivity.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityCapture.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityUpload.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedCinWitnessActivity.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityInternal.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+        "@legacy_fea//lib_src/elements:shell_batch_publication",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedCinWitnessRoster.cmake:robo_dyna_tied_cin_witness_roster
+app_library(
+    name = "tied_cin_witness_roster",
+    srcs = [
+        "case/vehicle_startup/TiedCinWitnessRoster.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_values",
+        "//build_defs/app/case/vehicle_startup:tied_cin_attachments",
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_binding",
+        "@legacy_fea//lib_src/assembly:shell_physical_binding",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedCinWitnessValues.cmake:robo_dyna_tied_cin_witness_values
+app_library(
+    name = "tied_cin_witness_values",
+    srcs = [
+        "case/vehicle_startup/tied_cin_witness/Budget.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.cpp",
+        "case/vehicle_startup/tied_cin_witness/Incidence.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedCinWitnessActivity.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.h",
+        "case/vehicle_startup/tied_cin_witness/Internal.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_cin_values",
+        "@legacy_fea//lib_src/elements:shell_batch_binding",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements:shell_batch_publication",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchClassificationValues.cmake:robo_dyna_tied_classification_values
+app_library(
+    name = "tied_classification_values",
+    srcs = [
+        "case/vehicle_startup/tied_classification/Inputs.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/tied_classification/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_finalization_values",
+        "//build_defs/app/modelio/tied_shell:tied_classification_context",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_shell_classification",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchFinalizedValues.cmake:robo_dyna_tied_finalization_values
+app_library(
+    name = "tied_finalization_values",
+    srcs = [
+        "case/vehicle_startup/tied_finalization/Budget.cpp",
+        "case/vehicle_startup/tied_finalization/Inputs.cpp",
+        "case/vehicle_startup/tied_finalization/SourceReceipt.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/tied_finalization/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/packing/Internal.h",
+        "modelio/vehicle_source/SourceCards.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_assessment_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchPostKinChkValues.cmake:robo_dyna_tied_post_kinchk_values
+app_library(
+    name = "tied_post_kinchk_values",
+    srcs = [
+        "case/vehicle_startup/tied_post_kinchk/Receipt.cpp",
+        "case/vehicle_startup/tied_post_kinchk/Inputs.cpp",
+        "case/vehicle_startup/tied_post_kinchk/Budget.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/tied_post_kinchk/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/classification/Internal.h",
+        "modelio/vehicle_source/SourceCards.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_classification_values",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_post_kinchk",
+    ],
+    copts = [
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchAssessment.cmake:robo_dyna_tied_search_assessment
+app_library(
+    name = "tied_search_assessment",
+    srcs = [
+        "case/vehicle_startup/TiedSearchAssessment.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_assessment_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:driver",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchClassification.cmake:robo_dyna_tied_search_classification
+app_library(
+    name = "tied_search_classification",
+    srcs = [
+        "case/vehicle_startup/TiedSearchClassification.cpp",
+        "case/vehicle_startup/tied_classification/Budget.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/classification/Internal.h",
+        "modelio/vehicle_source/SourceCards.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_search_finalized",
+        "//build_defs/app/case/vehicle_startup:tied_classification_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchFinalized.cmake:robo_dyna_tied_search_finalized
+app_library(
+    name = "tied_search_finalized",
+    srcs = [
+        "case/vehicle_startup/TiedSearchFinalized.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_finalization_values",
+        "//build_defs/app/case/vehicle_startup:tied_search_assessment",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/TiedSearchPostKinChk.cmake:robo_dyna_tied_search_post_kinchk
+app_library(
+    name = "tied_search_post_kinchk",
+    srcs = [
+        "case/vehicle_startup/TiedSearchPostKinChk.cpp",
+        "case/vehicle_startup/physical_attachments/OriginalTiedPost.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/physical_attachments/OriginalTiedPost.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:tied_search_classification",
+        "//build_defs/app/case/vehicle_startup:tied_post_kinchk_values",
+    ],
+    copts = [
+    ],
+)
+
+# From case/vehicle_startup/VehicleShellReferences.cmake:robo_dyna_vehicle_native_reference
+app_library(
+    name = "vehicle_native_reference",
+    srcs = [
+        "case/vehicle_startup/NativeReference.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/ReferenceDeclarations.h",
+        "case/vehicle_startup/ReferenceStorage.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/source_assembly/SourceShellReferenceInput.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/ArtifactInventory.h",
+        "output/BoundedArrayIO.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+        "output/full_shell/IntervalValues.h",
+        "output/full_shell/static_bundle/Types.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements:shell_batch_failure_binding",
+    ],
+)
+
+# From case/vehicle_startup/VehicleShellBinding.cmake:robo_dyna_vehicle_shell_binding
+app_library(
+    name = "vehicle_shell_binding",
+    srcs = [
+        "case/vehicle_startup/VehicleShellBinding.cpp",
+        "case/vehicle_startup/shell_binding/Budget.cpp",
+        "case/vehicle_startup/shell_binding/Inputs.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/shell_binding/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_references",
+        "@legacy_fea//lib_src/elements:shell_batch_binding",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/VehicleShellReferences.cmake:robo_dyna_vehicle_shell_references
+app_library(
+    name = "vehicle_shell_references",
+    srcs = [
+        "case/vehicle_startup/VehicleShellReferences.cpp",
+        "case/vehicle_startup/ReferenceGeometry.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/QbatReferenceInput.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/vehicle_sections:vehicle_sections",
+        "//build_defs/app/case/vehicle_startup:vehicle_native_reference",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

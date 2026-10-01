@@ -26,7 +26,7 @@ cc_library(
 
 # Retained implicit/ANCF implementations have distinct state and numerical
 # contracts. They are not selected by the Yaris explicit target above.
-alias(name = "implicit_newton", actual = "@legacy_fea//lib_src/solvers:multi_element_newton")
-alias(name = "implicit_adamw", actual = "@legacy_fea//lib_src/solvers:solvers_syncedadamw")
-alias(name = "implicit_nesterov", actual = "@legacy_fea//lib_src/solvers:solvers_syncednesterov")
-alias(name = "legacy_dem_contact", actual = "@legacy_fea//lib_src/collision:deme_mesh_collision_system")
+alias(name = "implicit_newton", actual = "@legacy_fea//lib_src/solvers:multi_element_newton", tags = ["manual"])
+alias(name = "implicit_adamw", actual = "@legacy_fea//lib_src/solvers:solvers_syncedadamw", tags = ["manual"])
+alias(name = "implicit_nesterov", actual = "@legacy_fea//lib_src/solvers:solvers_syncednesterov", tags = ["manual"])
+alias(name = "legacy_dem_contact", actual = "@legacy_fea//lib_src/collision:deme_mesh_collision_system", tags = ["manual"])

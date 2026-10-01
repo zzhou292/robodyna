@@ -1,0 +1,24 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/type25/VehicleType25Source.cmake:robo_dyna_vehicle_type25_source
+app_library(
+    name = "vehicle_type25_source",
+    srcs = [
+        "modelio/type25/VehicleType25Source.cpp",
+        "modelio/type25/Budget.cpp",
+        "modelio/type25/Mapping.cpp",
+    ],
+    hdrs = [
+        "modelio/type25/Internal.h",
+        "modelio/type25/VehicleType25Source.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "//build_defs/app/modelio/source_assembly:source_assembly_spotweld_input",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

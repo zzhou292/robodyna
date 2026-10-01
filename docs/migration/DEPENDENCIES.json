@@ -11,7 +11,9 @@
       "source_checkout_initialized": true,
       "source_checkout_commit": "cf8ae333c7693b4a6356e3c2df7993c53d5bb696",
       "source_checkout_differs_from_gitlink": false,
-      "imported_checkout_initialized": false
+      "imported_checkout_initialized": true,
+      "imported_checkout_commit": "cf8ae333c7693b4a6356e3c2df7993c53d5bb696",
+      "transport": "local source copy; public origin restored"
     },
     {
       "name": "chrono-googletest",

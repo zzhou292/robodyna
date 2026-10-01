@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+alias(name = "vsg", actual = "//src/compatibility/chrono:native_vsg", tags = ["manual"])
+alias(name = "assets", actual = "//src/compatibility/chrono:vsg_assets", tags = ["manual"])
+
+cc_test(
+    name = "sdk_test",
+    srcs = ["VsgSdkTest.cpp"],
+    deps = [":vsg", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-viewer"],
+)

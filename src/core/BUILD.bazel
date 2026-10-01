@@ -1,0 +1,3 @@
+load("//build_defs/chrono:neutral.bzl", "neutral_library")
+
+neutral_library(name = "foundation", component = "foundation", deps = [])

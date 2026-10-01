@@ -1,0 +1,66 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_python//python:defs.bzl", "py_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Source-only export boundary. Native libraries under build_defs/app declare
+# precise translation units and headers; this does not compile a source glob.
+_REQUIRED_NATIVE_SOURCES = glob(
+    [
+        "case/vehicle_native_contact/Run.h",
+        "case/vehicle_native_contact/run/Prepare.cpp",
+        "case/vehicle_native_contact/source/OriginalSources.h",
+        "output/ArtifactIO.cpp",
+    ],
+    allow_empty = False,
+)
+
+exports_files(
+    _REQUIRED_NATIVE_SOURCES + glob(
+        ["**/*.cpp", "**/*.h", "**/*.hpp", "**/*.cuh", "**/*.cmake", "**/CMakeLists.txt"],
+        exclude = ["**/tests/**", "**/frozen/**"] + _REQUIRED_NATIVE_SOURCES,
+        allow_empty = True,
+    ),
+    visibility = ["//build_defs/app:__subpackages__", "//src/simulation/driver:__subpackages__"],
+)
+
+# Transitional rooted includes. This adds no implementation or hidden headers;
+# the consuming library still declares every header through its dependencies.
+cc_library(name = "include_root", includes = ["."])
+
+# Focused inherited viewer-value regressions; frozen model fixtures remain private.
+exports_files(
+    [
+        "chrono/physical_run/tests/ViewerValuesTest.cpp",
+        "chrono/physical_run/tests/FixedCameraTest.cpp",
+        "chrono/physical_run/tests/ClippingTest.cpp",
+        "output/full_shell/tests/TestSupport.h",
+    ],
+    visibility = ["//build_defs/app/viewer/tests:__pkg__"],
+)
+
+py_library(
+    name = "python_io",
+    srcs = ["viewer/file_integrity.py", "output/gtest_evidence.py"] + glob(
+        ["viewer/postprocess/*.py", "viewer/__init__.py", "output/__init__.py"],
+        exclude = ["**/test_*.py"],
+        allow_empty = True,
+    ),
+    imports = ["."],
+)
+
+py_library(
+    name = "python_video",
+    srcs = glob(["viewer/video/capture.py", "viewer/video/encode.py"], allow_empty = False),
+    imports = ["."],
+    deps = [":python_io"],
+)
+
+# Exact JSON spelling comparison reused by the migration gate; implementation
+# remains unchanged in the retained output utility.
+py_library(
+    name = "python_exact_json",
+    srcs = ["output/json_object.py"],
+    imports = ["."],
+    visibility = ["//tools/migration:__pkg__"],
+)

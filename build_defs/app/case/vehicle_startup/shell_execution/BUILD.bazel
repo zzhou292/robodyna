@@ -1,0 +1,87 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_startup/shell_execution/VehicleShellExecution.cmake:robo_dyna_vehicle_shell_execution
+app_library(
+    name = "vehicle_shell_execution",
+    srcs = [
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.cpp",
+        "case/vehicle_startup/shell_execution/SourceChecks.cpp",
+        "case/vehicle_startup/shell_execution/Budget.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution_values",
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "@legacy_fea//lib_src/assembly:shell_physical_binding",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_startup/shell_execution/VehicleShellExecution.cmake:robo_dyna_vehicle_shell_execution_values
+app_library(
+    name = "vehicle_shell_execution_values",
+    srcs = [
+        "case/vehicle_startup/shell_execution/Packing.cpp",
+        "case/vehicle_startup/shell_execution/Curves.cpp",
+        "case/vehicle_startup/shell_execution/Resource.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/Internal.h",
+        "case/vehicle_startup/shell_execution/Packing.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/NativeDeclarationViews.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/BoundedArrayIO.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+        "output/full_shell/IntervalValues.h",
+        "output/full_shell/static_bundle/Types.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/assembly:shell_physical_binding",
+        "@legacy_fea//lib_src/elements/solids:model",
+    ],
+)

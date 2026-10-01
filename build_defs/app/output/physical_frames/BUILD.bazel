@@ -1,0 +1,139 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/physical_frames/PhysicalFrames.cmake:robo_dyna_physical_accepted_frames
+app_library(
+    name = "physical_accepted_frames",
+    srcs = [
+        "output/physical_frames/Mapping.cpp",
+        "output/physical_frames/PhaseIdentity.cpp",
+        "output/physical_frames/CaptureContext.cpp",
+        "output/physical_frames/Capture.cpp",
+    ],
+    hdrs = [
+        "output/physical_frames/CaptureState.h",
+        "output/physical_frames/PhysicalAcceptedFrames.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_frames:physical_frame_values",
+        "//build_defs/app/case/vehicle_runtime:vehicle_physical_startup",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_bundle",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From output/physical_frames/FrameArchive.cmake:robo_dyna_physical_frame_archive
+app_library(
+    name = "physical_frame_archive",
+    srcs = [
+        "output/physical_frames/ArchivePrepare.cpp",
+        "output/physical_frames/ArchiveWrite.cpp",
+        "output/physical_frames/FrameIOChecks.cpp",
+    ],
+    hdrs = [
+        "output/physical_frames/Archive.h",
+        "output/physical_frames/ArchiveState.h",
+    ],
+    deps = [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_bundle",
+        "//build_defs/app/output/full_shell/activity:parent_activity",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_utils:bounded_arena",
+    ],
+)
+
+# From output/physical_frames/PhysicalFrames.cmake:robo_dyna_physical_frame_values
+app_library(
+    name = "physical_frame_values",
+    srcs = [
+        "output/physical_frames/Buffers.cpp",
+        "output/physical_frames/Fields.cpp",
+        "output/physical_frames/MappingRoles.cpp",
+        "output/physical_frames/Phase.cpp",
+        "output/physical_frames/EnvironmentFields.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_runtime/CaptureAccess.h",
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/SourceRoles.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/physical_frames/Buffers.h",
+        "output/physical_frames/EnvironmentFields.h",
+        "output/physical_frames/FieldTypes.h",
+        "output/physical_frames/Fields.h",
+        "output/physical_frames/Mapping.h",
+        "output/physical_frames/ParticipantPhase.h",
+        "output/physical_frames/RecordFields.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_frames:physical_frame_archive",
+        "@eigen//:eigen",
+        "@rules_cuda//cuda:runtime",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+        "@legacy_fea//lib_src/elements:shell_batch_publication",
+    ],
+)

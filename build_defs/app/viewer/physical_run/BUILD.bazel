@@ -1,0 +1,35 @@
+load("//build_defs/app:defs.bzl", "app_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+app_library(
+    name = "physical_viewer_values",
+    srcs = [
+        "viewer/physical_run/Options.cpp",
+        "viewer/physical_run/Input.cpp",
+        "viewer/physical_run/SourceMetadata.cpp",
+    ],
+    hdrs = [
+        "viewer/physical_run/Options.h",
+    ],
+    deps = [
+        "//build_defs/app/chrono/physical_run:physical_replay_scene",
+    ],
+    copts = [
+    ],
+)
+
+cc_binary(
+    name = "physical_replay",
+    srcs = [
+        "//src/compatibility/app:viewer/physical_run/main.cpp",
+        "//src/compatibility/app:viewer/physical_run/Overlay.cpp",
+        "//src/compatibility/app:viewer/physical_run/Capture.cpp",
+        "//src/compatibility/app:viewer/physical_run/Metadata.cpp",
+        "//src/compatibility/app:viewer/physical_run/Capture.h",
+        "//src/compatibility/app:viewer/physical_run/Playback.h",
+    ],
+    deps = [":physical_viewer_values", "//build_defs/app/viewer:replay_vsg"],
+    data = ["//build_defs/chrono/vsg:assets", "@vsg_sdk//:runtime", "@vsg_sdk//:sdk.json"],
+    visibility = ["//visibility:public"],
+    tags = ["manual", "native-viewer"],
+)

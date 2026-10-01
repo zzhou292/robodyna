@@ -1,0 +1,29 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_native_contact/source/Sources.cmake:robo_dyna_native_v6_sources
+app_library(
+    name = "native_v6_sources",
+    srcs = [
+        "case/vehicle_native_contact/source/Inputs.cpp",
+        "case/vehicle_native_contact/source/Owner.cpp",
+        "case/vehicle_native_contact/source/Contact.cpp",
+    ],
+    hdrs = [
+        "case/CanonicalWallArtifacts.h",
+        "case/vehicle_native_contact/source/Internal.h",
+        "case/vehicle_native_contact/source/MemberStorage.h",
+        "case/vehicle_native_contact/source/OriginalSources.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_run/source:original_source_io",
+        "//build_defs/app/modelio/solid_control_packets:native_solid_packets",
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "//build_defs/app/case/vehicle_self_contact/native:initializer_controls_source",
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "//build_defs/app/case/vehicle_startup:tied_search_post_kinchk",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

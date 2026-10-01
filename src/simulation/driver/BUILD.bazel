@@ -1,0 +1,59 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "driver",
+    srcs = ["__init__.py", "cli.py", "inspection.py", "job.py", "jsonio.py",
+            "manifests.py", "receipts.py", "runtime.py", "sources.py", "watchdog.py",
+            "rendering/__init__.py", "rendering/assets.py", "rendering/config.py", "rendering/inputs.py", "rendering/integrity.py",
+            "rendering/pipeline.py", "rendering/stages.py", "rendering/worker.py"],
+    deps = ["//src/compatibility/app:python_io", "//src/compatibility/app:python_video", "@rules_python//python/runfiles"],
+    data = ["@legacy_fea//tools:bounded_guard_runtime"],
+)
+
+py_test(
+    name = "host_tests",
+    srcs = ["tests/__init__.py", "tests/fixture.py", "tests/main.py",
+            "tests/test_admission.py", "tests/test_launch.py", "tests/test_rendering.py",
+            "tests/test_guard_runtime.py", "tests/test_viewer_assets.py"],
+    main = "tests/main.py",
+    deps = [":driver"],
+)
+
+# Explicit local artifact gate; missing environment is a failure, not a skip.
+py_test(
+    name = "delivered_archive_metadata_test",
+    srcs = ["tests/test_delivered_archive.py"],
+    main = "tests/test_delivered_archive.py",
+    deps = [":driver"],
+    tags = ["manual", "local"],
+)
+
+cc_library(
+    name = "native_request",
+    srcs = ["native/Request.cpp"],
+    hdrs = ["native/Request.h"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//build_defs/app:artifact_io"],
+)
+
+cc_library(
+    name = "native_driver",
+    srcs = ["native/Prepare.cpp", "native/Report.cpp", "native/Execute.cpp"],
+    hdrs = ["native/Session.h",
+            "//src/compatibility/app:case/vehicle_native_contact/actual/PreviewResources.h",
+            "//src/compatibility/app:case/vehicle_native_contact/actual/SolidExecutionLimits.h",
+            "//src/compatibility/app:case/vehicle_native_contact/actual/ContactActivitySelection.h"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = [":native_request", "//build_defs/app:native_vehicle_run", "//build_defs/app:native_v6_sources",
+            "//build_defs/app:native_preview_controls", "//build_defs/app:artifact_io"],
+)
+
+cc_test(
+    name = "native_request_test",
+    srcs = ["native/RequestTest.cpp"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = [":native_request", "@googletest//:gtest_main"],
+)

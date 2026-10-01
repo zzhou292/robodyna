@@ -1,0 +1,39 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/rigid_part/RigidPartSource.cmake:robo_dyna_rigid_part_source
+app_library(
+    name = "rigid_part_source",
+    srcs = [
+        "modelio/rigid_part/RigidPartDeclarations.cpp",
+        "modelio/rigid_part/RigidPartSource.cpp",
+        "modelio/rigid_part/Declarations.cpp",
+        "modelio/rigid_part/Sources.cpp",
+        "modelio/rigid_part/Connections.cpp",
+        "modelio/rigid_part/Geometry.cpp",
+    ],
+    hdrs = [
+        "modelio/rigid_part/Internal.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/NativeMaterialInput.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyMaterialInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_part_topology",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements:shell_batch_plasticity_binding",
+    ],
+)

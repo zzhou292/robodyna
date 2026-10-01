@@ -1,0 +1,24 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_dynamics/native_contact/Contribution.cmake:robo_dyna_native_contact_contribution
+app_library(
+    name = "native_contact_contribution",
+    srcs = [
+        "case/vehicle_dynamics/native_contact/Contribution.cpp",
+        "case/vehicle_dynamics/native_contact/Error.cpp",
+        "case/vehicle_dynamics/native_contact/Group.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_dynamics/native_contact/Contribution.h",
+        "case/vehicle_dynamics/native_contact/Error.h",
+        "case/vehicle_dynamics/native_contact/Group.h",
+        "case/vehicle_dynamics/native_contact/Observation.h",
+    ],
+    deps = [
+        "@legacy_fea//lib_src/collision:radioss_type25_transaction",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

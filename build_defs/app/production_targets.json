@@ -1,0 +1,3925 @@
+{
+  "schema_version": 1,
+  "qualified_app_commit": "3b6ef1c566061246679d56b4ffd538315dde74dc",
+  "scope": "Static source-preserving native production target port; compilation and runtime qualification pending.",
+  "source_root": "src/compatibility/app",
+  "external_targets": {
+    "CUDA::cudart": "@rules_cuda//cuda:runtime",
+    "Chrono::Chrono_core": "//build_defs/chrono:native_core_fea",
+    "Eigen3::Eigen": "@eigen//:eigen",
+    "OpenSSL::Crypto": "@openssl//:crypto",
+    "tl_beam18_node_contributions": "@legacy_fea//lib_src/assembly:beam18_node_contributions",
+    "tl_element_mass_contributions": "@legacy_fea//lib_src/assembly:element_mass_contributions",
+    "tl_nodal_node_domain": "@legacy_fea//lib_src/assembly:nodal_node_domain",
+    "tl_shell_physical_binding": "@legacy_fea//lib_src/assembly:shell_physical_binding",
+    "tl_nodal_rigid_assembly_binding": "@legacy_fea//lib_src/constraints:nodal_rigid_assembly_binding",
+    "tl_nodal_rigid_part_topology": "@legacy_fea//lib_src/constraints:nodal_rigid_part_topology",
+    "tl_planar_wall_geometry": "@legacy_fea//lib_src/collision:planar_wall_geometry",
+    "tl_radioss_type25_activity_source": "@legacy_fea//lib_src/collision:radioss_type25_activity_source",
+    "tl_radioss_type25_current_normals": "@legacy_fea//lib_src/collision:radioss_type25_current_normals",
+    "tl_radioss_type25_fixed_main_startup": "@legacy_fea//lib_src/collision:radioss_type25_fixed_main_startup",
+    "tl_radioss_type25_gap_source": "@legacy_fea//lib_src/collision:radioss_type25_gap_source",
+    "tl_radioss_type25_initial_state": "@legacy_fea//lib_src/collision:radioss_type25_initial_state",
+    "tl_radioss_type25_interface_surface": "@legacy_fea//lib_src/collision:radioss_type25_interface_surface",
+    "tl_radioss_type25_main_geometry": "@legacy_fea//lib_src/collision:radioss_type25_main_geometry",
+    "tl_radioss_type25_search_startup": "@legacy_fea//lib_src/collision:radioss_type25_search_startup",
+    "tl_radioss_type25_shell_source": "@legacy_fea//lib_src/collision:radioss_type25_shell_source",
+    "tl_radioss_type25_surface_source": "@legacy_fea//lib_src/collision:radioss_type25_surface_source",
+    "tl_radioss_type25_transaction": "@legacy_fea//lib_src/collision:radioss_type25_transaction",
+    "tl_shell_batch_binding": "@legacy_fea//lib_src/elements:shell_batch_binding",
+    "tl_shell_batch_publication": "@legacy_fea//lib_src/elements:shell_batch_publication",
+    "tl_tied_cin_attachment": "@legacy_fea//lib_src/constraints/tied_shell:tied_cin_attachment",
+    "tl_tied_post_kinchk": "@legacy_fea//lib_src/constraints/tied_shell:tied_post_kinchk",
+    "tl_tied_shell_classification": "@legacy_fea//lib_src/constraints/tied_shell:tied_shell_classification",
+    "tl_tied_search_driver": "@legacy_fea//lib_src/constraints/tied_shell/search:driver",
+    "tl_tied_search_driver_values": "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+    "tl_tied_search_finalization": "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+    "tl_beam18_batch": "@legacy_fea//lib_src/elements/beam18/resident:batch",
+    "tl_solid_model": "@legacy_fea//lib_src/elements/solids:model",
+    "tl_type13_startup": "@legacy_fea//lib_src/elements/type13:type13_startup",
+    "tl_type25_model": "@legacy_fea//lib_src/elements/type25:type25_model",
+    "tl_type45_batch": "@legacy_fea//lib_src/elements/type45/resident:batch",
+    "tl_type45_model": "@legacy_fea//lib_src/elements/type45:model"
+  },
+  "targets": {
+    "robo_dyna_native_preview_controls": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact/actual/controls:native_preview_controls",
+      "cmake_file": "case/vehicle_native_contact/actual/controls/Controls.cmake",
+      "cmake_sha256": "8066f2f157aad2c7051f642687311aa5a97897face7ad4183b824dbfc1b9cea0",
+      "sources": [
+        "case/vehicle_native_contact/actual/controls/PreviewControls.cpp"
+      ],
+      "headers": [
+        "case/vehicle_native_contact/actual/controls/PreviewControls.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_run_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_run:vehicle_run_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_run_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_run:vehicle_run_values",
+      "cmake_file": "case/vehicle_run/Values.cmake",
+      "cmake_sha256": "512c929df26395656238dab40f1c8b7cc8ad8c822c1964f6413137f43c8acc5a",
+      "sources": [
+        "case/vehicle_run/Config.cpp",
+        "case/vehicle_run/ContactProfile.cpp",
+        "case/vehicle_run/Loop.cpp",
+        "case/vehicle_run/TimingWindow.cpp",
+        "case/vehicle_run/cli/Options.cpp"
+      ],
+      "headers": [
+        "benchmarks/stage_timing/StageTimer.h",
+        "case/vehicle_dynamics/StepTiming.h",
+        "case/vehicle_run/Config.h",
+        "case/vehicle_run/ContactProfile.h",
+        "case/vehicle_run/Loop.h",
+        "case/vehicle_run/MechanicsTotals.h",
+        "case/vehicle_run/Progress.h",
+        "case/vehicle_run/SampledShellPlasticityTotals.h",
+        "case/vehicle_run/SelfContactTotals.h",
+        "case/vehicle_run/TimingWindow.h",
+        "case/vehicle_run/cli/Options.h",
+        "case/vehicle_run/contact_diagnostics/Values.h",
+        "case/vehicle_run/source/OriginalPaths.h",
+        "output/full_shell/FixedStepHorizon.h"
+      ],
+      "dependencies": [],
+      "bazel_dependencies": [],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_v6_sources": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact/source:native_v6_sources",
+      "cmake_file": "case/vehicle_native_contact/source/Sources.cmake",
+      "cmake_sha256": "9f4bba95396666ec4ab3a318e487e0608b501027c43d23f9663437d2e4c09cd9",
+      "sources": [
+        "case/vehicle_native_contact/source/Inputs.cpp",
+        "case/vehicle_native_contact/source/Owner.cpp",
+        "case/vehicle_native_contact/source/Contact.cpp"
+      ],
+      "headers": [
+        "case/CanonicalWallArtifacts.h",
+        "case/vehicle_native_contact/source/Internal.h",
+        "case/vehicle_native_contact/source/MemberStorage.h",
+        "case/vehicle_native_contact/source/OriginalSources.h"
+      ],
+      "dependencies": [
+        "robo_dyna_original_source_io",
+        "robo_dyna_native_solid_packets",
+        "robo_dyna_native_vehicle_source_admission",
+        "robo_dyna_initializer_controls_source",
+        "robo_dyna_post_gapm_main_source",
+        "robo_dyna_tied_search_post_kinchk"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_run/source:original_source_io",
+        "//build_defs/app/modelio/solid_control_packets:native_solid_packets",
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "//build_defs/app/case/vehicle_self_contact/native:initializer_controls_source",
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "//build_defs/app/case/vehicle_startup:tied_search_post_kinchk"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_search_post_kinchk": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_search_post_kinchk",
+      "cmake_file": "case/vehicle_startup/TiedSearchPostKinChk.cmake",
+      "cmake_sha256": "b67077681a3ea0702f7dccd7cf3330f3900fe1fa095afbd2aa4e470eb0cc52f7",
+      "sources": [
+        "case/vehicle_startup/TiedSearchPostKinChk.cpp",
+        "case/vehicle_startup/physical_attachments/OriginalTiedPost.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/physical_attachments/OriginalTiedPost.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_search_classification",
+        "robo_dyna_tied_post_kinchk_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_search_classification",
+        "//build_defs/app/case/vehicle_startup:tied_post_kinchk_values"
+      ],
+      "copts": []
+    },
+    "robo_dyna_tied_post_kinchk_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_post_kinchk_values",
+      "cmake_file": "case/vehicle_startup/TiedSearchPostKinChkValues.cmake",
+      "cmake_sha256": "d4df7787bd07b44d34ba71a4b30f98e1a5d614544aa47f6b4369aad049f95a05",
+      "sources": [
+        "case/vehicle_startup/tied_post_kinchk/Receipt.cpp",
+        "case/vehicle_startup/tied_post_kinchk/Inputs.cpp",
+        "case/vehicle_startup/tied_post_kinchk/Budget.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/tied_post_kinchk/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/classification/Internal.h",
+        "modelio/vehicle_source/SourceCards.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_classification_values",
+        "tl_tied_post_kinchk"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_classification_values",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_post_kinchk"
+      ],
+      "copts": []
+    },
+    "robo_dyna_tied_classification_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_classification_values",
+      "cmake_file": "case/vehicle_startup/TiedSearchClassificationValues.cmake",
+      "cmake_sha256": "bb035d33cab479e883c67ed29a88c909051f3b6f24e6aae0db01157fbcdc1c35",
+      "sources": [
+        "case/vehicle_startup/tied_classification/Inputs.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/tied_classification/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_finalization_values",
+        "robo_dyna_tied_classification_context",
+        "tl_tied_shell_classification"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_finalization_values",
+        "//build_defs/app/modelio/tied_shell:tied_classification_context",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_shell_classification"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_classification_context": {
+      "bazel_target": "//build_defs/app/modelio/tied_shell:tied_classification_context",
+      "cmake_file": "modelio/tied_shell/TiedClassificationContext.cmake",
+      "cmake_sha256": "d96452a8f96264f992e2d5d5feaa6f64a032d4a339175873fa2fc14cb12967af",
+      "sources": [
+        "modelio/tied_shell/TiedClassificationContext.cpp",
+        "modelio/tied_shell/classification/Budget.cpp",
+        "modelio/tied_shell/classification/ReadSet.cpp",
+        "modelio/tied_shell/classification/SourceRoles.cpp",
+        "modelio/tied_shell/classification/Wall.cpp"
+      ],
+      "headers": [
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/classification/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_auxiliary_constraints",
+        "robo_dyna_rigid_part_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_auxiliary_constraints",
+        "//build_defs/app/modelio/rigid_part:rigid_part_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_rigid_part_source": {
+      "bazel_target": "//build_defs/app/modelio/rigid_part:rigid_part_source",
+      "cmake_file": "modelio/rigid_part/RigidPartSource.cmake",
+      "cmake_sha256": "91b86d97d73d8579a4697d834b46b93d17f2384038a79325cb18a5cb21485a52",
+      "sources": [
+        "modelio/rigid_part/RigidPartDeclarations.cpp",
+        "modelio/rigid_part/RigidPartSource.cpp",
+        "modelio/rigid_part/Declarations.cpp",
+        "modelio/rigid_part/Sources.cpp",
+        "modelio/rigid_part/Connections.cpp",
+        "modelio/rigid_part/Geometry.cpp"
+      ],
+      "headers": [
+        "modelio/rigid_part/Internal.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/NativeMaterialInput.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyMaterialInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration",
+        "tl_nodal_rigid_part_topology"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_part_topology"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements:shell_batch_plasticity_binding"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements:shell_batch_plasticity_binding",
+          "headers": [
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/qeph/QephData.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_tied_shell_declaration": {
+      "bazel_target": "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+      "cmake_file": "modelio/tied_shell/TiedShellDeclaration.cmake",
+      "cmake_sha256": "6d0a90cf2250fba81258fc82beaafec5ab7ac810fba3d868779b1d028e6eb009",
+      "sources": [
+        "modelio/tied_shell/TiedShellDeclaration.cpp",
+        "modelio/tied_shell/Budget.cpp",
+        "modelio/tied_shell/SourceCards.cpp",
+        "modelio/tied_shell/ScopeDeclarations.cpp",
+        "modelio/tied_shell/GeometryCensus.cpp",
+        "modelio/tied_shell/ConstraintEvidence.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/TiedShellDeclaration.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/vehicle_source:vehicle_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_source": {
+      "bazel_target": "//build_defs/app/modelio/vehicle_source:vehicle_source",
+      "cmake_file": "modelio/vehicle_source/VehicleSourcePlan.cmake",
+      "cmake_sha256": "8a3b3abdcfc52dbd4b64722049379e362d4737d7b461f241cd7a640dec3cedcc",
+      "sources": [
+        "modelio/vehicle_source/VehicleSourcePlan.cpp",
+        "modelio/vehicle_source/OriginalAuthority.cpp",
+        "modelio/vehicle_source/PlanLimits.cpp",
+        "modelio/vehicle_source/PlanDeclarations.cpp",
+        "modelio/vehicle_source/PlanGeometry.cpp",
+        "modelio/vehicle_source/SourceCards.cpp",
+        "modelio/vehicle_source/NumericalSourceCards.cpp"
+      ],
+      "headers": [
+        "modelio/vehicle_source/Internal.h",
+        "modelio/vehicle_source/OriginalAuthority.h",
+        "modelio/vehicle_source/SourceCards.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h"
+      ],
+      "dependencies": [
+        "robo_dyna_source_assembly",
+        "robo_dyna_full_shell_source_mapping"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_full_shell_source_mapping": {
+      "bazel_target": "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+      "cmake_file": "output/full_shell/static_bundle/CMakeLists.txt",
+      "cmake_sha256": "e3e7d4b0892cbf6646bb8511353e97355a4ab20dfae278fd9efa0657c5d862ef",
+      "sources": [
+        "output/full_shell/static_bundle/InputChecks.cpp",
+        "output/full_shell/static_bundle/SourceReadBudget.cpp",
+        "output/full_shell/static_bundle/SourceAuthority.cpp",
+        "output/full_shell/static_bundle/CanonicalSpecs.cpp",
+        "output/full_shell/static_bundle/CanonicalSource.cpp",
+        "output/full_shell/static_bundle/CanonicalCatalog.cpp",
+        "output/full_shell/static_bundle/DeclaredCatalog.cpp",
+        "output/full_shell/static_bundle/Scope.cpp",
+        "output/full_shell/static_bundle/ScopeParts.cpp",
+        "output/full_shell/static_bundle/CanonicalGeometry.cpp",
+        "output/full_shell/static_bundle/MappingArrays.cpp",
+        "output/full_shell/static_bundle/MappingDigest.cpp",
+        "output/full_shell/static_bundle/MappingTopology.cpp",
+        "output/full_shell/static_bundle/MappingExecution.cpp",
+        "output/full_shell/static_bundle/MappingEncoding.cpp",
+        "output/full_shell/static_bundle/PreparedSourceMapping.cpp",
+        "output/full_shell/static_bundle/MappingFields.cpp",
+        "output/full_shell/static_bundle/MappingRecordWriter.cpp",
+        "output/full_shell/static_bundle/MappingRecordReader.cpp"
+      ],
+      "headers": [
+        "output/full_shell/static_bundle/CanonicalSpecs.h",
+        "output/full_shell/static_bundle/InputChecks.h",
+        "output/full_shell/static_bundle/MappingArrays.h",
+        "output/full_shell/static_bundle/MappingDraft.h",
+        "output/full_shell/static_bundle/MappingExecution.h",
+        "output/full_shell/static_bundle/MappingFields.h",
+        "output/full_shell/static_bundle/MappingRecords.h",
+        "output/full_shell/static_bundle/PreparedSourceMapping.h",
+        "output/full_shell/static_bundle/SourceAuthority.h",
+        "output/full_shell/static_bundle/Types.h"
+      ],
+      "dependencies": [
+        "robo_dyna_full_shell_records"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/full_shell:full_shell_records"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_full_shell_records": {
+      "bazel_target": "//build_defs/app/output/full_shell:full_shell_records",
+      "cmake_file": "output/full_shell/CMakeLists.txt",
+      "cmake_sha256": "d928eeb026d8d75a26fbca17fbc823d328ab5c1e3d90cdcdb3367e16e8db19c8",
+      "sources": [
+        "output/full_shell/FullShellVisualizationSchema.cpp",
+        "output/full_shell/FullShellVisualizationPlan.cpp",
+        "output/full_shell/FullShellFrameDescription.cpp",
+        "output/full_shell/FullShellVisualizationRecords.cpp",
+        "output/full_shell/FullShellIdentityFields.cpp"
+      ],
+      "headers": [
+        "output/full_shell/FixedStepHorizon.h",
+        "output/full_shell/FullShellIdentityFields.h",
+        "output/full_shell/FullShellVisualizationPlan.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h"
+      ],
+      "dependencies": [
+        "robo_dyna_bounded_array_io",
+        "robo_dyna_interval_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/arrays:bounded_array_io",
+        "//build_defs/app/output/full_shell/interval_values:interval_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_interval_values": {
+      "bazel_target": "//build_defs/app/output/full_shell/interval_values:interval_values",
+      "cmake_file": "output/full_shell/interval_values/CMakeLists.txt",
+      "cmake_sha256": "62199940ac967603460b27dbbc83a151ca0309d9fb4878495224460ce385c086",
+      "sources": [
+        "output/full_shell/IntervalValues.cpp",
+        "output/full_shell/IntervalChunkPlan.cpp"
+      ],
+      "headers": [
+        "output/full_shell/IntervalChunkPlan.h",
+        "output/full_shell/IntervalValues.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_artifact_io": {
+      "bazel_target": "//build_defs/app/output:artifact_io",
+      "cmake_file": "output/ArtifactIO.cmake",
+      "cmake_sha256": "07fa64fd78bdc97c181580d51254e8b2f01b2b59993f3a810675564e092f0ac9",
+      "sources": [
+        "output/ArtifactIO.cpp",
+        "output/ArtifactInventory.cpp",
+        "output/MeshArchive.cpp",
+        "output/GeometryMeshArchive.cpp",
+        "output/SurfaceBindingFields.cpp",
+        "output/CsvLedgerSegments.cpp",
+        "output/CsvLedgerWriter.cpp"
+      ],
+      "headers": [
+        "chrono/SurfaceBinding.h",
+        "output/ArtifactIO.h",
+        "output/ArtifactInventory.h",
+        "output/BoundedArrayJson.h",
+        "output/CsvLedgerSegments.h",
+        "output/GeometryMeshArchive.h",
+        "output/MeshArchive.h",
+        "output/SurfaceBindingFields.h"
+      ],
+      "dependencies": [
+        "Chrono::Chrono_core",
+        "OpenSSL::Crypto"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/chrono:native_core_fea",
+        "@openssl//:crypto"
+      ],
+      "copts": []
+    },
+    "robo_dyna_bounded_array_io": {
+      "bazel_target": "//build_defs/app/output/arrays:bounded_array_io",
+      "cmake_file": "output/arrays/CMakeLists.txt",
+      "cmake_sha256": "daa48510b38f1cab9dbd2ca1586de2c4910b5809873ac9deaaf87e8952b98d08",
+      "sources": [
+        "output/BoundedArrayIO.cpp",
+        "output/BoundedArrayDescriptor.cpp"
+      ],
+      "headers": [
+        "output/BoundedArrayIO.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_source_assembly": {
+      "bazel_target": "//build_defs/app/modelio/source_assembly:source_assembly",
+      "cmake_file": "modelio/source_assembly/Reader.cmake",
+      "cmake_sha256": "a0e1ee6c45a29755b758cf76c48c3e79660819a575426b117d71b2f267cf08ac",
+      "sources": [
+        "modelio/source_assembly/SourceFields.cpp",
+        "modelio/source_assembly/SourceCurve.cpp",
+        "modelio/source_assembly/SourceAssembly.cpp",
+        "modelio/source_assembly/JsonReader.cpp",
+        "modelio/source_assembly/SourceLaw1Driver.cpp",
+        "modelio/source_assembly/ReadDeclarations.cpp",
+        "modelio/source_assembly/ReadLaw44Material.cpp",
+        "modelio/source_assembly/ReadGeometry.cpp",
+        "modelio/source_assembly/ReadLaw1Material.cpp",
+        "modelio/source_assembly/ReadMaterialPolicy.cpp",
+        "modelio/source_assembly/ReadAuxiliaryFrontier.cpp",
+        "modelio/source_assembly/ReadAttachments.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceLaw1Driver.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/math:fixed3"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/math:fixed3",
+          "headers": [
+            "lib_src/math/Fixed3.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_tied_auxiliary_constraints": {
+      "bazel_target": "//build_defs/app/modelio/tied_shell:tied_auxiliary_constraints",
+      "cmake_file": "modelio/tied_shell/TiedAuxiliaryConstraints.cmake",
+      "cmake_sha256": "255327b9659470a1ea5014b7c56d5ae453a2da2462af2828fd577fb9135be02a",
+      "sources": [
+        "modelio/tied_shell/TiedAuxiliaryConstraints.cpp",
+        "modelio/tied_shell/auxiliary/Budget.cpp",
+        "modelio/tied_shell/auxiliary/Sources.cpp",
+        "modelio/tied_shell/auxiliary/Groups.cpp",
+        "modelio/tied_shell/auxiliary/Nodes.cpp",
+        "modelio/tied_shell/auxiliary/Boundary.cpp"
+      ],
+      "headers": [
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/auxiliary/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_finalization_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_finalization_values",
+      "cmake_file": "case/vehicle_startup/TiedSearchFinalizedValues.cmake",
+      "cmake_sha256": "6202709253257f9a7a2e866160ef0457c243f0bba4ba2d98cf6cee011322a075",
+      "sources": [
+        "case/vehicle_startup/tied_finalization/Budget.cpp",
+        "case/vehicle_startup/tied_finalization/Inputs.cpp",
+        "case/vehicle_startup/tied_finalization/SourceReceipt.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/tied_finalization/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/packing/Internal.h",
+        "modelio/vehicle_source/SourceCards.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_assessment_values",
+        "tl_tied_search_finalization"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_assessment_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_assessment_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_assessment_values",
+      "cmake_file": "case/vehicle_startup/TiedSearchAssessmentValues.cmake",
+      "cmake_sha256": "3848b5ddb186293435df66bf11bacff3a1c3c93cba3ee4c68d66200d48e6ff43",
+      "sources": [
+        "case/vehicle_startup/tied_search/CanonicalPayload.cpp",
+        "case/vehicle_startup/tied_search/Budget.cpp",
+        "case/vehicle_startup/tied_search/Inputs.cpp",
+        "case/vehicle_startup/tied_search/Associations.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/tied_search/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_search_geometry",
+        "tl_tied_search_driver_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_search_geometry",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_search_geometry": {
+      "bazel_target": "//build_defs/app/modelio/tied_shell:tied_search_geometry",
+      "cmake_file": "modelio/tied_shell/TiedShellSearchGeometry.cmake",
+      "cmake_sha256": "0d204bc5ec1dceeb35d4f428c60b5a94336ace00013aebefc7e4e31a0e7c6e77",
+      "sources": [
+        "modelio/tied_shell/TiedShellSearchGeometry.cpp",
+        "modelio/tied_shell/search_geometry/Build.cpp",
+        "modelio/tied_shell/search_geometry/Budget.cpp",
+        "modelio/tied_shell/search_geometry/Association.cpp",
+        "modelio/tied_shell/search_geometry/Properties.cpp",
+        "modelio/tied_shell/search_geometry/WorkingCoordinates.cpp",
+        "modelio/tied_shell/search_geometry/Coefficients.cpp"
+      ],
+      "headers": [
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/tied_shell/search_geometry/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_packing",
+        "robo_dyna_source_native_coordinates"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_packing",
+        "//build_defs/app/modelio/source_assembly:source_native_coordinates"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_source_native_coordinates": {
+      "bazel_target": "//build_defs/app/modelio/source_assembly:source_native_coordinates",
+      "cmake_file": "modelio/source_assembly/NativeCoordinates.cmake",
+      "cmake_sha256": "1a23cb183205e6dbf510b1b71d480befa6fffb7bf5b16104aa9b9996afd525ec",
+      "sources": [
+        "modelio/source_assembly/NativeCoordinates.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/NativeCoordinates.h"
+      ],
+      "dependencies": [
+        "robo_dyna_source_assembly",
+        "robo_dyna_full_shell_source_mapping"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_shell_packing": {
+      "bazel_target": "//build_defs/app/modelio/tied_shell:tied_shell_packing",
+      "cmake_file": "modelio/tied_shell/TiedShellPacking.cmake",
+      "cmake_sha256": "5ff59a24dcd18eb9ed539893ed2aedad048783e5cd1a164ee12bc9b162859fad",
+      "sources": [
+        "modelio/tied_shell/TiedShellPacking.cpp",
+        "modelio/tied_shell/packing/Budget.cpp",
+        "modelio/tied_shell/packing/Policy.cpp",
+        "modelio/tied_shell/packing/Order.cpp"
+      ],
+      "headers": [
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/packing/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration"
+      ],
+      "copts": []
+    },
+    "robo_dyna_tied_search_classification": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_search_classification",
+      "cmake_file": "case/vehicle_startup/TiedSearchClassification.cmake",
+      "cmake_sha256": "e4b84538f996a19bd1d0bc9ce17ef254302c8083198349beb3eaf198200cad22",
+      "sources": [
+        "case/vehicle_startup/TiedSearchClassification.cpp",
+        "case/vehicle_startup/tied_classification/Budget.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/tied_shell/classification/Internal.h",
+        "modelio/vehicle_source/SourceCards.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_search_finalized",
+        "robo_dyna_tied_classification_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_search_finalized",
+        "//build_defs/app/case/vehicle_startup:tied_classification_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_search_finalized": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_search_finalized",
+      "cmake_file": "case/vehicle_startup/TiedSearchFinalized.cmake",
+      "cmake_sha256": "39e4266c1cd8a3761c3a3eb452853bd6b1b6e016f0ce646eaccb89c841abad66",
+      "sources": [
+        "case/vehicle_startup/TiedSearchFinalized.cpp"
+      ],
+      "headers": [],
+      "dependencies": [
+        "robo_dyna_tied_finalization_values",
+        "robo_dyna_tied_search_assessment"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_finalization_values",
+        "//build_defs/app/case/vehicle_startup:tied_search_assessment"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_search_assessment": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_search_assessment",
+      "cmake_file": "case/vehicle_startup/TiedSearchAssessment.cmake",
+      "cmake_sha256": "2fdb90070960275c111265c36052ee36c27c0d25b2e81233cc0493ebac66fa89",
+      "sources": [
+        "case/vehicle_startup/TiedSearchAssessment.cpp"
+      ],
+      "headers": [],
+      "dependencies": [
+        "robo_dyna_tied_assessment_values",
+        "tl_tied_search_driver"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_assessment_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:driver"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_post_gapm_main_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+      "cmake_file": "case/vehicle_self_contact/native/PostGapmMainSource.cmake",
+      "cmake_sha256": "d21ccfc48651b5ff70c0d2e7e6efbe5982c4183b51e46473ef68cf9f824b4e1d",
+      "sources": [
+        "case/vehicle_self_contact/native/PostGapmMainSource.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Controls.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Support.cpp",
+        "case/vehicle_self_contact/native/mixed_main/CoefficientValues.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Gaps.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/PostGapmMainSource.h",
+        "case/vehicle_self_contact/native/mixed_main/CoefficientValues.h",
+        "case/vehicle_self_contact/native/mixed_main/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_mixed_interface_source",
+        "robo_dyna_contact_gap_operands",
+        "robo_dyna_selected_shell_main_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:mixed_interface_source",
+        "//build_defs/app/case/vehicle_self_contact/native:contact_gap_operands",
+        "//build_defs/app/case/vehicle_self_contact/native:selected_shell_main_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_selected_shell_main_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:selected_shell_main_source",
+      "cmake_file": "case/vehicle_self_contact/native/SelectedShellMainSource.cmake",
+      "cmake_sha256": "09f9a531490c4873bfd1733f987d94d52c49ddc00fea93bfac06161553812f65",
+      "sources": [
+        "case/vehicle_self_contact/native/SelectedShellMainSource.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Binding.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Grouping.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/ShellValues.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Certificate.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/SupportQuery.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/SolidSupportQuery.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Compose.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Budget.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/SelectedShellMainSource.h",
+        "case/vehicle_self_contact/native/main_coefficients/Compose.h",
+        "case/vehicle_self_contact/native/main_coefficients/Internal.h",
+        "case/vehicle_self_contact/native/main_coefficients/SolidSupportQuery.h",
+        "case/vehicle_self_contact/native/main_coefficients/SupportQuery.h",
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_corrected_nodal_source",
+        "robo_dyna_v5_coated_source",
+        "tl_radioss_type25_main_geometry"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "//build_defs/app/case/vehicle_self_contact/native:v5_coated_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_main_geometry"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_v5_coated_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:v5_coated_source",
+      "cmake_file": "case/vehicle_self_contact/native/CoatedSource.cmake",
+      "cmake_sha256": "4d2342177902ed668f32d994b851977fd9fe5fb3e9a051d08279e02de683db4e",
+      "sources": [
+        "case/vehicle_self_contact/native/coated/Reader.cpp",
+        "case/vehicle_self_contact/native/coated/Membership.cpp",
+        "case/vehicle_self_contact/native/coated/Order.cpp",
+        "case/vehicle_self_contact/native/coated/Inputs.cpp",
+        "case/vehicle_self_contact/native/coated/Budget.cpp",
+        "case/vehicle_self_contact/native/coated/Digest.cpp",
+        "case/vehicle_self_contact/native/coated/Assessment.cpp",
+        "case/vehicle_self_contact/native/coated/Document.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/CoatedSource.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/coated/Internal.h",
+        "case/vehicle_self_contact/native/coated/TopologyInput.h",
+        "case/vehicle_self_contact/native/coated/Types.h",
+        "case/vehicle_self_contact/native/coated/Values.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/type45/VehicleType45Source.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_model",
+        "robo_dyna_native_topology_assessment",
+        "robo_dyna_source_native_coordinates"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/case/vehicle_self_contact/native:native_topology_assessment",
+        "//build_defs/app/modelio/source_assembly:source_native_coordinates"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_topology_assessment": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:native_topology_assessment",
+      "cmake_file": "case/vehicle_self_contact/native/TopologyAssessment.cmake",
+      "cmake_sha256": "14b6afc3cbc473f820d696aba1f5c7ba05082b7a07269521344b6d2c249a23ff",
+      "sources": [
+        "case/vehicle_self_contact/native/TopologyInputs.cpp",
+        "case/vehicle_self_contact/native/TopologyAssessment.cpp",
+        "case/vehicle_self_contact/native/TopologyDigest.cpp",
+        "case/vehicle_self_contact/native/AssessmentDocument.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/TopologyAssessment.h",
+        "case/vehicle_self_contact/native/TopologyAssessmentInternal.h",
+        "case/vehicle_self_contact/native/TopologyDigestFields.h",
+        "output/BoundedArrayJson.h"
+      ],
+      "dependencies": [
+        "robo_dyna_original_self_contact_selection",
+        "tl_radioss_type25_fixed_main_startup"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/self_contact:original_self_contact_selection",
+        "@legacy_fea//lib_src/collision:radioss_type25_fixed_main_startup"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_original_self_contact_selection": {
+      "bazel_target": "//build_defs/app/modelio/self_contact:original_self_contact_selection",
+      "cmake_file": "modelio/self_contact/OriginalSelection.cmake",
+      "cmake_sha256": "aba27c88e47a4bdc85389b30cdd46a125f75edf05754ec5adfee535e109a0de6",
+      "sources": [
+        "modelio/self_contact/Budget.cpp",
+        "modelio/self_contact/Sources.cpp",
+        "modelio/self_contact/Cards.cpp",
+        "modelio/self_contact/PartSets.cpp",
+        "modelio/self_contact/Census.cpp",
+        "modelio/self_contact/OriginalSelection.cpp"
+      ],
+      "headers": [
+        "modelio/self_contact/Internal.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "modelio/self_contact/PartSets.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_physical_model": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+      "cmake_file": "case/vehicle_startup/physical_model/VehiclePhysicalModel.cmake",
+      "cmake_sha256": "327182fd591eec81b149874ba2b6a36f07804ce10718ede6d7b1eddb3f57567e",
+      "sources": [
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.cpp",
+        "case/vehicle_startup/physical_model/Budget.cpp",
+        "case/vehicle_startup/physical_model/Components.cpp",
+        "case/vehicle_startup/physical_model/StructuralBeams.cpp",
+        "case/vehicle_startup/physical_model/BeamModel.cpp",
+        "case/vehicle_startup/physical_model/SolidModel.cpp",
+        "case/vehicle_startup/physical_model/SolidControls.cpp",
+        "case/vehicle_startup/physical_model/PlainGroups.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/physical_model/Components.h",
+        "case/vehicle_startup/physical_model/Internal.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h"
+      ],
+      "dependencies": [
+        "robo_dyna_native_solid_packets",
+        "robo_dyna_vehicle_shell_binding",
+        "robo_dyna_vehicle_physical_domain",
+        "robo_dyna_vehicle_point_mass_source",
+        "robo_dyna_vehicle_type25_source",
+        "tl_solid_model",
+        "tl_beam18_node_contributions",
+        "tl_nodal_rigid_assembly_binding"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/solid_control_packets:native_solid_packets",
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_binding",
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+        "//build_defs/app/modelio/point_mass:vehicle_point_mass_source",
+        "//build_defs/app/modelio/type25:vehicle_type25_source",
+        "@legacy_fea//lib_src/elements/solids:model",
+        "@legacy_fea//lib_src/assembly:beam18_node_contributions",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_assembly_binding"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_type25_source": {
+      "bazel_target": "//build_defs/app/modelio/type25:vehicle_type25_source",
+      "cmake_file": "modelio/type25/VehicleType25Source.cmake",
+      "cmake_sha256": "b60c61329c7639f566a5fbb7249067c6525bce065eeac53459f32a37d7e9836c",
+      "sources": [
+        "modelio/type25/VehicleType25Source.cpp",
+        "modelio/type25/Budget.cpp",
+        "modelio/type25/Mapping.cpp"
+      ],
+      "headers": [
+        "modelio/type25/Internal.h",
+        "modelio/type25/VehicleType25Source.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_scope",
+        "robo_dyna_source_assembly_spotweld_input",
+        "tl_nodal_node_domain"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "//build_defs/app/modelio/source_assembly:source_assembly_spotweld_input",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_source_assembly_spotweld_input": {
+      "bazel_target": "//build_defs/app/modelio/source_assembly:source_assembly_spotweld_input",
+      "cmake_file": "modelio/source_assembly/SourceAssemblySpotweldInput.cmake",
+      "cmake_sha256": "cd8842ae34c6f03663a03fbbdc4e2e1e60ae91dce1cf524995f19bdb84778d37",
+      "sources": [
+        "modelio/source_assembly/ResolvedSpotweldProperty.cpp",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/ResolvedSpotweldProperty.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h"
+      ],
+      "dependencies": [
+        "robo_dyna_source_assembly",
+        "tl_type25_model"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "@legacy_fea//lib_src/elements/type25:type25_model"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_scope": {
+      "bazel_target": "//build_defs/app/modelio/physical_scope:physical_scope",
+      "cmake_file": "modelio/physical_scope/PhysicalScope.cmake",
+      "cmake_sha256": "6be8b74b0a31c72a55578329724c20372e996958b1f93ea09f4c215c4f96c3ef",
+      "sources": [
+        "modelio/physical_scope/CanonicalDomain.cpp",
+        "modelio/physical_scope/DomainEmbedding.cpp",
+        "modelio/physical_scope/PhysicalScope.cpp",
+        "modelio/physical_scope/Budget.cpp",
+        "modelio/physical_scope/Connections.cpp",
+        "modelio/physical_scope/Groups.cpp",
+        "modelio/physical_scope/Roles.cpp",
+        "modelio/physical_scope/BeamRoles.cpp",
+        "modelio/physical_scope/Evidence.cpp",
+        "modelio/physical_scope/Report.cpp"
+      ],
+      "headers": [
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/Internal.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/physical_scope/SourcePolicy.h"
+      ],
+      "dependencies": [
+        "robo_dyna_rigid_point_mass_source",
+        "robo_dyna_vehicle_solid_source",
+        "robo_dyna_type13_source",
+        "robo_dyna_beam18_source",
+        "tl_nodal_node_domain"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/rigid_part/point_mass:rigid_point_mass_source",
+        "//build_defs/app/modelio/solid_source:vehicle_solid_source",
+        "//build_defs/app/modelio/type13:type13_source",
+        "//build_defs/app/modelio/beam18:beam18_source",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_beam18_source": {
+      "bazel_target": "//build_defs/app/modelio/beam18:beam18_source",
+      "cmake_file": "modelio/beam18/Source.cmake",
+      "cmake_sha256": "10bb64f33a4b8d4d923beb9ee08452040f529a845dce4f06dea5bd41927ace29",
+      "sources": [
+        "modelio/beam18/Source.cpp",
+        "modelio/beam18/Budget.cpp",
+        "modelio/beam18/Declarations.cpp",
+        "modelio/beam18/Part.cpp",
+        "modelio/beam18/Geometry.cpp",
+        "modelio/beam18/WorkingCards.cpp",
+        "modelio/beam18/References.cpp"
+      ],
+      "headers": [
+        "modelio/beam18/Internal.h",
+        "modelio/beam18/Source.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceLines.h",
+        "modelio/vehicle_source/OriginalAuthority.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements/beam18:force"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements/beam18:force",
+          "headers": [
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Reference.h",
+            "lib_src/materials/law44/solid/Prepare.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_type13_source": {
+      "bazel_target": "//build_defs/app/modelio/type13:type13_source",
+      "cmake_file": "modelio/type13/SourceType13.cmake",
+      "cmake_sha256": "d859391b96091b26f0c8dedd2ef5b0d3e1cd4299921106a1e98d75d31d835e0d",
+      "sources": [
+        "modelio/type13/ConvertProperty.cpp",
+        "modelio/type13/SourceType13.cpp",
+        "modelio/type13/ReadScope.cpp",
+        "modelio/type13/ReadProperty.cpp",
+        "modelio/type13/ReadGeometry.cpp",
+        "modelio/type13/ReadSourceArrays.cpp",
+        "modelio/type13/SourceBudget.cpp"
+      ],
+      "headers": [
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/ReadInternal.h",
+        "modelio/type13/SourceType13.h"
+      ],
+      "dependencies": [
+        "robo_dyna_source_assembly",
+        "tl_type13_startup",
+        "robo_dyna_bounded_array_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "@legacy_fea//lib_src/elements/type13:type13_startup",
+        "//build_defs/app/output/arrays:bounded_array_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_solid_source": {
+      "bazel_target": "//build_defs/app/modelio/solid_source:vehicle_solid_source",
+      "cmake_file": "modelio/solid_source/VehicleSolidSource.cmake",
+      "cmake_sha256": "b95ba8dde19d9ba129bec63f804104179cdb3f06781ae995725855fa0ea2dbdc",
+      "sources": [
+        "modelio/solid_source/VehicleSolidSource.cpp",
+        "modelio/solid_source/Budget.cpp",
+        "modelio/solid_source/Sources.cpp",
+        "modelio/solid_source/Cards.cpp",
+        "modelio/solid_source/Materials.cpp",
+        "modelio/solid_source/RearMaterial.cpp",
+        "modelio/solid_source/RadiatorMaterial.cpp",
+        "modelio/solid_source/AirbagMaterial.cpp",
+        "modelio/solid_source/AirbagHourglass.cpp",
+        "modelio/solid_source/Curves.cpp",
+        "modelio/solid_source/Geometry.cpp",
+        "modelio/solid_source/References.cpp"
+      ],
+      "headers": [
+        "modelio/solid_source/AirbagSourceReceipt.h",
+        "modelio/solid_source/Internal.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/vehicle_source/OriginalAuthority.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_shell_declaration"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements/solid18/law44:reference",
+        "@legacy_fea//lib_src/elements/solid18/total_strain:reference_kinematics",
+        "@legacy_fea//lib_src/elements/solid24:reference",
+        "@legacy_fea//lib_src/elements/solid6z:force",
+        "@legacy_fea//lib_src/materials/law44/solid:point",
+        "@legacy_fea//lib_src/materials/law90:preparation"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements/solid18/law44:reference",
+          "headers": [
+            "lib_src/elements/solid18/Solid18Reference.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Reference.h",
+            "lib_src/elements/solid18/law44/Types.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/elements/solid18/total_strain:reference_kinematics",
+          "headers": [
+            "lib_src/elements/solid18/Solid18Reference.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/total_strain/Reference.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/materials/law36/Prepare.h",
+            "lib_src/materials/law36/Types.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/elements/solid24:reference",
+          "headers": [
+            "lib_src/elements/solid24/Solid24Reference.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/CollapsedBrickTopology.h",
+            "lib_src/elements/solid6z/Solid6zReference.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/elements/solid6z:force",
+          "headers": [
+            "lib_src/elements/solid6z/CollapsedBrickTopology.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solid6z/Solid6zReference.h",
+            "lib_src/materials/law42/Prepare.h",
+            "lib_src/materials/law42/Types.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/materials/law44/solid:point",
+          "headers": [
+            "lib_src/materials/law44/solid/Prepare.h",
+            "lib_src/materials/law44/solid/Types.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/materials/law90:preparation",
+          "headers": [
+            "lib_src/materials/law90/Prepare.h",
+            "lib_src/materials/law90/Types.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_rigid_point_mass_source": {
+      "bazel_target": "//build_defs/app/modelio/rigid_part/point_mass:rigid_point_mass_source",
+      "cmake_file": "modelio/rigid_part/point_mass/Source.cmake",
+      "cmake_sha256": "793680741ded0f9e01fc603126d6653198c73a2f7578c8b3545c6a03404f318f",
+      "sources": [
+        "modelio/rigid_part/point_mass/Fields.cpp",
+        "modelio/rigid_part/point_mass/Source.cpp"
+      ],
+      "headers": [
+        "modelio/rigid_part/point_mass/Fields.h",
+        "modelio/rigid_part/point_mass/Source.h"
+      ],
+      "dependencies": [
+        "robo_dyna_rigid_part_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/rigid_part:rigid_part_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_point_mass_source": {
+      "bazel_target": "//build_defs/app/modelio/point_mass:vehicle_point_mass_source",
+      "cmake_file": "modelio/point_mass/VehiclePointMassSource.cmake",
+      "cmake_sha256": "02b7467c71ec476bb1af4dd1783bacf710c3ec838c5d653ec333d47d180b7ede",
+      "sources": [
+        "modelio/point_mass/VehiclePointMassSource.cpp",
+        "modelio/point_mass/Budget.cpp",
+        "modelio/point_mass/Mapping.cpp"
+      ],
+      "headers": [
+        "modelio/point_mass/Mapping.h",
+        "modelio/point_mass/VehiclePointMassSource.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_scope",
+        "tl_element_mass_contributions"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "@legacy_fea//lib_src/assembly:element_mass_contributions"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_physical_domain": {
+      "bazel_target": "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+      "cmake_file": "modelio/physical_domain/VehiclePhysicalDomain.cmake",
+      "cmake_sha256": "e375d9933664b749819603e80210645e18dacdc9b36faa3ab01a9f5ff1f59048",
+      "sources": [
+        "modelio/physical_domain/VehiclePhysicalDomain.cpp",
+        "modelio/physical_domain/Selection.cpp",
+        "modelio/physical_domain/ProfileSelection.cpp",
+        "modelio/physical_domain/Topology.cpp",
+        "modelio/physical_domain/Budget.cpp"
+      ],
+      "headers": [
+        "modelio/physical_domain/Internal.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_scope",
+        "tl_nodal_node_domain"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_shell_binding": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:vehicle_shell_binding",
+      "cmake_file": "case/vehicle_startup/VehicleShellBinding.cmake",
+      "cmake_sha256": "5a9e237e86b3849b5a8d43257cef4be3df27433c3c0a2fe4d98ac507c3ab7a5d",
+      "sources": [
+        "case/vehicle_startup/VehicleShellBinding.cpp",
+        "case/vehicle_startup/shell_binding/Budget.cpp",
+        "case/vehicle_startup/shell_binding/Inputs.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/shell_binding/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_shell_references",
+        "tl_shell_batch_binding"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_references",
+        "@legacy_fea//lib_src/elements:shell_batch_binding"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_shell_references": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:vehicle_shell_references",
+      "cmake_file": "case/vehicle_startup/VehicleShellReferences.cmake",
+      "cmake_sha256": "d560a60902a9fd72d179d297e7c2f80cd71e76d17fbae61b23179f03bab32bad",
+      "sources": [
+        "case/vehicle_startup/VehicleShellReferences.cpp",
+        "case/vehicle_startup/ReferenceGeometry.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/QbatReferenceInput.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_sections",
+        "robo_dyna_vehicle_native_reference"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/vehicle_sections:vehicle_sections",
+        "//build_defs/app/case/vehicle_startup:vehicle_native_reference"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_native_reference": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:vehicle_native_reference",
+      "cmake_file": "case/vehicle_startup/VehicleShellReferences.cmake",
+      "cmake_sha256": "d560a60902a9fd72d179d297e7c2f80cd71e76d17fbae61b23179f03bab32bad",
+      "sources": [
+        "case/vehicle_startup/NativeReference.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/ReferenceDeclarations.h",
+        "case/vehicle_startup/ReferenceStorage.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/source_assembly/SourceShellReferenceInput.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/ArtifactInventory.h",
+        "output/BoundedArrayIO.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+        "output/full_shell/IntervalValues.h",
+        "output/full_shell/static_bundle/Types.h"
+      ],
+      "dependencies": [
+        "robo_dyna_source_assembly"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/source_assembly:source_assembly"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements:shell_batch_failure_binding"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements:shell_batch_failure_binding",
+          "headers": [
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/qbat/QbatReference.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/qeph/QephStartup.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/t3/T3Startup.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_vehicle_sections": {
+      "bazel_target": "//build_defs/app/modelio/vehicle_sections:vehicle_sections",
+      "cmake_file": "modelio/vehicle_sections/VehicleSectionResolution.cmake",
+      "cmake_sha256": "3ae577aac98d199c54cde53b061c6aad04749619aa426ce7e8685973950a0615",
+      "sources": [
+        "modelio/vehicle_sections/VehicleSectionResolution.cpp",
+        "modelio/vehicle_sections/ResolutionDeclarations.cpp",
+        "modelio/vehicle_sections/ResolutionParents.cpp",
+        "modelio/vehicle_sections/ResolutionLimits.cpp",
+        "modelio/vehicle_sections/GlassDeclarations.cpp",
+        "modelio/vehicle_sections/GlassSourceCards.cpp",
+        "modelio/vehicle_sections/GlassPolicy.cpp",
+        "modelio/vehicle_sections/MidlayerDeclarations.cpp",
+        "modelio/vehicle_sections/MidlayerProfile.cpp",
+        "modelio/vehicle_sections/RigidProfile.cpp",
+        "modelio/vehicle_sections/NativeParentMapping.cpp"
+      ],
+      "headers": [
+        "modelio/vehicle_sections/GlassDeclarations.h",
+        "modelio/vehicle_sections/Internal.h",
+        "modelio/vehicle_sections/MidlayerDeclarations.h",
+        "modelio/vehicle_sections/ResolutionData.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_source",
+        "robo_dyna_rigid_part_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/vehicle_source:vehicle_source",
+        "//build_defs/app/modelio/rigid_part:rigid_part_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements:shell_batch_failure_binding"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements:shell_batch_failure_binding",
+          "headers": [
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellReferencePlacement.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_native_solid_packets": {
+      "bazel_target": "//build_defs/app/modelio/solid_control_packets:native_solid_packets",
+      "cmake_file": "modelio/solid_control_packets/NativePacketSource.cmake",
+      "cmake_sha256": "12f598d205789fa98fb9b138b3b24af3f771471573e5b8492d6e55d1f4e59690",
+      "sources": [
+        "modelio/solid_control_packets/NativePacketSource.cpp",
+        "modelio/solid_control_packets/Reader.cpp",
+        "modelio/solid_control_packets/Binding.cpp",
+        "modelio/solid_control_packets/Budget.cpp"
+      ],
+      "headers": [
+        "modelio/solid_control_packets/Internal.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "output/BoundedArrayJson.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_solid_source",
+        "robo_dyna_solid_control_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/solid_source:vehicle_solid_source",
+        "//build_defs/app/modelio/solid_control:solid_control_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements/solids/control:selection"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements/solids/control:selection",
+          "headers": [
+            "lib_src/elements/solids/control/Types.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_solid_control_source": {
+      "bazel_target": "//build_defs/app/modelio/solid_control:solid_control_source",
+      "cmake_file": "modelio/solid_control/SolidControlSource.cmake",
+      "cmake_sha256": "ffa0f8550511c06f2b29d556434492109fed91b956666daa8796d021bd3edef8",
+      "sources": [
+        "modelio/solid_control/DirectSource.cpp",
+        "modelio/solid_control/DirectDeclarations.cpp",
+        "modelio/solid_control/EffectiveContext.cpp",
+        "modelio/solid_control/EffectiveSource.cpp",
+        "modelio/solid_control/Sharing.cpp"
+      ],
+      "headers": [
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/InterfaceProfile.h",
+        "modelio/solid_control/Internal.h",
+        "modelio/solid_control/Members.h",
+        "modelio/solid_control/SourceIds.h",
+        "modelio/solid_control/Storage.h",
+        "modelio/solid_control/Types.h"
+      ],
+      "dependencies": [
+        "robo_dyna_native_spring_ids",
+        "robo_dyna_original_self_contact_selection"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/modelio/self_contact:original_self_contact_selection"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_spring_ids": {
+      "bazel_target": "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+      "cmake_file": "modelio/native_spring_ids/NativeSpringIds.cmake",
+      "cmake_sha256": "431de43ab7452f1805fdfd7e08e36ebdd1e4e6c149af7fde52e9d48476584210",
+      "sources": [
+        "modelio/native_spring_ids/ImportContext.cpp",
+        "modelio/native_spring_ids/ContextSources.cpp",
+        "modelio/native_spring_ids/Elements.cpp",
+        "modelio/native_spring_ids/Resolve.cpp",
+        "modelio/native_spring_ids/ResolveValues.cpp"
+      ],
+      "headers": [
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Internal.h",
+        "modelio/native_spring_ids/Resolve.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_scope/Internal.h",
+        "modelio/tied_shell/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_type25_source",
+        "robo_dyna_vehicle_type45_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/type25:vehicle_type25_source",
+        "//build_defs/app/modelio/type45:vehicle_type45_source"
+      ],
+      "copts": []
+    },
+    "robo_dyna_vehicle_type45_source": {
+      "bazel_target": "//build_defs/app/modelio/type45:vehicle_type45_source",
+      "cmake_file": "modelio/type45/VehicleType45Source.cmake",
+      "cmake_sha256": "afd9145349b3423f4edecddf21cf32121e469f82101b4f5315c2fa7e4998ea08",
+      "sources": [
+        "modelio/type45/VehicleType45Source.cpp",
+        "modelio/type45/Fields.cpp",
+        "modelio/type45/Mapping.cpp",
+        "modelio/type45/Budget.cpp"
+      ],
+      "headers": [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/type45/Internal.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/type45/VehicleType45Source.h",
+        "modelio/vehicle_source/SourceCards.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_domain"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements/type45:values"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements/type45:values",
+          "headers": [
+            "lib_src/elements/type45/Type45Types.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_vehicle_corrected_nodal_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+      "cmake_file": "case/vehicle_self_contact/native/CorrectedNodalSource.cmake",
+      "cmake_sha256": "3088adaac5d296ee12ee4dcd92fae17b7e37eeefe8164dd56f8615748b2bafe5",
+      "sources": [
+        "case/vehicle_self_contact/native/CorrectedNodalSource.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Budget.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Context.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Sharing.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Inputs.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/CorrectedNodalSource.h",
+        "case/vehicle_self_contact/native/nodal_correction/Internal.h",
+        "case/vehicle_self_contact/native/nodal_correction/MaterialSlots.h",
+        "modelio/self_contact/PartSets.h",
+        "modelio/solid_control/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/vehicle_source/SourceCards.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_contact_nodal_seed"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_contact_nodal_seed"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_contact_nodal_seed": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:vehicle_contact_nodal_seed",
+      "cmake_file": "case/vehicle_self_contact/native/ContactNodalSeed.cmake",
+      "cmake_sha256": "d49bd4c2be775aa90a0f3262ba3631235ae050619f1bdc90f4b108ee7daf3c96",
+      "sources": [
+        "case/vehicle_self_contact/native/ContactNodalSeed.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Budget.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Context.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/SolidValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/DirectValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/ShellValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/ContactNodalSeed.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/nodal_seed/Internal.h",
+        "case/vehicle_self_contact/native/nodal_seed/MaterialSlots.h",
+        "case/vehicle_self_contact/native/nodal_seed/SolidSlots.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/OriginalAuthority.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_joint_model",
+        "robo_dyna_native_spring_ids",
+        "robo_dyna_solid_control_source",
+        "robo_dyna_native_topology_assessment",
+        "tl_radioss_type25_shell_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/modelio/solid_control:solid_control_source",
+        "//build_defs/app/case/vehicle_self_contact/native:native_topology_assessment",
+        "@legacy_fea//lib_src/collision:radioss_type25_shell_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_joint_model": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+      "cmake_file": "case/vehicle_startup/joints/VehicleJointModel.cmake",
+      "cmake_sha256": "5182019c8cd6e9479fd59e1fdbd633a8e825040c5d96e27ad514b9ef9d21a29f",
+      "sources": [
+        "case/vehicle_startup/joints/VehicleJointModel.cpp",
+        "case/vehicle_startup/joints/Budget.cpp",
+        "case/vehicle_startup/joints/SourceMapping.cpp",
+        "case/vehicle_startup/joints/OwnedBytes.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/joints/SourceMapping.h",
+        "case/vehicle_startup/joints/Storage.h",
+        "case/vehicle_startup/joints/VehicleJointModel.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_model",
+        "robo_dyna_vehicle_type45_source",
+        "tl_type45_model"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/modelio/type45:vehicle_type45_source",
+        "@legacy_fea//lib_src/elements/type45:model"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_contact_gap_operands": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:contact_gap_operands",
+      "cmake_file": "case/vehicle_self_contact/native/ContactGapOperands.cmake",
+      "cmake_sha256": "12cbcc30198f63fccbd1117b24943cb7201d944bc598991ebf7306ca7d57a883",
+      "sources": [
+        "case/vehicle_self_contact/native/ContactGapOperands.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Binding.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Shells.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Lines.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Springs.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Budget.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/ContactGapOperands.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/gap_operands/Internal.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_scope/SourcePolicy.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_corrected_nodal_source",
+        "tl_radioss_type25_gap_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_gap_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_mixed_interface_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:mixed_interface_source",
+      "cmake_file": "case/vehicle_self_contact/native/MixedInterfaceSource.cmake",
+      "cmake_sha256": "3ccb8b93aa5da17b8265986a0a0f3c3b841fd9d72a8175e9d5a36a90387423ba",
+      "sources": [
+        "case/vehicle_self_contact/native/MixedInterfaceSource.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Packing.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Certificate.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Census.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Digest.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Document.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/MixedInterfaceSource.h",
+        "case/vehicle_self_contact/native/mixed_interface/Internal.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h"
+      ],
+      "dependencies": [
+        "robo_dyna_initial_surface_source",
+        "tl_radioss_type25_interface_surface"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:initial_surface_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_interface_surface"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_initial_surface_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:initial_surface_source",
+      "cmake_file": "case/vehicle_self_contact/native/InitialSurfaceSource.cmake",
+      "cmake_sha256": "0285190f6894eb30c9fe71cc0e86c245b72f78d857989e2980aa26d5255eccb5",
+      "sources": [
+        "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Certificate.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Context.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Budget.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Digest.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Document.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/InitialSurfaceSource.h",
+        "case/vehicle_self_contact/native/solid_surfaces/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_corrected_nodal_source",
+        "robo_dyna_v5_coated_source",
+        "tl_radioss_type25_surface_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "//build_defs/app/case/vehicle_self_contact/native:v5_coated_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_surface_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_initializer_controls_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:initializer_controls_source",
+      "cmake_file": "case/vehicle_self_contact/native/InitializerControlsSource.cmake",
+      "cmake_sha256": "1e651312fd3f9af564ca24e1b6e21cd59157fe4a7b94dd18756c500211bbf850",
+      "sources": [
+        "case/vehicle_self_contact/native/InitializerControlsSource.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Budget.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Controls.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Gaps.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Law.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Namespace.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/InitializerControlsSource.h",
+        "case/vehicle_self_contact/native/initial_controls/Internal.h",
+        "case/vehicle_self_contact/native/initial_controls/PopulationProfile.h",
+        "case/vehicle_self_contact/native/initial_controls/Values.h"
+      ],
+      "dependencies": [
+        "robo_dyna_post_gapm_main_source",
+        "robo_dyna_native_envelope_wall_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "//build_defs/app/case/vehicle_wall/native:native_envelope_wall_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_envelope_wall_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall/native:native_envelope_wall_source",
+      "cmake_file": "case/vehicle_wall/native/WallSource.cmake",
+      "cmake_sha256": "c6a0b1cbac87d9e67b2395e4f2fb8f26eca22fae163d9b000ad24f45aab0426a",
+      "sources": [
+        "case/vehicle_wall/native/WallSource.cpp",
+        "case/vehicle_wall/native/Namespace.cpp",
+        "case/vehicle_wall/native/Geometry.cpp",
+        "case/vehicle_wall/native/CombinedDomain.cpp",
+        "case/vehicle_wall/native/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/TopologyAssessment.h",
+        "case/vehicle_self_contact/native/TopologyAssessmentInternal.h",
+        "case/vehicle_self_contact/native/TopologyDigestFields.h",
+        "case/vehicle_wall/native/Internal.h",
+        "case/vehicle_wall/native/Types.h",
+        "case/vehicle_wall/native/WallSource.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceShellReferenceInput.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_domain",
+        "robo_dyna_native_spring_ids",
+        "robo_dyna_vehicle_wall_values",
+        "robo_dyna_canonical_wall_artifacts",
+        "tl_radioss_type25_shell_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/case/vehicle_wall:vehicle_wall_values",
+        "//build_defs/app/case:canonical_wall_artifacts",
+        "@legacy_fea//lib_src/collision:radioss_type25_shell_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_canonical_wall_artifacts": {
+      "bazel_target": "//build_defs/app/case:canonical_wall_artifacts",
+      "cmake_file": "case/CanonicalWallArtifacts.cmake",
+      "cmake_sha256": "6b3566fb80df2d71238fae4fadcd7048fc9746705fd058a8435ef082969ef445",
+      "sources": [
+        "case/CanonicalWallArtifacts.cpp"
+      ],
+      "headers": [
+        "case/CanonicalWallArtifacts.h"
+      ],
+      "dependencies": [
+        "crash_canonical_wall",
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case:canonical_wall",
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "crash_canonical_wall": {
+      "bazel_target": "//build_defs/app/case:canonical_wall",
+      "cmake_file": "case/CanonicalWall.cmake",
+      "cmake_sha256": "9e24c9393de14b823a579bd634a4586115e4e7824052c97aa2e1e2de99a93e81",
+      "sources": [
+        "case/CanonicalWall.cpp"
+      ],
+      "headers": [
+        "case/CanonicalWall.h"
+      ],
+      "dependencies": [
+        "Chrono::Chrono_core"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/chrono:native_core_fea"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_wall_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall:vehicle_wall_values",
+      "cmake_file": "case/vehicle_wall/VehicleWallValues.cmake",
+      "cmake_sha256": "df0e3d4d996eb1b03bdd2345d015e57aaabf4cb744d236c2e29784907f8edef9",
+      "sources": [
+        "case/vehicle_wall/Settings.cpp",
+        "case/vehicle_wall/EnvelopeWall.cpp",
+        "case/vehicle_wall/RuntimeBudget.cpp",
+        "case/vehicle_wall/loaded/Config.cpp",
+        "case/wall_penalty/WallPlacementBounds.cpp"
+      ],
+      "headers": [
+        "benchmarks/stage_timing/StageTimer.h",
+        "case/CanonicalWall.h",
+        "case/PlacedCanonicalWall.h",
+        "case/WallTessellation.h",
+        "case/shell_collection/ShellCollectionContactGeometry.h",
+        "case/vehicle_dynamics/MotionSummary.h",
+        "case/vehicle_dynamics/SelfContactObservation.h",
+        "case/vehicle_dynamics/StepTiming.h",
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+        "case/vehicle_dynamics/WallObservation.h",
+        "case/vehicle_dynamics/native_contact/Observation.h",
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/SourceRoles.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "case/vehicle_wall/EnvelopeWall.h",
+        "case/vehicle_wall/LoadedWall.h",
+        "case/vehicle_wall/RuntimeBudget.h",
+        "case/vehicle_wall/Settings.h",
+        "case/vehicle_wall/SetupIdentity.h",
+        "case/vehicle_wall/VehicleWallSetup.h",
+        "case/vehicle_wall/VehicleWallStartup.h",
+        "case/vehicle_wall/WallStageError.h",
+        "case/wall_penalty/WallPlacementBounds.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/BoundedArrayIO.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+        "output/full_shell/IntervalValues.h",
+        "output/full_shell/static_bundle/Types.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io",
+        "tl_planar_wall_geometry",
+        "CUDA::cudart"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io",
+        "@legacy_fea//lib_src/collision:planar_wall_geometry",
+        "@rules_cuda//cuda:runtime"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/collision:nodal_wall_mapped_device",
+        "@legacy_fea//lib_src/collision:radioss_type25_runtime_values",
+        "@legacy_fea//lib_src/collision:self_contact_transaction_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/collision:nodal_wall_mapped_device",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/NodalWallContact.h",
+            "lib_src/collision/NodalWallContactDevice.h",
+            "lib_src/collision/NodalWallMappedContact.h",
+            "lib_src/collision/Q4ContactBounds.h",
+            "lib_src/collision/Q4PlanarGeometry.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/collision:radioss_type25_runtime_values",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/Q4ContactBounds.h",
+            "lib_src/collision/RadiossType25Transaction.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/collision:self_contact_transaction_values",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/Q4ContactBounds.h",
+            "lib_src/collision/Q4PlanarGeometry.h",
+            "lib_src/collision/SelfContactTransactionDiagnostics.h",
+            "lib_src/collision/SelfContactTransactionTypes.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchFinalization.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchDriver.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_native_vehicle_source_admission": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+      "cmake_file": "case/vehicle_native_contact/SourceAdmission.cmake",
+      "cmake_sha256": "5e2c5e50481921de90b7a6284c7a64f9e4474d8b9ec867e8c4c0a7953e831d97",
+      "sources": [
+        "case/vehicle_native_contact/SourceAdmission.cpp"
+      ],
+      "headers": [
+        "case/vehicle_dynamics/native_contact/Observation.h",
+        "case/vehicle_native_contact/SourceAdmission.h"
+      ],
+      "dependencies": [
+        "robo_dyna_finite_wall_contact_source",
+        "robo_dyna_mixed_starter_source",
+        "robo_dyna_initializer_controls_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_wall/native:finite_wall_contact_source",
+        "//build_defs/app/case/vehicle_self_contact/native:mixed_starter_source",
+        "//build_defs/app/case/vehicle_self_contact/native:initializer_controls_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_mixed_starter_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_self_contact/native:mixed_starter_source",
+      "cmake_file": "case/vehicle_self_contact/native/MixedStarterSource.cmake",
+      "cmake_sha256": "2f972c49258fe0c68ddd6906a13a5a269cf15e56f1a2011660525af28387915a",
+      "sources": [
+        "case/vehicle_self_contact/native/MixedStarterSource.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Domain.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Digest.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Document.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/MixedStarterSource.h",
+        "case/vehicle_self_contact/native/mixed_starter/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_post_gapm_main_source",
+        "tl_radioss_type25_current_normals"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_current_normals"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_finite_wall_contact_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall/native:finite_wall_contact_source",
+      "cmake_file": "case/vehicle_wall/native/FiniteWallContactSource.cmake",
+      "cmake_sha256": "e00305a5d32239dcc3aa0308c4ee350529d667ed47ac33769b987d08ad7a213a",
+      "sources": [
+        "case/vehicle_wall/native/FiniteWallContactSource.cpp",
+        "case/vehicle_wall/native/contact/Binding.cpp",
+        "case/vehicle_wall/native/contact/Budget.cpp",
+        "case/vehicle_wall/native/contact/Controls.cpp",
+        "case/vehicle_wall/native/contact/Values.cpp",
+        "case/vehicle_wall/native/contact/Packing.cpp",
+        "case/vehicle_wall/native/contact/Topology.cpp",
+        "case/vehicle_wall/native/contact/Gaps.cpp",
+        "case/vehicle_wall/native/contact/Digest.cpp"
+      ],
+      "headers": [
+        "case/vehicle_wall/native/FiniteWallContactSource.h",
+        "case/vehicle_wall/native/contact/Internal.h",
+        "case/vehicle_wall/native/contact/Values.h"
+      ],
+      "dependencies": [
+        "robo_dyna_envelope_owner_source",
+        "robo_dyna_post_gapm_main_source",
+        "tl_radioss_type25_search_startup"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_wall/native:envelope_owner_source",
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_search_startup"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_envelope_owner_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall/native:envelope_owner_source",
+      "cmake_file": "case/vehicle_wall/native/EnvelopeOwnerSource.cmake",
+      "cmake_sha256": "6602054dcad26e4e017df2fa43e48b7b849770d59e94e1fcfad5e771eb83785d",
+      "sources": [
+        "case/vehicle_wall/native/EnvelopeOwnerSource.cpp",
+        "case/vehicle_wall/native/owner_source/Admission.cpp"
+      ],
+      "headers": [
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_wall/native/EnvelopeOwnerSource.h",
+        "case/vehicle_wall/native/owner_source/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_envelope_execution_source",
+        "robo_dyna_tied_cin_witness_roster",
+        "robo_dyna_vehicle_joint_model",
+        "robo_dyna_vehicle_runtime_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_wall/native:envelope_execution_source",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/case/vehicle_runtime:vehicle_runtime_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_runtime_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_runtime:vehicle_runtime_values",
+      "cmake_file": "case/vehicle_runtime/Values.cmake",
+      "cmake_sha256": "424784871432f4194808c62329a3b441016add11e8d43c2285105528c1b8ec5d",
+      "sources": [
+        "case/vehicle_runtime/Config.cpp",
+        "case/vehicle_runtime/Packing.cpp",
+        "case/vehicle_runtime/SourceRoles.cpp"
+      ],
+      "headers": [
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/SourceRoles.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io",
+        "tl_nodal_rigid_assembly_binding",
+        "robo_dyna_vehicle_physical_attachments",
+        "CUDA::cudart"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_assembly_binding",
+        "//build_defs/app/case/vehicle_startup/physical_attachments:vehicle_physical_attachments",
+        "@rules_cuda//cuda:runtime"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_physical_attachments": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup/physical_attachments:vehicle_physical_attachments",
+      "cmake_file": "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.cmake",
+      "cmake_sha256": "5f88db1379e8d3f63ad0f2eab9b1857e901f705193b2ada306250dde8588717d",
+      "sources": [
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_model",
+        "robo_dyna_tied_cin_witness_roster"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_cin_witness_roster": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+      "cmake_file": "case/vehicle_startup/TiedCinWitnessRoster.cmake",
+      "cmake_sha256": "8533a458ff2f7767bf5904401ab0284185aa9f4ca5d037797727397e9353e8c0",
+      "sources": [
+        "case/vehicle_startup/TiedCinWitnessRoster.cpp"
+      ],
+      "headers": [],
+      "dependencies": [
+        "robo_dyna_tied_cin_witness_values",
+        "robo_dyna_tied_cin_attachments",
+        "robo_dyna_vehicle_shell_binding",
+        "tl_shell_physical_binding"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_values",
+        "//build_defs/app/case/vehicle_startup:tied_cin_attachments",
+        "//build_defs/app/case/vehicle_startup:vehicle_shell_binding",
+        "@legacy_fea//lib_src/assembly:shell_physical_binding"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_cin_attachments": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_cin_attachments",
+      "cmake_file": "case/vehicle_startup/TiedCinAttachments.cmake",
+      "cmake_sha256": "13b2370d3383aecc03fc70cb62641c9f68a0e9962da35e73157660110a52c7a0",
+      "sources": [
+        "case/vehicle_startup/TiedCinAttachments.cpp"
+      ],
+      "headers": [],
+      "dependencies": [
+        "robo_dyna_tied_search_post_kinchk",
+        "robo_dyna_tied_cin_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_search_post_kinchk",
+        "//build_defs/app/case/vehicle_startup:tied_cin_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_cin_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_cin_values",
+      "cmake_file": "case/vehicle_startup/TiedCinAttachmentValues.cmake",
+      "cmake_sha256": "ac6391486cdeaab902a71dfd09ae6f24baac64989dd060083c91bbbe80d3b0a6",
+      "sources": [
+        "case/vehicle_startup/tied_cin/Inputs.cpp",
+        "case/vehicle_startup/tied_cin/Budget.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/tied_cin/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_post_kinchk_values",
+        "tl_tied_cin_attachment"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_post_kinchk_values",
+        "@legacy_fea//lib_src/constraints/tied_shell:tied_cin_attachment"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_tied_cin_witness_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_cin_witness_values",
+      "cmake_file": "case/vehicle_startup/TiedCinWitnessValues.cmake",
+      "cmake_sha256": "c88d984221de89845661c8ef212f25a47f1a635f1c4928543cf5fd1a67f00fe8",
+      "sources": [
+        "case/vehicle_startup/tied_cin_witness/Budget.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.cpp",
+        "case/vehicle_startup/tied_cin_witness/Incidence.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedCinWitnessActivity.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.h",
+        "case/vehicle_startup/tied_cin_witness/Internal.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/vehicle_source/SourceShellRole.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_cin_values",
+        "tl_shell_batch_binding"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_cin_values",
+        "@legacy_fea//lib_src/elements:shell_batch_binding"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/elements:shell_batch_publication"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/elements:shell_batch_publication",
+          "headers": [
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalTrialIdentity.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_envelope_execution_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall/native:envelope_execution_source",
+      "cmake_file": "case/vehicle_wall/native/EnvelopeExecutionSource.cmake",
+      "cmake_sha256": "c63288cc4d2e71d149dd3017162e192c9a39babce8af5ebe40a0ee122246ed2a",
+      "sources": [
+        "case/vehicle_wall/native/EnvelopeExecutionSource.cpp",
+        "case/vehicle_wall/native/execution/Packing.cpp"
+      ],
+      "headers": [
+        "case/vehicle_wall/native/EnvelopeExecutionSource.h",
+        "case/vehicle_wall/native/execution/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_envelope_physical_source",
+        "robo_dyna_vehicle_shell_execution"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_wall/native:envelope_physical_source",
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_shell_execution": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution",
+      "cmake_file": "case/vehicle_startup/shell_execution/VehicleShellExecution.cmake",
+      "cmake_sha256": "2e2f5d0e58978a60ed50040433e118230ab308ef97f0f64e20adbd04516731d0",
+      "sources": [
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.cpp",
+        "case/vehicle_startup/shell_execution/SourceChecks.cpp",
+        "case/vehicle_startup/shell_execution/Budget.cpp"
+      ],
+      "headers": [],
+      "dependencies": [
+        "robo_dyna_vehicle_shell_execution_values",
+        "robo_dyna_vehicle_physical_model",
+        "tl_shell_physical_binding"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution_values",
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "@legacy_fea//lib_src/assembly:shell_physical_binding"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_shell_execution_values": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution_values",
+      "cmake_file": "case/vehicle_startup/shell_execution/VehicleShellExecution.cmake",
+      "cmake_sha256": "2e2f5d0e58978a60ed50040433e118230ab308ef97f0f64e20adbd04516731d0",
+      "sources": [
+        "case/vehicle_startup/shell_execution/Packing.cpp",
+        "case/vehicle_startup/shell_execution/Curves.cpp",
+        "case/vehicle_startup/shell_execution/Resource.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/Internal.h",
+        "case/vehicle_startup/shell_execution/Packing.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/NativeDeclarationViews.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/BoundedArrayIO.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+        "output/full_shell/IntervalValues.h",
+        "output/full_shell/static_bundle/Types.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/assembly:shell_physical_binding",
+        "@legacy_fea//lib_src/elements/solids:model"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/assembly:shell_physical_binding",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/elements/solids:model",
+          "headers": [
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_envelope_physical_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_wall/native:envelope_physical_source",
+      "cmake_file": "case/vehicle_wall/native/EnvelopePhysicalSource.cmake",
+      "cmake_sha256": "068375d42cae75b3ff4aca69e334b0b26e359d611921846cb2b10bf2d728aec2",
+      "sources": [
+        "case/vehicle_wall/native/EnvelopePhysicalSource.cpp",
+        "case/vehicle_wall/native/physical/Packing.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/shell_binding/Internal.h",
+        "case/vehicle_wall/native/EnvelopePhysicalSource.h",
+        "case/vehicle_wall/native/physical/Internal.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h"
+      ],
+      "dependencies": [
+        "robo_dyna_native_envelope_wall_source",
+        "robo_dyna_vehicle_physical_model"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_wall/native:native_envelope_wall_source",
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_original_source_io": {
+      "bazel_target": "//build_defs/app/case/vehicle_run/source:original_source_io",
+      "cmake_file": "case/vehicle_run/source/OriginalSourceIO.cmake",
+      "cmake_sha256": "88d5dd1301759bcbf3d50be42275bd8fa128a679a827ed7ceb099d6261676016",
+      "sources": [
+        "case/vehicle_run/source/OriginalSourceIO.cpp"
+      ],
+      "headers": [
+        "case/vehicle_run/source/OriginalPaths.h",
+        "case/vehicle_run/source/OriginalSourceIO.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_sections"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/modelio/vehicle_sections:vehicle_sections"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_vehicle_run": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact:native_vehicle_run",
+      "cmake_file": "case/vehicle_native_contact/Run.cmake",
+      "cmake_sha256": "e3d6d05efbade7df1481f2cda4fa6ec6979f86d982daa81850a01d58dd9b7f60",
+      "sources": [
+        "case/vehicle_native_contact/run/Prepare.cpp",
+        "case/vehicle_native_contact/run/Session.cpp",
+        "case/vehicle_native_contact/run/ArchiveRequest.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Codec.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Export.cpp",
+        "case/vehicle_native_contact/run/Retry.cpp",
+        "case/vehicle_native_contact/run/Execute.cpp",
+        "case/vehicle_native_contact/run/Summary.cpp"
+      ],
+      "headers": [
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Export.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/GeometryFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/MaterialFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/MetadataFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/WordArchive.h",
+        "case/vehicle_native_contact/Run.h",
+        "case/vehicle_native_contact/run/ArchiveRequest.h",
+        "case/vehicle_native_contact/run/Horizon.h",
+        "case/vehicle_native_contact/run/State.h",
+        "case/vehicle_run/Loop.h",
+        "case/vehicle_runtime/SolidReadback.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_native_contact",
+        "robo_dyna_vehicle_run_reports",
+        "robo_dyna_physical_run_environment",
+        "robo_dyna_physical_run_live"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_native_contact:vehicle_native_contact",
+        "//build_defs/app/case/vehicle_run:vehicle_run_reports",
+        "//build_defs/app/output/physical_run:physical_run_environment",
+        "//build_defs/app/output/physical_run:physical_run_live"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_run_live": {
+      "bazel_target": "//build_defs/app/output/physical_run:physical_run_live",
+      "cmake_file": "output/physical_run/PhysicalRun.cmake",
+      "cmake_sha256": "7f1320f3fa366f86514f676acde43992137311672edf4912a55187e1a26d4e9c",
+      "sources": [
+        "output/physical_run/AcceptedDynamics.cpp",
+        "output/physical_run/AcceptedWall.cpp",
+        "output/physical_run/AcceptedWallValues.cpp",
+        "output/physical_run/AcceptedSelfContact.cpp",
+        "output/physical_run/AcceptedNativeGroup.cpp"
+      ],
+      "headers": [
+        "case/PlacedCanonicalWall.h",
+        "case/WallTessellation.h",
+        "case/shell_collection/ShellCollectionContactGeometry.h",
+        "case/vehicle_self_contact/SelectedSelfContactSource.h",
+        "case/vehicle_self_contact/VehicleSelfContactSetup.h",
+        "case/vehicle_self_contact/VehicleSelfContactStartup.h",
+        "case/vehicle_wall/Settings.h",
+        "case/vehicle_wall/VehicleWallSetup.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "output/physical_run/AcceptedNativeGroup.h",
+        "output/physical_run/AcceptedSelfContact.h",
+        "output/physical_run/AcceptedWall.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_run_records",
+        "robo_dyna_vehicle_accepted_frames"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/case/vehicle_dynamics/output:vehicle_accepted_frames"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_accepted_frames": {
+      "bazel_target": "//build_defs/app/case/vehicle_dynamics/output:vehicle_accepted_frames",
+      "cmake_file": "case/vehicle_dynamics/output/VehicleAcceptedFrames.cmake",
+      "cmake_sha256": "b7c36d1d28f1a28803b35ae29e3f6e57c118eec3a02fb977265f46bb0f1f0b47",
+      "sources": [
+        "case/vehicle_dynamics/output/VehicleAcceptedFrames.cpp"
+      ],
+      "headers": [
+        "case/vehicle_dynamics/output/VehicleAcceptedFrames.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_dynamics",
+        "robo_dyna_physical_accepted_frames"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_dynamics:vehicle_physical_dynamics",
+        "//build_defs/app/output/physical_frames:physical_accepted_frames"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_accepted_frames": {
+      "bazel_target": "//build_defs/app/output/physical_frames:physical_accepted_frames",
+      "cmake_file": "output/physical_frames/PhysicalFrames.cmake",
+      "cmake_sha256": "31a810d2ad220d79f8e992f0b256b731b0eecd02ecadf1975700fe0cf2625896",
+      "sources": [
+        "output/physical_frames/Mapping.cpp",
+        "output/physical_frames/PhaseIdentity.cpp",
+        "output/physical_frames/CaptureContext.cpp",
+        "output/physical_frames/Capture.cpp"
+      ],
+      "headers": [
+        "output/physical_frames/CaptureState.h",
+        "output/physical_frames/PhysicalAcceptedFrames.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_frame_values",
+        "robo_dyna_vehicle_physical_startup",
+        "robo_dyna_full_shell_source_bundle"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_frames:physical_frame_values",
+        "//build_defs/app/case/vehicle_runtime:vehicle_physical_startup",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_bundle"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_full_shell_source_bundle": {
+      "bazel_target": "//build_defs/app/output/full_shell/static_bundle:full_shell_source_bundle",
+      "cmake_file": "output/full_shell/static_bundle/CMakeLists.txt",
+      "cmake_sha256": "e3e7d4b0892cbf6646bb8511353e97355a4ab20dfae278fd9efa0657c5d862ef",
+      "sources": [
+        "output/full_shell/static_bundle/SourceChunks.cpp",
+        "output/full_shell/static_bundle/SourceBundleInventory.cpp",
+        "output/full_shell/static_bundle/SourceBundleFields.cpp",
+        "output/full_shell/static_bundle/SourceBundleParse.cpp",
+        "output/full_shell/static_bundle/SourceBundlePrepare.cpp",
+        "output/full_shell/static_bundle/SourceBundleWriter.cpp",
+        "output/full_shell/static_bundle/SourceBundleReader.cpp"
+      ],
+      "headers": [
+        "output/full_shell/static_bundle/SourceBundle.h",
+        "output/full_shell/static_bundle/SourceBundleInternal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_full_shell_source_mapping"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_physical_startup": {
+      "bazel_target": "//build_defs/app/case/vehicle_runtime:vehicle_physical_startup",
+      "cmake_file": "case/vehicle_runtime/VehiclePhysicalStartup.cmake",
+      "cmake_sha256": "79625bf8c5c706d0285a2b2e18a6fe0642d647d3b9ccc0a9a7fc907098081407",
+      "sources": [
+        "case/vehicle_runtime/VehiclePhysicalStartup.cpp",
+        "case/vehicle_runtime/source/Admission.cpp",
+        "case/vehicle_runtime/source/Views.cpp",
+        "case/vehicle_runtime/source/Budget.cpp",
+        "case/vehicle_runtime/CaptureAccess.cpp",
+        "case/vehicle_runtime/SourceIdentity.cpp",
+        "case/vehicle_runtime/SourceBudget.cpp",
+        "case/vehicle_runtime/Forecast.cpp",
+        "case/vehicle_runtime/JointRuntime.cpp",
+        "case/vehicle_runtime/InitializeJoints.cpp",
+        "case/vehicle_runtime/InspectJoints.cpp",
+        "case/vehicle_runtime/BeamRuntime.cpp",
+        "case/vehicle_runtime/InitializeStructuralBeams.cpp",
+        "case/vehicle_runtime/InspectStructuralBeams.cpp",
+        "case/vehicle_runtime/ParticipantConfigs.cpp",
+        "case/vehicle_runtime/InitializeOwner.cpp",
+        "case/vehicle_runtime/InitializeParticipants.cpp",
+        "case/vehicle_runtime/InitializePublication.cpp",
+        "case/vehicle_runtime/InspectOwner.cpp",
+        "case/vehicle_runtime/InspectShells.cpp",
+        "case/vehicle_runtime/InspectConnections.cpp",
+        "case/vehicle_runtime/InspectSolids.cpp"
+      ],
+      "headers": [
+        "case/vehicle_runtime/BeamRuntime.h",
+        "case/vehicle_runtime/CaptureAccess.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/JointRuntime.h",
+        "case/vehicle_runtime/ParticipantConfigs.h",
+        "case/vehicle_runtime/ParticipantControls.h",
+        "case/vehicle_runtime/Reports.h",
+        "case/vehicle_runtime/SolidReadback.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/Storage.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_runtime/source/Storage.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_runtime_values",
+        "robo_dyna_vehicle_shell_execution",
+        "robo_dyna_vehicle_physical_attachments",
+        "tl_shell_batch_publication",
+        "robo_dyna_vehicle_joint_model",
+        "robo_dyna_envelope_owner_source",
+        "tl_type45_batch",
+        "tl_beam18_batch"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_runtime:vehicle_runtime_values",
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution",
+        "//build_defs/app/case/vehicle_startup/physical_attachments:vehicle_physical_attachments",
+        "@legacy_fea//lib_src/elements:shell_batch_publication",
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/case/vehicle_wall/native:envelope_owner_source",
+        "@legacy_fea//lib_src/elements/type45/resident:batch",
+        "@legacy_fea//lib_src/elements/beam18/resident:batch"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_frame_values": {
+      "bazel_target": "//build_defs/app/output/physical_frames:physical_frame_values",
+      "cmake_file": "output/physical_frames/PhysicalFrames.cmake",
+      "cmake_sha256": "31a810d2ad220d79f8e992f0b256b731b0eecd02ecadf1975700fe0cf2625896",
+      "sources": [
+        "output/physical_frames/Buffers.cpp",
+        "output/physical_frames/Fields.cpp",
+        "output/physical_frames/MappingRoles.cpp",
+        "output/physical_frames/Phase.cpp",
+        "output/physical_frames/EnvironmentFields.cpp"
+      ],
+      "headers": [
+        "case/vehicle_runtime/CaptureAccess.h",
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/SourceRoles.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/physical_frames/Buffers.h",
+        "output/physical_frames/EnvironmentFields.h",
+        "output/physical_frames/FieldTypes.h",
+        "output/physical_frames/Fields.h",
+        "output/physical_frames/Mapping.h",
+        "output/physical_frames/ParticipantPhase.h",
+        "output/physical_frames/RecordFields.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_frame_archive",
+        "Eigen3::Eigen",
+        "CUDA::cudart"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_frames:physical_frame_archive",
+        "@eigen//:eigen",
+        "@rules_cuda//cuda:runtime"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+        "@legacy_fea//lib_src/elements:shell_batch_publication"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchFinalization.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchDriver.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/elements:shell_batch_publication",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchLayeredSection.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatBatch.h",
+            "lib_src/elements/qbat/QbatBatchTypes.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalTrialIdentity.h",
+            "lib_utils/BoundedArena.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_physical_frame_archive": {
+      "bazel_target": "//build_defs/app/output/physical_frames:physical_frame_archive",
+      "cmake_file": "output/physical_frames/FrameArchive.cmake",
+      "cmake_sha256": "c0c9492712cf58a87189a7c47846279c98dea87f934f4950f0971da3f8ae4943",
+      "sources": [
+        "output/physical_frames/ArchivePrepare.cpp",
+        "output/physical_frames/ArchiveWrite.cpp",
+        "output/physical_frames/FrameIOChecks.cpp"
+      ],
+      "headers": [
+        "output/physical_frames/Archive.h",
+        "output/physical_frames/ArchiveState.h"
+      ],
+      "dependencies": [
+        "robo_dyna_full_shell_source_bundle",
+        "robo_dyna_parent_activity"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_bundle",
+        "//build_defs/app/output/full_shell/activity:parent_activity"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_utils:bounded_arena"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_utils:bounded_arena",
+          "headers": [
+            "lib_utils/BoundedArena.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_parent_activity": {
+      "bazel_target": "//build_defs/app/output/full_shell/activity:parent_activity",
+      "cmake_file": "output/full_shell/activity/ActivityRecords.cmake",
+      "cmake_sha256": "c2063c2f2aef239769d0dec3374b1d1d2cd6c1a1fca301f760d0fbf5efab8001",
+      "sources": [
+        "output/full_shell/activity/ActivityRecord.cpp",
+        "output/full_shell/activity/ActivityFields.cpp",
+        "output/full_shell/activity/ActivityIO.cpp",
+        "output/full_shell/activity/ActivityPlan.cpp"
+      ],
+      "headers": [
+        "output/full_shell/activity/ActivityRecord.h",
+        "output/full_shell/activity/Internal.h"
+      ],
+      "dependencies": [
+        "robo_dyna_full_shell_records"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/full_shell:full_shell_records"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_physical_dynamics": {
+      "bazel_target": "//build_defs/app/case/vehicle_dynamics:vehicle_physical_dynamics",
+      "cmake_file": "case/vehicle_dynamics/VehiclePhysicalDynamics.cmake",
+      "cmake_sha256": "2a2d351c1ffcaa82026c2f68805b42669ec7fec28bf146f195f84d5d15a2dca1",
+      "sources": [
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.cpp",
+        "case/vehicle_dynamics/NativeStageError.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Capture.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/CaptureValues.cpp",
+        "case/vehicle_dynamics/native_contact/Installation.cpp",
+        "case/vehicle_dynamics/Trial.cpp",
+        "case/vehicle_dynamics/MotionSummary.cpp"
+      ],
+      "headers": [
+        "case/vehicle_dynamics/ExecutionAccess.h",
+        "case/vehicle_dynamics/MotionSummary.h",
+        "case/vehicle_dynamics/NativeStageError.h",
+        "case/vehicle_dynamics/Reports.h",
+        "case/vehicle_dynamics/ScratchReceiptRoster.h",
+        "case/vehicle_dynamics/SelfContactContribution.h",
+        "case/vehicle_dynamics/SelfContactObservation.h",
+        "case/vehicle_dynamics/StepTiming.h",
+        "case/vehicle_dynamics/Storage.h",
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+        "case/vehicle_dynamics/WallContribution.h",
+        "case/vehicle_dynamics/WallObservation.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Capture.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Codec.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_physical_startup",
+        "robo_dyna_tied_cin_witness_activity",
+        "robo_dyna_stage_timing",
+        "robo_dyna_native_contact_contribution"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_runtime:vehicle_physical_startup",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_activity",
+        "//build_defs/app/benchmarks/stage_timing:stage_timing",
+        "//build_defs/app/case/vehicle_dynamics/native_contact:native_contact_contribution"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_contact_contribution": {
+      "bazel_target": "//build_defs/app/case/vehicle_dynamics/native_contact:native_contact_contribution",
+      "cmake_file": "case/vehicle_dynamics/native_contact/Contribution.cmake",
+      "cmake_sha256": "55180b3af19a85d704d6e21c3058bcf0f8d35546daf0ca981ca3c56f2f171de1",
+      "sources": [
+        "case/vehicle_dynamics/native_contact/Contribution.cpp",
+        "case/vehicle_dynamics/native_contact/Error.cpp",
+        "case/vehicle_dynamics/native_contact/Group.cpp"
+      ],
+      "headers": [
+        "case/vehicle_dynamics/native_contact/Contribution.h",
+        "case/vehicle_dynamics/native_contact/Error.h",
+        "case/vehicle_dynamics/native_contact/Group.h",
+        "case/vehicle_dynamics/native_contact/Observation.h"
+      ],
+      "dependencies": [
+        "tl_radioss_type25_transaction"
+      ],
+      "bazel_dependencies": [
+        "@legacy_fea//lib_src/collision:radioss_type25_transaction"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_stage_timing": {
+      "bazel_target": "//build_defs/app/benchmarks/stage_timing:stage_timing",
+      "cmake_file": "benchmarks/stage_timing/StageTiming.cmake",
+      "cmake_sha256": "028d68f75e4a8356c3e04d9d6e663cf7e164d8ff3793566a797d8895183e641b",
+      "sources": [
+        "benchmarks/stage_timing/StageTimer.cpp"
+      ],
+      "headers": [
+        "benchmarks/stage_timing/StageTimer.h"
+      ],
+      "dependencies": [],
+      "bazel_dependencies": [],
+      "copts": []
+    },
+    "robo_dyna_tied_cin_witness_activity": {
+      "bazel_target": "//build_defs/app/case/vehicle_startup:tied_cin_witness_activity",
+      "cmake_file": "case/vehicle_startup/TiedCinWitnessActivity.cmake",
+      "cmake_sha256": "a3badabb933403df051ae8d67a9d4342a92e1988db137fe9fbf71bdddc4cd06e",
+      "sources": [
+        "case/vehicle_startup/TiedCinWitnessActivity.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityCapture.cpp",
+        "case/vehicle_startup/tied_cin_witness/ActivityUpload.cpp"
+      ],
+      "headers": [
+        "case/vehicle_startup/TiedCinWitnessActivity.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityInternal.h",
+        "case/vehicle_startup/tied_cin_witness/ActivityValues.h"
+      ],
+      "dependencies": [
+        "robo_dyna_tied_cin_witness_roster",
+        "tl_shell_batch_publication"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+        "@legacy_fea//lib_src/elements:shell_batch_publication"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_run_records": {
+      "bazel_target": "//build_defs/app/output/physical_run:physical_run_records",
+      "cmake_file": "output/physical_run/PhysicalRun.cmake",
+      "cmake_sha256": "7f1320f3fa366f86514f676acde43992137311672edf4912a55187e1a26d4e9c",
+      "sources": [
+        "output/physical_run/ViewerInput.cpp",
+        "output/physical_run/Profile.cpp",
+        "output/physical_run/Sequence.cpp",
+        "output/physical_run/NativeGroupValues.cpp",
+        "output/physical_run/SelfContactValues.cpp",
+        "output/physical_run/NativeContactValues.cpp",
+        "output/physical_run/Fields.cpp",
+        "output/physical_run/IntervalWriter.cpp",
+        "output/physical_run/IntervalReader.cpp",
+        "output/physical_run/Configuration.cpp",
+        "output/physical_run/IndexFields.cpp",
+        "output/physical_run/IndexChecks.cpp",
+        "output/physical_run/Manifest.cpp",
+        "output/physical_run/Inventory.cpp",
+        "output/physical_run/ReferencedInventory.cpp",
+        "output/physical_run/WallFields.cpp",
+        "output/physical_run/WallRead.cpp",
+        "output/physical_run/EnvironmentFields.cpp",
+        "output/physical_run/EnvironmentRead.cpp",
+        "output/physical_run/RunPrepare.cpp",
+        "output/physical_run/RunWrite.cpp",
+        "output/physical_run/ReplayBudget.cpp",
+        "output/physical_run/ReplayPreflight.cpp",
+        "output/physical_run/Replay.cpp",
+        "output/physical_run/ReplayRecords.cpp"
+      ],
+      "headers": [
+        "case/CanonicalWall.h",
+        "case/CanonicalWallArtifacts.h",
+        "case/vehicle_wall/SetupIdentity.h",
+        "output/GeometryMeshArchive.h",
+        "output/full_shell/FullShellIdentityFields.h",
+        "output/full_shell/IntervalChunkPlan.h",
+        "output/full_shell/activity/Internal.h",
+        "output/full_shell/static_bundle/SourceAuthority.h",
+        "output/physical_run/AcceptedInterval.h",
+        "output/physical_run/EnvironmentArtifacts.h",
+        "output/physical_run/IntervalIO.h",
+        "output/physical_run/Metadata.h",
+        "output/physical_run/NativeContactValues.h",
+        "output/physical_run/NativeGroupValues.h",
+        "output/physical_run/Replay.h",
+        "output/physical_run/ReplayBudget.h",
+        "output/physical_run/RunArchive.h",
+        "output/physical_run/RunState.h",
+        "output/physical_run/SelfContactValues.h",
+        "output/physical_run/SourceInputFields.h",
+        "output/physical_run/Types.h",
+        "output/physical_run/ViewerInput.h",
+        "output/physical_run/WallArtifacts.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_frame_archive",
+        "robo_dyna_wall_composition"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_frames:physical_frame_archive",
+        "//build_defs/app/output/physical_run:wall_composition"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_wall_composition": {
+      "bazel_target": "//build_defs/app/output/physical_run:wall_composition",
+      "cmake_file": "output/physical_run/WallComposition.cmake",
+      "cmake_sha256": "34b758ebf498e742f33aef21b7f44842ed801a11c597616151ea085d7e47b217",
+      "sources": [
+        "output/physical_run/WallComposition.cpp"
+      ],
+      "headers": [
+        "output/physical_run/WallComposition.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_run_environment": {
+      "bazel_target": "//build_defs/app/output/physical_run:physical_run_environment",
+      "cmake_file": "output/physical_run/PhysicalRun.cmake",
+      "cmake_sha256": "7f1320f3fa366f86514f676acde43992137311672edf4912a55187e1a26d4e9c",
+      "sources": [
+        "output/physical_run/EnvironmentPrepare.cpp"
+      ],
+      "headers": [
+        "output/MeshArchive.h"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_run_records",
+        "robo_dyna_physical_accepted_frames"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/output/physical_frames:physical_accepted_frames"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_vehicle_run_reports": {
+      "bazel_target": "//build_defs/app/case/vehicle_run:vehicle_run_reports",
+      "cmake_file": "case/vehicle_run/RunReports.cmake",
+      "cmake_sha256": "a7956b134f76f51295a21b7aa997e0433523cad77bf942b7a0ca19dfa06e9e72",
+      "sources": [
+        "case/vehicle_run/ContactSummary.cpp",
+        "case/vehicle_run/Summary.cpp",
+        "case/vehicle_run/MechanicsSummary.cpp",
+        "case/vehicle_run/MechanicsDocument.cpp",
+        "case/vehicle_run/SampledShellPlasticity.cpp",
+        "case/vehicle_run/SelfContactSummary.cpp",
+        "case/vehicle_run/SelfContactDocument.cpp",
+        "case/vehicle_run/SelfContactErrorDocument.cpp",
+        "case/vehicle_run/SelfContactErrorGeometry.cpp",
+        "case/vehicle_run/contact_diagnostics/Observe.cpp",
+        "case/vehicle_run/contact_diagnostics/Document.cpp",
+        "case/vehicle_run/contact_diagnostics/Progress.cpp"
+      ],
+      "headers": [
+        "case/PlacedCanonicalWall.h",
+        "case/WallTessellation.h",
+        "case/shell_collection/ShellCollectionContactGeometry.h",
+        "case/vehicle_dynamics/MotionSummary.h",
+        "case/vehicle_dynamics/SelfContactObservation.h",
+        "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+        "case/vehicle_dynamics/WallObservation.h",
+        "case/vehicle_dynamics/native_contact/Observation.h",
+        "case/vehicle_dynamics/output/VehicleAcceptedFrames.h",
+        "case/vehicle_run/ContactComposition.h",
+        "case/vehicle_run/ContactSummary.h",
+        "case/vehicle_run/MechanicsDocument.h",
+        "case/vehicle_run/MechanicsSummary.h",
+        "case/vehicle_run/Run.h",
+        "case/vehicle_run/RunState.h",
+        "case/vehicle_run/SampledShellPlasticity.h",
+        "case/vehicle_run/SelfContactDocument.h",
+        "case/vehicle_run/SelfContactErrorGeometry.h",
+        "case/vehicle_run/SelfContactSummary.h",
+        "case/vehicle_run/contact_diagnostics/Document.h",
+        "case/vehicle_run/contact_diagnostics/Observe.h",
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/SourceRoles.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_self_contact/SelectedSelfContactSource.h",
+        "case/vehicle_self_contact/SelfContactFactories.h",
+        "case/vehicle_self_contact/SelfContactStageError.h",
+        "case/vehicle_self_contact/VehicleSelfContactSetup.h",
+        "case/vehicle_self_contact/VehicleSelfContactStartup.h",
+        "case/vehicle_startup/TiedCinAttachments.h",
+        "case/vehicle_startup/TiedCinWitnessRoster.h",
+        "case/vehicle_startup/TiedSearchAssessment.h",
+        "case/vehicle_startup/TiedSearchClassification.h",
+        "case/vehicle_startup/TiedSearchFinalized.h",
+        "case/vehicle_startup/TiedSearchPostKinChk.h",
+        "case/vehicle_startup/VehicleShellBinding.h",
+        "case/vehicle_startup/VehicleShellReferences.h",
+        "case/vehicle_startup/joints/VehicleJointModel.h",
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h",
+        "case/vehicle_startup/physical_model/VehiclePhysicalModel.h",
+        "case/vehicle_startup/shell_execution/VehicleShellExecution.h",
+        "case/vehicle_wall/LoadedWall.h",
+        "case/vehicle_wall/Settings.h",
+        "case/vehicle_wall/VehicleWallSetup.h",
+        "case/vehicle_wall/VehicleWallStartup.h",
+        "case/vehicle_wall/WallStageError.h",
+        "modelio/beam18/Source.h",
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+        "modelio/physical_scope/CanonicalDomain.h",
+        "modelio/physical_scope/DomainEmbedding.h",
+        "modelio/physical_scope/PhysicalScope.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+        "modelio/rigid_part/RigidPartDeclarations.h",
+        "modelio/rigid_part/RigidPartSource.h",
+        "modelio/rigid_part/point_mass/Source.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "modelio/solid_control/DirectSource.h",
+        "modelio/solid_control/EffectiveSource.h",
+        "modelio/solid_control/Types.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/Law1ExecutionPolicy.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+        "modelio/source_assembly/SourceReferenceMetric.h",
+        "modelio/tied_shell/TiedAuxiliaryConstraints.h",
+        "modelio/tied_shell/TiedClassificationContext.h",
+        "modelio/tied_shell/TiedShellDeclaration.h",
+        "modelio/tied_shell/TiedShellPacking.h",
+        "modelio/tied_shell/TiedShellSearchGeometry.h",
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/SourceType13.h",
+        "modelio/type25/VehicleType25Source.h",
+        "modelio/type45/VehicleType45Source.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/SourceShellRole.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+        "output/physical_frames/Buffers.h",
+        "output/physical_frames/FieldTypes.h",
+        "output/physical_frames/Mapping.h",
+        "output/physical_frames/PhysicalAcceptedFrames.h"
+      ],
+      "dependencies": [
+        "robo_dyna_vehicle_run_values",
+        "robo_dyna_physical_run_records",
+        "robo_dyna_vehicle_stage_timing_document"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_run:vehicle_run_values",
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/case/vehicle_run:vehicle_stage_timing_document"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/collision:nodal_wall_mapped_device",
+        "@legacy_fea//lib_src/collision:radioss_type25_runtime_values",
+        "@legacy_fea//lib_src/collision:self_contact_transaction_values",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+        "@legacy_fea//lib_src/constraints/tied_shell/search:values"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/collision:nodal_wall_mapped_device",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/NodalWallContact.h",
+            "lib_src/collision/NodalWallContactDevice.h",
+            "lib_src/collision/NodalWallMappedContact.h",
+            "lib_src/collision/PlanarWallBox.h",
+            "lib_src/collision/PlanarWallGeometry.h",
+            "lib_src/collision/Q4PlanarGeometry.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchLayeredSection.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatBatch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/Model.h",
+            "lib_src/elements/type45/Type45Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalTrialIdentity.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/collision:radioss_type25_runtime_values",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/RadiossType25Transaction.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchLayeredSection.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatBatch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/Model.h",
+            "lib_src/elements/type45/Type45Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalTrialIdentity.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/collision:self_contact_transaction_values",
+          "headers": [
+            "lib_src/assembly/ElementMassContributions.h",
+            "lib_src/assembly/NodalCoefficientLedger.h",
+            "lib_src/assembly/NodalNodeDomain.h",
+            "lib_src/assembly/ShellNodeMap.h",
+            "lib_src/assembly/ShellPhysicalBinding.h",
+            "lib_src/collision/PlanarWallBox.h",
+            "lib_src/collision/PlanarWallGeometry.h",
+            "lib_src/collision/Q4PlanarGeometry.h",
+            "lib_src/collision/SelfContactActiveUseBinding.h",
+            "lib_src/collision/SelfContactTransaction.h",
+            "lib_src/collision/SelfContactTransactionDiagnostics.h",
+            "lib_src/collision/SelfContactTransactionTypes.h",
+            "lib_src/constraints/NodalRigidAssemblyBinding.h",
+            "lib_src/constraints/NodalRigidPartTopology.h",
+            "lib_src/constraints/tied_shell/TiedCinAttachmentModel.h",
+            "lib_src/constraints/tied_shell/TiedClassification.h",
+            "lib_src/constraints/tied_shell/TiedPostKinChk.h",
+            "lib_src/constraints/tied_shell/runtime/CinStageTypes.h",
+            "lib_src/elements/ShellBatchBinding.h",
+            "lib_src/elements/ShellBatchFailureBinding.h",
+            "lib_src/elements/ShellBatchLayeredSection.h",
+            "lib_src/elements/ShellBatchPlasticityBinding.h",
+            "lib_src/elements/ShellBatchPublication.h",
+            "lib_src/elements/ShellBatchStartup.h",
+            "lib_src/elements/ShellParentExecution.h",
+            "lib_src/elements/ShellReferencePlacement.h",
+            "lib_src/elements/beam18/ForceTypes.h",
+            "lib_src/elements/beam18/Model.h",
+            "lib_src/elements/beam18/resident/Batch.h",
+            "lib_src/elements/qbat/QbatBatch.h",
+            "lib_src/elements/qbat/QbatTypes.h",
+            "lib_src/elements/qeph/QephData.h",
+            "lib_src/elements/solid18/Solid18Types.h",
+            "lib_src/elements/solid18/law44/Types.h",
+            "lib_src/elements/solid18/total_strain/ReferenceTypes.h",
+            "lib_src/elements/solid24/Solid24Types.h",
+            "lib_src/elements/solid6z/Solid6zForceTypes.h",
+            "lib_src/elements/solids/Model.h",
+            "lib_src/elements/solids/control/Types.h",
+            "lib_src/elements/solids/resident/Batch.h",
+            "lib_src/elements/t3/T3Data.h",
+            "lib_src/elements/type13/Type13Startup.h",
+            "lib_src/elements/type25/Type25Model.h",
+            "lib_src/elements/type25/Type25Types.h",
+            "lib_src/elements/type45/Model.h",
+            "lib_src/elements/type45/Type45Types.h",
+            "lib_src/elements/type45/resident/Batch.h",
+            "lib_src/materials/law36/Types.h",
+            "lib_src/materials/law42/Types.h",
+            "lib_src/materials/law44/solid/Types.h",
+            "lib_src/materials/law90/Types.h",
+            "lib_src/math/Fixed3.h",
+            "lib_src/solvers/FENodalState.h",
+            "lib_src/solvers/NodalCinRuntime.h",
+            "lib_src/solvers/NodalCinStructuralLimit.h",
+            "lib_src/solvers/NodalTrialIdentity.h",
+            "lib_src/solvers/NodalUniformMotionObserver.h",
+            "lib_utils/BoundedStartupArray.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:finalization",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchFinalization.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/constraints/tied_shell/search:values",
+          "headers": [
+            "lib_src/constraints/tied_shell/search/TiedSearchDriver.h",
+            "lib_src/math/Fixed3.h"
+          ]
+        }
+      ]
+    },
+    "robo_dyna_vehicle_stage_timing_document": {
+      "bazel_target": "//build_defs/app/case/vehicle_run:vehicle_stage_timing_document",
+      "cmake_file": "case/vehicle_run/StageTimingDocument.cmake",
+      "cmake_sha256": "895f9aa558fde8ff07c3677e2b9b557fa348b792a80b559bdbe1668d90802d2c",
+      "sources": [
+        "case/vehicle_run/StageTimingDocument.cpp"
+      ],
+      "headers": [
+        "benchmarks/stage_timing/StageTimer.h",
+        "case/vehicle_dynamics/StepTiming.h",
+        "case/vehicle_run/StageTimingDocument.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io"
+      ],
+      "copts": []
+    },
+    "robo_dyna_vehicle_native_contact": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact:vehicle_native_contact",
+      "cmake_file": "case/vehicle_native_contact/VehicleContactStartup.cmake",
+      "cmake_sha256": "0ac772f9b33c7abdffee844c65cd0646fdcc30492b7945dab10b2f64a0f3e2d9",
+      "sources": [
+        "case/vehicle_native_contact/Config.cpp",
+        "case/vehicle_native_contact/Budget.cpp",
+        "case/vehicle_native_contact/TiedRemovalSource.cpp",
+        "case/vehicle_native_contact/InitialModel.cpp",
+        "case/vehicle_native_contact/InterfaceFields.cpp",
+        "case/vehicle_native_contact/RuntimeSources.cpp",
+        "case/vehicle_native_contact/Prepare.cpp",
+        "case/vehicle_native_contact/Initialize.cpp",
+        "case/vehicle_native_contact/Census.cpp"
+      ],
+      "headers": [
+        "case/vehicle_native_contact/InitialModel.h",
+        "case/vehicle_native_contact/InterfaceFields.h",
+        "case/vehicle_native_contact/Storage.h",
+        "case/vehicle_native_contact/TiedRemovalSource.h",
+        "case/vehicle_native_contact/VehicleContactStartup.h",
+        "output/full_shell/FixedStepHorizon.h"
+      ],
+      "dependencies": [
+        "robo_dyna_native_vehicle_source_admission",
+        "robo_dyna_native_vehicle_field_packing",
+        "robo_dyna_native_activity_source",
+        "robo_dyna_vehicle_physical_dynamics",
+        "tl_radioss_type25_initial_state",
+        "CUDA::cudart"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_field_packing",
+        "//build_defs/app/case/vehicle_native_contact/activity:native_activity_source",
+        "//build_defs/app/case/vehicle_dynamics:vehicle_physical_dynamics",
+        "@legacy_fea//lib_src/collision:radioss_type25_initial_state",
+        "@rules_cuda//cuda:runtime"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_activity_source": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact/activity:native_activity_source",
+      "cmake_file": "case/vehicle_native_contact/activity/ActivitySource.cmake",
+      "cmake_sha256": "d7ed04c776ce9abe26dbc91ef0be05261717b57b67bc39e5ab34bc3fcfc5db13",
+      "sources": [
+        "case/vehicle_native_contact/activity/Controls.cpp",
+        "case/vehicle_native_contact/activity/Declaration.cpp",
+        "case/vehicle_native_contact/activity/Coverage.cpp",
+        "case/vehicle_native_contact/activity/CoverageValues.cpp",
+        "case/vehicle_native_contact/activity/CoverageShells.cpp",
+        "case/vehicle_native_contact/activity/CoverageSolids.cpp",
+        "case/vehicle_native_contact/activity/CoverageBeams.cpp",
+        "case/vehicle_native_contact/activity/CoverageConnections.cpp",
+        "case/vehicle_native_contact/activity/Census.cpp",
+        "case/vehicle_native_contact/activity/Document.cpp"
+      ],
+      "headers": [
+        "case/vehicle_native_contact/activity/Controls.h",
+        "case/vehicle_native_contact/activity/Coverage.h",
+        "case/vehicle_native_contact/activity/Declaration.h",
+        "case/vehicle_self_contact/native/initial_controls/Values.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_scope/SourcePolicy.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/type45/SourcePolicy.h"
+      ],
+      "dependencies": [
+        "robo_dyna_native_vehicle_source_admission",
+        "tl_radioss_type25_activity_source"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "@legacy_fea//lib_src/collision:radioss_type25_activity_source"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_native_vehicle_field_packing": {
+      "bazel_target": "//build_defs/app/case/vehicle_native_contact:native_vehicle_field_packing",
+      "cmake_file": "case/vehicle_native_contact/FieldPacking.cmake",
+      "cmake_sha256": "afc01f9d7bc2d9a43cacfaff0a27706f8d89697cbd88504ec316c5bfc7a70ef8",
+      "sources": [
+        "case/vehicle_native_contact/FieldPacking.cpp"
+      ],
+      "headers": [
+        "case/vehicle_native_contact/FieldPacking.h"
+      ],
+      "dependencies": [
+        "robo_dyna_artifact_io",
+        "tl_radioss_type25_fixed_main_startup"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output:artifact_io",
+        "@legacy_fea//lib_src/collision:radioss_type25_fixed_main_startup"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ],
+      "header_dependencies": [
+        "@legacy_fea//lib_src/collision:radioss_type25_gap_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_lifecycle"
+      ],
+      "header_dependency_evidence": [
+        {
+          "target": "@legacy_fea//lib_src/collision:radioss_type25_gap_source",
+          "headers": [
+            "lib_src/collision/radioss_type25/source_gaps/Types.h"
+          ]
+        },
+        {
+          "target": "@legacy_fea//lib_src/collision:radioss_type25_lifecycle",
+          "headers": [
+            "lib_src/collision/radioss_type25/selection/lifecycle/Types.h"
+          ]
+        }
+      ]
+    }
+  }
+}

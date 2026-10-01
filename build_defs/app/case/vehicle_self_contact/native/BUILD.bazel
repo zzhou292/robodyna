@@ -1,0 +1,328 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_self_contact/native/ContactGapOperands.cmake:robo_dyna_contact_gap_operands
+app_library(
+    name = "contact_gap_operands",
+    srcs = [
+        "case/vehicle_self_contact/native/ContactGapOperands.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Binding.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Shells.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Lines.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Springs.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Budget.cpp",
+        "case/vehicle_self_contact/native/gap_operands/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/ContactGapOperands.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/gap_operands/Internal.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_scope/SourcePolicy.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_gap_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/InitialSurfaceSource.cmake:robo_dyna_initial_surface_source
+app_library(
+    name = "initial_surface_source",
+    srcs = [
+        "case/vehicle_self_contact/native/InitialSurfaceSource.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Packing.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Certificate.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Context.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Budget.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Digest.cpp",
+        "case/vehicle_self_contact/native/solid_surfaces/Document.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/InitialSurfaceSource.h",
+        "case/vehicle_self_contact/native/solid_surfaces/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "//build_defs/app/case/vehicle_self_contact/native:v5_coated_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_surface_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/InitializerControlsSource.cmake:robo_dyna_initializer_controls_source
+app_library(
+    name = "initializer_controls_source",
+    srcs = [
+        "case/vehicle_self_contact/native/InitializerControlsSource.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Budget.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Controls.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Gaps.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Law.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Namespace.cpp",
+        "case/vehicle_self_contact/native/initial_controls/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/InitializerControlsSource.h",
+        "case/vehicle_self_contact/native/initial_controls/Internal.h",
+        "case/vehicle_self_contact/native/initial_controls/PopulationProfile.h",
+        "case/vehicle_self_contact/native/initial_controls/Values.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "//build_defs/app/case/vehicle_wall/native:native_envelope_wall_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/MixedInterfaceSource.cmake:robo_dyna_mixed_interface_source
+app_library(
+    name = "mixed_interface_source",
+    srcs = [
+        "case/vehicle_self_contact/native/MixedInterfaceSource.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Packing.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Certificate.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Census.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Digest.cpp",
+        "case/vehicle_self_contact/native/mixed_interface/Document.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/MixedInterfaceSource.h",
+        "case/vehicle_self_contact/native/mixed_interface/Internal.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:initial_surface_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_interface_surface",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/MixedStarterSource.cmake:robo_dyna_mixed_starter_source
+app_library(
+    name = "mixed_starter_source",
+    srcs = [
+        "case/vehicle_self_contact/native/MixedStarterSource.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Domain.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Digest.cpp",
+        "case/vehicle_self_contact/native/mixed_starter/Document.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/MixedStarterSource.h",
+        "case/vehicle_self_contact/native/mixed_starter/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_current_normals",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/TopologyAssessment.cmake:robo_dyna_native_topology_assessment
+app_library(
+    name = "native_topology_assessment",
+    srcs = [
+        "case/vehicle_self_contact/native/TopologyInputs.cpp",
+        "case/vehicle_self_contact/native/TopologyAssessment.cpp",
+        "case/vehicle_self_contact/native/TopologyDigest.cpp",
+        "case/vehicle_self_contact/native/AssessmentDocument.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/TopologyAssessment.h",
+        "case/vehicle_self_contact/native/TopologyAssessmentInternal.h",
+        "case/vehicle_self_contact/native/TopologyDigestFields.h",
+        "output/BoundedArrayJson.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/self_contact:original_self_contact_selection",
+        "@legacy_fea//lib_src/collision:radioss_type25_fixed_main_startup",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/PostGapmMainSource.cmake:robo_dyna_post_gapm_main_source
+app_library(
+    name = "post_gapm_main_source",
+    srcs = [
+        "case/vehicle_self_contact/native/PostGapmMainSource.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Budget.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Controls.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Support.cpp",
+        "case/vehicle_self_contact/native/mixed_main/CoefficientValues.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Gaps.cpp",
+        "case/vehicle_self_contact/native/mixed_main/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/PostGapmMainSource.h",
+        "case/vehicle_self_contact/native/mixed_main/CoefficientValues.h",
+        "case/vehicle_self_contact/native/mixed_main/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:mixed_interface_source",
+        "//build_defs/app/case/vehicle_self_contact/native:contact_gap_operands",
+        "//build_defs/app/case/vehicle_self_contact/native:selected_shell_main_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/SelectedShellMainSource.cmake:robo_dyna_selected_shell_main_source
+app_library(
+    name = "selected_shell_main_source",
+    srcs = [
+        "case/vehicle_self_contact/native/SelectedShellMainSource.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Binding.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Grouping.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/ShellValues.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Certificate.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/SupportQuery.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/SolidSupportQuery.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Compose.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Budget.cpp",
+        "case/vehicle_self_contact/native/main_coefficients/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/SelectedShellMainSource.h",
+        "case/vehicle_self_contact/native/main_coefficients/Compose.h",
+        "case/vehicle_self_contact/native/main_coefficients/Internal.h",
+        "case/vehicle_self_contact/native/main_coefficients/SolidSupportQuery.h",
+        "case/vehicle_self_contact/native/main_coefficients/SupportQuery.h",
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_corrected_nodal_source",
+        "//build_defs/app/case/vehicle_self_contact/native:v5_coated_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_main_geometry",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/CoatedSource.cmake:robo_dyna_v5_coated_source
+app_library(
+    name = "v5_coated_source",
+    srcs = [
+        "case/vehicle_self_contact/native/coated/Reader.cpp",
+        "case/vehicle_self_contact/native/coated/Membership.cpp",
+        "case/vehicle_self_contact/native/coated/Order.cpp",
+        "case/vehicle_self_contact/native/coated/Inputs.cpp",
+        "case/vehicle_self_contact/native/coated/Budget.cpp",
+        "case/vehicle_self_contact/native/coated/Digest.cpp",
+        "case/vehicle_self_contact/native/coated/Assessment.cpp",
+        "case/vehicle_self_contact/native/coated/Document.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/CoatedSource.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/coated/Internal.h",
+        "case/vehicle_self_contact/native/coated/TopologyInput.h",
+        "case/vehicle_self_contact/native/coated/Types.h",
+        "case/vehicle_self_contact/native/coated/Values.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/type45/SourcePolicy.h",
+        "modelio/type45/VehicleType45Source.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/case/vehicle_self_contact/native:native_topology_assessment",
+        "//build_defs/app/modelio/source_assembly:source_native_coordinates",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/ContactNodalSeed.cmake:robo_dyna_vehicle_contact_nodal_seed
+app_library(
+    name = "vehicle_contact_nodal_seed",
+    srcs = [
+        "case/vehicle_self_contact/native/ContactNodalSeed.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Budget.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Context.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/SolidValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/DirectValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/ShellValues.cpp",
+        "case/vehicle_self_contact/native/nodal_seed/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/ContactNodalSeed.h",
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_self_contact/native/nodal_seed/Internal.h",
+        "case/vehicle_self_contact/native/nodal_seed/MaterialSlots.h",
+        "case/vehicle_self_contact/native/nodal_seed/SolidSlots.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+        "modelio/vehicle_source/OriginalAuthority.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/modelio/solid_control:solid_control_source",
+        "//build_defs/app/case/vehicle_self_contact/native:native_topology_assessment",
+        "@legacy_fea//lib_src/collision:radioss_type25_shell_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_self_contact/native/CorrectedNodalSource.cmake:robo_dyna_vehicle_corrected_nodal_source
+app_library(
+    name = "vehicle_corrected_nodal_source",
+    srcs = [
+        "case/vehicle_self_contact/native/CorrectedNodalSource.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Budget.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Context.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Sharing.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Inputs.cpp",
+        "case/vehicle_self_contact/native/nodal_correction/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/CorrectedNodalSource.h",
+        "case/vehicle_self_contact/native/nodal_correction/Internal.h",
+        "case/vehicle_self_contact/native/nodal_correction/MaterialSlots.h",
+        "modelio/self_contact/PartSets.h",
+        "modelio/solid_control/Internal.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/tied_shell/Internal.h",
+        "modelio/vehicle_source/SourceCards.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_self_contact/native:vehicle_contact_nodal_seed",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

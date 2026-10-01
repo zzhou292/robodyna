@@ -1,0 +1,36 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_native_contact/activity/ActivitySource.cmake:robo_dyna_native_activity_source
+app_library(
+    name = "native_activity_source",
+    srcs = [
+        "case/vehicle_native_contact/activity/Controls.cpp",
+        "case/vehicle_native_contact/activity/Declaration.cpp",
+        "case/vehicle_native_contact/activity/Coverage.cpp",
+        "case/vehicle_native_contact/activity/CoverageValues.cpp",
+        "case/vehicle_native_contact/activity/CoverageShells.cpp",
+        "case/vehicle_native_contact/activity/CoverageSolids.cpp",
+        "case/vehicle_native_contact/activity/CoverageBeams.cpp",
+        "case/vehicle_native_contact/activity/CoverageConnections.cpp",
+        "case/vehicle_native_contact/activity/Census.cpp",
+        "case/vehicle_native_contact/activity/Document.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_native_contact/activity/Controls.h",
+        "case/vehicle_native_contact/activity/Coverage.h",
+        "case/vehicle_native_contact/activity/Declaration.h",
+        "case/vehicle_self_contact/native/initial_controls/Values.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_scope/SourcePolicy.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/type45/SourcePolicy.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "@legacy_fea//lib_src/collision:radioss_type25_activity_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

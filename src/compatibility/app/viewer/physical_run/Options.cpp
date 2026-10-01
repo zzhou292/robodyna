@@ -23,7 +23,7 @@ std::array<double, 3> Coordinates(const std::string& text) {
 } // namespace
 Options Parse(int argc,char** argv) {
     using output::Require;
-    Require(argc>=2,"usage: robo_dyna_physical_replay (RUN_DIR_OR_RECEIPT | --recovered RECOVERED_DESCRIPTOR) [--capture NEW_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--part-palette-seed UINT64] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6|10]");
+    Require(argc>=2,"usage: robo_dyna_physical_replay (RUN_DIR_OR_RECEIPT | --recovered RECOVERED_DESCRIPTOR) [--capture NEW_DIR] [--chrono-data ASSET_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--part-palette-seed UINT64] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6|10]");
     Options out;
     int first_option=2;
     if (std::string(argv[1])=="--recovered") {
@@ -39,6 +39,10 @@ Options Parse(int argc,char** argv) {
         Require(i+1<argc,"Missing physical viewer option value");
         const std::string value=argv[++i];
         if(name=="--capture") out.capture=value;
+        else if(name=="--chrono-data") {
+            Require(!value.empty(), "Visualization asset directory must not be empty");
+            out.chrono_data=value;
+        }
         else if(name=="--fps") {
             std::size_t end=0;out.frames_per_second=std::stod(value,&end);
             Require(end==value.size() && std::isfinite(out.frames_per_second) && out.frames_per_second>=1 &&

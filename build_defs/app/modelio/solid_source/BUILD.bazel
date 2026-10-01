@@ -1,0 +1,46 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/solid_source/VehicleSolidSource.cmake:robo_dyna_vehicle_solid_source
+app_library(
+    name = "vehicle_solid_source",
+    srcs = [
+        "modelio/solid_source/VehicleSolidSource.cpp",
+        "modelio/solid_source/Budget.cpp",
+        "modelio/solid_source/Sources.cpp",
+        "modelio/solid_source/Cards.cpp",
+        "modelio/solid_source/Materials.cpp",
+        "modelio/solid_source/RearMaterial.cpp",
+        "modelio/solid_source/RadiatorMaterial.cpp",
+        "modelio/solid_source/AirbagMaterial.cpp",
+        "modelio/solid_source/AirbagHourglass.cpp",
+        "modelio/solid_source/Curves.cpp",
+        "modelio/solid_source/Geometry.cpp",
+        "modelio/solid_source/References.cpp",
+    ],
+    hdrs = [
+        "modelio/solid_source/AirbagSourceReceipt.h",
+        "modelio/solid_source/Internal.h",
+        "modelio/solid_source/SourcePolicy.h",
+        "modelio/solid_source/VehicleSolidSource.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/vehicle_source/OriginalAuthority.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements/solid18/law44:reference",
+        "@legacy_fea//lib_src/elements/solid18/total_strain:reference_kinematics",
+        "@legacy_fea//lib_src/elements/solid24:reference",
+        "@legacy_fea//lib_src/elements/solid6z:force",
+        "@legacy_fea//lib_src/materials/law44/solid:point",
+        "@legacy_fea//lib_src/materials/law90:preparation",
+    ],
+)

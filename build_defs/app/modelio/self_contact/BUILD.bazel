@@ -1,0 +1,26 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/self_contact/OriginalSelection.cmake:robo_dyna_original_self_contact_selection
+app_library(
+    name = "original_self_contact_selection",
+    srcs = [
+        "modelio/self_contact/Budget.cpp",
+        "modelio/self_contact/Sources.cpp",
+        "modelio/self_contact/Cards.cpp",
+        "modelio/self_contact/PartSets.cpp",
+        "modelio/self_contact/Census.cpp",
+        "modelio/self_contact/OriginalSelection.cpp",
+    ],
+    hdrs = [
+        "modelio/self_contact/Internal.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "modelio/self_contact/PartSets.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

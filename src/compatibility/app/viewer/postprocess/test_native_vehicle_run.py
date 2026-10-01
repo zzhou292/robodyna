@@ -97,9 +97,23 @@ class NativeVehicleCompletionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             closed_run(self.launch)
 
+    def test_native_v6_profile_keeps_source_label_and_all_existing_hash_checks(self):
+        self.summary['physical_profile'] = 'native_v6_raw8_heph_explicit_cin28_with_declared_finite_mesh_wall'
+        self.publish()
+        before = {p: p.read_bytes() for p in self.root.rglob('*.json')}
+        summary, _, _ = closed_run(self.launch)
+        self.assertEqual(summary['physical_profile'], self.summary['physical_profile'])
+        self.assertEqual(summary['_display_profile'], 'Native V6 vehicle + finite mesh wall')
+        self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob('*.json')})
+        with (self.root / 'archive/configuration.json').open('a') as stream:
+            stream.write(' ')
+        with self.assertRaises(ValueError):
+            closed_run(self.launch)
+
     def test_typed_summary_and_completion_reject_inconsistent_claims(self):
         before = copy.deepcopy(self.summary)
         for key, value in [('schema', 'robo_dyna.native_shell_impact_run.v1'),
+                           ('physical_profile', 'unqualified_vehicle_profile'),
                            ('valid_closed_archive', 1), ('session_initialized', False),
                            ('visualization_only_not_restart', False), ('accepted_intervals', True),
                            ('accepted_intervals', 25001), ('actual_time_s', float('nan')),

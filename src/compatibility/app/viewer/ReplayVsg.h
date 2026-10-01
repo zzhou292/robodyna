@@ -18,7 +18,7 @@ class FixedReplayVisual : public chrono::vsg3d::ChVisualSystemVSG {
 };
 struct ReplayLighting {double azimuth=0,elevation=0;};
 // Chrono captures asset search paths in its visual-system constructor.
-std::shared_ptr<FixedReplayVisual> CreateReplayVisual();
+std::shared_ptr<FixedReplayVisual> CreateReplayVisual(const std::filesystem::path& asset_directory = {});
 ReplayLighting ConfigureReplayVisual(FixedReplayVisual&,chrono::ChSystem&,const visual::ReplayCamera&);
 void InitializeReplayVisual(FixedReplayVisual&);
 void RenderReplayFrame(FixedReplayVisual&);

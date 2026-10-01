@@ -87,3 +87,22 @@ py_test(
     size = "small",
     tags = ["manual", "chrono-native-aggregate", "cpu-only"],
 )
+
+py_test(
+    name = "neutral_ownership_test",
+    srcs = ["NeutralOwnershipTest.py"],
+    main = "NeutralOwnershipTest.py",
+    args = [
+        "$(location //docs/migration:NEUTRAL_OWNERSHIP.json)",
+        "$(location //build_defs/chrono:neutral_sources.bzl)",
+        "$(location //build_defs/chrono:native_sources.bzl)",
+        "$(location //src/compatibility/chrono:CMakeLists.txt)",
+    ],
+    data = [
+        "//docs/migration:NEUTRAL_OWNERSHIP.json", "//build_defs/chrono:neutral_sources.bzl",
+        "//build_defs/chrono:native_sources.bzl", "//src/compatibility/chrono:CMakeLists.txt",
+        "//src/compatibility/chrono:neutral_source_inputs",
+    ],
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)

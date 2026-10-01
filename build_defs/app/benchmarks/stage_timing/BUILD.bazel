@@ -1,0 +1,16 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From benchmarks/stage_timing/StageTiming.cmake:robo_dyna_stage_timing
+app_library(
+    name = "stage_timing",
+    srcs = [
+        "benchmarks/stage_timing/StageTimer.cpp",
+    ],
+    hdrs = [
+        "benchmarks/stage_timing/StageTimer.h",
+    ],
+    deps = [
+    ],
+    copts = [
+    ],
+)

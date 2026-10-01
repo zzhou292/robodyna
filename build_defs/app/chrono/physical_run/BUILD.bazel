@@ -1,0 +1,27 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+app_library(
+    name = "physical_replay_scene",
+    srcs = [
+        "chrono/physical_run/Scene.cpp",
+        "chrono/physical_run/SceneValues.cpp",
+        "chrono/physical_run/SceneInitialize.cpp",
+        "chrono/physical_run/SampleSource.cpp",
+    ],
+    hdrs = [
+        "chrono/physical_run/SampleSource.h",
+        "chrono/physical_run/Scene.h",
+        "chrono/physical_run/SceneState.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/output/recovered_frames:recovered_frames",
+        "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
+        "//build_defs/app/chrono/replay:replay_visual_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    header_deps = ["@legacy_fea//lib_utils:bounded_arena"],
+)

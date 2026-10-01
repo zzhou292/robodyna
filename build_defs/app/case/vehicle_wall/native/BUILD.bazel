@@ -1,0 +1,133 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_wall/native/EnvelopeExecutionSource.cmake:robo_dyna_envelope_execution_source
+app_library(
+    name = "envelope_execution_source",
+    srcs = [
+        "case/vehicle_wall/native/EnvelopeExecutionSource.cpp",
+        "case/vehicle_wall/native/execution/Packing.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_wall/native/EnvelopeExecutionSource.h",
+        "case/vehicle_wall/native/execution/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_wall/native:envelope_physical_source",
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_wall/native/EnvelopeOwnerSource.cmake:robo_dyna_envelope_owner_source
+app_library(
+    name = "envelope_owner_source",
+    srcs = [
+        "case/vehicle_wall/native/EnvelopeOwnerSource.cpp",
+        "case/vehicle_wall/native/owner_source/Admission.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/SourcePolicies.h",
+        "case/vehicle_wall/native/EnvelopeOwnerSource.h",
+        "case/vehicle_wall/native/owner_source/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_wall/native:envelope_execution_source",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/case/vehicle_runtime:vehicle_runtime_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_wall/native/EnvelopePhysicalSource.cmake:robo_dyna_envelope_physical_source
+app_library(
+    name = "envelope_physical_source",
+    srcs = [
+        "case/vehicle_wall/native/EnvelopePhysicalSource.cpp",
+        "case/vehicle_wall/native/physical/Packing.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/shell_binding/Internal.h",
+        "case/vehicle_wall/native/EnvelopePhysicalSource.h",
+        "case/vehicle_wall/native/physical/Internal.h",
+        "modelio/vehicle_sections/VehicleSectionResolution.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_wall/native:native_envelope_wall_source",
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_wall/native/FiniteWallContactSource.cmake:robo_dyna_finite_wall_contact_source
+app_library(
+    name = "finite_wall_contact_source",
+    srcs = [
+        "case/vehicle_wall/native/FiniteWallContactSource.cpp",
+        "case/vehicle_wall/native/contact/Binding.cpp",
+        "case/vehicle_wall/native/contact/Budget.cpp",
+        "case/vehicle_wall/native/contact/Controls.cpp",
+        "case/vehicle_wall/native/contact/Values.cpp",
+        "case/vehicle_wall/native/contact/Packing.cpp",
+        "case/vehicle_wall/native/contact/Topology.cpp",
+        "case/vehicle_wall/native/contact/Gaps.cpp",
+        "case/vehicle_wall/native/contact/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_wall/native/FiniteWallContactSource.h",
+        "case/vehicle_wall/native/contact/Internal.h",
+        "case/vehicle_wall/native/contact/Values.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_wall/native:envelope_owner_source",
+        "//build_defs/app/case/vehicle_self_contact/native:post_gapm_main_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_search_startup",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_wall/native/WallSource.cmake:robo_dyna_native_envelope_wall_source
+app_library(
+    name = "native_envelope_wall_source",
+    srcs = [
+        "case/vehicle_wall/native/WallSource.cpp",
+        "case/vehicle_wall/native/Namespace.cpp",
+        "case/vehicle_wall/native/Geometry.cpp",
+        "case/vehicle_wall/native/CombinedDomain.cpp",
+        "case/vehicle_wall/native/Digest.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_self_contact/native/TopologyAssessment.h",
+        "case/vehicle_self_contact/native/TopologyAssessmentInternal.h",
+        "case/vehicle_self_contact/native/TopologyDigestFields.h",
+        "case/vehicle_wall/native/Internal.h",
+        "case/vehicle_wall/native/Types.h",
+        "case/vehicle_wall/native/WallSource.h",
+        "modelio/self_contact/OriginalSelection.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceShellReferenceInput.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/physical_domain:vehicle_physical_domain",
+        "//build_defs/app/modelio/native_spring_ids:native_spring_ids",
+        "//build_defs/app/case/vehicle_wall:vehicle_wall_values",
+        "//build_defs/app/case:canonical_wall_artifacts",
+        "@legacy_fea//lib_src/collision:radioss_type25_shell_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

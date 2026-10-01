@@ -1,0 +1,29 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/solid_control_packets/NativePacketSource.cmake:robo_dyna_native_solid_packets
+app_library(
+    name = "native_solid_packets",
+    srcs = [
+        "modelio/solid_control_packets/NativePacketSource.cpp",
+        "modelio/solid_control_packets/Reader.cpp",
+        "modelio/solid_control_packets/Binding.cpp",
+        "modelio/solid_control_packets/Budget.cpp",
+    ],
+    hdrs = [
+        "modelio/solid_control_packets/Internal.h",
+        "modelio/solid_control_packets/NativePacketSource.h",
+        "output/BoundedArrayJson.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/solid_source:vehicle_solid_source",
+        "//build_defs/app/modelio/solid_control:solid_control_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements/solids/control:selection",
+    ],
+)

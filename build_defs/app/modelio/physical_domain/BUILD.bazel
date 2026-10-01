@@ -1,0 +1,26 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/physical_domain/VehiclePhysicalDomain.cmake:robo_dyna_vehicle_physical_domain
+app_library(
+    name = "vehicle_physical_domain",
+    srcs = [
+        "modelio/physical_domain/VehiclePhysicalDomain.cpp",
+        "modelio/physical_domain/Selection.cpp",
+        "modelio/physical_domain/ProfileSelection.cpp",
+        "modelio/physical_domain/Topology.cpp",
+        "modelio/physical_domain/Budget.cpp",
+    ],
+    hdrs = [
+        "modelio/physical_domain/Internal.h",
+        "modelio/physical_domain/Policy.h",
+        "modelio/physical_domain/VehiclePhysicalDomain.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "@legacy_fea//lib_src/assembly:nodal_node_domain",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

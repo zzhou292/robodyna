@@ -190,6 +190,7 @@ cuda_library(
             "publication/PhysicalState.h", "publication/PhysicalChecks.h",
             "publication/PhysicalScratchParticipationState.h", "publication/ScratchRoster.h",
             "publication/ShellPhysicalScratchParticipation.h", "publication/NativeContactPublicationState.h", "ShellBatchPublicationStorage.h",
+            "publication/NativeContactActivitySelectors.h",
             "ShellBatchPublicationImpl.h", "ShellBatchPublicationValues.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [

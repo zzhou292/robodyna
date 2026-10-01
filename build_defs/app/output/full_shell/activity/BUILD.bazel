@@ -1,0 +1,23 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/full_shell/activity/ActivityRecords.cmake:robo_dyna_parent_activity
+app_library(
+    name = "parent_activity",
+    srcs = [
+        "output/full_shell/activity/ActivityRecord.cpp",
+        "output/full_shell/activity/ActivityFields.cpp",
+        "output/full_shell/activity/ActivityIO.cpp",
+        "output/full_shell/activity/ActivityPlan.cpp",
+    ],
+    hdrs = [
+        "output/full_shell/activity/ActivityRecord.h",
+        "output/full_shell/activity/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/output/full_shell:full_shell_records",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

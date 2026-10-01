@@ -11,12 +11,20 @@ No publication is part of the current staged operation.
    original dirty-doc and dependency differences preserved.129 LFS payloads verified
    and restored locally; all six dependency gitlinks inventoried. Optional dependency
    checkout/build qualification remains explicit follow-up.
-2. IN PROGRESS — one root Bazel entry with reusable TL targets, Chrono transition build,
-   explicit dependencies, host checks and source-verification tools.
-3. IN PROGRESS — real application CLI around existing preparation/run/output libraries;
-   exact short Yaris regression and replay/video compatibility.
-4. PENDING — extract neutral mechanics seams, prove FEA-only/MBD-only link closures
-   and a coupled flexible-beam/rigid-mechanism test.
+2. BUILD CHECKPOINT PASSED — one root Bazel entry builds the retained TL CUDA
+   backend, native Chrono core/FEA aggregate, production application and native
+   VSG viewer. Host, source and SDK checks passed. These aggregate targets are
+   transitional; they do not establish independent FEA and MBD modules.
+3. PHYSICS CHECKPOINT PASSED — normal application CLI completed 101 Yaris steps;
+   all 50 archived files and viewer receipt match the frozen baseline byte for byte.
+   Every non-timing summary field matches. Both stored frames passed C++ replay.
+   Native viewer execution and rendering passed on the short run and the preserved
+   100 ms archive. The new 60.2-second MP4 is byte-identical to the original
+   qualified video, fully decoded and visually reviewed; inputs remain unchanged.
+4. IN PROGRESS — 21 unchanged source files now compile in neutral foundation,
+   mass-block, frame and inertia libraries. Actual header/link and 482-source
+   ownership gates and all 20 runtime/build test targets passed;
+   FEA-only/MBD-only closures and a coupled flexible-beam/body gate remain next.
 5. PENDING — migrate remaining Chrono modules and supporting APIs against a complete
    capability matrix, then qualify CUDA coverage by module.
 
@@ -45,5 +53,39 @@ source and short native coupons; run longer physics only when a change warrants 
 - Core, rigid, FE, source-inventory and OpenSSL SDK host gates passed.
 - Product Python admission and C++ request tests passed.
 - Importer preservation/rejection tests passed (six cases).
-- Full native vehicle backend build is in progress; GPU parity and independent
-  FEA/MBD gates remain pending.
+- Full native vehicle backend build passed (`robodyna-native-backend-build-3`).
+- Native VSG viewer and three SDK/asset/value test targets passed
+  (`robodyna-viewer-native-tests-2`), without linking an old Chrono library.
+- CLI launch guard now capability-checks its Python interpreter. A real monitored
+  `/bin/true` passed with complete cleanup; 27 driver behavioral host tests passed.
+- Product package attempt3 passed. The actual 101-step GPU run passed in
+  22.569 seconds including setup and replay; the independent comparison passed.
+  Receipt paths, hashes and exact comparison scope are in `QUALIFICATION.json`.
+- The neutral extraction passed 20 test targets; its new 101-step run again
+  matched all 50 archive files, viewer receipt and non-timing fields exactly.
+- The actual native product render/encode/decode workflow passed on that run,
+  and the preserved 100 ms delivery now renders identically through the product.
+- Independent FEA/MBD gates remain pending; `NEXT_SEAMS.md` records the next
+  source-audited visual, system-service, contact and assembly extractions.
+
+## Next architectural extraction
+
+The first small dependency split will own the existing moving-frame and inertia
+implementations under neutral mechanics, with only core/archive and variable-block
+support. Standalone wrench and inertia tests must link without the aggregate.
+This changes ownership, not equations. Preserve inherited include and archive names.
+
+Source review also found a visualization dependency through `ChObj` and
+`ChVisualShapeFEA`. Moving the entire participant hierarchy without resolving that
+dependency would hide FEA inside a supposedly neutral package. Treat visual adapters,
+mesh/system services, contact reporting and mixed assembly as explicit later seams.
+
+## Qualified checkpoint and continuation
+
+Source imports, root native builds, normal CLI execution/rendering, the first
+neutral mechanics ownership split and all current regression gates are complete.
+This is a staged restructuring checkpoint, not complete FEA/MBD independence.
+The next code change should follow `NEXT_SEAMS.md`: remove the generic visual
+model's FE implementation dependency before extracting participant/system services.
+Do not reopen completed imports or rerun the 11-hour physical trajectory merely
+to resume this migration. `OPERATING.md` records tested operator entry points.

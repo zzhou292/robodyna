@@ -1,0 +1,34 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/beam18/Source.cmake:robo_dyna_beam18_source
+app_library(
+    name = "beam18_source",
+    srcs = [
+        "modelio/beam18/Source.cpp",
+        "modelio/beam18/Budget.cpp",
+        "modelio/beam18/Declarations.cpp",
+        "modelio/beam18/Part.cpp",
+        "modelio/beam18/Geometry.cpp",
+        "modelio/beam18/WorkingCards.cpp",
+        "modelio/beam18/References.cpp",
+    ],
+    hdrs = [
+        "modelio/beam18/Internal.h",
+        "modelio/beam18/Source.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceLines.h",
+        "modelio/vehicle_source/OriginalAuthority.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/tied_shell:tied_shell_declaration",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/elements/beam18:force",
+    ],
+)

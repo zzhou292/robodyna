@@ -1,0 +1,9 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "source_port_test",
+    size = "small",
+    srcs = ["test_source_port.py"],
+    main = "test_source_port.py",
+    deps = ["//build_defs/app:audit_library"],
+)

@@ -5,8 +5,8 @@ not numerical algorithms, state ownership or the FEA/MBD coupling method.
 """
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load(":native_config.bzl", "native_configuration")
 load(":native_sources.bzl", "NATIVE_SOURCE_GROUPS")
+load(":neutral_sources.bzl", "NEUTRAL_SOURCES", "NEUTRAL_TARGETS")
 
 _VENDOR_GROUPS = [
     "collision_bullet",
@@ -26,20 +26,9 @@ def chrono_native_host(name):
     Args:
         name: Native aggregate target name; it must not claim domain independence.
     """
-    config_name = name + "_configuration"
-    config_prefix = config_name + "/include"
-    native_configuration(
-        name = config_name,
-        config_template = "src/ChConfig.h.in",
-        version_template = "src/ChVersion.h.in",
-        config_header = config_prefix + "/chrono/ChConfig.h",
-        version_header = config_prefix + "/chrono/ChVersion.h",
-        tags = _TAGS,
-    )
-    cc_library(
+    native.alias(
         name = name + "_configuration_headers",
-        hdrs = [":" + config_name],
-        strip_include_prefix = config_prefix,
+        actual = "//src/core/configuration:host_headers",
         tags = _TAGS,
     )
 
@@ -73,11 +62,12 @@ def chrono_native_host(name):
     }
     core_sources = []
     vendor_sources = []
+    extracted = {path: True for paths in NEUTRAL_SOURCES.values() for path in paths}
     for group, paths in NATIVE_SOURCE_GROUPS.items():
         if group in _VENDOR_GROUPS:
             vendor_sources.extend(paths)
         else:
-            core_sources.extend(paths)
+            core_sources.extend([path for path in paths if path not in extracted])
     cc_library(
         name = name + "_implementation",
         srcs = core_sources,
@@ -102,7 +92,7 @@ def chrono_native_host(name):
     )
     cc_library(
         name = name,
-        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"],
+        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"] + NEUTRAL_TARGETS.values(),
         linkopts = ["-pthread"],
         target_compatible_with = ["@platforms//os:linux"],
         tags = _TAGS,

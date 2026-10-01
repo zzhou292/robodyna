@@ -1,0 +1,29 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/type13/SourceType13.cmake:robo_dyna_type13_source
+app_library(
+    name = "type13_source",
+    srcs = [
+        "modelio/type13/ConvertProperty.cpp",
+        "modelio/type13/SourceType13.cpp",
+        "modelio/type13/ReadScope.cpp",
+        "modelio/type13/ReadProperty.cpp",
+        "modelio/type13/ReadGeometry.cpp",
+        "modelio/type13/ReadSourceArrays.cpp",
+        "modelio/type13/SourceBudget.cpp",
+    ],
+    hdrs = [
+        "modelio/type13/ConvertProperty.h",
+        "modelio/type13/ReadInternal.h",
+        "modelio/type13/SourceType13.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "@legacy_fea//lib_src/elements/type13:type13_startup",
+        "//build_defs/app/output/arrays:bounded_array_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

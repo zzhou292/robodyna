@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/chrono:neutral.bzl", "neutral_library")
+
+package(default_visibility = ["//visibility:public"])
+
+neutral_library(
+    name = "frames",
+    component = "frames",
+    deps = ["//src/numerics/variables:mass_blocks"],
+)
+
+cc_test(
+    name = "frames_test",
+    srcs = ["FrameTest.cpp"],
+    deps = [":frames", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "neutral-mechanics", "cpu-only"],
+)

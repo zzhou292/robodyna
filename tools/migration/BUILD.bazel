@@ -1,0 +1,45 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(name = "import_library", srcs = ["import_tree.py"])
+py_library(
+    name = "comparison_library",
+    srcs = ["verify_run.py"],
+    deps = [
+        "//src/compatibility/app:python_io",
+        "//src/compatibility/app:python_exact_json",
+        "//src/simulation/driver:driver",
+    ],
+)
+py_binary(
+    name = "verify_run",
+    srcs = ["verify_run.py"],
+    main = "verify_run.py",
+    deps = [":comparison_library"],
+)
+py_test(
+    name = "import_tree_test",
+    size = "small",
+    srcs = ["//tests/migration:test_import_tree.py"],
+    main = "//tests/migration:test_import_tree.py",
+    deps = [":import_library"],
+    # The fixture uses only temporary local Git repositories, never a network
+    # remote or the user's Git configuration/hooks.
+    env = {"GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0"},
+    tags = ["local", "requires-git"],
+    target_compatible_with = ["@platforms//os:linux"],
+)
+py_test(
+    name = "verify_run_test",
+    size = "small",
+    srcs = ["tests/test_verify_run.py"],
+    main = "tests/test_verify_run.py",
+    deps = [":comparison_library"],
+)
+test_suite(name = "behavior_tests", tests = [":import_tree_test", ":verify_run_test"])
+
+# Run these deliberately against the checkout. They check live metadata/source
+# declarations and are distinct from the small fixture unit tests above.
+alias(name = "check_source_boundary", actual = "//build_defs:check_source_boundary")
+alias(name = "check_app_sources", actual = "//build_defs/app:check_port")

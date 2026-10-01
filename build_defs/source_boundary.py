@@ -12,6 +12,11 @@ import os
 from pathlib import Path
 import re
 
+try:
+    from build_defs.build_overlays import verify_build_overlay
+except ModuleNotFoundError:
+    from build_overlays import verify_build_overlay  # Direct checkout script invocation.
+
 
 def workspace_path(root, relative):
     """Resolve an owned path without allowing absolute paths or symlink escape."""
@@ -54,6 +59,16 @@ def inspect_workspace(root, contract):
 
     try:
         source = workspace_path(root, contract["source_root"])
+        overlays = {}
+        overlay_path = root / "build_defs/legacy/build_overlays.json"
+        if overlay_path.is_file():
+            overlay_document = json.loads(overlay_path.read_text())
+            check(overlay_document["schema_version"] == 1 and
+                  overlay_document["qualified_commit"] == contract["qualified_commit"],
+                  "Build metadata overlay belongs to a different qualified source")
+            for relative, entry in overlay_document["files"].items():
+                current = workspace_path(source, relative).read_bytes()
+                overlays[relative] = verify_build_overlay(relative, current, entry)
         module = declarations(root / "MODULE.bazel")
         check(any(kind == "module" and args.get("name") == "robodyna"
                   for kind, args in module), "Root module must be robodyna")
@@ -79,7 +94,8 @@ def inspect_workspace(root, contract):
                       f"Qualified compatibility patch not applied: {name}")
         for relative, expected in contract["source_files"].items():
             path = workspace_path(source, relative)
-            check(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == expected,
+            check(path.is_file() and (hashlib.sha256(path.read_bytes()).hexdigest() == expected or
+                                      overlays.get(relative) == expected),
                   f"Qualified source changed or missing: {relative}")
         for name, expected in contract["patches"].items():
             path = workspace_path(root, "build_defs/patches/" + name)

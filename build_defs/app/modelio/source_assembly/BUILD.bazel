@@ -1,0 +1,81 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/source_assembly/Reader.cmake:robo_dyna_source_assembly
+app_library(
+    name = "source_assembly",
+    srcs = [
+        "modelio/source_assembly/SourceFields.cpp",
+        "modelio/source_assembly/SourceCurve.cpp",
+        "modelio/source_assembly/SourceAssembly.cpp",
+        "modelio/source_assembly/JsonReader.cpp",
+        "modelio/source_assembly/SourceLaw1Driver.cpp",
+        "modelio/source_assembly/ReadDeclarations.cpp",
+        "modelio/source_assembly/ReadLaw44Material.cpp",
+        "modelio/source_assembly/ReadGeometry.cpp",
+        "modelio/source_assembly/ReadLaw1Material.cpp",
+        "modelio/source_assembly/ReadMaterialPolicy.cpp",
+        "modelio/source_assembly/ReadAuxiliaryFrontier.cpp",
+        "modelio/source_assembly/ReadAttachments.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/AuxiliarySourceCards.h",
+        "modelio/source_assembly/JsonReader.h",
+        "modelio/source_assembly/MaterialDeclarationFields.h",
+        "modelio/source_assembly/SourceAssembly.h",
+        "modelio/source_assembly/SourceAssemblyData.h",
+        "modelio/source_assembly/SourceCurve.h",
+        "modelio/source_assembly/SourceFields.h",
+        "modelio/source_assembly/SourceLaw1Driver.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/math:fixed3",
+    ],
+)
+
+# From modelio/source_assembly/SourceAssemblySpotweldInput.cmake:robo_dyna_source_assembly_spotweld_input
+app_library(
+    name = "source_assembly_spotweld_input",
+    srcs = [
+        "modelio/source_assembly/ResolvedSpotweldProperty.cpp",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/ResolvedSpotweldProperty.h",
+        "modelio/source_assembly/SourceAssemblySpotweldInput.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "@legacy_fea//lib_src/elements/type25:type25_model",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From modelio/source_assembly/NativeCoordinates.cmake:robo_dyna_source_native_coordinates
+app_library(
+    name = "source_native_coordinates",
+    srcs = [
+        "modelio/source_assembly/NativeCoordinates.cpp",
+    ],
+    hdrs = [
+        "modelio/source_assembly/NativeCoordinates.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

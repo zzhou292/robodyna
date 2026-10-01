@@ -1,0 +1,20 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_dynamics/output/VehicleAcceptedFrames.cmake:robo_dyna_vehicle_accepted_frames
+app_library(
+    name = "vehicle_accepted_frames",
+    srcs = [
+        "case/vehicle_dynamics/output/VehicleAcceptedFrames.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_dynamics/output/VehicleAcceptedFrames.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_dynamics:vehicle_physical_dynamics",
+        "//build_defs/app/output/physical_frames:physical_accepted_frames",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

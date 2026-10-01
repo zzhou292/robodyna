@@ -1,0 +1,71 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/full_shell/static_bundle/CMakeLists.txt:robo_dyna_full_shell_source_bundle
+app_library(
+    name = "full_shell_source_bundle",
+    srcs = [
+        "output/full_shell/static_bundle/SourceChunks.cpp",
+        "output/full_shell/static_bundle/SourceBundleInventory.cpp",
+        "output/full_shell/static_bundle/SourceBundleFields.cpp",
+        "output/full_shell/static_bundle/SourceBundleParse.cpp",
+        "output/full_shell/static_bundle/SourceBundlePrepare.cpp",
+        "output/full_shell/static_bundle/SourceBundleWriter.cpp",
+        "output/full_shell/static_bundle/SourceBundleReader.cpp",
+    ],
+    hdrs = [
+        "output/full_shell/static_bundle/SourceBundle.h",
+        "output/full_shell/static_bundle/SourceBundleInternal.h",
+    ],
+    deps = [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From output/full_shell/static_bundle/CMakeLists.txt:robo_dyna_full_shell_source_mapping
+app_library(
+    name = "full_shell_source_mapping",
+    srcs = [
+        "output/full_shell/static_bundle/InputChecks.cpp",
+        "output/full_shell/static_bundle/SourceReadBudget.cpp",
+        "output/full_shell/static_bundle/SourceAuthority.cpp",
+        "output/full_shell/static_bundle/CanonicalSpecs.cpp",
+        "output/full_shell/static_bundle/CanonicalSource.cpp",
+        "output/full_shell/static_bundle/CanonicalCatalog.cpp",
+        "output/full_shell/static_bundle/DeclaredCatalog.cpp",
+        "output/full_shell/static_bundle/Scope.cpp",
+        "output/full_shell/static_bundle/ScopeParts.cpp",
+        "output/full_shell/static_bundle/CanonicalGeometry.cpp",
+        "output/full_shell/static_bundle/MappingArrays.cpp",
+        "output/full_shell/static_bundle/MappingDigest.cpp",
+        "output/full_shell/static_bundle/MappingTopology.cpp",
+        "output/full_shell/static_bundle/MappingExecution.cpp",
+        "output/full_shell/static_bundle/MappingEncoding.cpp",
+        "output/full_shell/static_bundle/PreparedSourceMapping.cpp",
+        "output/full_shell/static_bundle/MappingFields.cpp",
+        "output/full_shell/static_bundle/MappingRecordWriter.cpp",
+        "output/full_shell/static_bundle/MappingRecordReader.cpp",
+    ],
+    hdrs = [
+        "output/full_shell/static_bundle/CanonicalSpecs.h",
+        "output/full_shell/static_bundle/InputChecks.h",
+        "output/full_shell/static_bundle/MappingArrays.h",
+        "output/full_shell/static_bundle/MappingDraft.h",
+        "output/full_shell/static_bundle/MappingExecution.h",
+        "output/full_shell/static_bundle/MappingFields.h",
+        "output/full_shell/static_bundle/MappingRecords.h",
+        "output/full_shell/static_bundle/PreparedSourceMapping.h",
+        "output/full_shell/static_bundle/SourceAuthority.h",
+        "output/full_shell/static_bundle/Types.h",
+    ],
+    deps = [
+        "//build_defs/app/output/full_shell:full_shell_records",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

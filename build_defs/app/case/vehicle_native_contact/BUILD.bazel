@@ -1,0 +1,120 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_native_contact/FieldPacking.cmake:robo_dyna_native_vehicle_field_packing
+app_library(
+    name = "native_vehicle_field_packing",
+    srcs = [
+        "case/vehicle_native_contact/FieldPacking.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_native_contact/FieldPacking.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+        "@legacy_fea//lib_src/collision:radioss_type25_fixed_main_startup",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    # Required header owners omitted by the inherited broad CMake includes.
+    header_deps = [
+        "@legacy_fea//lib_src/collision:radioss_type25_gap_source",
+        "@legacy_fea//lib_src/collision:radioss_type25_lifecycle",
+    ],
+)
+
+# From case/vehicle_native_contact/Run.cmake:robo_dyna_native_vehicle_run
+app_library(
+    name = "native_vehicle_run",
+    srcs = [
+        "case/vehicle_native_contact/run/Prepare.cpp",
+        "case/vehicle_native_contact/run/Session.cpp",
+        "case/vehicle_native_contact/run/ArchiveRequest.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Codec.cpp",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Export.cpp",
+        "case/vehicle_native_contact/run/Retry.cpp",
+        "case/vehicle_native_contact/run/Execute.cpp",
+        "case/vehicle_native_contact/run/Summary.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/Export.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/GeometryFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/MaterialFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/MetadataFields.h",
+        "case/vehicle_dynamics/diagnostics/qeph_rejection/WordArchive.h",
+        "case/vehicle_native_contact/Run.h",
+        "case/vehicle_native_contact/run/ArchiveRequest.h",
+        "case/vehicle_native_contact/run/Horizon.h",
+        "case/vehicle_native_contact/run/State.h",
+        "case/vehicle_run/Loop.h",
+        "case/vehicle_runtime/SolidReadback.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_native_contact:vehicle_native_contact",
+        "//build_defs/app/case/vehicle_run:vehicle_run_reports",
+        "//build_defs/app/output/physical_run:physical_run_environment",
+        "//build_defs/app/output/physical_run:physical_run_live",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_native_contact/SourceAdmission.cmake:robo_dyna_native_vehicle_source_admission
+app_library(
+    name = "native_vehicle_source_admission",
+    srcs = [
+        "case/vehicle_native_contact/SourceAdmission.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_dynamics/native_contact/Observation.h",
+        "case/vehicle_native_contact/SourceAdmission.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_wall/native:finite_wall_contact_source",
+        "//build_defs/app/case/vehicle_self_contact/native:mixed_starter_source",
+        "//build_defs/app/case/vehicle_self_contact/native:initializer_controls_source",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_native_contact/VehicleContactStartup.cmake:robo_dyna_vehicle_native_contact
+app_library(
+    name = "vehicle_native_contact",
+    srcs = [
+        "case/vehicle_native_contact/Config.cpp",
+        "case/vehicle_native_contact/Budget.cpp",
+        "case/vehicle_native_contact/TiedRemovalSource.cpp",
+        "case/vehicle_native_contact/InitialModel.cpp",
+        "case/vehicle_native_contact/InterfaceFields.cpp",
+        "case/vehicle_native_contact/RuntimeSources.cpp",
+        "case/vehicle_native_contact/Prepare.cpp",
+        "case/vehicle_native_contact/Initialize.cpp",
+        "case/vehicle_native_contact/Census.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_native_contact/InitialModel.h",
+        "case/vehicle_native_contact/InterfaceFields.h",
+        "case/vehicle_native_contact/Storage.h",
+        "case/vehicle_native_contact/TiedRemovalSource.h",
+        "case/vehicle_native_contact/VehicleContactStartup.h",
+        "output/full_shell/FixedStepHorizon.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_source_admission",
+        "//build_defs/app/case/vehicle_native_contact:native_vehicle_field_packing",
+        "//build_defs/app/case/vehicle_native_contact/activity:native_activity_source",
+        "//build_defs/app/case/vehicle_dynamics:vehicle_physical_dynamics",
+        "@legacy_fea//lib_src/collision:radioss_type25_initial_state",
+        "@rules_cuda//cuda:runtime",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "qualified_commit": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
+  "scope": "Reviewed BUILD metadata only; no physics source or numerical options changed. Reversing every exact replacement must reproduce the qualified baseline bytes.",
+  "files": {
+    "lib_src/elements/BUILD.bazel": {
+      "baseline_sha256": "116b3eed2a16fdabb923ec2561432f49472f205f6416558603248c4ce108119b",
+      "overlay_sha256": "4b013c27f1a2e6284dd7b4523784dbb9682afe90f39c6899e4281ec86454799b",
+      "reason": "shell_batch_publication: declare the existing private activity-selector header",
+      "replacements": [
+        {
+          "before": "            \"publication/ShellPhysicalScratchParticipation.h\", \"publication/NativeContactPublicationState.h\", \"ShellBatchPublicationStorage.h\",\n",
+          "after": "            \"publication/ShellPhysicalScratchParticipation.h\", \"publication/NativeContactPublicationState.h\", \"ShellBatchPublicationStorage.h\",\n            \"publication/NativeContactActivitySelectors.h\",\n"
+        }
+      ]
+    },
+    "lib_src/elements/solids/resident/BUILD.bazel": {
+      "baseline_sha256": "e95a8b12af82b4543b0f9407a46142cca1e41c7059a930e0a24dcb76c0fcd55a",
+      "overlay_sha256": "f7a55640b8a5117257f68d72913710cd7fcdc2f4f6b47b15cdc4a82685b2a133",
+      "reason": "values: declare the owning dependencies of repeated-assembly headers",
+      "replacements": [
+        {
+          "before": "        \"//lib_src/solvers:nodal_native_physical_coefficients\", \"//lib_src/solvers:nodal_trial_identity\",\n",
+          "after": "        \"//lib_src/solvers:nodal_native_physical_coefficients\", \"//lib_src/solvers:nodal_trial_identity\",\n        \"//lib_src/solvers:nodal_repeated_force_assembly\", \"//lib_src/solvers:nodal_repeated_stiffness\",\n"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From output/full_shell/CMakeLists.txt:robo_dyna_full_shell_records
+app_library(
+    name = "full_shell_records",
+    srcs = [
+        "output/full_shell/FullShellVisualizationSchema.cpp",
+        "output/full_shell/FullShellVisualizationPlan.cpp",
+        "output/full_shell/FullShellFrameDescription.cpp",
+        "output/full_shell/FullShellVisualizationRecords.cpp",
+        "output/full_shell/FullShellIdentityFields.cpp",
+    ],
+    hdrs = [
+        "output/full_shell/FixedStepHorizon.h",
+        "output/full_shell/FullShellIdentityFields.h",
+        "output/full_shell/FullShellVisualizationPlan.h",
+        "output/full_shell/FullShellVisualizationRecords.h",
+        "output/full_shell/FullShellVisualizationSchema.h",
+    ],
+    deps = [
+        "//build_defs/app/output/arrays:bounded_array_io",
+        "//build_defs/app/output/full_shell/interval_values:interval_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -3,7 +3,7 @@
 #include "output/physical_run/ViewerInput.h"
 namespace crash::viewer::physical_run {
 struct Options {
-    std::filesystem::path input,capture;
+    std::filesystem::path input,capture,chrono_data;
     std::string expected_receipt_sha256;
     double frames_per_second=10;
     std::size_t require_frames=0,capture_bytes=2ull<<30;

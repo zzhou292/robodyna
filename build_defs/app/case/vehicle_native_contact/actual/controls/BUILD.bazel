@@ -1,0 +1,19 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_native_contact/actual/controls/Controls.cmake:robo_dyna_native_preview_controls
+app_library(
+    name = "native_preview_controls",
+    srcs = [
+        "case/vehicle_native_contact/actual/controls/PreviewControls.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_native_contact/actual/controls/PreviewControls.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_run:vehicle_run_values",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -64,6 +64,13 @@ full-case target, set both launch `output` and postprocess `run` to the genuine
 `.../accepted` child, which contains `viewer-input.json`, `summary.json` and
 `archive/`. The outer qualification `case.json` is a separate report.
 
+The same summary schema is emitted by the native V6 source-controlled producer.
+The dispatcher accepts its explicit
+`native_v6_raw8_heph_explicit_cin28_with_declared_finite_mesh_wall` profile and
+preserves that label in the operator view. Unknown physical profiles still reject;
+configuration, identity, closure and hash checks remain unchanged. This metadata
+dispatch is not a new physical source-control qualification.
+
 The existing C++ viewer already accepts this `accepted/` directory or its exact
 `viewer-input.json`, with `--receipt-sha256` binding the immutable receipt. It
 opens the same generic physical-run reader and validates every native-group

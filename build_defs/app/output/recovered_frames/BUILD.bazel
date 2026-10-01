@@ -1,0 +1,28 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+app_library(
+    name = "recovered_frames",
+    srcs = [
+        "output/recovered_frames/Descriptor.cpp",
+        "output/recovered_frames/Samples.cpp",
+        "output/recovered_frames/Files.cpp",
+        "output/recovered_frames/Budget.cpp",
+        "output/recovered_frames/Source.cpp",
+        "output/recovered_frames/Prepare.cpp",
+        "output/recovered_frames/Replay.cpp",
+        "output/recovered_frames/Environment.cpp",
+    ],
+    hdrs = [
+        "output/recovered_frames/Environment.h",
+        "output/recovered_frames/Internal.h",
+        "output/recovered_frames/Replay.h",
+    ],
+    deps = [
+        "//build_defs/app/output/physical_run:physical_run_records",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    header_deps = ["@legacy_fea//lib_utils:bounded_arena"],
+)

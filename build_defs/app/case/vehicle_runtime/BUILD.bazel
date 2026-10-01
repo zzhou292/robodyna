@@ -1,0 +1,84 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_runtime/VehiclePhysicalStartup.cmake:robo_dyna_vehicle_physical_startup
+app_library(
+    name = "vehicle_physical_startup",
+    srcs = [
+        "case/vehicle_runtime/VehiclePhysicalStartup.cpp",
+        "case/vehicle_runtime/source/Admission.cpp",
+        "case/vehicle_runtime/source/Views.cpp",
+        "case/vehicle_runtime/source/Budget.cpp",
+        "case/vehicle_runtime/CaptureAccess.cpp",
+        "case/vehicle_runtime/SourceIdentity.cpp",
+        "case/vehicle_runtime/SourceBudget.cpp",
+        "case/vehicle_runtime/Forecast.cpp",
+        "case/vehicle_runtime/JointRuntime.cpp",
+        "case/vehicle_runtime/InitializeJoints.cpp",
+        "case/vehicle_runtime/InspectJoints.cpp",
+        "case/vehicle_runtime/BeamRuntime.cpp",
+        "case/vehicle_runtime/InitializeStructuralBeams.cpp",
+        "case/vehicle_runtime/InspectStructuralBeams.cpp",
+        "case/vehicle_runtime/ParticipantConfigs.cpp",
+        "case/vehicle_runtime/InitializeOwner.cpp",
+        "case/vehicle_runtime/InitializeParticipants.cpp",
+        "case/vehicle_runtime/InitializePublication.cpp",
+        "case/vehicle_runtime/InspectOwner.cpp",
+        "case/vehicle_runtime/InspectShells.cpp",
+        "case/vehicle_runtime/InspectConnections.cpp",
+        "case/vehicle_runtime/InspectSolids.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_runtime/BeamRuntime.h",
+        "case/vehicle_runtime/CaptureAccess.h",
+        "case/vehicle_runtime/Forecast.h",
+        "case/vehicle_runtime/JointRuntime.h",
+        "case/vehicle_runtime/ParticipantConfigs.h",
+        "case/vehicle_runtime/ParticipantControls.h",
+        "case/vehicle_runtime/Reports.h",
+        "case/vehicle_runtime/SolidReadback.h",
+        "case/vehicle_runtime/Source.h",
+        "case/vehicle_runtime/SourceIdentity.h",
+        "case/vehicle_runtime/Storage.h",
+        "case/vehicle_runtime/VehiclePhysicalStartup.h",
+        "case/vehicle_runtime/source/Storage.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_runtime:vehicle_runtime_values",
+        "//build_defs/app/case/vehicle_startup/shell_execution:vehicle_shell_execution",
+        "//build_defs/app/case/vehicle_startup/physical_attachments:vehicle_physical_attachments",
+        "@legacy_fea//lib_src/elements:shell_batch_publication",
+        "//build_defs/app/case/vehicle_startup/joints:vehicle_joint_model",
+        "//build_defs/app/case/vehicle_wall/native:envelope_owner_source",
+        "@legacy_fea//lib_src/elements/type45/resident:batch",
+        "@legacy_fea//lib_src/elements/beam18/resident:batch",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+# From case/vehicle_runtime/Values.cmake:robo_dyna_vehicle_runtime_values
+app_library(
+    name = "vehicle_runtime_values",
+    srcs = [
+        "case/vehicle_runtime/Config.cpp",
+        "case/vehicle_runtime/Packing.cpp",
+        "case/vehicle_runtime/SourceRoles.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_runtime/Config.h",
+        "case/vehicle_runtime/Packing.h",
+        "case/vehicle_runtime/SourceRoles.h",
+    ],
+    deps = [
+        "//build_defs/app/output:artifact_io",
+        "@legacy_fea//lib_src/constraints:nodal_rigid_assembly_binding",
+        "//build_defs/app/case/vehicle_startup/physical_attachments:vehicle_physical_attachments",
+        "@rules_cuda//cuda:runtime",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

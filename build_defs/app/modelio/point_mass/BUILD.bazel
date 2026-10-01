@@ -1,0 +1,23 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/point_mass/VehiclePointMassSource.cmake:robo_dyna_vehicle_point_mass_source
+app_library(
+    name = "vehicle_point_mass_source",
+    srcs = [
+        "modelio/point_mass/VehiclePointMassSource.cpp",
+        "modelio/point_mass/Budget.cpp",
+        "modelio/point_mass/Mapping.cpp",
+    ],
+    hdrs = [
+        "modelio/point_mass/Mapping.h",
+        "modelio/point_mass/VehiclePointMassSource.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/physical_scope:physical_scope",
+        "@legacy_fea//lib_src/assembly:element_mass_contributions",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

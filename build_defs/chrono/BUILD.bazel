@@ -2,7 +2,7 @@ load(":defs.bzl", "chrono_host_bridge")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["check_inputs.cmake", "native_sources.bzl"])
+exports_files(["check_inputs.cmake", "native_sources.bzl", "neutral_sources.bzl"])
 
 alias(
     name = "native_core_fea",

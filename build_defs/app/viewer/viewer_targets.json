@@ -1,0 +1,176 @@
+{
+  "schema": "robodyna.native_viewer_sources.v1",
+  "scope": "Native source port; build and guarded rendering qualification pending",
+  "source_root": "src/compatibility/app",
+  "targets": {
+    "robo_dyna_replay_geometry_values": {
+      "bazel_target": "//build_defs/app/chrono/replay:replay_geometry_values",
+      "cmake_file": "chrono/replay/CMakeLists.txt",
+      "cmake_sha256": "63ee97dd1eb2aa935b3e9832e32a807738bdf647d09c509bc02d58102fc108c1",
+      "sources": [
+        "chrono/ReplayPartColors.cpp",
+        "chrono/ReplayDisplayGeometry.cpp"
+      ],
+      "dependencies": [
+        "Chrono::Chrono_core"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/chrono:native_core_fea",
+        ":replay_part_colors"
+      ],
+      "copts": [],
+      "split_target": "//build_defs/app/chrono/replay:replay_part_colors"
+    },
+    "robo_dyna_replay_visual_values": {
+      "bazel_target": "//build_defs/app/chrono/replay:replay_visual_values",
+      "cmake_file": "chrono/replay/CMakeLists.txt",
+      "cmake_sha256": "63ee97dd1eb2aa935b3e9832e32a807738bdf647d09c509bc02d58102fc108c1",
+      "sources": [
+        "chrono/ReplayVisuals.cpp",
+        "chrono/ReplayCamera.cpp",
+        "chrono/ReplayClipping.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_replay_geometry_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/chrono/replay:replay_geometry_values"
+      ],
+      "copts": []
+    },
+    "robo_dyna_replay_scene": {
+      "bazel_target": "//build_defs/app/chrono/replay:replay_scene",
+      "cmake_file": "chrono/replay/CMakeLists.txt",
+      "cmake_sha256": "63ee97dd1eb2aa935b3e9832e32a807738bdf647d09c509bc02d58102fc108c1",
+      "sources": [
+        "chrono/AcceptedReplayScene.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_replay_visual_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/chrono/replay:replay_visual_values"
+      ],
+      "copts": []
+    },
+    "robo_dyna_full_shell_frame_geometry": {
+      "bazel_target": "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
+      "cmake_file": "chrono/full_shell/CMakeLists.txt",
+      "cmake_sha256": "ea915a782647e6babc87e3c2972e47c1f2a5f5067b20297585fc74625dce3170",
+      "sources": [
+        "chrono/full_shell/FullShellFrameGeometry.cpp",
+        "chrono/full_shell/FrameGeometryInitialize.cpp",
+        "chrono/full_shell/FrameGeometryChecks.cpp",
+        "chrono/full_shell/FrameGeometryFields.cpp",
+        "chrono/full_shell/FrameGeometryTopology.cpp",
+        "chrono/full_shell/FrameGeometryUpdate.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_full_shell_source_mapping",
+        "robo_dyna_replay_geometry_values",
+        "robo_dyna_parent_activity"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+        "//build_defs/app/chrono/replay:replay_geometry_values",
+        "//build_defs/app/output/full_shell/activity:parent_activity"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_recovered_frames": {
+      "bazel_target": "//build_defs/app/output/recovered_frames:recovered_frames",
+      "cmake_file": "output/recovered_frames/RecoveredFrames.cmake",
+      "cmake_sha256": "a7d303e2b4d39662aa08c7ccebd83b4b598069c219705260bdb671c9a54230ef",
+      "sources": [
+        "output/recovered_frames/Descriptor.cpp",
+        "output/recovered_frames/Samples.cpp",
+        "output/recovered_frames/Files.cpp",
+        "output/recovered_frames/Budget.cpp",
+        "output/recovered_frames/Source.cpp",
+        "output/recovered_frames/Prepare.cpp",
+        "output/recovered_frames/Replay.cpp",
+        "output/recovered_frames/Environment.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_run_records"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_run:physical_run_records"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_replay_scene": {
+      "bazel_target": "//build_defs/app/chrono/physical_run:physical_replay_scene",
+      "cmake_file": "chrono/physical_run/CMakeLists.txt",
+      "cmake_sha256": "4b6a3f3e53f784a21c380a3851a2ee5a2e46552729f9314e292dff0477755e1e",
+      "sources": [
+        "chrono/physical_run/Scene.cpp",
+        "chrono/physical_run/SceneValues.cpp",
+        "chrono/physical_run/SceneInitialize.cpp",
+        "chrono/physical_run/SampleSource.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_run_records",
+        "robo_dyna_recovered_frames",
+        "robo_dyna_full_shell_frame_geometry",
+        "robo_dyna_replay_visual_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/output/physical_run:physical_run_records",
+        "//build_defs/app/output/recovered_frames:recovered_frames",
+        "//build_defs/app/chrono/full_shell:full_shell_frame_geometry",
+        "//build_defs/app/chrono/replay:replay_visual_values"
+      ],
+      "copts": [
+        "-fno-fast-math",
+        "-ffp-contract=off"
+      ]
+    },
+    "robo_dyna_physical_viewer_values": {
+      "bazel_target": "//build_defs/app/viewer/physical_run:physical_viewer_values",
+      "cmake_file": "chrono/physical_run/CMakeLists.txt",
+      "cmake_sha256": "4b6a3f3e53f784a21c380a3851a2ee5a2e46552729f9314e292dff0477755e1e",
+      "sources": [
+        "viewer/physical_run/Options.cpp",
+        "viewer/physical_run/Input.cpp",
+        "viewer/physical_run/SourceMetadata.cpp"
+      ],
+      "dependencies": [
+        "robo_dyna_physical_replay_scene"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/app/chrono/physical_run:physical_replay_scene"
+      ],
+      "copts": []
+    },
+    "robo_dyna_replay_vsg": {
+      "bazel_target": "//build_defs/app/viewer:replay_vsg",
+      "cmake_file": "viewer/ReplayVsg.cmake",
+      "cmake_sha256": "e6265e943d8158a324da44ad8a06c36a09dea1c2b2cce998ea9a605e1b472db1",
+      "sources": [
+        "viewer/ReplayVsg.cpp",
+        "viewer/ReplayVsgCapture.cpp",
+        "viewer/ReplayAssets.cpp"
+      ],
+      "dependencies": [
+        "Chrono::Chrono_vsg",
+        "robo_dyna_artifact_io",
+        "robo_dyna_replay_visual_values"
+      ],
+      "bazel_dependencies": [
+        "//build_defs/chrono/vsg:vsg",
+        "//build_defs/app/output:artifact_io",
+        "//build_defs/app/chrono/replay:replay_visual_values",
+        ":replay_assets"
+      ],
+      "copts": [],
+      "split_target": "//build_defs/app/viewer:replay_assets"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/vehicle_source/VehicleSourcePlan.cmake:robo_dyna_vehicle_source
+app_library(
+    name = "vehicle_source",
+    srcs = [
+        "modelio/vehicle_source/VehicleSourcePlan.cpp",
+        "modelio/vehicle_source/OriginalAuthority.cpp",
+        "modelio/vehicle_source/PlanLimits.cpp",
+        "modelio/vehicle_source/PlanDeclarations.cpp",
+        "modelio/vehicle_source/PlanGeometry.cpp",
+        "modelio/vehicle_source/SourceCards.cpp",
+        "modelio/vehicle_source/NumericalSourceCards.cpp",
+    ],
+    hdrs = [
+        "modelio/vehicle_source/Internal.h",
+        "modelio/vehicle_source/OriginalAuthority.h",
+        "modelio/vehicle_source/SourceCards.h",
+        "modelio/vehicle_source/VehicleSourcePlan.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/source_assembly:source_assembly",
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

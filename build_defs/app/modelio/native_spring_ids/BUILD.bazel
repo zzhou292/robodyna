@@ -1,0 +1,27 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From modelio/native_spring_ids/NativeSpringIds.cmake:robo_dyna_native_spring_ids
+app_library(
+    name = "native_spring_ids",
+    srcs = [
+        "modelio/native_spring_ids/ImportContext.cpp",
+        "modelio/native_spring_ids/ContextSources.cpp",
+        "modelio/native_spring_ids/Elements.cpp",
+        "modelio/native_spring_ids/Resolve.cpp",
+        "modelio/native_spring_ids/ResolveValues.cpp",
+    ],
+    hdrs = [
+        "modelio/native_spring_ids/ImportContext.h",
+        "modelio/native_spring_ids/Internal.h",
+        "modelio/native_spring_ids/Resolve.h",
+        "modelio/native_spring_ids/Types.h",
+        "modelio/physical_scope/Internal.h",
+        "modelio/tied_shell/Internal.h",
+    ],
+    deps = [
+        "//build_defs/app/modelio/type25:vehicle_type25_source",
+        "//build_defs/app/modelio/type45:vehicle_type45_source",
+    ],
+    copts = [
+    ],
+)

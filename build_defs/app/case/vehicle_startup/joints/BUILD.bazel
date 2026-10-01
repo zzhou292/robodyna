@@ -1,0 +1,26 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_startup/joints/VehicleJointModel.cmake:robo_dyna_vehicle_joint_model
+app_library(
+    name = "vehicle_joint_model",
+    srcs = [
+        "case/vehicle_startup/joints/VehicleJointModel.cpp",
+        "case/vehicle_startup/joints/Budget.cpp",
+        "case/vehicle_startup/joints/SourceMapping.cpp",
+        "case/vehicle_startup/joints/OwnedBytes.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/joints/SourceMapping.h",
+        "case/vehicle_startup/joints/Storage.h",
+        "case/vehicle_startup/joints/VehicleJointModel.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/modelio/type45:vehicle_type45_source",
+        "@legacy_fea//lib_src/elements/type45:model",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

@@ -1,0 +1,28 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+app_library(
+    name = "full_shell_frame_geometry",
+    srcs = [
+        "chrono/full_shell/FullShellFrameGeometry.cpp",
+        "chrono/full_shell/FrameGeometryInitialize.cpp",
+        "chrono/full_shell/FrameGeometryChecks.cpp",
+        "chrono/full_shell/FrameGeometryFields.cpp",
+        "chrono/full_shell/FrameGeometryTopology.cpp",
+        "chrono/full_shell/FrameGeometryUpdate.cpp",
+    ],
+    hdrs = [
+        "chrono/full_shell/FrameGeometryData.h",
+        "chrono/full_shell/FrameGeometryState.h",
+        "chrono/full_shell/FullShellFrameGeometry.h",
+    ],
+    deps = [
+        "//build_defs/app/output/full_shell/static_bundle:full_shell_source_mapping",
+        "//build_defs/app/chrono/replay:replay_geometry_values",
+        "//build_defs/app/output/full_shell/activity:parent_activity",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+    header_deps = ["//build_defs/app/chrono/replay:replay_scene_contracts"],
+)

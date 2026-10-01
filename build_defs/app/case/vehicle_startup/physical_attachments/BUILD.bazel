@@ -1,0 +1,20 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+# From case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.cmake:robo_dyna_vehicle_physical_attachments
+app_library(
+    name = "vehicle_physical_attachments",
+    srcs = [
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.cpp",
+    ],
+    hdrs = [
+        "case/vehicle_startup/physical_attachments/VehiclePhysicalAttachments.h",
+    ],
+    deps = [
+        "//build_defs/app/case/vehicle_startup/physical_model:vehicle_physical_model",
+        "//build_defs/app/case/vehicle_startup:tied_cin_witness_roster",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)

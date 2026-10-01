@@ -1,0 +1,77 @@
+load("//build_defs/app:defs.bzl", "app_library")
+
+app_library(
+    name = "replay_part_colors",
+    srcs = [
+        "chrono/ReplayPartColors.cpp",
+    ],
+    hdrs = [
+        "chrono/ReplayGeometryLimits.h",
+        "chrono/ReplayPartColors.h",
+    ],
+    deps = [
+        "//build_defs/chrono:native_core_fea",
+    ],
+    copts = [
+        "-fno-fast-math",
+        "-ffp-contract=off",
+    ],
+)
+
+app_library(
+    name = "replay_geometry_values",
+    srcs = [
+        "chrono/ReplayDisplayGeometry.cpp",
+    ],
+    hdrs = [
+        "chrono/ReplayDisplayGeometry.h",
+    ],
+    deps = [
+        "//build_defs/chrono:native_core_fea",
+        ":replay_part_colors",
+    ],
+    copts = [
+    ],
+)
+
+app_library(
+    name = "replay_scene_contracts",
+    srcs = [],
+    hdrs = [
+        "chrono/AcceptedReplayScene.h",
+        "chrono/ReplayClipping.h",
+        "chrono/ReplayColorMode.h",
+        "chrono/ReplayFixedCamera.h",
+        "chrono/ReplayParentScalarColors.h",
+        "chrono/ReplayScalarApplicability.h",
+        "chrono/ReplayView.h",
+        "chrono/ReplayVisuals.h",
+        "output/AcceptedReplay.h",
+    ],
+    deps = [
+        "//build_defs/app/chrono/replay:replay_geometry_values",
+    ],
+    copts = [
+    ],
+)
+
+app_library(
+    name = "replay_visual_values",
+    srcs = ["chrono/ReplayVisuals.cpp", "chrono/ReplayCamera.cpp", "chrono/ReplayClipping.cpp"],
+    hdrs = [],
+    deps = [":replay_scene_contracts"],
+)
+
+app_library(
+    name = "replay_scene",
+    srcs = [
+        "chrono/AcceptedReplayScene.cpp",
+    ],
+    hdrs = [
+    ],
+    deps = [
+        "//build_defs/app/chrono/replay:replay_visual_values",
+    ],
+    copts = [
+    ],
+)

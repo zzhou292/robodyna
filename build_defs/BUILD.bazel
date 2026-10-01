@@ -6,10 +6,22 @@ config_setting(name = "sm75", define_values = {"robodyna_cuda_arch": "75"})
 config_setting(name = "sm86", define_values = {"robodyna_cuda_arch": "86"})
 config_setting(name = "sm120", define_values = {"robodyna_cuda_arch": "120"})
 
-py_library(name = "source_boundary", srcs = ["source_boundary.py"])
+py_library(name = "source_boundary", srcs = ["source_boundary.py", "build_overlays.py"])
 py_binary(
     name = "check_source_boundary",
-    srcs = ["source_boundary.py"],
+    srcs = ["source_boundary.py", "build_overlays.py"],
     main = "source_boundary.py",
-    data = ["//build_defs/legacy:source_contract.json"],
+    data = ["//build_defs/legacy:source_contract.json", "//build_defs/legacy:build_overlays.json"],
+)
+
+# CPU-only build/metadata admission tests. Actual workspace audits remain the
+# explicit read-only checker binaries above, separate from fixture unit tests.
+test_suite(
+    name = "bootstrap_host_tests",
+    tests = [
+        "//build_defs/tests:source_boundary_test",
+        "//build_defs/app/tests:source_port_test",
+        "//build_defs/sdk:openssl_sdk_test",
+        "//tools/migration:behavior_tests",
+    ],
 )

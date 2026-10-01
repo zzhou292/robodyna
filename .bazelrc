@@ -3,6 +3,13 @@ build --lockfile_mode=error
 build --cxxopt=-std=c++17
 build --host_cxxopt=-std=c++17
 
+# Import only declared Python package roots and the main repository. Data-only
+# external repositories (including the legacy watchdog) must not shadow tools/.
+# rules_python 1.7 reads the native option when its fragments exist, otherwise
+# its Starlark replacement. Keep both definitions consistent on Bazel 9.
+build --noexperimental_python_import_all_repositories
+build --@rules_python//python/config_settings:experimental_python_import_all_repositories=false
+
 # Scheduling limits supplement the workstation guard; they are not an RSS cap.
 build --jobs=4
 build --local_resources=cpu=4

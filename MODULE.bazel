@@ -51,3 +51,8 @@ register_toolchains("@rules_cuda//cuda:all")
 # copied into Git and no package installation or download occurs here.
 system_openssl = use_repo_rule("//build_defs/sdk:openssl.bzl", "system_openssl")
 system_openssl(name = "openssl")
+
+# Optional external rendering SDK. The frontend implementation is built from
+# owned source; this repository imports no Chrono implementation library.
+local_vsg = use_repo_rule("//build_defs/sdk:vsg.bzl", "local_vsg")
+local_vsg(name = "vsg_sdk")

@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from build_defs.source_boundary import declarations, inspect_workspace, workspace_path
+from build_defs.build_overlays import verify_build_overlay
 
 
 class SourceBoundaryTest(unittest.TestCase):
@@ -66,6 +67,21 @@ class SourceBoundaryTest(unittest.TestCase):
         path = self.root / "declaration.bazel"
         path.write_text('cc_library(name="owner",srcs=unknown_function())\n')
         self.assertEqual(declarations(path), [("cc_library", {"name": "owner"})])
+
+    def test_reviewed_build_overlay_reconstructs_baseline(self):
+        before = b'cc_library(name="owner", hdrs=["State.h"])\n'
+        after = b'cc_library(name="owner", hdrs=["State.h", "Internal.h"])\n'
+        entry = {"baseline_sha256": hashlib.sha256(before).hexdigest(),
+                 "overlay_sha256": hashlib.sha256(after).hexdigest(),
+                 "replacements": [{"before": 'hdrs=["State.h"]',
+                                   "after": 'hdrs=["State.h", "Internal.h"]'}]}
+        self.assertEqual(verify_build_overlay("module/BUILD.bazel", after, entry), entry["baseline_sha256"])
+        with self.assertRaisesRegex(ValueError, "Only BUILD"):
+            verify_build_overlay("module/Physics.cu", after, entry)
+        unreviewed = after + b'cc_library(name="unreviewed")\n'
+        entry["overlay_sha256"] = hashlib.sha256(unreviewed).hexdigest()
+        with self.assertRaisesRegex(ValueError, "does not reconstruct"):
+            verify_build_overlay("module/BUILD.bazel", unreviewed, entry)
 
 
 if __name__ == "__main__":

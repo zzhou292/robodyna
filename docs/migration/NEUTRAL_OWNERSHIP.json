@@ -1,0 +1,121 @@
+{
+  "schema": "robodyna.neutral_mechanics_ownership.v1",
+  "source_commit": "a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38",
+  "source_root": "src/compatibility/chrono",
+  "scope": "Existing source bytes and includes retained; native compile ownership extracted. Complete FEA/MBD independence remains future work.",
+  "components": {
+    "foundation": {
+      "target": "//src/core:foundation",
+      "sources": {
+        "src/chrono/core/ChClassFactory.cpp": "16154309c0985d13d8164d92fec0d9eb1d85888284c6aa83a96120ff61ddfbc5",
+        "src/chrono/core/ChQuaternion.cpp": "c501f9ed47e82a602f7339c67d408565c55e1f76ed7a9a6f391a1d681aaa1b40",
+        "src/chrono/core/ChRotation.cpp": "5f0656c6b322ea59dc2c75910c99fab484ee79a38ab683c5a55713e6c4baf1b3",
+        "src/chrono/core/ChVector3.cpp": "313254aeb2c741f1f525f7960cf60d6e92f128115b2fa076f9da91730681b0c1",
+        "src/chrono/core/ChCoordsys.cpp": "c0bdde1f3bb56774b5b9d63295646d018c2f0aeaf423d2e7b9a76135187b4468",
+        "src/chrono/core/ChQuadrature.cpp": "8aad776ae3c818ee0ccd84d0a77a1f7554863531bc17ba3ae3afcff204bed53a",
+        "src/chrono/core/ChBezierCurve.cpp": "a50ba84a4df8e64d848e28737138502c2e95b58768e6784d74fec10cb3a9a262",
+        "src/chrono/core/ChCubicSpline.cpp": "bc3f8ca086000240b91f3c53ba2385656384303dec510bc2b49e1aee111e2900",
+        "src/chrono/core/ChRandom.cpp": "32d0920b4fc34374f3ad5ede61831ff5e9a2628c48c9495bf2233098d290f32e",
+        "src/chrono/core/ChDataPath.cpp": "08dec8a843a953a992771fe6863873bbe9cdc3e3d30665610059f88bc99787a3",
+        "src/chrono/serialization/ChArchive.cpp": "c876d5716617abe50dfb53759b4f8dd970793621237e31df74c10a1cd0159d00",
+        "src/chrono/serialization/ChArchiveBinary.cpp": "a4f14a8ac29876bfa0f90daf9ffb38b5b1ff331aa40a8fab36960cb85cf8b536",
+        "src/chrono/serialization/ChObjectExplorer.cpp": "54525b746b0306de8c8bd44b4d4244703b8076a2b893e33befefb2b076ff621a",
+        "src/chrono/serialization/ChArchiveJSON.cpp": "fd46cfa54455870838fa7f258c43803b1f0c7d9c6ff8e3cc2c9451d9a7af170e",
+        "src/chrono/serialization/ChArchiveXML.cpp": "0022709d27e5685830702cbd331175d2c1d1e7ebbb03775b9f3257f30fab9570",
+        "src/chrono/serialization/ChArchiveASCII.cpp": "7eccd52af13364bc2b962f57b2b4078e1cd01bec47f2d3daf193620a91102a2b"
+      },
+      "headers": {
+        "src/chrono/ChCorePCH.h": "45b04162219e30fe204ad8730b2df86578a5e1769187b26114dd1a9659de6ba9",
+        "src/chrono/core/ChApiCE.h": "3a225239e2d63f18a5820682b5aa56cf06d9abeff5b77e891addbb91774e9bcf",
+        "src/chrono/core/ChBezierCurve.h": "0cb21e337d201b5d37e4bef716d862c34f8fb15ba8a3b68f2d87a1bb3975bce5",
+        "src/chrono/core/ChClassFactory.h": "c97becce5efbda59ba250b2b233271e46993870bf3f22e543ae79d4a8e5d0971",
+        "src/chrono/core/ChCoordsys.h": "31088279feb8da5c082a74fe9991e986c80e71dcc8a40592bc8691663782a490",
+        "src/chrono/core/ChCubicSpline.h": "45a2c37b1113f2cbba8aaf5cb26bd8a50bd57df9e8987d8415e12346e607ba64",
+        "src/chrono/core/ChDataPath.h": "5dab333b80d6a82881757797f68a3118c7d4166ed10a72547683fc9bbc9b8756",
+        "src/chrono/core/ChFrame.h": "147d96b72482884b517a130ecca50044539c1d27b3299b4870624069718bb314",
+        "src/chrono/core/ChFrameMoving.h": "82476c8dcc6bf8bc0494036be35957c2051feeec203f1ac51a0c112e887bda4c",
+        "src/chrono/core/ChMatrix.h": "4635c9f06cde9210e55d17ebac17760e04eb3b7324b13158db0c486567e486cf",
+        "src/chrono/core/ChMatrix33.h": "14732b4468046026ebf152140a358a9864a74ae37a56879d75bd7a7e8c1ccb6d",
+        "src/chrono/core/ChMatrixEigenExtensions.h": "dc3431ba9657c65e0da5ac04873f7fb07305f5cbf465e04f4b572571afad8620",
+        "src/chrono/core/ChMatrixMBD.h": "0ff0125fe8902073e7b2a3f82518c455e986ef8715df76e4c185043877eac797",
+        "src/chrono/core/ChPlatform.h": "c108f20cbfa1216fd0785d34553230cecf40c93c02029f389e0aa86c8878940e",
+        "src/chrono/core/ChQuadrature.h": "173b2e6c02784a3c6be1c5ed485106c09d58b1e44aa48e41467b67131f43109b",
+        "src/chrono/core/ChQuaternion.h": "b57b207950dc4d7ddc81c1d952bbcbb7d0db1b318f2919d51f87606acc06a9b7",
+        "src/chrono/core/ChRandom.h": "adde66b49efd8e96a125ee0606bade5fcb0c4265d4f228df7b9323c8a860b737",
+        "src/chrono/core/ChRotation.h": "4b684beb07d75c1cf5d45f22a35448641961d67039a67f3606506bd047d91dc7",
+        "src/chrono/core/ChSparseMatrixEigenExtensions.h": "45c9207ae6b1c364f00cc50b0eacf7b46508ed471fb29d24fdb14b5c443b7fdf",
+        "src/chrono/core/ChTemplateExpressions.h": "2ea53f187f714948156c1054394fa151f9202f129d946bdc2fa0b5a23ad36adc",
+        "src/chrono/core/ChTypes.h": "f0d39daa2bf8eb9e229462cc36ab7b2b5c29cab259a5fd2f70357e51d4fcd994",
+        "src/chrono/core/ChVector3.h": "204995ee135dcc0fdf9d788b001e02a99cb2f9a6e9dbdaa2adac12a85fb3cd42",
+        "src/chrono/serialization/ChArchive.h": "c40f7ef7fee3ef92e4f0fd0de47558e47a1fe94c59e3245fdd7a41a6ba810073",
+        "src/chrono/serialization/ChArchiveASCII.h": "bb1e4896dbe9639f8a83da0acb697d3729716ef5e954a4a36eb8b639a405791a",
+        "src/chrono/serialization/ChArchiveBinary.h": "d897da2f71e1195d03e9d5e0139dbf11e6011a384c7edb800157fc3b79420301",
+        "src/chrono/serialization/ChArchiveJSON.h": "b80c569d77b74d186582fd793b8b15f7e97885afb62ff7f1618b273fd512d607",
+        "src/chrono/serialization/ChArchiveXML.h": "4fac07076f9c9360e89e0f040abd6faaccd161e5bd7119c824bd41455df45479",
+        "src/chrono/serialization/ChObjectExplorer.h": "48ff952c1aa490bd353be9ddd779fb67b3cf272fc3c36cd85f540a0e0d553fda",
+        "src/chrono/utils/ChConstants.h": "87138707ce28376e7f3069a82448144e4dd32d73990115548a5809da49c424c2",
+        "src/chrono/utils/ChUtils.h": "e85e1b17c0d6d0e794b04ccb745fc997129e1ce8e9da4de53228e39596cce3c2",
+        "src/chrono_thirdparty/rapidjson/allocators.h": "bf6f3a6b2fc0b62557554a15a9c301479cfb589f5529d671931908862e90b74c",
+        "src/chrono_thirdparty/rapidjson/document.h": "8b4ace5e179728205d634eca89aaeff10f60a46ef75e08a3572ee7b68ea29832",
+        "src/chrono_thirdparty/rapidjson/encodedstream.h": "394710616961270b0e4033c03a22b2e5b411958dc07eb4495ba36131648e3558",
+        "src/chrono_thirdparty/rapidjson/encodings.h": "1d4c62bd4ecc0b5a8b4b53faf48a8d09f09f086e41a90fc2b135517c3d148379",
+        "src/chrono_thirdparty/rapidjson/error/error.h": "64fdd0bad7480cd2a257fddf0aaa16b9a8d4a401189ebe0e44cee2ee6be8687c",
+        "src/chrono_thirdparty/rapidjson/filereadstream.h": "d3d2aa0540471f4e58987f2184067e7cdf229363648ebf81af43c7e659bf2a40",
+        "src/chrono_thirdparty/rapidjson/filewritestream.h": "b16d4cbb8618e1b2bf58d91632f4a31a1fb2e4938b4cded365d723487792f0a5",
+        "src/chrono_thirdparty/rapidjson/internal/biginteger.h": "7771c3f2c82c4736d32b487558d19eaacf678e030945c5b5c994ae9ffa952755",
+        "src/chrono_thirdparty/rapidjson/internal/clzll.h": "4ca3e63eaae4c67b049e8a6cbb532182e1d9c9023b7d992c556fcab0c2f4c045",
+        "src/chrono_thirdparty/rapidjson/internal/diyfp.h": "2efb18fcfaf4882a23720b0e08fdbe3e94be3b282b6c5c017d18bfd205e80880",
+        "src/chrono_thirdparty/rapidjson/internal/dtoa.h": "25d736a672d49b85355b1e064f86010e13d520a10a69163dff8d051dac4b512d",
+        "src/chrono_thirdparty/rapidjson/internal/ieee754.h": "00757a3dc2aad5b90d915f9c49b378026dc612d49a7f057106d72b1ebd1a0105",
+        "src/chrono_thirdparty/rapidjson/internal/itoa.h": "a0f965f33b11ce112b7bf2fbdeaf5338fca174e33f9f47608ccdd6d8559f3871",
+        "src/chrono_thirdparty/rapidjson/internal/meta.h": "5fcbfd72da1732926e4d0be2a1d79dce892f98d7b66879f818c57583a82505d3",
+        "src/chrono_thirdparty/rapidjson/internal/pow10.h": "74cd5ef251a854565a36abe49521be4d8ed17a76e3d27231fd119fb9374a9364",
+        "src/chrono_thirdparty/rapidjson/internal/stack.h": "1bc01f4623d7b4ed6e890220fa9753375c0f0fb87c8a84f41cd7eecf38a38cd2",
+        "src/chrono_thirdparty/rapidjson/internal/strfunc.h": "9bcc71e2e8f7096325218cebd9aa5338d2c8539bddfc6324eec6d8037c466dbe",
+        "src/chrono_thirdparty/rapidjson/internal/strtod.h": "ad524108ca9df43b73a4009c2a47255436403711b3e9c42b3b1ee0b32675a814",
+        "src/chrono_thirdparty/rapidjson/internal/swap.h": "72acfabebd33f44869e7724603e57744da33337998b32443b66eaba58d2bbbfd",
+        "src/chrono_thirdparty/rapidjson/memorystream.h": "a7bf789978c6d7dda7bb93c0c9555b7d53b3177cbf34c3998c7e18068a3723f5",
+        "src/chrono_thirdparty/rapidjson/msinttypes/inttypes.h": "78ee41fd99bcbe59ca93f6a870a83c0a90f4b179af571f6e684f2600491bbae7",
+        "src/chrono_thirdparty/rapidjson/msinttypes/stdint.h": "bf2d1bc4885bc1e0720ec9af8f399477c7e105ae1e70e2863c31a8123cae1c17",
+        "src/chrono_thirdparty/rapidjson/prettywriter.h": "75adaed0efd180955a44cd5322fb20f5f1b15b5ed40998fe88c50fc2ecd2c64f",
+        "src/chrono_thirdparty/rapidjson/rapidjson.h": "04cb7c640fe18a3d696b92fba9af31b42fb2db294ad641fe738ddfbddca97284",
+        "src/chrono_thirdparty/rapidjson/reader.h": "9902058538bcca216f57b74bb404fa666b1b8d9224acd5b173ab3189c68db6f0",
+        "src/chrono_thirdparty/rapidjson/stream.h": "a3708a941a130a5679d2302368169852e5c4ca5f54758ea0e94caf61615c8ae0",
+        "src/chrono_thirdparty/rapidjson/stringbuffer.h": "4788a86bc76a2880bdefa1765b366bda2303b62c1b8de1aabb4940fe37722b88",
+        "src/chrono_thirdparty/rapidjson/writer.h": "40db14761c8f72d44261553400c24111b64bcc367bd23eeed4c45043ec80b39b",
+        "src/chrono_thirdparty/rapidxml/rapidxml.hpp": "c04935cc8a3ee13c8880a789da95af673186d013fc0d64f8eb074dfdce8c4e30"
+      }
+    },
+    "mass_blocks": {
+      "target": "//src/numerics/variables:mass_blocks",
+      "sources": {
+        "src/chrono/solver/ChVariables.cpp": "0fec4d339993379ba47be55851fd4779b21494cd40bd0f445ec5329224d2015b",
+        "src/chrono/solver/ChVariablesBody.cpp": "68bbe66ac8663728ff6ee9cd9a7267bf6b89e6965480a71a2e411d17eafd24fd",
+        "src/chrono/solver/ChVariablesBodyOwnMass.cpp": "77d83a70d3c3f8cc8e777115f739b940ad5f9284432217372e2659ef90bba6e6"
+      },
+      "headers": {
+        "src/chrono/solver/ChVariables.h": "c435b032ab73206655effaf0099922294a2c9803fd7e32ebbf857f23f3009862",
+        "src/chrono/solver/ChVariablesBody.h": "f6a2a0bbcf73d0e7e2cee7beee0c99ff411662903888e0066227edc4bcdab4c7",
+        "src/chrono/solver/ChVariablesBodyOwnMass.h": "429382eebb0430c6e218b6c0c785b936531178805f2818d10da33df46cd7e099"
+      }
+    },
+    "frames": {
+      "target": "//src/mechanics/kinematics:frames",
+      "sources": {
+        "src/chrono/physics/ChBodyFrame.cpp": "30eda2f2966901db292222906b0b958819555f8a41a33ed8344a6b45f2f2f4c3"
+      },
+      "headers": {
+        "src/chrono/physics/ChBodyFrame.h": "0b739034f2d081106ebb9061ff112e34de9a6258507307f783a3056b380a5b81"
+      }
+    },
+    "inertia": {
+      "target": "//src/mechanics/inertia:inertia",
+      "sources": {
+        "src/chrono/physics/ChMassProperties.cpp": "2550dee20a105115106e9ce0f050cbcdd0c1f77152942e86f6cb7687adc0acaf"
+      },
+      "headers": {
+        "src/chrono/physics/ChMassProperties.h": "a4583fda0d8c20f05247f3077527ca30c075e600d869dc2f6d6be1965bfe32b9"
+      }
+    }
+  }
+}
