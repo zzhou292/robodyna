@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+# Apply and qualify this target against unchanged ChAssembly before any implementation move.
+cc_test(
+    name = "baseline_test",
+    srcs = ["Fixture.h", "LifecycleTest.cpp", "CopyTest.cpp"],
+    deps = ["//build_defs/chrono:native_core_fea", "@googletest//:gtest_main"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    size = "small",
+    tags = ["manual", "cpu-only", "assembly-compatibility"],
+)
