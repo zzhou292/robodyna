@@ -102,9 +102,9 @@ set(Chrono_physics_SOURCES
     ${ROBODYNA_SOURCE_ROOT}/src/mbd/bodies/RbBody.cpp
     physics/ChBodyAuxRef.cpp
     physics/ChBodyEasy.cpp
-    physics/ChSystem.cpp
-    physics/ChSystemNSC.cpp
-    physics/ChSystemSMC.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystem.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemNSC.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemSMC.cpp
     physics/ChPhysicsItem.cpp
     physics/ChParticleCloud.cpp
     physics/ChIndexedParticles.cpp
@@ -139,6 +139,7 @@ set(Chrono_physics_HEADERS
     physics/ChPhysicsItem.h
     physics/ChProximityContainer.h
     physics/ChSystem.h
+    physics/ChSystemFwd.h
     physics/ChSystemNSC.h
     physics/ChSystemSMC.h
     physics/ChExternalDynamicsODE.h
@@ -1528,6 +1529,11 @@ install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperti
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h"
         DESTINATION include/robodyna/mbd)
+install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemNSC.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemSMC.h"
+              "${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemFwd.h"
+        DESTINATION include/robodyna/simulation)
 if(CH_ENABLE_MODULE_FEA)
     install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMesh.h"
                   "${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMeshFwd.h"

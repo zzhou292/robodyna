@@ -10,6 +10,7 @@ cc_library(
     name = "implementation_headers",
     hdrs = ["RbBody.h", "RbBodyFwd.h"],
     strip_include_prefix = "/include",
+    deps = ["//include/robodyna/simulation:forward"],
     visibility = ["//src/compatibility/chrono:__pkg__"],
 )
 

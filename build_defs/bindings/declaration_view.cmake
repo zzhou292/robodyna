@@ -56,6 +56,18 @@ function(robodyna_bind_swig_declarations target)
     "docs/migration/BODY_TRANSFORMATIONS.json"
     "include/robodyna/mbd/RbBody.h"
     "src/compatibility/chrono/src/chrono/physics/ChBody.h")
+  _robodyna_bind_swig_view(${target} system
+    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
+    "include/robodyna/simulation/RbSystem.h"
+    "src/compatibility/chrono/src/chrono/physics/ChSystem.h")
+  _robodyna_bind_swig_view(${target} system_nsc
+    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
+    "include/robodyna/simulation/RbSystemNSC.h"
+    "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h")
+  _robodyna_bind_swig_view(${target} system_smc
+    "docs/migration/SYSTEM_TRANSFORMATIONS.json"
+    "include/robodyna/simulation/RbSystemSMC.h"
+    "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h")
   if(CH_ENABLE_MODULE_FEA)
     _robodyna_bind_swig_view(${target} mesh
       "docs/migration/MESH_TRANSFORMATIONS.json"

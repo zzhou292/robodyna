@@ -15,6 +15,7 @@
 #ifndef CH_VISUAL_SYSTEM_H
 #define CH_VISUAL_SYSTEM_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <vector>
 
 #include "chrono/core/ChApiCE.h"
@@ -279,7 +280,7 @@ class ChApi ChVisualSystem {
     bool m_write_images;      ///< if true, save snapshots
     std::string m_image_dir;  ///< directory for image files
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 /// @} chrono_assets

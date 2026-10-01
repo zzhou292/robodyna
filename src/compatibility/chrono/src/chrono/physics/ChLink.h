@@ -15,13 +15,14 @@
 #ifndef CH_LINK_H
 #define CH_LINK_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/physics/ChBodyFrame.h"
 #include "chrono/physics/ChLinkBase.h"
 
 namespace chrono {
 
 // Forward references
-class ChSystem;
+// System type is declared by the explicit forward header.
 
 /// Base class for joints between two ChBodyFrame objects.
 /// ChLink objects can constrain the motion in the 3D space of ChBodyFrame objects, most often rigid bodies (ChBody and derived).

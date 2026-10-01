@@ -15,6 +15,7 @@
 #ifndef CHNODEPERI_H
 #define CHNODEPERI_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono_peridynamics/ChApiPeridynamics.h"
 
 #include "chrono/collision/ChCollisionModel.h"
@@ -25,7 +26,7 @@
 namespace chrono {
 
 // Forward references (for parent hierarchy pointer)
-class ChSystem;
+// System type is declared by the explicit forward header.
 
 namespace peridynamics {
 

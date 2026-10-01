@@ -1,6 +1,6 @@
 {
   "schema": "robodyna.source_transformations.v1",
-  "scope": "Reviewed canonical inertia/body/mesh relocations, archive identities, visual ownership and binding declarations; original import identities retained.",
+  "scope": "Complete source-preserving import history and reviewed implementation migrations; per-family parser ledgers contain only declarations.",
   "files": [
     {
       "original_path": "src/compatibility/chrono/src/chrono/physics/ChMassProperties.h",
@@ -169,6 +169,31 @@
         {
           "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt\"",
           "after": "if(CH_ENABLE_MODULE_FEA)\n    install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMesh.h\"\n                  \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMeshFwd.h\"\n            DESTINATION include/robodyna/fea)\nendif()\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt\"",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChSystem.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystem.cpp",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChSystemNSC.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemNSC.cpp",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChSystemSMC.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/simulation/composition/RbSystemSMC.cpp",
+          "count": 1
+        },
+        {
+          "before": "    physics/ChSystem.h",
+          "after": "    physics/ChSystem.h\n    physics/ChSystemFwd.h",
+          "count": 1
+        },
+        {
+          "before": "        DESTINATION include/robodyna/mbd)",
+          "after": "        DESTINATION include/robodyna/mbd)\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystem.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemNSC.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemSMC.h\"\n              \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/simulation/RbSystemFwd.h\"\n        DESTINATION include/robodyna/simulation)",
           "count": 1
         }
       ],
@@ -573,6 +598,21 @@
           "before": "#include <cmath>",
           "after": "#include <cmath>\n#include \"robodyna/mbd/RbBodyFwd.h\"",
           "count": 1
+        },
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "friend class chrono::ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <cmath>",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include <cmath>",
+          "count": 1
         }
       ],
       "forwarding_sha256": "91218797b23ed188a0c33363fc4804e779b485c50ee9689ef745ff74503e62e7"
@@ -633,6 +673,16 @@
         {
           "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISIONSYSTEM_H\n#define CH_COLLISIONSYSTEM_H\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/ChCollisionInfo.h\"\n#include \"chrono/core/ChApiCE.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n#include \"chrono/assets/ChColor.h\"\n\n",
           "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2014 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Alessandro Tasora, Radu Serban\n// =============================================================================\n\n#ifndef CH_COLLISIONSYSTEM_H\n#define CH_COLLISIONSYSTEM_H\n\n#include \"chrono/collision/ChCollisionModel.h\"\n#include \"chrono/collision/ChCollisionInfo.h\"\n#include \"chrono/core/ChApiCE.h\"\n#include \"chrono/core/ChFrame.h\"\n#include \"chrono/geometry/ChGeometry.h\"\n#include \"chrono/assets/ChColor.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
+          "count": 1
+        },
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/collision/ChCollisionModel.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/collision/ChCollisionModel.h\"",
           "count": 1
         }
       ]
@@ -753,6 +803,16 @@
           "before": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2026 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Kyle Sha\n// =============================================================================\n//\n// Bridge from a Chrono ChSystem to a MetalRenderScene.\n// Plain cross-platform C++: depends on Chrono and the standard library only, with no\n// GPU or platform code, so the extraction can be read and tested without a Metal device.\n//\n// =============================================================================\n\n#ifndef CH_METAL_SCENE_BUILDER_H\n#define CH_METAL_SCENE_BUILDER_H\n\n#include <map>\n#include <memory>\n#include <string>\n\n#include \"chrono_sensor/metal/ChMetalRenderTypes.h\"\n\n",
           "after": "// =============================================================================\n// PROJECT CHRONO - http://projectchrono.org\n//\n// Copyright (c) 2026 projectchrono.org\n// All rights reserved.\n//\n// Use of this source code is governed by a BSD-style license that can be found\n// in the LICENSE file at the top level of the distribution and at\n// http://projectchrono.org/license-chrono.txt.\n//\n// =============================================================================\n// Authors: Kyle Sha\n// =============================================================================\n//\n// Bridge from a Chrono ChSystem to a MetalRenderScene.\n// Plain cross-platform C++: depends on Chrono and the standard library only, with no\n// GPU or platform code, so the extraction can be read and tested without a Metal device.\n//\n// =============================================================================\n\n#ifndef CH_METAL_SCENE_BUILDER_H\n#define CH_METAL_SCENE_BUILDER_H\n\n#include <map>\n#include <memory>\n#include <string>\n\n#include \"chrono_sensor/metal/ChMetalRenderTypes.h\"\n\n#include \"chrono/physics/ChBodyFwd.h\"\n\n",
           "count": 1
+        },
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include <map>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <map>",
+          "count": 1
         }
       ]
     },
@@ -771,7 +831,7 @@
     {
       "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
       "original_sha256": "6ec07bf072e7a1fc409e618c894b3a15ecb748c2bfccb4eb8f00d3862bce086b",
-      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "canonical_path": "include/robodyna/simulation/RbSystem.h",
       "replacements": [
         {
           "before": "friend class ChBody;",
@@ -782,8 +842,247 @@
           "before": "friend class fea::ChMesh;",
           "after": "friend class ::robodyna::fea::RbMesh;",
           "count": 1
+        },
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CHSYSTEM_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEM_H",
+          "count": 2
+        },
+        {
+          "before": "// Forward references\nclass ChVisualSystem;\n\nnamespace modal {\nclass ChModalAssembly;\n}",
+          "after": "// Inherited service/friend declarations precede the canonical namespace.",
+          "count": 1
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "fea::ChMesh",
+          "after": "chrono::fea::ChMesh",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "modal::ChModalAssembly",
+          "after": "chrono::modal::ChModalAssembly",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChAssembly",
+          "after": "chrono::ChAssembly",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "chrono::ChBody",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChCollisionSystem",
+          "after": "chrono::ChCollisionSystem",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainerNSC",
+          "after": "chrono::ChContactContainerNSC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainerSMC",
+          "after": "chrono::ChContactContainerSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterialCompositionStrategy",
+          "after": "chrono::ChContactMaterialCompositionStrategy",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChIntegrableIIorder",
+          "after": "chrono::ChIntegrableIIorder",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkBase",
+          "after": "chrono::ChLinkBase",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChMarker",
+          "after": "chrono::ChMarker",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChOutput",
+          "after": "chrono::ChOutput",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChPhysicsItem",
+          "after": "chrono::ChPhysicsItem",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChShaft",
+          "after": "chrono::ChShaft",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChSolver",
+          "after": "chrono::ChSolver",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChSparseMatrix",
+          "after": "chrono::ChSparseMatrix",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChState",
+          "after": "chrono::ChState",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChStateDelta",
+          "after": "chrono::ChStateDelta",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "ChStaticAnalysis",
+          "after": "chrono::ChStaticAnalysis",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChStaticNonLinearRheonomicAnalysis",
+          "after": "chrono::ChStaticNonLinearRheonomicAnalysis",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemDescriptor",
+          "after": "chrono::ChSystemDescriptor",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChTimer",
+          "after": "chrono::ChTimer",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChTimestepper",
+          "after": "chrono::ChTimestepper",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChVectorDynamic",
+          "after": "chrono::ChVectorDynamic",
+          "count": 18,
+          "code_token": true
+        },
+        {
+          "before": "ChVisualSystem",
+          "after": "chrono::ChVisualSystem",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "AssemblyAnalysis",
+          "after": "chrono::AssemblyAnalysis",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\nclass ChVisualSystem;\nclass ChContactContainerNSC;\nclass ChContactContainerSMC;\nnamespace modal { class ChModalAssembly; }\n}\n\nnamespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystem, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystem, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include <cfloat>",
+          "after": "#include <cfloat>\n#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "count": 1
         }
-      ]
+      ],
+      "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"
     },
     {
       "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChBody.i",
@@ -799,8 +1098,8 @@
     },
     {
       "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
-      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
       "original_sha256": "35505b3513cffc678e1925a159e822deac0d19a4fcd1ff8dc96cfd02f48e7a69",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
       "replacements": [
         {
           "before": "%include <std_shared_ptr.i>",
@@ -810,6 +1109,11 @@
         {
           "before": "%include \"../../../chrono/fea/ChMesh.h\"",
           "after": "%include \"robodyna_swig/MeshDeclarations.h\"",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono { class ChBody; }",
+          "after": "namespace chrono { class ChBody; class ChSystem; class ChSystemNSC; class ChSystemSMC; }",
           "count": 1
         }
       ]
@@ -995,8 +1299,8 @@
     },
     {
       "original_path": "src/compatibility/chrono/src/chrono/fea/ChMesh.h",
-      "canonical_path": "include/robodyna/fea/RbMesh.h",
       "original_sha256": "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
+      "canonical_path": "include/robodyna/fea/RbMesh.h",
       "replacements": [
         {
           "before": "in the LICENSE file at the top level of the distribution and at",
@@ -1120,6 +1424,16 @@
           "after": "chrono::fea::ChMeshSurface",
           "count": 4,
           "code_token": true
+        },
+        {
+          "before": "friend class chrono::ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <cstdlib>",
+          "after": "#include \"robodyna/simulation/RbSystemFwd.h\"\n#include <cstdlib>",
+          "count": 1
         }
       ],
       "forwarding_sha256": "eabc9d24bd1d7e2c438c6594d599fbf8b955289a532188f52868de5d7a89081c"
@@ -1257,6 +1571,717 @@
         {
           "before": "%import(module = \"pychrono.core\") \"../../../chrono/fea/ChMesh.h\"",
           "after": "%import(module = \"pychrono.core\") \"robodyna_swig/MeshDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h",
+      "original_sha256": "787173c0f36566dc0fdc34e1843c003f499e8a5f72985c316b72855d11f62d19",
+      "canonical_path": "include/robodyna/simulation/RbSystemNSC.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CH_SYSTEM_NSC_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEMNSC_H",
+          "count": 2
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemNSC",
+          "after": "RbSystemNSC",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystemNSC, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystemNSC, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/simulation/RbSystem.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "3c7c968cc8e6117c99b340a3b59b44b57e5d75751e2d3e150761f5b452bd01e4"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h",
+      "original_sha256": "414e56d0def6f60329346b70018900614fa21816f9a1e84fd0895da4cff8fe3f",
+      "canonical_path": "include/robodyna/simulation/RbSystemSMC.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Radu Serban, Alessandro Tasora",
+          "after": "// Authors: Radu Serban, Alessandro Tasora\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CH_SYSTEM_SMC_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEMSMC_H",
+          "count": 2
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemSMC",
+          "after": "RbSystemSMC",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "ChContactForceTorqueSMC",
+          "after": "RbContactForceTorqueSMC",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "    /// Change the default SMC contact force calculation (and torque, too, if needed).",
+          "after": "    // Source compatibility for existing custom contact algorithms.\n    using ChContactForceTorqueSMC = RbContactForceTorqueSMC;\n\n    /// Change the default SMC contact force calculation (and torque, too, if needed).",
+          "count": 1
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterialCompositeSMC",
+          "after": "chrono::ChContactMaterialCompositeSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChContactable",
+          "after": "chrono::ChContactable",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChWrenchd",
+          "after": "chrono::ChWrenchd",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystemSMC, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystemSMC, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/simulation/RbSystem.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "286ed049b06e5abe729a1c3a18f916d9d5db1d63d371ba58de9533836db9df35"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.cpp",
+      "original_sha256": "f7fa016871a286d9282ac80df137d8505ff33a2990b6fed2bdfe0d3e1b2ba719",
+      "canonical_path": "src/simulation/composition/RbSystem.cpp",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system implementation; archive identities retained.",
+          "count": 1
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 105,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemNSC",
+          "after": "RbSystemNSC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemSMC",
+          "after": "RbSystemSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::simulation {\n\n// Translation-unit-only lookup keeps the inherited numerical expressions intact.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/simulation/RbSystem.h\"\n#include \"chrono/physics/ChSystem.h\"",
+          "count": 1
+        },
+        {
+          "before": "VersionWrite<RbSystem>()",
+          "after": "VersionWrite<RbSystem>(\"N6chrono8ChSystemE\")",
+          "count": 1
+        },
+        {
+          "before": "VersionRead<RbSystem>()",
+          "after": "VersionRead<RbSystem>(\"N6chrono8ChSystemE\")",
+          "count": 1
+        },
+        {
+          "before": "    archive_out.VersionWrite<RbSystem>(\"N6chrono8ChSystemE\");",
+          "after": "    // Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.\n    archive_out.VersionWrite<RbSystem>(\"N6chrono8ChSystemE\");",
+          "count": 1
+        },
+        {
+          "before": "    /*int version =*/archive_in.VersionRead<RbSystem>(\"N6chrono8ChSystemE\");",
+          "after": "    // Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.\n    /*int version =*/archive_in.VersionRead<RbSystem>(\"N6chrono8ChSystemE\");",
+          "count": 1
+        },
+        {
+          "before": "void RbSystem::ArchiveOut(ChArchiveOut& archive_out) {",
+          "after": "namespace {\n// Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.\nconstexpr char kLegacySystemArchiveType[] = \"N6chrono8ChSystemE\";\n}\n\nvoid RbSystem::ArchiveOut(ChArchiveOut& archive_out) {",
+          "count": 1
+        },
+        {
+          "before": "    // Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.\n    archive_out.VersionWrite<RbSystem>(\"N6chrono8ChSystemE\");",
+          "after": "    archive_out.VersionWrite<RbSystem>(kLegacySystemArchiveType);",
+          "count": 1
+        },
+        {
+          "before": "    // Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.\n    /*int version =*/archive_in.VersionRead<RbSystem>(\"N6chrono8ChSystemE\");",
+          "after": "    /*int version =*/archive_in.VersionRead<RbSystem>(kLegacySystemArchiveType);",
+          "count": 1
+        },
+        {
+          "before": "fea::ChMesh",
+          "after": "::chrono::fea::ChMesh",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.cpp",
+      "original_sha256": "7146aba0fc7f8e12d160658f3e6b9b3f48790fb7ef491f0bab94c44702390dd4",
+      "canonical_path": "src/simulation/composition/RbSystemNSC.cpp",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system implementation; archive identities retained.",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(ChSystemNSC)",
+          "after": "// Stable registered identity is emitted before the canonical implementation namespace.",
+          "count": 1
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemNSC",
+          "after": "RbSystemNSC",
+          "count": 11,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\nCH_FACTORY_REGISTER(ChSystemNSC)\n}\n\nnamespace robodyna::simulation {\n\n// Translation-unit-only lookup keeps the inherited numerical expressions intact.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemNSC.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemNSC.h\"\n#include \"chrono/physics/ChSystemNSC.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.cpp",
+      "original_sha256": "b9631b4ede56ce474dded509085b13f3b04f05f38c75fd74b8ffca96d49d8788",
+      "canonical_path": "src/simulation/composition/RbSystemSMC.cpp",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Radu Serban, Alessandro Tasora",
+          "after": "// Authors: Radu Serban, Alessandro Tasora\n// Robodyna adaptation: canonical system implementation; archive identities retained.",
+          "count": 1
+        },
+        {
+          "before": "CH_FACTORY_REGISTER(ChSystemSMC)",
+          "after": "// Stable registered identity is emitted before the canonical implementation namespace.",
+          "count": 1
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemSMC",
+          "after": "RbSystemSMC",
+          "count": 13,
+          "code_token": true
+        },
+        {
+          "before": "ChContactForceTorqueSMC",
+          "after": "RbContactForceTorqueSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemSMC_Properties_enum_mapper",
+          "after": "RbSystemSMCPropertiesMapper",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\nCH_FACTORY_REGISTER(ChSystemSMC)\n}\n\nnamespace robodyna::simulation {\n\n// Translation-unit-only lookup keeps the inherited numerical expressions intact.\nusing namespace ::chrono;",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystemSMC.h\"",
+          "after": "#include \"robodyna/simulation/RbSystemSMC.h\"\n#include \"chrono/physics/ChSystemSMC.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/app/chrono/AcceptedReplayScene.h",
+      "original_sha256": "ef5f790be469f0885419952e69fb2f84d3db7763919423c50cd84798b39a36f5",
+      "canonical_path": "src/compatibility/app/chrono/AcceptedReplayScene.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#pragma once",
+          "after": "#pragma once\n#include \"chrono/physics/ChSystemFwd.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualSystem.h",
+      "original_sha256": "f3e444e8f6c18c35319403c26e78e064eed5c458bdfbbc20a0676bcd5197ae65",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualSystem.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <vector>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <vector>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElement.h",
+      "original_sha256": "3a2f39dad26d77ec7684bf689c7aaeff1a78ae026b5943d2f7dc01298eb61f4f",
+      "canonical_path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElement.h",
+      "replacements": [
+        {
+          "before": "\n    class ChSystem;\n",
+          "after": "\n    // System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/core/ChApiCE.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/core/ChApiCE.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+      "original_sha256": "c76f89fa3fa6bd6e46bef60eac60cef1d9c9303873e9ce2b54f69a05d455e050",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChAssembly.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <cmath>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <cmath>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChContactContainerNSC.h",
+      "original_sha256": "989debc5ef934f9b12914456e73ff6a55131ec3afdf5fab922d7025c84862eba",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChContactContainerNSC.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystemNSC;",
+          "after": "friend class ::robodyna::simulation::RbSystemNSC;",
+          "count": 1
+        },
+        {
+          "before": "#include <list>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <list>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChIndexedParticles.h",
+      "original_sha256": "3f7db2960da4f6a3402c7cc5cd0fb377427fd46e5fb1f1e86c10f579ee620e07",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChIndexedParticles.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include <cmath>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <cmath>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChLink.h",
+      "original_sha256": "a695a4bf44dc42dc81866163018ca1e3ae58b527e7ae6f6ac167837718fed2ee",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChLink.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChBodyFrame.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/physics/ChBodyFrame.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChParticleCloud.h",
+      "original_sha256": "942a28fa1dc971fb24f431f5645f0f0f3d36d4c0ac6daa635c340be8f24313e4",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChParticleCloud.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include <cmath>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <cmath>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.h",
+      "original_sha256": "19dd99b80f367c0f085070fb5a1affe2e70699d903fdd8746be0989aeab52287",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChPhysicsItem.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/core/ChFrame.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/core/ChFrame.h\"",
+          "count": 1
+        },
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChShaft.h",
+      "original_sha256": "13c7e295cb13d5aef4a60c8dc94345701c84b4672e6d1d42a16f44c081495a69",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChShaft.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChPhysicsItem.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/physics/ChPhysicsItem.h\"",
+          "count": 1
+        },
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/solver/ChIterativeSolver.h",
+      "original_sha256": "84085c7a17653b77b83ec0ee44bafbf644fdbc063ea11c90b6e9fdfc2547b90a",
+      "canonical_path": "src/compatibility/chrono/src/chrono/solver/ChIterativeSolver.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/core/ChApiCE.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/core/ChApiCE.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/timestepper/ChStaticAnalysis.h",
+      "original_sha256": "04f2e750543e44507405320de6b29f26729a285e4459105194b5d1ce61845de8",
+      "canonical_path": "src/compatibility/chrono/src/chrono/timestepper/ChStaticAnalysis.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 5
+        },
+        {
+          "before": "#include \"chrono/core/ChApiCE.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono/core/ChApiCE.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/timestepper/ChTimestepper.h",
+      "original_sha256": "dc45b7ebb686ff796fbf5d3d3f87e29c25a1e52c871d81553212be146cb642d3",
+      "canonical_path": "src/compatibility/chrono/src/chrono/timestepper/ChTimestepper.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <cstdlib>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <cstdlib>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_irrlicht/ChIrrGUI.h",
+      "original_sha256": "82da4ec5f85a89ed7bc59b89948c19e2eeaf277318b8580b5e1eafa622ce0b55",
+      "canonical_path": "src/compatibility/chrono/src/chrono_irrlicht/ChIrrGUI.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include <irrlicht.h>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <irrlicht.h>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_modal/ChModalAssembly.h",
+      "original_sha256": "6d1e46a276b0a27f83872840792eca0382e9c174ba98fbc67510ecf7935f1397",
+      "canonical_path": "src/compatibility/chrono/src/chrono_modal/ChModalAssembly.h",
+      "replacements": [
+        {
+          "before": "friend class ChSystem;",
+          "after": "friend class ::robodyna::simulation::RbSystem;",
+          "count": 1
+        },
+        {
+          "before": "#include <complex>",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include <complex>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_peridynamics/ChNodePeri.h",
+      "original_sha256": "13cdd50a4ad23da9564513f5a375081fc8e5cfff044c5de6f9989038e1c326dc",
+      "canonical_path": "src/compatibility/chrono/src/chrono_peridynamics/ChNodePeri.h",
+      "replacements": [
+        {
+          "before": "\nclass ChSystem;\n",
+          "after": "\n// System type is declared by the explicit forward header.\n",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono_peridynamics/ChApiPeridynamics.h\"",
+          "after": "#include \"chrono/physics/ChSystemFwd.h\"\n#include \"chrono_peridynamics/ChApiPeridynamics.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystem.i",
+      "original_sha256": "cbf9abc7ad46b789bb8994a5b407a60da08d6a5f1cebe35f1e5b5ac14a97e0cd",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystem.i",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChSystem.h\"",
+          "after": "%include \"robodyna_swig/SystemDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemNSC.i",
+      "original_sha256": "892c657791919fd549014bdad2f835283b34ac7c8c1371466bc0db5cec47d2ea",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemNSC.i",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChSystemNSC.h\"",
+          "after": "%include \"robodyna_swig/SystemNSCDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemSMC.i",
+      "original_sha256": "d3121f4c2ce34829547a01f00243edab56ea22e1d78939ac367dcd5fbbb28cca",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemSMC.i",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/physics/ChSystemSMC.h\"",
+          "after": "%include \"robodyna_swig/SystemSMCDeclarations.h\"",
           "count": 1
         }
       ]

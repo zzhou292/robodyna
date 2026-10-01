@@ -1,4 +1,5 @@
 #pragma once
+#include "chrono/physics/ChSystemFwd.h"
 
 #include "ReplayView.h"
 #include "ReplayColorMode.h"
@@ -11,7 +12,7 @@
 #include <memory>
 
 namespace chrono {
-class ChSystem;
+// System type is declared by the explicit forward header.
 class ChTriangleMeshConnected;
 class ChVisualShapeTriangleMesh;
 }

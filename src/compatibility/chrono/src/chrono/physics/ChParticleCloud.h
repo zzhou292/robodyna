@@ -15,6 +15,7 @@
 #ifndef CH_PARTICLE_CLOUD_H
 #define CH_PARTICLE_CLOUD_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <cmath>
 
 #include "chrono/physics/ChContactable.h"
@@ -25,7 +26,7 @@
 namespace chrono {
 
 // Forward references (for parent hierarchy pointer)
-class ChSystem;
+// System type is declared by the explicit forward header.
 class ChParticleCloud;
 
 /// Class for a single particle clone in the ChParticleCloud cluster.

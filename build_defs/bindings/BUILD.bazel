@@ -4,7 +4,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake"])
+exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake", "system_view_contract.json", "system_nsc_view_contract.json", "system_smc_view_contract.json"])
 
 # Pins are reviewed separately from the mutable generator inputs. Keep in sync
 # with the CMake contract; a source/API edit must not silently refresh these.
@@ -17,7 +17,7 @@ declaration_view(
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChBody.h",
     ledger = "//docs/migration:BODY_TRANSFORMATIONS.json",
     original_sha256 = "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2",
-    ledger_sha256 = "fab2eb3c4a7a7a09c67afa754ac01322d3b0bdd3835c6f752f65c5d51d98df82",
+    ledger_sha256 = "ef7c02501c88959067e4b79b875c793a865540cc67e8886bb65c266f9f23134e",
 )
 
 filegroup(name = "body_header", srcs = [":body_declarations"], output_group = "header")
@@ -31,7 +31,7 @@ declaration_view(
     view_name = "MeshDeclarations.h",
     ledger = "//docs/migration:MESH_TRANSFORMATIONS.json",
     original_sha256 = "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
-    ledger_sha256 = "cdc1b739000701e6a25d24a88702fa57049fc17e5c432e5914f67f7947418d1f",
+    ledger_sha256 = "4b0753493995387a7bc0d6fbbeff9253631bcb634b157c4dd03f775084a8e67b",
 )
 
 filegroup(name = "mesh_header", srcs = [":mesh_declarations"], output_group = "header")
@@ -103,3 +103,42 @@ cc_shared_library(
     shared_lib_name = "libchrono.so",
     tags = ["manual", "native-bindings", "cpu-only"],
 )
+
+declaration_view(
+    name = "system_declarations",
+    canonical = "//include/robodyna/simulation:RbSystem.h",
+    canonical_path = "include/robodyna/simulation/RbSystem.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+    view_name = "SystemDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystem.h",
+    ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
+    original_sha256 = "6ec07bf072e7a1fc409e618c894b3a15ecb748c2bfccb4eb8f00d3862bce086b",
+    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+)
+filegroup(name = "system_header", srcs = [":system_declarations"], output_group = "header")
+
+declaration_view(
+    name = "system_nsc_declarations",
+    canonical = "//include/robodyna/simulation:RbSystemNSC.h",
+    canonical_path = "include/robodyna/simulation/RbSystemNSC.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h",
+    view_name = "SystemNSCDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystemNSC.h",
+    ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
+    original_sha256 = "787173c0f36566dc0fdc34e1843c003f499e8a5f72985c316b72855d11f62d19",
+    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+)
+filegroup(name = "system_nsc_header", srcs = [":system_nsc_declarations"], output_group = "header")
+
+declaration_view(
+    name = "system_smc_declarations",
+    canonical = "//include/robodyna/simulation:RbSystemSMC.h",
+    canonical_path = "include/robodyna/simulation/RbSystemSMC.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h",
+    view_name = "SystemSMCDeclarations.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/physics/ChSystemSMC.h",
+    ledger = "//docs/migration:SYSTEM_TRANSFORMATIONS.json",
+    original_sha256 = "414e56d0def6f60329346b70018900614fa21816f9a1e84fd0895da4cff8fe3f",
+    ledger_sha256 = "d75e62c5e47aa06803263b4ce6ba8736ec01f137477f1bdc2be9125274af9592",
+)
+filegroup(name = "system_smc_header", srcs = [":system_smc_declarations"], output_group = "header")

@@ -13,6 +13,7 @@
 #ifndef CHSTATICANALYSIS_H
 #define CHSTATICANALYSIS_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/core/ChApiCE.h"
 #include "chrono/timestepper/ChState.h"
 #include "chrono/timestepper/ChIntegrable.h"
@@ -46,7 +47,7 @@ class ChApi ChStaticAnalysis {
     ChState X;
     ChVectorDynamic<> L;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 // -----------------------------------------------------------------------------
@@ -61,7 +62,7 @@ class ChApi ChStaticLinearAnalysis : public ChStaticAnalysis {
     /// Performs the static analysis, doing a linear solve.
     virtual void StaticAnalysis() override;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 // -----------------------------------------------------------------------------
@@ -101,7 +102,7 @@ class ChApi ChStaticNonLinearAnalysis : public ChStaticAnalysis {
     double m_reltol;
     double m_abstol;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 // -----------------------------------------------------------------------------
@@ -171,7 +172,7 @@ class ChApi ChStaticNonLinearRheonomicAnalysis : public ChStaticAnalysis {
     double m_abstol;
     std::shared_ptr<IterationCallback> m_callback;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 // -----------------------------------------------------------------------------
@@ -266,7 +267,7 @@ class ChApi ChStaticNonLinearAnalysisIncremental : public ChStaticAnalysis {
     double m_abstol;
     std::shared_ptr<LoadIncrementCallback> m_callback;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 }  // end namespace chrono

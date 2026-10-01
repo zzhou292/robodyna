@@ -76,7 +76,7 @@ class ChVisualSystem;
 %feature("director") CustomCollisionCallback;
 
 // Parse the header file to generate wrappers
-%include "../../../chrono/physics/ChSystem.h" 
+%include "robodyna_swig/SystemDeclarations.h" 
 
 
 

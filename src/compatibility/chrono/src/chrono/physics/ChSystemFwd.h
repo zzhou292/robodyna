@@ -12,7 +12,11 @@
 // Authors: Alessandro Tasora, Radu Serban
 // =============================================================================
 
-// Robodyna compatibility route; the canonical class has one native implementation.
+// Robodyna compatibility aliases for the canonical system family.
 #pragma once
-#include "chrono/physics/ChSystemFwd.h"
-#include "robodyna/simulation/RbSystem.h"
+#include "robodyna/simulation/RbSystemFwd.h"
+namespace chrono {
+using ChSystem = ::robodyna::simulation::RbSystem;
+using ChSystemNSC = ::robodyna::simulation::RbSystemNSC;
+using ChSystemSMC = ::robodyna::simulation::RbSystemSMC;
+}

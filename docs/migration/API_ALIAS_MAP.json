@@ -1,6 +1,6 @@
 {
   "schema": "robodyna.api_alias_map.v1",
-  "status": "qualified initial public surface; canonical body/inertia implementations and native mesh implementation qualified separately",
+  "status": "qualified initial public surface; canonical body/inertia and native mesh/system implementations qualified separately",
   "scope": "N1 initial useful closure, not all retained Chrono APIs",
   "headers": [
     {
@@ -240,8 +240,11 @@
           "canonical": "robodyna::simulation::RbSystem"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse alias",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/simulation/composition/RbSystem.cpp",
+      "archive_identity": "N6chrono8ChSystemE (captured Linux/GCC unregistered base)",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_system"
     },
     {
       "module": "simulation",
@@ -253,8 +256,11 @@
           "canonical": "robodyna::simulation::RbSystemNSC"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse alias",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/simulation/composition/RbSystemNSC.cpp",
+      "archive_identity": "ChSystemNSC",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_system"
     },
     {
       "module": "simulation",
@@ -266,8 +272,11 @@
           "canonical": "robodyna::simulation::RbSystemSMC"
         }
       ],
-      "implementation": "alias",
-      "backend": "native_core_fea_aggregate"
+      "implementation": "canonical definition; legacy reverse alias",
+      "backend": "native_core_fea_aggregate",
+      "source": "src/simulation/composition/RbSystemSMC.cpp",
+      "archive_identity": "ChSystemSMC",
+      "qualification": "docs/migration/RENAME_QUALIFICATION.json: N4_system"
     },
     {
       "module": "simulation",

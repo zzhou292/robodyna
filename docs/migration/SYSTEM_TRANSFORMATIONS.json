@@ -1,0 +1,455 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Parser-only authenticated public declaration recipes. Complete implementation history remains in SOURCE_TRANSFORMATIONS.json.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "original_sha256": "6ec07bf072e7a1fc409e618c894b3a15ecb748c2bfccb4eb8f00d3862bce086b",
+      "canonical_path": "include/robodyna/simulation/RbSystem.h",
+      "replacements": [
+        {
+          "before": "friend class ChBody;",
+          "after": "friend class ::robodyna::mbd::RbBody;",
+          "count": 1
+        },
+        {
+          "before": "friend class fea::ChMesh;",
+          "after": "friend class ::robodyna::fea::RbMesh;",
+          "count": 1
+        },
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CHSYSTEM_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEM_H",
+          "count": 2
+        },
+        {
+          "before": "// Forward references\nclass ChVisualSystem;\n\nnamespace modal {\nclass ChModalAssembly;\n}",
+          "after": "// Inherited service/friend declarations precede the canonical namespace.",
+          "count": 1
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "fea::ChMesh",
+          "after": "chrono::fea::ChMesh",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "modal::ChModalAssembly",
+          "after": "chrono::modal::ChModalAssembly",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChAssembly",
+          "after": "chrono::ChAssembly",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChBody",
+          "after": "chrono::ChBody",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChCollisionSystem",
+          "after": "chrono::ChCollisionSystem",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainerNSC",
+          "after": "chrono::ChContactContainerNSC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainerSMC",
+          "after": "chrono::ChContactContainerSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterialCompositionStrategy",
+          "after": "chrono::ChContactMaterialCompositionStrategy",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChIntegrableIIorder",
+          "after": "chrono::ChIntegrableIIorder",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChLinkBase",
+          "after": "chrono::ChLinkBase",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChMarker",
+          "after": "chrono::ChMarker",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChOutput",
+          "after": "chrono::ChOutput",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChPhysicsItem",
+          "after": "chrono::ChPhysicsItem",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChShaft",
+          "after": "chrono::ChShaft",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChSolver",
+          "after": "chrono::ChSolver",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChSparseMatrix",
+          "after": "chrono::ChSparseMatrix",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChState",
+          "after": "chrono::ChState",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChStateDelta",
+          "after": "chrono::ChStateDelta",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "ChStaticAnalysis",
+          "after": "chrono::ChStaticAnalysis",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChStaticNonLinearRheonomicAnalysis",
+          "after": "chrono::ChStaticNonLinearRheonomicAnalysis",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemDescriptor",
+          "after": "chrono::ChSystemDescriptor",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "ChTimer",
+          "after": "chrono::ChTimer",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChTimestepper",
+          "after": "chrono::ChTimestepper",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChVectorDynamic",
+          "after": "chrono::ChVectorDynamic",
+          "count": 18,
+          "code_token": true
+        },
+        {
+          "before": "ChVisualSystem",
+          "after": "chrono::ChVisualSystem",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "AssemblyAnalysis",
+          "after": "chrono::AssemblyAnalysis",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace chrono {\nclass ChVisualSystem;\nclass ChContactContainerNSC;\nclass ChContactContainerSMC;\nnamespace modal { class ChModalAssembly; }\n}\n\nnamespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystem, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystem, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include <cfloat>",
+          "after": "#include <cfloat>\n#include \"robodyna/simulation/RbSystemFwd.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "b210cefa98c0554fbf8dd71271bbdea1d895d9cfd14ceb8a0f10a6d8e08fbc70"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemNSC.h",
+      "original_sha256": "787173c0f36566dc0fdc34e1843c003f499e8a5f72985c316b72855d11f62d19",
+      "canonical_path": "include/robodyna/simulation/RbSystemNSC.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Alessandro Tasora, Radu Serban",
+          "after": "// Authors: Alessandro Tasora, Radu Serban\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CH_SYSTEM_NSC_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEMNSC_H",
+          "count": 2
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemNSC",
+          "after": "RbSystemNSC",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystemNSC, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystemNSC, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/simulation/RbSystem.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "3c7c968cc8e6117c99b340a3b59b44b57e5d75751e2d3e150761f5b452bd01e4"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystemSMC.h",
+      "original_sha256": "414e56d0def6f60329346b70018900614fa21816f9a1e84fd0895da4cff8fe3f",
+      "canonical_path": "include/robodyna/simulation/RbSystemSMC.h",
+      "replacements": [
+        {
+          "before": "// in the LICENSE file at the top level of the distribution and at",
+          "after": "// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "// Authors: Radu Serban, Alessandro Tasora",
+          "after": "// Authors: Radu Serban, Alessandro Tasora\n// Robodyna adaptation: canonical system ownership and names; numerical operations unchanged.",
+          "count": 1
+        },
+        {
+          "before": "CH_SYSTEM_SMC_H",
+          "after": "ROBODYNA_SIMULATION_RBSYSTEMSMC_H",
+          "count": 2
+        },
+        {
+          "before": "ChSystem",
+          "after": "RbSystem",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemSMC",
+          "after": "RbSystemSMC",
+          "count": 9,
+          "code_token": true
+        },
+        {
+          "before": "ChContactForceTorqueSMC",
+          "after": "RbContactForceTorqueSMC",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "    /// Change the default SMC contact force calculation (and torque, too, if needed).",
+          "after": "    // Source compatibility for existing custom contact algorithms.\n    using ChContactForceTorqueSMC = RbContactForceTorqueSMC;\n\n    /// Change the default SMC contact force calculation (and torque, too, if needed).",
+          "count": 1
+        },
+        {
+          "before": "ChArchiveIn",
+          "after": "chrono::ChArchiveIn",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChArchiveOut",
+          "after": "chrono::ChArchiveOut",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactContainer",
+          "after": "chrono::ChContactContainer",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMaterialCompositeSMC",
+          "after": "chrono::ChContactMaterialCompositeSMC",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChContactMethod",
+          "after": "chrono::ChContactMethod",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChContactable",
+          "after": "chrono::ChContactable",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 5,
+          "code_token": true
+        },
+        {
+          "before": "ChWrenchd",
+          "after": "chrono::ChWrenchd",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {",
+          "after": "namespace robodyna::simulation {",
+          "count": 1
+        },
+        {
+          "before": "CH_CLASS_VERSION(RbSystemSMC, 0)",
+          "after": "// Stable version specialization is declared in the required inherited trait namespace below.",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace chrono",
+          "after": "}  // namespace robodyna::simulation\n\nnamespace chrono {\nCH_CLASS_VERSION(::robodyna::simulation::RbSystemSMC, 0)\n}",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/physics/ChSystem.h\"",
+          "after": "#include \"robodyna/simulation/RbSystem.h\"",
+          "count": 1
+        }
+      ],
+      "forwarding_sha256": "286ed049b06e5abe729a1c3a18f916d9d5db1d63d371ba58de9533836db9df35"
+    }
+  ]
+}

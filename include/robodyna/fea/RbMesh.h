@@ -15,6 +15,7 @@
 #ifndef ROBODYNA_FEA_RBMESH_H
 #define ROBODYNA_FEA_RBMESH_H
 
+#include "robodyna/simulation/RbSystemFwd.h"
 #include <cstdlib>
 #include <cmath>
 #include <set>
@@ -303,7 +304,7 @@ class ChApi RbMesh : public chrono::ChIndexedNodes {
     unsigned int ncalls_internal_forces;
     unsigned int ncalls_KRMload;
 
-    friend class chrono::ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class chrono::ChAssembly;
     friend class chrono::modal::ChModalAssembly;
 };

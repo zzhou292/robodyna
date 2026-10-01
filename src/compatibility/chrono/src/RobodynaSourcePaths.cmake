@@ -4,6 +4,13 @@ if(NOT DEFINED ROBODYNA_SOURCE_ROOT)
   get_filename_component(ROBODYNA_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
 endif()
 foreach(required IN ITEMS
+    src/simulation/composition/RbSystem.cpp
+    include/robodyna/simulation/RbSystem.h
+    src/simulation/composition/RbSystemNSC.cpp
+    include/robodyna/simulation/RbSystemNSC.h
+    src/simulation/composition/RbSystemSMC.cpp
+    include/robodyna/simulation/RbSystemSMC.h
+    include/robodyna/simulation/RbSystemFwd.h
     src/mbd/bodies/RbBody.cpp
     include/robodyna/mbd/RbBody.h
     include/robodyna/mbd/RbBodyFwd.h

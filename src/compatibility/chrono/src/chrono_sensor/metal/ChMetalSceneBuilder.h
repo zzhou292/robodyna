@@ -21,6 +21,7 @@
 #ifndef CH_METAL_SCENE_BUILDER_H
 #define CH_METAL_SCENE_BUILDER_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -30,7 +31,7 @@
 #include "chrono/physics/ChBodyFwd.h"
 
 namespace chrono {
-class ChSystem;
+// System type is declared by the explicit forward header.
 // ChBody is declared by the compatibility forward header.
 class ChTriangleMeshConnected;
 }  // namespace chrono

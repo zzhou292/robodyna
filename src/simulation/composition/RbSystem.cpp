@@ -5,11 +5,12 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban
+// Robodyna adaptation: canonical system implementation; archive identities retained.
 // =============================================================================
 
 #include <algorithm>
@@ -23,6 +24,7 @@
 #include "chrono/assets/ChVisualSystem.h"
 #include "chrono/core/ChMatrix.h"
 #include "chrono/physics/ChProximityContainer.h"
+#include "robodyna/simulation/RbSystem.h"
 #include "chrono/physics/ChSystem.h"
 #include "chrono/physics/ChSystemNSC.h"
 #include "chrono/physics/ChSystemSMC.h"
@@ -36,13 +38,16 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include "chrono/utils/ChProfiler.h"
 
-namespace chrono {
+namespace robodyna::simulation {
+
+// Translation-unit-only lookup keeps the inherited numerical expressions intact.
+using namespace ::chrono;
 
 // -----------------------------------------------------------------------------
 // CLASS FOR PHYSICAL SYSTEM
 // -----------------------------------------------------------------------------
 
-ChSystem::ChSystem(const std::string& name)
+RbSystem::RbSystem(const std::string& name)
     : m_name(name),
       G_acc(ChVector3d(0, 0, 0)),
       is_initialized(false),
@@ -83,7 +88,7 @@ ChSystem::ChSystem(const std::string& name)
     timestepper = chrono_types::make_shared<ChTimestepperEulerImplicitLinearized>(this);
 }
 
-ChSystem::ChSystem(const ChSystem& other) : m_RTF(0), collision_system(nullptr), visual_system(nullptr) {
+RbSystem::RbSystem(const RbSystem& other) : m_RTF(0), collision_system(nullptr), visual_system(nullptr) {
     if (!other.GetName().empty())
         SetName(other.GetName() + "_copy");
 
@@ -122,22 +127,22 @@ ChSystem::ChSystem(const ChSystem& other) : m_RTF(0), collision_system(nullptr),
     applied_forces_current = false;
 }
 
-ChSystem::~ChSystem() {
+RbSystem::~RbSystem() {
     Clear();
 }
 
-std::shared_ptr<ChSystem> ChSystem::Create(ChContactMethod contact_method) {
+std::shared_ptr<RbSystem> RbSystem::Create(ChContactMethod contact_method) {
     switch (contact_method) {
         case ChContactMethod::NSC:
-            return chrono_types::make_shared<ChSystemNSC>();
+            return chrono_types::make_shared<RbSystemNSC>();
         case ChContactMethod::SMC:
-            return chrono_types::make_shared<ChSystemSMC>();
+            return chrono_types::make_shared<RbSystemSMC>();
             break;
     }
     return nullptr;
 }
 
-void ChSystem::Clear() {
+void RbSystem::Clear() {
     assembly.Clear();
 
     if (visual_system)
@@ -150,50 +155,50 @@ void ChSystem::Clear() {
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::AddBody(std::shared_ptr<ChBody> body) {
+void RbSystem::AddBody(std::shared_ptr<ChBody> body) {
     body->index = static_cast<unsigned int>(GetBodies().size());
     assembly.AddBody(body);
     body->SetSystem(this);
 }
 
-void ChSystem::AddShaft(std::shared_ptr<ChShaft> shaft) {
+void RbSystem::AddShaft(std::shared_ptr<ChShaft> shaft) {
     shaft->index = static_cast<unsigned int>(GetShafts().size());
     assembly.AddShaft(shaft);
     shaft->SetSystem(this);
 }
 
-void ChSystem::AddLink(std::shared_ptr<ChLinkBase> link) {
+void RbSystem::AddLink(std::shared_ptr<ChLinkBase> link) {
     assembly.AddLink(link);
     link->SetSystem(this);
 }
 
 #ifdef CHRONO_FEA
-void ChSystem::AddMesh(std::shared_ptr<fea::ChMesh> mesh) {
+void RbSystem::AddMesh(std::shared_ptr<::chrono::fea::ChMesh> mesh) {
     assembly.AddMesh(mesh);
     mesh->SetSystem(this);
 }
 #endif
 
-void ChSystem::AddOtherPhysicsItem(std::shared_ptr<ChPhysicsItem> item) {
+void RbSystem::AddOtherPhysicsItem(std::shared_ptr<ChPhysicsItem> item) {
     assembly.AddOtherPhysicsItem(item);
     item->SetSystem(this);
 }
 
-void ChSystem::RemoveBody(std::shared_ptr<ChBody> body) {
+void RbSystem::RemoveBody(std::shared_ptr<ChBody> body) {
     if (collision_system)
         body->RemoveCollisionModelsFromSystem(collision_system.get());
     assembly.RemoveBody(body);
     body->SetSystem(nullptr);
 }
 
-void ChSystem::RemoveShaft(std::shared_ptr<ChShaft> shaft) {
+void RbSystem::RemoveShaft(std::shared_ptr<ChShaft> shaft) {
     if (collision_system)
         shaft->RemoveCollisionModelsFromSystem(collision_system.get());
     assembly.RemoveShaft(shaft);
     shaft->SetSystem(nullptr);
 }
 
-void ChSystem::RemoveLink(std::shared_ptr<ChLinkBase> link) {
+void RbSystem::RemoveLink(std::shared_ptr<ChLinkBase> link) {
     if (collision_system)
         link->RemoveCollisionModelsFromSystem(collision_system.get());
     assembly.RemoveLink(link);
@@ -201,7 +206,7 @@ void ChSystem::RemoveLink(std::shared_ptr<ChLinkBase> link) {
 }
 
 #ifdef CHRONO_FEA
-void ChSystem::RemoveMesh(std::shared_ptr<fea::ChMesh> mesh) {
+void RbSystem::RemoveMesh(std::shared_ptr<::chrono::fea::ChMesh> mesh) {
     if (collision_system)
         mesh->RemoveCollisionModelsFromSystem(collision_system.get());
     assembly.RemoveMesh(mesh);
@@ -209,7 +214,7 @@ void ChSystem::RemoveMesh(std::shared_ptr<fea::ChMesh> mesh) {
 }
 #endif
 
-void ChSystem::RemoveOtherPhysicsItem(std::shared_ptr<ChPhysicsItem> item) {
+void RbSystem::RemoveOtherPhysicsItem(std::shared_ptr<ChPhysicsItem> item) {
     if (collision_system)
         item->RemoveCollisionModelsFromSystem(collision_system.get());
     assembly.RemoveOtherPhysicsItem(item);
@@ -218,7 +223,7 @@ void ChSystem::RemoveOtherPhysicsItem(std::shared_ptr<ChPhysicsItem> item) {
 
 // Add arbitrary physics item to the underlying assembly.
 // NOTE: we cannot simply invoke ChAssembly::Add as this would not provide polymorphism!
-void ChSystem::Add(std::shared_ptr<ChPhysicsItem> item) {
+void RbSystem::Add(std::shared_ptr<ChPhysicsItem> item) {
     if (auto body = std::dynamic_pointer_cast<ChBody>(item)) {
         AddBody(body);
         return;
@@ -235,7 +240,7 @@ void ChSystem::Add(std::shared_ptr<ChPhysicsItem> item) {
     }
 
 #ifdef CHRONO_FEA
-    if (auto mesh = std::dynamic_pointer_cast<fea::ChMesh>(item)) {
+    if (auto mesh = std::dynamic_pointer_cast<::chrono::fea::ChMesh>(item)) {
         AddMesh(mesh);
         return;
     }
@@ -244,7 +249,7 @@ void ChSystem::Add(std::shared_ptr<ChPhysicsItem> item) {
     AddOtherPhysicsItem(item);
 }
 
-void ChSystem::Remove(std::shared_ptr<ChPhysicsItem> item) {
+void RbSystem::Remove(std::shared_ptr<ChPhysicsItem> item) {
     if (!item)
         return;
 
@@ -264,7 +269,7 @@ void ChSystem::Remove(std::shared_ptr<ChPhysicsItem> item) {
     }
 
 #ifdef CHRONO_FEA
-    if (auto mesh = std::dynamic_pointer_cast<fea::ChMesh>(item)) {
+    if (auto mesh = std::dynamic_pointer_cast<::chrono::fea::ChMesh>(item)) {
         RemoveMesh(mesh);
         return;
     }
@@ -275,7 +280,7 @@ void ChSystem::Remove(std::shared_ptr<ChPhysicsItem> item) {
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::SetSolverType(ChSolver::Type type) {
+void RbSystem::SetSolverType(ChSolver::Type type) {
     // Do nothing if changing to a CUSTOM solver.
     if (type == ChSolver::Type::CUSTOM)
         return;
@@ -323,18 +328,18 @@ void ChSystem::SetSolverType(ChSolver::Type type) {
     }
 }
 
-void ChSystem::EnableSolverMatrixWrite(bool val, const std::string& out_dir) {
+void RbSystem::EnableSolverMatrixWrite(bool val, const std::string& out_dir) {
     write_matrix = val;
     output_dir = out_dir;
 }
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::RegisterCustomCollisionCallback(std::shared_ptr<CustomCollisionCallback> callback) {
+void RbSystem::RegisterCustomCollisionCallback(std::shared_ptr<CustomCollisionCallback> callback) {
     collision_callbacks.push_back(callback);
 }
 
-void ChSystem::UnregisterCustomCollisionCallback(std::shared_ptr<CustomCollisionCallback> callback) {
+void RbSystem::UnregisterCustomCollisionCallback(std::shared_ptr<CustomCollisionCallback> callback) {
     auto itr = std::find(std::begin(collision_callbacks), std::end(collision_callbacks), callback);
     if (itr != collision_callbacks.end()) {
         collision_callbacks.erase(itr);
@@ -343,17 +348,17 @@ void ChSystem::UnregisterCustomCollisionCallback(std::shared_ptr<CustomCollision
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::SetSystemDescriptor(std::shared_ptr<ChSystemDescriptor> newdescriptor) {
+void RbSystem::SetSystemDescriptor(std::shared_ptr<ChSystemDescriptor> newdescriptor) {
     assert(newdescriptor);
     descriptor = newdescriptor;
 }
 
-void ChSystem::SetSolver(std::shared_ptr<ChSolver> newsolver) {
+void RbSystem::SetSolver(std::shared_ptr<ChSolver> newsolver) {
     assert(newsolver);
     solver = newsolver;
 }
 
-void ChSystem::SetCollisionSystemType(ChCollisionSystem::Type type) {
+void RbSystem::SetCollisionSystemType(ChCollisionSystem::Type type) {
     assert(assembly.GetNumBodiesActive() == 0);
 
     auto coll_sys_type = type;
@@ -385,24 +390,24 @@ void ChSystem::SetCollisionSystemType(ChCollisionSystem::Type type) {
     collision_system->SetSystem(this);
 }
 
-void ChSystem::SetCollisionSystem(std::shared_ptr<ChCollisionSystem> coll_system) {
+void RbSystem::SetCollisionSystem(std::shared_ptr<ChCollisionSystem> coll_system) {
     assert(coll_system);
     collision_system = coll_system;
     collision_system->SetNumThreads(nthreads_collision);
     collision_system->SetSystem(this);
 }
 
-void ChSystem::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
+void RbSystem::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
     assert(container);
     contact_container = container;
     contact_container->SetSystem(this);
 }
 
-void ChSystem::SetMaterialCompositionStrategy(std::unique_ptr<ChContactMaterialCompositionStrategy>&& strategy) {
+void RbSystem::SetMaterialCompositionStrategy(std::unique_ptr<ChContactMaterialCompositionStrategy>&& strategy) {
     composition_strategy = std::move(strategy);
 }
 
-void ChSystem::SetNumThreads(int num_threads_chrono, int num_threads_collision, int num_threads_eigen) {
+void RbSystem::SetNumThreads(int num_threads_chrono, int num_threads_collision, int num_threads_eigen) {
     nthreads_chrono = std::max(1, num_threads_chrono);
     nthreads_collision = (num_threads_collision <= 0) ? num_threads_chrono : num_threads_collision;
     nthreads_eigen = (num_threads_eigen <= 0) ? num_threads_chrono : num_threads_eigen;
@@ -414,7 +419,7 @@ void ChSystem::SetNumThreads(int num_threads_chrono, int num_threads_collision, 
 // -----------------------------------------------------------------------------
 
 // Initial system setup before analysis. Must be called once the system construction is completed.
-void ChSystem::Initialize() {
+void RbSystem::Initialize() {
     if (is_initialized)
         return;
 
@@ -441,7 +446,7 @@ void ChSystem::Initialize() {
 // PREFERENCES
 // -----------------------------------------------------------------------------
 
-void ChSystem::SetTimestepperType(ChTimestepper::Type type) {
+void RbSystem::SetTimestepperType(ChTimestepper::Type type) {
     // Do nothing if changing to a CUSTOM timestepper.
     if (type == ChTimestepper::Type::CUSTOM)
         return;
@@ -495,7 +500,7 @@ void ChSystem::SetTimestepperType(ChTimestepper::Type type) {
     }
 }
 
-bool ChSystem::ManageSleepingBodies() {
+bool RbSystem::ManageSleepingBodies() {
     if (!IsSleepingAllowed())
         return 0;
 
@@ -631,11 +636,11 @@ bool ChSystem::ManageSleepingBodies() {
 //  DESCRIPTOR BOOKKEEPING
 // -----------------------------------------------------------------------------
 
-void ChSystem::DescriptorPrepareInject() {
+void RbSystem::DescriptorPrepareInject() {
     DescriptorPrepareInject(*descriptor);
 }
 
-void ChSystem::DescriptorPrepareInject(ChSystemDescriptor& sys_descriptor) {
+void RbSystem::DescriptorPrepareInject(ChSystemDescriptor& sys_descriptor) {
     sys_descriptor.BeginInsertion();  // This resets the vectors of constr. and var. pointers.
 
     InjectConstraints(sys_descriptor);
@@ -653,7 +658,7 @@ void ChSystem::DescriptorPrepareInject(ChSystemDescriptor& sys_descriptor) {
 // Count all bodies and links, etc, compute &set dof for statistics,
 // allocates or reallocate bookkeeping data/vectors, if any,
 
-void ChSystem::Setup() {
+void RbSystem::Setup() {
     if (!is_initialized)
         assembly.SetupInitial();
 
@@ -730,12 +735,12 @@ void ChSystem::Setup() {
 // - updates all forces  (automatic, as children of bodies)
 // - updates all markers (automatic, as children of bodies).
 
-void ChSystem::Update(double time, UpdateFlags update_flags) {
+void RbSystem::Update(double time, UpdateFlags update_flags) {
     ch_time = time;
     Update(update_flags);
 }
 
-void ChSystem::Update(UpdateFlags update_flags) {
+void RbSystem::Update(UpdateFlags update_flags) {
     CH_PROFILE("Update");
 
     Initialize();
@@ -755,11 +760,11 @@ void ChSystem::Update(UpdateFlags update_flags) {
     timer_update.stop();
 }
 
-void ChSystem::ForceUpdate() {
+void RbSystem::ForceUpdate() {
     is_updated = false;
 }
 
-void ChSystem::IntToDescriptor(const unsigned int off_v,
+void RbSystem::IntToDescriptor(const unsigned int off_v,
                                const ChStateDelta& v,
                                const ChVectorDynamic<>& R,
                                const unsigned int off_L,
@@ -774,7 +779,7 @@ void ChSystem::IntToDescriptor(const unsigned int off_v,
     contact_container->IntToDescriptor(displ_v + contact_container->GetOffset_w(), v, R, displ_L + contact_container->GetOffset_L(), L, Qc);
 }
 
-void ChSystem::IntFromDescriptor(const unsigned int off_v, ChStateDelta& v, const unsigned int off_L, ChVectorDynamic<>& L) {
+void RbSystem::IntFromDescriptor(const unsigned int off_v, ChStateDelta& v, const unsigned int off_L, ChVectorDynamic<>& L) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.IntFromDescriptor(off_v, v, off_L, L);
 
@@ -786,7 +791,7 @@ void ChSystem::IntFromDescriptor(const unsigned int off_v, ChStateDelta& v, cons
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::InjectVariables(ChSystemDescriptor& sys_descriptor) {
+void RbSystem::InjectVariables(ChSystemDescriptor& sys_descriptor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.InjectVariables(sys_descriptor);
 
@@ -794,7 +799,7 @@ void ChSystem::InjectVariables(ChSystemDescriptor& sys_descriptor) {
     contact_container->InjectVariables(sys_descriptor);
 }
 
-void ChSystem::VariablesFbReset() {
+void RbSystem::VariablesFbReset() {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesFbReset();
 
@@ -802,7 +807,7 @@ void ChSystem::VariablesFbReset() {
     contact_container->VariablesFbReset();
 }
 
-void ChSystem::VariablesFbLoadForces(double factor) {
+void RbSystem::VariablesFbLoadForces(double factor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesFbLoadForces();
 
@@ -810,7 +815,7 @@ void ChSystem::VariablesFbLoadForces(double factor) {
     contact_container->VariablesFbLoadForces();
 }
 
-void ChSystem::VariablesFbIncrementMq() {
+void RbSystem::VariablesFbIncrementMq() {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesFbIncrementMq();
 
@@ -818,7 +823,7 @@ void ChSystem::VariablesFbIncrementMq() {
     contact_container->VariablesFbIncrementMq();
 }
 
-void ChSystem::VariablesQbLoadSpeed() {
+void RbSystem::VariablesQbLoadSpeed() {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesQbLoadSpeed();
 
@@ -826,7 +831,7 @@ void ChSystem::VariablesQbLoadSpeed() {
     contact_container->VariablesQbLoadSpeed();
 }
 
-void ChSystem::VariablesQbSetSpeed(double step_size) {
+void RbSystem::VariablesQbSetSpeed(double step_size) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesQbSetSpeed(step_size);
 
@@ -834,7 +839,7 @@ void ChSystem::VariablesQbSetSpeed(double step_size) {
     contact_container->VariablesQbSetSpeed(step_size);
 }
 
-void ChSystem::VariablesQbIncrementPosition(double step_size) {
+void RbSystem::VariablesQbIncrementPosition(double step_size) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.VariablesQbIncrementPosition(step_size);
 
@@ -842,7 +847,7 @@ void ChSystem::VariablesQbIncrementPosition(double step_size) {
     contact_container->VariablesQbIncrementPosition(step_size);
 }
 
-void ChSystem::InjectConstraints(ChSystemDescriptor& sys_descriptor) {
+void RbSystem::InjectConstraints(ChSystemDescriptor& sys_descriptor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.InjectConstraints(sys_descriptor);
 
@@ -850,7 +855,7 @@ void ChSystem::InjectConstraints(ChSystemDescriptor& sys_descriptor) {
     contact_container->InjectConstraints(sys_descriptor);
 }
 
-void ChSystem::ConstraintsBiReset() {
+void RbSystem::ConstraintsBiReset() {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsBiReset();
 
@@ -858,7 +863,7 @@ void ChSystem::ConstraintsBiReset() {
     contact_container->ConstraintsBiReset();
 }
 
-void ChSystem::ConstraintsBiLoad_C(double factor, double recovery_clamp, bool do_clamp) {
+void RbSystem::ConstraintsBiLoad_C(double factor, double recovery_clamp, bool do_clamp) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsBiLoad_C(factor, recovery_clamp, do_clamp);
 
@@ -866,7 +871,7 @@ void ChSystem::ConstraintsBiLoad_C(double factor, double recovery_clamp, bool do
     contact_container->ConstraintsBiLoad_C(factor, recovery_clamp, do_clamp);
 }
 
-void ChSystem::ConstraintsBiLoad_Ct(double factor) {
+void RbSystem::ConstraintsBiLoad_Ct(double factor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsBiLoad_Ct(factor);
 
@@ -874,7 +879,7 @@ void ChSystem::ConstraintsBiLoad_Ct(double factor) {
     contact_container->ConstraintsBiLoad_Ct(factor);
 }
 
-void ChSystem::ConstraintsBiLoad_Qc(double factor) {
+void RbSystem::ConstraintsBiLoad_Qc(double factor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsBiLoad_Qc(factor);
 
@@ -882,7 +887,7 @@ void ChSystem::ConstraintsBiLoad_Qc(double factor) {
     contact_container->ConstraintsBiLoad_Qc(factor);
 }
 
-void ChSystem::ConstraintsFbLoadForces(double factor) {
+void RbSystem::ConstraintsFbLoadForces(double factor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsFbLoadForces(factor);
 
@@ -890,7 +895,7 @@ void ChSystem::ConstraintsFbLoadForces(double factor) {
     contact_container->ConstraintsFbLoadForces(factor);
 }
 
-void ChSystem::LoadConstraintJacobians() {
+void RbSystem::LoadConstraintJacobians() {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.LoadConstraintJacobians();
 
@@ -898,7 +903,7 @@ void ChSystem::LoadConstraintJacobians() {
     contact_container->LoadConstraintJacobians();
 }
 
-void ChSystem::ConstraintsFetch_react(double factor) {
+void RbSystem::ConstraintsFetch_react(double factor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.ConstraintsFetch_react(factor);
 
@@ -906,7 +911,7 @@ void ChSystem::ConstraintsFetch_react(double factor) {
     contact_container->ConstraintsFetch_react(factor);
 }
 
-void ChSystem::InjectKRMMatrices(ChSystemDescriptor& sys_descriptor) {
+void RbSystem::InjectKRMMatrices(ChSystemDescriptor& sys_descriptor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.InjectKRMMatrices(sys_descriptor);
 
@@ -914,7 +919,7 @@ void ChSystem::InjectKRMMatrices(ChSystemDescriptor& sys_descriptor) {
     contact_container->InjectKRMMatrices(sys_descriptor);
 }
 
-void ChSystem::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
+void RbSystem::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.LoadKRMMatrices(Kfactor, Rfactor, Mfactor);
 
@@ -927,7 +932,7 @@ void ChSystem::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
 // -----------------------------------------------------------------------------
 
 // From system to state y={x,v}
-void ChSystem::StateGather(ChState& x, ChStateDelta& v, double& T) {
+void RbSystem::StateGather(ChState& x, ChStateDelta& v, double& T) {
     unsigned int off_x = 0;
     unsigned int off_v = 0;
 
@@ -943,7 +948,7 @@ void ChSystem::StateGather(ChState& x, ChStateDelta& v, double& T) {
 }
 
 // From state Y={x,v} to system.
-void ChSystem::StateScatter(const ChState& x, const ChStateDelta& v, const double T, UpdateFlags update_flags) {
+void RbSystem::StateScatter(const ChState& x, const ChStateDelta& v, const double T, UpdateFlags update_flags) {
     unsigned int off_x = 0;
     unsigned int off_v = 0;
 
@@ -962,7 +967,7 @@ void ChSystem::StateScatter(const ChState& x, const ChStateDelta& v, const doubl
 }
 
 // From system to state derivative (acceleration), some timesteppers might need last computed accel.
-void ChSystem::StateGatherAcceleration(ChStateDelta& a) {
+void RbSystem::StateGatherAcceleration(ChStateDelta& a) {
     unsigned int off_a = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -974,7 +979,7 @@ void ChSystem::StateGatherAcceleration(ChStateDelta& a) {
 }
 
 // From state derivative (acceleration) to system, sometimes might be needed
-void ChSystem::StateScatterAcceleration(const ChStateDelta& a) {
+void RbSystem::StateScatterAcceleration(const ChStateDelta& a) {
     unsigned int off_a = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -986,7 +991,7 @@ void ChSystem::StateScatterAcceleration(const ChStateDelta& a) {
 }
 
 // From system to reaction forces (last computed) - some timestepper might need this
-void ChSystem::StateGatherReactions(ChVectorDynamic<>& L) {
+void RbSystem::StateGatherReactions(ChVectorDynamic<>& L) {
     unsigned int off_L = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -998,7 +1003,7 @@ void ChSystem::StateGatherReactions(ChVectorDynamic<>& L) {
 }
 
 // From reaction forces to system, ex. store last computed reactions in ChLink objects for plotting etc.
-void ChSystem::StateScatterReactions(const ChVectorDynamic<>& L) {
+void RbSystem::StateScatterReactions(const ChVectorDynamic<>& L) {
     unsigned int off_L = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1009,7 +1014,7 @@ void ChSystem::StateScatterReactions(const ChVectorDynamic<>& L) {
     contact_container->IntStateScatterReactions(displ_L + contact_container->GetOffset_L(), L);
 }
 
-void ChSystem::StateOnEndStep(double T) {
+void RbSystem::StateOnEndStep(double T) {
     // Operate on assembly sub-objects (bodies, links, etc.)
     assembly.IntStateOnEndStep(T);
 
@@ -1021,7 +1026,7 @@ void ChSystem::StateOnEndStep(double T) {
 // It takes care of the fact that x has quaternions, dx has angular vel etc.
 // NOTE: the system is not updated automatically after the state increment, so one might
 // need to call StateScatter() if needed.
-void ChSystem::StateIncrementX(ChState& x_new, const ChState& x, const ChStateDelta& Dx) {
+void RbSystem::StateIncrementX(ChState& x_new, const ChState& x, const ChStateDelta& Dx) {
     unsigned int off_x = 0;
     unsigned int off_v = 0;
 
@@ -1043,7 +1048,7 @@ void ChSystem::StateIncrementX(ChState& x_new, const ChState& x, const ChStateDe
 //  |-Dl|   [ Cq  0   ]      |-Qc|
 // for given residuals R and -Qc, and  H = [ c_a*M + c_v*dF/dv + c_x*dF/dx ]
 // This function returns true if successful and false otherwise.
-bool ChSystem::StateSolveCorrection(ChStateDelta& Dv,             // result: computed Dv
+bool RbSystem::StateSolveCorrection(ChStateDelta& Dv,             // result: computed Dv
                                     ChVectorDynamic<>& Dl,        // result: computed Dl Lagrange multipliers
                                     const ChVectorDynamic<>& R,   // the R residual
                                     const ChVectorDynamic<>& Qc,  // the Qc residual
@@ -1153,7 +1158,7 @@ bool ChSystem::StateSolveCorrection(ChStateDelta& Dv,             // result: com
     return true;
 }
 
-ChVector3d ChSystem::GetBodyAppliedForce(ChBody* body) {
+ChVector3d RbSystem::GetBodyAppliedForce(ChBody* body) {
     if (!is_initialized)
         return ChVector3d(0, 0, 0);
 
@@ -1165,7 +1170,7 @@ ChVector3d ChSystem::GetBodyAppliedForce(ChBody* body) {
     return applied_forces.segment(body->Variables().GetOffset() + 0, 3);
 }
 
-ChVector3d ChSystem::GetBodyAppliedTorque(ChBody* body) {
+ChVector3d RbSystem::GetBodyAppliedTorque(ChBody* body) {
     if (!is_initialized)
         return ChVector3d(0, 0, 0);
 
@@ -1179,7 +1184,7 @@ ChVector3d ChSystem::GetBodyAppliedTorque(ChBody* body) {
 
 // Increment a vector R with the term c*F:
 //    R += c*F
-void ChSystem::LoadResidual_F(ChVectorDynamic<>& R, const double c) {
+void RbSystem::LoadResidual_F(ChVectorDynamic<>& R, const double c) {
     unsigned int off = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1192,7 +1197,7 @@ void ChSystem::LoadResidual_F(ChVectorDynamic<>& R, const double c) {
 
 // Increment a vector R with a term that has M multiplied a given vector w:
 //    R += c*M*w
-void ChSystem::LoadResidual_Mv(ChVectorDynamic<>& R, const ChVectorDynamic<>& w, const double c) {
+void RbSystem::LoadResidual_Mv(ChVectorDynamic<>& R, const ChVectorDynamic<>& w, const double c) {
     unsigned int off = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1206,7 +1211,7 @@ void ChSystem::LoadResidual_Mv(ChVectorDynamic<>& R, const ChVectorDynamic<>& w,
 // Adds the lumped mass to a Md vector, representing a mass diagonal matrix. Used by lumped explicit integrators.
 // If mass lumping is impossible or approximate, adds scalar error to "error" parameter.
 //    Md += c*diag(M)    or   Md += c*HRZ(M)
-void ChSystem::LoadLumpedMass_Md(ChVectorDynamic<>& Md, double& err, const double c) {
+void RbSystem::LoadLumpedMass_Md(ChVectorDynamic<>& Md, double& err, const double c) {
     unsigned int off = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1219,7 +1224,7 @@ void ChSystem::LoadLumpedMass_Md(ChVectorDynamic<>& Md, double& err, const doubl
 
 // Increment a vectorR with the term Cq'*L:
 //    R += c*Cq'*L
-void ChSystem::LoadResidual_CqL(ChVectorDynamic<>& R, const ChVectorDynamic<>& L, const double c) {
+void RbSystem::LoadResidual_CqL(ChVectorDynamic<>& R, const ChVectorDynamic<>& L, const double c) {
     unsigned int off_L = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1232,7 +1237,7 @@ void ChSystem::LoadResidual_CqL(ChVectorDynamic<>& R, const ChVectorDynamic<>& L
 
 // Increment a vector Qc with the term C:
 //    Qc += c*C
-void ChSystem::LoadConstraint_C(ChVectorDynamic<>& Qc,  // result: the Qc residual, Qc += c*C
+void RbSystem::LoadConstraint_C(ChVectorDynamic<>& Qc,  // result: the Qc residual, Qc += c*C
                                 const double c,         // a scaling factor
                                 const double c_vel,     // scaling factor for constraints at speed level
                                 const bool do_clamp,    // enable optional clamping of Qc
@@ -1250,7 +1255,7 @@ void ChSystem::LoadConstraint_C(ChVectorDynamic<>& Qc,  // result: the Qc residu
 
 // Increment a vector Qc with the term Ct = partial derivative dC/dt:
 //    Qc += c*Ct
-void ChSystem::LoadConstraint_Ct(ChVectorDynamic<>& Qc, const double c, const double c_vel) {
+void RbSystem::LoadConstraint_Ct(ChVectorDynamic<>& Qc, const double c, const double c_vel) {
     unsigned int off_L = 0;
 
     // Operate on assembly sub-objects (bodies, links, etc.)
@@ -1265,11 +1270,11 @@ void ChSystem::LoadConstraint_Ct(ChVectorDynamic<>& Qc, const double c, const do
 //   COLLISION OPERATIONS
 // -----------------------------------------------------------------------------
 
-unsigned int ChSystem::GetNumContacts() const {
+unsigned int RbSystem::GetNumContacts() const {
     return contact_container->GetNumContacts();
 }
 
-unsigned int ChSystem::ComputeCollisions() {
+unsigned int RbSystem::ComputeCollisions() {
     CH_PROFILE("ComputeCollisions");
 
     timer_collision.start();
@@ -1319,21 +1324,21 @@ unsigned int ChSystem::ComputeCollisions() {
 // TIMERS
 // -----------------------------------------------------------------------------
 
-double ChSystem::GetTimerCollisionBroad() const {
+double RbSystem::GetTimerCollisionBroad() const {
     if (collision_system)
         return collision_system->GetTimerCollisionBroad();
 
     return 0;
 }
 
-double ChSystem::GetTimerCollisionNarrow() const {
+double RbSystem::GetTimerCollisionNarrow() const {
     if (collision_system)
         return collision_system->GetTimerCollisionNarrow();
 
     return 0;
 }
 
-void ChSystem::ResetTimers() {
+void RbSystem::ResetTimers() {
     timer_step.reset();
     timer_advance.reset();
     timer_ls_solve.reset();
@@ -1350,7 +1355,7 @@ void ChSystem::ResetTimers() {
 //   PHYSICAL OPERATIONS
 // =============================================================================
 
-void ChSystem::GetMassMatrix(ChSparseMatrix& M) {
+void RbSystem::GetMassMatrix(ChSparseMatrix& M) {
     // IntToDescriptor(0, Dv, R, 0, L, Qc);
     // LoadConstraintJacobians();
 
@@ -1365,7 +1370,7 @@ void ChSystem::GetMassMatrix(ChSparseMatrix& M) {
     descriptor->PasteMassKRMMatrixInto(M);
 }
 
-void ChSystem::GetStiffnessMatrix(ChSparseMatrix& K) {
+void RbSystem::GetStiffnessMatrix(ChSparseMatrix& K) {
     // IntToDescriptor(0, Dv, R, 0, L, Qc);
     // LoadConstraintJacobians();
 
@@ -1380,7 +1385,7 @@ void ChSystem::GetStiffnessMatrix(ChSparseMatrix& K) {
     descriptor->PasteMassKRMMatrixInto(K);
 }
 
-void ChSystem::GetDampingMatrix(ChSparseMatrix& R) {
+void RbSystem::GetDampingMatrix(ChSparseMatrix& R) {
     // IntToDescriptor(0, Dv, R, 0, L, Qc);
     // LoadConstraintJacobians();
 
@@ -1395,7 +1400,7 @@ void ChSystem::GetDampingMatrix(ChSparseMatrix& R) {
     descriptor->PasteMassKRMMatrixInto(R);
 }
 
-void ChSystem::GetConstraintJacobianMatrix(ChSparseMatrix& Cq) {
+void RbSystem::GetConstraintJacobianMatrix(ChSparseMatrix& Cq) {
     // IntToDescriptor(0, Dv, R, 0, L, Qc);
 
     // Load all jacobian matrices
@@ -1407,7 +1412,7 @@ void ChSystem::GetConstraintJacobianMatrix(ChSparseMatrix& Cq) {
     descriptor->PasteConstraintsJacobianMatrixInto(Cq);
 }
 
-void ChSystem::WriteSystemMatrices(bool save_M, bool save_K, bool save_R, bool save_Cq, const std::string& path, bool one_indexed) {
+void RbSystem::WriteSystemMatrices(bool save_M, bool save_K, bool save_R, bool save_Cq, const std::string& path, bool one_indexed) {
     // Prepare lists of variables and constraints, if not already prepared.
     DescriptorPrepareInject();
 
@@ -1442,7 +1447,7 @@ void ChSystem::WriteSystemMatrices(bool save_M, bool save_K, bool save_R, bool s
 }
 
 /// Remove redundant constraints present in ChSystem through QR decomposition of constraints Jacobian matrix.
-unsigned int ChSystem::RemoveRedundantConstraints(bool remove_links, double qr_tol, bool verbose) {
+unsigned int RbSystem::RemoveRedundantConstraints(bool remove_links, double qr_tol, bool verbose) {
     // Setup system descriptor
     Setup();
     Update(UpdateFlags::UPDATE_ALL & ~UpdateFlags::VISUAL_ASSETS);
@@ -1578,7 +1583,7 @@ unsigned int ChSystem::RemoveRedundantConstraints(bool remove_links, double qr_t
 //  Forward dynamics analysis
 // -----------------------------------------------------------------------------
 
-bool ChSystem::AdvanceDynamics(bool do_collision) {
+bool RbSystem::AdvanceDynamics(bool do_collision) {
     CH_PROFILE("AdvanceDynamics");
 
     ResetTimers();
@@ -1657,7 +1662,7 @@ bool ChSystem::AdvanceDynamics(bool do_collision) {
     return true;
 }
 
-int ChSystem::DoStepDynamics(double step_size, bool do_collision) {
+int RbSystem::DoStepDynamics(double step_size, bool do_collision) {
     Initialize();
 
     applied_forces_current = false;
@@ -1670,7 +1675,7 @@ int ChSystem::DoStepDynamics(double step_size, bool do_collision) {
     return success;
 }
 
-bool ChSystem::DoFrameDynamics(double frame_time, double step_size) {
+bool RbSystem::DoFrameDynamics(double frame_time, double step_size) {
     Initialize();
 
     applied_forces_current = false;
@@ -1699,7 +1704,7 @@ bool ChSystem::DoFrameDynamics(double frame_time, double step_size) {
 // System assembly
 // -----------------------------------------------------------------------------
 
-AssemblyAnalysis::ExitFlag ChSystem::DoAssembly(int action, int max_num_iterationsNR, double abstol_residualNR, double reltol_updateNR, double abstol_updateNR) {
+AssemblyAnalysis::ExitFlag RbSystem::DoAssembly(int action, int max_num_iterationsNR, double abstol_residualNR, double reltol_updateNR, double abstol_updateNR) {
     Initialize();
 
     applied_forces_current = false;
@@ -1734,7 +1739,7 @@ AssemblyAnalysis::ExitFlag ChSystem::DoAssembly(int action, int max_num_iteratio
 // Inverse kinematics analysis
 // -----------------------------------------------------------------------------
 
-AssemblyAnalysis::ExitFlag ChSystem::DoStepKinematics(double step_size) {
+AssemblyAnalysis::ExitFlag RbSystem::DoStepKinematics(double step_size) {
     Initialize();
 
     applied_forces_current = false;
@@ -1747,7 +1752,7 @@ AssemblyAnalysis::ExitFlag ChSystem::DoStepKinematics(double step_size) {
     return exit_flag;
 }
 
-AssemblyAnalysis::ExitFlag ChSystem::DoFrameKinematics(double frame_time, double step_size) {
+AssemblyAnalysis::ExitFlag RbSystem::DoFrameKinematics(double frame_time, double step_size) {
     Initialize();
 
     applied_forces_current = false;
@@ -1780,7 +1785,7 @@ AssemblyAnalysis::ExitFlag ChSystem::DoFrameKinematics(double frame_time, double
 // Static analysis
 // -----------------------------------------------------------------------------
 
-bool ChSystem::DoStaticAnalysis(ChStaticAnalysis& analysis) {
+bool RbSystem::DoStaticAnalysis(ChStaticAnalysis& analysis) {
     Initialize();
 
     applied_forces_current = false;
@@ -1802,7 +1807,7 @@ bool ChSystem::DoStaticAnalysis(ChStaticAnalysis& analysis) {
     return true;
 }
 
-bool ChSystem::DoStaticLinear() {
+bool RbSystem::DoStaticLinear() {
     Initialize();
 
     applied_forces_current = false;
@@ -1862,7 +1867,7 @@ bool ChSystem::DoStaticLinear() {
     return true;
 }
 
-bool ChSystem::DoStaticNonlinear(int nsteps, bool verbose) {
+bool RbSystem::DoStaticNonlinear(int nsteps, bool verbose) {
     Initialize();
 
     applied_forces_current = false;
@@ -1903,7 +1908,7 @@ bool ChSystem::DoStaticNonlinear(int nsteps, bool verbose) {
     return true;
 }
 
-bool ChSystem::DoStaticNonlinearRheonomic(int max_num_iterations, bool verbose, std::shared_ptr<ChStaticNonLinearRheonomicAnalysis::IterationCallback> callback) {
+bool RbSystem::DoStaticNonlinearRheonomic(int max_num_iterations, bool verbose, std::shared_ptr<ChStaticNonLinearRheonomicAnalysis::IterationCallback> callback) {
     Initialize();
 
     applied_forces_current = false;
@@ -1945,7 +1950,7 @@ bool ChSystem::DoStaticNonlinearRheonomic(int max_num_iterations, bool verbose, 
     return true;
 }
 
-bool ChSystem::DoStaticRelaxing(double step_size, int num_iterations) {
+bool RbSystem::DoStaticRelaxing(double step_size, int num_iterations) {
     Initialize();
 
     applied_forces_current = false;
@@ -1978,7 +1983,7 @@ bool ChSystem::DoStaticRelaxing(double step_size, int num_iterations) {
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::WriteOutput(int frame, ChOutput& database) const {
+void RbSystem::WriteOutput(int frame, ChOutput& database) const {
     ChAssembly::Components components;
 
     for (auto& b : GetBodies())
@@ -2015,9 +2020,14 @@ void ChSystem::WriteOutput(int frame, ChOutput& database) const {
 
 // -----------------------------------------------------------------------------
 
-void ChSystem::ArchiveOut(ChArchiveOut& archive_out) {
+namespace {
+// Captured Linux x86_64 GCC/Itanium identity; other archive ABIs are unqualified.
+constexpr char kLegacySystemArchiveType[] = "N6chrono8ChSystemE";
+}
+
+void RbSystem::ArchiveOut(ChArchiveOut& archive_out) {
     // version number
-    archive_out.VersionWrite<ChSystem>();
+    archive_out.VersionWrite<RbSystem>(kLegacySystemArchiveType);
 
     // serialize underlying assembly
     archive_out << CHNVP(assembly);
@@ -2047,9 +2057,9 @@ void ChSystem::ArchiveOut(ChArchiveOut& archive_out) {
 }
 
 // Method to allow de serialization of transient data from archives.
-void ChSystem::ArchiveIn(ChArchiveIn& archive_in) {
+void RbSystem::ArchiveIn(ChArchiveIn& archive_in) {
     // version number
-    /*int version =*/archive_in.VersionRead<ChSystem>();
+    /*int version =*/archive_in.VersionRead<RbSystem>(kLegacySystemArchiveType);
 
     // deserialize underlying assembly
     archive_in >> CHNVP(assembly);
@@ -2082,4 +2092,4 @@ void ChSystem::ArchiveIn(ChArchiveIn& archive_in) {
     Setup();
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::simulation

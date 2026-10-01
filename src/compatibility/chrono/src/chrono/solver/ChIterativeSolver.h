@@ -19,6 +19,7 @@
 #ifndef CH_ITERATIVESOLVER_H
 #define CH_ITERATIVESOLVER_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/core/ChApiCE.h"
 #include "chrono/solver/ChSystemDescriptor.h"
 
@@ -72,7 +73,7 @@ class ChApi ChIterativeSolver {
     int m_max_iterations;  ///< maximum number of iterations
     double m_tolerance;    ///< tolerance threshold in stopping criteria
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 /// @} chrono_solver

@@ -85,7 +85,13 @@ it is not yet an independent MBD library. The actual mesh definition now lives
 at `include/robodyna/fea/RbMesh.h` with its implementation in `src/fea/mesh` and a
 reverse legacy alias. Its 31-target native gate passed; optional integration is
 tracked separately. The mesh still uses concrete mixed-system services, so it
-also remains in the explicit aggregate. System names remain forward aliases.
+also remains in the explicit aggregate. `RbSystem`, `RbSystemNSC` and `RbSystemSMC`
+are now actual definitions in `robodyna::simulation`; their three implementations
+live in `src/simulation/composition`, with one compile owner in that aggregate.
+The dedicated `//include/robodyna/simulation:forward` target provides declarations
+without a mechanics implementation dependency. The 33-target native gate preserves
+mixed stepping and captured archive identities; broader integration gates remain
+explicit in the qualification record.
 `SOURCE_TRANSFORMATIONS.json` in the
 migration directory records reviewed edits against the immutable original hashes.
 Archive identity helpers preserve captured file formats across actual type renames;

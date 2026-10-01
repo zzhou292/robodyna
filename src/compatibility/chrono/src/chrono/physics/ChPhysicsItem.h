@@ -15,6 +15,7 @@
 #ifndef CH_PHYSICSITEM_H
 #define CH_PHYSICSITEM_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/core/ChFrame.h"
 #include "chrono/core/ChRotation.h"
 
@@ -26,7 +27,7 @@
 namespace chrono {
 
 // Forward references
-class ChSystem;
+// System type is declared by the explicit forward header.
 class ChCollisionSystem;
 namespace modal {
 class ChModalAssembly;
@@ -377,7 +378,7 @@ class ChApi ChPhysicsItem : public ChObj {
   private:
     virtual void SetupInitial() {}
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class ChAssembly;
     friend class modal::ChModalAssembly;
 };

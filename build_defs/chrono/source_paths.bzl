@@ -6,6 +6,10 @@ make its implementation a neutral service or an independent domain library.
 """
 
 SOURCE_RELOCATIONS = {
+    "src/chrono/physics/ChSystem.cpp": "//src/simulation/composition:RbSystem.cpp",
+    "src/chrono/physics/ChSystemNSC.cpp": "//src/simulation/composition:RbSystemNSC.cpp",
+    "src/chrono/physics/ChSystemSMC.cpp": "//src/simulation/composition:RbSystemSMC.cpp",
+
     "src/chrono/fea/ChMesh.cpp": "//src/fea/mesh:RbMesh.cpp",
     "src/chrono/physics/ChBody.cpp": "//src/mbd/bodies:RbBody.cpp",
     "src/chrono/physics/ChMassProperties.cpp": "//src/mechanics/inertia:RbMassProperties.cpp",

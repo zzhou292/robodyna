@@ -15,6 +15,7 @@
 #ifndef CHMODALASSEMBLY_H
 #define CHMODALASSEMBLY_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <complex>
 #include <iomanip>
 
@@ -723,7 +724,7 @@ class ChApiModal ChModalAssembly : public ChAssembly {
     mutable ChTimer m_timer_modal_solver_call;
     mutable ChTimer m_timer_setup;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class ChSystemMulticore;
 
   public:

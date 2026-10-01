@@ -5,11 +5,12 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Radu Serban, Alessandro Tasora
+// Robodyna adaptation: canonical system implementation; archive identities retained.
 // =============================================================================
 //
 // Physical system in which contact is modeled using a smooth (penalty-based)
@@ -19,6 +20,7 @@
 
 #include <limits>
 
+#include "robodyna/simulation/RbSystemSMC.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/physics/ChContactContainerSMC.h"
 
@@ -26,12 +28,19 @@
 #include "chrono/solver/ChIterativeSolverLS.h"
 
 namespace chrono {
+CH_FACTORY_REGISTER(ChSystemSMC)
+}
+
+namespace robodyna::simulation {
+
+// Translation-unit-only lookup keeps the inherited numerical expressions intact.
+using namespace ::chrono;
 
 // Register into the object factory, to enable run-time dynamic creation and persistence
-CH_FACTORY_REGISTER(ChSystemSMC)
+// Stable registered identity is emitted before the canonical implementation namespace.
 
-ChSystemSMC::ChSystemSMC(const std::string& name)
-    : ChSystem(name),
+RbSystemSMC::RbSystemSMC(const std::string& name)
+    : RbSystem(name),
       m_use_mat_props(true),
       m_contact_model(Hertz),
       m_adhesion_model(AdhesionForceModel::Constant),
@@ -53,7 +62,7 @@ ChSystemSMC::ChSystemSMC(const std::string& name)
     m_characteristicVelocity = 1;
 }
 
-ChSystemSMC::ChSystemSMC(const ChSystemSMC& other) : ChSystem(other) {
+RbSystemSMC::RbSystemSMC(const RbSystemSMC& other) : RbSystem(other) {
     m_use_mat_props = other.m_use_mat_props;
     m_contact_model = other.m_contact_model;
     m_adhesion_model = other.m_adhesion_model;
@@ -68,22 +77,22 @@ ChSystemSMC::ChSystemSMC(const ChSystemSMC& other) : ChSystem(other) {
     m_force_algo = chrono_types::make_unique<ChDefaultContactForceTorqueSMC>();
 }
 
-void ChSystemSMC::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
+void RbSystemSMC::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
     if (std::dynamic_pointer_cast<ChContactContainerSMC>(container))
-        ChSystem::SetContactContainer(container);
+        RbSystem::SetContactContainer(container);
 }
 
-void ChSystemSMC::SetSlipVelocityThreshold(double vel) {
+void RbSystemSMC::SetSlipVelocityThreshold(double vel) {
     m_minSlipVelocity = std::max(vel, std::numeric_limits<double>::epsilon());
 }
 
-void ChSystemSMC::SetContactForceTorqueAlgorithm(std::unique_ptr<ChContactForceTorqueSMC>&& algorithm) {
+void RbSystemSMC::SetContactForceTorqueAlgorithm(std::unique_ptr<RbContactForceTorqueSMC>&& algorithm) {
     m_force_algo = std::move(algorithm);
 }
 
 // Trick to avoid putting the following mapper macro inside the class definition in .h file:
 // enclose macros in local 'ChSystemSMC_Properties_enum_mapper', just to avoid avoiding cluttering of the parent class.
-class ChSystemSMC_Properties_enum_mapper : public ChSystemSMC {
+class RbSystemSMCPropertiesMapper : public RbSystemSMC {
   public:
     CH_ENUM_MAPPER_BEGIN(ContactForceModel);
     CH_ENUM_VAL(Hooke);
@@ -105,43 +114,43 @@ class ChSystemSMC_Properties_enum_mapper : public ChSystemSMC {
     CH_ENUM_MAPPER_END(TangentialDisplacementModel);
 };
 
-void ChSystemSMC::ArchiveOut(ChArchiveOut& archive_out) {
+void RbSystemSMC::ArchiveOut(ChArchiveOut& archive_out) {
     // version number
-    archive_out.VersionWrite<ChSystemSMC>();
+    archive_out.VersionWrite<RbSystemSMC>();
 
     // serialize parent class
-    ChSystem::ArchiveOut(archive_out);
+    RbSystem::ArchiveOut(archive_out);
 
     // serialize all member data:
     archive_out << CHNVP(m_use_mat_props);
     archive_out << CHNVP(m_minSlipVelocity);
     archive_out << CHNVP(m_characteristicVelocity);
-    ChSystemSMC_Properties_enum_mapper::ContactForceModel_mapper mmodel_mapper;
+    RbSystemSMCPropertiesMapper::ContactForceModel_mapper mmodel_mapper;
     archive_out << CHNVP(mmodel_mapper(m_contact_model), "contact_model");
-    ChSystemSMC_Properties_enum_mapper::AdhesionForceModel_mapper madhesion_mapper;
+    RbSystemSMCPropertiesMapper::AdhesionForceModel_mapper madhesion_mapper;
     archive_out << CHNVP(madhesion_mapper(m_adhesion_model), "adhesion_model");
-    ChSystemSMC_Properties_enum_mapper::TangentialDisplacementModel_mapper mtangential_mapper;
+    RbSystemSMCPropertiesMapper::TangentialDisplacementModel_mapper mtangential_mapper;
     archive_out << CHNVP(mtangential_mapper(m_tdispl_model), "tangential_model");
     //// TODO  complete...
 }
 
 /// Method to allow de serialization of transient data from archives.
-void ChSystemSMC::ArchiveIn(ChArchiveIn& archive_in) {
+void RbSystemSMC::ArchiveIn(ChArchiveIn& archive_in) {
     // version number
-    /*int version =*/archive_in.VersionRead<ChSystemSMC>();
+    /*int version =*/archive_in.VersionRead<RbSystemSMC>();
 
     // deserialize parent class
-    ChSystem::ArchiveIn(archive_in);
+    RbSystem::ArchiveIn(archive_in);
 
     // stream in all member data:
     archive_in >> CHNVP(m_use_mat_props);
     archive_in >> CHNVP(m_minSlipVelocity);
     archive_in >> CHNVP(m_characteristicVelocity);
-    ChSystemSMC_Properties_enum_mapper::ContactForceModel_mapper mmodel_mapper;
+    RbSystemSMCPropertiesMapper::ContactForceModel_mapper mmodel_mapper;
     archive_in >> CHNVP(mmodel_mapper(m_contact_model), "contact_model");
-    ChSystemSMC_Properties_enum_mapper::AdhesionForceModel_mapper madhesion_mapper;
+    RbSystemSMCPropertiesMapper::AdhesionForceModel_mapper madhesion_mapper;
     archive_in >> CHNVP(madhesion_mapper(m_adhesion_model), "adhesion_model");
-    ChSystemSMC_Properties_enum_mapper::TangentialDisplacementModel_mapper mtangential_mapper;
+    RbSystemSMCPropertiesMapper::TangentialDisplacementModel_mapper mtangential_mapper;
     archive_in >> CHNVP(mtangential_mapper(m_tdispl_model), "tangential_model");
     //// TODO  complete...
 
@@ -149,4 +158,4 @@ void ChSystemSMC::ArchiveIn(ChArchiveIn& archive_in) {
     this->Setup();
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::simulation

@@ -5,11 +5,12 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
 // Authors: Alessandro Tasora, Radu Serban
+// Robodyna adaptation: canonical system implementation; archive identities retained.
 // =============================================================================
 //
 // Physical system in which contact is modeled using a non-smooth
@@ -19,17 +20,25 @@
 
 #include <algorithm>
 
+#include "robodyna/simulation/RbSystemNSC.h"
 #include "chrono/physics/ChSystemNSC.h"
 #include "chrono/physics/ChContactContainerNSC.h"
 #include "chrono/physics/ChProximityContainer.h"
 #include "chrono/physics/ChSystem.h"
 
 namespace chrono {
+CH_FACTORY_REGISTER(ChSystemNSC)
+}
+
+namespace robodyna::simulation {
+
+// Translation-unit-only lookup keeps the inherited numerical expressions intact.
+using namespace ::chrono;
 
 // Register into the object factory, to enable run-time dynamic creation and persistence
-CH_FACTORY_REGISTER(ChSystemNSC)
+// Stable registered identity is emitted before the canonical implementation namespace.
 
-ChSystemNSC::ChSystemNSC(const std::string& name) : ChSystem(name) {
+RbSystemNSC::RbSystemNSC(const std::string& name) : RbSystem(name) {
     // Set default solver
     SetSolverType(ChSolver::Type::PSOR);
 
@@ -42,39 +51,39 @@ ChSystemNSC::ChSystemNSC(const std::string& name) : ChSystem(name) {
     ChCollisionModel::SetDefaultSuggestedMargin(0.01);
 }
 
-ChSystemNSC::ChSystemNSC(const ChSystemNSC& other) : ChSystem(other) {
+RbSystemNSC::RbSystemNSC(const RbSystemNSC& other) : RbSystem(other) {
     contact_container = chrono_types::make_shared<ChContactContainerNSC>();
     contact_container->SetSystem(this);
 }
 
-void ChSystemNSC::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
+void RbSystemNSC::SetContactContainer(std::shared_ptr<ChContactContainer> container) {
     if (std::dynamic_pointer_cast<ChContactContainerNSC>(container))
-        ChSystem::SetContactContainer(container);
+        RbSystem::SetContactContainer(container);
 }
 
-void ChSystemNSC::SetMinBounceSpeed(double value) {
+void RbSystemNSC::SetMinBounceSpeed(double value) {
     std::static_pointer_cast<ChContactContainerNSC>(contact_container)->min_bounce_speed = value;
 }
 
-void ChSystemNSC::ArchiveOut(ChArchiveOut& archive_out) {
+void RbSystemNSC::ArchiveOut(ChArchiveOut& archive_out) {
     // version number
-    archive_out.VersionWrite<ChSystemNSC>();
+    archive_out.VersionWrite<RbSystemNSC>();
 
     // serialize parent class
-    ChSystem::ArchiveOut(archive_out);
+    RbSystem::ArchiveOut(archive_out);
 
     // serialize all member data:
 }
 
 // Method to allow de serialization of transient data from archives.
-void ChSystemNSC::ArchiveIn(ChArchiveIn& archive_in) {
+void RbSystemNSC::ArchiveIn(ChArchiveIn& archive_in) {
     // version number
-    /*int version =*/archive_in.VersionRead<ChSystemNSC>();
+    /*int version =*/archive_in.VersionRead<RbSystemNSC>();
 
     // deserialize parent class
-    ChSystem::ArchiveIn(archive_in);
+    RbSystem::ArchiveIn(archive_in);
 
     // stream in all member data:
 }
 
-}  // end namespace chrono
+}  // namespace robodyna::simulation

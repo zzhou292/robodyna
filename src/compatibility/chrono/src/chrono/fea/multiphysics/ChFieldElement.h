@@ -15,6 +15,7 @@
 #ifndef CHFIELDELEMENT_H
 #define CHFIELDELEMENT_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/core/ChApiCE.h"
 #include "chrono/core/ChFrame.h"
 #include "chrono/physics/ChLoadable.h"
@@ -23,7 +24,7 @@
 namespace chrono {
 
 // Forward declarations:
-    class ChSystem;
+    // System type is declared by the explicit forward header.
 
 namespace fea {
 

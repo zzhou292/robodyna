@@ -15,6 +15,7 @@
 #ifndef CHINDEXEDPARTICLES_H
 #define CHINDEXEDPARTICLES_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <cmath>
 
 #include "chrono/core/ChFrameMoving.h"
@@ -24,7 +25,7 @@ namespace chrono {
 
 // Forward references (for parent hierarchy pointer)
 
-class ChSystem;
+// System type is declared by the explicit forward header.
 
 /// Base class for a single particle to be used in ChIndexedParticles containers.
 /// It is an item that has 6 degrees of freedom, like a moving frame.

@@ -16,6 +16,7 @@
 #ifndef ROBODYNA_MBD_RBBODY_H
 #define ROBODYNA_MBD_RBBODY_H
 
+#include "robodyna/simulation/RbSystemFwd.h"
 #include <cmath>
 #include "robodyna/mbd/RbBodyFwd.h"
 
@@ -30,7 +31,7 @@
 #include "chrono/solver/ChVariablesBodyOwnMass.h"
 
 namespace chrono {
-class ChSystem;
+// System type is declared by the explicit forward header.
 class ChSystemMulticore;
 class ChSystemMulticoreNSC;
 class ChAssembly;
@@ -665,7 +666,7 @@ class ChApi RbBody : public chrono::ChPhysicsItem, public chrono::ChBodyFrame, p
                               ///< simulation
 
     // Friend classes with private access
-    friend class chrono::ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class chrono::ChSystemMulticore;
     friend class chrono::ChSystemMulticoreNSC;
     friend class chrono::ChAssembly;

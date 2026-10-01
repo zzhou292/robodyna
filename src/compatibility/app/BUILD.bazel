@@ -30,7 +30,7 @@ cc_library(name = "include_root", includes = ["."])
 
 filegroup(
     name = "renamed_type_source_inputs",
-    srcs = ["chrono/ReplayVisuals.h"],
+    srcs = ["chrono/ReplayVisuals.h", "chrono/AcceptedReplayScene.h"],
     visibility = ["//tests/chrono:__pkg__"],
 )
 

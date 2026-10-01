@@ -15,6 +15,7 @@
 #ifndef CHSHAFT_H
 #define CHSHAFT_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include "chrono/physics/ChPhysicsItem.h"
 #include "chrono/physics/ChLoadable.h"
 #include "chrono/solver/ChVariablesShaft.h"
@@ -22,7 +23,7 @@
 namespace chrono {
 
 // Forward references (for parent hierarchy pointer)
-class ChSystem;
+// System type is declared by the explicit forward header.
 
 /// Class for one-degree-of-freedom mechanical parts with associated  inertia (mass or moment of rotational inertia).
 /// In most cases these represent shafts that can be used to build 1D models of power trains. This is more efficient
@@ -237,7 +238,7 @@ class ChApi ChShaft : public ChPhysicsItem, public ChLoadable {
     unsigned int index;  ///< unique sequential body identifier, used for indexing (internal use only)
 
     // Friend classes with private access
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class ChSystemMulticore;
 };
 

@@ -33,7 +33,7 @@
 
 // SWIG does not follow the compatibility forward-header #include.
 // This is parser metadata; generated C++ sees the real canonical type alias.
-namespace chrono { class ChBody; }
+namespace chrono { class ChBody; class ChSystem; class ChSystemNSC; class ChSystemSMC; }
 
 
 // Include C++ headers this way...

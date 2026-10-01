@@ -15,6 +15,7 @@
 #ifndef CHASSEMBLY_H
 #define CHASSEMBLY_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <cmath>
 #include <vector>
 
@@ -351,7 +352,7 @@ class ChApi ChAssembly : public ChPhysicsItem {
     unsigned int m_num_constr_bil;  ///< number of scalar bilateral constraints
     unsigned int m_num_constr_uni;  ///< number of scalar unilateral constraints
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
     friend class ChSystemMulticore;
 };
 

@@ -10,6 +10,6 @@ using namespace chrono;
 
 
 /* Parse the header file to generate wrappers */
-%include "../../../chrono/physics/ChSystemSMC.h"    
+%include "robodyna_swig/SystemSMCDeclarations.h"    
 
 

@@ -15,6 +15,7 @@
 #ifndef CHTIMESTEPPER_H
 #define CHTIMESTEPPER_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <cstdlib>
 
 #include "chrono/core/ChApiCE.h"
@@ -93,7 +94,7 @@ class ChApi ChTimestepper {
     bool Qc_do_clamp;
     double Qc_clamping;
 
-    friend class ChSystem;
+    friend class ::robodyna::simulation::RbSystem;
 };
 
 /// Base class for 1st order timesteppers, that is a time integrator for a ChIntegrable.

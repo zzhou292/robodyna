@@ -9,9 +9,10 @@
     "N2": "passed actual old archives, genuinely renamed-type fixtures and explicit version-policy tests",
     "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending",
     "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending",
-    "N4_mesh": "passed 31 native targets, 3 retained-CMake targets, four CMake binding-generation/install profiles and declaration-pin rejection/recovery; integrated binding runtime pending"
+    "N4_mesh": "passed 31 native targets, 3 retained-CMake targets, four CMake binding-generation/install profiles and declaration-pin rejection/recovery; integrated binding runtime pending",
+    "N4_system": "passed 33 native targets for actual System/NSC/SMC implementations, frozen archives, callbacks, contact profiles and common FE/body clock; combined CMake/binding/product gates pending"
   },
-  "test_targets_passed": 31,
+  "test_targets_passed": 33,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -221,6 +222,14 @@
       "path": "crash-work/investigations/robodyna-mesh-swig-parity-1/review.json",
       "sha256": "0614380880723eb62ef2a9089b8fe44b0cc0dd4da4ad547767ea7b6847a6c98d",
       "passed": true
+    },
+    "robodyna-canonical-system-native-3": {
+      "path": "crash-work/reports/robodyna-canonical-system-native-3.json",
+      "sha256": "e00f54b3f5c4f5327f04d39936bbca6317d996a3e4ccfe0a8dee4b63f3e1be3d",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 4.783,
+      "peak_sampled_rss_bytes": 901906432
     }
   },
   "limits": {
@@ -240,7 +249,7 @@
   },
   "claim_boundary": [
     "No independent full FEA/MBD build yet",
-    "Body, mesh and inertia definitions are canonical; system implementations retain legacy names behind aliases",
+    "Body, mesh, System/NSC/SMC and inertia definitions are canonical; other initial APIs remain aliases",
     "Body checkpoint core Python runtime and both native wrappers qualified; integrated mesh bindings pending; managed C# and optional module runtimes remain unqualified",
     "No new CUDA physics or 100 ms rerun",
     "Populated glyph-property archive and unsafe Python parent-ownership helper limitations recorded separately",
@@ -252,7 +261,7 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest broad mesh native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count.",
+  "test_targets_scope": "Latest broad System native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative count.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",

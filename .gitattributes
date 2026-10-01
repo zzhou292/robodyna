@@ -13,3 +13,6 @@ tests/system_compat/fixtures/producer.json -whitespace
 # authenticate their exact bytes rather than mixing formatting into the rename.
 include/robodyna/mbd/RbBody.h -whitespace
 src/compatibility/chrono/src/chrono_swig/interface/core/ChBody.i -whitespace
+src/compatibility/chrono/src/chrono_swig/interface/core/ChSystem.i -whitespace
+src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemNSC.i -whitespace
+src/compatibility/chrono/src/chrono_swig/interface/core/ChSystemSMC.i -whitespace

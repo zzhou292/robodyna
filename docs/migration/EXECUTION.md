@@ -204,6 +204,19 @@ once from `src/fea/mesh`. The declaration-view helper now handles Body and Mesh
 through the same generator. Full current binding integration remains a separate
 gate before this larger rename batch is accepted as a product checkpoint.
 
+The actual `RbSystem`, `RbSystemNSC` and `RbSystemSMC` definitions now live under
+`robodyna::simulation`, with implementations in `src/simulation/composition`.
+All 33 native targets passed, including frozen System archives and common-clock
+FE/body dynamics. One captured legacy base-version key preserves the qualified
+Linux/GCC archive identity. Registered NSC/SMC tags and compatibility aliases
+remain unchanged. The thin public forward target does not link the aggregate.
+Current CMake, binding and product qualification will follow the derived-body and
+maintained-consumer integration as a combined checkpoint.
+
+Parser ledgers now contain only their public-header inverse recipes; the global
+source ledger retains complete implementation history. This avoids stale copies
+of other families' edits when their headers move later.
+
 OpenRadioss remains an optional external reference solver, not a required product
 runtime. Production C++/CUDA ports and their notices remain; verification-only
 Fortran fixtures require a separately reviewed relocation if moved out of tree.

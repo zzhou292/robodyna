@@ -13,6 +13,7 @@
 #ifndef CH_CONTACT_CONTAINER_NSC_H
 #define CH_CONTACT_CONTAINER_NSC_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <list>
 
 #include "chrono/physics/ChContactContainer.h"
@@ -145,7 +146,7 @@ class ChApi ChContactContainerNSC : public ChContactContainer {
 
     double min_bounce_speed;  ///< minimum speed for rebounce after impacts. Lower speeds are clamped to 0
 
-    friend class ChSystemNSC;
+    friend class ::robodyna::simulation::RbSystemNSC;
 };
 
 CH_CLASS_VERSION(ChContactContainerNSC, 0)

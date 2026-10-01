@@ -15,6 +15,7 @@
 #ifndef CH_IRR_GUI_H
 #define CH_IRR_GUI_H
 
+#include "chrono/physics/ChSystemFwd.h"
 #include <irrlicht.h>
 
 #include "chrono_irrlicht/ChApiIrr.h"
@@ -23,7 +24,7 @@
 namespace chrono {
 
 // Forward references
-class ChSystem;
+// System type is declared by the explicit forward header.
 
 namespace irrlicht {
 
