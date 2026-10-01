@@ -58,3 +58,21 @@ Host tests use tiny PNGs and mocked media processes; they never execute ffmpeg:
 ```sh
 python3 -B -m unittest discover -s viewer/video/tests -v
 ```
+
+## Robodyna-branded presentation copies
+
+`//apps/media:brand_video` accepts a qualified movie directory and creates a new
+presentation directory:
+
+```sh
+bazel-bin/apps/media/brand_video SOURCE_VIDEO_DIR NEW_OUTPUT_DIR \
+  --logo assets/brand/robodyna-logo-primary.png --ffmpeg /path/to/ffmpeg \
+  --poster-frame 900
+```
+
+The poster index is a zero-based frame in the final movie. Run through the existing
+workstation guard. This command overlays the declared top-right logo panel and
+re-encodes H.264; it preserves the canvas, frame count, rate and exact track duration.
+It verifies source/tool identities, fully decodes the movie and poster, and records
+`robodyna.branded_video.v1` separately from numerical qualification. Original movies,
+PNGs and simulation archives remain unchanged. It does not advance a simulation.

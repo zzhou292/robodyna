@@ -17,6 +17,14 @@ py_test(
     size = "small",
 )
 
+py_test(
+    name = "video_branding_test",
+    srcs = ["//src/compatibility/app:viewer/video/tests/test_brand.py"],
+    main = "//src/compatibility/app:viewer/video/tests/test_brand.py",
+    deps = ["//src/compatibility/app:python_video", "//src/compatibility/app:python_video_test_fixtures"],
+    size = "small",
+)
+
 cc_test(
     name = "assets_test",
     srcs = ["ReplayAssetsTest.cpp"],

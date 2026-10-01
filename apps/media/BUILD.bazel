@@ -1,0 +1,9 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "brand_video",
+    srcs = ["brand_video.py"],
+    main = "brand_video.py",
+    deps = ["//src/compatibility/app:python_video"],
+    visibility = ["//visibility:public"],
+)
