@@ -1,0 +1,3 @@
+# The canonical implementation still compiles in the retained mixed backend.
+# Exporting the source is not a claim of independent FE linkage.
+exports_files(["RbMesh.cpp"], visibility = ["//visibility:public"])

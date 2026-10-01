@@ -345,7 +345,7 @@ set(Chrono_fea_base_SOURCES
     fea/ChBuilderBeam.cpp
     fea/ChGaussIntegrationRule.cpp
     fea/ChGaussPoint.cpp
-    fea/ChMesh.cpp
+    ${ROBODYNA_SOURCE_ROOT}/src/fea/mesh/RbMesh.cpp
     fea/ChMeshFileLoader.cpp
     fea/ChMeshExporter.cpp
     fea/ChPolarDecomposition.cpp
@@ -368,6 +368,7 @@ set(Chrono_fea_base_HEADERS
     fea/ChGaussIntegrationRule.h
     fea/ChGaussPoint.h
     fea/ChMesh.h
+    fea/ChMeshFwd.h
     fea/ChMeshExporter.h
     fea/ChMeshFileLoader.h
     fea/ChPolarDecomposition.h
@@ -1527,6 +1528,11 @@ install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mechanics/RbMassProperti
 install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBody.h"
               "${ROBODYNA_SOURCE_ROOT}/include/robodyna/mbd/RbBodyFwd.h"
         DESTINATION include/robodyna/mbd)
+if(CH_ENABLE_MODULE_FEA)
+    install(FILES "${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMesh.h"
+                  "${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMeshFwd.h"
+            DESTINATION include/robodyna/fea)
+endif()
 install(FILES "${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt"
         DESTINATION LICENSES)
 

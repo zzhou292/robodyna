@@ -21,6 +21,7 @@ exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
 exports_files(["src/chrono_swig/interface/core/ChMassProperties.i"])
 exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h"])
+exports_files(["src/chrono/fea/ChMesh.h", "src/chrono/fea/ChMeshFwd.h"])
 exports_files(["src/chrono/assets/ChVisualShapeFEA.cpp"])
 exports_files([
     "src/chrono_swig/chrono_python/ChModuleCore_python.i",
@@ -33,6 +34,8 @@ filegroup(
         "//include/robodyna/mechanics:RbMassProperties.h",
         "//include/robodyna/mbd:RbBody.h",
         "//include/robodyna/mbd:RbBodyFwd.h",
+        "//include/robodyna/fea:RbMesh.h",
+        "//include/robodyna/fea:RbMeshFwd.h",
     ],
 )
 
@@ -120,4 +123,29 @@ filegroup(
         ["**"],
         exclude = ["BUILD.bazel", "**/.git/**"],
     ),
+)
+
+# Mesh source proof only; optional SDK inputs do not imply runtime qualification.
+filegroup(
+    name = "mesh_source_inputs",
+    srcs = [
+        "src/chrono/CMakeLists.txt",
+        "src/chrono/assets/ChVisualShapeFEA.h",
+        "src/chrono/fea/ChElementBase.h",
+        "src/chrono/fea/ChMesh.h",
+        "src/chrono/fea/ChMeshFwd.h",
+        "src/chrono/fea/ChMeshSurface.h",
+        "src/chrono/fea/ChNodeFEAbase.h",
+        "src/chrono/fea/ChNodeFEAxyz.h",
+        "src/chrono/physics/ChSystem.h",
+        "src/chrono_swig/CMakeLists.txt",
+        "src/chrono_swig/chrono_csharp/CMakeLists.txt",
+        "src/chrono_swig/chrono_python/CMakeLists.txt",
+        "src/chrono_swig/interface/core/ChModuleCore.i",
+        "src/chrono_swig/interface/fea/ChModuleFea.i",
+        "src/chrono_swig/interface/vehicle/ChModuleVehicle.i",
+        "//include/robodyna/fea:RbMesh.h", "//include/robodyna/fea:RbMeshFwd.h",
+        "//src/fea/mesh:RbMesh.cpp",
+    ],
+    visibility = ["//tests/chrono:__pkg__"],
 )

@@ -35,7 +35,7 @@ already completed migrations.
 | `chrono_sensor` | `sensor` | Source retained; CUDA/OptiX and other SDK profiles require separate qualification |
 | `chrono_synchrono` | `integrations/synchrono` | Source retained; flatbuffers/MPI and native target qualification pending |
 | `chrono_ros` | `integrations/ros` | Source retained; ROS environment and native target qualification pending |
-| `chrono_swig` | `bindings` | Python/C# interfaces retained; generated binding and archive/API compatibility gates pending |
+| `chrono_swig` | `bindings` | Core Python runtime and both native wrappers pass against one shared backend; historical core proxy compatibility and CMake generation/interface installation pass. Managed C# and other module runtimes pending |
 | `chrono_precice` | `integrations/precice` | Source retained; external SDK and coupled runtime qualification pending |
 | `demos`, `tests` | `examples`, `tests`, `benchmarks` | All sources retained; only named focused root gates have run |
 | `src/fea/legacy` explicit CUDA mechanics | `fea/backends`, contact and mechanics services | Native build plus 101-step wall/self-contact archive parity passed; original 100 ms evidence preserved |

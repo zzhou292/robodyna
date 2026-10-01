@@ -157,7 +157,7 @@ class ChApi ChElementBase {
     /// each element, if any, the mass, etc.
     virtual void SetupInitial(ChSystem* system) {}
 
-    friend class ChMesh;
+    friend class ::robodyna::fea::RbMesh;
 };
 
 /// @} fea_elements

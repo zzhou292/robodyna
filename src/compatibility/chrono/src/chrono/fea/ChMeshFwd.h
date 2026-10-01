@@ -12,7 +12,9 @@
 // Authors: Alessandro Tasora, Radu Serban
 // =============================================================================
 
-// Robodyna compatibility header; one canonical implementation owns the FE mesh.
+// Robodyna adaptation: transitional alias to the canonical forward declaration.
 #pragma once
-#include "chrono/fea/ChMeshFwd.h"
-#include "robodyna/fea/RbMesh.h"
+#include "robodyna/fea/RbMeshFwd.h"
+namespace chrono::fea {
+using ChMesh = ::robodyna::fea::RbMesh;
+}

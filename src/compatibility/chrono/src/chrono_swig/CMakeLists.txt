@@ -17,15 +17,15 @@ if(CH_INSTALL_SWIG_INTERFACE)
     file(COPY ${CMAKE_SOURCE_DIR}/src/chrono_swig/interface/ DESTINATION ${CMAKE_BINARY_DIR}/chrono_swig)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/chrono_swig/interface/ DESTINATION include/chrono_swig)
 
-    # Shipped interfaces must include their authenticated parser-only dependency.
-    if(NOT TARGET robodyna_swig_body_declarations)
-        message(FATAL_ERROR "SWIG interface installation requires the generated body declaration target")
+    # Shipped interfaces include every enabled authenticated parser dependency.
+    get_property(declaration_targets GLOBAL PROPERTY ROBODYNA_SWIG_DECLARATION_TARGETS)
+    get_property(declaration_files GLOBAL PROPERTY ROBODYNA_SWIG_DECLARATION_FILES)
+    if(NOT declaration_targets OR NOT declaration_files)
+        message(FATAL_ERROR "SWIG interface installation requires generated declaration views")
     endif()
     add_custom_target(robodyna_swig_install_inputs ALL)
-    add_dependencies(robodyna_swig_install_inputs robodyna_swig_body_declarations)
-    install(FILES "${PROJECT_BINARY_DIR}/robodyna_swig/BodyDeclarations.h"
-                  "${PROJECT_BINARY_DIR}/robodyna_swig/BodyDeclarations.h.json"
-            DESTINATION include/robodyna_swig)
+    add_dependencies(robodyna_swig_install_inputs ${declaration_targets})
+    install(FILES ${declaration_files} DESTINATION include/robodyna_swig)
 
     message(STATUS "Chrono SWIG interface files copied to ${CMAKE_BINARY_DIR}/chrono_swig")
     message(STATUS "Chrono SWIG interface will be installed to ${CMAKE_INSTALL_PREFIX}/include/chrono_swig")

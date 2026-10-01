@@ -1,16 +1,19 @@
-load(":declaration.bzl", "body_declaration_view")
+load(":declaration.bzl", "declaration_view")
 load(":swig.bzl", "swig_core")
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["body_view_contract.json", "declaration_view.cmake"])
+exports_files(["body_view_contract.json", "mesh_view_contract.json", "declaration_view.cmake"])
 
 # Pins are reviewed separately from the mutable generator inputs. Keep in sync
 # with the CMake contract; a source/API edit must not silently refresh these.
-body_declaration_view(
+declaration_view(
     name = "body_declarations",
     canonical = "//include/robodyna/mbd:RbBody.h",
+    canonical_path = "include/robodyna/mbd/RbBody.h",
+    original_path = "src/compatibility/chrono/src/chrono/physics/ChBody.h",
+    view_name = "BodyDeclarations.h",
     forwarder = "//src/compatibility/chrono:src/chrono/physics/ChBody.h",
     ledger = "//docs/migration:BODY_TRANSFORMATIONS.json",
     original_sha256 = "6f1d415ad43ca60f4026db79096c7439d35e139edcdc405f18caafdd276ac3c2",
@@ -18,6 +21,20 @@ body_declaration_view(
 )
 
 filegroup(name = "body_header", srcs = [":body_declarations"], output_group = "header")
+
+declaration_view(
+    name = "mesh_declarations",
+    canonical = "//include/robodyna/fea:RbMesh.h",
+    canonical_path = "include/robodyna/fea/RbMesh.h",
+    forwarder = "//src/compatibility/chrono:src/chrono/fea/ChMesh.h",
+    original_path = "src/compatibility/chrono/src/chrono/fea/ChMesh.h",
+    view_name = "MeshDeclarations.h",
+    ledger = "//docs/migration:MESH_TRANSFORMATIONS.json",
+    original_sha256 = "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
+    ledger_sha256 = "cdc1b739000701e6a25d24a88702fa57049fc17e5c432e5914f67f7947418d1f",
+)
+
+filegroup(name = "mesh_header", srcs = [":mesh_declarations"], output_group = "header")
 
 # All wrappers use this one implementation DSO and one class-factory instance.
 # These bindings retain the current combined CPU backend; no CUDA coverage claim.

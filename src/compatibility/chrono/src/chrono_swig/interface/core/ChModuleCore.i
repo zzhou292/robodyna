@@ -409,7 +409,7 @@ inline const char* ChUtils_GetFilename() {
 %include "../../../chrono/solver/ChSystemDescriptor.h"
 
 #ifdef CHRONO_FEA
-%include "../../../chrono/fea/ChMesh.h"
+%include "robodyna_swig/MeshDeclarations.h"
 #endif
 
 // assets

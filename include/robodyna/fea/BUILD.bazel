@@ -2,12 +2,24 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["RbMesh.h", "RbMeshFwd.h"])
+
+# The retained aggregate supplies the inherited element/contact header closure.
+# This provider does not claim independent FE linkage.
+cc_library(
+    name = "implementation_headers",
+    hdrs = ["RbMesh.h", "RbMeshFwd.h"],
+    strip_include_prefix = "/include",
+    visibility = ["//src/compatibility/chrono:__pkg__"],
+)
+
 # This facade still uses the combined native mechanics backend.
 # It does not establish independent FEA or MBD linkage.
 cc_library(
     name = "api",
     hdrs = [
         "RbMesh.h",
+        "RbMeshFwd.h",
         "RbNodeFEAxyz.h",
         "RbElementSpring.h"
     ],

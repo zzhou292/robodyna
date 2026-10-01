@@ -1,0 +1,356 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Mesh definition/source and parser entry points against current qualified Body; no mesh persistence added.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChMesh.h",
+      "canonical_path": "include/robodyna/fea/RbMesh.h",
+      "original_sha256": "6ef39b75ba467165b0ba72ca40b8db73e6d1326e6f4f519ffe9af8c0bfb043b4",
+      "replacements": [
+        {
+          "before": "in the LICENSE file at the top level of the distribution and at",
+          "after": "in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "CHMESH_H",
+          "after": "ROBODYNA_FEA_RBMESH_H",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChMesh",
+          "after": "RbMesh",
+          "count": 7,
+          "code_token": true
+        },
+        {
+          "before": "namespace chrono {\n\nclass ChAssembly;\n\nnamespace fea {",
+          "after": "namespace chrono {\nclass ChAssembly;\n}\n\nnamespace robodyna::fea {",
+          "count": 1
+        },
+        {
+          "before": "}  // end namespace fea\n}  // end namespace chrono",
+          "after": "}  // namespace robodyna::fea",
+          "count": 1
+        },
+        {
+          "before": "ChIndexedNodes",
+          "after": "chrono::ChIndexedNodes",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChNodeBase",
+          "after": "chrono::ChNodeBase",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChCollisionSystem",
+          "after": "chrono::ChCollisionSystem",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChVector3d",
+          "after": "chrono::ChVector3d",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChMatrix33",
+          "after": "chrono::ChMatrix33",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChMassProperties",
+          "after": "chrono::ChMassProperties",
+          "count": 1,
+          "code_token": true
+        },
+        {
+          "before": "ChState",
+          "after": "chrono::ChState",
+          "count": 6,
+          "code_token": true
+        },
+        {
+          "before": "ChStateDelta",
+          "after": "chrono::ChStateDelta",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChVectorDynamic",
+          "after": "chrono::ChVectorDynamic",
+          "count": 8,
+          "code_token": true
+        },
+        {
+          "before": "ChSystemDescriptor",
+          "after": "chrono::ChSystemDescriptor",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChTimer",
+          "after": "chrono::ChTimer",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "UpdateFlags",
+          "after": "chrono::UpdateFlags",
+          "count": 2,
+          "code_token": true
+        },
+        {
+          "before": "ChNodeFEAbase",
+          "after": "chrono::fea::ChNodeFEAbase",
+          "count": 3,
+          "code_token": true
+        },
+        {
+          "before": "ChElementBase",
+          "after": "chrono::fea::ChElementBase",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChContactSurface",
+          "after": "chrono::fea::ChContactSurface",
+          "count": 4,
+          "code_token": true
+        },
+        {
+          "before": "ChMeshSurface",
+          "after": "chrono::fea::ChMeshSurface",
+          "count": 4,
+          "code_token": true
+        }
+      ],
+      "forwarding_sha256": "eabc9d24bd1d7e2c438c6594d599fbf8b955289a532188f52868de5d7a89081c"
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChMesh.cpp",
+      "canonical_path": "src/fea/mesh/RbMesh.cpp",
+      "original_sha256": "7bc0cae6ad02f5e0d445ca4d9d53345980622794745a450585a398ea2245a8d8",
+      "replacements": [
+        {
+          "before": "in the LICENSE file at the top level of the distribution and at",
+          "after": "in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at",
+          "count": 1
+        },
+        {
+          "before": "#include \"chrono/fea/ChMesh.h\"",
+          "after": "#include \"robodyna/fea/RbMesh.h\"",
+          "count": 1
+        },
+        {
+          "before": "namespace chrono {\nnamespace fea {",
+          "after": "namespace robodyna::fea {\n\n// Translation-unit-only lookup preserves the inherited expressions and ADL.\nusing namespace ::chrono;\nusing namespace ::chrono::fea;",
+          "count": 1
+        },
+        {
+          "before": "ChMesh",
+          "after": "RbMesh",
+          "count": 41,
+          "code_token": true
+        },
+        {
+          "before": "}  // end namespace fea\n}  // end namespace chrono",
+          "after": "}  // namespace robodyna::fea",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShapeFEA.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/assets/ChVisualShapeFEA.h",
+      "original_sha256": "af2c4fa2a98d40dcefc93b766ebc075557b11a4f235f62f14dffcc9af4ad26f5",
+      "replacements": [
+        {
+          "before": "namespace chrono {",
+          "after": "#include \"chrono/fea/ChMeshFwd.h\"\n\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "class ChMesh;\n",
+          "after": "// ChMesh is the legacy alias declared in ChMeshFwd.h.\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChNodeFEAbase.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/fea/ChNodeFEAbase.h",
+      "original_sha256": "d6347d0a9bdae05230a2eab75305e7949e9d26063aa12fc2e5afd103be46e2c1",
+      "replacements": [
+        {
+          "before": "namespace chrono {",
+          "after": "#include \"chrono/fea/ChMeshFwd.h\"\n\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "class ChMesh;\n",
+          "after": "// ChMesh is the legacy alias declared in ChMeshFwd.h.\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChNodeFEAxyz.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/fea/ChNodeFEAxyz.h",
+      "original_sha256": "1da2e47e0bc6993b71ea61d86af50a3d6359e9ebc1b8da973507908a3a8d6682",
+      "replacements": [
+        {
+          "before": "namespace chrono {",
+          "after": "#include \"chrono/fea/ChMeshFwd.h\"\n\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "class ChMesh;\n",
+          "after": "// ChMesh is the legacy alias declared in ChMeshFwd.h.\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChMeshSurface.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/fea/ChMeshSurface.h",
+      "original_sha256": "b461fd397b9dc483321c3c123da8437dcf8485b588c102486bb47a2b2d11673c",
+      "replacements": [
+        {
+          "before": "namespace chrono {",
+          "after": "#include \"chrono/fea/ChMeshFwd.h\"\n\nnamespace chrono {",
+          "count": 1
+        },
+        {
+          "before": "class ChMesh;\n",
+          "after": "// ChMesh is the legacy alias declared in ChMeshFwd.h.\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/fea/ChElementBase.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/fea/ChElementBase.h",
+      "original_sha256": "6cb384cd02f61081fc3b633793889bdf302a8e29a7feed938a33632da806c11c",
+      "replacements": [
+        {
+          "before": "friend class ChMesh;",
+          "after": "friend class ::robodyna::fea::RbMesh;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/physics/ChSystem.h",
+      "original_sha256": "9e467af0170bc5ed07cf227f61a8a901924ef0a3c947d4088962c82b8ffc0184",
+      "replacements": [
+        {
+          "before": "friend class fea::ChMesh;",
+          "after": "friend class ::robodyna::fea::RbMesh;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/core/ChModuleCore.i",
+      "original_sha256": "69ca7a369a5f43402037ee8a665fd54cc32b273084c18d4ed9d635672d5bc4eb",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/fea/ChMesh.h\"",
+          "after": "%include \"robodyna_swig/MeshDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/fea/ChModuleFea.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/fea/ChModuleFea.i",
+      "original_sha256": "37233b6716d0fc702abca6c8f5ba3d54d50a91360bd85ebcbd9c64471f01910c",
+      "replacements": [
+        {
+          "before": "%include \"../../../chrono/fea/ChMesh.h\"",
+          "after": "%include \"robodyna_swig/MeshDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/interface/vehicle/ChModuleVehicle.i",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/interface/vehicle/ChModuleVehicle.i",
+      "original_sha256": "41e5b667047672ee72040aac385defb230fdc61f4c8af7d91e1f703cd8871c22",
+      "replacements": [
+        {
+          "before": "%import(module = \"pychrono.core\") \"../../../chrono/fea/ChMesh.h\"",
+          "after": "%import(module = \"pychrono.core\") \"robodyna_swig/MeshDeclarations.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+      "original_sha256": "bf561b3fe2a8f2d839dc06f1302b4e98834a65e61d7a3cc4e9d5755d2366ed1a",
+      "replacements": [
+        {
+          "before": "    fea/ChMesh.cpp",
+          "after": "    ${ROBODYNA_SOURCE_ROOT}/src/fea/mesh/RbMesh.cpp",
+          "count": 1
+        },
+        {
+          "before": "    fea/ChMesh.h",
+          "after": "    fea/ChMesh.h\n    fea/ChMeshFwd.h",
+          "count": 1
+        },
+        {
+          "before": "install(FILES \"${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt\"",
+          "after": "if(CH_ENABLE_MODULE_FEA)\n    install(FILES \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMesh.h\"\n                  \"${ROBODYNA_SOURCE_ROOT}/include/robodyna/fea/RbMeshFwd.h\"\n            DESTINATION include/robodyna/fea)\nendif()\ninstall(FILES \"${ROBODYNA_SOURCE_ROOT}/LICENSES/Chrono-BSD-3-Clause.txt\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/chrono_python/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/chrono_python/CMakeLists.txt",
+      "original_sha256": "2fce98f7e4756883250b3bf4a4e1baf54c59b841d8af749c1d717c81e5aa996c",
+      "replacements": [
+        {
+          "before": "robodyna_bind_swig_body(",
+          "after": "robodyna_bind_swig_declarations(",
+          "count": 13
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/chrono_csharp/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/chrono_csharp/CMakeLists.txt",
+      "original_sha256": "32876466f3c9f77608bd914e227cda22e449cb17759c027f88184772e0e5d073",
+      "replacements": [
+        {
+          "before": "robodyna_bind_swig_body(",
+          "after": "robodyna_bind_swig_declarations(",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_swig/CMakeLists.txt",
+      "canonical_path": "src/compatibility/chrono/src/chrono_swig/CMakeLists.txt",
+      "original_sha256": "97532490406a75ad21c87ca2636badcb10dcc2eb8ce3dd822dc6f887c904fb0d",
+      "replacements": [
+        {
+          "before": "    # Shipped interfaces must include their authenticated parser-only dependency.\n    if(NOT TARGET robodyna_swig_body_declarations)\n        message(FATAL_ERROR \"SWIG interface installation requires the generated body declaration target\")\n    endif()\n    add_custom_target(robodyna_swig_install_inputs ALL)\n    add_dependencies(robodyna_swig_install_inputs robodyna_swig_body_declarations)\n    install(FILES \"${PROJECT_BINARY_DIR}/robodyna_swig/BodyDeclarations.h\"\n                  \"${PROJECT_BINARY_DIR}/robodyna_swig/BodyDeclarations.h.json\"\n            DESTINATION include/robodyna_swig)",
+          "after": "    # Shipped interfaces include every enabled authenticated parser dependency.\n    get_property(declaration_targets GLOBAL PROPERTY ROBODYNA_SWIG_DECLARATION_TARGETS)\n    get_property(declaration_files GLOBAL PROPERTY ROBODYNA_SWIG_DECLARATION_FILES)\n    if(NOT declaration_targets OR NOT declaration_files)\n        message(FATAL_ERROR \"SWIG interface installation requires generated declaration views\")\n    endif()\n    add_custom_target(robodyna_swig_install_inputs ALL)\n    add_dependencies(robodyna_swig_install_inputs ${declaration_targets})\n    install(FILES ${declaration_files} DESTINATION include/robodyna_swig)",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

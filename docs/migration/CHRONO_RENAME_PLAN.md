@@ -352,6 +352,9 @@ spelling. Existing `robo_dyna.*` stored schemas remain stable.
 ### N7 — Make the new API the default and retire legacy implementation ownership
 
 Switch maintained examples, operator docs and generated API docs to Robodyna.
+The retained Doxygen input currently scans its imported `../src` tree; add the
+canonical public include and relocated implementation roots in the owned docs
+configuration before claiming generated documentation covers the migrated API.
 Offer legacy headers/labels in a documented compatibility package; deprecate them
 only after internal callers migrate and optional capabilities have a tested path.
 Keep the shim until an explicit compatibility policy permits removal.

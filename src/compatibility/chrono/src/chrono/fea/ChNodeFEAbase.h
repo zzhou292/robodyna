@@ -17,6 +17,8 @@
 
 #include "chrono/physics/ChNodeBase.h"
 
+#include "chrono/fea/ChMeshFwd.h"
+
 namespace chrono {
 namespace fea {
 
@@ -24,7 +26,7 @@ namespace fea {
 /// @{
 
 // Forward
-class ChMesh;
+// ChMesh is the legacy alias declared in ChMeshFwd.h.
 
 /// Base class for a generic finite element node that can be stored in ChMesh containers.
 /// Derived classes must implement specialized versions.

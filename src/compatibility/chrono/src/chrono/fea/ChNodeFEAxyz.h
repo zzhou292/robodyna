@@ -19,6 +19,8 @@
 #include "chrono/solver/ChVariablesNode.h"
 #include "chrono/fea/ChNodeFEAbase.h"
 
+#include "chrono/fea/ChMeshFwd.h"
+
 namespace chrono {
 namespace fea {
 
@@ -26,7 +28,7 @@ namespace fea {
 /// @{
 
 // Forward declaration
-class ChMesh;
+// ChMesh is the legacy alias declared in ChMeshFwd.h.
 
 /// Class for a generic 3D finite element node, with x,y,z displacement.
 /// This is the typical node that can be used for tetrahedrons, etc.

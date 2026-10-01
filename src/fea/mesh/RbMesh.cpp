@@ -5,7 +5,7 @@
 // All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file at the top level of the distribution and at
+// in LICENSES/Chrono-BSD-3-Clause.txt at the Robodyna root and at
 // http://projectchrono.org/license-chrono.txt.
 //
 // =============================================================================
@@ -25,14 +25,17 @@
 #include "chrono/physics/ChSystem.h"
 
 #include "chrono/fea/ChElementTetraCorot_4.h"
-#include "chrono/fea/ChMesh.h"
+#include "robodyna/fea/RbMesh.h"
 #include "chrono/fea/ChNodeFEAxyz.h"
 #include "chrono/fea/ChNodeFEAxyzrot.h"
 
-namespace chrono {
-namespace fea {
+namespace robodyna::fea {
 
-ChMesh::ChMesh(const ChMesh& other) : ChIndexedNodes(other) {
+// Translation-unit-only lookup preserves the inherited expressions and ADL.
+using namespace ::chrono;
+using namespace ::chrono::fea;
+
+RbMesh::RbMesh(const RbMesh& other) : ChIndexedNodes(other) {
     vnodes = other.vnodes;
     velements = other.velements;
 
@@ -49,7 +52,7 @@ ChMesh::ChMesh(const ChMesh& other) : ChIndexedNodes(other) {
     ncalls_KRMload = 0;
 }
 
-void ChMesh::SetupInitial() {
+void RbMesh::SetupInitial() {
     n_dofs = 0;
     n_dofs_w = 0;
 
@@ -69,21 +72,21 @@ void ChMesh::SetupInitial() {
     }
 }
 
-void ChMesh::Relax() {
+void RbMesh::Relax() {
     for (unsigned int i = 0; i < vnodes.size(); i++) {
         // "relaxes" the structure by setting all X0 = 0, and null speeds
         vnodes[i]->Relax();
     }
 }
 
-void ChMesh::ForceToRest() {
+void RbMesh::ForceToRest() {
     for (unsigned int i = 0; i < vnodes.size(); i++) {
         // set null speeds, null accelerations
         vnodes[i]->ForceToRest();
     }
 }
 
-void ChMesh::AddNode(std::shared_ptr<ChNodeFEAbase> node) {
+void RbMesh::AddNode(std::shared_ptr<ChNodeFEAbase> node) {
     node->SetIndex(static_cast<unsigned int>(vnodes.size()) + 1);
     vnodes.push_back(node);
 
@@ -94,7 +97,7 @@ void ChMesh::AddNode(std::shared_ptr<ChNodeFEAbase> node) {
     }
 }
 
-void ChMesh::AddElement(std::shared_ptr<ChElementBase> elem) {
+void RbMesh::AddElement(std::shared_ptr<ChElementBase> elem) {
     velements.push_back(elem);
 
     // If the mesh is already added to a system, mark the system uninitialized and out-of-date
@@ -104,7 +107,7 @@ void ChMesh::AddElement(std::shared_ptr<ChElementBase> elem) {
     }
 }
 
-void ChMesh::ClearElements() {
+void RbMesh::ClearElements() {
     velements.clear();
     vcontactsurfaces.clear();
 
@@ -114,7 +117,7 @@ void ChMesh::ClearElements() {
     }
 }
 
-void ChMesh::ClearNodes() {
+void RbMesh::ClearNodes() {
     velements.clear();
     vnodes.clear();
     vcontactsurfaces.clear();
@@ -125,22 +128,22 @@ void ChMesh::ClearNodes() {
     }
 }
 
-void ChMesh::AddContactSurface(std::shared_ptr<ChContactSurface> m_surf) {
+void RbMesh::AddContactSurface(std::shared_ptr<ChContactSurface> m_surf) {
     m_surf->SetPhysicsItem(this);
     vcontactsurfaces.push_back(m_surf);
 }
 
-void ChMesh::ClearContactSurfaces() {
+void RbMesh::ClearContactSurfaces() {
     vcontactsurfaces.clear();
 }
 
-void ChMesh::AddMeshSurface(std::shared_ptr<ChMeshSurface> m_surf) {
+void RbMesh::AddMeshSurface(std::shared_ptr<ChMeshSurface> m_surf) {
     m_surf->SetMesh(this);
     vmeshsurfaces.push_back(m_surf);
 }
 
 /// This recomputes the number of DOFs, constraints, as well as state offsets of contained items
-void ChMesh::Setup() {
+void RbMesh::Setup() {
     n_dofs = 0;
     n_dofs_w = 0;
 
@@ -159,7 +162,7 @@ void ChMesh::Setup() {
 
 // Updates all time-dependent variables, if any...
 // Ex: maybe the elasticity can increase in time, etc.
-void ChMesh::Update(double m_time, UpdateFlags update_flags) {
+void RbMesh::Update(double m_time, UpdateFlags update_flags) {
     // Parent class update
     ChIndexedNodes::Update(m_time, update_flags);
 
@@ -169,24 +172,24 @@ void ChMesh::Update(double m_time, UpdateFlags update_flags) {
     }
 }
 
-void ChMesh::AddCollisionModelsToSystem(ChCollisionSystem* coll_sys) const {
+void RbMesh::AddCollisionModelsToSystem(ChCollisionSystem* coll_sys) const {
     for (const auto& surf : vcontactsurfaces)
         surf->AddCollisionModelsToSystem(coll_sys);
 }
 
-void ChMesh::RemoveCollisionModelsFromSystem(ChCollisionSystem* coll_sys) const {
+void RbMesh::RemoveCollisionModelsFromSystem(ChCollisionSystem* coll_sys) const {
     for (const auto& surf : vcontactsurfaces)
         surf->RemoveCollisionModelsFromSystem(coll_sys);
 }
 
-void ChMesh::SyncCollisionModels() {
+void RbMesh::SyncCollisionModels() {
     for (const auto& surf : vcontactsurfaces)
         surf->SyncCollisionModels();
 }
 
 //// STATE BOOKKEEPING FUNCTIONS
 
-void ChMesh::IntStateGather(const unsigned int off_x,
+void RbMesh::IntStateGather(const unsigned int off_x,
                             ChState& x,
                             const unsigned int off_v,
                             ChStateDelta& v,
@@ -204,7 +207,7 @@ void ChMesh::IntStateGather(const unsigned int off_x,
     T = GetChTime();
 }
 
-void ChMesh::IntStateScatter(const unsigned int off_x,
+void RbMesh::IntStateScatter(const unsigned int off_x,
                              const ChState& x,
                              const unsigned int off_v,
                              const ChStateDelta& v,
@@ -223,7 +226,7 @@ void ChMesh::IntStateScatter(const unsigned int off_x,
     Update(T, update_flags);
 }
 
-void ChMesh::IntStateGatherAcceleration(const unsigned int off_a, ChStateDelta& a) {
+void RbMesh::IntStateGatherAcceleration(const unsigned int off_a, ChStateDelta& a) {
     unsigned int local_off_a = 0;
     for (unsigned int j = 0; j < vnodes.size(); j++) {
         if (!vnodes[j]->IsFixed()) {
@@ -233,7 +236,7 @@ void ChMesh::IntStateGatherAcceleration(const unsigned int off_a, ChStateDelta& 
     }
 }
 
-void ChMesh::IntStateScatterAcceleration(const unsigned int off_a, const ChStateDelta& a) {
+void RbMesh::IntStateScatterAcceleration(const unsigned int off_a, const ChStateDelta& a) {
     unsigned int local_off_a = 0;
     for (unsigned int j = 0; j < vnodes.size(); j++) {
         if (!vnodes[j]->IsFixed()) {
@@ -243,7 +246,7 @@ void ChMesh::IntStateScatterAcceleration(const unsigned int off_a, const ChState
     }
 }
 
-void ChMesh::IntStateIncrement(const unsigned int off_x,
+void RbMesh::IntStateIncrement(const unsigned int off_x,
                                ChState& x_new,
                                const ChState& x,
                                const unsigned int off_v,
@@ -262,7 +265,7 @@ void ChMesh::IntStateIncrement(const unsigned int off_x,
     }
 }
 
-void ChMesh::IntStateGetIncrement(const unsigned int off_x,
+void RbMesh::IntStateGetIncrement(const unsigned int off_x,
                                   const ChState& x_new,
                                   const ChState& x,
                                   const unsigned int off_v,
@@ -278,13 +281,13 @@ void ChMesh::IntStateGetIncrement(const unsigned int off_x,
     }
 }
 
-void ChMesh::IntStateOnEndStep(double T) {
+void RbMesh::IntStateOnEndStep(double T) {
     for (int ie = 0; ie < velements.size(); ie++) {
         velements[ie]->ElementUpdateEndStep(T);
     }
 }
 
-void ChMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, const double c) {
+void RbMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, const double c) {
     // nodes applied forces
     unsigned int local_off_v = 0;
     for (unsigned int j = 0; j < vnodes.size(); j++) {
@@ -337,7 +340,7 @@ void ChMesh::IntLoadResidual_F(const unsigned int off, ChVectorDynamic<>& R, con
     }
 }
 
-void ChMesh::ComputeMassProperties(double& mass,           // ChMesh object mass
+void RbMesh::ComputeMassProperties(double& mass,           // ChMesh object mass
                                    ChVector3d& com,        // ChMesh center of gravity
                                    ChMatrix33<>& inertia)  // ChMesh inertia tensor
 {
@@ -409,13 +412,13 @@ void ChMesh::ComputeMassProperties(double& mass,           // ChMesh object mass
     inertia(2, 2) = mJzz;
 }
 
-ChMassProperties ChMesh::ComputeMassProperties() {
+ChMassProperties RbMesh::ComputeMassProperties() {
     ChMassProperties mp;
     ComputeMassProperties(mp.mass, mp.com, mp.inertia);
     return mp;
 }
 
-void ChMesh::IntLoadResidual_Mv(const unsigned int off,      ///< offset in R residual
+void RbMesh::IntLoadResidual_Mv(const unsigned int off,      ///< offset in R residual
                                 ChVectorDynamic<>& R,        ///< result: the R residual, R += c*M*v
                                 const ChVectorDynamic<>& w,  ///< the w vector
                                 const double c               ///< a scaling factor
@@ -435,7 +438,7 @@ void ChMesh::IntLoadResidual_Mv(const unsigned int off,      ///< offset in R re
     }
 }
 
-void ChMesh::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md, double& err, const double c) {
+void RbMesh::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md, double& err, const double c) {
     // nodal masses
     unsigned int local_off_v = 0;
     for (unsigned int j = 0; j < vnodes.size(); j++) {
@@ -451,7 +454,7 @@ void ChMesh::IntLoadLumpedMass_Md(const unsigned int off, ChVectorDynamic<>& Md,
     }
 }
 
-void ChMesh::IntToDescriptor(const unsigned int off_v,
+void RbMesh::IntToDescriptor(const unsigned int off_v,
                              const ChStateDelta& v,
                              const ChVectorDynamic<>& R,
                              const unsigned int off_L,
@@ -466,7 +469,7 @@ void ChMesh::IntToDescriptor(const unsigned int off_v,
     }
 }
 
-void ChMesh::IntFromDescriptor(const unsigned int off_v,
+void RbMesh::IntFromDescriptor(const unsigned int off_v,
                                ChStateDelta& v,
                                const unsigned int off_L,
                                ChVectorDynamic<>& L) {
@@ -481,12 +484,12 @@ void ChMesh::IntFromDescriptor(const unsigned int off_v,
 
 //// SOLVER FUNCTIONS
 
-void ChMesh::InjectKRMMatrices(ChSystemDescriptor& descriptor) {
+void RbMesh::InjectKRMMatrices(ChSystemDescriptor& descriptor) {
     for (unsigned int ie = 0; ie < velements.size(); ie++)
         velements[ie]->InjectKRMMatrices(descriptor);
 }
 
-void ChMesh::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
+void RbMesh::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
     int nthreads = GetSystem()->nthreads_chrono;
 
     timer_KRMload.start();
@@ -497,12 +500,12 @@ void ChMesh::LoadKRMMatrices(double Kfactor, double Rfactor, double Mfactor) {
     ncalls_KRMload++;
 }
 
-void ChMesh::VariablesFbReset() {
+void RbMesh::VariablesFbReset() {
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->VariablesFbReset();
 }
 
-void ChMesh::VariablesFbLoadForces(double factor) {
+void RbMesh::VariablesFbLoadForces(double factor) {
     // applied nodal forces
     for (unsigned int in = 0; in < vnodes.size(); in++)
         vnodes[in]->VariablesFbLoadForces(factor);
@@ -512,12 +515,12 @@ void ChMesh::VariablesFbLoadForces(double factor) {
         velements[ie]->VariablesFbLoadInternalForces(factor);
 }
 
-void ChMesh::VariablesQbLoadSpeed() {
+void RbMesh::VariablesQbLoadSpeed() {
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->VariablesQbLoadSpeed();
 }
 
-void ChMesh::VariablesFbIncrementMq() {
+void RbMesh::VariablesFbIncrementMq() {
     // nodal masses
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->VariablesFbIncrementMq();
@@ -527,20 +530,19 @@ void ChMesh::VariablesFbIncrementMq() {
         velements[ie]->VariablesFbIncrementMq();
 }
 
-void ChMesh::VariablesQbSetSpeed(double step) {
+void RbMesh::VariablesQbSetSpeed(double step) {
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->VariablesQbSetSpeed(step);
 }
 
-void ChMesh::VariablesQbIncrementPosition(double step) {
+void RbMesh::VariablesQbIncrementPosition(double step) {
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->VariablesQbIncrementPosition(step);
 }
 
-void ChMesh::InjectVariables(ChSystemDescriptor& descriptor) {
+void RbMesh::InjectVariables(ChSystemDescriptor& descriptor) {
     for (unsigned int ie = 0; ie < vnodes.size(); ie++)
         vnodes[ie]->InjectVariables(descriptor);
 }
 
-}  // end namespace fea
-}  // end namespace chrono
+}  // namespace robodyna::fea

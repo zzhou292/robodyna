@@ -18,6 +18,8 @@
 #include "chrono/physics/ChLoadable.h"
 #include "chrono/fea/ChElementBase.h"
 
+#include "chrono/fea/ChMeshFwd.h"
+
 namespace chrono {
 namespace fea {
 
@@ -25,7 +27,7 @@ namespace fea {
 /// @{
 
 // Forward references (for parent hierarchy pointer)
-class ChMesh;
+// ChMesh is the legacy alias declared in ChMeshFwd.h.
 
 /// Class which defines a surface for a mesh FEA elements.
 /// The surface is a collection of pointers to  ChLoadableUV objects, which can be shells in the mesh or proxies

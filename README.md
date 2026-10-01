@@ -115,9 +115,10 @@ record timesteps, measured behavior and reproducible entry points.
 
 The first public headers expose `robodyna::mbd::RbBody`,
 `robodyna::fea::RbMesh`, and `robodyna::simulation::RbSystemNSC`, with supporting
-math, contact and solver types. These initial names alias the retained CPU
-implementations; they add no wrapper objects. The inertia utilities already have
-canonical implementations under `robodyna::mechanics` with legacy compatibility.
+math, contact and solver types. `RbBody`, `RbMesh`, and the inertia utilities now
+have actual canonical definitions under their respective modules; their legacy
+names alias those same types. The remaining initial names are aliases while their
+implementation families migrate. No wrapper objects or alternate physics are added.
 
 Build the small headless examples with
 `bazel build --config=host //examples/api:rigid_spring //examples/api:fea_spring`.
@@ -125,6 +126,12 @@ Their [source and usage](examples/api/README.md) use Robodyna public includes.
 The [rename qualification](docs/migration/RENAME_QUALIFICATION.json) records the
 passed API, archive, mechanics and build checks. Full independent FEA/MBD ownership
 and the remaining module/binding migrations are still in progress.
+
+The body checkpoint preserves frozen object archives, the complete recorded
+results of the six-second spring/NSC/SCM examples, and every saved file from the
+101-step GPU Yaris regression. Core Python runtime and both native binding wrappers
+are qualified against one shared backend; managed C# and optional module bindings
+remain separate work.
 
 ## Chrono acknowledgement and source cutoff
 

@@ -8,9 +8,10 @@
     "N3": "passed actual inertia implementation move; one compile owner, preserved arithmetic/source notices",
     "N2": "passed actual old archives, genuinely renamed-type fixtures and explicit version-policy tests",
     "N4_visual": "passed generic visual/object separation with FEA enabled; remaining domain service/assembly seams pending",
-    "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending"
+    "N4_body": "passed actual canonical RbBody, frozen archives, native/CMake, compiled wrappers, Python runtime and exact 101-step GPU product regression; independent MBD closure pending",
+    "N4_mesh": "passed 31 native targets, 3 retained-CMake targets, four CMake binding-generation/install profiles and declaration-pin rejection/recovery; integrated binding runtime pending"
   },
-  "test_targets_passed": 26,
+  "test_targets_passed": 31,
   "header_include_order_probes": 52,
   "receipts": {
     "robodyna-rename-checkpoint-1": {
@@ -178,6 +179,35 @@
       "exit_code": 0,
       "elapsed_seconds": 3.974,
       "peak_sampled_rss_bytes": 48783360
+    },
+    "robodyna-canonical-mesh-native-1": {
+      "path": "crash-work/reports/robodyna-canonical-mesh-native-1.json",
+      "sha256": "a7328b289ffe19eaf665321ed7e81592a5860afbcdd09bfa16d262ab0817dc6e",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 200.492,
+      "peak_sampled_rss_bytes": 5081542656
+    },
+    "robodyna-canonical-mesh-cmake-1": {
+      "path": "crash-work/reports/robodyna-canonical-mesh-cmake-1.json",
+      "sha256": "25e56b4dfc267b109e5128a194bf127a0781998ab8c2f9b2bcdec7f26755ca42",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 148.061,
+      "peak_sampled_rss_bytes": 5502259200
+    },
+    "robodyna-mesh-cmake-swig-1": {
+      "path": "crash-work/reports/robodyna-mesh-cmake-swig-1.json",
+      "sha256": "0a718bf9cc800042436772597fdc247cef5672b1c4b8506e0554c9717c4bedf4",
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 53.187,
+      "peak_sampled_rss_bytes": 1293111296
+    },
+    "robodyna-mesh-cmake-swig-boundary-1": {
+      "path": "crash-work/investigations/robodyna-mesh-cmake-swig-1/receipt.json",
+      "sha256": "30a44f30f22786a8d0546ba06d05e1856ed193d3addaae4bb343126206cc6472",
+      "passed": true
     }
   },
   "limits": {
@@ -197,8 +227,8 @@
   },
   "claim_boundary": [
     "No independent full FEA/MBD build yet",
-    "Body and inertia definitions are canonical; mesh/system implementations retain legacy names behind aliases",
-    "Core Python runtime and both native wrappers qualified; managed C# and optional module runtimes remain unqualified",
+    "Body, mesh and inertia definitions are canonical; system implementations retain legacy names behind aliases",
+    "Body checkpoint core Python runtime and both native wrappers qualified; integrated mesh bindings pending; managed C# and optional module runtimes remain unqualified",
     "No new CUDA physics or 100 ms rerun",
     "Populated glyph-property archive and unsafe Python parent-ownership helper limitations recorded separately",
     "101-step GPU comparison covers saved output at epochs 0 and 101, not unsaved state or physical restart"
@@ -209,7 +239,7 @@
     "path": "crash-work/reports/robodyna-rename-archive-visual-1.json",
     "reason": "Root stopped nested native/CMake compilation after observing five concurrent compiler processes; clean owned-session cleanup. Subsequent phases run separately. One new test also required a declared texture asset."
   },
-  "test_targets_scope": "Latest broad body native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count.",
+  "test_targets_scope": "Latest broad mesh native suite; separate product/CMake/binding suites are recorded by receipt, not a cumulative unique test count.",
   "optional_cmake_binding_scope": "Python+C# and C#-only configure, exact emitted SWIG command execution, owning interface installation and copied-contract negative/recovery check passed; full Ninja wrapper targets and managed C# runtime not built by this probe.",
   "system_fixture_checkpoint": {
     "source_head": "9581daa03f370fd5f2e33735794c074bd5966d56",

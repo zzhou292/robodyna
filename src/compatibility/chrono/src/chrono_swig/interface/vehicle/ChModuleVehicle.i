@@ -264,7 +264,7 @@ using namespace chrono::vehicle::m113;
 %import(module = "pychrono.core") "../../../chrono/physics/ChBodyFrame.h"
 %import(module = "pychrono.core") "../../../chrono/physics/ChLinkBase.h"
 %import(module = "pychrono.core") "chrono_swig/interface/core/ChTexture.i"
-%import(module = "pychrono.core") "../../../chrono/fea/ChMesh.h"
+%import(module = "pychrono.core") "robodyna_swig/MeshDeclarations.h"
 %import(module = "pychrono.core") "chrono_swig/interface/core/ChBodyGeometry.i"
 
 %import(module = "pychrono.core") "../../../chrono/input_output/ChOutput.h"

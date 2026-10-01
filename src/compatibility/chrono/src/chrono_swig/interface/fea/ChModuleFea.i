@@ -479,7 +479,7 @@ using namespace chrono::fea;
 %template(vector_ChNodeFEAbase) std::vector<std::shared_ptr<chrono::fea::ChNodeFEAbase>>;
 %template(vector_ChElementBase) std::vector<std::shared_ptr<chrono::fea::ChElementBase>>;
 %import "../../../chrono/fea/ChMeshSurface.h" // should be already provided by ChModuleCore
-%include "../../../chrono/fea/ChMesh.h"
+%include "robodyna_swig/MeshDeclarations.h"
 %include "../../../chrono/fea/ChLinkNodeSlopeFrame.h"
 %include "../../../chrono/fea/ChLinkNodeFrame.h"
 %include "../../../chrono/fea/ChLinkNodeNode.h"

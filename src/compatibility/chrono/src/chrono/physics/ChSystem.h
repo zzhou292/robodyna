@@ -903,7 +903,7 @@ class ChApi ChSystem : public ChIntegrableIIorder {
     friend class ChAssembly;
     friend class ::robodyna::mbd::RbBody;
 #ifdef CHRONO_FEA
-    friend class fea::ChMesh;
+    friend class ::robodyna::fea::RbMesh;
 #endif
 
     friend class ChContactContainerNSC;

@@ -81,8 +81,11 @@ The inertia definitions have moved to `robodyna::mechanics`, and the actual
 body definition/implementation now belongs to `robodyna::mbd::RbBody` under the
 public MBD header and `src/mbd/bodies`. The legacy body name is a reverse alias.
 Its implementation still compiles exactly once in the explicit combined backend;
-it is not yet an independent MBD library. Mesh and system public names remain
-forward aliases pending their next implementation batches.
+it is not yet an independent MBD library. The actual mesh definition now lives
+at `include/robodyna/fea/RbMesh.h` with its implementation in `src/fea/mesh` and a
+reverse legacy alias. Its 31-target native gate passed; optional integration is
+tracked separately. The mesh still uses concrete mixed-system services, so it
+also remains in the explicit aggregate. System names remain forward aliases.
 `SOURCE_TRANSFORMATIONS.json` in the
 migration directory records reviewed edits against the immutable original hashes.
 Archive identity helpers preserve captured file formats across actual type renames;

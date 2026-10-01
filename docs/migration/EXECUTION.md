@@ -196,6 +196,14 @@ Reuse the new source, archive and binding gates. Complete the remaining domain
 service seams before claiming independent FEA/MBD libraries. Namespace changes
 and physical ownership separation are tracked separately.
 
+The actual `robodyna::fea::RbMesh` implementation has now passed 31 native targets
+and three separate retained-CMake targets. Node offsets, shallow clone ownership,
+clear operations, setup invalidation and the mixed FE/body spring remain unchanged.
+Its old header aliases the canonical type; the original implementation is compiled
+once from `src/fea/mesh`. The declaration-view helper now handles Body and Mesh
+through the same generator. Full current binding integration remains a separate
+gate before this larger rename batch is accepted as a product checkpoint.
+
 OpenRadioss remains an optional external reference solver, not a required product
 runtime. Production C++/CUDA ports and their notices remain; verification-only
 Fortran fixtures require a separately reviewed relocation if moved out of tree.

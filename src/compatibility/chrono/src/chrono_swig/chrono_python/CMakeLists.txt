@@ -233,7 +233,7 @@ if(MSVC)
 endif()
 
 swig_add_library(${CHPY_CORE} LANGUAGE python SOURCES ${CHPY_CORE_MODULE_FILE})
-robodyna_bind_swig_body(${CHPY_CORE})
+robodyna_bind_swig_declarations(${CHPY_CORE})
 target_link_libraries(${CHPY_CORE} PRIVATE Python3::Python Chrono_core)
 
 # Numpy: enables to_numpy() and __array__ 
@@ -314,7 +314,7 @@ if(CH_ENABLE_MODULE_FEA)
   endif()
   
   swig_add_library(${CHPY_FEA} LANGUAGE python SOURCES ${CHPY_FEA_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_FEA})
+  robodyna_bind_swig_declarations(${CHPY_FEA})
   target_link_libraries(${CHPY_FEA} PRIVATE Python3::Python Chrono_core)
   
   # Disable additional warnings for generated C++ code TODO: are they all really needed for all targets?
@@ -407,7 +407,7 @@ if(CH_ENABLE_MODULE_POSTPROCESS)
   endif()
 
   swig_add_library(${CHPY_POSTPROCESS} LANGUAGE python SOURCES ${CHPY_POSTPROCESS_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_POSTPROCESS})
+  robodyna_bind_swig_declarations(${CHPY_POSTPROCESS})
   target_link_libraries(${CHPY_POSTPROCESS} PRIVATE Python3::Python Chrono_core Chrono_postprocess)
 
   # Disable additional warnings for generated C++ code TODO: are they all really needed for all targets?
@@ -483,7 +483,7 @@ if(CH_ENABLE_MODULE_VSG)
   endif()
 
   swig_add_library(${CHPY_VSG} LANGUAGE python SOURCES ${CHPY_VSG_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_VSG})
+  robodyna_bind_swig_declarations(${CHPY_VSG})
   target_link_libraries(${CHPY_VSG} PRIVATE Python3::Python Chrono_core Chrono_vsg)
 
   # Disable additional warnings for generated C++ code TODO: are they all really needed for all targets?
@@ -560,7 +560,7 @@ if(CH_ENABLE_MODULE_FSI_SPH)
   endif()
   
   swig_add_library(${CHPY_FSI} LANGUAGE python SOURCES ${CHPY_FSI_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_FSI})
+  robodyna_bind_swig_declarations(${CHPY_FSI})
   target_link_libraries(${CHPY_FSI} PRIVATE Python3::Python Chrono_core  Chrono_fsi Chrono_fsisph)
 
   if (Python3_NumPy_FOUND)
@@ -654,7 +654,7 @@ if(CH_ENABLE_MODULE_IRRLICHT)
   find_package(Irrlicht QUIET REQUIRED)
 
   swig_add_library(${CHPY_IRRLICHT} LANGUAGE python SOURCES ${CHPY_IRRLICHT_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_IRRLICHT})
+  robodyna_bind_swig_declarations(${CHPY_IRRLICHT})
   target_link_libraries(${CHPY_IRRLICHT} PRIVATE Python3::Python Chrono_core Chrono_irrlicht Irrlicht::Irrlicht)
 
   # Disable additional warnings for generated C++ code TODO: are they all really needed for all targets?
@@ -732,7 +732,7 @@ if(CH_ENABLE_MODULE_PARDISO_MKL)
   endif()
 
   swig_add_library(${CHPY_MKL} LANGUAGE python SOURCES ${CHPY_MKL_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_MKL})
+  robodyna_bind_swig_declarations(${CHPY_MKL})
   target_link_libraries(${CHPY_MKL} PRIVATE Python3::Python Chrono_core Chrono_pardisomkl)
 
   # Disable additional warnings for generated C++ code TODO: are they all really needed for all targets?
@@ -801,7 +801,7 @@ if(CH_ENABLE_MODULE_CASCADE)
   set_source_files_properties(${CHPY_CASCADE_MODULE_FILE} PROPERTIES CPLUSPLUS ON)
 
   swig_add_library(cascade LANGUAGE python SOURCES ${CHPY_CASCADE_MODULE_FILE})
-  robodyna_bind_swig_body(cascade)
+  robodyna_bind_swig_declarations(cascade)
   target_link_libraries(cascade PRIVATE Python3::Python Chrono_core Chrono_cascade)
   if(MSVC)
     set_source_files_properties(${CHPY_CASCADE_MODULE_FILE} PROPERTIES COMPILE_OPTIONS ${CHRONO_SWIG_FLAGS})
@@ -890,7 +890,7 @@ if(CH_ENABLE_MODULE_VEHICLE AND CH_ENABLE_MODULE_VEHICLE_MODELS)
   endif()
 
   swig_add_library(${CHPY_VEHICLE} LANGUAGE python SOURCES ${CHPY_VEHICLE_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_VEHICLE})
+  robodyna_bind_swig_declarations(${CHPY_VEHICLE})
   target_link_libraries(${CHPY_VEHICLE} PRIVATE Python3::Python Chrono_core Chrono_vehicle ChronoModels_vehicle)
 
   if(CH_ENABLE_MODULE_IRRLICHT)
@@ -993,7 +993,7 @@ if(CH_ENABLE_MODULE_SENSOR)
   endif()
 
   swig_add_library(${CHPY_SENSOR} LANGUAGE python SOURCES ${CHPY_SENSOR_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_SENSOR})
+  robodyna_bind_swig_declarations(${CHPY_SENSOR})
   target_link_libraries(${CHPY_SENSOR} PRIVATE Python3::Python Chrono_core Chrono_sensor)
 
   if (Python3_NumPy_FOUND)
@@ -1075,7 +1075,7 @@ if(CH_ENABLE_MODULE_ROBOT_MODELS)
   endif()
 
   swig_add_library(${CHPY_RS} LANGUAGE python SOURCES ${CHPY_ROBOT_MODULE_FILE})
-  robodyna_bind_swig_body(${CHPY_RS})
+  robodyna_bind_swig_declarations(${CHPY_RS})
   target_link_libraries(${CHPY_RS} PRIVATE Python3::Python Chrono_core ChronoModels_robot)
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -1150,7 +1150,7 @@ if(CH_ENABLE_MODULE_PARSERS AND CH_USE_URDF)
   endif()
 
   swig_add_library(parsers LANGUAGE python SOURCES ${CHPY_PARSERS_MODULE_FILE})
-  robodyna_bind_swig_body(parsers)
+  robodyna_bind_swig_declarations(parsers)
   target_link_libraries(parsers PRIVATE Python3::Python Chrono_core Chrono_parsers)
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -1251,7 +1251,7 @@ if(CH_ENABLE_MODULE_ROS)
   endif()
 
   swig_add_library(ros LANGUAGE python SOURCES ${CHPY_ROS_MODULE_FILE})
-  robodyna_bind_swig_body(ros)
+  robodyna_bind_swig_declarations(ros)
   target_link_libraries(ros PRIVATE Python3::Python Chrono_core Chrono_ros)
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

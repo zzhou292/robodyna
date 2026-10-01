@@ -27,6 +27,8 @@ class Node;
 }
 #endif
 
+#include "chrono/fea/ChMeshFwd.h"
+
 namespace chrono {
 
 /// @addtogroup chrono_assets
@@ -34,7 +36,7 @@ namespace chrono {
 
 // Forward declarations
 namespace fea {
-class ChMesh;
+// ChMesh is the legacy alias declared in ChMeshFwd.h.
 class ChMeshSurface;
 class ChContactSurface;
 class ChNodeFEAxyz;
