@@ -1,0 +1,158 @@
+{
+  "schema": "robodyna.yaris_playback_speed.v1",
+  "status": "passed",
+  "recorded_utc": "2026-10-02T04:45:07.105311+00:00",
+  "speed_factor": 5,
+  "prior_playback_seconds": 60.2,
+  "playback_seconds": 12.04,
+  "video_profile": {
+    "codec": "h264",
+    "pixel_format": "yuv420p",
+    "width": 1280,
+    "height": 720,
+    "fps": 25,
+    "frames": 301,
+    "audio_streams": 0
+  },
+  "preservation": {
+    "recorded_state_count": 301,
+    "all_source_state_metadata_identical": true,
+    "original_capture_manifests_and_frame_indexes_identical": true,
+    "previous_media_record_sha256": "38384a3173b5c2fd4973d7dd3c9fd21fd9e971b5cd054cb7ff0b606f4b1043ea",
+    "previous_media_record_git_commit": "b0b11d3a876921f01c9a4b0dbd2fc90e00807a80",
+    "original_captures_movies_archives_preserved": true,
+    "other_three_readme_video_entries_unchanged": true
+  },
+  "method": "Re-encode every existing native PNG state once at 25 fps using the existing encoder. The previous presentation held each of 301 states for six frames at 30 fps. No frame interpolation, scene rendering, solver run, rescaling or new logo overlay.",
+  "branding_review": {
+    "native_transparent_robodyna_logo_visible": true,
+    "front_and_overview_midpoint_posters_reviewed": true,
+    "burned_in_text": "Physical time/sample count only; no obsolete playback-rate text."
+  },
+  "validation": {
+    "exact_track_duration_ratio": "5/1",
+    "poster_full_decode_passed": true,
+    "ffprobe_frames_streams_and_timing_verified": true,
+    "markdown_video_player_rendered": true,
+    "markdown_rendering_authentication": "github_token",
+    "anonymous_cdn_sha256_readback_verified": true,
+    "public_readme_browser_verification": "Pending the README publication commit; attachment Markdown/player and anonymous bytes already verified.",
+    "native_encode_and_delivery_full_decode_passed": true
+  },
+  "resources": {
+    "cpus": 2,
+    "max_rss_gib": 4,
+    "min_available_gib": 32,
+    "timeout_seconds": 600,
+    "ffmpeg_threads": 1,
+    "gpu": false
+  },
+  "guards": [
+    {
+      "stage": "encode",
+      "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/encode-guard.json",
+      "sha256": "88fd166aa079d34f0accabfaa872beb2848e4b25713c14c27bf0b89cf4d965f7",
+      "bytes": 16904,
+      "elapsed_seconds": 16.556,
+      "peak_sampled_rss_bytes": 253976576,
+      "cleanup": "complete"
+    },
+    {
+      "stage": "front-upload",
+      "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/front-upload-guard.json",
+      "sha256": "698145565d6c45b0aab5045b323ca87da34c798dd5492731b228b52ee490a58e",
+      "bytes": 4762,
+      "elapsed_seconds": 2.143,
+      "peak_sampled_rss_bytes": 27160576,
+      "cleanup": "complete"
+    },
+    {
+      "stage": "overview-upload",
+      "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/overview-upload-guard.json",
+      "sha256": "440ebaa41bfeb655b6b11b7749fffb296c8b3d4000b0a6fff90b4bff0acc6086",
+      "bytes": 4770,
+      "elapsed_seconds": 2.153,
+      "peak_sampled_rss_bytes": 24154112,
+      "cleanup": "complete"
+    }
+  ],
+  "speed_change_receipt": {
+    "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/speed-change.json",
+    "sha256": "5372af2d8d0889a703887be827257468b10027a9a9006a9fbddb68eac346459b",
+    "bytes": 3121
+  },
+  "request": {
+    "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/request.json",
+    "sha256": "9d48b923b33fb0b62bd625b72f4486d271f07cd33af35808048dfcac02219090",
+    "bytes": 259206
+  },
+  "videos": [
+    {
+      "case": "yaris-front",
+      "old_attachment_url": "https://github.com/user-attachments/assets/71270cf4-bf3e-41bf-9e55-e940a0b763a2",
+      "attachment_url": "https://github.com/user-attachments/assets/0f07b58c-4b13-4d66-9275-ee84e0ef9e94",
+      "video": {
+        "bytes": 4248712,
+        "sha256": "8870ca707d525f8bdb362ba7497bf88d863b5c5369b48d2a0cd15c46eeab2ee9",
+        "frames": 301,
+        "fps": 25,
+        "duration_s": 12.04
+      },
+      "physical_duration_s": 0.10000005000066203,
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-yaris-readme-5x-1/yaris-front-video/manifest.json",
+        "sha256": "b0d0e51a473494610f162e51b8028326d58a61e7091325594c376b2ca09d6b9a",
+        "bytes": 208755
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-yaris-readme-5x-1/delivery/yaris-front/manifest.json",
+        "sha256": "6c305572a18471ae5e49b3f8d7c5706e9f7ab084e2be9e068b7e2e30b2198779",
+        "bytes": 111270
+      },
+      "upload_receipt": {
+        "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/front-upload.json",
+        "sha256": "2f7f94a2768013e3b041fb0c012f63c927caf3939ddf8db5ff66fa2f036deb53",
+        "bytes": 1056
+      },
+      "poster": {
+        "path": "docs/verification/images/yaris-front.png",
+        "sha256": "7702c9374a69d326affe3f0de2abe42eb25d10a7b72d01dac5ff48e3193709ac",
+        "video_frame": 150
+      }
+    },
+    {
+      "case": "yaris-overview",
+      "old_attachment_url": "https://github.com/user-attachments/assets/16654165-39e5-437b-879e-b314db5bfd45",
+      "attachment_url": "https://github.com/user-attachments/assets/8b5263ae-5f28-4682-8ef3-069f1e37750e",
+      "video": {
+        "bytes": 1189247,
+        "sha256": "4289c6997ed5c4e656fd5d6c4a370b6bbb33b63e6e10e7328db23ee32688b1e4",
+        "frames": 301,
+        "fps": 25,
+        "duration_s": 12.04
+      },
+      "physical_duration_s": 0.10000005000066203,
+      "native_manifest": {
+        "path": "crash-work/renders/robodyna-yaris-readme-5x-1/yaris-overview-video/manifest.json",
+        "sha256": "752b066d826723fe0b5455118da685988cc050b0c6a34df4595b6bb2f96826c5",
+        "bytes": 208854
+      },
+      "publication_manifest": {
+        "path": "crash-work/renders/robodyna-yaris-readme-5x-1/delivery/yaris-overview/manifest.json",
+        "sha256": "f42468a859b2a5bb2ca2ada69b23def2141a53a9faa84765716dbccb578d2639",
+        "bytes": 111387
+      },
+      "upload_receipt": {
+        "path": "crash-work/investigations/robodyna-yaris-readme-5x-1/overview-upload.json",
+        "sha256": "afd9556eca38b4659ad1b38ca691de8f70b7f6e6d2cd8fbdd8e4843e8d3ea187",
+        "bytes": 1059
+      },
+      "poster": {
+        "path": "docs/verification/images/yaris-overview.png",
+        "sha256": "e0492683f51fa005284f89e5a0893491cf56278207a41ba48d150176a7fc250f",
+        "video_frame": 150
+      }
+    }
+  ],
+  "scope": "Playback presentation update only. The unchanged approximately 100 ms physical trajectory and its original numerical qualifications are not rerun or broadened."
+}

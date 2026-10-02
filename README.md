@@ -19,11 +19,12 @@ and the preserved numerical evidence.
 
 ### Yaris wall crash — front view
 
-100 ms of simulated impact with wall and self-contact, shown in 60.2 seconds of
-slow-motion playback. The selected vehicle assembly includes elastic/plastic
-deformation; inflated tires remain outside this profile.
+100 ms of simulated impact with wall and self-contact, shown in **12.04 seconds
+of playback—5× faster than the previous video**. All 301 saved states are retained.
+The selected vehicle assembly includes elastic/plastic deformation; inflated
+tires remain outside this profile.
 
-https://github.com/user-attachments/assets/71270cf4-bf3e-41bf-9e55-e940a0b763a2
+https://github.com/user-attachments/assets/0f07b58c-4b13-4d66-9275-ee84e0ef9e94
 
 <details>
 <summary>Robodyna poster</summary>
@@ -34,10 +35,11 @@ https://github.com/user-attachments/assets/71270cf4-bf3e-41bf-9e55-e940a0b763a2
 
 ### Yaris wall crash — overview
 
-The same 100 ms trajectory, with the complete selected assembly and mesh wall
-visible. Parts keep their own colors and deformation is shown at physical scale.
+The same 100 ms trajectory in **12.04 seconds, also 5× faster**, with the complete
+selected assembly and mesh wall visible. Parts keep their own colors and
+deformation is shown at physical scale.
 
-https://github.com/user-attachments/assets/16654165-39e5-437b-879e-b314db5bfd45
+https://github.com/user-attachments/assets/8b5263ae-5f28-4682-8ef3-069f1e37750e
 
 <details>
 <summary>Robodyna poster</summary>
