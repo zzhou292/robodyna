@@ -1,0 +1,17 @@
+load("//bindings/python:package.bzl", "python_binding_package")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+python_binding_package(
+    name = "package", numpy = True, profile = "numpy-matplotlib-agg-capable",
+    python_runtime_anchor = "@numpy_sdk//:site-packages/numpy/__init__.py",
+    additional_runtime_roots = ["@python_plot_sdk//:site-packages/.robodyna-runtime.json"],
+    runtime_data = ["@numpy_sdk//:runtime_files", "@python_plot_sdk//:runtime_files"],
+    proxies = {module: "//build_defs/bindings/python/numpy:" + module + "_proxy" for module in ["core", "fea", "irrlicht", "pardisomkl"]},
+    extensions = {module: "//build_defs/bindings/python/numpy:python_" + module for module in ["core", "fea", "irrlicht", "pardisomkl"]},
+    backends = ["//build_defs/bindings:native_core", "//build_defs/bindings/optional:native_irrlicht", "//build_defs/bindings/optional:native_pardisomkl"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+filegroup(name = "manifest", srcs = [":package"], output_group = "manifest")

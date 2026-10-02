@@ -1,0 +1,52 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("//build_defs/features:defs.bzl", "YAML_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+_SOURCE = "//src/compatibility/chrono:src/demos/yaml/"
+_VISUAL = ["//build_defs/chrono/vsg:vsg"]
+_DATA = ["//src/io/parsers:yaml_demo_assets", "//build_defs/chrono/vsg:assets", "@vsg_sdk//:runtime"]
+
+# These are the original main functions. The global YAML/VSG profile applies to
+# both their parser libraries and consumers; no per-demo layout override exists.
+cc_binary(
+    name = "multibody",
+    srcs = [_SOURCE + "demo_YAML_mbs.cpp"],
+    deps = ["//src/io/parsers:yaml_mbs"] + _VISUAL,
+    data = _DATA,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "yaml-profile"],
+)
+cc_binary(
+    name = "controller",
+    srcs = [_SOURCE + "demo_YAML_mbs_controller.cpp"],
+    deps = ["//src/io/parsers:yaml_mbs"] + _VISUAL,
+    data = _DATA,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "yaml-profile"],
+)
+cc_binary(
+    name = "finite_elements",
+    srcs = [_SOURCE + "demo_YAML_fea.cpp"],
+    deps = ["//src/io/parsers:yaml_mbs"] + _VISUAL,
+    data = _DATA,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "yaml-profile"],
+)
+cc_binary(
+    name = "vehicle",
+    srcs = [_SOURCE + "demo_YAML_vehicle.cpp"],
+    deps = ["//src/io/parsers:yaml_vehicle", "//src/vehicle/visualization:vsg"],
+    data = _DATA,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "yaml-profile"],
+)
+cc_binary(
+    name = "fluid_structure",
+    srcs = [_SOURCE + "demo_YAML_fsi.cpp"],
+    deps = ["//src/io/parsers:yaml_fsi"] + _VISUAL,
+    data = _DATA,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "yaml-profile", "selected-fsi-backends"],
+)
+filegroup(name = "native_demos", srcs = [":multibody", ":controller", ":finite_elements", ":vehicle", ":fluid_structure"], tags = ["manual"])

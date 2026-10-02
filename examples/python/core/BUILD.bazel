@@ -1,0 +1,39 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "buildsystem",
+    source = "//src/compatibility/chrono:src/demos/python/core/demo_CH_buildsystem.py",
+    helpers = [],
+    package = "//bindings/python:core_package",
+    manifest = "//bindings/python:core_package_manifest",
+)
+
+robodyna_python_demo(
+    name = "functions",
+    source = "//src/compatibility/chrono:src/demos/python/core/demo_CH_functions.py",
+    helpers = [],
+    package = "//bindings/python:core_package",
+    manifest = "//bindings/python:core_package_manifest",
+)
+
+filegroup(name = "programs", srcs = [":buildsystem", ":functions"], tags = ["manual", "original-python-demos"])
+
+robodyna_python_demo(
+    name = "euler_angles",
+    source = "//src/compatibility/chrono:src/demos/python/core/demo_CH_EulerAngles.py",
+    helpers = [],
+    package = "//bindings/python/numpy:core_package",
+    manifest = "//bindings/python/numpy:core_manifest",
+)
+
+robodyna_python_demo(
+    name = "coords",
+    source = "//src/compatibility/chrono:src/demos/python/core/demo_CH_coords.py",
+    helpers = [],
+    package = "//bindings/python/numpy:core_package",
+    manifest = "//bindings/python/numpy:core_manifest",
+)

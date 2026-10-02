@@ -1,0 +1,119 @@
+{
+  "schema": "robodyna.rosidl_generator_downloads.v1",
+  "components": {
+    "python3-catkin-pkg-modules": {
+      "version": "1.1.1-1",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/p/python3-catkin-pkg-modules/python3-catkin-pkg-modules_1.1.1-1_all.deb",
+      "archive": "python3-catkin-pkg-modules_1.1.1-1_all.deb",
+      "bytes": 43428,
+      "sha256": "0bffe122ad0a894254468b1fba88a175c961f755dc9895a3a6f33c1683d0e020"
+    },
+    "ros-humble-rosidl-default-generators": {
+      "version": "1.2.1-1jammy.20260907.201146",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-default-generators/ros-humble-rosidl-default-generators_1.2.1-1jammy.20260907.201146_amd64.deb",
+      "archive": "ros-humble-rosidl-default-generators_1.2.1-1jammy.20260907.201146_amd64.deb",
+      "bytes": 7092,
+      "sha256": "a3c349f109c88bd40bed8d8e230668b5b395fad68d5022adc7d7715114b4b87c"
+    },
+    "ros-humble-rosidl-generator-rs": {
+      "version": "0.5.0-1jammy.20260907.195915",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-generator-rs/ros-humble-rosidl-generator-rs_0.5.0-1jammy.20260907.195915_amd64.deb",
+      "archive": "ros-humble-rosidl-generator-rs_0.5.0-1jammy.20260907.195915_amd64.deb",
+      "bytes": 25254,
+      "sha256": "f0d5f8b684419128de4867cb6097d0577550162cc94ffa39110efceb751f2736"
+    },
+    "ros-humble-ros-environment": {
+      "version": "3.2.2-1jammy.20260226.005101",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ros-environment/ros-humble-ros-environment_3.2.2-1jammy.20260226.005101_amd64.deb",
+      "archive": "ros-humble-ros-environment_3.2.2-1jammy.20260226.005101_amd64.deb",
+      "bytes": 5738,
+      "sha256": "d626963cfb17f8d830c8917e6ed46b32178ad64a57c90603c4f746cf29540fe5"
+    },
+    "python3-empy": {
+      "version": "3.3.4-2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/e/empy/python3-empy_3.3.4-2_all.deb",
+      "archive": "python3-empy_3.3.4-2_all.deb",
+      "bytes": 65668,
+      "sha256": "079a3ff2a5e792d84c22b8c618088b1467bd8e67d96e5a38166bb205c3906658"
+    },
+    "python3-lark": {
+      "version": "1.1.1-1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/p/python-lark/python3-lark_1.1.1-1_all.deb",
+      "archive": "python3-lark_1.1.1-1_all.deb",
+      "bytes": 122988,
+      "sha256": "41d3745264cdb3ed47317667fa5b9dea8c776d8fc390e1fb35857bdce2d8eed5"
+    },
+    "python3-numpy": {
+      "version": "1:1.21.5-1ubuntu22.04.1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/numpy/python3-numpy_1.21.5-1ubuntu22.04.1_amd64.deb",
+      "archive": "python3-numpy_1.21.5-1ubuntu22.04.1_amd64.deb",
+      "bytes": 3467276,
+      "sha256": "f60f535a4880ba1f58dece6fb5c55822445311e35ef3ef6ac825741df9b362e6"
+    },
+    "python3-docutils": {
+      "version": "0.17.1+dfsg-2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/python-docutils/python3-docutils_0.17.1+dfsg-2_all.deb",
+      "archive": "python3-docutils_0.17.1+dfsg-2_all.deb",
+      "bytes": 386516,
+      "sha256": "b4d063e2b4eb1c8a399552a4372c677aa45a0d5a254b39ac3c7d53cbd94b7a4d"
+    },
+    "docutils-common": {
+      "version": "0.17.1+dfsg-2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/python-docutils/docutils-common_0.17.1+dfsg-2_all.deb",
+      "archive": "docutils-common_0.17.1+dfsg-2_all.deb",
+      "bytes": 117236,
+      "sha256": "43d490a014c8bf63c6657ff226c145f6f77117f0cdde45436ac21daab580cb03"
+    },
+    "python3-roman": {
+      "version": "3.3-1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/python-roman/python3-roman_3.3-1_all.deb",
+      "archive": "python3-roman_3.3-1_all.deb",
+      "bytes": 10594,
+      "sha256": "0a86c357c6d18846ae30d8020aa94db15c7a1df0ffa02a45bb40cd08af614871"
+    },
+    "python3-dateutil": {
+      "version": "2.8.1-6",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/python-dateutil/python3-dateutil_2.8.1-6_all.deb",
+      "archive": "python3-dateutil_2.8.1-6_all.deb",
+      "bytes": 78444,
+      "sha256": "cc8ff634b6646b31236eb07f98380796be81845f9b8f7b874a60e2d2f21123d6"
+    },
+    "python3-pyparsing": {
+      "version": "2.4.7-1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/pyparsing/python3-pyparsing_2.4.7-1_all.deb",
+      "archive": "python3-pyparsing_2.4.7-1_all.deb",
+      "bytes": 61404,
+      "sha256": "b28bcfb1cf7992e1802c41b659535646cd86dd20cc62adcf941bb095005a45a4"
+    },
+    "python3-packaging": {
+      "version": "21.3-1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/python-packaging/python3-packaging_21.3-1_all.deb",
+      "archive": "python3-packaging_21.3-1_all.deb",
+      "bytes": 30672,
+      "sha256": "95982dc1ffb5b7eb03f385d685887aadd98d086e0795755795df3904cf8e3ecf"
+    },
+    "python3-six": {
+      "version": "1.16.0-3ubuntu1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/six/python3-six_1.16.0-3ubuntu1_all.deb",
+      "archive": "python3-six_1.16.0-3ubuntu1_all.deb",
+      "bytes": 12624,
+      "sha256": "561db46fbee989a595ef4be588cd4ecbe76ca19bdbfe93d7d006b07acb53e4ea"
+    },
+    "python3-pkg-resources": {
+      "version": "59.6.0-1.2ubuntu0.22.04.3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/setuptools/python3-pkg-resources_59.6.0-1.2ubuntu0.22.04.3_all.deb",
+      "archive": "python3-pkg-resources_59.6.0-1.2ubuntu0.22.04.3_all.deb",
+      "bytes": 132734,
+      "sha256": "e838b1d16912f11c8c955d99ba5b7f378025ebb29b3ea72096cc7e9ec4d5e8f8"
+    },
+    "python3-setuptools": {
+      "version": "59.6.0-1.2ubuntu0.22.04.3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/setuptools/python3-setuptools_59.6.0-1.2ubuntu0.22.04.3_all.deb",
+      "archive": "python3-setuptools_59.6.0-1.2ubuntu0.22.04.3_all.deb",
+      "bytes": 340010,
+      "sha256": "553fd6b076e22c35123f29b4b5ff08e762164b39c72569f05af7265571a85c13"
+    }
+  },
+  "base_sdk": "ros-humble-r0 (unchanged)",
+  "scope": "Separate build-only ROSIDL/Python-generator overlay, no modification of frozen ROS runtime SDK; original custom message package default C/C++/Python/Rust-generation profile retained."
+}

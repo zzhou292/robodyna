@@ -1,0 +1,39 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel", "demo_targets.json"])
+
+# Build-only aggregate. Every dependency is a real executable; nothing is run here.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        "//examples/fea/cuda/beams:all_demos",
+        "//examples/fea/cuda/deformation:all_demos",
+        "//examples/fea/cuda/joints:all_demos",
+        "//examples/fea/cuda/contact:all_demos",
+        "//examples/fea/cuda/mixed:all_demos",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)
+
+py_test(
+    name = "catalog_test",
+    srcs = ["CatalogTest.py"],
+    main = "CatalogTest.py",
+    args = ["$(location demo_targets.json)", "$(location BUILD.bazel)"] + [
+        "$(location //examples/fea/cuda/beams:BUILD.bazel)",
+        "$(location //examples/fea/cuda/deformation:BUILD.bazel)",
+        "$(location //examples/fea/cuda/joints:BUILD.bazel)",
+        "$(location //examples/fea/cuda/contact:BUILD.bazel)",
+        "$(location //examples/fea/cuda/mixed:BUILD.bazel)",
+    ],
+    data = ["demo_targets.json", "BUILD.bazel"] + [
+        "//examples/fea/cuda/beams:BUILD.bazel",
+        "//examples/fea/cuda/deformation:BUILD.bazel",
+        "//examples/fea/cuda/joints:BUILD.bazel",
+        "//examples/fea/cuda/contact:BUILD.bazel",
+        "//examples/fea/cuda/mixed:BUILD.bazel",
+    ],
+    size = "small",
+)

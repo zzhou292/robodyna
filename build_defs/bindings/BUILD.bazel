@@ -1,5 +1,8 @@
 load(":declaration.bzl", "declaration_view")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
 load(":swig.bzl", "swig_module")
+load("//build_defs/bindings/python/profiles:policy.bzl", "IMPLEMENTATION_PROFILE")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_shared_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -41,13 +44,20 @@ filegroup(name = "mesh_header", srcs = [":mesh_declarations"], output_group = "h
 # These bindings retain the current combined CPU backend; no CUDA coverage claim.
 cc_shared_library(
     name = "native_core",
-    deps = ["//build_defs/chrono:native_core_fea"],
+    target_compatible_with = IMPLEMENTATION_PROFILE,
+    # ChUtilsYAML already links this vendor implementation into the configured
+    # core. Retain its full API here so parser wrappers reuse one YAML owner.
+    deps = ["//build_defs/chrono:native_core_fea"] + select({
+        "//build_defs/features:yaml_enabled": ["//src/compatibility/chrono/src/chrono_thirdparty/yaml-cpp:yaml-cpp"],
+        "//conditions:default": [],
+    }),
     shared_lib_name = "librobodyna_core.so",
     user_link_flags = ["-Wl,-soname,librobodyna_core.so"],
     tags = ["manual", "native-bindings", "cpu-only"],
 )
 
 swig_module(
+    target_compatible_with = BASELINE_ABI_ONLY,
     name = "python_generated",
     language = "python",
     interface = "//src/compatibility/chrono:src/chrono_swig/chrono_python/ChModuleCore_python.i",
@@ -55,6 +65,7 @@ swig_module(
 )
 
 swig_module(
+    target_compatible_with = BASELINE_ABI_ONLY,
     name = "csharp_generated",
     language = "csharp",
     interface = "//src/compatibility/chrono:src/chrono_swig/chrono_csharp/ChModuleCore_csharp.i",
@@ -67,6 +78,16 @@ filegroup(name = "python_proxy", srcs = [":python_generated"], output_group = "p
 filegroup(name = "csharp_wrapper_source", srcs = [":csharp_generated"], output_group = "wrapper")
 filegroup(name = "csharp_director_header", srcs = [":csharp_generated"], output_group = "directors")
 filegroup(name = "csharp_proxies", srcs = [":csharp_generated"], output_group = "proxy")
+
+managed_assembly(
+    name = "csharp_managed_core",
+    assembly_name = "Robodyna.Managed.dll",
+    srcs = [":csharp_proxies"],
+    globals_template = "//src/compatibility/chrono:src/chrono_swig/chrono_csharp/ChChronoGlobals.cs.in",
+    native_libraries = [":csharp_core", ":native_core"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-bindings", "cpu-only"],
+)
 
 _WRAPPER_COPTS = ["-std=c++17", "-O3", "-fPIC", "-fno-fast-math", "-ffp-contract=off", "-Wno-unused-variable"]
 
@@ -172,6 +193,7 @@ filegroup(name = "body_easy_header", srcs = [":body_easy_declarations"], output_
 
 # FEA extends the same owned native implementation; no second static core.
 swig_module(
+    target_compatible_with = BASELINE_ABI_ONLY,
     name = "python_fea_generated",
     module = "fea",
     language = "python",

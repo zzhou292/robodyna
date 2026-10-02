@@ -1,0 +1,19 @@
+package(default_visibility = ["//visibility:public"])
+
+# Canonical names select existing real binaries; numerical compile owners stay unchanged.
+exports_files(["BUILD.bazel"])
+
+alias(
+    name = "mixed_elements_gravity",
+    actual = "@legacy_fea//lib_bin/multi_type:test_multi_element_gravity",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+# Explicit aggregate includes every program in this group, including optional backends.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        ":mixed_elements_gravity",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)

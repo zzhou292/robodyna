@@ -13,7 +13,10 @@
 //
 ///////////////////////////////////////////////////
 
+// The outer C# interface owns its chrono_ros module name.
+#ifdef SWIGPYTHON
 %module(directors="1") ros
+#endif
 
 %feature("autodoc", "1");
 %feature("flatnested", "1");
@@ -31,12 +34,14 @@
 // Surface the real Python traceback when a director method (a user's
 // ChROSHandler.Initialize/Tick or ChROSSubscriptionCallback.OnMessage) raises,
 // instead of a generic "SWIG director method error".
+#ifdef SWIGPYTHON
 %feature("director:except") {
     if ($error != NULL) {
         PyErr_Print();
         throw Swig::DirectorMethodException();
     }
 }
+#endif
 
 %include "../chrono_cast.i"
 %include "../chrono_ignore_operators.i"
@@ -56,6 +61,7 @@
 // library still links nothing beyond Chrono_core.
 #include "chrono/physics/ChSystemNSC.h"
 #include "chrono/physics/ChSystemSMC.h"
+#include "chrono_ros/ChConfigROS.h"
 
 // Supplies CHRONO_HAS_OPTIX for the guarded blocks below: this wrapper is compiled as
 // C++, so that macro has to come from the generated configuration header, not from the
@@ -204,7 +210,9 @@ using namespace chrono::ros;
 // (bridge.CreateSubscription(topic, type, MyCallback())) is not garbage-
 // collected while C++ still holds it. Expose the real binding under a private
 // name for the shim to call.
+#ifdef SWIGPYTHON
 %rename(_CreateSubscription) chrono::ros::ChROSBridge::CreateSubscription;
+#endif
 
 // Bulk blob I/O (camera pixels, lidar points, any primitive array field). The
 // raw-pointer/BlobView C++ methods take `const void*`/return a BlobView and
@@ -226,7 +234,9 @@ using namespace chrono::ros;
 // bare-template SensorBufferT (breaks under %import). It would compile but not
 // reliably convert at runtime. The exact equivalent uses already-wrapped types:
 //   tf.AddTransform(sensor.GetParent(), pfid, sensor.GetOffsetPose(), cfid)
+#ifdef SWIGPYTHON
 %ignore chrono::ros::ChROSTFHandler::AddSensor;
+#endif
 #endif
 
 // RobotModel's ChParserURDF ctor and TF AddURDF take a chrono::parsers::ChParserURDF
@@ -291,6 +301,13 @@ using namespace chrono::ros;
 // DynamicCast helpers these files emit) is defined via the ChSensor.h #include
 // in the %{ %} block above; SWIG treats it as an opaque imported base, which is
 // all we need to pass a leaf-sensor shared_ptr into a handler ctor.
+#ifdef SWIGCSHARP
+// C# needs the actual imported base hierarchy for AddSensor(shared_ptr<ChSensor>).
+// Parse the real header without ChSensorBuffer.i's bare-template shared_ptr
+// declarations; the owning sensor module still supplies its managed proxy.
+%shared_ptr(chrono::sensor::ChSensor)
+%import "chrono_sensor/sensors/ChSensor.h"
+#endif
 %import(module = "pychrono.sensor") "chrono_swig/interface/sensor/ChGPSSensor.i"
 %import(module = "pychrono.sensor") "chrono_swig/interface/sensor/ChIMUSensor.i"
 #endif

@@ -1,0 +1,48 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "ball_cosimulation",
+    srcs = ["//src/compatibility/chrono:src/demos/dem/demo_DEM_ballCosim.cpp"],
+    deps = ["//src/dem:visualization"],
+    features = ["dem", "vsg"],
+    tags = ["gpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "moving_boundary",
+    srcs = ["//src/compatibility/chrono:src/demos/dem/demo_DEM_movingBoundary.cpp"],
+    features = ["dem"],
+    tags = ["gpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "fixed_terrain",
+    srcs = ["//src/compatibility/chrono:src/demos/dem/demo_DEM_fixedTerrain.cpp"],
+    features = ["dem"],
+    tags = ["gpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "mixer",
+    srcs = ["//src/compatibility/chrono:src/demos/dem/demo_DEM_mixer.cpp"],
+    deps = ["//src/dem:visualization"],
+    features = ["dem", "vsg"],
+    tags = ["gpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "repose",
+    srcs = ["//src/compatibility/chrono:src/demos/dem/demo_DEM_repose.cpp"],
+    deps = ["//src/dem:visualization"],
+    features = ["dem", "vsg"],
+    tags = ["gpu-dynamics"],
+)
+
+# Builds the real original entry points; it does not execute a simulation.
+filegroup(
+    name = "native_demos",
+    srcs = [":ball_cosimulation", ":moving_boundary", ":fixed_terrain", ":mixer", ":repose"],
+    tags = ["manual"],
+)

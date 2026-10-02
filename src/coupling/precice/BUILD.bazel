@@ -1,0 +1,108 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "YAML_ONLY")
+load("//tools/mpi:defs.bzl", "local_mpi_test")
+load(":sources.bzl", "PRECICE_ASSETS", "PRECICE_EXPORTS", "PRECICE_GROUPS")
+load(":ownership.bzl", "precice_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["sources.bzl", "SourceBaseline.json"])
+
+_SOURCE = "//src/compatibility/chrono:"
+_COMPATIBLE = ["@platforms//os:linux"] + YAML_ONLY
+_SPH_COMPATIBLE = ["@platforms//os:linux"] + select({
+    "//build_defs/features:yaml_sph_enabled": [],
+    "//conditions:default": ["@platforms//:incompatible"],
+})
+_VSG = select({"//build_defs/features:vsg_enabled": ["//build_defs/chrono/vsg:vsg"], "//conditions:default": []})
+
+cc_library(
+    name = "base",
+    srcs = [_SOURCE + p for p in PRECICE_GROUPS["base"]["sources"]],
+    hdrs = [_SOURCE + p for p in PRECICE_GROUPS["base"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea", "//src/io/yaml:yaml", "@precice_sdk//:precice"] + _VSG,
+    local_defines = ["CH_API_COMPILE_PRECICE"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "native-precice"],
+)
+
+cc_library(
+    name = "mbs",
+    srcs = [_SOURCE + p for p in PRECICE_GROUPS["mbs"]["sources"]],
+    hdrs = [_SOURCE + p for p in PRECICE_GROUPS["mbs"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base", "//src/io/parsers:yaml_mbs"] + _VSG,
+    local_defines = ["CH_API_COMPILE_PRECICE"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "native-precice", "cpu-mechanics"],
+)
+
+cc_library(
+    name = "sph",
+    srcs = [_SOURCE + p for p in PRECICE_GROUPS["sph"]["sources"]],
+    hdrs = [_SOURCE + p for p in PRECICE_GROUPS["sph"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base", "//src/io/parsers:yaml_sph", "//src/sph:sph"] + select({
+        "//build_defs/features:vsg_enabled": ["//src/sph/visualization:vsg"],
+        "//conditions:default": [],
+    }),
+    local_defines = ["CH_API_COMPILE_PRECICE", "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA", "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = _SPH_COMPATIBLE,
+    tags = ["manual", "native-precice", "cuda-fluid-coupling"],
+)
+
+filegroup(name = "demo_assets", srcs = [_SOURCE + p for p in PRECICE_ASSETS])
+
+cc_binary(
+    name = "host_adapter_backend",
+    testonly = True,
+    srcs = ["HostAdapterTest.cpp"],
+    data = [":demo_assets", "@precice_sdk//:runtime", "@precice_sdk//:sdk.json",
+            _SOURCE + "data/precice/sphere_drop/solid_chrono/mbs_participant.yaml",
+            _SOURCE + "data/testing/precice/test.xml"],
+    deps = [":mbs", "//include/robodyna/simulation:api", "@googletest//:gtest"],
+    linkopts = ["-ldl"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "cpu-only", "native-precice"],
+)
+
+# The real configuration validator initializes MPI internally. Admit its single
+# local rank and runtime helpers without starting a coupled solver participant.
+local_mpi_test(
+    name = "host_adapter_test",
+    program = ":host_adapter_backend",
+    ranks = 1,
+    program_inputs = [
+        _SOURCE + "data/precice/sphere_drop/solid_chrono/mbs_participant.yaml",
+        _SOURCE + "data/testing/precice/test.xml",
+        "@precice_sdk//:sdk.json",
+    ],
+    target_compatible_with = _COMPATIBLE,
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location :sources.bzl)", "$(location :SourceBaseline.json)",
+            "$(location " + _SOURCE + "src/chrono_precice/CMakeLists.txt)",
+            "$(location //examples/coupling/precice:DemoCatalog.json)"],
+    data = [":sources.bzl", ":SourceBaseline.json", "//examples/coupling/precice:DemoCatalog.json"] + [_SOURCE + p for p in PRECICE_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+precice_ownership_test(
+    name = "ownership_test",
+    implementations = [":mbs", ":sph"],
+    target_compatible_with = _SPH_COMPATIBLE,
+    tags = ["manual", "cpu-only", "source-proof"],
+)

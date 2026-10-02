@@ -1,0 +1,398 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "basic",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_basic.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "dynamics",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_dynamics.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "static_loads",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_loads_statics.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "thermal",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_thermal.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/fea/beam.ele",
+        "//src/compatibility/chrono:data/fea/beam.node",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "electrostatics",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_electrostatics.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/fea/electrostatics.INP",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "contact_smc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_contacts_SMC.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/fea/beam.ele",
+        "//src/compatibility/chrono:data/fea/beam.node",
+        "//src/compatibility/chrono:data/models/cube.obj",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "cables",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_cables.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAcables.h",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_shells_3423_3443",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_shellsANCF_3423_3443.cpp",
+        "//src/compatibility/chrono:src/demos/SetChronoSolver.h",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_shells_3833",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_shellsANCF_3833.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_hexahedra_3813",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_hexaANCF_3813.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "dynamic_loads",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_loads_dynamics.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "euler_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beamsEuler.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "truss",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_truss.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "load_cosimulation",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_cosimulate_load.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/tractor_wheel/tractor_wheel_coarse.INP",
+        "//src/compatibility/chrono:data/models/tractor_wheel/tractor_wheel_fine.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "static_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beams_static.cpp",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "beam_extrusion",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beams_extrude.cpp",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "iga_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beamsIGA.cpp",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "checkpoint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_checkpoint.cpp",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "cables_mumps",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_cablesMUMPS.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAcables.h",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "mumps"],
+)
+
+robodyna_cpp_demo(
+    name = "constrained_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beams_constr.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "cables_mkl",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_cablesMKL.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAcables.h",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "abaqus_wheel",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_abaqus_wheel.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+    data = [
+        "//src/compatibility/chrono:data/models/tractor_wheel/tractor_wheel_coarse.INP",
+        "//src/compatibility/chrono:data/models/tractor_wheel/tractor_wheel_rim.obj",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "reissner_shells",
+    deps = ["//src/postprocess:gnuplot_headers"],
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_shellsReissner.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "bst_shells",
+    deps = ["//src/postprocess:gnuplot_headers"],
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_shellsBST.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+    data = [
+        "//src/compatibility/chrono:data/models/sphere.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "contact_nsc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_contacts_NSC.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+    data = [
+        "//src/compatibility/chrono:data/fea/beam.ele",
+        "//src/compatibility/chrono:data/fea/beam.node",
+        "//src/compatibility/chrono:data/models/cube.obj",
+        "//src/compatibility/chrono:data/models/tractor_wheel/tractor_wheel_fine.INP",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_contact_smc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_contactsANCF_SMC.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+    data = [
+        "//src/compatibility/chrono:data/fea/Plate.mesh",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_hexahedra_3813_9",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_hexaANCF_3813_9.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+    data = [
+        "//src/compatibility/chrono:data/fea/CapHardeningInformation_TriaxialAxial.INP",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "ancf_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beamsANCF.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl"],
+)
+
+robodyna_cpp_demo(
+    name = "rotor_beams",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_beams_rotor.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["vsg", "pardiso_mkl", "postprocess"],
+)
+
+# Explicit compilation aggregate; this does not execute interactive programs.
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":static_beams",
+        ":beam_extrusion",
+        ":iga_beams",
+        ":checkpoint",
+        ":cables_mumps",
+        ":constrained_beams",
+        ":cables_mkl",
+        ":abaqus_wheel",
+        ":reissner_shells",
+        ":bst_shells",
+        ":contact_nsc",
+        ":ancf_contact_smc",
+        ":ancf_hexahedra_3813_9",
+        ":ancf_beams",
+        ":rotor_beams",
+        ":basic",
+        ":dynamics",
+        ":static_loads",
+        ":truss",
+        ":load_cosimulation",
+        ":thermal",
+        ":electrostatics",
+        ":contact_smc",
+        ":cables",
+        ":ancf_shells_3423_3443",
+        ":ancf_shells_3833",
+        ":ancf_hexahedra_3813",
+        ":dynamic_loads",
+        ":euler_beams",
+    ],
+    tags = ["manual"],
+)
+
+# Coherent opt-in profile required; no per-demo numerical/layout defines.
+robodyna_cpp_demo(
+    name = "multiphysics",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_multiphysics.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+    deps = ["//src/fea/multiphysics:fields"],
+)
+
+robodyna_cpp_demo(
+    name = "custom_multiphysics",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_multiphysics_custom.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+    deps = ["//src/fea/multiphysics:fields"],
+)
+
+robodyna_cpp_demo(
+    name = "multiphysics_contact",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_multiphysics_contacts.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+    deps = ["//src/fea/multiphysics:fields"],
+    data = [
+        "//src/compatibility/chrono:data/models/cube.obj",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "viscous_multiphysics",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/fea/demo_FEA_multiphysics_viscous.cpp",
+        "//src/compatibility/chrono:src/demos/fea/FEAvisualization.h",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+    deps = ["//src/fea/multiphysics:fields"],
+)
+
+filegroup(
+    name = "multiphysics_demos",
+    srcs = [
+        ":multiphysics",
+        ":custom_multiphysics",
+        ":multiphysics_contact",
+        ":viscous_multiphysics",
+    ],
+    tags = ["manual"],
+)
+
+# Every retained FEA program; deliberately fails when the required profile is
+# absent. :native_demos remains the explicit baseline-compatible slice.
+filegroup(
+    name = "all_demos",
+    srcs = [":native_demos", ":multiphysics_demos"],
+    tags = ["manual"],
+)

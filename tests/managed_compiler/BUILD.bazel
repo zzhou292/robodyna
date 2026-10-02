@@ -1,0 +1,15 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "local_functions_test",
+    srcs = ["CompilerTest.py"],
+    main = "CompilerTest.py",
+    args = ["$(rlocationpath :LocalFunctions.cs)", "$(rlocationpath @mono_sdk//:sdk.json)",
+            "$(rlocationpath @roslyn_sdk//:sdk.json)"],
+    data = ["LocalFunctions.cs", "@mono_sdk//:sdk.json", "@mono_sdk//:runtime",
+            "@roslyn_sdk//:sdk.json", "@roslyn_sdk//:compiler_files"],
+    deps = ["@rules_python//python/runfiles", "//tools/managed:environment", "//tools/dependencies:cuda_math_library"],
+    size = "small",
+    timeout = "short",
+    tags = ["manual", "cpu-only", "managed-compiler-admission"],
+)

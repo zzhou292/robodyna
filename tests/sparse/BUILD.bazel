@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+# Separate processes keep the vendor BLAS/runtime closures distinct at admission.
+# No display, GPU, MPI service, or external reference solver is launched.
+cc_test(
+    name = "mumps_test",
+    srcs = ["MumpsTest.cpp", "Integration.h"],
+    deps = ["//src/numerics/sparse:mumps", "//tests/mesh_compat:fixture", "@googletest//:gtest_main"],
+    data = ["@mumps_sdk//:runtime"],
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    size = "small",
+    tags = ["manual", "cpu-only", "sdk-admission"],
+)
+
+cc_test(
+    name = "pardiso_test",
+    srcs = ["PardisoTest.cpp", "MklRuntimeTest.cpp", "Integration.h"],
+    deps = ["//src/numerics/sparse:pardiso_mkl", "//tests/mesh_compat:fixture", "@googletest//:gtest_main"],
+    data = ["@mkl_sdk//:runtime"],
+    linkopts = ["-ldl"],
+    env = {"MKL_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE"},
+    size = "small",
+    tags = ["manual", "cpu-only", "sdk-admission"],
+)
+
+test_suite(name = "solver_tests", tests = [":mumps_test", ":pardiso_test"], tags = ["manual"])

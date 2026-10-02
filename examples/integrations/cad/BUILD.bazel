@@ -1,0 +1,41 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "step_import",
+    srcs = ["//src/compatibility/chrono:src/demos/cascade/demo_CAS_stepfile.cpp"],
+    deps = ["//src/integrations/cad:cad"],
+    data = ["//src/integrations/cad:demo_assets", "@occt_sdk//:runtime"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "native-cad"],
+)
+
+robodyna_cpp_demo(
+    name = "robot",
+    srcs = ["//src/compatibility/chrono:src/demos/cascade/demo_CAS_robot.cpp"],
+    deps = ["//src/integrations/cad:cad"],
+    data = ["//src/integrations/cad:demo_assets", "@occt_sdk//:runtime"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "native-cad"],
+)
+
+robodyna_cpp_demo(
+    name = "profile_extrusion",
+    srcs = ["//src/compatibility/chrono:src/demos/cascade/demo_CAS_profile.cpp"],
+    deps = ["//src/integrations/cad:cad"],
+    data = ["//src/integrations/cad:demo_assets", "@occt_sdk//:runtime"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "native-cad"],
+)
+
+robodyna_cpp_demo(
+    name = "mesh_converter",
+    srcs = ["//src/compatibility/chrono:src/demos/cascade/demo_CAS_converter.cpp"],
+    deps = ["//src/integrations/cad:irrlicht"],
+    data = ["//src/integrations/cad:demo_assets", "@occt_sdk//:runtime"],
+    features = ["irrlicht"],
+    tags = ["cpu-dynamics", "native-cad"],
+)
+
+filegroup(name = "native_demos", srcs = [":step_import", ":robot", ":profile_extrusion", ":mesh_converter"], tags = ["manual"])

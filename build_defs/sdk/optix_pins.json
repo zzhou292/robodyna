@@ -1,0 +1,59 @@
+{
+  "schema": "robodyna.optix_downloads.v1",
+  "cuda_release": "13.2.2",
+  "nvcc_version": "13.2.86",
+  "manifests": {
+    "cuda": {
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.2.2.json",
+      "sha256": "89d93e6de640d47eb43c63437fe1be426ed21dd58cc79933a29acbca33c6eeb8"
+    },
+    "optix": {
+      "repository": "https://github.com/NVIDIA/optix-dev",
+      "tag": "v9.1.0",
+      "commit": "f1f6dd803f3159992d248178f6e09421c6eb8b6d",
+      "url": "https://codeload.github.com/NVIDIA/optix-dev/tar.gz/f1f6dd803f3159992d248178f6e09421c6eb8b6d",
+      "archive": "optix-dev-f1f6dd803f3159992d248178f6e09421c6eb8b6d.tar.gz",
+      "bytes": 105898,
+      "sha256": "c36d6e52289138685dcce77befb8f966d2761c6840556f6a04945b01700c8ebc",
+      "identity_source": "Official git ls-remote refs/tags/v9.1.0, immutable commit URL; observed HTTPS archive fingerprint"
+    }
+  },
+  "components": {
+    "libnpp": {
+      "version": "13.1.0.59",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libnpp/linux-x86_64/libnpp-linux-x86_64-13.1.0.59-archive.tar.xz",
+      "archive": "libnpp-linux-x86_64-13.1.0.59-archive.tar.xz",
+      "bytes": 225380108,
+      "sha256": "b76bc65fa21b8fb1077b908cfee2745f9214d2ff46c12c8f14d101f7af8a0e83",
+      "license": "CUDA Toolkit",
+      "license_path": "libnpp/LICENSE.txt"
+    },
+    "libcurand": {
+      "version": "10.4.2.66",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/libcurand-linux-x86_64-10.4.2.66-archive.tar.xz",
+      "archive": "libcurand-linux-x86_64-10.4.2.66-archive.tar.xz",
+      "bytes": 86679840,
+      "sha256": "f682166d50b81d3f1833c1d5a29cfe06871ec8e48991ffdeac367ba6430cf6a7",
+      "license": "CUDA Toolkit",
+      "license_path": "libcurand/LICENSE.txt"
+    },
+    "optix_headers": {
+      "url": "https://codeload.github.com/NVIDIA/optix-dev/tar.gz/f1f6dd803f3159992d248178f6e09421c6eb8b6d",
+      "archive": "optix-dev-f1f6dd803f3159992d248178f6e09421c6eb8b6d.tar.gz",
+      "bytes": 105898,
+      "sha256": "c36d6e52289138685dcce77befb8f966d2761c6840556f6a04945b01700c8ebc",
+      "version": "9.1.0",
+      "commit": "f1f6dd803f3159992d248178f6e09421c6eb8b6d",
+      "license": "NVIDIA SDK terms and per-file BSD/proprietary licenses; retain all original notices"
+    }
+  },
+  "cccl": {
+    "policy": "reuse_existing_toolkit_tree",
+    "relative_include": "include/cccl",
+    "expected_thrust_version": 300200,
+    "expected_cub_version": 300200,
+    "separate_archive_installed": false
+  },
+  "scope": "Additional OptiX/NPP/cuRAND SDK only; reuse rules_cuda runtime and cuda_math NVRTC/CCCL/driver owner.",
+  "sdk_receipt_sha256": "f9405e226c1bbf8a7bf8c132fcff236a7451d5805131f8a5280a8192c9b7d872"
+}

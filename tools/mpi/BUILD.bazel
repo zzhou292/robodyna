@@ -1,0 +1,36 @@
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["TestMain.py"])
+
+py_library(
+    name = "environment",
+    srcs = ["environment.py"],
+    deps = ["//tools/bindings:swig_runner_library"],
+)
+
+py_library(
+    name = "harness",
+    srcs = ["TestMain.py"],
+    deps = [":environment", "//src/simulation/driver:driver", "//src/compatibility/app:python_io",
+            "@rules_python//python/runfiles"],
+)
+
+py_test(
+    name = "environment_test",
+    srcs = ["EnvironmentTest.py"],
+    main = "EnvironmentTest.py",
+    deps = [":environment"],
+    size = "small",
+)
+
+py_test(
+    name = "cli_test",
+    srcs = ["CliTest.py"],
+    main = "CliTest.py",
+    args = ["$(rlocationpath @mpi_sdk//:sdk.json)"],
+    data = ["@mpi_sdk//:sdk.json", "@mpi_sdk//:runtime"],
+    deps = [":environment", "@rules_python//python/runfiles"],
+    size = "small",
+    tags = ["manual", "local", "cpu-only"],
+)

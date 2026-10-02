@@ -1,0 +1,44 @@
+load("//bindings/python:package.bzl", "python_binding_package")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+python_binding_package(
+    name = "package",
+    profile = "baseline-graphics-vehicle-robot-sparse",
+    proxies = {
+        "core": "//build_defs/bindings:python_proxy",
+        "fea": "//build_defs/bindings:python_fea_proxy",
+        "vsg3d": "//build_defs/bindings/python:vsg3d_proxy",
+        "irrlicht": "//build_defs/bindings/python:irrlicht_proxy",
+        "postprocess": "//build_defs/bindings/python:postprocess_proxy",
+        "vehicle": "//build_defs/bindings/python:vehicle_proxy",
+        "robot": "//build_defs/bindings/python:robot_proxy",
+        "pardisomkl": "//build_defs/bindings/python:pardisomkl_proxy",
+    },
+    extensions = {
+        "core": "//build_defs/bindings:python_core",
+        "fea": "//build_defs/bindings:python_fea",
+        "vsg3d": "//build_defs/bindings/python:python_vsg3d",
+        "irrlicht": "//build_defs/bindings/python:python_irrlicht",
+        "postprocess": "//build_defs/bindings/python:python_postprocess",
+        "vehicle": "//build_defs/bindings/python:python_vehicle",
+        "robot": "//build_defs/bindings/python:python_robot",
+        "pardisomkl": "//build_defs/bindings/python:python_pardisomkl",
+    },
+    backends = [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_pardisomkl",
+    ],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+
+filegroup(name = "manifest", srcs = [":package"], output_group = "manifest")

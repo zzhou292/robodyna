@@ -1,0 +1,212 @@
+{
+  "schema": "robodyna.demo_profile_admission.v1",
+  "scope": "Additional original demo compilation targets across explicit incompatible profiles; declarations are not accepted builds or runtime results.",
+  "programs": [
+    {
+      "source": "src/demos/vehicle/fsi/demo_VEH_FSI_FloatingBlock.cpp",
+      "target": "//examples/vehicle/crm:fsi_floating_block",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_MovingPatch.cpp",
+      "target": "//examples/vehicle/crm:crm_terrain_moving_patch",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_TrackedVehicle.cpp",
+      "target": "//examples/vehicle/crm:crm_terrain_tracked_vehicle",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_WheeledVehicle.cpp",
+      "target": "//examples/vehicle/crm:crm_terrain_wheeled_vehicle",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_WheelTestRig_CRM.cpp",
+      "target": "//examples/vehicle/crm:wheel_test_rig_crm",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRGTerrain_VSG.cpp",
+      "target": "//examples/vehicle/opencrg:crg_terrain_vsg",
+      "required_configs": [
+        "opencrg"
+      ],
+      "profile_family": "opencrg",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_Cornering.cpp",
+      "target": "//examples/vehicle/opencrg:test_cornering",
+      "required_configs": [
+        "opencrg"
+      ],
+      "profile_family": "opencrg",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_FEDA_Ride.cpp",
+      "target": "//examples/vehicle/opencrg:test_feda_ride",
+      "required_configs": [
+        "opencrg"
+      ],
+      "profile_family": "opencrg",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/multicore/demo_VEH_HMMWV_Multicore.cpp",
+      "target": "//examples/vehicle/multicore:hmmwv_multicore",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/multicore/demo_VEH_M113_Multicore.cpp",
+      "target": "//examples/vehicle/multicore:m113_multicore",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/multicore/demo_VEH_WheelTestRig_Multicore.cpp",
+      "target": "//examples/vehicle/multicore:wheel_test_rig_multicore",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_GranularTerrain_MovingPatch.cpp",
+      "target": "//examples/vehicle/multicore:granular_terrain_moving_patch",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/vehicle/terrain/demo_VEH_GranularTerrain_RigidTire.cpp",
+      "target": "//examples/vehicle/multicore:granular_terrain_rigid_tire",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_CRM.cpp",
+      "target": "//examples/robotics/crm:viper_crm",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "robot_crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_WheelSlope_CRM.cpp",
+      "target": "//examples/robotics/crm:viper_wheel_slope_crm",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "robot_crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_WheelTestRig_CRM.cpp",
+      "target": "//examples/robotics/crm:viper_wheel_test_rig_crm",
+      "required_configs": [
+        "fsi-sph"
+      ],
+      "profile_family": "robot_crm",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM_Sensor.cpp",
+      "target": "//examples/robotics/sensor:curiosity_scm",
+      "required_configs": [],
+      "profile_family": "sensor_vulkan",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_SCM_Sensor.cpp",
+      "target": "//examples/robotics/sensor:viper_scm",
+      "required_configs": [],
+      "profile_family": "sensor_vulkan",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/sensor/demo_SEN_HMMWV.cpp",
+      "target": "//examples/sensor/optix:hmmwv",
+      "required_configs": [
+        "sensor-optix"
+      ],
+      "profile_family": "sensor_optix",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/sensor/demo_SEN_CRM_Rendering.cpp",
+      "target": "//examples/sensor/optix:crm_rendering",
+      "required_configs": [
+        "sensor-optix-sph"
+      ],
+      "profile_family": "sensor_optix",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/robot/robosimian/multicore/demo_ROBOT_RoboSimian_Granular.cpp",
+      "target": "//examples/robotics/multicore:robo_simian_granular",
+      "required_configs": [
+        "multicore"
+      ],
+      "profile_family": "multicore",
+      "compiled": false,
+      "runtime_qualified": false
+    }
+  ]
+}

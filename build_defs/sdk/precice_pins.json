@@ -1,0 +1,1336 @@
+{
+  "schema": "robodyna.precice_sdk_pins.v1",
+  "version": "3.0.0",
+  "archive": {
+    "version": "3.0.0",
+    "archive": "libprecice3_3.0.0_jammy.deb",
+    "url": "https://github.com/precice/precice/releases/download/v3.0.0/libprecice3_3.0.0_jammy.deb",
+    "bytes": 1489414,
+    "sha256": "5bbd51051210c7d32b169c91f0958f48cb73eef42bff77dc36b16efdf7681372"
+  },
+  "receipt_sha256": "4940c3f842251e020c4f00e01a8009dda3049acf4b86f6a36c12d35dbef62ebd",
+  "runtime_receipt_sha256": "0dc50f52acd733673a977999a34580d3ecaced05587e917c0095af482eedd49a",
+  "headers": {
+    "usr/include/precice/Participant.hpp": "d3c4779ba3342c94e9d6cefc8c388b04df75216be2302adbf5c48df10691a813",
+    "usr/include/precice/Tooling.hpp": "3eb0ddaeb5d3e022453cc68fc18a6ea3b05d36093f0cfe4d25b21af3220f961b",
+    "usr/include/precice/Types.hpp": "fc572e186fd410a2d385d93f5ad7b6df061c672bd5d9585b0b4e476fa4472402",
+    "usr/include/precice/Version.h": "ece87c706ac540ad27e0fc37d13694de81d9bf95aa00d3e0e21c8b57bf3828d3",
+    "usr/include/precice/export.h": "ef305ba447a28291e1b900462aae4e13a0d031d56cdd8e3a94f3bc551b9b7303",
+    "usr/include/precice/precice.hpp": "87371004478de9060509d308fb2958658e320386b87c8331d50bf509035e73a6",
+    "usr/include/precice/preciceC.h": "70b45dce571b4f9f968f7b001f8bc957b080dea2c948a67f541058e2d203bb4a",
+    "usr/include/precice/preciceFortran.hpp": "6d75dea1096276789b9d8663648bcacb5c3608e2a9d92f42b6eddb27bf4c44cd",
+    "usr/include/precice/span.hpp": "7482be0d90ab762efffa687c401c3de52b8e9908a0e6f4538537cdc712e95dd1"
+  },
+  "libraries": {
+    "libprecice.so.3": {
+      "root": "precice",
+      "path": "usr/lib/x86_64-linux-gnu/libprecice.so.3.0.0",
+      "soname": "libprecice.so.3",
+      "sha256": "587cfca784da934c52264442d1782f83c886ad44468666f02d5a74f9e6e5b329",
+      "needed": [
+        "libboost_log_setup.so.1.74.0",
+        "libboost_log.so.1.74.0",
+        "libboost_filesystem.so.1.74.0",
+        "libboost_program_options.so.1.74.0",
+        "libboost_thread.so.1.74.0",
+        "libxml2.so.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libpetsc_real.so.3.15",
+        "libpython3.10.so.1.0",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libpetsc_real.so.3.15": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libpetsc_real.so.3.15.5",
+      "soname": "libpetsc_real.so.3.15",
+      "sha256": "81cda002b1dcf030d04c7a5b879d9270328235d8c967d56ab3e3b0725b2f1bf3",
+      "needed": [
+        "libHYPRE-2.22.1.so",
+        "libdmumps-5.4.so",
+        "libscalapack-openmpi.so.2.1",
+        "libumfpack.so.5",
+        "libamd.so.2",
+        "libcholmod.so.3",
+        "libklu.so.1",
+        "libsuperlu.so.5",
+        "libsuperlu_dist.so.7",
+        "libtrilinos_ml.so.13.2",
+        "libfftw3.so.3",
+        "libfftw3_mpi.so.3",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libptscotch-6.1.so",
+        "libhdf5_openmpi.so.103",
+        "libmpi.so.40",
+        "libm.so.6",
+        "libOpenCL.so.1",
+        "libyaml-0.so.2",
+        "libX11.so.6",
+        "libmpi_mpifh.so.40",
+        "libgfortran.so.5",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libmpi_mpifh.so.40": {
+      "root": "mpi",
+      "path": "usr/lib/x86_64-linux-gnu/libmpi_mpifh.so.40.30.0",
+      "soname": "libmpi_mpifh.so.40",
+      "sha256": "604c12bdeaceb7b5dd024bb6000719deb48a9e7116364fe5113ed9d0514f92c9",
+      "needed": [
+        "libmpi.so.40",
+        "libopen-pal.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libopen-pal.so.40": {
+      "root": "mpi",
+      "path": "usr/lib/x86_64-linux-gnu/libopen-pal.so.40.30.2",
+      "soname": "libopen-pal.so.40",
+      "sha256": "2a03b97563b724c6e42f853b90e2dc0619de3486628a7b065b74f7b30e5c35a1",
+      "needed": [
+        "libhwloc.so.15",
+        "libevent_core-2.1.so.7",
+        "libevent_pthreads-2.1.so.7",
+        "libc.so.6"
+      ]
+    },
+    "libmpi.so.40": {
+      "root": "mpi",
+      "path": "usr/lib/x86_64-linux-gnu/libmpi.so.40.30.2",
+      "soname": "libmpi.so.40",
+      "sha256": "27d2d690a5d1f971cf90e28e54e945519df7c1528a954ae4bfc8a436bfbb1982",
+      "needed": [
+        "libopen-rte.so.40",
+        "libopen-pal.so.40",
+        "libm.so.6",
+        "libhwloc.so.15",
+        "libc.so.6"
+      ]
+    },
+    "libopen-rte.so.40": {
+      "root": "mpi",
+      "path": "usr/lib/x86_64-linux-gnu/libopen-rte.so.40.30.2",
+      "soname": "libopen-rte.so.40",
+      "sha256": "69b31a92a4fb7e2f494a027a7d4dddff4e516aab5158827165e12730d7c0ff57",
+      "needed": [
+        "libopen-pal.so.40",
+        "libz.so.1",
+        "libhwloc.so.15",
+        "libevent_core-2.1.so.7",
+        "libc.so.6"
+      ]
+    },
+    "libhdf5_openmpi.so.103": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libhdf5_openmpi.so.103.3.0",
+      "soname": "libhdf5_openmpi.so.103",
+      "sha256": "8fb95a651fc8970d445725bc2ad180ecbfb4b96d425d0dc497f2025a5f01d021",
+      "needed": [
+        "libcrypto.so.3",
+        "libcurl.so.4",
+        "libsz.so.2",
+        "libz.so.1",
+        "libm.so.6",
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libptscotch-6.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libptscotch-6.1.3.so",
+      "soname": "libptscotch-6.1.so",
+      "sha256": "1c612cfcb69f5abe7d9139575be4eebee6e0cd4b56b11908838878570fbf61e0",
+      "needed": [
+        "libptscotcherr-6.1.so",
+        "libz.so.1",
+        "libbz2.so.1.0",
+        "liblzma.so.5",
+        "libm.so.6",
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libptscotcherr-6.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libptscotcherr-6.1.3.so",
+      "soname": "libptscotcherr-6.1.so",
+      "sha256": "8027bb6356a13e5284dace7d6e5417ee19cc4f8913573c4eab0bf3be51623d3e",
+      "needed": [
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libfftw3_mpi.so.3": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libfftw3_mpi.so.3.5.8",
+      "soname": "libfftw3_mpi.so.3",
+      "sha256": "e970143854125481215a77bf8d16ab24d2df442f90252acec4a3770372df3953",
+      "needed": [
+        "libfftw3.so.3",
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_ml.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_ml.so.13.2",
+      "soname": "libtrilinos_ml.so.13.2",
+      "sha256": "144fc1fbfb664ed9c27b664f87c5e640a79bc545f6815a7682b31ef23f0700b1",
+      "needed": [
+        "libtrilinos_ifpack.so.13.2",
+        "libtrilinos_amesos.so.13.2",
+        "libtrilinos_galeri-epetra.so.13.2",
+        "libtrilinos_aztecoo.so.13.2",
+        "libtrilinos_zoltan.so.13.2",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libtrilinos_epetraext.so.13.2",
+        "libscotch-6.1.so",
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libmpi_cxx.so.40": {
+      "root": "mpi",
+      "path": "usr/lib/x86_64-linux-gnu/libmpi_cxx.so.40.30.1",
+      "soname": "libmpi_cxx.so.40",
+      "sha256": "00d66f84d34258596906f499a62918c9e7adc946e6e7ebc80675ba422ce29788",
+      "needed": [
+        "libmpi.so.40",
+        "libopen-pal.so.40",
+        "libstdc++.so.6",
+        "libc.so.6",
+        "libgcc_s.so.1"
+      ]
+    },
+    "libtrilinos_teuchoscore.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchoscore.so.13.2",
+      "soname": "libtrilinos_teuchoscore.so.13.2",
+      "sha256": "10a6c70ab200c8161d303480576cfb75dfb45eb22f693e5824173e419f90cc09",
+      "needed": [
+        "libtrilinos_kokkoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_kokkoscore.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_kokkoscore.so.13.2",
+      "soname": "libtrilinos_kokkoscore.so.13.2",
+      "sha256": "268bd8852f7fd949bd26ae611589a2e07cd8d7803817ae8b3d5e203d29caaa7e",
+      "needed": [
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libtrilinos_teuchosparameterlist.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchosparameterlist.so.13.2",
+      "soname": "libtrilinos_teuchosparameterlist.so.13.2",
+      "sha256": "b5bebc234e0fcdb53c43c080c5598b77c5d988e39cfa9b13315155daa7e69825",
+      "needed": [
+        "libtrilinos_teuchosparser.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_teuchosparser.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchosparser.so.13.2",
+      "soname": "libtrilinos_teuchosparser.so.13.2",
+      "sha256": "bd0454b1257e17894bdb4096bf6a643deb58982c7261df71d30b8ae56367cc57",
+      "needed": [
+        "libtrilinos_teuchoscore.so.13.2",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_epetra.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_epetra.so.13.2",
+      "soname": "libtrilinos_epetra.so.13.2",
+      "sha256": "3174a09960bc49197a37452ee94f542d23a3cb49b136c544697e3255bcb265c9",
+      "needed": [
+        "libtrilinos_teuchoscomm.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_teuchoscomm.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchoscomm.so.13.2",
+      "soname": "libtrilinos_teuchoscomm.so.13.2",
+      "sha256": "5acf14cd89cc21848a9a741c32a23d5fe6a8c19098249aac62fd16dba570c28a",
+      "needed": [
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libtrilinos_kokkoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libscotch-6.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libscotch-6.1.3.so",
+      "soname": "libscotch-6.1.so",
+      "sha256": "ebc5bf524a38c081cff46100ce6a6a417297e335ac6e0a28ad16e8d95d894966",
+      "needed": [
+        "libscotcherr-6.1.so",
+        "libz.so.1",
+        "libbz2.so.1.0",
+        "liblzma.so.5",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libscotcherr-6.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libscotcherr-6.1.3.so",
+      "soname": "libscotcherr-6.1.so",
+      "sha256": "c154ad8b0c5db16d3f596dc203de7a2e202fb06652bfa7a3e31787d8537f2621",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_epetraext.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_epetraext.so.13.2",
+      "soname": "libtrilinos_epetraext.so.13.2",
+      "sha256": "9fc5f8fd207fe080c59b4d37cdee1c84903c8c66f813c0d6dd6b27d0a6436568",
+      "needed": [
+        "libtrilinos_triutils.so.13.2",
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchoscomm.so.13.2",
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libhdf5_openmpi.so.103",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_triutils.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_triutils.so.13.2",
+      "soname": "libtrilinos_triutils.so.13.2",
+      "sha256": "80a60f04126fc4e5bf08454be7b45a0592fc298ba97443772a6630c3616f75f8",
+      "needed": [
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_zoltan.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_zoltan.so.13.2",
+      "soname": "libtrilinos_zoltan.so.13.2",
+      "sha256": "1c6afd78fa6c1b238d99a6b5830f1161887aa6d933507983e5c78debe176396c",
+      "needed": [
+        "libm.so.6",
+        "libptscotch-6.1.so",
+        "libscotcherr-6.1.so",
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_aztecoo.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_aztecoo.so.13.2",
+      "soname": "libtrilinos_aztecoo.so.13.2",
+      "sha256": "6cf3071f7b6efac8ce66ccb56bb9d6dc2e7c77e627b871dbb9dcbc2e138b4cd4",
+      "needed": [
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_galeri-epetra.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_galeri-epetra.so.13.2",
+      "soname": "libtrilinos_galeri-epetra.so.13.2",
+      "sha256": "8cbd50587c09c660a894af1cd9ca48f6942750ec7a019497d1d7cb4367d7e414",
+      "needed": [
+        "libtrilinos_triutils.so.13.2",
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_amesos.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_amesos.so.13.2",
+      "soname": "libtrilinos_amesos.so.13.2",
+      "sha256": "8c4073a0d70c31811cc51d2199c0739fc5a289ad4f99da9b4f042d28888e073e",
+      "needed": [
+        "libtrilinos_trilinosss.so.13.2",
+        "libtrilinos_epetraext.so.13.2",
+        "libdmumps-5.4.so",
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libdmumps-5.4.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libdmumps-5.4.0.so",
+      "soname": "libdmumps-5.4.so",
+      "sha256": "603239f3032876949c0fdc91e1fb4b65b7da9df6160649b100e8854548e61110",
+      "needed": [
+        "libmumps_common-5.4.so",
+        "libblas.so.3",
+        "libscalapack-openmpi.so.2.1",
+        "liblapack.so.3",
+        "libmpi_mpifh.so.40",
+        "libgfortran.so.5",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libscalapack-openmpi.so.2.1": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libscalapack-openmpi.so.2.1.0",
+      "soname": "libscalapack-openmpi.so.2.1",
+      "sha256": "001d584ca00552144c6c73cb147fa4a569d9f41f341e624754b31660f89349d9",
+      "needed": [
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libmpi.so.40",
+        "libgfortran.so.5",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libmumps_common-5.4.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libmumps_common-5.4.0.so",
+      "soname": "libmumps_common-5.4.so",
+      "sha256": "6f51cde85ed02b388b6d79dafce10ca8d0bb6af04c71db2c54113dc1b0f16430",
+      "needed": [
+        "libpord-5.4.so",
+        "libmpi_mpifh.so.40",
+        "libgfortran.so.5",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libpord-5.4.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libpord-5.4.0.so",
+      "soname": "libpord-5.4.so",
+      "sha256": "997614c2fd2eed3e18787bd1bd41910b0c646473bb9e3e0c8e4329c55fb75a08",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_trilinosss.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_trilinosss.so.13.2",
+      "soname": "libtrilinos_trilinosss.so.13.2",
+      "sha256": "771a5f7235161812bb8c26f6cadd5ecd3ca543b07e9a6183857ae97af056f0a2",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_ifpack.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_ifpack.so.13.2",
+      "soname": "libtrilinos_ifpack.so.13.2",
+      "sha256": "d2d390ce71edd10f885f58cbd0b848448c02856872cd18539cbfd67299094834",
+      "needed": [
+        "libtrilinos_amesos.so.13.2",
+        "libtrilinos_aztecoo.so.13.2",
+        "libtrilinos_epetraext.so.13.2",
+        "libtrilinos_trilinosss.so.13.2",
+        "libtrilinos_epetra.so.13.2",
+        "libtrilinos_teuchosremainder.so.13.2",
+        "libtrilinos_teuchosnumerics.so.13.2",
+        "libtrilinos_teuchoscomm.so.13.2",
+        "libtrilinos_teuchosparameterlist.so.13.2",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_teuchosnumerics.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchosnumerics.so.13.2",
+      "soname": "libtrilinos_teuchosnumerics.so.13.2",
+      "sha256": "9946d6216aa23c416e7dc58ad61401f0fd626538907848b54d381bb803616c57",
+      "needed": [
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libtrilinos_teuchoscore.so.13.2",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libtrilinos_teuchosremainder.so.13.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libtrilinos_teuchosremainder.so.13.2",
+      "soname": "libtrilinos_teuchosremainder.so.13.2",
+      "sha256": "fa66e16270ed19e6fd183a75d0e90f250f75e443a4e769065f25431fe5c7b176",
+      "needed": [
+        "libtrilinos_teuchoscore.so.13.2",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libsuperlu_dist.so.7": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libsuperlu_dist.so.7.2.0",
+      "soname": "libsuperlu_dist.so.7",
+      "sha256": "db14d5ee4537c6297964bd2e7bb16e3d40d5fb9b9b0a3dd946b78e339a3f629b",
+      "needed": [
+        "libblas.so.3",
+        "liblapack.so.3",
+        "libptscotchparmetis-6.1.so",
+        "libmetis.so.5",
+        "libCombBLAS.so.1.16.0",
+        "libgomp.so.1",
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libCombBLAS.so.1.16.0": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libCombBLAS.so.1.16.0",
+      "soname": "libCombBLAS.so.1.16.0",
+      "sha256": "aaf39646fb6880f264272ee7809ea0421c1774b2720dbd85ce1442c4fc560f8f",
+      "needed": [
+        "libmpi_cxx.so.40",
+        "libmpi.so.40",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libmetis.so.5": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libmetis.so.5.1.0",
+      "soname": "libmetis.so.5",
+      "sha256": "d0ad52903eee2ae1f79540a9de989acd7ddccff1b7499bbcb466184c15cbc4f7",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libptscotchparmetis-6.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libptscotchparmetis-6.1.3.so",
+      "soname": "libptscotchparmetis-6.1.so",
+      "sha256": "d64dae66a09420db025e56aab36e824b906fb69cc99b2c3aa4128b4e63558149",
+      "needed": [
+        "libptscotch-6.1.so",
+        "libm.so.6",
+        "libmpi.so.40",
+        "libc.so.6"
+      ]
+    },
+    "libklu.so.1": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libklu.so.1.3.8",
+      "soname": "libklu.so.1",
+      "sha256": "a495d35fedf693891f6e08499d23a63f3ae736331af0a995d5b9023c7f1e4ea1",
+      "needed": [
+        "libm.so.6",
+        "libamd.so.2",
+        "libcolamd.so.2",
+        "libbtf.so.1",
+        "libsuitesparseconfig.so.5",
+        "libc.so.6"
+      ]
+    },
+    "libbtf.so.1": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libbtf.so.1.2.6",
+      "soname": "libbtf.so.1",
+      "sha256": "fa209c9c74cb15699babfb3ac483812cb016352a4f189729abb18b466b059ed6",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libamd.so.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libamd.so.2.4.6",
+      "soname": "libamd.so.2",
+      "sha256": "b154b7dc0f2c62eb4f345196d68f4040cd8a38afeb3f1391cabb36f943193641",
+      "needed": [
+        "libm.so.6",
+        "libsuitesparseconfig.so.5",
+        "libc.so.6"
+      ]
+    },
+    "libcholmod.so.3": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libcholmod.so.3.0.14",
+      "soname": "libcholmod.so.3",
+      "sha256": "b1dbc5659588e31981fcd6faecd9d1125642e732103ad9d4064a2b75bb29b409",
+      "needed": [
+        "libamd.so.2",
+        "libcolamd.so.2",
+        "libsuitesparseconfig.so.5",
+        "libccolamd.so.2",
+        "libcamd.so.2",
+        "libmetis.so.5",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libm.so.6",
+        "libgomp.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libcamd.so.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libcamd.so.2.4.6",
+      "soname": "libcamd.so.2",
+      "sha256": "8029e313234a784c91a913fcc02262a77f5720d6571999021c5659d62cd6072e",
+      "needed": [
+        "libm.so.6",
+        "libsuitesparseconfig.so.5",
+        "libc.so.6"
+      ]
+    },
+    "libccolamd.so.2": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libccolamd.so.2.9.6",
+      "soname": "libccolamd.so.2",
+      "sha256": "f0d33c287929927b737794cf7a33899428ab60fd501625f78f7f890eaa41e45e",
+      "needed": [
+        "libm.so.6",
+        "libsuitesparseconfig.so.5",
+        "libc.so.6"
+      ]
+    },
+    "libumfpack.so.5": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libumfpack.so.5.7.9",
+      "soname": "libumfpack.so.5",
+      "sha256": "d42c73f125770f3c73d3ad6a05d9f885fa5d595acb5980bbc762ef6296f79f38",
+      "needed": [
+        "libm.so.6",
+        "libamd.so.2",
+        "libsuitesparseconfig.so.5",
+        "libblas.so.3",
+        "libcholmod.so.3",
+        "libc.so.6"
+      ]
+    },
+    "libHYPRE-2.22.1.so": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libHYPRE-2.22.1.so",
+      "soname": "libHYPRE-2.22.1.so",
+      "sha256": "0a6a6c0b46a10a081b7b73fbc41c862035a4f87555025f5b538dd2bb670ff152",
+      "needed": [
+        "libsuperlu_dist.so.7",
+        "libmpi.so.40",
+        "liblapack.so.3",
+        "libblas.so.3",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libboost_program_options.so.1.74.0": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.74.0",
+      "soname": "libboost_program_options.so.1.74.0",
+      "sha256": "ea9cc5e083371770527e933345315e413dd7c460548d8f7e868004a67d88b482",
+      "needed": [
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libboost_log.so.1.74.0": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libboost_log.so.1.74.0",
+      "soname": "libboost_log.so.1.74.0",
+      "sha256": "0501f7561ac691941b7f4fcc86170b31643cf638b2b853386715378f17459d4d",
+      "needed": [
+        "libboost_thread.so.1.74.0",
+        "libboost_filesystem.so.1.74.0",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libboost_log_setup.so.1.74.0": {
+      "root": "runtime",
+      "path": "usr/lib/x86_64-linux-gnu/libboost_log_setup.so.1.74.0",
+      "soname": "libboost_log_setup.so.1.74.0",
+      "sha256": "36e3b03222ca734b662b7fc486e480cc0dfbd24a2d8c623605d7187a4c8641a3",
+      "needed": [
+        "libboost_log.so.1.74.0",
+        "libboost_regex.so.1.74.0",
+        "libboost_filesystem.so.1.74.0",
+        "libboost_thread.so.1.74.0",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    }
+  },
+  "platform_libraries": {
+    "libboost_filesystem.so.1.74.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.74.0",
+      "sha256": "545886948b178af06160dfd7590ee8be108bd1e28263bf63816e4a2c43cd0a59",
+      "needed": [
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libboost_thread.so.1.74.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.74.0",
+      "sha256": "41c8fe93ef58c42bc46798ce7bb84cbb964185b7529547dec7e501f15bd8a2a0",
+      "needed": [
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libxml2.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libxml2.so.2.9.13",
+      "sha256": "1db824dff2a302a15540b31595d8507ed7a45ac8783d7325953c653acb88112c",
+      "needed": [
+        "libicuuc.so.70",
+        "libz.so.1",
+        "liblzma.so.5",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libpython3.10.so.1.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libpython3.10.so.1.0",
+      "sha256": "d7bc028c6a98ac8c17edeada13609ea36db324d7f49c26b6ca93994e8c830453",
+      "needed": [
+        "libexpat.so.1",
+        "libz.so.1",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libstdc++.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+      "sha256": "ff0825e113603c3866680d5d52216bc6d8eedf3a59f52a0aef67ff01994db128",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2",
+        "libgcc_s.so.1"
+      ]
+    },
+    "libm.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "3dd5511ae94785c9f921429b0f2b2f7aabb461b6f0e6de6dfdbef15f24bdfee6",
+      "needed": [
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libgcc_s.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "fc9d43b2f6c20e53b009238f767c5b949d202389e20de9e202ea684b4ba3729a",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libc.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "b2cf6c33b74d2f22543b7a469a75b538911e690f769d0b238843a49465b83793",
+      "needed": [
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libboost_regex.so.1.74.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.74.0",
+      "sha256": "e2b8b67932a6ab53544c7da1e6421fe7e75571feae5218d586b5c69d62ea1c49",
+      "needed": [
+        "libicui18n.so.70",
+        "libicuuc.so.70",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libicuuc.so.70": {
+      "path": "/usr/lib/x86_64-linux-gnu/libicuuc.so.70.1",
+      "sha256": "4683f3623dc47a92e862dc3c8770caff81c9f4c7e116bb672fc439737b06d88a",
+      "needed": [
+        "libicudata.so.70",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libz.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libz.so.1.2.11",
+      "sha256": "64c206f0146cc58bbddc4f22054436f4ff278f5a554aa3ce6921ddf7e9133370",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "liblzma.so.5": {
+      "path": "/usr/lib/x86_64-linux-gnu/liblzma.so.5.2.5",
+      "sha256": "7fa51c1500cb9fcc4c7d69b7fe0a6d7203cfe6af64373f6c411c5445ef1b402c",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libhwloc.so.15": {
+      "path": "/usr/lib/x86_64-linux-gnu/libhwloc.so.15.5.2",
+      "sha256": "2efe6e32d0d3454b2bce0d3b8cd437f48691475717be4b431f96bcc2d4d9bc54",
+      "needed": [
+        "libm.so.6",
+        "libudev.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libsuperlu.so.5": {
+      "path": "/usr/lib/x86_64-linux-gnu/libsuperlu.so.5.3.0",
+      "sha256": "17cfc126212b320bfc801071c0dec2e50918b4afe170c024b26e1b35690427f4",
+      "needed": [
+        "libblas.so.3",
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libfftw3.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/libfftw3.so.3.5.8",
+      "sha256": "34610b14cb5199a78d9554bef4ef90f8fc53c11d56dd13c5011892a307f71e6d",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "liblapack.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+      "sha256": "86b2c20720e2aafb6b84d20d252cd39c5b22a6f7452f8bb920a06d8c8439124c",
+      "needed": [
+        "libblas.so.3",
+        "libgfortran.so.5",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libblas.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+      "sha256": "bd8a282c845e100cbb28dd31f9cf19757d508bf7a07a7f62bbe8c04cafb81646",
+      "needed": [
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libOpenCL.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libOpenCL.so.1.0.0",
+      "sha256": "3fc4989d3472c4c64dfe8a16642ebb07e7d5df3960db5f9247035f81d68b0a2b",
+      "needed": [
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libyaml-0.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.6",
+      "sha256": "b8a73ba01e86b12ca125d8bfa2c3efd9aae6d90f618b1bfa37b213e99c2e91d1",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libX11.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+      "sha256": "34b7869a1ba702462a1aa862fc0afe5b2608a7d5a09552c07796802fcf0c684b",
+      "needed": [
+        "libxcb.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libgfortran.so.5": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0",
+      "sha256": "f7379c9331de9d66c03b439a070e8056b7419fc4213320d647952b998d026b30",
+      "needed": [
+        "libquadmath.so.0",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libexpat.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libexpat.so.1.8.7",
+      "sha256": "683e2e41db14581194bf1f6616e95a8f02cd4ab599f0fba807e46325ec01d21f",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libicui18n.so.70": {
+      "path": "/usr/lib/x86_64-linux-gnu/libicui18n.so.70.1",
+      "sha256": "24fa78caa9b66c10c90711c51089f45273b643f132031172d54a3e98d711d48e",
+      "needed": [
+        "libicuuc.so.70",
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libicudata.so.70": {
+      "path": "/usr/lib/x86_64-linux-gnu/libicudata.so.70.1",
+      "sha256": "c1404396288e178c8db2f30203cb8150e4d2c14cacee9a2883e0092f45399cc8",
+      "needed": []
+    },
+    "libevent_core-2.1.so.7": {
+      "path": "/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1",
+      "sha256": "2d04f8e4a4cd0cf3dfe214f655298b6819cf7b1ce5677c461b904830bcdb2f8f",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libevent_pthreads-2.1.so.7": {
+      "path": "/usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7.0.1",
+      "sha256": "2c12e1fbd54ac804e4de1badcb318217ada877ae18cab8b3ce89cf3626635537",
+      "needed": [
+        "libevent_core-2.1.so.7",
+        "libc.so.6"
+      ]
+    },
+    "libudev.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libudev.so.1.7.2",
+      "sha256": "1f47ab3bd9929605e30935503e339b6f5dcceb71595f0716377be1318962561d",
+      "needed": [
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libsuitesparseconfig.so.5": {
+      "path": "/usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so.5.10.1",
+      "sha256": "32ecc08cb76987ad03ffc65a0d8cfa29f74afca398fa7741f2bfc8ab1dc8caca",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libcolamd.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libcolamd.so.2.9.6",
+      "sha256": "f12827241222913efcd0ace2ca69cac1400d7dfe360bf435ce97872442aaac93",
+      "needed": [
+        "libm.so.6",
+        "libsuitesparseconfig.so.5",
+        "libc.so.6"
+      ]
+    },
+    "libgomp.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0",
+      "sha256": "d46f9225c1883039e8a6853e6d96ca1af11d034ce186a090952e4a7c8a7c2fdc",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libbz2.so.1.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libbz2.so.1.0.4",
+      "sha256": "54d16979912ab62282350dd2dc5dceb5b73b13e27bb02792087aff752d16f6e9",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libcrypto.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "sha256": "7cc817ff1841b59516d684f357bc0c3fc2cc52c3fa9b4ffb8ce8bdc215f02915",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libcurl.so.4": {
+      "path": "/usr/lib/x86_64-linux-gnu/libcurl.so.4.7.0",
+      "sha256": "77977e023dcb6e40ff5548dbb0b23fb392c7c40bc58406d9a2a01247e43fa46f",
+      "needed": [
+        "libnghttp2.so.14",
+        "libidn2.so.0",
+        "librtmp.so.1",
+        "libssh.so.4",
+        "libpsl.so.5",
+        "libssl.so.3",
+        "libcrypto.so.3",
+        "libgssapi_krb5.so.2",
+        "libldap-2.5.so.0",
+        "liblber-2.5.so.0",
+        "libzstd.so.1",
+        "libbrotlidec.so.1",
+        "libz.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libsz.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libsz.so.2.0.1",
+      "sha256": "53f3c9c7b7ac1b704f80db9474c65f419c32c9b21e0b78b7f634967de9fa5fbe",
+      "needed": [
+        "libaec.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libxcb.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+      "sha256": "aabc489094abd96c876d1c989a2da8a8aa6d28f5a676c4a84dd6d0a0c34aec5d",
+      "needed": [
+        "libXau.so.6",
+        "libXdmcp.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libquadmath.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libquadmath.so.0.0.0",
+      "sha256": "a962d0383ce4c2a39a81017ffd9e5b51f32fd314e411c09ddd6da21593079a8c",
+      "needed": [
+        "libm.so.6",
+        "libc.so.6"
+      ]
+    },
+    "libnghttp2.so.14": {
+      "path": "/usr/lib/x86_64-linux-gnu/libnghttp2.so.14.20.1",
+      "sha256": "3b9cae3346ad67fbe962fa1ed73f358e125604a3ad7bb11626fa712ccefe6ee2",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libidn2.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libidn2.so.0.3.7",
+      "sha256": "1420c60a18189fb2e7bb4b8da1409564b0c1c46c59df5bbb0c23339bb961403a",
+      "needed": [
+        "libunistring.so.2",
+        "libc.so.6"
+      ]
+    },
+    "librtmp.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/librtmp.so.1",
+      "sha256": "2401c4fc99c7b93e79648071224a6eb230dcb800184ccacc8e1854e33fc61445",
+      "needed": [
+        "libgnutls.so.30",
+        "libhogweed.so.6",
+        "libnettle.so.8",
+        "libgmp.so.10",
+        "libz.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libssh.so.4": {
+      "path": "/usr/lib/x86_64-linux-gnu/libssh.so.4.8.7",
+      "sha256": "e7162733430abba6f51e4a5186b9c61a6c706a63d4461182d5f66ce55f35507e",
+      "needed": [
+        "libcrypto.so.3",
+        "libz.so.1",
+        "libgssapi_krb5.so.2",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libpsl.so.5": {
+      "path": "/usr/lib/x86_64-linux-gnu/libpsl.so.5.3.2",
+      "sha256": "95ca960ec3417da3d9505c8d2c6f0e9b7caf79ab900f6099a6bd938cf91069c5",
+      "needed": [
+        "libunistring.so.2",
+        "libidn2.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libssl.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/libssl.so.3",
+      "sha256": "51fc92556f11ddce62f3f988d3fe973fab8fb4742032e61a713688581c924262",
+      "needed": [
+        "libcrypto.so.3",
+        "libc.so.6"
+      ]
+    },
+    "libgssapi_krb5.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2.2",
+      "sha256": "a8c1a62a7b925e198c5fb8f8123bb2900c235dd678d6dbf0c1e0b5f06175e84b",
+      "needed": [
+        "libkrb5.so.3",
+        "libk5crypto.so.3",
+        "libcom_err.so.2",
+        "libkrb5support.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libldap-2.5.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libldap-2.5.so.0.1.15",
+      "sha256": "f7c5ddb238bc12a13c4d4b4f8e6ea8af61f8bd144651728936d31b65bec7bbdc",
+      "needed": [
+        "liblber-2.5.so.0",
+        "libsasl2.so.2",
+        "libgnutls.so.30",
+        "libc.so.6"
+      ]
+    },
+    "liblber-2.5.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/liblber-2.5.so.0.1.15",
+      "sha256": "3d6d7558e2764fa0a2ee3ee9bf1754bff872bed23148d673bdb648f737ec39ff",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libzstd.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libzstd.so.1.4.8",
+      "sha256": "5df4f4df42d76270bb6981fabc7c1fdccd8ad28a23d84d67f73203fb3f537667",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libbrotlidec.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.0.9",
+      "sha256": "db9dbda709a46c3ae124433f47c4db71167db8aaba4eafdfd99c8a3a14584463",
+      "needed": [
+        "libbrotlicommon.so.1",
+        "libc.so.6"
+      ]
+    },
+    "libaec.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libaec.so.0.0.12",
+      "sha256": "df4ff8a405f9c7c1e23c6a8c9dc94c9a1f16ccfac1b6b957adb538125fceaa42",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libXau.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+      "sha256": "98343a8324ea62ed75a13c923ed5dea96b7a8ad41aeba9f18126c4cbf7178064",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libXdmcp.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+      "sha256": "1dc3ff1269a5ede69ef9a8ec2436d73fccbcd10531055b359292e0bde4e29b46",
+      "needed": [
+        "libbsd.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libunistring.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libunistring.so.2.2.0",
+      "sha256": "9c28d59500f186fc28bf7e77e9b1a71129f66731c52ac1e974b9acd1a760911a",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libgnutls.so.30": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgnutls.so.30.31.0",
+      "sha256": "dcadda7f0f82c54ca157b6ca0a5fdc8e1128db4d778109c8e197e2f84c2ac9ba",
+      "needed": [
+        "libp11-kit.so.0",
+        "libidn2.so.0",
+        "libunistring.so.2",
+        "libtasn1.so.6",
+        "libnettle.so.8",
+        "libhogweed.so.6",
+        "libgmp.so.10",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libhogweed.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libhogweed.so.6.4",
+      "sha256": "47d56894948545036bd49aed718393bf6edb93fce222874dad30b59f085ad9ee",
+      "needed": [
+        "libnettle.so.8",
+        "libgmp.so.10",
+        "libc.so.6"
+      ]
+    },
+    "libnettle.so.8": {
+      "path": "/usr/lib/x86_64-linux-gnu/libnettle.so.8.4",
+      "sha256": "2d3bda6cfa2d477cd91b8178843d19e081b911a124f04b4be06b6e32c9fabc73",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libgmp.so.10": {
+      "path": "/usr/lib/x86_64-linux-gnu/libgmp.so.10.4.1",
+      "sha256": "4dc20a901c6951e678e216e959da2534bcef7053e6efdf1492509baf142282b0",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libkrb5.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/libkrb5.so.3.3",
+      "sha256": "ecc1a3b592c3685e330499aba8eac3b635e9be80b99fa65b2ef3e4f0b2d8a166",
+      "needed": [
+        "libk5crypto.so.3",
+        "libcom_err.so.2",
+        "libkrb5support.so.0",
+        "libkeyutils.so.1",
+        "libresolv.so.2",
+        "libc.so.6"
+      ]
+    },
+    "libk5crypto.so.3": {
+      "path": "/usr/lib/x86_64-linux-gnu/libk5crypto.so.3.1",
+      "sha256": "d3c3d1c5415f09918c67a5bb23cf5004aa9524b916003655af4a2bb15627760a",
+      "needed": [
+        "libkrb5support.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libcom_err.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libcom_err.so.2.1",
+      "sha256": "f196091d8ec9790b4cd203ecdb0eab3b242d35ae8625ead7962d0a944a8fdfa5",
+      "needed": [
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libkrb5support.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libkrb5support.so.0.1",
+      "sha256": "add5050d2a960ab105b568c714849d1e771cf2bd67a46dbfcc068a99de80eeec",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libsasl2.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libsasl2.so.2.0.25",
+      "sha256": "344870a9ff3cfee1df28f518e9e93073df8d0522a288f016f06fdacbfa49eed8",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libbrotlicommon.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.0.9",
+      "sha256": "abf86ae9362dbb413c740a55b194c74adb09a7bd92d8fbd96a293c797a4a6d08",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libbsd.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libbsd.so.0.11.5",
+      "sha256": "e4ad21c203d8e8b9b7f49071311339af6b438026e1ad236403e3b379b022f23d",
+      "needed": [
+        "libmd.so.0",
+        "libc.so.6"
+      ]
+    },
+    "libp11-kit.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libp11-kit.so.0.3.0",
+      "sha256": "883ecfef9c8d3a2f17a1b8a3116e9e32d272f1c43e2088bf7837b98d2c50f5e2",
+      "needed": [
+        "libffi.so.8",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ]
+    },
+    "libtasn1.so.6": {
+      "path": "/usr/lib/x86_64-linux-gnu/libtasn1.so.6.6.2",
+      "sha256": "f198a1272ca6a071b313646ae65fc1942628df8caebe07e4c377b15b68903358",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libkeyutils.so.1": {
+      "path": "/usr/lib/x86_64-linux-gnu/libkeyutils.so.1.9",
+      "sha256": "ad20d5fb89df5297073b46373c65bfbb01f33a00b4949894055d29a7fcf00900",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libresolv.so.2": {
+      "path": "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+      "sha256": "7230adfc1d3676f2485bec78f2d5c916d6becb15bc554ff95901f46800215194",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libmd.so.0": {
+      "path": "/usr/lib/x86_64-linux-gnu/libmd.so.0.0.5",
+      "sha256": "bb376813876bb214535bbbdac70f2c0c4b00baecb81557dab78a79518248df06",
+      "needed": [
+        "libc.so.6"
+      ]
+    },
+    "libffi.so.8": {
+      "path": "/usr/lib/x86_64-linux-gnu/libffi.so.8.1.0",
+      "sha256": "247da4d5d34a91cadcdd6282be4c4644fcb8af001334d2b8a82ecda435418cbf",
+      "needed": [
+        "libc.so.6"
+      ]
+    }
+  },
+  "scope": "Local Linux x86_64 Ubuntu22.04 SDK profile, exact external ELF prerequisites; platform updates require readmission"
+}

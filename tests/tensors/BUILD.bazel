@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+# This regression needs one retained header plus the existing neutral math
+# closure. It does not link another FEA/MBD aggregate or introduce new equations.
+cc_library(
+    name = "tensor_header", testonly = True,
+    hdrs = ["//src/compatibility/chrono:src/chrono/core/ChTensors.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/core:foundation"],
+)
+cc_test(
+    name = "principal_directions_test",
+    srcs = ["TensorDirectionsTest.cpp"],
+    deps = [":tensor_header", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    size = "small", tags = ["manual", "cpu-only", "numerical-regression"],
+)

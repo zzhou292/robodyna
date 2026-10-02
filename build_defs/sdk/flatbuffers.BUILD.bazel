@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Reuse the retained generated message schema and its exact pinned header ABI.
+cc_library(name = "headers", hdrs = glob(["include/**/*.h"]), includes = ["include"])
+exports_files(["LICENSE.txt"])

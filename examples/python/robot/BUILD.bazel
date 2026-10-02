@@ -1,0 +1,55 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "industrial",
+    source = "//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_Industrial.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":industrial"], tags = ["manual", "original-python-demos"])
+
+robodyna_python_demo(
+    name = "curiosity_rigid",
+    source = "//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_Curiosity_Rigid.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = "robo_simian_rigid",
+    source = "//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_RoboSimian_Rigid.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = "turtlebot_rigid",
+    source = "//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_Turtlebot_Rigid.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = "viper_rigid",
+    source = "//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_Viper_Rigid.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = 'viper_crm',
+    source = '//src/compatibility/chrono:src/demos/python/robot/demo_ROBOT_Viper_CRM.py',
+    helpers = [],
+    package = "//bindings/python/profiles:fsi",
+    manifest = "//bindings/python/profiles:fsi_manifest",
+)

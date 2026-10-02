@@ -57,9 +57,102 @@ system_openssl(name = "openssl")
 local_vsg = use_repo_rule("//build_defs/sdk:vsg.bzl", "local_vsg")
 local_vsg(name = "vsg_sdk")
 
+local_irrlicht = use_repo_rule("//build_defs/sdk:irrlicht.bzl", "local_irrlicht")
+local_irrlicht(name = "irrlicht_sdk")
+
+local_mumps = use_repo_rule("//build_defs/sdk:sparse.bzl", "local_mumps")
+local_mumps(name = "mumps_sdk")
+local_mkl = use_repo_rule("//build_defs/sdk:sparse.bzl", "local_mkl")
+local_mkl(name = "mkl_sdk")
+
+local_mono = use_repo_rule("//build_defs/sdk:mono.bzl", "local_mono")
+local_mono(name = "mono_sdk")
+
+local_roslyn = use_repo_rule("//build_defs/sdk:roslyn.bzl", "local_roslyn")
+local_roslyn(name = "roslyn_sdk")
+
+local_sensor_sdk = use_repo_rule("//build_defs/sdk:sensor.bzl", "local_sensor_sdk")
+local_sensor_sdk(name = "sensor_sdk")
+
+local_hdf5 = use_repo_rule("//build_defs/sdk:hdf5.bzl", "local_hdf5")
+local_hdf5(name = "hdf5_sdk")
+local_hydrochrono = use_repo_rule("//build_defs/sdk:hydrochrono.bzl", "local_hydrochrono")
+local_hydrochrono(name = "hydrochrono")
+
+local_ros = use_repo_rule("//build_defs/sdk:ros.bzl", "local_ros")
+local_ros(name = "ros_sdk")
+
+local_occt = use_repo_rule("//build_defs/sdk:occt.bzl", "local_occt")
+local_occt(name = "occt_sdk")
+
+local_urdf = use_repo_rule("//build_defs/sdk:urdf.bzl", "local_urdf")
+local_urdf(name = "urdf_sdk")
+local_python_embed = use_repo_rule("//build_defs/sdk:python_embed.bzl", "local_python_embed")
+local_python_embed(name = "python_embed_sdk")
+
+local_mpi = use_repo_rule("//build_defs/sdk:mpi.bzl", "local_mpi")
+local_mpi(name = "mpi_sdk")
+
+cuda_math_sdk = use_repo_rule("//build_defs/sdk:cuda_math.bzl", "cuda_math_sdk")
+cuda_math_sdk(name = "cuda_math")
+
+# The inherited modal recipe requires develop's Krylov-Schur solver. Freeze the
+# actual upstream revision and archive bytes instead of tracking a moving branch.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "spectra",
+    urls = ["https://github.com/yixuan/spectra/archive/c4775ea4f2bbb10f95d4c4c4b7554f6ebcf0e9e7.tar.gz"],
+    sha256 = "79ae261f2a8ffa68d924c101d94bc7f092503123295d4845dd51bd12c18d5191",
+    strip_prefix = "spectra-c4775ea4f2bbb10f95d4c4c4b7554f6ebcf0e9e7",
+    build_file = "//build_defs/sdk:spectra.BUILD.bazel",
+)
+
+# FMI import/export support uses the retained dependency's exact source revision.
+http_archive(
+    name = "fmu_forge",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/projectchrono/fmu-forge/tar.gz/cbf2a58ba9518e6230e831ff0b3640f9a0b4905a"],
+    sha256 = "56eec5cf264b357d43e2087396106517ccfd0d8a6b187ac770ecba272f94efe0",
+    strip_prefix = "fmu-forge-cbf2a58ba9518e6230e831ff0b3640f9a0b4905a",
+    build_file = "//src/integrations/fmi:forge.BUILD.bazel",
+)
+
 # Optional binding build SDKs are explicitly selected local installations.
 # These repositories neither download tools nor install system packages.
 local_swig = use_repo_rule("//build_defs/sdk:swig.bzl", "local_swig")
 local_swig(name = "swig_sdk")
 python_bindings_sdk = use_repo_rule("//build_defs/sdk:python_bindings.bzl", "python_bindings_sdk")
 python_bindings_sdk(name = "python_sdk")
+
+# Real optional Sensor and Vehicle dependency owners.
+local_optix_sdk = use_repo_rule("//build_defs/sdk:optix.bzl", "local_optix_sdk")
+local_optix_sdk(name = "optix_sdk")
+local_opencrg_sdk = use_repo_rule("//build_defs/sdk:opencrg.bzl", "local_opencrg_sdk")
+local_opencrg_sdk(name = "opencrg_sdk")
+
+local_precice = use_repo_rule("//build_defs/sdk:precice.bzl", "local_precice")
+local_precice(name = "precice_sdk")
+
+local_numpy_sdk = use_repo_rule("//build_defs/sdk:numpy.bzl", "local_numpy_sdk")
+local_numpy_sdk(name = "numpy_sdk")
+
+local_fastdds = use_repo_rule("//build_defs/sdk:fastdds.bzl", "local_fastdds")
+local_fastdds(name = "fastdds_sdk")
+
+http_archive(
+    name = "flatbuffers",
+    urls = ["https://codeload.github.com/google/flatbuffers/tar.gz/8573108bbef495f3dd13db8353f43b2e86d25950"],
+    type = "tar.gz",
+    sha256 = "a492b7df3d05422070c0f369b061983f202aa92dd91b674303e8fa644b884bf1",
+    strip_prefix = "flatbuffers-8573108bbef495f3dd13db8353f43b2e86d25950",
+    build_file = "//build_defs/sdk:flatbuffers.BUILD.bazel",
+)
+
+local_python_plot_sdk = use_repo_rule("//build_defs/sdk:python_plot.bzl", "local_python_plot_sdk")
+local_python_plot_sdk(name = "python_plot_sdk")
+
+local_ros_interfaces = use_repo_rule("//build_defs/sdk:ros_interfaces.bzl", "local_ros_interfaces")
+local_ros_interfaces(name = "ros_interfaces_sdk")
+
+local_pythonocc_sdk = use_repo_rule("//build_defs/sdk:pythonocc.bzl", "local_pythonocc_sdk")
+local_pythonocc_sdk(name = "pythonocc_sdk")

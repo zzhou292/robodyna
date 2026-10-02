@@ -1,0 +1,23 @@
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "road_course",
+    assembly_name = "Robodyna.Vehicle.OpenCrgRoad.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_VSG.cs"],
+    deps = ["//build_defs/bindings/csharp/profiles:managed_opencrg"],
+    tags = ["manual", "managed-demo", "retained-original-main"],
+)
+
+managed_assembly(
+    name = "road_course_alternate",
+    assembly_name = "Robodyna.Vehicle.OpenCrgAlternateRoad.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_IRR.cs"],
+    deps = ["//build_defs/bindings/csharp/profiles:managed_opencrg"],
+    tags = ["manual", "managed-demo", "retained-original-main"],
+)
+
+filegroup(name = "assemblies", srcs = [':road_course', ':road_course_alternate'], tags = ["manual"])

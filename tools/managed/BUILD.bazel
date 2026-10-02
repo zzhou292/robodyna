@@ -1,0 +1,56 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "environment",
+    srcs = ["environment.py"],
+    deps = ["//tools/bindings:swig_runner_library"],
+)
+
+py_binary(
+    name = "compile",
+    srcs = ["compile.py"],
+    main = "compile.py",
+    deps = ["//tools/bindings:swig_runner_library"],
+)
+
+exports_files(["launch.py"])
+
+py_library(
+    name = "launcher",
+    srcs = ["launch.py"],
+    deps = [":environment", "@rules_python//python/runfiles"],
+)
+
+py_library(
+    name = "compiler_library",
+    srcs = ["compile.py"],
+    deps = ["//tools/bindings:swig_runner_library"],
+)
+
+py_test(
+    name = "inputs_test",
+    srcs = ["tests/test_inputs.py"],
+    main = "tests/test_inputs.py",
+    deps = [":environment", ":compiler_library"],
+    size = "small",
+)
+
+py_test(
+    name = "launch_failure_test",
+    srcs = ["tests/test_launch_failure.py"],
+    main = "tests/test_launch_failure.py",
+    deps = [":launcher"],
+    size = "small",
+)
+
+py_library(name = "composer", srcs = ["compose.py"])
+py_binary(name = "compose", srcs = ["compose.py"], main = "compose.py")
+py_test(
+    name = "composition_test",
+    srcs = ["tests/test_compose.py"],
+    main = "tests/test_compose.py",
+    deps = [":composer"],
+    size = "small",
+)

@@ -1,0 +1,103 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "MULTICORE_ONLY")
+load(":configuration.bzl", "multicore_configuration")
+load(":sources.bzl", "MULTICORE_ASSETS", "MULTICORE_EXPORTS", "MULTICORE_HEADERS", "MULTICORE_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json"])
+
+_SOURCE = "//src/compatibility/chrono:"
+_TAGS = ["manual", "cpu-only", "multicore-profile"]
+
+multicore_configuration(
+    name = "configuration",
+    template = _SOURCE + "src/chrono_multicore/ChConfigMulticore.h.in",
+    header = "generated/include/chrono_multicore/ChConfigMulticore.h",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated/include",
+    deps = ["//src/core/configuration:host_headers"],
+    target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+    tags = _TAGS,
+)
+
+cc_library(
+    name = "multicore",
+    srcs = [_SOURCE + path for path in MULTICORE_SOURCES],
+    hdrs = [_SOURCE + path for path in MULTICORE_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [
+        ":configuration_headers",
+        "//src/collision/multicore:collision",
+        "@cuda_math//:cccl_headers",
+    ],
+    # These public Thrust selections match the retained module CMake. They
+    # apply to its consumers, not to unrelated CUDA kernel compilation owners.
+    defines = [
+        "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
+        "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_OMP",
+    ],
+    local_defines = ["CH_API_COMPILE_MULTICORE", "BT_THREADSAFE", "EIGEN_DONT_PARALLELIZE"],
+    copts = ["-O3", "-fPIC", "-fopenmp"],
+    linkopts = ["-fopenmp"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+    tags = _TAGS,
+)
+
+filegroup(name = "demo_assets", srcs = [_SOURCE + path for path in MULTICORE_ASSETS])
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)",
+        "$(location :SourceBaseline.json)",
+        "$(location " + _SOURCE + "src/chrono/CMakeLists.txt)",
+        "$(location " + _SOURCE + "src/chrono_multicore/CMakeLists.txt)",
+        "$(location " + _SOURCE + "src/demos/multicore/CMakeLists.txt)",
+        "$(location //build_defs/chrono:native_sources.bzl)",
+    ],
+    data = [":sources.bzl", ":SourceBaseline.json", "//build_defs/chrono:native_sources.bzl"] + [_SOURCE + path for path in MULTICORE_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_test(
+    name = "runtime_contract_test",
+    srcs = ["RuntimeContractTest.cpp"],
+    deps = [":multicore", "@googletest//:gtest_main"],
+    copts = ["-fopenmp"],
+    env = {"OMP_NUM_THREADS": "2", "OMP_THREAD_LIMIT": "2", "OMP_DYNAMIC": "FALSE", "OMP_MAX_ACTIVE_LEVELS": "1"},
+    target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+    size = "small",
+    tags = _TAGS,
+)
+
+# Reuse the actual inherited physics and arithmetic checks. Separate binaries
+# avoid duplicate helper definitions from their retained ut_utils.h.
+[
+    cc_test(
+        name = name + "_test",
+        srcs = [
+            _SOURCE + "src/tests/unit_tests/multicore/utest_MCORE_" + name + ".cpp",
+            _SOURCE + "src/tests/unit_tests/ut_utils.h",
+        ],
+        deps = [":multicore", "@googletest//:gtest_main"],
+        copts = ["-fopenmp"],
+        env = {"OMP_NUM_THREADS": "2", "OMP_THREAD_LIMIT": "2", "OMP_DYNAMIC": "FALSE"},
+        target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+        size = "small",
+        tags = _TAGS,
+    )
+    for name in ["real3", "gravity"]
+]
+
+test_suite(name = "tests", tests = [":source_inventory_test", ":runtime_contract_test", ":real3_test", ":gravity_test"], tags = ["manual"])

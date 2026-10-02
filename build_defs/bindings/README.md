@@ -43,10 +43,14 @@ It rejects ordinary C++ inclusion and rejects stale or edited source/ledger pins
 
 ## Qualification
 
-Use the workspace guard and **one compiler job** for the large generated wrapper
-translation units; the normal four-worker allowance does not apply to this phase.
-The current wrapper qualification guard is 16 GiB sampled RSS. The root agent
-owns serialized builds and tests.
+Use the workspace guard and the current **two-worker trial** for generated
+wrappers. Native implementation prerequisites build first with four workers;
+the wrapper phase remains capped at two within the same eight-CPU/16-GiB guard.
+Observed single-worker batch peaks were5.130 GiB for NumPy/plot/CAD,4.884 GiB for
+baseline Python and3.655 GiB for the largest managed run. Preserve receipts and
+return an affected batch to one worker if its guard demands it. These observations
+do not establish that the new parallel policy has passed every profile yet.
+The root agent owns serialized builds and tests.
 
 ```text
 //tools/bindings:declaration_view_test
@@ -67,8 +71,29 @@ definitions in either wrapper.
 The inherited Python marker parent getter constructs shared ownership from a raw
 pointer. That existing issue is excluded from the safe runtime probe and must be
 investigated separately; native C++ parent rebinding is covered by frozen archive
-tests. C# native wrapper compilation and proxy comparison do not qualify a managed
-C# runtime. No managed runtime SDK is installed by these rules.
+tests. C# native wrapper compilation and proxy comparison alone do not qualify a
+managed runtime. A separate Mono 6.8/net472-reference admission now passes:
+`crash-work/reports/robodyna-managed-core-build-1.json` records the guarded
+18.873-second compilation/test gate. The unchanged original C# build-system
+demo ran 501 steps to 5.01 seconds, with finite crank motion, the expected
+0.01-second clock and exactly one observed `librobodyna_core.so`.
+Input-admission and failed-process receipt tests passed in the same gate.
+This qualifies the headless core example, not optional managed modules,
+Windows .NET Framework, GUI execution or CUDA mechanics. See
+[`examples/csharp/README.md`](../../examples/csharp/README.md) and
+[`MONO_SDK.md`](../sdk/MONO_SDK.md). The Mono SDK is extracted in the workspace;
+these rules do not install a global managed runtime.
+
+The subsequent optional managed gate passed all 13 exposed original assemblies
+and six tests: `crash-work/reports/robodyna-managed-optional-build-3.json`
+(32.244 seconds under the guard). Roslyn 3.11/C# 7.3 compiles the original local
+functions against the same Mono/net472 ABI, with an explicitly declared real
+XML LINQ runtime assembly. The unchanged ELF gate verifies one implementation
+owner. Actual managed calls cross core, Vehicle, postprocess and VSG boundaries;
+the coupon advances the core and checks shared lifetimes and loaded owners
+without initializing a window or CUDA device. Four original Sensor/ROS/OpenCRG
+examples and full GUI demo executions remain pending. The copied compiler-only
+local-function/XML-doc compile-and-execute gate passed separately.
 
 Construct finite-element meshes through the FEA module. The historical core-only
 Mesh proxy lacks the qualified FE node argument descriptor for `AddNode`; comparing

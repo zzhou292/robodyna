@@ -1,0 +1,22 @@
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["node_launcher.py"])
+py_library(
+    name = "environment",
+    srcs = ["environment.py"],
+    deps = ["//tools/bindings:swig_runner_library"],
+)
+py_library(
+    name = "node_launcher",
+    srcs = ["node_launcher.py"],
+    deps = ["@rules_python//python/runfiles", ":environment", "//src/integrations/ros:launch_paths"],
+)
+
+py_test(
+    name = "environment_test",
+    srcs = ["tests/test_environment.py"],
+    main = "tests/test_environment.py",
+    deps = [":environment"],
+    size = "small",
+)

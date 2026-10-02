@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/features:defs.bzl", "MULTICORE_ONLY")
+load("//src/mbd/multicore:sources.bzl", "CORE_EXTENSION_HEADERS", "CORE_EXTENSION_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+_SOURCE = "//src/compatibility/chrono:"
+
+# Owning the additional sources separately avoids a target cycle: the existing
+# mixed backend selects this implementation, so this target needs headers only.
+# It still calls that backend and is not an independent collision library yet.
+cc_library(
+    name = "core_extension",
+    srcs = [_SOURCE + path for path in CORE_EXTENSION_SOURCES],
+    hdrs = [_SOURCE + path for path in CORE_EXTENSION_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [
+        "//src/compatibility/chrono:native_core_fea_headers",
+        "@cuda_math//:cccl_headers",
+    ],
+    local_defines = [
+        "CH_API_COMPILE",
+        "BT_THREADSAFE",
+        "BP_USE_FIXEDPOINT_INT_32",
+        "BT_USE_OPENMP",
+        "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
+        "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_OMP",
+    ],
+    # These sources originally belong to Chrono_core, including its Eigen
+    # plugin/PCH include-order contract. Keep the existing native equivalent.
+    copts = ["-O3", "-fPIC", "-fopenmp", "-include", "$(location //src/compatibility/chrono:src/chrono/ChCorePCH.h)"],
+    additional_compiler_inputs = ["//src/compatibility/chrono:src/chrono/ChCorePCH.h"],
+    linkopts = ["-fopenmp"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+    tags = ["manual", "cpu-only", "multicore-profile"],
+)
+
+# Public collision selection retains the same concrete System/Body owner.
+cc_library(
+    name = "collision",
+    deps = [":core_extension", "//build_defs/chrono:native_core_fea"],
+    target_compatible_with = ["@platforms//os:linux"] + MULTICORE_ONLY,
+    tags = ["manual", "cpu-only", "multicore-profile"],
+)

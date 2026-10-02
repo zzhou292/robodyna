@@ -1,0 +1,88 @@
+{
+  "schema": "robodyna.cuda_math_downloads.v1",
+  "cuda_release": "13.2.2",
+  "nvcc_version": "13.2.86",
+  "manifests": {
+    "cuda": {
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.2.2.json",
+      "sha256": "89d93e6de640d47eb43c63437fe1be426ed21dd58cc79933a29acbca33c6eeb8"
+    },
+    "cudss": {
+      "url": "https://developer.download.nvidia.com/compute/cudss/redist/redistrib_0.8.0.json",
+      "sha256": "77ce67314c6b0107bd2112e6ad6de65a955a246190492234f9470fc2a702fa0b"
+    }
+  },
+  "components": {
+    "libcublas": {
+      "version": "13.4.1.3",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libcublas/linux-x86_64/libcublas-linux-x86_64-13.4.1.3-archive.tar.xz",
+      "sha256": "2ae4563b6f49f29c65cd550146a7acc9b12633e11c2c9d748545ca7fc5cfcd74",
+      "bytes": 808733088,
+      "archive": "libcublas-linux-x86_64-13.4.1.3-archive.tar.xz",
+      "license": "CUDA Toolkit",
+      "license_path": "libcublas/LICENSE.txt"
+    },
+    "libcusparse": {
+      "version": "12.7.10.12",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libcusparse/linux-x86_64/libcusparse-linux-x86_64-12.7.10.12-archive.tar.xz",
+      "sha256": "4ec34b152aef761ed707b95b890886c5b38c2310374093f1c16d4d7663787021",
+      "bytes": 286431576,
+      "archive": "libcusparse-linux-x86_64-12.7.10.12-archive.tar.xz",
+      "license": "CUDA Toolkit",
+      "license_path": "libcusparse/LICENSE.txt"
+    },
+    "libcusolver": {
+      "version": "12.2.0.11",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libcusolver/linux-x86_64/libcusolver-linux-x86_64-12.2.0.11-archive.tar.xz",
+      "sha256": "46ecd4882fe2834db5a73ea0e16d0090bf6fb5de567b2b46182db59deaa26dca",
+      "bytes": 291745032,
+      "archive": "libcusolver-linux-x86_64-12.2.0.11-archive.tar.xz",
+      "license": "CUDA Toolkit",
+      "license_path": "libcusolver/LICENSE.txt"
+    },
+    "cuda_nvrtc": {
+      "version": "13.2.86",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvrtc/linux-x86_64/cuda_nvrtc-linux-x86_64-13.2.86-archive.tar.xz",
+      "sha256": "6e0661e31a43c22ad030637adeb881822249ffb2a14a19691828f117f5ab2de9",
+      "bytes": 60704976,
+      "archive": "cuda_nvrtc-linux-x86_64-13.2.86-archive.tar.xz",
+      "license": "CUDA Toolkit",
+      "license_path": "cuda_nvrtc/LICENSE.txt"
+    },
+    "libnvjitlink": {
+      "version": "13.2.86",
+      "url": "https://developer.download.nvidia.com/compute/cuda/redist/libnvjitlink/linux-x86_64/libnvjitlink-linux-x86_64-13.2.86-archive.tar.xz",
+      "sha256": "7fa9f80ea63e6eff0065198b96f792f8d7adfde028411bfd066ed9cd8b57fc30",
+      "bytes": 56240428,
+      "archive": "libnvjitlink-linux-x86_64-13.2.86-archive.tar.xz",
+      "license": "CUDA Toolkit",
+      "license_path": "libnvjitlink/LICENSE.txt"
+    },
+    "libcudss": {
+      "version": "0.8.0.10",
+      "url": "https://developer.download.nvidia.com/compute/cudss/redist/libcudss/linux-x86_64/libcudss-linux-x86_64-0.8.0.10_cuda13-archive.tar.xz",
+      "sha256": "ba18f5fd80dcbbe905d158caac5b3061d848442bb5abd477b5f296b4257a4937",
+      "bytes": 157058452,
+      "archive": "libcudss-linux-x86_64-0.8.0.10_cuda13-archive.tar.xz",
+      "license": "cuDSS library",
+      "license_path": "libcudss/LICENSE.txt"
+    },
+    "jitify": {
+      "version": "37b49d96bb41084dde895f0e7a2c3976db17b4e5",
+      "url": "https://codeload.github.com/NVIDIA/jitify/tar.gz/37b49d96bb41084dde895f0e7a2c3976db17b4e5",
+      "sha256": "a30432061a548eb76ad4c4c9314d67490e8e11522a3039dda889fbe2560b30df",
+      "bytes": 85736,
+      "archive": "jitify-37b49d96bb41084dde895f0e7a2c3976db17b4e5.tar.gz",
+      "license": "Retained NVIDIA source license; preserve archive LICENSE",
+      "source_gitlink": "DEME thirdparty/jitify 37b49d96bb41084dde895f0e7a2c3976db17b4e5"
+    }
+  },
+  "cccl": {
+    "policy": "reuse_existing_toolkit_tree",
+    "relative_include": "include/cccl",
+    "expected_thrust_version": 300200,
+    "expected_cub_version": 300200,
+    "separate_archive_installed": false
+  },
+  "sdk_receipt_sha256": "4db8aa22e68b0a182d988de87cc60986d8fe96ba037ad6995bd70e079d1ed40a"
+}

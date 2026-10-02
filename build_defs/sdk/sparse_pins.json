@@ -1,0 +1,690 @@
+{
+  "schema": "robodyna.sparse_sdk_pins.v1",
+  "mumps": {
+    "version": "5.4.1",
+    "environment": "ROBODYNA_MUMPS_ROOT",
+    "header_directory": "include",
+    "library_directory": "lib/x86_64-linux-gnu",
+    "headers": [
+      {
+        "path": "include/cmumps_c.h",
+        "sha256": "741639b372d8fa7b2ce60890a19678926f38135b8d55798540e8372e0c13947f"
+      },
+      {
+        "path": "include/cmumps_root.h",
+        "sha256": "c4a3c3d7a0f95fcf565f4f2b8caf2912c208d34707218250540de255f411be67"
+      },
+      {
+        "path": "include/cmumps_struc.h",
+        "sha256": "f2ca8b863e62f328b5005e93adf05559c7768e3c4dbbc77694731ae1f4950bac"
+      },
+      {
+        "path": "include/dmumps_c.h",
+        "sha256": "cd2ea6782c0c1ff667f50dfcc282ba7e5a57073a0ff4d65d431f6baee94a2919"
+      },
+      {
+        "path": "include/dmumps_root.h",
+        "sha256": "0925a7e2598bebb3e87ab66de9a71ed59c307002ee86640826581060e607745d"
+      },
+      {
+        "path": "include/dmumps_struc.h",
+        "sha256": "fad935b5189d79ec0106e84ed1e995a0230cceca38800188a8ecf0fc8f0a13ea"
+      },
+      {
+        "path": "include/mumps_c_types.h",
+        "sha256": "4a3be54a57879df4590552f2f60ac232f914603ddc9edffd068c38ad290695e6"
+      },
+      {
+        "path": "include/mumps_compat.h",
+        "sha256": "7c1f59c0f6111797d02ff8fdc9ac4b62b4580e8207e8197792fc5e4666f0600f"
+      },
+      {
+        "path": "include/mumps_int_def.h",
+        "sha256": "708cad62e1a5519cb29a1f1de81d28a043cae18f464096e77901c0c2fe008e8b"
+      },
+      {
+        "path": "include/mumps_seq/elapse.h",
+        "sha256": "5563811eac8562ed964e1ebccb7afcabde4f3f6802a3e01136c3f3763daf807a"
+      },
+      {
+        "path": "include/mumps_seq/mpi.h",
+        "sha256": "2fc00dc01db93080197f560fb0da8d13fb029caa6454a71929d33cdee93e383a"
+      },
+      {
+        "path": "include/mumps_seq/mpif.h",
+        "sha256": "5741d2cddabb035c2f59ec4c605353e3c44d0ebb66ca93a9e3a10a2e168ee43d"
+      },
+      {
+        "path": "include/smumps_c.h",
+        "sha256": "fcef565c2540104aa4b312683209d6e4c6c8f906f5e307b3815def9b9d5ff9da"
+      },
+      {
+        "path": "include/smumps_root.h",
+        "sha256": "8168b21ddf1df1ce9d46f077abf7525010c2ee79e32f0b5840a2365a4e722023"
+      },
+      {
+        "path": "include/smumps_struc.h",
+        "sha256": "7b06a31a4c73b9c92c25a1a6413dc9cede2aed48058f1be522c32670d1f7c8a1"
+      },
+      {
+        "path": "include/zmumps_c.h",
+        "sha256": "7b95d4d7111d77812fadeca53a774a9989640799c23f128a949373e6e94b737d"
+      },
+      {
+        "path": "include/zmumps_root.h",
+        "sha256": "818d8ff8b37f3e5f39d835de1e6ee4f2e786f2fedaa75abc2cbc3c9ec195e8e4"
+      },
+      {
+        "path": "include/zmumps_struc.h",
+        "sha256": "e8e7ac50d78bd5e7d2afbcde1eafaf9f5ae9173177ea5fa90d83ee9fe7bb5a6e"
+      }
+    ],
+    "libraries": [
+      {
+        "path": "lib/x86_64-linux-gnu/libdmumps_seq.so",
+        "sha256": "d93b4b367ea010d8ba073dc44f1f3d1d307a3c8b32ffdfc1a46fd3542a8a00e5",
+        "name": "dmumps",
+        "soname": "libdmumps_seq-5.4.so",
+        "needed": [
+          "libmumps_common_seq-5.4.so",
+          "libmpiseq_seq-5.4.so",
+          "libblas.so.3",
+          "liblapack.so.3",
+          "libgfortran.so.5",
+          "libm.so.6",
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libmumps_common_seq.so",
+        "sha256": "b8e51cc982e8e853e02dfc9d8ce3e13ac7e26a5af0b1d70f80ee1f7debec3d56",
+        "name": "common",
+        "soname": "libmumps_common_seq-5.4.so",
+        "needed": [
+          "libpord_seq-5.4.so",
+          "libesmumps-6.1.so",
+          "libscotch-6.1.so",
+          "libmpiseq_seq-5.4.so",
+          "libgfortran.so.5",
+          "libm.so.6",
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libmpiseq_seq.so",
+        "sha256": "719b0f0d9cfb311f50820adf848475a11d42a8729054594e0fa225d4055cd02b",
+        "name": "mpi_sequential",
+        "soname": "libmpiseq_seq-5.4.so",
+        "needed": [
+          "libgfortran.so.5",
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libpord_seq.so",
+        "sha256": "ff8fd0126a0526ede7d7c923787b239c8c3672306f11f9ef64eea862aa21961b",
+        "name": "pord",
+        "soname": "libpord_seq-5.4.so",
+        "needed": [
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libesmumps-6.1.so",
+        "sha256": "561ad99c9514a98865aa17f2b7363beea13b159890f13581731b3d772b3e8195",
+        "name": "esmumps",
+        "soname": "libesmumps-6.1.so",
+        "needed": [
+          "libscotch-6.1.so",
+          "libscotcherr-6.1.so",
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libscotch-6.1.so",
+        "sha256": "ebc5bf524a38c081cff46100ce6a6a417297e335ac6e0a28ad16e8d95d894966",
+        "name": "scotch",
+        "soname": "libscotch-6.1.so",
+        "needed": [
+          "libscotcherr-6.1.so",
+          "libz.so.1",
+          "libbz2.so.1.0",
+          "liblzma.so.5",
+          "libm.so.6",
+          "libc.so.6"
+        ]
+      },
+      {
+        "path": "lib/x86_64-linux-gnu/libscotcherr-6.1.so",
+        "sha256": "c154ad8b0c5db16d3f596dc203de7a2e202fb06652bfa7a3e31787d8537f2621",
+        "name": "scotch_error",
+        "soname": "libscotcherr-6.1.so",
+        "needed": [
+          "libc.so.6"
+        ]
+      }
+    ],
+    "runtime_only": [],
+    "platform_runtime": [
+      "libblas.so.3",
+      "liblapack.so.3",
+      "libgfortran.so.5",
+      "libquadmath.so.0",
+      "libz.so.1",
+      "libbz2.so.1.0",
+      "liblzma.so.5",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libc.so.6"
+    ],
+    "linkopts": [
+      "-pthread"
+    ]
+  },
+  "mkl": {
+    "version": "2023.2.0",
+    "environment": "ROBODYNA_ONEAPI_2023_ROOT",
+    "header_directory": "mkl/2023.2.0/include",
+    "library_directory": "mkl/2023.2.0/lib/intel64",
+    "headers": [
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw.h",
+        "sha256": "5e9139e65eec4d6291bbd8e894bee6fa47cf4413141cd2c50048c48c2c552cb7"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw3-mpi.h",
+        "sha256": "bb9da7d272ab92a191256e739d4d9ce4296549f7675add8530f3ce6bd90b2121"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw3-mpi_mkl.h",
+        "sha256": "dd4f4aa8c3b836d8a81d9c90892ba5efbc4773b3bb369d5285cdb45f8d9a70d0"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw3.h",
+        "sha256": "a397736f295d0fb4a3191aa48865e42624dea63fdf6c1a0bf1c6a8e2b2c1a494"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw3_mkl.h",
+        "sha256": "20d7c1dd6ab9ae07c79a881c68c41edcd78dbe67f6d274d6e5889353b28414eb"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw3_mkl_f77.h",
+        "sha256": "90e6369c69c2939c147bd30258d6998108f1b0f40cd5c6a16626b166fea9bf51"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw_mpi.h",
+        "sha256": "d1a75efd95c19960730e501ae921501da67f733ad209b892bf6823d4769a2966"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/fftw_threads.h",
+        "sha256": "e5dca8db066d8902171ee6777d047840e57bd34fe19b00eed9c9b06bdad7f688"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/offload/fftw3_omp_offload.h",
+        "sha256": "a8f70a02903a1fcff64b1094aa45e8c2f54e294435560861f3e86ec4c9baa7f7"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/offload/fftw3_omp_offload_common.h",
+        "sha256": "33ae072a115aee81f3f577f669d31ec4ed95c31812dc53579ada99ab674652b6"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/rfftw.h",
+        "sha256": "0f079716fcb8c83acbf18c32e44d971e00347398e8e4b4b28595cb7fe844117e"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/rfftw_mpi.h",
+        "sha256": "2ff2a47926c2306488f7ede624c7717c8db6e4cd0710a0a328b0e49e8987311f"
+      },
+      {
+        "path": "mkl/2023.2.0/include/fftw/rfftw_threads.h",
+        "sha256": "3c0f2534ef3eff420a184f2d6da9f97e6aeb0665ccbd5ecfcc30a57dc1e3ddab"
+      },
+      {
+        "path": "mkl/2023.2.0/include/i_malloc.h",
+        "sha256": "cf5fa30e39c53f941c071596277475d5cee3b4ddeb0422a828879453b1762ca5"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl.h",
+        "sha256": "7d2656290a66bf7cabd8767e3312579fa6c3a0f4300c5fb31b3ffb1c02f4ffe1"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_blacs.h",
+        "sha256": "81d7e5cf19a410a9221eef5f65620cdeb4870a0b18ab90219facd140c2dfc95f"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_blas.h",
+        "sha256": "eb29b94f37776e92b6d4e96c8cb832eec07aeabcfe564050dda66ea3ea5feb84"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_blas_64.h",
+        "sha256": "98022a5ea48d6a4a9bdcbe9c0a1a70651cd49246d88f2e63e2e49767f08c27cd"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_blas_omp_offload.h",
+        "sha256": "be1d147275002384833406237f5d5cf31cc87b6facb510740bce1c60bd38250c"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_blas_omp_variant.h",
+        "sha256": "f7ddcb76a927802813e7e29e559adaf77c078ae38b4324b609ebaf2cc843f123"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_cblas.h",
+        "sha256": "aefa2931b56a19995ae284ebacb5120646d2c0a52c836af8a5576933e0273412"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_cblas_64.h",
+        "sha256": "6abed69d8bb9efaa12fac346341ee1260290ec65d4a18464d684f74c81d3540a"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_cdft.h",
+        "sha256": "75d562a274ea6fabe7115243652182f5e3d16caeb0fbc7300d6aa896c33ab6e1"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_cdft_types.h",
+        "sha256": "c97b768c9e6efa62782a3b743c66b1ad62b0da8d385b8aa3267a9e356b2fbad1"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_cluster_sparse_solver.h",
+        "sha256": "d2fdcf5288833b4ddfbaf6f5b6dec8106e64bb4bcfde78ba15c659ce465a8126"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_compact.h",
+        "sha256": "69c56270d02a2fa0da6e897ddb9e441bdf393f957b9b3274fb26aa03e354eeed"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_df.h",
+        "sha256": "f768001f9413a1d62f1c90ffda3d23776ca4b68ad66af82127ef6e3c6f5abfbb"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_df_defines.h",
+        "sha256": "d49865f97630f0c1590234609b745532dbd6051785794375c5b27a6db862e8b0"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_df_functions.h",
+        "sha256": "2195868d680fafb9619a6362a5fd15ce11c6aa64a1c52cf84d1c12a069c40784"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_df_types.h",
+        "sha256": "122ff2c9565959380e719578234b23cb45a37752308ede25ca6536dc038fe5ec"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_dfti.h",
+        "sha256": "84a1d619ac02f0baa156e5a70b1f00d89834572f3a280fcd4ecf35101428b6cb"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_dfti_omp_offload.h",
+        "sha256": "839ed79dbbb7a7ee10228cf099eecdae30ece8c630324a5e663ab426683072dd"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_direct_blas.h",
+        "sha256": "d1a53d53d7e811a6b393ab894e2ad523e79950a9af3821a77b4ba734bbc303a4"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_direct_blas_kernels.h",
+        "sha256": "27e22831f027d0e1aba0a1046e7c9b2493302309ec852c34ee2cae2d0f6993de"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_direct_call.h",
+        "sha256": "b3d9bea28e4dc915eac14cf1ea779c7c0e6e5efc587fc01aa515571890f301fa"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_direct_lapack.h",
+        "sha256": "81f818de9ed5443c17818299250ab311939883f155586c35beda99b438cba712"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_direct_types.h",
+        "sha256": "9f40a2f1059d3895bdf06548a600de822bfdd5fa83ffe76d0ae0a691f4170a38"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_dss.h",
+        "sha256": "73d75a866dfd45b71df6694a8781887fdc8798fb9e785e9c2395b30155669bac"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_graph.h",
+        "sha256": "454d33cacf97867da934a7ceea84b6414270bfaa733bb4a50038bdb4de4ef73f"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_lapack.h",
+        "sha256": "fdd24794b9ab69d747a821009539b9a9e9864d1c717f13b556a0cad4775f327f"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_lapack_omp_offload.h",
+        "sha256": "a08dd5cce0d4d6f46cdd13d703a2f75d5a45a7396deb647f2d4ea483bf97996b"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_lapack_omp_variant.h",
+        "sha256": "86d556c031bc75d7a31ff7058b262dc45679e36dfa8f26142ed9e8d51ddaa5b8"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_lapacke.h",
+        "sha256": "0ec92e88d5153501a2bfc548a116065b87543d9b57f8b9ad3a88e6e45fda9b2d"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_omp_offload.h",
+        "sha256": "b9fe4fea7d8edc7a40deaa141d2b561cb869f9420a010fd238a7c95c64ea7feb"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_omp_variant.h",
+        "sha256": "f9e099e2c4ea6e868c36c9e053255dbf3a3f1096391403e2e75404f15f267b44"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_pardiso.h",
+        "sha256": "dec822444927ba2a8d5f5e354f5fb1cb18150b2f268bc674985e27297224e5b1"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_pblas.h",
+        "sha256": "02c4e2f4c897ffe2d34f8e479cd69e9cc5cb51071f0c9afc48bef3563264b864"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_poisson.h",
+        "sha256": "be722e9c4baac9a161ec1878a8ffd374273841e4f48e7dafd456c43b89515464"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_rci.h",
+        "sha256": "524557dc4ff94ad9eae7aa8930e947aa7eff8851a91142965e994af7f870301b"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_scalapack.h",
+        "sha256": "645ec45bebf214d72c0f0d5d62e8c43a8edc96c156ea8ee89d89746bc3850415"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_service.h",
+        "sha256": "87c2752882b7b6db8c23e711931d3e01097e3488ebbb6274b38da824b26d3156"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_solvers_ee.h",
+        "sha256": "bdb56b2f619e44da126384245454da638cc4e81601c52ab3e99ceb15883482f6"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_sparse_handle.h",
+        "sha256": "b007e64ebe99057550299846bd1a3bc5d7277fde1d2e09a37811913787bae03b"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_sparse_qr.h",
+        "sha256": "92240dbbf7d080f054cf786ccd1bdd5fe3f10d153cb268326d6e3bd30420c4a5"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_spblas.h",
+        "sha256": "283c56c12ede4c1d88c951de2bd9c0c682bc46a4d3a18e5a71eea4b5923552b4"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_spblas_omp_offload.h",
+        "sha256": "5973901e8f3242ca60b56c51eb0734cbecd9037c852babf27532264c1eed0bab"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_spblas_omp_variant.h",
+        "sha256": "688fd47ae81657705f8df0d477ed9d1fb26a43d98fcc2945843eccd3f5b7ca7f"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_trans.h",
+        "sha256": "58b01e61c50aa3df3c807782e274a34bfbb42464b4654285448de68be4b5b085"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_trans_names.h",
+        "sha256": "d993bdbcf01d0c6196722e40ae89da2f53dff88d42f2b67117edc089debf7a6c"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_trig_transforms.h",
+        "sha256": "302b6df2f46f5aff753c2fc50f7ce42ecddfeebfa7022df3709e1d79bb947de7"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_types.h",
+        "sha256": "62d00371a21de5a80c6b6dd069857aa529ad4d6aef9ce4e9a5adf2f5aefc9552"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_version.h",
+        "sha256": "2f79d648e6b5508ddc42bd0bf0e4b8ad7a14e5ff2aea6a33b543a368c4f47999"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml.h",
+        "sha256": "e4a7505733a630795106836b0be6358976343fd110bffda84af3bdf3b1917d84"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml_defines.h",
+        "sha256": "656bfc4a9dde29192844ca7456ce2d72258e8df6db5cace0a2fe735bdac49579"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml_functions.h",
+        "sha256": "d7cc8a642b843b3d1df868082391e90a7061a2d2c6da93a90020719c4c045a14"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml_omp_offload.h",
+        "sha256": "98498357f786d2d94150486d1c884cbcb822d82e4a773f4cea8c96dcaf7341f1"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml_omp_variant.h",
+        "sha256": "0f3ac01d516698be3c7965b0142971001b539efde113103fc9181b67fac9df21"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vml_types.h",
+        "sha256": "0e079a2421777ad954a8241ced5b181091d1868f42166862ba57f06275481d8e"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl.h",
+        "sha256": "d0fed5520590428e3975e04e3d62cc00a57807966a2e855c8b5c2c03e11ece9e"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_defines.h",
+        "sha256": "6513977a2e1c6b023f9bb71d7a0abc498735691ebeb203132657fdf3c616b503"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_functions.h",
+        "sha256": "fc6e4531f7115cbd138160dfd0d20490b6a37e88d846f95ba02ffa291d2ff706"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_functions_64.h",
+        "sha256": "5d2331e76aa945dc9f84b835e3385db030b887c81e2388eae2b29a7f42bb1409"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_omp_offload.h",
+        "sha256": "14a5581596c2a3f8c2faa164aadac0afe42aa88a17eb52a124ede53a3e2cfad3"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_omp_variant.h",
+        "sha256": "81bcccdd28d0aad1f449b7ff502d717d8a3c8dcad13f5e6ae2961a0d801251e2"
+      },
+      {
+        "path": "mkl/2023.2.0/include/mkl_vsl_types.h",
+        "sha256": "82175978bcb2cdaef7ac98d430cbf104cf94d9f697fe9f06f46cc44fa7270332"
+      }
+    ],
+    "libraries": [
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_intel_lp64.so.2",
+        "sha256": "14afdfb61a57202afbb2331f307ae768a302b7a05d9cd11abaf791363582e6de",
+        "name": "interface",
+        "soname": "libmkl_intel_lp64.so.2",
+        "needed": [
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_intel_thread.so.2",
+        "sha256": "027a4f49732483355697e9cde828628bd064e0e8437ef61053508fd1b8f03860",
+        "name": "threading",
+        "soname": "libmkl_intel_thread.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_core.so.2",
+        "sha256": "66eb66f5ed3fbdec0a440ff13bde7ad5e5a4b120267c9de0bd3d7099ce2a2af3",
+        "name": "core",
+        "soname": "libmkl_core.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0"
+        ]
+      },
+      {
+        "path": "lib/intel64/libiomp5.so",
+        "sha256": "c8421531b8c67810289a78dd3dac5aeac3950b07054e059692b16ba7559563e8",
+        "name": "openmp",
+        "soname": "libiomp5.so",
+        "needed": [
+          "librt.so.1",
+          "libgcc_s.so.1",
+          "libpthread.so.0",
+          "libc.so.6",
+          "ld-linux-x86-64.so.2",
+          "libdl.so.2"
+        ]
+      }
+    ],
+    "runtime_only": [
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_avx.so.2",
+        "sha256": "5abd2b10ebefab6ffeeb4ada6001e42dde0f47c732e9a36bfe339123a1b768f8",
+        "name": "dispatch_0",
+        "soname": "libmkl_avx.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_avx2.so.2",
+        "sha256": "45efb5b17dbc22335f31777734bc37eab4c10fc38c0d9398a4f114b528b4cc15",
+        "name": "dispatch_1",
+        "soname": "libmkl_avx2.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_avx512.so.2",
+        "sha256": "d6ef502fe527583fed8272dee57e658c35cdb6932a4be6726e5d11c2492efd87",
+        "name": "dispatch_2",
+        "soname": "libmkl_avx512.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_def.so.2",
+        "sha256": "86b0f219761d58e62e324c3207e4e6364630157a83decc541e5af0de25d734e4",
+        "name": "dispatch_9",
+        "soname": "libmkl_def.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_mc.so.2",
+        "sha256": "69649aca23826db7e6e9d0afe8f69caf749ff168276d2d38552c331bd3fa42c8",
+        "name": "dispatch_16",
+        "soname": "libmkl_mc.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_mc3.so.2",
+        "sha256": "bdf91cb6749f8238a6e5678ceb674a0145c414c5ac431251830258703c1ff2e0",
+        "name": "dispatch_17",
+        "soname": "libmkl_mc3.so.2",
+        "needed": [
+          "libmkl_core.so.2",
+          "libdl.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_avx.so.2",
+        "sha256": "ea60170341f273bc97602a14667d204b1cf87cf346901ccf6ca6eadfe463276d",
+        "name": "dispatch_24",
+        "soname": "libmkl_vml_avx.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_avx2.so.2",
+        "sha256": "0056afc26b1bc3712881a51ae212490be769d300076ba5a558fa68103de935f7",
+        "name": "dispatch_25",
+        "soname": "libmkl_vml_avx2.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_avx512.so.2",
+        "sha256": "04374e6296918f4233726b947247d5b4e5434822a542739c1d97363bf7014b8e",
+        "name": "dispatch_26",
+        "soname": "libmkl_vml_avx512.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_cmpt.so.2",
+        "sha256": "a400fa0d153491f27e6bef0c57b0dc895c2db15621944a8084b426b3fe4105af",
+        "name": "dispatch_27",
+        "soname": "libmkl_vml_cmpt.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_def.so.2",
+        "sha256": "ef720d0451349baf5420e750b47b63638f1751d1e677575c182d09180987c31b",
+        "name": "dispatch_28",
+        "soname": "libmkl_vml_def.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_mc.so.2",
+        "sha256": "c0d724b72e28239dc506ba5bff6355fdbf1fb34adfea0c59c629541334c0a9a3",
+        "name": "dispatch_29",
+        "soname": "libmkl_vml_mc.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      },
+      {
+        "path": "mkl/2023.2.0/lib/intel64/libmkl_vml_mc3.so.2",
+        "sha256": "225b63cf6d5b523f8dabb62a1dd87ae07ccc0e43abd4bd8943df108d18a7b13e",
+        "name": "dispatch_30",
+        "soname": "libmkl_vml_mc3.so.2",
+        "needed": [
+          "libdl.so.2",
+          "libpthread.so.0",
+          "libmkl_core.so.2"
+        ]
+      }
+    ],
+    "platform_runtime": [
+      "libdl.so.2",
+      "libpthread.so.0",
+      "librt.so.1",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libc.so.6",
+      "ld-linux-x86-64.so.2"
+    ],
+    "linkopts": [
+      "-pthread",
+      "-lm",
+      "-ldl"
+    ]
+  }
+}

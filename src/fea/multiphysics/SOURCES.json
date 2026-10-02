@@ -1,0 +1,314 @@
+{
+  "schema": "robodyna.fea_multiphysics_source_plan.v1",
+  "status": "off-tree proposed coherent configuration; not compiled",
+  "cmake": "src/compatibility/chrono/src/chrono/CMakeLists.txt",
+  "cmake_sha256": "82780cb392ea41bf088d358dc0b22ecbf3e688a235ed3120b837f76cd566722c",
+  "sources": [
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChNodeFEAfieldXYZ.cpp",
+      "sha256": "9276e7ae40511934d8aaf5cb489c55e032762880a7c59f8ea230f39efcb4e29d"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElement.cpp",
+      "sha256": "5d0215f26f597a97be58aed462a1610c8b2af6edf541b4c4d30c79a8abe57735"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementTetrahedron4.cpp",
+      "sha256": "0922c4dd9fc93004c95be56f30b7f51f2b0f61bcb91d4c39c6aaf0f3a1d5e7b3"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementTetrahedron4Face.cpp",
+      "sha256": "c92384f49392fd7798015f63f55f45f755f60f1768d1299ea786df0befbf412e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementHexahedron8.cpp",
+      "sha256": "b53e9ed79d9f389825f1addc1b80be7669be7dc4a18bb29a4dc4c26bf13dd4cc"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementHexahedron8Face.cpp",
+      "sha256": "f1d142e32ff187f82a8357140edbafbd4f6fa9830ff5b9225f76e2cf78e8fd45"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementLoadableVolume.cpp",
+      "sha256": "04d9b62510f28562e41345b1ccafbae4b3ae60c2e5bcd33c5af6acaf496d3a04"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementLoadableSurface.cpp",
+      "sha256": "081d9af78d911e89862d7c055eba1a81401f943463fe60b08116a5bdd07d1324"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldData.cpp",
+      "sha256": "51b1af40f30c517ec02dbf7b03500828643051e16845c218287f5c12b5023527"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChField.cpp",
+      "sha256": "f6275be52e79d54b4c78c4c598a2b401f4558a54937d888ca57f3109eda2ca74"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial.cpp",
+      "sha256": "c7dcb22cc8f6ddff6bbf85c7feda2d41cd97587f114856abea74e13ecadc8ae2"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DDensity.cpp",
+      "sha256": "239f4654c24c7c3626ea2526565ff717b555352c2a84cc838bbabf96b1262592"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterialPoisson.cpp",
+      "sha256": "34fec5331c8a88226e9731234c4b9e88dff904b7c751c3b7d1ddab7212078a1b"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermal.cpp",
+      "sha256": "e0a2173b3dac4f4ed2169ac90392f6eba5ae4e87e4d65b0b9bb3b774063d8397"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalLinear.cpp",
+      "sha256": "e2f2c3a0e53fd5f2327970a0f558738866d6119b6dc8ba0232e3385643c4777e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalNonlinear.cpp",
+      "sha256": "4a796ed8560c5a5e168fec98970e24f34ff48bdf71f2e7a9b904e8758963c9d4"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStress.cpp",
+      "sha256": "8e4f1f43c74b422ece1e01a893660b900f0837338db3a10ffd1941a2bf268306"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DHyperelastic.cpp",
+      "sha256": "96f432c40cd8940aa2c49d2df3ca251feaa905e680534d77bde579ea577f743a"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressStVenant.cpp",
+      "sha256": "81b689063e1ac94f31725816c7d7cd07aa53032b4a99d59b219314bdb1118f85"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressNeoHookean.cpp",
+      "sha256": "fe08e4d930fbedf94a1fcf01a9ee7c1f3a1ffe859aed0d33eaf4a2dd78480899"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressViscoNewton.cpp",
+      "sha256": "b1b26d454145d971fc6315620182a2ec9c5c6f5f20cb4a82b8835aa1230623cb"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressViscoLinear.cpp",
+      "sha256": "743c24f65d235e0b1425d6b2b96fdea787f3e4bdf15163fa0d327f5b2364436b"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressOgden.cpp",
+      "sha256": "4435e6af7c2e4c5f30a37920e1165cf07fe1057350e14b5f2ebd58f1f5c6d14d"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalStress.cpp",
+      "sha256": "daffe727c9018e2f5c613ddcda7794488c4f9d36e88b4c0f63bc73ec2e842f04"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressParallel.cpp",
+      "sha256": "83c977296b8837bb980c515cfe1d1bcce38296b6b73306604be5e67f35fdf9d2"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModel.cpp",
+      "sha256": "a748af614405df11da913ca1a11e9f1ca2c74a7a9203332fdc71f7b2c0032668"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelThermal.cpp",
+      "sha256": "f0112762c96a496124fd96d970da3cc0928ee3f101a6796e97fe6368657facb9"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelDeformation.cpp",
+      "sha256": "227939735ce90ae91215d2a1281491be6ccfcdc9ce314fff057f0451928dcbd2"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelThermoDeformation.cpp",
+      "sha256": "1645570d7480d74f6c40873f1effcf99a5cc46564c050e7e0c26537db2697c41"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChVisualDataExtractor.cpp",
+      "sha256": "57ccd5f20ff61cffd70d226ed51d9d8f1a5aa02936ce967f81fbf006c660bd73"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChDrawer.cpp",
+      "sha256": "18c46c5143e19deb2bfbe0939dfa4a42533d43e2f937d6012d573099be9ccc53"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatFlux.cpp",
+      "sha256": "20250b51532bdc2a7b0700ec29ece892e651f11ac8eb98d4c8b5373b75679636"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatRadiation.cpp",
+      "sha256": "dea8c0ba032824c98da76eff30b57a8051135c5ee8f831eac2a1268d9b734753"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatConvection.cpp",
+      "sha256": "9818d9ffb003e628d60b6da0bef529c9fccaa45aae5274c6a705653360c72e7e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatVolumetricSource.cpp",
+      "sha256": "126e74d81e4a96de3435cd95cec85ca66fe3f59ec035170a9440f7f95afec511"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChBuilderVolume.cpp",
+      "sha256": "6a0230b35d6311a092261b6301f3d51c5584cf2fe74068730539cf5c7dfe99ca"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLinkFieldNode.cpp",
+      "sha256": "832f48f25efe8baf255e72c32cae742026c7720fa04e386a90fdef89d7b238f7"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChSurfaceOfModel.cpp",
+      "sha256": "81f32fdf026520e2741636263cdba773061f5acac1c4946ae34528da54e045ed"
+    }
+  ],
+  "headers": [
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChNodeFEAfieldXYZ.h",
+      "sha256": "28c1eb8158390539344516d08e3edf202fe1e47636070360c5378ffbb0ad0779"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElement.h",
+      "sha256": "7678f36a8bf7a2d47fee006e226b4235a8c26601f54155b6be33179caceaa1c1"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementTetrahedron4.h",
+      "sha256": "39b6ea0e5d365cf814e988aa9ec1e674a57c70cdf58f57ff7c952e6cfa1a1295"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementTetrahedron4Face.h",
+      "sha256": "8afd1c01b83ae40f260fc98202c63921d7c189e524dd5b73b82a71de2b1aea71"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementHexahedron8.h",
+      "sha256": "f7334cd4783278389d951d52ade548322c7535337c035cc4ac8d7d9a5f4b2601"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementHexahedron8Face.h",
+      "sha256": "5be45b9b9c223a2fabfceb50a34606eda18eb17353b0f7b64c488a330608f75c"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementLoadableVolume.h",
+      "sha256": "f7c7ecd6338725bd55436588f289f78daf448806a7aa5309f7327a616e098863"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldElementLoadableSurface.h",
+      "sha256": "4c757ae27786d3eb4e4b074954b0772a7bfe18681622a81d3f297e528389dec2"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFieldData.h",
+      "sha256": "9b79a7df0f754e67f4e206aec4287c0d4478965410bfd80e56aa12641c1b8ce5"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChField.h",
+      "sha256": "2f468e25feac7b9cf805b4bd7d1df01635a3d0314e0cc6da8e18d5bab3d94d9c"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial.h",
+      "sha256": "3f88ff7e61c8073789f60979a344ee81be0ae6c98f6adc37e3cd9b87ed2c1720"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DDensity.h",
+      "sha256": "f2347b5a5c6e35d02495a15f5494cb5c5165bc6cae4e447e9936fa21909cb6f7"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterialPoisson.h",
+      "sha256": "5b9e1290d403693eacf3e5e812144f2a3c5ba1d31626e32232e1fdec0df0e656"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermal.h",
+      "sha256": "03a1fac43319fa0a611c5ef1e7ee60ff16646d6ad5ad6e80a718dfb46745f28e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalLinear.h",
+      "sha256": "44637fc4382b6ab4cf105ff88705a97e1d6334046c7622a24818bc8c3a70d792"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalNonlinear.h",
+      "sha256": "0d1c351a38f35792661fd3b9c24c4b509262388a245bdc39c98496df2d442dc8"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStress.h",
+      "sha256": "86de706a645518b4fcbcb895b5859f83df2ca19b974e45d376e64ea2b3108ed1"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DHyperelastic.h",
+      "sha256": "41310a9b22b0c003841edb4d202c27cf15916b76669b6401b6040ae11e3b9878"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressStVenant.h",
+      "sha256": "5de95773546f343f85f892260f7b0d371763a227db1c1879aee29dc7e6a1112e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressViscoNewton.h",
+      "sha256": "364da3afda39cdc7c18366601951e6cd9ca123cbb592a1816f7d5297859f4276"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressViscoLinear.h",
+      "sha256": "e7a5d4e961f17114e272c3fe330db1ea2a4afab3e6d3b1b8ab4c749e15e84aaa"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressNeoHookean.h",
+      "sha256": "8fdcc7a71c59abff79b354dc7dd766bfb42a7309ac5d8d5f534ff53d87bd022e"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressOgden.h",
+      "sha256": "0015ce6e3b920dda57af81dc2d2ababd1c6f12f3234c99409eebefc739687947"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DThermalStress.h",
+      "sha256": "e598886f45f13493099392ae4c6f3437d436d71852d2029fd06c4d07d8211cf3"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChMaterial3DStressParallel.h",
+      "sha256": "9e4d26d1375317527f7c15fc917f27599cc09164e38b7af31bffb4b25efc8a4f"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModel.h",
+      "sha256": "1b0404a23dafe6c2336aa37e3c9340db4a1f1b645bae9a8752ff30d6f2753d3b"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelThermal.h",
+      "sha256": "f65e1e65ff156cbcf0df0f8520cb371228a63e258ba17aa14b3b1b6702686af0"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelDeformation.h",
+      "sha256": "8e07e8b4b21770b705abaa6d7e8d405c0a984fb8af6b289f514b20df1b6d8a51"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChFEModelThermoDeformation.h",
+      "sha256": "f116f721d1b986173a37ea8f1dae31e70607b905fbf9e2fd58711a6d8dd01d81"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChVisualDataExtractor.h",
+      "sha256": "9d8c705dd4632c04f55e2d48792572b9bc9ba4730c40e20c052f96752a0a0018"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChDrawer.h",
+      "sha256": "87a09a4040b4047dc32b836981d1b2b1b6b1906c7b56ad48ba4e450047dfce44"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatFlux.h",
+      "sha256": "1e463bd46e1e1662548ede40c73e9e32bce6f49cbdb619ba9a549a840dc72c7a"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatRadiation.h",
+      "sha256": "4463ab52f96b100e1f24d5d4e92449a5d41c5265a0c533835f302ed3531c25f1"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatConvection.h",
+      "sha256": "d66c87d2611ab45930ae874e7e4ae9825329440f6f739a9a568a483918649553"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLoaderHeatVolumetricSource.h",
+      "sha256": "ade527450565fe352b8c00b9170640c184d54e0e1d9e457c676303fb9c7a65c7"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChBuilderVolume.h",
+      "sha256": "856c35f8d65b3f8017f836da2cbad21f943dd88e792024ed5ab538813a5f3611"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChLinkFieldNode.h",
+      "sha256": "0c22e14b8bfb8175269f70a72e71fc820c25546bda5e878773869d04a2882a87"
+    },
+    {
+      "path": "src/compatibility/chrono/src/chrono/fea/multiphysics/ChSurfaceOfModel.h",
+      "sha256": "c31a0c154ff85c9d2086e2b8d88ae44165dc2f7486a22eb1efd5d8559bdbd132"
+    }
+  ]
+}

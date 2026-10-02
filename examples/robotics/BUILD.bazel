@@ -1,0 +1,159 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["DemoCatalog.json", "sources.bzl", "BUILD.bazel"])
+
+# One original Lander helper owner reused by both original mains.
+cc_library(
+    name = "lander_model",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/lander/model/Lander.cpp"],
+    hdrs = ["//src/compatibility/chrono:src/demos/robot/lander/model/Lander.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src/demos/robot/lander",
+    deps = ["//build_defs/chrono:native_core_fea"],
+    tags = ["manual", "original-demo-model"],
+)
+
+robodyna_cpp_demo(
+    name = "curiosity_rigid",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/curiosity/demo_ROBOT_Curiosity_Rigid.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "curiosity_scm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "little_hexy",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/hexy/demo_ROBOT_LittleHexy.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+    ],
+    features = ["irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "industrial",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/industrial/demo_ROBOT_Industrial.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+    ],
+    features = ["irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "lander",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/lander/demo_ROBOT_Lander.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        ":lander_model",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vsg"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "lander_crm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/lander/demo_ROBOT_Lander_CRM.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        ":lander_model",
+        "//examples/vehicle:solver_selection_headers",
+        "//src/sph/visualization:vsg",
+    ],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["robotics-demo", "gpu-fluid-cpu-mechanics"],
+)
+
+robodyna_cpp_demo(
+    name = "robo_simian_rigid",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_Rigid.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+    ],
+    features = ["vehicle", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "robo_simian_scm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_SCM.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+    ],
+    features = ["vehicle", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "turtlebot_rigid",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/turtlebot/demo_ROBOT_Turtlebot_Rigid.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "viper_rigid",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_Rigid.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+robodyna_cpp_demo(
+    name = "viper_scm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_SCM.cpp"],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "cpu-dynamics"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":curiosity_rigid",
+        ":curiosity_scm",
+        ":little_hexy",
+        ":industrial",
+        ":lander",
+        ":lander_crm",
+        ":robo_simian_rigid",
+        ":robo_simian_scm",
+        ":turtlebot_rigid",
+        ":viper_rigid",
+        ":viper_scm",
+    ],
+    tags = ["manual", "native-demo-group"],
+)

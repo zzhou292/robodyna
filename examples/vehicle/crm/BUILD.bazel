@@ -1,0 +1,81 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "fsi_floating_block",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/fsi/demo_VEH_FSI_FloatingBlock.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/crm:terrain", "//src/sph/visualization:vsg"],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "crm"],
+)
+
+robodyna_cpp_demo(
+    name = "crm_terrain_moving_patch",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_CRMTerrain_MovingPatch.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/crm:terrain",
+        "//src/sph/visualization:vsg",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "crm"],
+)
+
+robodyna_cpp_demo(
+    name = "crm_terrain_tracked_vehicle",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_CRMTerrain_TrackedVehicle.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/crm:terrain",
+        "//src/sph/visualization:vsg",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "crm"],
+)
+
+robodyna_cpp_demo(
+    name = "crm_terrain_wheeled_vehicle",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_CRMTerrain_WheeledVehicle.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/crm:terrain",
+        "//src/sph/visualization:vsg",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "crm"],
+)
+
+robodyna_cpp_demo(
+    name = "wheel_test_rig_crm",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_WheelTestRig_CRM.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/crm:terrain",
+        "//src/sph/visualization:vsg",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "crm"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":fsi_floating_block",
+        ":crm_terrain_moving_patch",
+        ":crm_terrain_tracked_vehicle",
+        ":crm_terrain_wheeled_vehicle",
+        ":wheel_test_rig_crm",
+    ],
+    tags = ["manual", "native-demo-group"],
+)

@@ -1,0 +1,57 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "hmmwv_multicore",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/multicore/demo_VEH_HMMWV_Multicore.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["native-profile-demo", "multicore"],
+)
+
+robodyna_cpp_demo(
+    name = "m113_multicore",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/multicore/demo_VEH_M113_Multicore.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["native-profile-demo", "multicore"],
+)
+
+robodyna_cpp_demo(
+    name = "wheel_test_rig_multicore",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/multicore/demo_VEH_WheelTestRig_Multicore.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["native-profile-demo", "multicore"],
+)
+
+robodyna_cpp_demo(
+    name = "granular_terrain_moving_patch",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_GranularTerrain_MovingPatch.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["native-profile-demo", "multicore"],
+)
+
+robodyna_cpp_demo(
+    name = "granular_terrain_rigid_tire",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_GranularTerrain_RigidTire.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["native-profile-demo", "multicore"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":hmmwv_multicore",
+        ":m113_multicore",
+        ":wheel_test_rig_multicore",
+        ":granular_terrain_moving_patch",
+        ":granular_terrain_rigid_tire",
+    ],
+    tags = ["manual", "native-demo-group"],
+)

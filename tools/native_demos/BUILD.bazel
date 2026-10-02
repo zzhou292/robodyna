@@ -1,0 +1,15 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["Presets.json"])
+
+py_library(name = "cases", srcs = ["cases.py"], deps = ["//tools/dependencies:cuda_math_library"])
+py_binary(
+    name = "run",
+    srcs = ["run.py"],
+    main = "run.py",
+    data = ["Presets.json"],
+    deps = [":cases", "//src/simulation/driver:driver", "//tools/verification/demo_matrix:library"],
+    tags = ["manual", "local", "explicit-native-run"],
+)
+py_test(name = "cases_test", srcs = ["CasesTest.py"], main = "CasesTest.py", deps = [":cases"], size = "small")

@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("//build_defs/features:defs.bzl", "FSI_SPH_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+# The containing Vehicle module supplies the existing ChVehicle/ChWheelTestRig
+# symbol closure. Only this additional original terrain TU has a new owner.
+cc_library(
+    name = "terrain",
+    srcs = ["//src/compatibility/chrono:src/chrono_vehicle/terrain/CRMTerrain.cpp"],
+    deps = ["//src/vehicle:headers", "//src/sph:sph"],
+    local_defines = ["CH_API_COMPILE_VEHICLE"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + FSI_SPH_ONLY,
+    tags = ["manual", "native-vehicle-crm", "cuda-fluid-cpu-mechanics"],
+)
+
+cc_test(
+    name = "host_profile_test",
+    srcs = ["HostProfileTest.cpp"],
+    deps = ["//src/vehicle:vehicle", "@googletest//:gtest_main"],
+    target_compatible_with = FSI_SPH_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "vehicle-crm-profile"],
+)

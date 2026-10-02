@@ -1,0 +1,211 @@
+load("@rules_python//python:defs.bzl", "py_test")
+load(":configuration.bzl", "parser_configuration")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY", "YAML_ONLY")
+load(":sources.bzl", "PARSER_DEMO_ASSETS", "PARSER_SOURCE_EXPORTS", "YAML_DEMO_ASSETS")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["sources.bzl", "SourceBaseline.json", "BUILD.bazel"])
+
+_SOURCE = "//src/compatibility/chrono:src/chrono_parsers/"
+_COMPATIBLE = ["@platforms//os:linux"] + YAML_ONLY
+_VSG = select({"//build_defs/features:vsg_enabled": ["//build_defs/chrono/vsg:vsg"], "//conditions:default": []})
+
+cc_library(
+    name = "base_headers",
+    hdrs = [_SOURCE + "ChApiParsers.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea"],
+)
+
+# These original parser classes are concrete domain adapters. They reuse the
+# current mixed System owner; this package does not introduce a second stepper.
+cc_library(
+    name = "yaml_mbs",
+    srcs = [_SOURCE + "yaml/ChParserYAML.cpp", _SOURCE + "yaml/ChParserMbsYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserYAML.h", _SOURCE + "yaml/ChParserMbsYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base_headers", "//src/io/yaml:yaml"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "yaml-profile", "cpu-only"],
+)
+
+cc_library(
+    name = "yaml_vehicle",
+    srcs = [_SOURCE + "yaml/ChParserVehicleYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserVehicleYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":yaml_mbs", "//src/vehicle:vehicle"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "yaml-profile", "cpu-only"],
+)
+
+cc_library(
+    name = "yaml_cfd",
+    srcs = [_SOURCE + "yaml/ChParserCfdYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserCfdYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":yaml_mbs", "//src/coupling/fsi:fsi"] + _VSG,
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "yaml-profile"],
+)
+
+cc_library(
+    name = "yaml_sph",
+    srcs = [_SOURCE + "yaml/ChParserSphYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserSphYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":yaml_cfd", "//src/sph:sph"] + select({
+        "//build_defs/features:vsg_enabled": ["//src/sph/visualization:vsg"],
+        "//conditions:default": [],
+    }),
+    local_defines = ["CH_API_COMPILE_PARSERS", "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA", "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"] + select({
+        "//build_defs/features:yaml_sph_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "yaml-profile", "cuda-backend"],
+)
+
+cc_library(
+    name = "yaml_tdpf",
+    srcs = [_SOURCE + "yaml/ChParserTdpfYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserTdpfYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":yaml_cfd", "//src/coupling/tdpf:tdpf"] + select({
+        "//build_defs/features:vsg_enabled": ["//src/coupling/tdpf:visualization"],
+        "//conditions:default": [],
+    }),
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"] + select({
+        "//build_defs/features:yaml_tdpf_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "yaml-profile", "cpu-only"],
+)
+
+# Exactly one factory implementation for any selected backend combination.
+cc_library(
+    name = "yaml_fsi",
+    srcs = [_SOURCE + "yaml/ChParserFsiYAML.cpp"],
+    hdrs = [_SOURCE + "yaml/ChParserFsiYAML.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":yaml_mbs", ":yaml_cfd"] + select({
+        "//build_defs/features:fsi_sph_enabled": [":yaml_sph"], "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:fsi_tdpf_enabled": [":yaml_tdpf"], "//conditions:default": [],
+    }),
+    local_defines = ["CH_API_COMPILE_PARSERS"] + select({
+        "//build_defs/features:fsi_sph_enabled": ["THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA", "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP"],
+        "//conditions:default": [],
+    }),
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "yaml-profile"],
+)
+
+cc_library(
+    name = "yaml_fsi_sph",
+    deps = [":yaml_fsi", ":yaml_sph"],
+    target_compatible_with = ["@platforms//os:linux"] + select({
+        "//build_defs/features:yaml_sph_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual"],
+)
+cc_library(
+    name = "yaml_fsi_tdpf",
+    deps = [":yaml_fsi", ":yaml_tdpf"],
+    target_compatible_with = ["@platforms//os:linux"] + select({
+        "//build_defs/features:yaml_tdpf_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual"],
+)
+
+filegroup(name = "yaml_demo_assets", srcs = ["//src/compatibility/chrono:" + path for path in YAML_DEMO_ASSETS])
+
+cc_library(
+    name = "adams",
+    srcs = [_SOURCE + "ChParserAdams.cpp", _SOURCE + "ChParserAdamsTokenizer.yy.cpp"],
+    hdrs = [_SOURCE + "ChParserAdams.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base_headers"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "cpu-only", "native-parsers"],
+)
+cc_library(
+    name = "opensim",
+    srcs = [_SOURCE + "ChParserOpenSim.cpp"],
+    hdrs = [_SOURCE + "ChParserOpenSim.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base_headers"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "cpu-only", "native-parsers"],
+)
+cc_library(
+    name = "python",
+    srcs = [_SOURCE + "ChParserPython.cpp"],
+    hdrs = [_SOURCE + "ChParserPython.h", _SOURCE + "ChSwigutils.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base_headers", "@python_embed_sdk//:embed"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    tags = ["manual", "cpu-only", "native-parsers", "python-embedding"],
+)
+
+parser_configuration(
+    name = "configuration",
+    template = _SOURCE + "ChConfigParsers.h.in",
+    header = "generated/chrono_parsers/ChConfigParsers.h",
+)
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = [":base_headers"],
+)
+cc_library(
+    name = "urdf",
+    srcs = [_SOURCE + "urdf/ChParserURDF.cpp"],
+    hdrs = [_SOURCE + "urdf/ChParserURDF.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":base_headers", ":configuration_headers", "@urdf_sdk//:urdf"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "cpu-only", "native-parsers"],
+)
+cc_library(
+    name = "urdf_vsg",
+    srcs = [_SOURCE + "urdf/ChParserURDFVisualizationVSG.cpp"],
+    hdrs = [_SOURCE + "urdf/ChParserURDFVisualizationVSG.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":urdf", "//build_defs/chrono/vsg:vsg"],
+    local_defines = ["CH_API_COMPILE_PARSERS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "native-parsers", "vulkan-rendering"],
+)
+
+filegroup(name = "demo_assets", srcs = ["//src/compatibility/chrono:" + path for path in PARSER_DEMO_ASSETS])
+
+filegroup(name = "source_inputs", srcs = ["//src/compatibility/chrono:" + path for path in PARSER_SOURCE_EXPORTS])
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location :SourceBaseline.json)", "$(location //src/compatibility/chrono:src/chrono_parsers/ChApiParsers.h)", "$(location :BUILD.bazel)"],
+    data = [":SourceBaseline.json", ":BUILD.bazel", ":source_inputs", "//src/compatibility/chrono:src/chrono_parsers/ChApiParsers.h"],
+    tags = ["manual", "cpu-only", "source-proof"],
+    size = "small",
+)

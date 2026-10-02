@@ -1004,7 +1004,6 @@ cuda_library(
     srcs = ["DemeMeshCollisionSystem.cu"],
     hdrs = ["DemeMeshCollisionSystem.h"],
     copts = ["--std=c++17", "-O3"],
-    linkopts = ["-lcudart"],
     deps = [
         ":collision_system_interface",
         "//lib_utils:cuda_utils",
@@ -1012,6 +1011,8 @@ cuda_library(
         "@dem_engine//:dem_engine_headers",
         "//third_party:dem_engine",
         "@eigen//:eigen",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:jitify",
     ],
 )
 

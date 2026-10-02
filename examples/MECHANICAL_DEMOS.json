@@ -1,0 +1,2095 @@
+{
+  "schema": "robodyna.mechanical_demo_targets.v1",
+  "source_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "scope": "Original99CMake-listed core/MBD/FEA programs; all99have real native declarations. Optional cases require coherent Multicore or multiphysics profiles. Compilation/runtime qualification tracked separately.",
+  "configuration": "Existing native_core_fea with actual explicitly selected VSG, Irrlicht, sparse-solver and postprocess libraries; demo-only availability profile. No solver/formulation substitution.",
+  "runtime_readiness": "Original interactive programs are not yet qualified for root runfiles/data/output admission; do not auto-run this build matrix. Existing capture labels retain their separate qualification.",
+  "programs": [
+    {
+      "original_program": "demo_CH_coords",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_coords.cpp",
+      "source_sha256": "e2a376cfaaae07e3ae86d6aa7fecb0bee4bcda9ca3d0ed35e64b23e7305bfd3d",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:coordinates",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_linalg",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_linalg.cpp",
+      "source_sha256": "f76b74f89e7cca7a085ff240baae50dfa08a9272057901c425a78da4b4d3c576",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:linear_algebra",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_matrix_ref",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_matrix_ref.cpp",
+      "source_sha256": "06821fb3ce2f573dd64e7fa74683070d519a375146fc1b4ebfe5af268d169526",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:matrix_references",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_math",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_math.cpp",
+      "source_sha256": "2ada970f9565e3952c18a3c8d89582da3798862384ae3e2618f5455be1371986",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:math",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_archive",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_archive.cpp",
+      "source_sha256": "2dfd394faaf4af2d2d6df65e351b5479b1a6abeda7c6e4e1bdd1a3c51ede711a",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:archives",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_buildsystem",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_buildsystem.cpp",
+      "source_sha256": "b62ab8fcc3ae7ce4f1f775b9048fae98206486457d08a932b246ec4bdc39f42f",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:build_system",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_powertrain",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_powertrain.cpp",
+      "source_sha256": "e604b563b301453db2c44cb17a231f9fd7652ebe4f9349e0e3176f70103434a5",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:powertrain",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/SetChronoSolver.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_functions",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_functions.cpp",
+      "source_sha256": "f2a7a48ee88871de1e0d576acb09e1dd37c3c8775e29009e08c1641fcafcf0d5",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:functions",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_solver",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_solver.cpp",
+      "source_sha256": "c7c721972bdedb3533d05851287451c02196a3f663548ef4a5f8fd8c2f618202",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:solvers",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_EulerAngles",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_EulerAngles.cpp",
+      "source_sha256": "6538c6149158e1d37c936f0c92a061ef2f28a84e4d1def07945c88a19e5c3e1a",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:euler_angles",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_CH_filesystem",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_filesystem.cpp",
+      "source_sha256": "f9c10b5d8d958f91dafa24b6a6b8d13bdb12453f726be258aa7eb19a758e8e52",
+      "original_cmake": "src/compatibility/chrono/src/demos/core/CMakeLists.txt",
+      "target": "//examples/core:filesystem",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_aux_ref",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_aux_ref.cpp",
+      "source_sha256": "c027ed2bcf5f3d9efc4b6f8b26863aa07b719a702f8ba49ea651ff7b8f0a143a",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:reference_frames",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_bricks",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_bricks.cpp",
+      "source_sha256": "70cecdf4aecf60ed4782e5eb5df691f87b46fe29e4a7a6f5a228af2748dc7673",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:brick_wall",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/cubetexture_borders.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_callbackNSC",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_callbackNSC.cpp",
+      "source_sha256": "5619472a6605e3ab7e53bded6eea3fff811cfdb8f0557bb71904fc5c410adf1a",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:contact_callbacks_nsc",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_callbackSMC",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_callbackSMC.cpp",
+      "source_sha256": "9a984fe75f190f8a7d9cd15e25e9dbb533b8750753d030537ae18c35f7f29633",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:contact_callbacks_smc",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_collisionNSC",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collisionNSC.cpp",
+      "source_sha256": "e8952dae4f07a779a6ac41c867c4f3d4dafbd6d02f5c42989b4fef77da158241",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:collision_nsc_interactive",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/cubetexture_bluewhite.png",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [
+        "//examples/mbd:collision_nsc"
+      ],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_collisionSMC",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collisionSMC.cpp",
+      "source_sha256": "d550bf7803a81aa0a85edf6f66926515ad935ceb83ec846b2906e74d0047f009",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:collision_smc",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/cubetexture_pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_collision_trimesh",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collision_trimesh.cpp",
+      "source_sha256": "70db1392b29322190132733d559b7df22503a090c24c6c054543b2ddecd5c658",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:triangle_mesh_collision",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/bulldozer/shoe_view.obj",
+        "src/compatibility/chrono/data/models/cube.obj",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_convex_decomp",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_convex_decomp.cpp",
+      "source_sha256": "71e993170e8fbc9286e9b96c8ec3f50f95221c08652634f781af5d34b9cc5586",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:convex_decomposition",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/support.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_earthquake",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_earthquake.cpp",
+      "source_sha256": "fe0cf3778e1b2ac27460d1ba4684d09d511061f73c9a5de2c70e55090307d8ed",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:earthquake",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_friction",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_friction.cpp",
+      "source_sha256": "e07a15b22ec1782c2e155aaf33a3786e57b7c3521635b1570ab361237bb52401",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:friction",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/bluewhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_motors",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_motors.cpp",
+      "source_sha256": "cccedcaec698d9e2c86defaf70cff3758b1869ace1f639d528b58389f50eb2a8",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:motors",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/SetChronoSolver.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_spring",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_spring.cpp",
+      "source_sha256": "6b4f2896ac88ca8b3efc2c705b0ed3f01454acd25e3ac4def497e2e41dc73eb0",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:spring_interactive",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [
+        "//examples/mbd:spring"
+      ],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_topmount",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_topmount.cpp",
+      "source_sha256": "cb0aa9674e830cecd5c6ae877a6ef5d62f199bb5854cc273a334744c7bb6a59e",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:top_mount_damper",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_inverted_pendulum",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_inverted_pendulum.cpp",
+      "source_sha256": "b680118e8630363317207b8344ab687d143f8f1bffa6035e2e36d7008074d17c",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:inverted_pendulum",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_external_ODE",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_external_ODE.cpp",
+      "source_sha256": "205192943b018c71bf6433a9045b4f42eba49987277d0dadb0f9bd33cc0491a6",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:external_ode",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "No visualization is used; inherited optional plotting/MKL branches remain disabled in the current core-only profile."
+      ]
+    },
+    {
+      "original_program": "demo_MBS_external_DAE",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_external_DAE.cpp",
+      "source_sha256": "32062a2a2084cfc8746873af62eac15d499cf638b9fa119f6d449cf4b0e4f354",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:external_dae",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "No visualization is used; inherited optional plotting/MKL branches remain disabled in the current core-only profile."
+      ]
+    },
+    {
+      "original_program": "demo_MBS_hydraulic_actuator",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_hydraulic_actuator.cpp",
+      "source_sha256": "3946d712480a20f219b1a0ebdd6babf011ef1fee50cb41bc6501d052712179d8",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:hydraulic_actuator",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "No visualization is used; inherited optional plotting/MKL branches remain disabled in the current core-only profile."
+      ]
+    },
+    {
+      "original_program": "demo_MBS_hydraulic_crane",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_hydraulic_crane.cpp",
+      "source_sha256": "0e48b1a2eb0c909eb35df3453dbd02cf6d11cf9361e9881efa095b92829634f4",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:hydraulic_crane",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_hydraulic_crane_cosim",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_hydraulic_crane_cosim.cpp",
+      "source_sha256": "e952bb67ccf07fbbe02ba75985d14f86289ba12cf2941e756fb914d406b64063",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:hydraulic_crane_cosimulation",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_custom_collision",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_custom_collision.cpp",
+      "source_sha256": "51d1205d125195eb88dc1b73f070cc35e9110bf1d6145b218fe41e7fb432247d",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:custom_collision",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/bluewhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_spinning_tops",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_spinning_tops.cpp",
+      "source_sha256": "369248be3b6906107fc7e4c325534607339ecf390f7fcadec9b2f2bb5264d20a",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:spinning_tops",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/spinning_top/platform.obj",
+        "src/compatibility/chrono/data/models/spinning_top/spinning_top_1.obj",
+        "src/compatibility/chrono/data/models/spinning_top/spinning_top_2.obj",
+        "src/compatibility/chrono/data/textures/bronze.png",
+        "src/compatibility/chrono/data/textures/metal.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_joint_lock",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_joint_lock.cpp",
+      "source_sha256": "86c4727edc64e2265501051a68cd3f8b09fc16d81faf5ea9a9de777d85b98778",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:locking_joint",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/checker1.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_checkpoint",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_checkpoint.cpp",
+      "source_sha256": "620a0553237079c8e4638cbab9596138af8cb1fa4af14537146d636e9ef9f204",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:checkpoint",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_custom_contact",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_custom_contact.cpp",
+      "source_sha256": "fdcc71312e6595bee8934d79a563c48ab2e1117e39ffc30667bede29cbae3502",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:custom_contact",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/sphere.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_object_drop",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_object_drop.cpp",
+      "source_sha256": "59da2df7d95138cf310161eeee0e709ae47b7f0f5f442dfdfdc0f1e7edf782cb",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:object_drop",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_cohesion",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_cohesion.cpp",
+      "source_sha256": "f018d81c0431c0076dbba184ab0cc685b1810d7fafe5f985d87f233c1eac52d4",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:cohesion",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/rock.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_conveyor",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_conveyor.cpp",
+      "source_sha256": "a74202f8fd79b4065479f27eede848bf18bd5bad08224b0fa8e191009abb972a",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:conveyor",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/cubetexture_bluewhite.png",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_feeder",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_feeder.cpp",
+      "source_sha256": "eb4955b2275d348479c4bc24b2b188fea037c5eec949af414d92252293a10a30",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:feeder",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/feeder_bowl.obj",
+        "src/compatibility/chrono/data/models/feeder_item.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_crank",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_crank.cpp",
+      "source_sha256": "6eb3e8b5cb47759cd1548e5b9527caa6a1f20ccaec246daa6bc629910c533daf",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:crank",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_forklift",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_forklift.cpp",
+      "source_sha256": "4deeb9d14ba35037f0b5c262b9095fa0c16bdb846379101ec77d846e445ec962",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:forklift",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/forklift/arm.obj",
+        "src/compatibility/chrono/data/models/forklift/body.obj",
+        "src/compatibility/chrono/data/models/forklift/forks.obj",
+        "src/compatibility/chrono/data/models/forklift/wheel.obj",
+        "src/compatibility/chrono/data/models/pallet.obj",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/cubetexture.png",
+        "src/compatibility/chrono/data/textures/cubetexture_wood.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_fourbar",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_fourbar.cpp",
+      "source_sha256": "9741a5189c6a48d0bb1e98d547bfb62410ded15198eda8a28be9df8fd4c93efc",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:four_bar",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_gears",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_gears.cpp",
+      "source_sha256": "8b5582890f321ca6e9727dfa5c4a6b3b55f45fec3df13006b39510ead953c2a5",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:gears",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_mecanum",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_mecanum.cpp",
+      "source_sha256": "7463787c4c13ccf95402d94664b20619a1036f19e1de7c775ed8c8d7fd35c878",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:mecanum_wheels",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_pendulum",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_pendulum.cpp",
+      "source_sha256": "631e810f17e78c8d9f054be57eb0a238627c1de5ec35808e7526c93623a27578",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:pendulum",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/fan2.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_suspension",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_suspension.cpp",
+      "source_sha256": "83e5743c3da6381b294deed9a0259cdec1010a63ffb4dda688a5c5a5736e5abf",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:suspension",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/blue.png",
+        "src/compatibility/chrono/data/textures/bluewhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_tracks",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_tracks.cpp",
+      "source_sha256": "1238bb37017131e51c8002c569b9fecfc00650c9ba8460cd015b140197cfa9e7",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:tracks",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/bulldozer/bulldozerB10.obj",
+        "src/compatibility/chrono/data/models/bulldozer/shoe_collision.obj",
+        "src/compatibility/chrono/data/models/bulldozer/shoe_view.obj",
+        "src/compatibility/chrono/data/models/bulldozer/wheel_view.obj",
+        "src/compatibility/chrono/data/textures/blue.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_convergence",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_convergence.cpp",
+      "source_sha256": "a55d59d5dc044ac067f025d3c050380340d3548fa86d198d09acb89713798f42",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:solver_convergence",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/textures/cubetexture_bluewhite.png",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_collision_2d",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collision_2d.cpp",
+      "source_sha256": "3ba4898e1ac60ecdbe2750caf3c041ca80ae73492dc028832fffab046725e741",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:collision_2d",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_emitter",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_emitter.cpp",
+      "source_sha256": "5cba2426fcf66e266ac50e150007adee69f148280692448e88f353445a64d79c",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:particle_emitter",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_emit_cluster",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_emit_cluster.cpp",
+      "source_sha256": "8af5fe87123e366f412fd36211ddecd9b5d93aca6e03be7afe009b1896eb0e75",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:particle_clusters",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_emit_processor",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_emit_processor.cpp",
+      "source_sha256": "9325dd8e417ebb817962abc332d03eda14718fd5728cbcde50396e5ac4beb597",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:particle_processing",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_rev_sph",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_rev_sph.cpp",
+      "source_sha256": "6f79bdee8be99424cec0272c649cf653c4185fa4f3a0f19350d52f03759b7750",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:revolute_spherical_joint",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_rev_trans",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_rev_trans.cpp",
+      "source_sha256": "c4b7184042c8657e1bd86d328e9d8c328f6755bc7b67974da83383f401599ce4",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:revolute_translational_joint",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_rev_limits",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_rev_limits.cpp",
+      "source_sha256": "2f1d5cec9f711ac7f1c2414fc47d66d5aff28e15266ede72418681a01f31e901",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:revolute_limits",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_rev_reactions",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_rev_reactions.cpp",
+      "source_sha256": "5c40b03c91cefc08b211dcf326cbd645d6015eb3c8e02199ba17e04be8bd764d",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:revolute_reactions",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_rot_spring",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_rot_spring.cpp",
+      "source_sha256": "71214d13c3f50cd4d033d0470c6254678bf831d8736c45c04f2257f3f13c50dc",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:rotational_spring",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_ujoint",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_ujoint.cpp",
+      "source_sha256": "5b470d9cad479f6b73d0f7b8e82ffe813592f99775190554a1e5ebdcf730ed75",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:universal_joint",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_planar",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_planar.cpp",
+      "source_sha256": "9efd6ad273a17d60056febcd84f9a6a0ac046a5e95af8cdd190aabd9df18b6a4",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:planar_constraint",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_link_bushing",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_link_bushing.cpp",
+      "source_sha256": "2322719c8c175ba17ce38075033f09dd2031307194499acb898ae32aae8a6805",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:bushing",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_prismatic_limits",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_prismatic_limits.cpp",
+      "source_sha256": "c05f470da7b9b103472de072ea0d16329bccab4b071a548852d8f83747595a90",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:prismatic_limits",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_prismatic_force",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_prismatic_force.cpp",
+      "source_sha256": "a064de52cc22c6ab6002428b0172321d9c36e34cce38b055d340eb58a60bfebb",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:prismatic_force",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_report_collisions",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_report_collisions.cpp",
+      "source_sha256": "0a3165c5ab24e6501a26ba77f7d007df349d2f441a8b0bce67338ca4e8256dee",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:collision_reporting",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/bluewhite.png",
+        "src/compatibility/chrono/data/textures/cubetexture_bluewhite.png",
+        "src/compatibility/chrono/data/textures/pinkwhite.png"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_imposed_motion",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_imposed_motion.cpp",
+      "source_sha256": "14816db6624ebbf587285cf5d8db2e0e5444b221fa7639b68f397b53e29b8304",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:imposed_motion",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/support.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_MBS_collision_object",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_collision_object.cpp",
+      "source_sha256": "116539233c2356df5f5f0b40d07f57e4dc3da3a4492cb566ce836d1529b97da7",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:collision_objects",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht",
+        "multicore_collision",
+        "thrust"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/textures/checker1.png",
+        "src/compatibility/chrono/data/textures/concrete.jpg",
+        "src/compatibility/chrono/data/vehicle/hmmwv/hmmwv_tire_coarse.obj",
+        "src/compatibility/chrono/data/vehicle/hmmwv/hmmwv_tire_fine.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [],
+      "build_config": "multicore"
+    },
+    {
+      "original_program": "demo_MBS_link_mate",
+      "source": "src/compatibility/chrono/src/demos/mbs/demo_MBS_link_mate.cpp",
+      "source_sha256": "82fa3da920fc6848bf2714643e109fc9def0a33aab5dba73181ae8a974f16f94",
+      "original_cmake": "src/compatibility/chrono/src/demos/mbs/CMakeLists.txt",
+      "target": "//examples/mbd:mate_constraints",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_basic",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_basic.cpp",
+      "source_sha256": "cc4c9b3eea0d79a1aea1d0142005be026469aac6a3c6d50fd0ddf8935289e0a1",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:basic",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_dynamics",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_dynamics.cpp",
+      "source_sha256": "af1d48c1c278998f36e1d8f8a947d6d887005f40abafdf25bc5aea64c6cb4e08",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:dynamics",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_loads_statics",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_loads_statics.cpp",
+      "source_sha256": "4723fbb8f3aa5d16dc216b86ab038cce2afdc53d64b963b5d6f5f04e4395f9da",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:static_loads",
+      "declared": true,
+      "features": [],
+      "required_modules": [],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_truss",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_truss.cpp",
+      "source_sha256": "ae36a2db55008214768b4555230efb2de35439babeaa3828803d960ff0b9d18e",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:truss",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beams_static",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beams_static.cpp",
+      "source_sha256": "c1a788b51bb95f1f7456fa8a5c97219542e5367487dc1004e3dfb07410ebc006",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:static_beams",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beams_extrude",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beams_extrude.cpp",
+      "source_sha256": "900fc8e49143246635bc39c907411cea2c0855527b26bc54bdcb59ba49bfcde5",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:beam_extrusion",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beamsIGA",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beamsIGA.cpp",
+      "source_sha256": "fe688bd07a142243a31f271fb1043bddb73580fa29b8687dbe94d85c459c0ea1",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:iga_beams",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_cosimulate_load",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_cosimulate_load.cpp",
+      "source_sha256": "9b954616a3b096ffaa276cc31a7f881cba19ba21275f724aef8119617a525d57",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:load_cosimulation",
+      "declared": true,
+      "features": [
+        "irrlicht"
+      ],
+      "required_modules": [
+        "irrlicht"
+      ],
+      "private_headers": [],
+      "data_files": [
+        "src/compatibility/chrono/data/models/tractor_wheel/tractor_wheel_coarse.INP",
+        "src/compatibility/chrono/data/models/tractor_wheel/tractor_wheel_fine.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake groups this under MKL, but the unchanged source uses MINRES; Irrlicht remains mandatory."
+      ]
+    },
+    {
+      "original_program": "demo_FEA_multiphysics",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_multiphysics.cpp",
+      "source_sha256": "3fb9ef000a70b1be16a9a12c46dbfb21c9fda35e112056888c39a5dae98f7e2c",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:multiphysics",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "visualization",
+        "fea_multiphysics",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake selects Irrlicht for this family; a VSG profile requires independent module/visualization qualification."
+      ],
+      "build_config": "multiphysics"
+    },
+    {
+      "original_program": "demo_FEA_multiphysics_custom",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_multiphysics_custom.cpp",
+      "source_sha256": "3ada88bb87a00e94f3441efe465d3b9f8ebdd4bd440c7a7551d6f298739bebe2",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:custom_multiphysics",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "visualization",
+        "fea_multiphysics",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake selects Irrlicht for this family; a VSG profile requires independent module/visualization qualification."
+      ],
+      "build_config": "multiphysics"
+    },
+    {
+      "original_program": "demo_FEA_multiphysics_contacts",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_multiphysics_contacts.cpp",
+      "source_sha256": "c375ae4a09dc6a4ec3880946e8d51966f2521122a8029222c66772dfafda13c0",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:multiphysics_contact",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "visualization",
+        "fea_multiphysics",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/models/cube.obj",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake selects Irrlicht for this family; a VSG profile requires independent module/visualization qualification."
+      ],
+      "build_config": "multiphysics"
+    },
+    {
+      "original_program": "demo_FEA_multiphysics_viscous",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_multiphysics_viscous.cpp",
+      "source_sha256": "6b9ce0f4b12443cc0be4a8d44840ec0aeeaa46bd85d46adb7e999a289ec1bc6b",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:viscous_multiphysics",
+      "declared": true,
+      "features": [
+        "irrlicht",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "visualization",
+        "fea_multiphysics",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake selects Irrlicht for this family; a VSG profile requires independent module/visualization qualification."
+      ],
+      "build_config": "multiphysics"
+    },
+    {
+      "original_program": "demo_FEA_checkpoint",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_checkpoint.cpp",
+      "source_sha256": "3497f8093529b1322388bca4dc5a9e3c12e566546f994ec6ab45f29bf0d56188",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:checkpoint",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_thermal",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_thermal.cpp",
+      "source_sha256": "eb61fd2d9746eb4411943ab1775776a3e21cea6e11fbc191ef3818453f0f5c7a",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:thermal",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/beam.ele",
+        "src/compatibility/chrono/data/fea/beam.node"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_electrostatics",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_electrostatics.cpp",
+      "source_sha256": "549ee82b311967eb1ff462723c6dba20d760e2e15b5c39880a05f987fc09824a",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:electrostatics",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/electrostatics.INP"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_contacts_SMC",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_contacts_SMC.cpp",
+      "source_sha256": "c7ea72531634da58d2cb404ea981a5acec420acc9123f9971de842fa460731ba",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:contact_smc",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/beam.ele",
+        "src/compatibility/chrono/data/fea/beam.node",
+        "src/compatibility/chrono/data/models/cube.obj",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_cables",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_cables.cpp",
+      "source_sha256": "ef5ee8e9343e7af9107dca398704af3faad9ecfb079b3a31ecd177bb1ed4a412",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:cables",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAcables.h",
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_shellsANCF_3423_3443",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_shellsANCF_3423_3443.cpp",
+      "source_sha256": "a70db8abf1cdc9cbe33dbdb13bef5709edae3005a1f63e8cd5064adb9c104a21",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_shells_3423_3443",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/SetChronoSolver.h",
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_shellsANCF_3833",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_shellsANCF_3833.cpp",
+      "source_sha256": "9dd6122ffab67af84700e038fe220d30e4f773db34e053fd793569397aa62191",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_shells_3833",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_hexaANCF_3813",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_hexaANCF_3813.cpp",
+      "source_sha256": "ea6785a853b103db0a54e8a034a40a5d287a3799ba3d3e788a17f38b549f61ab",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_hexahedra_3813",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_loads_dynamics",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_loads_dynamics.cpp",
+      "source_sha256": "9449d2f4d1760a6540f2709e7196656b7ae0db8077d2e383b6a4369dbc604b49",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:dynamic_loads",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_cablesMUMPS",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_cablesMUMPS.cpp",
+      "source_sha256": "f79619fee59cb41cbafb89cddbbabbe7048861636e66efa1eeae5f7b83dd3aa1",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:cables_mumps",
+      "declared": true,
+      "features": [
+        "vsg",
+        "mumps"
+      ],
+      "required_modules": [
+        "vsg",
+        "mumps"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAcables.h",
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beamsEuler",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beamsEuler.cpp",
+      "source_sha256": "20f3ed187b19de50d78151bdb1a038bfe2dd90a0597b53825016945d34874340",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:euler_beams",
+      "declared": true,
+      "features": [
+        "vsg"
+      ],
+      "required_modules": [
+        "vsg"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original CMake groups this under MKL, but the unchanged source uses only MINRES and has no MKL dependency."
+      ]
+    },
+    {
+      "original_program": "demo_FEA_beams_constr",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beams_constr.cpp",
+      "source_sha256": "59adfb2dde8cfe273641b354c8d53272d345ec0a1e74d27b0ca1cae0ae91545f",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:constrained_beams",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_cablesMKL",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_cablesMKL.cpp",
+      "source_sha256": "50af8f41961c5eb0c0527bdfddc866f4460892f3066780edd65686724a2d1f8d",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:cables_mkl",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAcables.h",
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_abaqus_wheel",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_abaqus_wheel.cpp",
+      "source_sha256": "ef452b58c7f6a351f3c76722a1170c5d7b5bdd2c2df20c4f93a23f44e46c4bee",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:abaqus_wheel",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/models/tractor_wheel/tractor_wheel_coarse.INP",
+        "src/compatibility/chrono/data/models/tractor_wheel/tractor_wheel_rim.obj",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_shellsReissner",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_shellsReissner.cpp",
+      "source_sha256": "a778700cd3fe9fb7964bfae34741de6d10e2e84c04a73622b066a8f31a12c750",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:reissner_shells",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_shellsBST",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_shellsBST.cpp",
+      "source_sha256": "517e12e2579b00f363a7269262f88ab1e022067740a5b20c4c3bb68288df1298",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:bst_shells",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/models/sphere.obj"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_contacts_NSC",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_contacts_NSC.cpp",
+      "source_sha256": "c594dcb97c1de4442066f100cb66234ef8e6e9eb480c1bdca3b9682358554502",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:contact_nsc",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/beam.ele",
+        "src/compatibility/chrono/data/fea/beam.node",
+        "src/compatibility/chrono/data/models/cube.obj",
+        "src/compatibility/chrono/data/models/tractor_wheel/tractor_wheel_fine.INP",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_contactsANCF_SMC",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_contactsANCF_SMC.cpp",
+      "source_sha256": "80e561c90b6fd2fd8976a032a575395ac259c27467f0adb4646e988bd476fe36",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_contact_smc",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl_headers"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/Plate.mesh",
+        "src/compatibility/chrono/data/textures/concrete.jpg"
+      ],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": [
+        "Original MINRES solver remains unchanged; the Pardiso provider supplies the retained unconditional MKL header."
+      ]
+    },
+    {
+      "original_program": "demo_FEA_hexaANCF_3813_9",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_hexaANCF_3813_9.cpp",
+      "source_sha256": "a30a0f89fc008b919de3b341b593c16c16f907cf21b1115fa4fee4ed73b7027d",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_hexahedra_3813_9",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [
+        "src/compatibility/chrono/data/fea/CapHardeningInformation_TriaxialAxial.INP"
+      ],
+      "unresolved_literal_assets": [
+        "fea/Hardening_parameter_table.INP"
+      ],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beamsANCF",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beamsANCF.cpp",
+      "source_sha256": "6999c58d2c6db825b73bbfc811e45a8c734665b50efc2a9b047f1dc801de204e",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:ancf_beams",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    },
+    {
+      "original_program": "demo_FEA_beams_rotor",
+      "source": "src/compatibility/chrono/src/demos/fea/demo_FEA_beams_rotor.cpp",
+      "source_sha256": "e5bd31b085b2c0ed2ba6bc160891feb2497a0d46fa1fe2bd8d6805d612ddd823",
+      "original_cmake": "src/compatibility/chrono/src/demos/fea/CMakeLists.txt",
+      "target": "//examples/fea:rotor_beams",
+      "declared": true,
+      "features": [
+        "vsg",
+        "pardiso_mkl",
+        "postprocess"
+      ],
+      "required_modules": [
+        "vsg",
+        "pardiso_mkl",
+        "postprocess"
+      ],
+      "private_headers": [
+        "src/compatibility/chrono/src/demos/fea/FEAvisualization.h"
+      ],
+      "data_files": [],
+      "unresolved_literal_assets": [],
+      "existing_qualified_capture_targets": [],
+      "notes": []
+    }
+  ],
+  "qualification": {
+    "first48_compile_receipt": "crash-work/reports/robodyna-mechanical-demos-build-2.json",
+    "additional30": "declared; compilation pending",
+    "additional_sparse16": "declared; compilation and actual sparse-solver tests pending"
+  }
+}

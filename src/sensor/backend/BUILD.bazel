@@ -1,0 +1,19 @@
+package(default_visibility = ["//visibility:public"])
+
+# Select exactly one implementation of the retained Sensor classes.
+# Concrete targets reject the opposite build-wide backend capability.
+alias(
+    name = "sensor",
+    actual = select({
+        "//build_defs/features:sensor_optix": "//src/sensor/optix:sensor",
+        "//conditions:default": "//src/sensor:sensor",
+    }),
+)
+
+filegroup(
+    name = "runtime_inputs",
+    srcs = select({
+        "//build_defs/features:sensor_optix": ["//src/sensor/optix:configuration", "@optix_sdk//:runtime_headers", "@optix_sdk//:runtime", "@sensor_sdk//:runtime"],
+        "//conditions:default": ["//src/sensor:shaders", "@sensor_sdk//:runtime"],
+    }),
+)

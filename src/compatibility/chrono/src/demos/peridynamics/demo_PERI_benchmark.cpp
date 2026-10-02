@@ -180,9 +180,9 @@ int test_cantilever_push(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Visualization of the FEM mesh.
         {
             // Mesh visualization - speed
-            auto vis_mesh = chrono_types::make_shared<ChVisualShapeFEA>(mesh);
+            auto vis_mesh = chrono_types::make_shared<ChVisualShapeFEA>();
             vis_mesh->SetFEMdataType(ChVisualShapeFEA::DataType::NODE_SPEED_NORM);
-            vis_mesh->SetColorscaleMinMax(0.0, 5.50);
+            vis_mesh->SetColormapRange(0.0, 5.50);
             vis_mesh->SetShrinkElements(true, 0.90);
             vis_mesh->SetSmoothFaces(true);
             mesh->AddVisualShapeFEA(vis_mesh);
@@ -459,9 +459,9 @@ int test_cantilever_torsion(int argc, char* argv[], bool do_fea, bool do_peri) {
         // Visualization of the FEM mesh.
         {
             // Mesh visualization - speed
-            auto vis_mesh = chrono_types::make_shared<ChVisualShapeFEA>(mesh);
+            auto vis_mesh = chrono_types::make_shared<ChVisualShapeFEA>();
             vis_mesh->SetFEMdataType(ChVisualShapeFEA::DataType::NODE_SPEED_NORM);
-            vis_mesh->SetColorscaleMinMax(0.0, 5.50);
+            vis_mesh->SetColormapRange(0.0, 5.50);
             vis_mesh->SetShrinkElements(true, 0.90);
             vis_mesh->SetSmoothFaces(true);
             mesh->AddVisualShapeFEA(vis_mesh);

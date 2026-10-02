@@ -1,0 +1,79 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//tools/mpi:defs.bzl", "local_mpi_test")
+load(":configuration.bzl", "distributed_configuration")
+load(":ownership.bzl", "distributed_ownership_test")
+load(":sources.bzl", "DISTRIBUTED_HEADERS", "DISTRIBUTED_SOURCES", "DISTRIBUTED_EXPORTS", "DISTRIBUTED_DEMO_EXPORTS")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json"])
+
+distributed_configuration(
+    name = "configuration",
+    template = "//src/compatibility/chrono:src/chrono_synchrono/SynConfig.h.in",
+    header = "generated/chrono_synchrono/SynConfig.h",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+# This composition owns each retained unit once. Distributed agent state still
+# uses the original Vehicle/Robot objects and their shared mechanics backend.
+cc_library(
+    name = "synchronization",
+    srcs = ["//src/compatibility/chrono:" + path for path in DISTRIBUTED_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in DISTRIBUTED_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [
+        ":configuration_headers",
+        "//src/vehicle:vehicle", "//src/vehicle/models:models",
+        "//src/vehicle/visualization:irrlicht", "//src/robotics/models:models",
+        "@mpi_sdk//:cpp", "@flatbuffers//:headers", "@fastdds_sdk//:dds",
+    ],
+    local_defines = ["SYN_API_COMPILE"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    tags = ["manual", "native-distributed", "cpu-only"],
+)
+
+cc_test(
+    name = "message_test",
+    srcs = ["MessageTest.cpp", "DdsMessageTest.cpp"],
+    deps = [":synchronization", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only"],
+)
+
+cc_binary(
+    name = "mpi_message_test_backend",
+    srcs = ["MpiMessageTest.cpp"],
+    deps = [":synchronization"],
+    tags = ["manual", "cpu-only", "mpi-test-backend"],
+)
+
+local_mpi_test(name = "mpi_message_test", program = ":mpi_message_test_backend", ranks = 2)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location :sources.bzl)", "$(location :SourceBaseline.json)",
+            "$(location //src/compatibility/chrono:src/chrono_synchrono/CMakeLists.txt)",
+            "$(location //examples/distributed:DemoCatalog.json)"],
+    data = [":sources.bzl", ":SourceBaseline.json", "//examples/distributed:DemoCatalog.json"] +
+           ["//src/compatibility/chrono:" + p for p in DISTRIBUTED_EXPORTS + DISTRIBUTED_DEMO_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+distributed_ownership_test(
+    name = "ownership_test",
+    implementation = ":synchronization",
+    tags = ["manual", "cpu-only", "source-proof"],
+)

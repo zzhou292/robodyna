@@ -1,0 +1,85 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+_COMPATIBLE = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY
+_FMU = "//src/vehicle/fmi:"
+
+cc_library(name = "instance", hdrs = ["FmuInstance.h"], deps = ["//src/integrations/fmi:headers"])
+
+cc_test(
+    name = "vehicle_test",
+    srcs = ["VehicleTest.cpp"],
+    args = ["$(location " + _FMU + "wheeled_vehicle)", "$(location " + _FMU + "wheeled_vehicle_powertrain)"],
+    data = [_FMU + "wheeled_vehicle", _FMU + "wheeled_vehicle_powertrain"],
+    deps = [":instance", "@googletest//:gtest"],
+    target_compatible_with = _COMPATIBLE,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    tags = ["manual", "cpu-only", "native-fmi"],
+    size = "small",
+)
+cc_test(
+    name = "components_test",
+    srcs = ["ComponentsTest.cpp"],
+    args = ["$(location " + _FMU + "tire)", "$(location " + _FMU + "powertrain)"],
+    data = [_FMU + "tire", _FMU + "powertrain"],
+    deps = [":instance", "@googletest//:gtest"],
+    target_compatible_with = _COMPATIBLE,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    tags = ["manual", "cpu-only", "native-fmi"],
+    size = "small",
+)
+cc_test(
+    name = "driver_test",
+    srcs = ["DriverTest.cpp"],
+    args = ["$(location " + _FMU + "path_follower)"],
+    data = [_FMU + "path_follower"],
+    deps = [":instance", "@googletest//:gtest"],
+    target_compatible_with = _COMPATIBLE,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    tags = ["manual", "cpu-only", "native-fmi"],
+    size = "small",
+)
+cc_test(
+    name = "model_exchange_test",
+    srcs = ["ModelExchangeTest.cpp"],
+    args = ["$(location " + _FMU + "path_follower_model_exchange)"],
+    data = [_FMU + "path_follower_model_exchange"],
+    deps = ["//src/integrations/fmi:fmi", "@googletest//:gtest"],
+    target_compatible_with = _COMPATIBLE,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    tags = ["manual", "cpu-only", "native-fmi"],
+    size = "small",
+)
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location " + _FMU + "exports.json)", "$(location " + _FMU + "SourceBaseline.json)", "$(location " + _FMU + "BUILD.bazel)", "$(location //examples/vehicle/fmi:BUILD.bazel)", "$(location //src/compatibility/chrono:src/chrono_vehicle/fmi/CMakeLists.txt)"],
+    data = [_FMU + "exports.json", _FMU + "SourceBaseline.json", _FMU + "BUILD.bazel", "//examples/vehicle/fmi:BUILD.bazel", _FMU + "source_inputs", "//src/compatibility/chrono:src/chrono_vehicle/fmi/CMakeLists.txt"],
+    deps = ["//tools/verification:inventory"],
+    tags = ["manual", "cpu-only", "source-proof"],
+    size = "small",
+)
+
+_MODELS = [
+    ("wheeled_vehicle", "FMU2cs_WheeledVehicle"),
+    ("wheeled_vehicle_powertrain", "FMU2cs_WheeledVehiclePtrain"),
+    ("powertrain", "FMU2cs_Powertrain"),
+    ("tire", "FMU2cs_ForceElementTire"),
+    ("path_follower", "FMU2cs_PathFollowerDriver"),
+    ("path_follower_model_exchange", "FMU2me_PathFollowerDriver"),
+]
+py_test(
+    name = "artifacts_test",
+    srcs = ["ArtifactTest.py"],
+    main = "ArtifactTest.py",
+    args = ["$(location " + _FMU + "exports.json)"] + [arg for target, identifier in _MODELS for arg in ["$(location " + _FMU + target + ")", "$(location " + _FMU + identifier + ".so)"]],
+    data = [_FMU + "exports.json"] + [label for target, identifier in _MODELS for label in [_FMU + target, _FMU + identifier + ".so"]],
+    deps = ["//tests/fmi/elf:inspection"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "cpu-only", "local", "requires-binutils"],
+    size = "small",
+)
+
+test_suite(name = "tests", tests = [":vehicle_test", ":components_test", ":driver_test", ":model_exchange_test", ":source_inventory_test", ":artifacts_test"], tags = ["manual"])

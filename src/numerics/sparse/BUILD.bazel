@@ -1,0 +1,6 @@
+package(default_visibility = ["//visibility:public"])
+
+# Retained CPU sparse interfaces. These still use the mixed mechanics backend;
+# the labels do not claim that its numerical classes have been fully separated.
+alias(name = "mumps", actual = "//src/compatibility/chrono:native_mumps")
+alias(name = "pardiso_mkl", actual = "//src/compatibility/chrono:native_pardisomkl")

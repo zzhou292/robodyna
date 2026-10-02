@@ -1,0 +1,19 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "robo_simian_granular",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/robot/robosimian/multicore/demo_ROBOT_RoboSimian_Granular.cpp",
+        "//src/compatibility/chrono:src/demos/robot/robosimian/multicore/granular.cpp",
+        "//src/compatibility/chrono:src/demos/robot/robosimian/multicore/granular.h",
+    ],
+    deps = ["//src/robotics/models:models", "//src/mbd/multicore:multicore"],
+    features = ["vehicle", "vsg"],
+    tags = ["robotics-demo", "multicore-profile"],
+)
+
+filegroup(name = "native_demos", srcs = [":robo_simian_granular"], tags = ["manual", "native-demo-group"])

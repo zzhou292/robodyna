@@ -18,8 +18,8 @@ def _scm_configuration_impl(ctx):
         template = ctx.file.template,
         output = ctx.outputs.header,
         substitutions = {
-            "@CHRONO_OPENCRG@": "#undef CHRONO_OPENCRG",
-            "@CHRONO_CRM@": "#undef CHRONO_CRM",
+            "@CHRONO_OPENCRG@": "#define CHRONO_OPENCRG" if ctx.attr.opencrg else "#undef CHRONO_OPENCRG",
+            "@CHRONO_CRM@": "#define CHRONO_CRM" if ctx.attr.crm else "#undef CHRONO_CRM",
             "@CHRONO_SCM_GPU@": "#undef CHRONO_HAS_SCM_GPU",
         },
     )
@@ -30,6 +30,8 @@ _scm_configuration = rule(
     attrs = {
         "template": attr.label(allow_single_file = True, mandatory = True),
         "header": attr.output(mandatory = True),
+        "crm": attr.bool(default = False),
+        "opencrg": attr.bool(default = False),
     },
 )
 
@@ -37,6 +39,8 @@ def chrono_native_scm(name):
     """Declare the CPU/Bullet retention profile and separate presentation target."""
     _scm_configuration(
         name = name + "_configuration",
+        crm = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+        opencrg = select({"//build_defs/features:opencrg_enabled": True, "//conditions:default": False}),
         template = "src/chrono_vehicle/ChConfigVehicle.h.in",
         header = name + "_config/include/chrono_vehicle/ChConfigVehicle.h",
     )

@@ -1,0 +1,56 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load(":sources.bzl", "TDPF_ASSETS", "TDPF_HEADERS", "TDPF_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl"])
+
+genrule(
+    name = "configuration",
+    srcs = ["//src/compatibility/chrono:src/chrono_fsi/tdpf/ChFsiConfigTDPF.h.in"],
+    outs = ["generated/chrono_fsi/tdpf/ChFsiConfigTDPF.h"],
+    cmd = "cp $< $@",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+cc_library(
+    name = "tdpf",
+    srcs = ["//src/compatibility/chrono:" + path for path in TDPF_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in TDPF_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":configuration_headers", "//src/coupling/fsi:fsi", "@hydrochrono//:hydrodynamics"],
+    local_defines = ["CH_API_COMPILE_FSI"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    tags = ["manual", "native-tdpf", "cpu-only"],
+)
+
+cc_library(
+    name = "visualization",
+    srcs = ["//src/compatibility/chrono:src/chrono_fsi/tdpf/visualization/ChTdpfVisualizationVSG.cpp"],
+    hdrs = ["//src/compatibility/chrono:src/chrono_fsi/tdpf/visualization/ChTdpfVisualizationVSG.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":tdpf", "//build_defs/chrono/vsg:vsg", "//src/compatibility/chrono:native_stb"],
+    local_defines = ["CH_API_COMPILE_FSI"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "native-tdpf"],
+)
+
+filegroup(name = "demo_assets", srcs = ["//src/compatibility/chrono:" + path for path in TDPF_ASSETS])
+
+cc_test(
+    name = "dynamics_test",
+    srcs = ["DynamicsTest.cpp"],
+    deps = [":tdpf", "//include/robodyna/mbd:api", "//include/robodyna/simulation:api", "@googletest//:gtest"],
+    args = ["$(location //src/compatibility/chrono:data/fsi-tdpf/sphere/sphere.h5)"],
+    data = ["//src/compatibility/chrono:data/fsi-tdpf/sphere/sphere.h5", "@hdf5_sdk//:runtime"],
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    size = "small",
+    tags = ["manual", "cpu-only", "native-tdpf"],
+)

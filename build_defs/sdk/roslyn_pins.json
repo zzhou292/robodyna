@@ -1,0 +1,131 @@
+{
+  "schema": "robodyna.roslyn_sdk_pins.v1",
+  "version": "3.11.0",
+  "environment": "ROBODYNA_ROSLYN_ROOT",
+  "archive_sha256": "6c0511bae4f9baf9265bf0edd0147ff303185c0ad750023a154ec9bbd2e5c12b",
+  "source_commit": "ae1fff344d46976624e68ae17164e0607ab68b10",
+  "compiler": "tasks/net472/csc.exe",
+  "language_version": "7.3",
+  "files": [
+    {
+      "path": "tasks/net472/Microsoft.CodeAnalysis.dll",
+      "bytes": 2903440,
+      "sha256": "159f595e313f8cc09bac14588e2466c312f512a4778d9fa2352fcccf2a53aa3d"
+    },
+    {
+      "path": "tasks/net472/Microsoft.CodeAnalysis.CSharp.dll",
+      "bytes": 6098320,
+      "sha256": "e822156145e1add437b1d893c0315257c12e3d5b1b89d83494db6d88d37fe20a"
+    },
+    {
+      "path": "tasks/net472/Microsoft.CodeAnalysis.Scripting.dll",
+      "bytes": 135568,
+      "sha256": "9ec9ef36e6c17d51a703d540787f7b52bf0cdbb979209295efd9701f5f898d05"
+    },
+    {
+      "path": "tasks/net472/Microsoft.CodeAnalysis.CSharp.Scripting.dll",
+      "bytes": 31632,
+      "sha256": "f9206ec56662c391cd6f860a55e6d897ed2a48f3033920bef64efb03ed9209fd"
+    },
+    {
+      "path": "tasks/net472/Microsoft.CodeAnalysis.VisualBasic.dll",
+      "bytes": 5229968,
+      "sha256": "6046a05fa6a744558a326201ae1f575c8714bfce57a18e50d92a12464394dd41"
+    },
+    {
+      "path": "tasks/net472/Microsoft.DiaSymReader.Native.amd64.dll",
+      "bytes": 1813896,
+      "sha256": "3aecc22ececf784182883ebd2c2bf60bcdb25cc209dd64c32800b845ee8966e0"
+    },
+    {
+      "path": "tasks/net472/Microsoft.DiaSymReader.Native.x86.dll",
+      "bytes": 1529728,
+      "sha256": "1151c5f56d884fe60fddaed8a740f6d5c7e5b129003c99b442de5694b4bbd9ea"
+    },
+    {
+      "path": "tasks/net472/csc.exe",
+      "bytes": 58232,
+      "sha256": "8e2e5dc38efc607b7e29eca4c51dd17b51d3e6688f6cb861f97b5d458c573f50"
+    },
+    {
+      "path": "tasks/net472/csc.exe.config",
+      "bytes": 4312,
+      "sha256": "e4c6671dc75df66efba5149c26bf84d019135428f07d62c49d97e372610b540d"
+    },
+    {
+      "path": "tasks/net472/Microsoft.Build.Tasks.CodeAnalysis.dll",
+      "bytes": 137104,
+      "sha256": "b889bc490ba4da1ec8855aa248e77495ea85c53c6c7bf5d178b23d962168cc85"
+    },
+    {
+      "path": "tasks/net472/System.Collections.Immutable.dll",
+      "bytes": 189312,
+      "sha256": "646d3b52a4898078f46534727bdb06ff23b72523441458b9f49ecc315bf3ef5c"
+    },
+    {
+      "path": "tasks/net472/System.Reflection.Metadata.dll",
+      "bytes": 462728,
+      "sha256": "46451e1168dd11d450aa9b6119f17cec9a70928a40ac3c752abf61ce809cba6f"
+    },
+    {
+      "path": "tasks/net472/System.Runtime.CompilerServices.Unsafe.dll",
+      "bytes": 16768,
+      "sha256": "3cadcb6b8a7335141c7c357a1d77af1ff49b59b872df494f5025580191d1c0d5"
+    },
+    {
+      "path": "tasks/net472/System.Threading.Tasks.Extensions.dll",
+      "bytes": 25984,
+      "sha256": "4f81ffd0dc7204db75afc35ea4291769b07c440592f28894260eea76626a23c6"
+    },
+    {
+      "path": "tasks/net472/System.Buffers.dll",
+      "bytes": 20856,
+      "sha256": "accccfbe45d9f08ffeed9916e37b33e98c65be012cfff6e7fa7b67210ce1fefb"
+    },
+    {
+      "path": "tasks/net472/System.Memory.dll",
+      "bytes": 141184,
+      "sha256": "8e76318e8b06692abf7dab1169d27d15557f7f0a34d36af6463eff0fe21213c7"
+    },
+    {
+      "path": "tasks/net472/System.Text.Encoding.CodePages.dll",
+      "bytes": 761392,
+      "sha256": "e1091b3af6cbc71bba27cb5ab0c9bc204f1af128fd3681fe60f6ec4a9d3b5345"
+    },
+    {
+      "path": "tasks/net472/System.Numerics.Vectors.dll",
+      "bytes": 115856,
+      "sha256": "1d3ef8698281e7cf7371d1554afef5872b39f96c26da772210a33da041ba1183"
+    },
+    {
+      "path": "Microsoft.Net.Compilers.Toolset.nuspec",
+      "bytes": 2084,
+      "sha256": "ecc894bdada6ad20283e2fa8d168b02bcdcbe1badae16e9895169517a6196605"
+    },
+    {
+      "path": "ThirdPartyNotices.rtf",
+      "bytes": 2183,
+      "sha256": "ef4678850e7e3aaf9297f07e5c4060d477854e545ccf8e2ef8452d65a7b2efaf"
+    },
+    {
+      "path": ".signature.p7s",
+      "bytes": 18697,
+      "sha256": "59b7ec87c976abc370005b42728d2e14a69434c2eae9ff19382e916c990536ce"
+    }
+  ],
+  "scope": "Pinned Microsoft compiler on the existing Mono runtime/net472 references; interop qualification required",
+  "runtime_overlay": {
+    "environment": "ROBODYNA_MONO_ROSLYN_RUNTIME_ROOT",
+    "component": "xml_linq",
+    "archive_sha256": "4b70ef1837d6ff156c6f89f584c1d50942d3e75aed6f7b20831106fd7c1879a9",
+    "files": [
+      {
+        "path": "usr/lib/mono/gac/System.Xml.Linq/4.0.0.0__b77a5c561934e089/System.Xml.Linq.dll",
+        "output": "tasks/net472/System.Xml.Linq.dll",
+        "sha256": "8fce655abfda00a5f7cf8c0f0dd2ef4778cbe31eb61a64a72aaeb63045e42b41",
+        "bytes": 145408
+      }
+    ],
+    "scope": "Actual Mono runtime implementation used by Roslyn; never use a framework reference DLL as runtime code"
+  }
+}

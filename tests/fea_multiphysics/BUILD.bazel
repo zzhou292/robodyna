@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+# Opt-in layout profile; this target is incompatible under the baseline config.
+cc_test(
+    name = "field_admission_test",
+    srcs = ["MaterialTest.cpp", "FieldGeometryTest.cpp"],
+    deps = ["//src/fea/multiphysics:fields", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "fea-multiphysics"],
+)

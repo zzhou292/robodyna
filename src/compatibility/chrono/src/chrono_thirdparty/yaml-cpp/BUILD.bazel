@@ -1,21 +1,34 @@
-yaml_cpp_defines = select({
-    # On Windows, ensure static linking is used.
-    "@platforms//os:windows": ["YAML_CPP_STATIC_DEFINE", "YAML_CPP_NO_CONTRIB"],
-    "//conditions:default": [],
-})
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//src/io/yaml:sources.bzl", "YAML_SOURCES", "YAML_PRIVATE_HEADERS", "YAML_PUBLIC_HEADERS")
+
+package(default_visibility = ["//visibility:public"])
+
+_PREFIX = "src/chrono_thirdparty/yaml-cpp/"
+
+# Reuse the vendor's existing implementation target as the sole native owner.
+# The coherent Robodyna profile uses the retained static, contrib-enabled build.
+cc_library(
+    name = "headers",
+    hdrs = [path[len(_PREFIX):] for path in YAML_PUBLIC_HEADERS],
+    includes = ["include"],
+    defines = ["YAML_CPP_STATIC_DEFINE"] + select({
+        "@platforms//os:windows": ["YAML_CPP_NO_CONTRIB"],
+        "//conditions:default": [],
+    }),
+)
 
 cc_library(
     name = "yaml-cpp_internal",
-    visibility = ["//:__subpackages__"],
+    hdrs = [path[len(_PREFIX):] for path in YAML_PRIVATE_HEADERS],
     strip_include_prefix = "src",
-    hdrs = glob(["src/**/*.h"]),
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(
     name = "yaml-cpp",
-    visibility = ["//visibility:public"],
-    includes = ["include"],
-    hdrs = glob(["include/**/*.h"]),
-    srcs = glob(["src/**/*.cpp", "src/**/*.h"]),
-    defines = yaml_cpp_defines,
+    srcs = [path[len(_PREFIX):] for path in YAML_SOURCES + YAML_PRIVATE_HEADERS],
+    deps = [":headers"],
+    copts = ["-O3", "-fPIC"],
 )
+
+exports_files(["CMakeLists.txt", "LICENSE"])

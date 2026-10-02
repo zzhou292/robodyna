@@ -115,8 +115,14 @@ record timesteps, measured behavior and reproducible entry points.
 All imported Chrono demo and unit-test source files are retained. The
 [complete catalog](docs/verification/CHRONO_DEMOS_TESTS.md) separates CMake
 declarations, Python scripts, direct Bazel targets and runtime qualification.
-Most inherited examples and tests still need Bazel integration; source retention
-does not mean every optional module has been built or run. List available entries
+All 452 original demo programs now have public root-Bazel routes and pass the
+complete compile matrix: 338 native programs (including 26 CUDA FEA programs),
+97 Python and 17 C# examples. The separately tracked preCICE application also
+builds. Focused optional binding runtime and ownership checks pass.
+Use [the build matrix and operator](examples/README.md) and
+[current plan](docs/migration/DEMO_BUILD_PLAN.md) for live scope and evidence.
+The inherited unit-test suite and full interactive/GPU trajectories have separate
+remaining qualification work. List the retained historical catalog
 with `bazel run --config=host //tools/verification:chrono_catalog -- --help`.
 
 ## Robodyna C++ API migration
@@ -138,8 +144,10 @@ and the remaining module/binding migrations are still in progress.
 The body checkpoint preserves frozen object archives, the complete recorded
 results of the six-second spring/NSC/SCM examples, and every saved file from the
 101-step GPU Yaris regression. Core Python runtime and both native binding wrappers
-are qualified against one shared backend; managed C# and optional module bindings
-remain separate work.
+are qualified against one shared backend. All 17 C# assemblies compile, and the
+baseline and optional profiles passed their managed/native checks. Named profiles
+have separate import, object-lifetime and shared-owner evidence; these checks
+do not claim that every original demo trajectory has run.
 
 ## Chrono acknowledgement and source cutoff
 

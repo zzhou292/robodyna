@@ -281,12 +281,14 @@ cuda_library(
         "ElementBase.h",
     ],
     copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
-    linkopts = ["-lcusolver", "-lcublas", "-lcusparse"],
     deps = [
         "//lib_src/materials:materials",
         "//lib_utils:cpu_utils",
         "//lib_utils:cuda_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cusolver",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
     ],
 )
 
@@ -299,13 +301,15 @@ cuda_library(
         "ElementBase.h",
     ],
     copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
-    linkopts = ["-lcusolver", "-lcublas", "-lcusparse"],
     deps = [
         "//lib_src/materials:materials",
         "//lib_utils:cpu_utils",
         "//lib_utils:cuda_utils",
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
+        "@cuda_math//:cusolver",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
     ],
 )
 

@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load(":sources.bzl", "PERIDYNAMICS_HEADERS", "PERIDYNAMICS_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json", "SOURCE_TRANSFORMATIONS.json"])
+
+cc_library(
+    name = "peridynamics",
+    srcs = ["//src/compatibility/chrono:" + path for path in PERIDYNAMICS_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in PERIDYNAMICS_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea"],
+    local_defines = ["CH_API_COMPILE_PERIDYNAMICS", "CH_IGNORE_DEPRECATED"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    tags = ["manual", "cpu-only", "native-peridynamics"],
+)
+
+cc_test(
+    name = "host_module_test",
+    srcs = ["HostModuleTest.cpp"],
+    deps = [":peridynamics", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    deps = ["//tools/verification:inventory", "//tools/migration:source_transform"],
+    args = [
+        "$(location :sources.bzl)", "$(location :SourceBaseline.json)",
+        "$(location //src/compatibility/chrono:src/chrono_peridynamics/CMakeLists.txt)",
+        "$(location //examples/fea/peridynamics:BUILD.bazel)",
+        "$(location :SOURCE_TRANSFORMATIONS.json)",
+    ],
+    data = [":sources.bzl", ":SourceBaseline.json", ":SOURCE_TRANSFORMATIONS.json", "//examples/fea/peridynamics:BUILD.bazel",
+            "//src/compatibility/chrono:src/chrono_peridynamics/CMakeLists.txt",
+            "//src/compatibility/chrono:peridynamics_source_inputs"],
+    size = "small",
+    tags = ["manual", "source-proof", "cpu-only"],
+)

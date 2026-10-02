@@ -89,8 +89,10 @@ void ArchiveOut(chrono::ChArchiveOut& archive_out) {
     } else {
         size_t m_row = derived().rows();
         size_t m_col = derived().cols();
-        archive_out << chrono::make_ChNameValue("rows", m_row);
-        archive_out << chrono::make_ChNameValue("columns", m_col);
+        archive_out << chrono::make_ChNameValue("rows", m_row, 0, chrono::ChCausalityType::local,
+                                               chrono::ChVariabilityType::constant);
+        archive_out << chrono::make_ChNameValue("columns", m_col, 0, chrono::ChCausalityType::local,
+                                               chrono::ChVariabilityType::constant);
 
         // NORMAL array-based serialization:
         size_t tot_elements = derived().rows() * derived().cols();

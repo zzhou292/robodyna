@@ -1,0 +1,14 @@
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "camera",
+    assembly_name = "Robodyna.Sensor.Camera.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/sensor/demo_CS_SEN_camera.cs"],
+    deps = ["//build_defs/bindings/csharp/profiles:managed_sensor"],
+    tags = ["manual", "managed-demo", "retained-original-main"],
+)
+
+filegroup(name = "assemblies", srcs = [':camera'], tags = ["manual"])

@@ -1,0 +1,66 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_python_demo(
+    name = 'custom_handler',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_custom_handler.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros",
+    manifest = "//bindings/python/profiles:ros_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'numpy_camera',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_numpy_camera.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros",
+    manifest = "//bindings/python/profiles:ros_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'sensor',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_sensor.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros_sensor",
+    manifest = "//bindings/python/profiles:ros_sensor_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'two_managers',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_two_managers.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros",
+    manifest = "//bindings/python/profiles:ros_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'urdf',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_urdf.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros_urdf",
+    manifest = "//bindings/python/profiles:ros_urdf_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'vehicle',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_vehicle.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros",
+    manifest = "//bindings/python/profiles:ros_manifest",
+    ros = True,
+)
+
+robodyna_python_demo(
+    name = 'viper',
+    source = '//src/compatibility/chrono:src/demos/python/ros/demo_ROS_viper.py',
+    helpers = [],
+    package = "//bindings/python/profiles:ros",
+    manifest = "//bindings/python/profiles:ros_manifest",
+    ros = True,
+)

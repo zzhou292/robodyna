@@ -1,0 +1,28 @@
+load(":package.bzl", "python_binding_package")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["package.bzl", "compatibility_init.py", "public_init.py"])
+
+python_binding_package(
+    name = "core_package",
+    proxies = {"core": "//build_defs/bindings:python_proxy"},
+    extensions = {"core": "//build_defs/bindings:python_core"},
+    backends = ["//build_defs/bindings:native_core"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+
+filegroup(name = "core_package_manifest", srcs = [":core_package"], output_group = "manifest")
+
+python_binding_package(
+    name = "core_fea_package",
+    proxies = {"core": "//build_defs/bindings:python_proxy", "fea": "//build_defs/bindings:python_fea_proxy"},
+    extensions = {"core": "//build_defs/bindings:python_core", "fea": "//build_defs/bindings:python_fea"},
+    backends = ["//build_defs/bindings:native_core"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+
+filegroup(name = "core_fea_package_manifest", srcs = [":core_fea_package"], output_group = "manifest")

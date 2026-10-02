@@ -1,0 +1,54 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["BUILD.bazel"])
+
+_SOURCE = "//src/compatibility/chrono:src/demos/vehicle/fmi/"
+_COMMON = ["//src/vehicle:vehicle", "//src/vehicle/fmi:driver_headers", "//src/integrations/fmi:headers"]
+_COMPATIBLE = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY
+
+# Each target compiles the exact retained main. Its archive arguments are the
+# declared native FMUs below; extraction/output remains in a fresh working cwd.
+cc_binary(
+    name = "vehicle_native_subsystems",
+    srcs = [_SOURCE + "cosim/demo_VEH_FMI2_WheeledVehicle_a.cpp"],
+    deps = _COMMON,
+    data = ["//src/vehicle/fmi:wheeled_vehicle"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "robodyna-demo", "native-demo", "native-fmi"],
+)
+cc_binary(
+    name = "vehicle_fmu_subsystems",
+    srcs = [_SOURCE + "cosim/demo_VEH_FMI2_WheeledVehicle_b.cpp"],
+    deps = _COMMON,
+    data = ["//src/vehicle/fmi:wheeled_vehicle", "//src/vehicle/fmi:powertrain", "//src/vehicle/fmi:path_follower", "//src/vehicle/fmi:tire"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "robodyna-demo", "native-demo", "native-fmi"],
+)
+cc_binary(
+    name = "vehicle_powertrain_native_subsystems",
+    srcs = [_SOURCE + "cosim/demo_VEH_FMI2_WheeledVehiclePtrain_a.cpp"],
+    deps = _COMMON,
+    data = ["//src/vehicle/fmi:wheeled_vehicle_powertrain"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "robodyna-demo", "native-demo", "native-fmi"],
+)
+cc_binary(
+    name = "vehicle_powertrain_fmu_subsystems",
+    srcs = [_SOURCE + "cosim/demo_VEH_FMI2_WheeledVehiclePtrain_b.cpp"],
+    deps = _COMMON,
+    data = ["//src/vehicle/fmi:wheeled_vehicle_powertrain", "//src/vehicle/fmi:path_follower", "//src/vehicle/fmi:tire"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "robodyna-demo", "native-demo", "native-fmi"],
+)
+cc_binary(
+    name = "path_follower_model_exchange",
+    srcs = [_SOURCE + "modex/demo_VEH_FMI2_PathFollower.cpp"],
+    deps = _COMMON + ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/integrations/fmi:fmi"],
+    data = ["//src/vehicle/fmi:path_follower_model_exchange", "//build_defs/chrono/vsg:assets", "@vsg_sdk//:runtime"],
+    target_compatible_with = _COMPATIBLE,
+    tags = ["manual", "robodyna-demo", "native-demo", "native-fmi"],
+)
+
+filegroup(name = "native_demos", srcs = [":vehicle_native_subsystems", ":vehicle_fmu_subsystems", ":vehicle_powertrain_native_subsystems", ":vehicle_powertrain_fmu_subsystems", ":path_follower_model_exchange"], tags = ["manual"])

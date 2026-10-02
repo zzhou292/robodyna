@@ -1,0 +1,99 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "assets",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_assets.cpp"],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/bunny.glb",
+        "//src/compatibility/chrono:data/models/forklift/body.obj",
+        "//src/compatibility/chrono:data/models/red_teapot.obj",
+        "//src/compatibility/chrono:data/textures/checker1.png",
+        "//src/compatibility/chrono:data/textures/checker2.png",
+        "//src/compatibility/chrono:data/textures/cubetexture_wood.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "paths",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_paths.cpp"],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "shapes",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_shapes.cpp"],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/checker2.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "transparency",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_transparency.cpp"],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "wave",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_wave.cpp"],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "helmet",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_helmet.cpp"],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/FlightHelmet/FlightHelmet.gltf",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "vehicles",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_vehicles.cpp"],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/vehicle/Nissan_Patrol/suv_chassis.obj",
+        "//src/compatibility/chrono:data/vehicle/Nissan_Patrol/suv_rim.obj",
+        "//src/compatibility/chrono:data/vehicle/Nissan_Patrol/suv_tire.obj",
+        "//src/compatibility/chrono:data/vehicle/Polaris/meshes/Polaris_chassis.obj",
+        "//src/compatibility/chrono:data/vehicle/Polaris/meshes/Polaris_tire.obj",
+        "//src/compatibility/chrono:data/vehicle/Polaris/meshes/Polaris_wheel.obj",
+        "//src/compatibility/chrono:data/vehicle/audi/audi_chassis_white.obj",
+        "//src/compatibility/chrono:data/vehicle/audi/audi_rim.obj",
+        "//src/compatibility/chrono:data/vehicle/audi/audi_tire.obj",
+        "//src/compatibility/chrono:data/vehicle/citybus/CityBusRim.obj",
+        "//src/compatibility/chrono:data/vehicle/citybus/CityBusTire.obj",
+        "//src/compatibility/chrono:data/vehicle/citybus/CityBus_Vis.obj",
+        "//src/compatibility/chrono:data/vehicle/gator/gator_chassis.obj",
+        "//src/compatibility/chrono:data/vehicle/gator/gator_wheel_FL.obj",
+        "//src/compatibility/chrono:data/vehicle/gator/gator_wheel_RL.obj",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_chassis.obj",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_rim.obj",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_tire_left.obj",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_tire_right.obj",
+        "//src/compatibility/chrono:data/vehicle/uaz/uaz_rim.obj",
+        "//src/compatibility/chrono:data/vehicle/uaz/uaz_tire.obj",
+        "//src/compatibility/chrono:data/vehicle/uaz/uazbus_chassis.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "fea_visualization",
+    srcs = ["//src/compatibility/chrono:src/demos/vsg/demo_VSG_visualize_FEA.cpp"],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/fea/beam.ele",
+        "//src/compatibility/chrono:data/fea/beam.node",
+    ],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":assets", ":paths", ":shapes", ":transparency", ":wave", ":helmet", ":vehicles", ":fea_visualization"],
+    tags = ["manual"],
+)

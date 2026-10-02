@@ -1,0 +1,19 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_python_demo(
+    name = 'mbs',
+    source = '//src/compatibility/chrono:src/demos/python/yaml/demo_YAML_mbs.py',
+    helpers = [],
+    package = "//bindings/python/profiles:parsers",
+    manifest = "//bindings/python/profiles:parsers_manifest",
+)
+
+robodyna_python_demo(
+    name = 'mbs_controller',
+    source = '//src/compatibility/chrono:src/demos/python/yaml/demo_YAML_mbs_controller.py',
+    helpers = [],
+    package = "//bindings/python/profiles:parsers",
+    manifest = "//bindings/python/profiles:parsers_manifest",
+)

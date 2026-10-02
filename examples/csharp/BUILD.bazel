@@ -1,0 +1,55 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "build_system_assembly",
+    assembly_name = "Robodyna.BuildSystem.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/core/demo_CS_CH_buildsystem.cs"],
+    deps = ["//build_defs/bindings:csharp_managed_core"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+_LAUNCH_ARGS = [
+    "--mono", "$(rlocationpath @mono_sdk//:usr/bin/mono-sgen)",
+    "--assembly", "$(rlocationpath :build_system_assembly)",
+    "--managed", "$(rlocationpath //build_defs/bindings:csharp_managed_core)",
+    "--native-wrapper", "$(rlocationpath //build_defs/bindings:csharp_core)",
+    "--native-core", "$(rlocationpath //build_defs/bindings:native_core)",
+    "--data-anchor", "$(rlocationpath //src/compatibility/chrono:data/logo_robodyna_alpha.png)",
+]
+_DATA = [
+    ":build_system_assembly", "//build_defs/bindings:csharp_managed_core",
+    "//build_defs/bindings:csharp_core", "//build_defs/bindings:native_core",
+    "@mono_sdk//:runtime", "@mono_sdk//:usr/bin/mono-sgen",
+    "//src/compatibility/chrono:data/logo_robodyna_alpha.png",
+]
+
+# Launches the actual compiled original Main; no substitute physics program.
+py_binary(
+    name = "build_system",
+    srcs = ["//tools/managed:launch.py"],
+    main = "//tools/managed:launch.py",
+    deps = ["//tools/managed:launcher"],
+    args = _LAUNCH_ARGS,
+    data = _DATA,
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo", "cpu-only"],
+)
+
+py_test(
+    name = "build_system_test",
+    srcs = ["BuildSystemTest.py"],
+    main = "BuildSystemTest.py",
+    deps = ["//tools/managed:launcher"],
+    args = _LAUNCH_ARGS,
+    data = _DATA,
+    target_compatible_with = BASELINE_ABI_ONLY,
+    size = "small",
+    timeout = "short",
+    tags = ["manual", "managed-runtime", "cpu-only"],
+)

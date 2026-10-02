@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load(":sources.bzl", "FSI_HEADERS", "FSI_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl"])
+
+# Solver-independent coupling still refers to actual rigid/FE participants in
+# the retained mixed backend. This is not a new neutral domain-only interface.
+cc_library(
+    name = "fsi",
+    srcs = ["//src/compatibility/chrono:" + path for path in FSI_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in FSI_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea"],
+    local_defines = ["CH_API_COMPILE_FSI"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-fsi", "cpu-coupling"],
+)

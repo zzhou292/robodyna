@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "resources",
+    srcs = ["Resources.cpp"],
+    hdrs = ["Resources.h"],
+    deps = ["@rules_cc//cc/runfiles"],
+    target_compatible_with = ["@platforms//os:linux"],
+)

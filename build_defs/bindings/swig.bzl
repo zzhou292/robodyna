@@ -1,5 +1,7 @@
 """One native wrapper generation action with explicit source and SDK inputs."""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
 def _swig_impl(ctx):
     wrapper = ctx.actions.declare_file(ctx.label.name + "/" + ctx.attr.module + "_wrap.cpp")
     directors = ctx.actions.declare_file(ctx.label.name + "/" + ctx.attr.module + "_wrap.h")
@@ -12,7 +14,7 @@ def _swig_impl(ctx):
         proxy_dir = proxy.path
     if ctx.attr.module == "fea" and ctx.attr.language != "python":
         fail("The retained sources do not provide a separate C# FEA module")
-    stem = {"core": "Core", "fea": "Fea", "vehicle": "Vehicle"}[ctx.attr.module]
+    stem = {"core": "Core", "fea": "Fea", "vehicle": "Vehicle", "vsg": "Vsg", "irrlicht": "Irrlicht", "postprocess": "Postprocess", "sensor": "Sensor", "ros": "ROS", "vsg3d": "Vsg", "robot": "Robot", "pardisomkl": "PardisoMkl", "fsi": "Fsi", "parsers": "Parsers", "cascade": "Cascade"}[ctx.attr.module]
     anchor_suffix = "src/chrono_swig/chrono_" + ctx.attr.language + "/ChModule" + stem + "_" + ctx.attr.language + ".i"
     if not ctx.file.interface.path.endswith(anchor_suffix):
         fail("Expected the actual retained module interface")
@@ -31,22 +33,36 @@ def _swig_impl(ctx):
         root = view.path[:-len(suffix)]
         if root not in view_roots:
             view_roots.append(root)
+    # Only optional modules opt into their actual native header closure. Keep
+    # the qualified core-only generator independent of unrelated module SDKs.
+    header_inputs = []
+    header_roots = []
+    for dependency in ctx.attr.header_deps:
+        compilation = dependency[CcInfo].compilation_context
+        header_inputs.append(compilation.headers)
+        for directory in compilation.includes.to_list() + compilation.quote_includes.to_list() + compilation.system_includes.to_list():
+            if directory not in header_roots:
+                header_roots.append(directory)
     args = ctx.actions.args()
     args.add_all(["--swig", ctx.executable._swig.path, "--language", ctx.attr.language,
                   "--interface", ctx.file.interface.path, "--wrapper", wrapper.path,
                   "--directors", directors.path, "--proxy-dir", proxy_dir, "--report", report.path,
                   "--include", source_root, "--include", include_root])
+    for definition in ctx.attr.defines:
+        args.add_all(["--define", definition])
+    for root in header_roots:
+        args.add_all(["--include", root])
     for root in view_roots:
         args.add_all(["--include", root])
     ctx.actions.run(
         executable = ctx.executable._runner,
         tools = [ctx.attr._runner[DefaultInfo].files_to_run, ctx.attr._swig[DefaultInfo].files_to_run],
         inputs = depset([ctx.file.interface, ctx.file.canonical_anchor] + views,
-                        transitive = [target[DefaultInfo].files for target in ctx.attr.sources]),
+                        transitive = [target[DefaultInfo].files for target in ctx.attr.sources] + header_inputs),
         arguments = [args],
         outputs = [wrapper, directors, proxy, report],
         mnemonic = "RobodynaSwigCore",
-        progress_message = "Generate retained " + ctx.attr.language + " " + ctx.attr.module + " wrappers (NumPy disabled)",
+        progress_message = "Generate retained " + ctx.attr.language + " " + ctx.attr.module + (" wrappers (NumPy enabled)" if "CHRONO_PYTHON_NUMPY" in ctx.attr.defines else " wrappers (NumPy disabled)"),
     )
     return [DefaultInfo(files = depset([wrapper, directors, proxy, report])),
             OutputGroupInfo(wrapper = depset([wrapper]), directors = depset([directors]),
@@ -55,7 +71,9 @@ def _swig_impl(ctx):
 swig_module = rule(
     implementation = _swig_impl,
     attrs = {
-        "module": attr.string(values = ["core", "fea", "vehicle"], default = "core"),
+        "defines": attr.string_list(),
+        "header_deps": attr.label_list(providers = [CcInfo]),
+        "module": attr.string(values = ["core", "fea", "vehicle", "vsg", "irrlicht", "postprocess", "sensor", "ros", "vsg3d", "robot", "pardisomkl", "fsi", "parsers", "cascade"], default = "core"),
         "language": attr.string(values = ["python", "csharp"], mandatory = True),
         "interface": attr.label(allow_single_file = True, mandatory = True),
         "canonical_anchor": attr.label(allow_single_file = True, default = "//include/robodyna/mbd:RbBody.h"),

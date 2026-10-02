@@ -1,0 +1,112 @@
+{
+  "schema": "robodyna.sensor_graphics_downloads.v1",
+  "distribution": "Ubuntu22.04amd64",
+  "metadata_source": "Existing signed host APT package index; exact versions, byte counts and SHA256 values retained alongside raw metadata.",
+  "components": {
+    "libglfw3-dev": {
+      "version": "3.3.6-1",
+      "archive": "libglfw3-dev_3.3.6-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/g/glfw3/libglfw3-dev_3.3.6-1_amd64.deb",
+      "bytes": 41114,
+      "sha256": "2b2a68725a34dd69bcce045282806f1d1ffa6c43376aa1023058683f51a31b02",
+      "depends": "libgl1-mesa-dev | libgl-dev, libglfw3 (= 3.3.6-1) | libglfw3-wayland (= 3.3.6-1)"
+    },
+    "libglfw3": {
+      "version": "3.3.6-1",
+      "archive": "libglfw3_3.3.6-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/g/glfw3/libglfw3_3.3.6-1_amd64.deb",
+      "bytes": 83218,
+      "sha256": "a7fe08d4ded1c376e8b008fdeef220b8a0335258a05c542982424cdb43b61af3",
+      "depends": "libgl1, libc6 (>= 2.34), libx11-6 (>= 2:1.2.99.901)"
+    },
+    "libglew-dev": {
+      "version": "2.2.0-4",
+      "archive": "libglew-dev_2.2.0-4_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/g/glew/libglew-dev_2.2.0-4_amd64.deb",
+      "bytes": 287278,
+      "sha256": "e1f58fde23d57ef89043241f983411503fc004746513a97fc30da0696b02e118",
+      "depends": "libgl1-mesa-dev | libgl-dev, libglew2.2 (= 2.2.0-4), libglu1-mesa-dev | libglu-dev"
+    },
+    "libglew2.2": {
+      "version": "2.2.0-4",
+      "archive": "libglew2.2_2.2.0-4_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/g/glew/libglew2.2_2.2.0-4_amd64.deb",
+      "bytes": 195728,
+      "sha256": "85c67c68eaa4ff4ab8e6f0230d2d63c39070a3539c674bf80d3b128028d0abf3",
+      "depends": "libgl1"
+    },
+    "libgl-dev": {
+      "version": "1.4.0-1",
+      "archive": "libgl-dev_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libgl-dev_1.4.0-1_amd64.deb",
+      "bytes": 101498,
+      "sha256": "6cda0891ca38204ab3a9a2a9279ecb99989ab100d6e48101306efce28f0759a2",
+      "depends": "libgl1 (= 1.4.0-1), libglx-dev"
+    },
+    "libglx-dev": {
+      "version": "1.4.0-1",
+      "archive": "libglx-dev_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libglx-dev_1.4.0-1_amd64.deb",
+      "bytes": 14126,
+      "sha256": "98bc8061e0cc40bc553df71d84f4c653c8188ed4aabc9315aae99926948af7e4",
+      "depends": "libglx0 (= 1.4.0-1), libx11-dev"
+    },
+    "libgl1": {
+      "version": "1.4.0-1",
+      "archive": "libgl1_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libgl1_1.4.0-1_amd64.deb",
+      "bytes": 110500,
+      "sha256": "4fb2bbff94bb1a59bbdb40041e7a8ab58db2a003a151f4055357af03f0b78666",
+      "depends": "libc6 (>= 2.14), libglvnd0 (= 1.4.0-1), libglx0 (= 1.4.0-1)"
+    },
+    "libglx0": {
+      "version": "1.4.0-1",
+      "archive": "libglx0_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libglx0_1.4.0-1_amd64.deb",
+      "bytes": 41024,
+      "sha256": "950068e8a3ad3905058d21a8c870c37989e48c0a537a7c57231c277af19f5395",
+      "depends": "libc6 (>= 2.34), libglvnd0 (= 1.4.0-1), libx11-6 (>= 2:1.4.99.1), libglx-mesa0"
+    },
+    "libglvnd0": {
+      "version": "1.4.0-1",
+      "archive": "libglvnd0_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libglvnd0_1.4.0-1_amd64.deb",
+      "bytes": 73582,
+      "sha256": "6956d8be93b160b439a043141a061adfd54561d877423a956ace84d2fb3bfb4e",
+      "depends": "libc6 (>= 2.34)"
+    },
+    "libglu1-mesa-dev": {
+      "version": "9.0.2-1",
+      "archive": "libglu1-mesa-dev_9.0.2-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglu/libglu1-mesa-dev_9.0.2-1_amd64.deb",
+      "bytes": 231036,
+      "sha256": "ed5d896972d2f553f6bb6c88768ef9022a7c649378ebb2b52d9f66e69643fefc",
+      "depends": "libglu1-mesa (= 9.0.2-1), libgl-dev"
+    },
+    "libglu1-mesa": {
+      "version": "9.0.2-1",
+      "archive": "libglu1-mesa_9.0.2-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglu/libglu1-mesa_9.0.2-1_amd64.deb",
+      "bytes": 144982,
+      "sha256": "13c5572cf73951cda094392f5a6cbde904b9e71106ebe261198fb7e8ceaff495",
+      "depends": "libc6 (>= 2.14), libgcc-s1 (>= 3.3.1), libopengl0, libstdc++6 (>= 5)"
+    },
+    "libopengl0": {
+      "version": "1.4.0-1",
+      "archive": "libopengl0_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libopengl0_1.4.0-1_amd64.deb",
+      "bytes": 36450,
+      "sha256": "486473b82c475d8137d2a061adb22fbcd1d681936e9d85a3ca7f8b4b83e2ccde",
+      "depends": "libc6 (>= 2.14), libglvnd0 (= 1.4.0-1)"
+    },
+    "libopengl-dev": {
+      "version": "1.4.0-1",
+      "archive": "libopengl-dev_1.4.0-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libopengl-dev_1.4.0-1_amd64.deb",
+      "bytes": 3400,
+      "sha256": "825d0374431335bb4693a8f6e5a650353fd680838d6dc988fb9e232ffa0d95a1",
+      "depends": "libopengl0 (= 1.4.0-1)"
+    }
+  },
+  "scope": "Workspace-local GL/GLFW/GLEW development/runtime inputs. No package installation, Mesa/NVIDIA driver replacement or qualified VSG installation change."
+}

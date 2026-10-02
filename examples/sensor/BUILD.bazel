@@ -1,0 +1,138 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["DemoCatalog.json", "sources.bzl", "BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "gpsimu",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_GPSIMU.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "gator",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_Gator.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "irrlicht"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "json",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_JSON.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "buildtest",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_buildtest.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "camera",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_camera.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "cornell_box",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_cornell_box.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "deformablesoil",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_deformableSoil.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "irrlicht"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "lidar",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_lidar.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "metal_quarterpanel",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_metal_quarterpanel.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "irrlicht"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "phys_cam",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_phys_cam.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "radar",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_radar.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "radar1",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_radar1.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "tachometer",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_tachometer.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+robodyna_cpp_demo(
+    name = "vulkan_validation",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_vulkan_validation.cpp"],
+    deps = [],
+    features = ["sensor"],
+    tags = ["sensor-demo", "vulkan-rt"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":gpsimu",
+        ":gator",
+        ":json",
+        ":buildtest",
+        ":camera",
+        ":cornell_box",
+        ":deformablesoil",
+        ":lidar",
+        ":metal_quarterpanel",
+        ":phys_cam",
+        ":radar",
+        ":radar1",
+        ":tachometer",
+        ":vulkan_validation",
+    ],
+    tags = ["manual", "native-demo-group"],
+)

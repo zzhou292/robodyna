@@ -1,0 +1,43 @@
+load(":defs.bzl", "bool_capability", "choice_capability")
+
+package(default_visibility = ["//visibility:public"])
+
+bool_capability(name = "fea_multiphysics", build_setting_default = False)
+bool_capability(name = "multicore", build_setting_default = False)
+
+config_setting(
+    name = "multicore_enabled",
+    flag_values = {":multicore": "true"},
+)
+
+config_setting(
+    name = "fea_multiphysics_enabled",
+    flag_values = {":fea_multiphysics": "true"},
+)
+
+# FSI affects shared Sensor and Vehicle/CRM declarations, not just demo availability.
+bool_capability(name = "fsi_sph", build_setting_default = False)
+bool_capability(name = "opencrg", build_setting_default = False)
+choice_capability(name = "sensor_backend", build_setting_default = "vulkan", values = ["vulkan", "optix"])
+
+config_setting(name = "fsi_sph_enabled", flag_values = {":fsi_sph": "true"})
+config_setting(name = "opencrg_enabled", flag_values = {":opencrg": "true"})
+config_setting(name = "sensor_vulkan", flag_values = {":sensor_backend": "vulkan"})
+config_setting(name = "sensor_optix", flag_values = {":sensor_backend": "optix"})
+
+# YAML parser interfaces and optional CFD visualization must agree across TUs.
+bool_capability(name = "yaml", build_setting_default = False)
+bool_capability(name = "vsg", build_setting_default = False)
+bool_capability(name = "fsi_tdpf", build_setting_default = False)
+config_setting(name = "yaml_enabled", flag_values = {":yaml": "true"})
+config_setting(name = "vsg_enabled", flag_values = {":vsg": "true"})
+config_setting(name = "fsi_tdpf_enabled", flag_values = {":fsi_tdpf": "true"})
+config_setting(name = "yaml_sph_enabled", flag_values = {":yaml": "true", ":fsi_sph": "true"})
+config_setting(name = "yaml_tdpf_enabled", flag_values = {":yaml": "true", ":fsi_tdpf": "true"})
+
+# Shared native ROS declarations and their concrete adapter dependencies.
+bool_capability(name = "ros_sensor", build_setting_default = False)
+bool_capability(name = "ros_urdf", build_setting_default = False)
+config_setting(name = "ros_sensor_enabled", flag_values = {":ros_sensor": "true"})
+config_setting(name = "ros_urdf_enabled", flag_values = {":ros_urdf": "true"})
+config_setting(name = "ros_sensor_optix", flag_values = {":ros_sensor": "true", ":sensor_backend": "optix"})

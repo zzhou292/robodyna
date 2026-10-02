@@ -1,0 +1,118 @@
+load(":defs.bzl", "csharp_module", "shared_implementation")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//build_defs/managed:composition.bzl", "managed_proxy_set")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+_CORE = "//build_defs/bindings:native_core"
+_CORE_CPP = "//build_defs/chrono:native_core_fea"
+_GLOBALS = "//src/compatibility/chrono:src/chrono_swig/chrono_csharp/ChChronoGlobals.cs.in"
+
+# STB is shared by VSG, Vehicle and Sensor; give its symbols one DSO owner too.
+shared_implementation(name = "native_images", deps = ["//src/compatibility/chrono:native_stb"], dynamic_deps = [])
+shared_implementation(name = "native_vsg", deps = ["//build_defs/chrono/vsg:vsg"], dynamic_deps = [_CORE, ":native_images"])
+shared_implementation(name = "native_irrlicht", deps = ["//src/visualization/irrlicht:irrlicht"], dynamic_deps = [_CORE])
+shared_implementation(name = "native_postprocess", deps = ["//src/postprocess:exporters"], dynamic_deps = [_CORE])
+shared_implementation(
+    name = "native_vehicle",
+    deps = ["//src/vehicle:vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg"],
+    dynamic_deps = [_CORE, ":native_images", ":native_vsg"] + select({
+        "//build_defs/features:fsi_sph_enabled": [":native_fsi"], "//conditions:default": [],
+    }),
+)
+
+csharp_module(name = "vsg", stem = "Vsg", implementation = ":native_vsg",
+              cpp_deps = ["//build_defs/chrono/vsg:vsg"], dynamic_deps = [_CORE, ":native_images"])
+csharp_module(name = "irrlicht", stem = "Irrlicht", implementation = ":native_irrlicht",
+              cpp_deps = ["//src/visualization/irrlicht:irrlicht"], dynamic_deps = [_CORE])
+csharp_module(name = "postprocess", stem = "Postprocess", implementation = ":native_postprocess",
+              cpp_deps = ["//src/postprocess:exporters"], dynamic_deps = [_CORE])
+csharp_module(
+    name = "vehicle", stem = "Vehicle", implementation = ":native_vehicle",
+    cpp_deps = ["//src/vehicle:vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg"],
+    dynamic_deps = [_CORE, ":native_images", ":native_vsg"],
+    defines = ["CHRONO_VSG", "CHRONO_VEHICLE"],
+)
+
+# Preserve the retained CollectCSharpFiles order. Every selected/deduplicated
+# proxy is recorded; non-identical collisions require explicit exact-hash review.
+managed_proxy_set(
+    name = "visual_proxies",
+    modules = ["core", "vsg"],
+    proxies = ["//build_defs/bindings:csharp_proxies", ":vsg_proxies"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+)
+managed_assembly(
+    name = "managed_visual",
+    assembly_name = "Robodyna.Managed.Visualization.dll",
+    srcs = [":visual_proxies"],
+    globals_template = _GLOBALS,
+    native_libraries = ["//build_defs/bindings:csharp_core", _CORE, ":csharp_vsg"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-bindings"],
+)
+managed_proxy_set(
+    name = "vehicle_proxies_combined",
+    modules = ["core", "vsg", "postprocess", "vehicle"],
+    proxies = ["//build_defs/bindings:csharp_proxies", ":vsg_proxies", ":postprocess_proxies", ":vehicle_proxies"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+)
+managed_assembly(
+    name = "managed_vehicle",
+    assembly_name = "Robodyna.Managed.Vehicle.dll",
+    srcs = [":vehicle_proxies_combined"],
+    globals_template = _GLOBALS,
+    native_libraries = ["//build_defs/bindings:csharp_core", _CORE, ":csharp_vsg", ":csharp_postprocess", ":csharp_vehicle"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-bindings"],
+)
+
+filegroup(name = "graphics_generators", srcs = [":vsg_generated", ":irrlicht_generated", ":postprocess_generated", ":vehicle_generated"], tags = ["manual"])
+filegroup(name = "graphics_native", srcs = [":csharp_vsg", ":csharp_irrlicht", ":csharp_postprocess", ":csharp_vehicle"], tags = ["manual"])
+
+# Additional shared owners reused by Python wrappers; existing C# owners stay unchanged.
+shared_implementation(name = "native_robot", deps = ["//src/robotics/models:models"], dynamic_deps = [_CORE])
+alias(name = "native_pardisomkl", actual = "//build_defs/bindings/optional/pardisomkl:native_pardisomkl")
+shared_implementation(
+    name = "native_vehicle_irrlicht",
+    deps = ["//src/vehicle/visualization:irrlicht"],
+    dynamic_deps = [_CORE, ":native_images", ":native_vehicle", ":native_vsg", ":native_irrlicht"],
+)
+
+# Reused by explicit Python/C# profiles. Each configured graph has one owner.
+shared_implementation(
+    name = "native_fsi",
+    deps = ["//src/coupling/fsi:fsi", "//src/sph:sph"],
+    dynamic_deps = [_CORE, ":native_images"],
+)
+shared_implementation(
+    name = "native_sph_vsg",
+    deps = ["//src/sph/visualization:vsg"],
+    dynamic_deps = [_CORE, ":native_images", ":native_vsg", ":native_fsi"],
+)
+shared_implementation(
+    name = "native_sensor",
+    deps = ["//src/sensor/backend:sensor"],
+    dynamic_deps = [_CORE, ":native_images"] + select({
+        "//build_defs/features:fsi_sph_enabled": [":native_fsi"], "//conditions:default": [],
+    }),
+)
+shared_implementation(
+    name = "native_parsers",
+    deps = ["//src/io/parsers:urdf", "//src/io/parsers:yaml_mbs"],
+    dynamic_deps = [_CORE],
+)
+
+# Simulation/handlers only. The actual ROS middleware node remains a subprocess.
+shared_implementation(
+    name = "native_ros",
+    deps = ["//src/integrations/ros:simulation", "//src/integrations/ros:vehicle_handlers", "//src/integrations/ros:robot_handlers"] + select({
+        "//build_defs/features:ros_sensor_enabled": ["//src/integrations/ros:sensor_handlers"], "//conditions:default": [],
+    }),
+    dynamic_deps = [_CORE, ":native_vehicle", ":native_robot"] + select({
+        "//build_defs/features:ros_sensor_enabled": [":native_sensor"], "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:ros_urdf_enabled": [":native_parsers"], "//conditions:default": [],
+    }),
+)

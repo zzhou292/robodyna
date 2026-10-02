@@ -1,0 +1,12 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+# Retained YAML driver lives outside src/demos; keep its original main too.
+robodyna_cpp_demo(
+    name = "run_adapter",
+    srcs = ["//src/compatibility/chrono:src/chrono_precice/yaml_app/run_chrono_adapter.cpp"],
+    deps = ["//src/coupling/precice:mbs"],
+    data = ["//src/coupling/precice:demo_assets", "@precice_sdk//:runtime"],
+    tags = ["requires-explicit-coupled-runtime"],
+)

@@ -1,0 +1,12 @@
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["imports.py"])
+py_library(name = "imports", srcs = ["imports.py"])
+py_test(name = "imports_test", srcs = ["ImportsTest.py"], main = "ImportsTest.py",
+        deps = [":imports"], size = "small", tags = ["manual", "cpu-only", "sdk-admission"])
+
+exports_files(["libraries.py"])
+py_library(name = "libraries", srcs = ["libraries.py"])
+py_test(name = "libraries_test", srcs = ["LibrariesTest.py"], main = "LibrariesTest.py",
+        deps = [":libraries"], size = "small", tags = ["manual", "cpu-only", "sdk-admission"])

@@ -1,0 +1,23 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "curiosity_scm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM_Sensor.cpp"],
+    deps = ["//src/robotics/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "rendered-sensors"],
+)
+
+robodyna_cpp_demo(
+    name = "viper_scm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_SCM_Sensor.cpp"],
+    deps = ["//src/robotics/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "vsg", "irrlicht"],
+    tags = ["robotics-demo", "rendered-sensors"],
+)
+
+filegroup(name = "native_demos", srcs = [":curiosity_scm", ":viper_scm"], tags = ["manual", "native-demo-group"])

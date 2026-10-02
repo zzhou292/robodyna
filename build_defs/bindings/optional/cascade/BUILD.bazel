@@ -1,0 +1,11 @@
+load("//build_defs/bindings/optional:defs.bzl", "shared_implementation")
+
+package(default_visibility = ["//visibility:public"])
+
+# The real retained CAD adapters share the same configured native core and the
+# pinned OCCT SDK. PythonOCC will consume those exact external CAD DSOs too.
+shared_implementation(
+    name = "native_cascade",
+    deps = ["//src/integrations/cad:cad"],
+    dynamic_deps = ["//build_defs/bindings:native_core"],
+)

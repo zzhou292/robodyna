@@ -1,0 +1,257 @@
+{
+  "schema": "robodyna.retained_fmi_source_snapshot.v1",
+  "preintegration_commit": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "scope": "Exact pre-FMI source snapshot. Imported history remains in docs/migration/SOURCES.json; reviewed include/metadata substitutions are inverted by the local ledger.",
+  "files": [
+    {
+      "path": "src/chrono_fmi/CMakeLists.txt",
+      "bytes": 6948,
+      "sha256": "f78cdc5119044425de3c7133c770366d11096585edf78ba4972db104be252277"
+    },
+    {
+      "path": "src/chrono_fmi/ChApiFMI.h",
+      "bytes": 2344,
+      "sha256": "871d6421f7f05aea1801f693ac0050770ccc3b9f7bbaec55bad29acb714d358f"
+    },
+    {
+      "path": "src/chrono_fmi/ChConfigFMI.h.in",
+      "bytes": 1069,
+      "sha256": "9424afd3fb9c9f8b410e97cff1ed25db476f210d63b8c387203e33c0e924d0c8"
+    },
+    {
+      "path": "src/chrono_fmi/ChExternalFmu.cpp",
+      "bytes": 39586,
+      "sha256": "75ac6cc2c53fa0323204f551d7be80680656026abd2d47a62b49fed7a7b3f73b"
+    },
+    {
+      "path": "src/chrono_fmi/ChExternalFmu.h",
+      "bytes": 12374,
+      "sha256": "4387531340bcd83d2292196b30a2c17fdf5578c53046a9387297eeec2ce22984"
+    },
+    {
+      "path": "src/chrono_fmi/fmi2/ChFmuForgeExport.h",
+      "bytes": 41828,
+      "sha256": "ca8d312d994afa57a09765a570e7d870af8dde6e47c443476415cc450996381d"
+    },
+    {
+      "path": "src/chrono_fmi/fmi2/ChFmuForgeImport.h",
+      "bytes": 7128,
+      "sha256": "a45cca2a18a73aeb982a454e05789e92ff24542b57ce6f5e4ee6a70730ee339e"
+    },
+    {
+      "path": "src/chrono_fmi/fmi3/ChFmuForgeExport.h",
+      "bytes": 23012,
+      "sha256": "3663fea6bd18c33934b259f831d642e32d5696b54a3377286d8a0b24d94e3b14"
+    },
+    {
+      "path": "src/chrono_fmi/fmi3/ChFmuForgeImport.h",
+      "bytes": 6972,
+      "sha256": "0839389f0f4dfb260c813ec3008468dec6b31aade7234796a3daa95e5999c02d"
+    },
+    {
+      "path": "src/demos/fmi/CMakeLists.txt",
+      "bytes": 216,
+      "sha256": "f46ea80eea947372090ced0ae33e1a38538529d83ab65f0759aafedaebeec3ff"
+    },
+    {
+      "path": "src/demos/fmi/README.md",
+      "bytes": 3407,
+      "sha256": "518b9524739f65271af986494b3ca0ff1e0aaab5ec2d48a9b0d7196f193e201f"
+    },
+    {
+      "path": "src/demos/fmi/cosim/CMakeLists.txt",
+      "bytes": 4545,
+      "sha256": "4843500b3118383e07d1980ad258b58bdea9a314b00d2a18b5b87d22e2a8eec4"
+    },
+    {
+      "path": "src/demos/fmi/cosim/demo_FMI2_hydraulic_crane_cosim.cpp",
+      "bytes": 12282,
+      "sha256": "8d0c9530794ac1cc483d343651092971d86d47e40977a2b4326be3ec9097920e"
+    },
+    {
+      "path": "src/demos/fmi/cosim/demo_FMI3_hydraulic_crane_cosim.cpp",
+      "bytes": 11481,
+      "sha256": "87868eff89899e0e69955df84d443cf8ff1d598cc2e792392da6ce75b6704de1"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_actuator/CMakeLists.txt",
+      "bytes": 2185,
+      "sha256": "79ca0d0d16078e20b42c278f8fa40b19349a2dfa8cdde10d21c0640e72e6eaf4"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.cpp",
+      "bytes": 8181,
+      "sha256": "2b774baa78e955c16e3e9107f55fe0c1f4c135fecb8da99ab4d4a3a8ff1a026a"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.h",
+      "bytes": 2502,
+      "sha256": "e56f7b1e87743e217f628ff1a279143b905e83922a7e6a7015d11d30ff05770b"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_crane/CMakeLists.txt",
+      "bytes": 2482,
+      "sha256": "4d53d558d5bbe99c11ce3c7df1aeec1dfeb83df88d66a597c6933df1a6f1babc"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_crane/craneFMU.cpp",
+      "bytes": 12201,
+      "sha256": "4d3c4a45f3c53ea73f3139034a2acb86c68c281e61c5bb3deeac3f540a206b95"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu2_crane/craneFMU.h",
+      "bytes": 2791,
+      "sha256": "09ae972687244fd508dd235f5d07ef26c7ef62fa3e1bf899dabb63685b08aabc"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_actuator/CMakeLists.txt",
+      "bytes": 2227,
+      "sha256": "bd6aed31823f7906a2028e64acbb2c22b90cf7cb6967f188f48d7ef548c8919b"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.cpp",
+      "bytes": 9012,
+      "sha256": "59330f10de183f77cca8cbd48ada7f2d40827a786a45e2561123b3479b4467ae"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.h",
+      "bytes": 2857,
+      "sha256": "247ba1d5ddf10a82ec683b3f3b33a2211aed73772ad829ff0ba97e9e185e9489"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_crane/CMakeLists.txt",
+      "bytes": 2524,
+      "sha256": "bee5259b37a4dbf7daa4a387bd0a1a5fa87eb8fb15eb47e4d06c55994b4752d0"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_crane/craneFMU.cpp",
+      "bytes": 13060,
+      "sha256": "5c480c82f307c1485dfc240e35c740a6bd48f904d6c7e668661f1c8052ac6960"
+    },
+    {
+      "path": "src/demos/fmi/cosim/fmu3_crane/craneFMU.h",
+      "bytes": 3146,
+      "sha256": "fcbba5bee36f8c6e94ea32e78e02e55e6407e3c4b1f8f7ae157c66b2b2bae3a0"
+    },
+    {
+      "path": "src/demos/fmi/modex/CMakeLists.txt",
+      "bytes": 2915,
+      "sha256": "f82a57d4e8dc5f3d496169829309bd4fd49d9d2fd85c3d6ae9296cf481cf8e71"
+    },
+    {
+      "path": "src/demos/fmi/modex/demo_FMI_VdP_modex.cpp",
+      "bytes": 6263,
+      "sha256": "3a54e9b2fb3f35a6945d419fd5a60afb6b5592399f233fd1f608736aa818d3c2"
+    },
+    {
+      "path": "src/demos/fmi/modex/demo_FMI_hydraulic_crane_modex.cpp",
+      "bytes": 22124,
+      "sha256": "54e5b45bfe3cbbd8e3d4d36c833d9476a9cfac7c54e4cf214c0167a79b1f82f0"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_actuator/CMakeLists.txt",
+      "bytes": 2185,
+      "sha256": "01663c7fc75347ea14c1230fe0eb0a0e2965e0fd6e012957e430d81dccb5cb2f"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_actuator/actuatorFMU.cpp",
+      "bytes": 9249,
+      "sha256": "bac257cdcedc14f1df6640bc8766995c0033959f1eae90e5dbe54b4bb62e3ec9"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_actuator/actuatorFMU.h",
+      "bytes": 3027,
+      "sha256": "dbc27dab9a606c40b30a1a639109f4851b5501f5d6dd9dbb7f7f158c50432c50"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_vdp/CMakeLists.txt",
+      "bytes": 2153,
+      "sha256": "304b8403090c2dbefc4ba1e8e21f861611a87ca41e924a6522aca4b778960cd7"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_vdp/vdpFMU.cpp",
+      "bytes": 6358,
+      "sha256": "d1c5038ef75051600eea5bad241049e322c90bc7789bef35c096e978f1df7df1"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu2_vdp/vdpFMU.h",
+      "bytes": 2096,
+      "sha256": "47a648a6cb6ffbac7480052d883f599b5f5f4fbb5c3ddfddd78cd218b6a07fdc"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu3_vdp/CMakeLists.txt",
+      "bytes": 2195,
+      "sha256": "8b431f38036bdf9f612b29ae5640244dadbce1853043fec43a9ddd69be355204"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu3_vdp/vdpFMU.cpp",
+      "bytes": 6970,
+      "sha256": "caa07f85e72cc4613bf2953966ec9ee36d70c1a131eb137742f2a978f39da8ed"
+    },
+    {
+      "path": "src/demos/fmi/modex/fmu3_vdp/vdpFMU.h",
+      "bytes": 2266,
+      "sha256": "0eba2d79eaaf5658fcfcf906e01b70f739422497984e62e8c5c94aaa5dfe21cd"
+    },
+    {
+      "path": "template_project_fmi2/CMakeLists.txt",
+      "bytes": 3942,
+      "sha256": "a70566f725a8e8c9e57fba70b03450bca5af62a42b25cf645a95577bb462bd31"
+    },
+    {
+      "path": "template_project_fmi2/FmuComponentChrono.cpp",
+      "bytes": 9582,
+      "sha256": "19d3b879aea5516ffd1c731bd121b4656cb3deb95a1bfe5a46e3348298b0a091"
+    },
+    {
+      "path": "template_project_fmi2/FmuComponentChrono.h",
+      "bytes": 2298,
+      "sha256": "8cec1033c4b8a2ad3d31311d5829172ab9226ff6b074d092739ee74e87378edf"
+    },
+    {
+      "path": "template_project_fmi2/demo_FmuComponentChrono.cpp",
+      "bytes": 4678,
+      "sha256": "7b13e9cbddb51d2ff30fbf6f289766e4e73340a50717b9db4ce7f75f94998962"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/fonts/arial8.xml",
+      "bytes": 58957,
+      "sha256": "d125e351763f2efad171ce0c9479e15f22122520c40cb38381eccfa88ed7dfab"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/fonts/arial80.bmp",
+      "bytes": 786486,
+      "sha256": "1458a9ae68d1be81c0b21c1d1b1ae72ac7a649d327fb0832dc91b18f7647cdc5"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/fonts/jetbrainmono6_bold.png",
+      "bytes": 9987,
+      "sha256": "e62a32718255383841a2e57d360e5b27a27a09a088626617ac83a365c0b6409c"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/logo_robodyna_alpha.png",
+      "bytes": 322062,
+      "sha256": "83d6d0e289bae5f31ebf1a99754bdc653500440dc6dfa54fa8fdc4cfb556560a"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/skybox/sky_dn.jpg",
+      "bytes": 11580,
+      "sha256": "8bd887d23a0243384071a8cdfeb15e735c5df93c2708f7df5edccb55f0b723e0"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/skybox/sky_lf.jpg",
+      "bytes": 12948,
+      "sha256": "838c4089c32486cdf897fe4d0fd865e917e92f4cc5386c28bc89a2b2f3068b15"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/skybox/sky_up.jpg",
+      "bytes": 11610,
+      "sha256": "42f0ae045d900c9cb6df93ce48925c2f8494d5f091ad3307e9353153a3514692"
+    },
+    {
+      "path": "template_project_fmi2/fmu_resources/textures/blue.png",
+      "bytes": 82,
+      "sha256": "9a3551ac52b6ca0937e406b3a5e10de847802691e8e1f6579e7639ef7a00c126"
+    }
+  ]
+}

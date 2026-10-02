@@ -1,0 +1,113 @@
+load("//build_defs/bindings/optional:defs.bzl", "csharp_module")
+load("//build_defs/bindings/python/profiles:policy.bzl", "IMPLEMENTATION_PROFILE", "PROFILE_DEFINES", "ROS_DEFINES")
+load("//build_defs/managed:composition.bzl", "managed_proxy_set")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["DemoCatalog.json"])
+
+_CORE = "//build_defs/bindings:native_core"
+_OPTIONAL = "//build_defs/bindings/optional:"
+_GLOBALS = "//src/compatibility/chrono:src/chrono_swig/chrono_csharp/ChChronoGlobals.cs.in"
+
+# Domain-changing profiles are excluded until the matching managed API/runtime
+# is separately qualified. One selector produces at most one incompatible label.
+_COMMON_FLAGS = {
+    "//build_defs/features:multicore": "false",
+    "//build_defs/features:fea_multiphysics": "false",
+    "//build_defs/features:fsi_tdpf": "false",
+    "//build_defs/features:fsi_sph": "false",
+    "//build_defs/features:yaml": "false",
+}
+config_setting(name = "opencrg_profile", flag_values = dict(_COMMON_FLAGS.items() + [("//build_defs/features:opencrg", "true")]))
+config_setting(name = "sensor_profile", flag_values = dict(_COMMON_FLAGS.items() + [("//build_defs/features:sensor_backend", "optix")]))
+config_setting(name = "ros_sensor_profile", flag_values = dict(_COMMON_FLAGS.items() + [("//build_defs/features:sensor_backend", "optix"), ("//build_defs/features:ros_sensor", "true"), ("//build_defs/features:ros_urdf", "false")]))
+_OPENCRG = select({":opencrg_profile": [], "//conditions:default": ["@platforms//:incompatible"]})
+_SENSOR = select({":sensor_profile": [], "//conditions:default": ["@platforms//:incompatible"]})
+_ROS_SENSOR = select({":ros_sensor_profile": [], "//conditions:default": ["@platforms//:incompatible"]})
+_CRG_DEFINES = select({"//build_defs/features:opencrg_enabled": ["CHRONO_HAS_OPENCRG"], "//conditions:default": []})
+
+# Actual proxy/PInvoke names stay compatible with the retained .cs programs.
+# Public managed assemblies and Bazel labels use the Robodyna product name.
+csharp_module(name = "core", stem = "Core", implementation = _CORE,
+              cpp_deps = ["//build_defs/chrono:native_core_fea"], dynamic_deps = [],
+              defines = PROFILE_DEFINES, local_defines = PROFILE_DEFINES,
+              native_basename = "libchrono.so", compatibility = IMPLEMENTATION_PROFILE)
+csharp_module(name = "vsg", stem = "Vsg", implementation = _OPTIONAL + "native_vsg",
+              cpp_deps = ["//build_defs/chrono/vsg:vsg"], dynamic_deps = [_CORE, _OPTIONAL + "native_images"],
+              defines = PROFILE_DEFINES, local_defines = PROFILE_DEFINES, compatibility = IMPLEMENTATION_PROFILE)
+csharp_module(name = "postprocess", stem = "Postprocess", implementation = _OPTIONAL + "native_postprocess",
+              cpp_deps = ["//src/postprocess:exporters"], dynamic_deps = [_CORE],
+              defines = PROFILE_DEFINES, local_defines = PROFILE_DEFINES, compatibility = IMPLEMENTATION_PROFILE)
+csharp_module(name = "robot", stem = "Robot", implementation = _OPTIONAL + "native_robot",
+              cpp_deps = ["//src/robotics/models:models"], dynamic_deps = [_CORE],
+              defines = PROFILE_DEFINES, local_defines = PROFILE_DEFINES, compatibility = IMPLEMENTATION_PROFILE)
+csharp_module(
+    name = "vehicle", stem = "Vehicle", implementation = _OPTIONAL + "native_vehicle",
+    cpp_deps = ["//src/vehicle:vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg"],
+    dynamic_deps = [_CORE, _OPTIONAL + "native_images", _OPTIONAL + "native_vsg"],
+    defines = PROFILE_DEFINES + _CRG_DEFINES + ["CHRONO_VSG", "CHRONO_VEHICLE"],
+    local_defines = PROFILE_DEFINES + _CRG_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE,
+)
+csharp_module(
+    name = "sensor", stem = "Sensor", implementation = _OPTIONAL + "native_sensor",
+    cpp_deps = ["//src/sensor/backend:sensor"],
+    dynamic_deps = [_CORE, _OPTIONAL + "native_images"] + select({
+        "//build_defs/features:fsi_sph_enabled": [_OPTIONAL + "native_fsi"], "//conditions:default": [],
+    }),
+    defines = PROFILE_DEFINES + ["CHRONO_HAS_OPTIX"], local_defines = PROFILE_DEFINES + ["CHRONO_HAS_OPTIX"],
+    compatibility = _SENSOR,
+)
+csharp_module(
+    name = "ros", stem = "ROS", implementation = _OPTIONAL + "native_ros",
+    cpp_deps = ["//src/integrations/ros:simulation", "//src/integrations/ros:vehicle_handlers", "//src/integrations/ros:robot_handlers", "//src/integrations/ros:sensor_handlers"],
+    dynamic_deps = [_CORE, _OPTIONAL + "native_images", _OPTIONAL + "native_vsg", _OPTIONAL + "native_vehicle", _OPTIONAL + "native_robot", _OPTIONAL + "native_sensor"],
+    defines = PROFILE_DEFINES + ROS_DEFINES, local_defines = PROFILE_DEFINES + ROS_DEFINES,
+    compatibility = _ROS_SENSOR,
+)
+
+managed_proxy_set(
+    name = "opencrg_proxies",
+    modules = ["core", "vsg", "postprocess", "vehicle"],
+    proxies = [":core_proxies", ":vsg_proxies", ":postprocess_proxies", ":vehicle_proxies"],
+    target_compatible_with = _OPENCRG,
+)
+managed_assembly(
+    name = "managed_opencrg",
+    assembly_name = "Robodyna.Managed.Vehicle.OpenCrg.dll",
+    srcs = [":opencrg_proxies"], globals_template = _GLOBALS,
+    native_libraries = [":csharp_core", _CORE, ":csharp_vsg", ":csharp_postprocess", ":csharp_vehicle"],
+    target_compatible_with = _OPENCRG,
+    tags = ["manual", "managed-bindings"],
+)
+managed_proxy_set(
+    name = "sensor_proxies_combined",
+    modules = ["core", "sensor"],
+    proxies = [":core_proxies", ":sensor_proxies"],
+    approvals = ":sensor_proxy_collisions.json",
+    target_compatible_with = _SENSOR,
+)
+managed_assembly(
+    name = "managed_sensor",
+    assembly_name = "Robodyna.Managed.Sensor.dll",
+    srcs = [":sensor_proxies_combined"], globals_template = _GLOBALS,
+    native_libraries = [":csharp_core", _CORE, ":csharp_sensor"],
+    target_compatible_with = _SENSOR,
+    tags = ["manual", "managed-bindings"],
+)
+managed_proxy_set(
+    name = "ros_sensor_proxies",
+    modules = ["core", "robot", "vsg", "postprocess", "vehicle", "sensor", "ros"],
+    proxies = [":core_proxies", ":robot_proxies", ":vsg_proxies", ":postprocess_proxies", ":vehicle_proxies", ":sensor_proxies", ":ros_proxies"],
+    approvals = ":ros_sensor_proxy_collisions.json",
+    target_compatible_with = _ROS_SENSOR,
+)
+managed_assembly(
+    name = "managed_ros_sensor",
+    assembly_name = "Robodyna.Managed.Ros.Sensor.dll",
+    srcs = [":ros_sensor_proxies"], globals_template = _GLOBALS,
+    native_libraries = [":csharp_core", _CORE, ":csharp_robot", ":csharp_vsg", ":csharp_postprocess", ":csharp_vehicle", ":csharp_sensor", ":csharp_ros"],
+    target_compatible_with = _ROS_SENSOR,
+    tags = ["manual", "managed-bindings"],
+)

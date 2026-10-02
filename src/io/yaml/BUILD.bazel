@@ -1,0 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/features:defs.bzl", "YAML_ONLY")
+load(":sources.bzl", "YAML_PRIVATE_HEADERS", "YAML_PUBLIC_HEADERS", "YAML_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl"])
+_SOURCE = "//src/compatibility/chrono:"
+
+alias(
+    name = "headers",
+    actual = "//src/compatibility/chrono/src/chrono_thirdparty/yaml-cpp:headers",
+)
+
+# Exact src/*.cpp and default-enabled src/contrib/*.cpp from retained CMake.
+# This library is independent of concrete mechanics and uses no new YAML parser.
+alias(
+    name = "yaml",
+    actual = "//src/compatibility/chrono/src/chrono_thirdparty/yaml-cpp:yaml-cpp",
+)
+
+# The existing mixed core selects this adapter when the coherent YAML profile
+# is enabled. Its back edge is declarations only, keeping implementation unique.
+cc_library(
+    name = "core_extension",
+    srcs = [_SOURCE + "src/chrono/input_output/ChUtilsYAML.cpp"],
+    deps = [":yaml", "//src/compatibility/chrono:native_core_fea_headers"],
+    local_defines = ["CH_API_COMPILE", "BT_THREADSAFE", "BP_USE_FIXEDPOINT_INT_32"],
+    copts = ["-O3", "-fPIC", "-include", "$(location //src/compatibility/chrono:src/chrono/ChCorePCH.h)"],
+    additional_compiler_inputs = ["//src/compatibility/chrono:src/chrono/ChCorePCH.h"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "cpu-only", "yaml-profile"],
+)

@@ -37,6 +37,7 @@
 // fmu-forge
 // #include "rapidxml_ext.hpp"
 #include "fmi2/FmuForgeExport.h"
+#include "chrono_fmi/fmi2/FmuArchiveValues.h"
 
 namespace chrono {
 namespace fmi2 {
@@ -47,16 +48,20 @@ namespace fmi2 {
 using FmuVariable = fmu_forge::fmi2::FmuVariable;
 
 #define ADD_BVAL_AS_FMU_GETSET(returnType, codeGet, codeSet)                                         \
+    bVal = archive_bindings_.CaptureConstant(bVal);                                            \
     _fmucomp->AddFmuVariable(                                                                        \
         std::make_pair(std::function<fmi2##returnType(void)>([bVal]() -> fmi2##returnType codeGet),  \
                        std::function<void(fmi2##returnType)>([bVal](fmi2##returnType val) codeSet)), \
         getCurrentVarName(bVal.name()), FmuVariable::Type::returnType, "", "",                       \
-        CausalityType_conv.at(bVal.GetCausality()), VariabilityType_conv.at(bVal.GetVariability()));
+        CausalityType_conv.at(bVal.GetCausality()), VariabilityType_conv.at(robodyna::fmi::ScalarArchiveVariability( \
+            FmuVariable::Type::returnType == FmuVariable::Type::Real, bVal.GetVariability())));
 
 #define ADD_BVAL_AS_FMU_POINTER(returnType)                                                                          \
+    bVal = archive_bindings_.CaptureConstant(bVal);                                            \
     _fmucomp->AddFmuVariable(&(bVal.value()), getCurrentVarName(bVal.name()), FmuVariable::Type::returnType, "", "", \
                              CausalityType_conv.at(bVal.GetCausality()),                                             \
-                             VariabilityType_conv.at(bVal.GetVariability()));
+                             VariabilityType_conv.at(robodyna::fmi::ScalarArchiveVariability( \
+            FmuVariable::Type::returnType == FmuVariable::Type::Real, bVal.GetVariability())));
 
 const std::unordered_map<chrono::ChVariabilityType, FmuVariable::VariabilityType> VariabilityType_conv = {
     {chrono::ChVariabilityType::constant, FmuVariable::VariabilityType::constant},
@@ -224,6 +229,7 @@ class ChOutputFMU : public ChArchiveOut {
         return current_fullname;
     }
 
+    robodyna::fmi::ArchiveValueBindings archive_bindings_;
     int tablevel;
     fmu_forge::fmi2::FmuComponentBase* _fmucomp;
     std::stack<int> nitems;

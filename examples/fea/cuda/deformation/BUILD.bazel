@@ -1,0 +1,61 @@
+package(default_visibility = ["//visibility:public"])
+
+# Canonical names select existing real binaries; numerical compile owners stay unchanged.
+exports_files(["BUILD.bazel"])
+
+alias(
+    name = "bunny_adamw",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_feat10_bunny_adamw",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "bunny_newton",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_feat10_bunny_newton",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "teapot_adamw",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_feat10_teapot_adamw",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "teapot_newton",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_feat10_teapot_newton",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "tire_newton",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_feat10_tire_newton",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "ancf3243_net_newton",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_ancf3243_net_newton",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "ancf3443_mesh_newton",
+    actual = "@legacy_fea//lib_bin/mesh_deform:test_ancf3443_mesh_newton",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+# Explicit aggregate includes every program in this group, including optional backends.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        ":bunny_adamw",
+        ":bunny_newton",
+        ":teapot_adamw",
+        ":teapot_newton",
+        ":tire_newton",
+        ":ancf3243_net_newton",
+        ":ancf3443_mesh_newton",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)

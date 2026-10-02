@@ -1,6 +1,23 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "collision_objects",
+    srcs = ["//src/compatibility/chrono:src/demos/mbs/demo_MBS_collision_object.cpp"],
+    deps = ["//src/collision/multicore:collision"],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/checker1.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_tire_coarse.obj",
+        "//src/compatibility/chrono:data/vehicle/hmmwv/hmmwv_tire_fine.obj",
+    ],
+)
+
+# Complete55-program MBD collection requires --config=multicore.
+filegroup(name = "all_demos", srcs = [":native_demos", ":collision_objects"], tags = ["manual"])
 
 cc_library(
     name = "telemetry",
@@ -33,4 +50,618 @@ cc_binary(
         "@vsg_sdk//:runtime",
     ],
     tags = ["manual", "original-demo", "cpu-dynamics", "vulkan-rendering"],
+)
+
+robodyna_cpp_demo(
+    name = "reference_frames",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_aux_ref.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "brick_wall",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_bricks.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/cubetexture_borders.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "contact_callbacks_nsc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_callbackNSC.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "contact_callbacks_smc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_callbackSMC.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "collision_nsc_interactive",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_collisionNSC.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/cubetexture_bluewhite.png",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "collision_smc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_collisionSMC.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/cubetexture_pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "triangle_mesh_collision",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_collision_trimesh.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/bulldozer/shoe_view.obj",
+        "//src/compatibility/chrono:data/models/cube.obj",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "convex_decomposition",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_convex_decomp.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/support.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "earthquake",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_earthquake.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "friction",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_friction.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "motors",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_motors.cpp",
+        "//src/compatibility/chrono:src/demos/SetChronoSolver.h",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "spring_interactive",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_spring.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "top_mount_damper",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_topmount.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "inverted_pendulum",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_inverted_pendulum.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "external_ode",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_external_ODE.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "external_dae",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_external_DAE.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "hydraulic_actuator",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_hydraulic_actuator.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "hydraulic_crane",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_hydraulic_crane.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "hydraulic_crane_cosimulation",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_hydraulic_crane_cosim.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "custom_collision",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_custom_collision.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "spinning_tops",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_spinning_tops.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/spinning_top/platform.obj",
+        "//src/compatibility/chrono:data/models/spinning_top/spinning_top_1.obj",
+        "//src/compatibility/chrono:data/models/spinning_top/spinning_top_2.obj",
+        "//src/compatibility/chrono:data/textures/bronze.png",
+        "//src/compatibility/chrono:data/textures/metal.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "locking_joint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_joint_lock.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/textures/checker1.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "checkpoint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_checkpoint.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "custom_contact",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_custom_contact.cpp",
+    ],
+    features = ["vsg"],
+    data = [
+        "//src/compatibility/chrono:data/models/sphere.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "object_drop",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_object_drop.cpp",
+    ],
+    features = ["vsg"],
+)
+
+robodyna_cpp_demo(
+    name = "cohesion",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_cohesion.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/rock.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "conveyor",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_conveyor.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/cubetexture_bluewhite.png",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "feeder",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_feeder.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/feeder_bowl.obj",
+        "//src/compatibility/chrono:data/models/feeder_item.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "crank",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_crank.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "forklift",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_forklift.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/forklift/arm.obj",
+        "//src/compatibility/chrono:data/models/forklift/body.obj",
+        "//src/compatibility/chrono:data/models/forklift/forks.obj",
+        "//src/compatibility/chrono:data/models/forklift/wheel.obj",
+        "//src/compatibility/chrono:data/models/pallet.obj",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/cubetexture.png",
+        "//src/compatibility/chrono:data/textures/cubetexture_wood.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "four_bar",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_fourbar.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "gears",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_gears.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "mecanum_wheels",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_mecanum.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "pendulum",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_pendulum.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/fan2.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "suspension",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_suspension.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/blue.png",
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "tracks",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_tracks.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/bulldozer/bulldozerB10.obj",
+        "//src/compatibility/chrono:data/models/bulldozer/shoe_collision.obj",
+        "//src/compatibility/chrono:data/models/bulldozer/shoe_view.obj",
+        "//src/compatibility/chrono:data/models/bulldozer/wheel_view.obj",
+        "//src/compatibility/chrono:data/textures/blue.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "solver_convergence",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_convergence.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+        "//src/compatibility/chrono:data/textures/cubetexture_bluewhite.png",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "collision_2d",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_collision_2d.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "particle_emitter",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_emitter.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "particle_clusters",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_emit_cluster.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "particle_processing",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_emit_processor.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/concrete.jpg",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "revolute_spherical_joint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_rev_sph.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "revolute_translational_joint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_rev_trans.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "revolute_limits",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_rev_limits.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "revolute_reactions",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_rev_reactions.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "rotational_spring",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_rot_spring.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "universal_joint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_ujoint.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "planar_constraint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_planar.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "bushing",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_link_bushing.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "prismatic_limits",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_prismatic_limits.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "prismatic_force",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_prismatic_force.cpp",
+    ],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "collision_reporting",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_report_collisions.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/bluewhite.png",
+        "//src/compatibility/chrono:data/textures/cubetexture_bluewhite.png",
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "imposed_motion",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_imposed_motion.cpp",
+    ],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/models/support.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "mate_constraints",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/mbs/demo_MBS_link_mate.cpp",
+    ],
+    features = ["irrlicht", "pardiso_mkl"],
+)
+
+# Explicit compilation aggregate; this does not execute interactive programs.
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":mate_constraints",
+        ":reference_frames",
+        ":brick_wall",
+        ":contact_callbacks_nsc",
+        ":contact_callbacks_smc",
+        ":collision_nsc_interactive",
+        ":collision_smc",
+        ":triangle_mesh_collision",
+        ":convex_decomposition",
+        ":earthquake",
+        ":friction",
+        ":motors",
+        ":spring_interactive",
+        ":top_mount_damper",
+        ":inverted_pendulum",
+        ":external_ode",
+        ":external_dae",
+        ":hydraulic_actuator",
+        ":hydraulic_crane",
+        ":hydraulic_crane_cosimulation",
+        ":custom_collision",
+        ":spinning_tops",
+        ":locking_joint",
+        ":checkpoint",
+        ":custom_contact",
+        ":object_drop",
+        ":cohesion",
+        ":conveyor",
+        ":feeder",
+        ":crank",
+        ":forklift",
+        ":four_bar",
+        ":gears",
+        ":mecanum_wheels",
+        ":pendulum",
+        ":suspension",
+        ":tracks",
+        ":solver_convergence",
+        ":collision_2d",
+        ":particle_emitter",
+        ":particle_clusters",
+        ":particle_processing",
+        ":revolute_spherical_joint",
+        ":revolute_translational_joint",
+        ":revolute_limits",
+        ":revolute_reactions",
+        ":rotational_spring",
+        ":universal_joint",
+        ":planar_constraint",
+        ":bushing",
+        ":prismatic_limits",
+        ":prismatic_force",
+        ":collision_reporting",
+        ":imposed_motion",
+    ],
+    tags = ["manual"],
 )

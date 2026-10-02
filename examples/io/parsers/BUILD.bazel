@@ -1,0 +1,53 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//src/io/parsers/runtime:demo.bzl", "solidworks_demo")
+
+package(default_visibility = ["//visibility:public"])
+_SOURCE = "//src/compatibility/chrono:src/demos/parsers/"
+_DATA = ["//src/io/parsers:demo_assets"]
+
+robodyna_cpp_demo(
+    name = "opensim",
+    srcs = [_SOURCE + "demo_PARSER_OpenSim.cpp"],
+    deps = ["//src/io/parsers:opensim"],
+    data = _DATA,
+    features = ["irrlicht"],
+    tags = ["cpu-dynamics", "native-parsers"],
+)
+robodyna_cpp_demo(
+    name = "adams",
+    srcs = [_SOURCE + "demo_PARSER_Adams.cpp"],
+    deps = ["//src/io/parsers:adams"],
+    data = _DATA,
+    features = ["irrlicht"],
+    tags = ["cpu-dynamics", "native-parsers"],
+)
+robodyna_cpp_demo(
+    name = "urdf",
+    srcs = [_SOURCE + "demo_PARSER_URDF.cpp"],
+    deps = ["//src/io/parsers:urdf"],
+    data = _DATA + ["@urdf_sdk//:runtime"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "native-parsers"],
+)
+robodyna_cpp_demo(
+    name = "urdf_robosimian",
+    srcs = [_SOURCE + "demo_PARSER_URDF_RoboSimian.cpp"],
+    deps = ["//src/io/parsers:urdf_vsg", "//src/robotics/models:models"],
+    data = _DATA + ["@urdf_sdk//:runtime"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "native-parsers"],
+)
+cc_binary(
+    name = "python",
+    srcs = [_SOURCE + "demo_PARSER_Python.cpp"],
+    deps = ["//src/io/parsers:python"],
+    dynamic_deps = ["//build_defs/bindings:native_core"],
+    data = ["@python_embed_sdk//:runtime"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    tags = ["manual", "robodyna-demo", "native-demo", "python-embedding"],
+)
+solidworks_demo(name = "solidworks_python", source = _SOURCE + "demo_PARSER_Python_SolidWorks.cpp")
+
+filegroup(name = "native_demos", srcs = [":opensim", ":adams", ":urdf", ":urdf_robosimian", ":python", ":solidworks_python"], tags = ["manual"])

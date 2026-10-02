@@ -1,0 +1,47 @@
+package(default_visibility = ["//visibility:public"])
+
+# Canonical names select existing real binaries; numerical compile owners stay unchanged.
+exports_files(["BUILD.bazel"])
+
+alias(
+    name = "ancf3243_sag",
+    actual = "@legacy_fea//lib_bin/beam_sag:test_ancf3243",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "ancf3443_sag",
+    actual = "@legacy_fea//lib_bin/beam_sag:test_ancf3443",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "tetra10_adamw_sag",
+    actual = "@legacy_fea//lib_bin/beam_sag:test_feat10_adamw",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "tetra10_nesterov_sag",
+    actual = "@legacy_fea//lib_bin/beam_sag:test_feat10_nesterov",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "tetra10_resolution",
+    actual = "@legacy_fea//lib_bin/beam_sag:test_feat10_resolution",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+# Explicit aggregate includes every program in this group, including optional backends.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        ":ancf3243_sag",
+        ":ancf3443_sag",
+        ":tetra10_adamw_sag",
+        ":tetra10_nesterov_sag",
+        ":tetra10_resolution",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)

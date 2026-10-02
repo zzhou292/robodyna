@@ -1,0 +1,212 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load(":configuration.bzl", "node_paths", "ros_configuration")
+load(":sources.bzl", "ROS_GROUPS")
+load(":ownership.bzl", "ros_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json", "BridgeTest.py"])
+
+_SOURCE = "//src/compatibility/chrono:"
+
+# Seven real source units; this neutral wire/transport layer has neither Chrono
+# nor a ROS2 dependency. Do not reuse the old dev runner's stub-header stage.
+cc_library(
+    name = "protocol",
+    srcs = [_SOURCE + path for path in ROS_GROUPS["protocol"]["sources"]],
+    hdrs = [_SOURCE + path for path in ROS_GROUPS["protocol"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    copts = ["-O3", "-fPIC"],
+    linkopts = ["-pthread", "-lrt"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-protocol", "cpu-only"],
+)
+
+ros_configuration(
+    name = "configuration",
+    sensor = select({"//build_defs/features:ros_sensor_enabled": True, "//conditions:default": False}),
+    urdf = select({"//build_defs/features:ros_urdf_enabled": True, "//conditions:default": False}),
+    template = _SOURCE + "src/chrono_ros/ChConfigROS.h.in",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/core/configuration:host_headers"] + select({
+        "//build_defs/features:ros_sensor_enabled": ["//src/sensor/backend:sensor"], "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "simulation",
+    srcs = [_SOURCE + path for group in ["simulation", "handlers"] for path in ROS_GROUPS[group]["sources"]],
+    hdrs = [_SOURCE + path for group in ["simulation", "handlers"] for path in ROS_GROUPS[group]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":protocol", ":configuration_headers", "//build_defs/chrono:native_core_fea"] + select({
+        "//build_defs/features:ros_urdf_enabled": ["//src/io/parsers:urdf"], "//conditions:default": [],
+    }),
+    local_defines = ["CH_API_COMPILE_ROS"],
+    copts = ["-O3", "-fPIC"],
+    linkopts = ["-ldl"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-simulation", "cpu-only"],
+)
+
+cc_library(
+    name = "vehicle_handlers",
+    srcs = [_SOURCE + path for path in ROS_GROUPS["vehicle"]["sources"]],
+    hdrs = [_SOURCE + path for path in ROS_GROUPS["vehicle"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":simulation", "//src/vehicle:vehicle"],
+    local_defines = ["CH_API_COMPILE_ROS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "ros-simulation", "cpu-only"],
+)
+
+cc_library(
+    name = "robot_handlers",
+    srcs = [_SOURCE + path for path in ROS_GROUPS["robot"]["sources"]],
+    hdrs = [_SOURCE + path for path in ROS_GROUPS["robot"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":simulation", "//src/robotics/models:models"],
+    local_defines = ["CH_API_COMPILE_ROS"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "ros-simulation", "cpu-only"],
+)
+
+[
+    cc_test(
+        name = name + "_test",
+        srcs = [_SOURCE + "src/chrono_ros/tests_dev/test_" + name + ".cpp",
+                _SOURCE + "src/chrono_ros/tests_dev/ChROSTestUtils.h"],
+        deps = [":protocol"],
+        copts = ["-Wall", "-Wextra", "-Werror"],
+        size = "small",
+        tags = ["manual", "ros-protocol", "cpu-only"],
+    )
+    for name in ["cdr", "schema", "message", "transport"]
+]
+
+test_suite(
+    name = "protocol_tests",
+    tests = [":cdr_test", ":schema_test", ":message_test", ":transport_test"],
+    tags = ["manual"],
+)
+
+# The existing two-source middleware subprocess has no mechanics dependency.
+cc_library(
+    name = "node_headers",
+    hdrs = [_SOURCE + path for path in ROS_GROUPS["node"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":protocol", "@ros_sdk//:node_sdk"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-node", "cpu-only"],
+)
+
+cc_binary(
+    name = "node_backend",
+    srcs = [_SOURCE + path for path in ROS_GROUPS["node"]["sources"]],
+    deps = [":node_headers"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-node", "cpu-only"],
+)
+
+# Keep the inherited executable basename for ChROSNodeProcess. This launcher
+# replaces itself with the real C++ node; it does not simulate a ROS response.
+node_paths(
+    name = "node_paths",
+    backend = ":node_backend",
+    sdk_receipt = "@ros_sdk//:sdk.json",
+    message_sdk_receipts = ["@ros_interfaces_sdk//:sdk.json"],
+)
+py_library(name = "launch_paths", srcs = [":node_paths"])
+
+py_binary(
+    name = "chrono_ros_node",
+    srcs = ["//tools/ros:node_launcher.py"],
+    main = "//tools/ros:node_launcher.py",
+    deps = ["//tools/ros:node_launcher"],
+    data = [":node_backend", "@ros_sdk//:runtime", "@ros_sdk//:sdk.json", "@ros_interfaces_sdk//:runtime", "@ros_interfaces_sdk//:sdk.json"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-node", "cpu-only"],
+)
+
+alias(name = "node", actual = ":chrono_ros_node")
+
+ros_ownership_test(
+    name = "ownership_test",
+    owners = [":protocol", ":simulation", ":vehicle_handlers", ":robot_handlers", ":node_backend"] + select({
+        "//build_defs/features:ros_sensor_enabled": [":sensor_handlers"], "//conditions:default": [],
+    }),
+    sensor = select({"//build_defs/features:ros_sensor_enabled": True, "//conditions:default": False}),
+    rendered_sensor = select({"//build_defs/features:ros_sensor_optix": True, "//conditions:default": False}),
+    node = ":node_backend",
+    simulation = ":simulation",
+    size = "small",
+    tags = ["manual", "source-proof"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    deps = ["//tools/verification:inventory"],
+    args = ["$(location :sources.bzl)", "$(location :SourceBaseline.json)",
+            "$(location " + _SOURCE + "src/chrono_ros/CMakeLists.txt)",
+            "$(location //examples/ros:DEMO_TARGETS.json)", "$(location //examples/ros:BUILD.bazel)"],
+    data = [":sources.bzl", ":SourceBaseline.json", "//examples/ros:DEMO_TARGETS.json", "//examples/ros:BUILD.bazel",
+            _SOURCE + "src/chrono_ros/CMakeLists.txt"] +
+           [_SOURCE + path for group in ROS_GROUPS.values() for kind in ["sources", "headers"] for path in group[kind]] +
+           [_SOURCE + "src/demos/ros/demo_ROS_" + name + ".cpp" for name in
+            ["custom_handler", "hydraulic_crane", "vehicle", "two_managers", "viper", "sensor", "urdf"]],
+    size = "small",
+    tags = ["manual", "source-proof", "cpu-only"],
+)
+
+# Reuse the actual inherited C++ suite and peer rclcpp node. Its intentional
+# test-only co-linkage does not change the production two-process separation.
+cc_binary(
+    name = "bridge_test_backend",
+    srcs = [_SOURCE + "src/tests/unit_tests/ros/utest_ROS_bridge_roundtrip.cpp"],
+    deps = [":simulation", "@ros_sdk//:typed_messages", "@googletest//:gtest_main"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-integration", "cpu-only"],
+)
+
+py_test(
+    name = "bridge_test",
+    srcs = ["BridgeTest.py"],
+    main = "BridgeTest.py",
+    deps = ["@rules_python//python/runfiles", "//tools/ros:environment"],
+    args = ["$(rlocationpath :bridge_test_backend)", "$(rlocationpath :node)", "$(rlocationpath @ros_sdk//:sdk.json)"],
+    data = [":bridge_test_backend", ":node", "@ros_sdk//:runtime", "@ros_sdk//:sdk.json"],
+    size = "medium",
+    timeout = "moderate",
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "ros-integration", "cpu-only", "local"],
+)
+
+# Original sensor adapters compile only with the coherent selected declarations.
+cc_library(
+    name = "sensor_handlers",
+    srcs = [_SOURCE + path for path in ROS_GROUPS["sensor"]["sources"]] + select({
+        "//build_defs/features:ros_sensor_optix": [_SOURCE + path for path in ROS_GROUPS["rendered_sensor"]["sources"]],
+        "//conditions:default": [],
+    }),
+    hdrs = [_SOURCE + path for path in ROS_GROUPS["sensor"]["headers"]] + select({
+        "//build_defs/features:ros_sensor_optix": [_SOURCE + path for path in ROS_GROUPS["rendered_sensor"]["headers"]],
+        "//conditions:default": [],
+    }),
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":simulation", "//src/sensor/backend:sensor"],
+    local_defines = ["CH_API_COMPILE_ROS"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = select({
+        "//build_defs/features:ros_sensor_enabled": [], "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "ros-sensor-profile"],
+)

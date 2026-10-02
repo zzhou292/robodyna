@@ -1,0 +1,11 @@
+load("//build_defs/bindings/python:defs.bzl", "python_module")
+
+package(default_visibility = ["//visibility:public"])
+
+python_module(
+    name = "cascade", stem = "Cascade", numpy = True,
+    implementation = "//build_defs/bindings/optional/cascade:native_cascade",
+    cpp_deps = ["//src/integrations/cad:cad"],
+    dynamic_deps = ["//build_defs/bindings:native_core"],
+    compile_defines = ["HAVE_IOSTREAM", "HAVE_LIMITS_H"],
+)

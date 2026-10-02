@@ -1,0 +1,9 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["fmi2.exports", "fmi3.exports"])
+
+py_library(name = "package_library", srcs = ["package.py"])
+py_binary(name = "package", srcs = ["package.py"])
+py_test(name = "package_test", srcs = ["PackageTest.py"], main = "PackageTest.py", deps = [":package_library"], size = "small")

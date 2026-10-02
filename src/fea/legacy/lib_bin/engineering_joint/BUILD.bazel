@@ -6,13 +6,6 @@ cc_binary(
     name = "test_feat10_double_pendulum_revolute",
     srcs = ["test_feat10_double_pendulum_revolute.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/solvers:FEAT10ConstraintManager",
         "//lib_src/elements:FEAT10Data",
@@ -20,6 +13,10 @@ cc_binary(
         "//lib_utils:cpu_utils",
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -27,13 +24,6 @@ cc_binary(
     name = "test_feat10_double_pendulum_spherical",
     srcs = ["test_feat10_double_pendulum_spherical.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/solvers:FEAT10ConstraintManager",
         "//lib_src/elements:FEAT10Data",
@@ -41,6 +31,10 @@ cc_binary(
         "//lib_utils:cpu_utils",
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -49,13 +43,6 @@ cc_binary(
     name = "test_feat10_double_pendulum_welded",
     srcs = ["test_feat10_double_pendulum_welded.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/solvers:FEAT10ConstraintManager",
         "//lib_src/elements:FEAT10Data",
@@ -63,6 +50,10 @@ cc_binary(
         "//lib_utils:cpu_utils",
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -71,13 +62,6 @@ cc_binary(
     name = "test_feat10_piston_pump_cylindrical",
     srcs = ["test_feat10_piston_pump_cylindrical.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/solvers:FEAT10ConstraintManager",
         "//lib_src/elements:FEAT10Data",
@@ -85,5 +69,9 @@ cc_binary(
         "//lib_utils:cpu_utils",
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )

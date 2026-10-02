@@ -1,0 +1,15 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "vehicles",
+    source = "//src/compatibility/chrono:src/demos/python/vsg/demo_VSG_vehicles.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":vehicles"], tags = ["manual", "original-python-demos"])

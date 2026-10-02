@@ -181,8 +181,8 @@ using namespace chrono::sensor;
   %shared_ptr(chrono::sensor::PixelDepth)
   %shared_ptr(chrono::sensor::PixelSemantic)
 
-  %shared_ptr(chrono::sensor::LidarBufferT)
-  %shared_ptr(chrono::sensor::RadarBufferT)
+  // Concrete lidar buffer specializations are registered below.
+  // Concrete radar buffer specializations are registered below.
 
   %shared_ptr(chrono::sensor::SensorBufferT<std::shared_ptr<chrono::sensor::PixelXYZI[]>>)
   %shared_ptr(chrono::sensor::SensorBufferT<std::shared_ptr<chrono::sensor::PixelDI[]>>)

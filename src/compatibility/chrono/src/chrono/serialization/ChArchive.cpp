@@ -64,7 +64,8 @@ void ChArchiveOut::out_version(int mver, const std::type_index mtypeid) {
         std::replace(class_name.begin(), class_name.end(), ' ', '_');
         // avoid issues with FMU variable naming format
         std::replace(class_name.begin(), class_name.end(), ':', '_');
-        this->out(ChNameValue<int>(("_version_" + class_name).c_str(), mver));
+        this->out(ChNameValue<int>(("_version_" + class_name).c_str(), mver, 0,
+                                 ChCausalityType::local, ChVariabilityType::constant));
     }
 }
 

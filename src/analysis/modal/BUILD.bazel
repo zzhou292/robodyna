@@ -1,0 +1,41 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+_SOURCE = "//src/compatibility/chrono:src/chrono_modal/"
+
+# Original CMake implementation list; no modal solver is reimplemented here.
+cc_library(
+    name = "modal",
+    srcs = [_SOURCE + name + ".cpp" for name in [
+        "ChModalAssembly", "ChModalDamping", "ChSymGenEigenvalueSolver",
+        "ChModalSolverUndamped", "ChGeneralizedEigenvalueSolver",
+        "ChUnsymGenEigenvalueSolver", "ChModalSolver", "ChModalSolverDamped",
+        "ChKrylovSchurEig",
+    ]],
+    hdrs = [_SOURCE + name + ".h" for name in [
+        "ChApiModal", "ChModalAssembly", "ChModalDamping",
+        "ChGeneralizedEigenvalueSolver", "ChSymGenEigenvalueSolver",
+        "ChModalSolverUndamped", "ChUnsymGenEigenvalueSolver",
+        "ChModalSolverDamped", "ChModalSolver", "ChKrylovSchurEig",
+    ]],
+    deps = ["//build_defs/chrono:native_core_fea", "@spectra//:spectra"],
+    local_defines = ["CH_API_COMPILE_MODAL"],
+    copts = ["-O3", "-fPIC"],
+    tags = ["manual", "native-modal", "cpu-only"],
+)
+
+cc_library(
+    name = "irrlicht",
+    hdrs = [_SOURCE + "ChModalVisualSystemIrrlicht.h"],
+    deps = [":modal", "//src/visualization/irrlicht:irrlicht"],
+    tags = ["manual", "native-visualization"],
+)
+
+cc_test(
+    name = "curved_beam_test",
+    srcs = ["//src/compatibility/chrono:src/tests/unit_tests/modal/utest_MOD_curved_beam.cpp"],
+    deps = [":modal"],
+    size = "medium",
+    tags = ["manual", "original-test", "cpu-only"],
+)

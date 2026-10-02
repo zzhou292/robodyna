@@ -1,0 +1,119 @@
+{
+  "schema": "robodyna.parser_source_inventory.v1",
+  "import": "a5ec9bf5463d7c5ef98817a23051fa07fc0a8a38",
+  "scope": "Original parser module sources, unchanged in this target-ownership batch. Main functions counted separately.",
+  "files": [
+    {
+      "path": "src/chrono_parsers/ChApiParsers.h",
+      "sha256": "8ae4c066f0b2a3f955502ab1a14a0dd94073b0244fb9061081aeab5809480302"
+    },
+    {
+      "path": "src/chrono_parsers/ChConfigParsers.h.in",
+      "sha256": "a9ad05484cd51dd9ac75c794aa8cc5c306608f8cde5e1fc13564b5257a626e79"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserAdams.cpp",
+      "sha256": "35f3787224a403a4b387f73ff7f77d24f5c21862b201112a36fea26b8bb433f8"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserAdams.h",
+      "sha256": "a0aebdaf9efd3535437eeee29dfbde92e26daa7c0b5c9d704cc0aa2af593683b"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserAdamsTokenizer.yy.cpp",
+      "sha256": "2f17cc68e7b48fc40a8c866e25dd00d5c59b217f4958d0725a88bc1f6d215994"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserOpenSim.cpp",
+      "sha256": "0c84ac261c423fdc7e8bc69c1ce6e76c9c9cbc670042120b697e4731417a591a"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserOpenSim.h",
+      "sha256": "0cf40e4f656dc5d574abfb3cc2b94f7eadc9ea9dcbc24bd24f282c0e7bb16bd4"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserPython.cpp",
+      "sha256": "95c887aabe2220ab29dd31e3b50de22054b8e4978e3970814d933d4cfa851ef7"
+    },
+    {
+      "path": "src/chrono_parsers/ChParserPython.h",
+      "sha256": "d0b5949ed07b9de92eddaa7d75e76ddbee708f956b24afd4fbc7ad3082a9fb7f"
+    },
+    {
+      "path": "src/chrono_parsers/ChSwigutils.h",
+      "sha256": "d63652f247c5bc62b0bde2f06ab59f7bc68eb3b0d93816759c4aa338d3c16f79"
+    },
+    {
+      "path": "src/chrono_parsers/urdf/ChParserURDF.cpp",
+      "sha256": "91ae937ca34af7a454edce170f03d63f64b56369a1afb6e21f89397c890418f7"
+    },
+    {
+      "path": "src/chrono_parsers/urdf/ChParserURDF.h",
+      "sha256": "506c84b584d65960541a2819148a6bcd5ec2ebc20d8447e57b25a5bd0df33da4"
+    },
+    {
+      "path": "src/chrono_parsers/urdf/ChParserURDFVisualizationVSG.cpp",
+      "sha256": "02114242148f2b215ad746a3e69f048dca5dcea03c753068aefdb1d794db98f4"
+    },
+    {
+      "path": "src/chrono_parsers/urdf/ChParserURDFVisualizationVSG.h",
+      "sha256": "0c0a52c1a06a1c9226151659688a423deb9bc06abf0a7ea895d32f22ce72d7ad"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserCfdYAML.cpp",
+      "sha256": "8b53cc1e8d1bc472e5046448fb40822a4fbbc606c8868ff11ea2f613454cbda4"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserCfdYAML.h",
+      "sha256": "355201e6544eb6523400e7a4d98185b6b0825dab3a92b89a35a3c8498ce07d16"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserFsiYAML.cpp",
+      "sha256": "7442a9c29c63d3122a8fb1036a4581425f1fa7c6424bd7f46586a342ef286437"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserFsiYAML.h",
+      "sha256": "7ac02bfb3aa198ace6979792d4d305935184f3119c338ff320b9de9f89e530cc"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserMbsYAML.cpp",
+      "sha256": "fe4b1fe4957bf81635b08ef2834f53ad87fd8156bca4502a34268409c680f09b"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserMbsYAML.h",
+      "sha256": "4269e6b3eed538b978a49d043598828f0438d578d787e91f6dcfb95095505cef"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserSphYAML.cpp",
+      "sha256": "2848bf4afa21d669aaa83f6fffc40ef07d1c8031f2006422e92cbc85a7da3601"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserSphYAML.h",
+      "sha256": "9c11448b9c751337a92ff4182f30c6702f5c71cff336212911f2ffb79b0dfe79"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserTdpfYAML.cpp",
+      "sha256": "bdcc7e77f184d478e683c505bc8e7168a85f0f2ca429419231b1d1740a3f36e8"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserTdpfYAML.h",
+      "sha256": "997191de63862d0bc7b3d5e2372a7b778132fc9893411657d16d2a61e40429e8"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserVehicleYAML.cpp",
+      "sha256": "e3854327adec37ce2c37841d92af5442efbff44c83377d37f74ba30f2b7b9d63"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserVehicleYAML.h",
+      "sha256": "2444bc268bc4713e8cffd2ab7b9338c6b4d21a2e8ca7ee3450f6b66c551ae266"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserYAML.cpp",
+      "sha256": "cf609ee05718642e6802b90279f77f08976d1f3e6f477b09709bb5c44ce30bfd"
+    },
+    {
+      "path": "src/chrono_parsers/yaml/ChParserYAML.h",
+      "sha256": "389653387446990520ea6588ea3affffd480857198c9850aef29846dd3068bbd"
+    }
+  ]
+}

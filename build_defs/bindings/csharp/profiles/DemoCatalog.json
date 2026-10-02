@@ -1,0 +1,40 @@
+{
+  "schema": "robodyna.managed_optional_demo_catalog.v1",
+  "status": "authored_generation_build_and_runtime_pending",
+  "scope": "Four original main programs, not substitute demonstrations. Declared profile packages use actual shared native owners.",
+  "programs": [
+    {
+      "source": "src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_VSG.cs",
+      "source_sha256": "024433fbcac5b38da585cabdce2487e3eb7ccbf5524826cd17f3a51fd31012dc",
+      "target": "//examples/csharp/vehicle/opencrg:road_course",
+      "configuration": [
+        "--config=opencrg"
+      ]
+    },
+    {
+      "source": "src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_IRR.cs",
+      "source_sha256": "0b29061609493c10387b9c0b5e0409c923a34a0ddf6fbd7869e04aa5011c1558",
+      "target": "//examples/csharp/vehicle/opencrg:road_course_alternate",
+      "configuration": [
+        "--config=opencrg"
+      ]
+    },
+    {
+      "source": "src/demos/csharp/sensor/demo_CS_SEN_camera.cs",
+      "source_sha256": "a3af24b01a9573af647b3b0443b16e8c781077a2c950da1efb7d8b60e6d06234",
+      "target": "//examples/csharp/sensor:camera",
+      "configuration": [
+        "--config=sensor-optix"
+      ]
+    },
+    {
+      "source": "src/demos/csharp/ros/demo_CS_ROS_sensor.cs",
+      "source_sha256": "fa08f0efb4dfaac82d8c5a288084ff522ea55bea1bebbf3f223aa0a84a09fcf9",
+      "target": "//examples/csharp/ros:sensor_bridge",
+      "configuration": [
+        "--config=sensor-optix",
+        "--config=ros-sensor"
+      ]
+    }
+  ]
+}

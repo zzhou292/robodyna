@@ -1,0 +1,120 @@
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "gator_acceleration",
+    assembly_name = "Robodyna.Vehicle.GatorAcceleration.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_Gator_Accel.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "hmmwv_mesh_terrain",
+    assembly_name = "Robodyna.Vehicle.HmmwvMeshTerrain.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_HMMWV_MeshTerrain.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "hmmwv_rollover",
+    assembly_name = "Robodyna.Vehicle.HmmwvRollover.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_HMMWV_Rollover.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "kraz_closed_loop",
+    assembly_name = "Robodyna.Vehicle.KrazClosedLoop.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_Kraz_ClosedLoop.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "kraz_open_loop",
+    assembly_name = "Robodyna.Vehicle.KrazOpenLoop.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_Kraz_OpenLoop.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "wheeled_rigid_terrain",
+    assembly_name = "Robodyna.Vehicle.WheeledRigidTerrain.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_RigidTerrain_WheeledVehicle.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "uaz_bus",
+    assembly_name = "Robodyna.Vehicle.UazBus.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_UAZBUS.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "wheeled_json",
+    assembly_name = "Robodyna.Vehicle.WheeledJson.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_WheeledJSON.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "vehicle_paths",
+    assembly_name = "Robodyna.Vehicle.VehiclePaths.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/vehicle/demo_CS_VEH_paths.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+# Compiles the original entry points; does not launch unbounded GUI loops.
+filegroup(
+    name = "assemblies",
+    srcs = [
+        ":gator_acceleration",
+        ":hmmwv_mesh_terrain",
+        ":hmmwv_rollover",
+        ":kraz_closed_loop",
+        ":kraz_open_loop",
+        ":wheeled_rigid_terrain",
+        ":uaz_bus",
+        ":wheeled_json",
+        ":vehicle_paths",
+    ],
+    tags = ["manual"],
+)

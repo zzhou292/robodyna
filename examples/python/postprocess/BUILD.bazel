@@ -1,0 +1,23 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "povray1",
+    source = "//src/compatibility/chrono:src/demos/python/postprocess/demo_POST_povray1.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "povray2",
+    source = "//src/compatibility/chrono:src/demos/python/postprocess/demo_POST_povray2.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":povray1", ":povray2"], tags = ["manual", "original-python-demos"])

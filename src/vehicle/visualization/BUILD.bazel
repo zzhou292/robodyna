@@ -1,0 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load(":sources.bzl", "VISUALIZATION_GROUPS")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl"])
+
+cc_library(
+    name = "vsg",
+    srcs = ["//src/compatibility/chrono:" + path for path in VISUALIZATION_GROUPS["vsg"]["sources"]],
+    hdrs = ["//src/compatibility/chrono:" + path for path in VISUALIZATION_GROUPS["vsg"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [
+        "//src/vehicle:vehicle",
+        "//build_defs/chrono/vsg:vsg",
+        "//src/compatibility/chrono:native_scm_vsg",
+    ],
+    local_defines = ["CH_API_COMPILE_VEHICLE"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-vehicle", "vulkan-rendering"],
+)
+
+cc_library(
+    name = "irrlicht",
+    srcs = ["//src/compatibility/chrono:" + path for path in VISUALIZATION_GROUPS["irrlicht"]["sources"]],
+    hdrs = ["//src/compatibility/chrono:" + path for path in VISUALIZATION_GROUPS["irrlicht"]["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/vehicle:vehicle", "//src/visualization/irrlicht:irrlicht"],
+    local_defines = ["CH_API_COMPILE_VEHICLE"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-vehicle", "irrlicht-rendering"],
+)

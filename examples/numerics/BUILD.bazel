@@ -1,0 +1,17 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+# Original sparse-engine entry point, including null-pivot handling. Building
+# this target does not execute it or substitute another factorization backend.
+robodyna_cpp_demo(
+    name = "mumps_engine",
+    srcs = ["//src/compatibility/chrono:src/demos/mumps/demo_MUMPS_MumpsEngine.cpp"],
+    features = ["mumps"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":mumps_engine"],
+    tags = ["manual"],
+)

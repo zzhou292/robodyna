@@ -1,0 +1,97 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: irrlicht
+Homepage: https://irrlicht.sourceforge.io
+Files-Excluded:
+# Windows binaries
+	bin/Win32-VisualStudio
+	bin/Win64-VisualStudio
+	tools/IrrFontTool/oldFontTool/IrrFontTool.exe
+# embedded libs (we use system ones)
+	source/Irrlicht/bzip2
+	source/Irrlicht/libpng
+	source/Irrlicht/zlib
+	source/Irrlicht/jpeglib
+	source/Irrlicht/lzma
+# we build it ourselves!
+	doc/html
+
+Files: *
+Copyright: 2002-2012 Nikolaus Gebhardt
+	   2002-2012 Thomas Alten
+	   2006-2012 Luke Hoschke
+	   2002-2012 Christian Stehno
+	   2005-2008 Etienne Petitjean
+	   2006-2012 Michael Zeilfelder
+	   2006-2009 Kat'Oun
+	   2002-2008 Saurav Mohapatra
+	   2004-2005 Murphy McCauley
+	   2002-2008 ZDimitor
+	   2002-2009 Anders la Cour-Harbo
+	   2002-2008 Salvatore Russo
+	   2002-2009 Fabio Concas
+	   2005      A. Buschhueter
+	   2002-2008 Jonas Petersen
+	   2002-2008 William Finlayson
+	   2002-2008 Michael Zoech
+	   2002-2008 Spintz
+	   2007-2012 Dean Wadsworth
+	   2006-2009 Burningwater
+	   2009      Reinhard Ostermeier
+	   2009-2012 Gary Conway
+	   2002-2012 Gaz Davidson
+	   2006-2009 Asger Feldthaus
+	   2008      Neil Burlock
+License: zlib/libpng
+
+Files: source/Irrlicht/CImageLoaderDDS.cpp
+Copyright: 2003      Randy Reddig
+	   2002-2012 Thomas Alten
+License: zlib/libpng
+
+Files: source/Irrlicht/CCgMaterialRenderer.cpp
+       source/Irrlicht/CD3D9CgMaterialRenderer.cpp
+       source/Irrlicht/COpenGLCgMaterialRenderer.cpp
+       source/Irrlicht/COpenGLCgMaterialRenderer.h
+Copyright: 2012 Patryk Nadrowski
+License: zlib/libpng
+
+Files: source/Irrlicht/CDMFLoader.cpp source/Irrlicht/CDMFLoader.h source/Irrlicht/dmfsupport.h
+Copyright: 2005 Salvatore Russo
+License: zlib/libpng
+
+Files: source/Irrlicht/aesGladman/*
+Copyright: 2002-2003 Dr Brian Gladman
+License: GPL
+
+Files: include/irrMap.h
+Copyright: 2006-2012 Kat'Oun
+License: zlib/libpng
+
+Files: debian/*
+Copyright: 2009      Christoph Egger <debian@christoph-egger.org>
+	   2013-2014 Vincent Cheng <vcheng@debian.org>
+	   2021      Julien Puydt <jpuydt@debian.org>
+License: zlib/libpng
+
+License: zlib/libpng
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ .
+ 1. The origin of this software must not be misrepresented; you must not
+ claim that you wrote the original software. If you use this software
+ in a product, an acknowledgment in the product documentation would be
+ appreciated but is not required.
+ .
+ 2. Altered source versions must be plainly marked as such, and must not be
+ misrepresented as being the original software.
+ .
+ 3. This notice may not be removed or altered from any source distribution.
+
+License: GPL
+ On Debian GNU/Linux systems, the complete text of the GNU General Public
+ License can be found in `/usr/share/common-licenses/GPL'

@@ -37,18 +37,35 @@ def tree_files(repo, tree):
 
 
 def literal_bazel_targets(repo, prefix):
-    """Inspect real cc_binary/cc_test srcs, excluding exports and data-only groups."""
+    """Inspect native rules and the owned demo macro, excluding data-only groups."""
     result = collections.defaultdict(list)
     names = git(repo, 'ls-files', '-c', '-o', '--exclude-standard', '-z').decode().split('\0')
     for name in sorted(set(names)):
         if (not name.endswith('BUILD.bazel') or name.startswith('src/fea/legacy/')
                 or not (repo / name).is_file()):
             continue
-        for node in ast.parse((repo / name).read_text()).body:
+        statements = ast.parse((repo / name).read_text()).body
+        demo_macros = set()
+        for node in statements:
+            if (not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call)
+                    or not isinstance(node.value.func, ast.Name) or node.value.func.id != 'load'):
+                continue
+            call = node.value
+            if (not call.args or not isinstance(call.args[0], ast.Constant)
+                    or call.args[0].value != '//build_defs/examples:defs.bzl'):
+                continue
+            for argument in call.args[1:]:
+                if isinstance(argument, ast.Constant) and argument.value == 'robodyna_cpp_demo':
+                    demo_macros.add(argument.value)
+            for argument in call.keywords:
+                if isinstance(argument.value, ast.Constant) and argument.value.value == 'robodyna_cpp_demo':
+                    demo_macros.add(argument.arg)
+        for node in statements:
             if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
                 continue
             call = node.value
-            if not isinstance(call.func, ast.Name) or call.func.id not in ('cc_binary', 'cc_test'):
+            if (not isinstance(call.func, ast.Name)
+                    or call.func.id not in {'cc_binary', 'cc_test'} | demo_macros):
                 continue
             attrs = {kw.arg: kw.value for kw in call.keywords}
             if 'name' not in attrs or 'srcs' not in attrs:
@@ -58,7 +75,8 @@ def literal_bazel_targets(repo, prefix):
                 if isinstance(value, ast.Constant) and isinstance(value.value, str):
                     marker = '//' + prefix + ':'
                     if value.value.startswith(marker):
-                        result[value.value[len(marker):]].append(dict(target=target, rule=call.func.id,
+                        rule = 'cc_binary' if call.func.id in demo_macros else call.func.id
+                        result[value.value[len(marker):]].append(dict(target=target, rule=rule,
                                                                     declaration=name, line=node.lineno))
     return result
 

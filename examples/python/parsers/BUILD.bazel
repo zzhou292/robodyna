@@ -1,0 +1,23 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "python_solid_works",
+    source = "//src/compatibility/chrono:src/demos/python/parsers/demo_PARSER_Python_SolidWorks.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":python_solid_works"], tags = ["manual", "original-python-demos"])
+
+robodyna_python_demo(
+    name = 'urdf',
+    source = '//src/compatibility/chrono:src/demos/python/parsers/demo_PARSER_URDF.py',
+    helpers = [],
+    package = "//bindings/python/profiles:parsers",
+    manifest = "//bindings/python/profiles:parsers_manifest",
+)

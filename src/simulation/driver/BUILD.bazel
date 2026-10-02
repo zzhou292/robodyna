@@ -9,7 +9,8 @@ py_library(
             "manifests.py", "receipts.py", "runtime.py", "sources.py", "watchdog.py",
             "rendering/__init__.py", "rendering/assets.py", "rendering/config.py", "rendering/inputs.py", "rendering/integrity.py",
             "rendering/pipeline.py", "rendering/stages.py", "rendering/worker.py"],
-    deps = ["//src/compatibility/app:python_io", "//src/compatibility/app:python_video", "@rules_python//python/runfiles"],
+    deps = ["//src/compatibility/app:python_io", "//src/compatibility/app:python_video", "@rules_python//python/runfiles",
+            "//tools/dependencies:cuda_math_library"],
     data = ["@legacy_fea//tools:bounded_guard_runtime"],
 )
 

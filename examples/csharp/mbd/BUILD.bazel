@@ -1,0 +1,48 @@
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "smooth_contact_ball",
+    assembly_name = "Robodyna.Mbd.SmoothContactBall.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/mbs/demo_CS_MBS_ballSMC.cs"],
+    deps = ["//build_defs/bindings/optional:managed_visual"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "earthquake",
+    assembly_name = "Robodyna.Mbd.Earthquake.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/mbs/demo_CS_MBS_earthquake.cs"],
+    deps = ["//build_defs/bindings/optional:managed_visual"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+managed_assembly(
+    name = "bushing_links",
+    assembly_name = "Robodyna.Mbd.BushingLinks.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/mbs/demo_CS_MBS_link_bushing.cs"],
+    deps = ["//build_defs/bindings/optional:managed_visual"],
+    defines = ["CHRONO_VSG"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-demo"],
+)
+
+# Compiles the original entry points; does not launch unbounded GUI loops.
+filegroup(
+    name = "assemblies",
+    srcs = [
+        ":smooth_contact_ball",
+        ":earthquake",
+        ":bushing_links",
+    ],
+    tags = ["manual"],
+)

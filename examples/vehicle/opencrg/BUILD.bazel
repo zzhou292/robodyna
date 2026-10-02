@@ -1,0 +1,45 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "crg_terrain_vsg",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_CRGTerrain_VSG.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/opencrg:terrain",
+        "//examples/vehicle:wheeled_models_headers",
+    ],
+    features = ["vehicle", "vsg", "postprocess"],
+    tags = ["native-profile-demo", "opencrg"],
+)
+
+robodyna_cpp_demo(
+    name = "test_cornering",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_Cornering.cpp"],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/opencrg:terrain",
+        "//examples/vehicle:wheeled_models_headers",
+    ],
+    features = ["vehicle", "vsg", "postprocess"],
+    tags = ["native-profile-demo", "opencrg"],
+)
+
+robodyna_cpp_demo(
+    name = "test_feda_ride",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_FEDA_Ride.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/opencrg:terrain"],
+    features = ["vehicle", "vsg", "postprocess"],
+    tags = ["native-profile-demo", "opencrg"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":crg_terrain_vsg", ":test_cornering", ":test_feda_ride"],
+    tags = ["manual", "native-demo-group"],
+)

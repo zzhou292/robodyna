@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Robodyna explicit demo compile matrix",
+  "type": "object",
+  "required": [
+    "schema",
+    "expected_sources",
+    "known_configs",
+    "cuda_arch_configs",
+    "sdk_sets",
+    "batches"
+  ],
+  "properties": {
+    "schema": {
+      "const": "robodyna.demo_build_matrix.v1"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "expected_sources": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "known_configs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "cuda_arch_configs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "config_implies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "sdk_sets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^ROBODYNA_[A-Z0-9_]+$"
+        }
+      }
+    },
+    "batches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "families",
+          "targets",
+          "configs",
+          "compiler_workers"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]+$"
+          },
+          "families": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "native_demo",
+                "native_template",
+                "cuda_demo",
+                "python_demo",
+                "csharp_demo",
+                "application"
+              ]
+            }
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^//"
+            }
+          },
+          "exclude": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "configs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "cuda": {
+            "type": "boolean"
+          },
+          "sdk_sets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sdk_env": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ROBODYNA_[A-Z0-9_]+$"
+            }
+          },
+          "compiler_workers": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "prerequisite_targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^//[^:]+:[^*]+$"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "families": {
+                  "contains": {
+                    "enum": [
+                      "python_demo",
+                      "csharp_demo"
+                    ]
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "compiler_workers": {
+                  "maximum": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

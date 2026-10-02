@@ -1,0 +1,26 @@
+[
+  {
+    "name": "tinyxml2.txt",
+    "source": "https://codeload.github.com/leethomason/tinyxml2/tar.gz/9148bdf719e997d1f474be6bcc7943881046dba1",
+    "source_member": "tinyxml2-9148bdf719e997d1f474be6bcc7943881046dba1/LICENSE.txt",
+    "sha256": "9332252e9b9e46db8285d4a3f0bf25f139bf1dca6781b956d57f2302efca6432"
+  },
+  {
+    "name": "console_bridge.txt",
+    "source": "https://codeload.github.com/ros/console_bridge/tar.gz/0828d846f2d4940b4e2b5075c6c724991d0cd308",
+    "source_member": "console_bridge-0828d846f2d4940b4e2b5075c6c724991d0cd308/LICENSE",
+    "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8"
+  },
+  {
+    "name": "urdfdom_headers.txt",
+    "source": "https://codeload.github.com/ros/urdfdom_headers/tar.gz/7b1b3a44509985b953526dcd1fffacd3b2f92615",
+    "source_member": "urdfdom_headers-7b1b3a44509985b953526dcd1fffacd3b2f92615/LICENSE",
+    "sha256": "691230016abaee7fc1f685d49632d762a45bb55c5c3d0f805ba950ec53fd189a"
+  },
+  {
+    "name": "urdfdom.txt",
+    "source": "https://codeload.github.com/ros/urdfdom/tar.gz/3f6bf9a608065464bb6c2828af6e96c8f577f2bf",
+    "source_member": "urdfdom-3f6bf9a608065464bb6c2828af6e96c8f577f2bf/LICENSE",
+    "sha256": "691230016abaee7fc1f685d49632d762a45bb55c5c3d0f805ba950ec53fd189a"
+  }
+]

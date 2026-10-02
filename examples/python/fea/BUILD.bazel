@@ -1,0 +1,119 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "beams",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_beams.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "beams_ancf",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_beamsANCF.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "beams_iga",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_beamsIGA.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "beams_constr",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_beams_constr.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "beams_rotor",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_beams_rotor.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "cables",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_cables.py",
+    helpers = ["//src/compatibility/chrono:src/demos/python/fea/cables.py"],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "contacts",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_contacts.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "loads_dynamic",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_loads_dynamic.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "loads_static",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_loads_static.py",
+    helpers = [],
+    package = "//bindings/python:core_fea_package",
+    manifest = "//bindings/python:core_fea_package_manifest",
+)
+
+robodyna_python_demo(
+    name = "shells_ancf",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_shellsANCF.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "shells_bst",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_shellsBST.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "tetra",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_tetra.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":beams", ":beams_ancf", ":beams_iga", ":beams_constr", ":beams_rotor", ":cables", ":contacts", ":loads_dynamic", ":loads_static", ":shells_ancf", ":shells_bst", ":tetra"], tags = ["manual", "original-python-demos"])
+
+robodyna_python_demo(
+    name = "brick",
+    source = "//src/compatibility/chrono:src/demos/python/fea/demo_FEA_brick.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = 'shells',
+    source = '//src/compatibility/chrono:src/demos/python/fea/demo_FEA_shells.py',
+    helpers = [],
+    package = "//bindings/python/plot:package",
+    manifest = "//bindings/python/plot:manifest",
+)

@@ -1,0 +1,52 @@
+{
+  "schema": "robodyna.vehicle_optional_sources.v1",
+  "baseline_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "scope": "Exact retained optional terrain, wheel-rig and road inputs; source algorithms unchanged.",
+  "files": [
+    {
+      "path": "src/chrono_vehicle/CMakeLists.txt",
+      "bytes": 42409,
+      "sha256": "280604b83c26870e5546b224199891e2fbddd8429612f381be112486c7cb8c47"
+    },
+    {
+      "path": "src/chrono_vehicle/ChConfigVehicle.h.in",
+      "bytes": 1205,
+      "sha256": "c478cac948615508ec679c51c5f459f40d2dafc930525c6c61e6b343b67d6592"
+    },
+    {
+      "path": "src/chrono_vehicle/terrain/CRMTerrain.cpp",
+      "bytes": 8191,
+      "sha256": "97cb5e945e01c672069bf47ebfa57a208fe8892f6dff5696d88b5e052a3b7e38"
+    },
+    {
+      "path": "src/chrono_vehicle/terrain/CRMTerrain.h",
+      "bytes": 5226,
+      "sha256": "bb4ae577dc5b425aacc505b58c84a937cfa9f3817b5e56a55e9ee5e40a999f73"
+    },
+    {
+      "path": "src/chrono_vehicle/terrain/CRGTerrain.cpp",
+      "bytes": 22474,
+      "sha256": "1a86536984d7038ca3b936ca2423731b85675b34ff891067093fab24121400c1"
+    },
+    {
+      "path": "src/chrono_vehicle/terrain/CRGTerrain.h",
+      "bytes": 7731,
+      "sha256": "03388ce9f7d92708684cbbcdd2ab4fb23c7d83bbdb12920082423d43d72e2287"
+    },
+    {
+      "path": "src/chrono_vehicle/wheeled_vehicle/test_rig/ChWheelTestRig.cpp",
+      "bytes": 38236,
+      "sha256": "e2746841ee02ec8fa234add220670021c104a00336bb2860f1c16a101797450c"
+    },
+    {
+      "path": "src/chrono_vehicle/wheeled_vehicle/test_rig/ChWheelTestRig.h",
+      "bytes": 26479,
+      "sha256": "036c5ffcdd79704a396c98750a77aa2dc0f9d67b69388cffbe3ec7a093ecdc25"
+    },
+    {
+      "path": "data/vehicle/terrain/crg_roads/handmade_straight.crg",
+      "bytes": 5923,
+      "sha256": "88ad7207a7b5dcf7e79e2141f9f27c7064ae523a23a461a9569d5011c86f895a"
+    }
+  ]
+}

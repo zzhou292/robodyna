@@ -1,0 +1,37 @@
+{
+  "schema": "robodyna.precice_programs.v1",
+  "programs": [
+    {
+      "source": "src/compatibility/chrono/src/demos/precice/demo_PRECICE_sphere_drop.cpp",
+      "target": "//examples/coupling/precice:sphere_drop",
+      "required_profiles": [
+        "yaml",
+        "fsi-sph"
+      ],
+      "external_participant": "original buoyancy example or real SPH",
+      "qualification": "pending",
+      "sha256": "07939d10f163477a981091f5f3f3b9fbd96795c0aa1c3a5dc45a3c6c584935d0"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/precice/demo_PRECICE_flap_openfoam.cpp",
+      "target": "//examples/coupling/precice:flap_openfoam",
+      "required_profiles": [
+        "yaml"
+      ],
+      "external_participant": "OpenFOAM + its preCICE adapter",
+      "qualification": "pending",
+      "sha256": "3c4a548b5de9662404717a8fdb67d46dbd9dd7d7300ad23c4206351922b67804"
+    },
+    {
+      "source": "src/compatibility/chrono/src/chrono_precice/yaml_app/run_chrono_adapter.cpp",
+      "target": "//apps/precice:run_adapter",
+      "required_profiles": [
+        "yaml"
+      ],
+      "external_participant": "configured preCICE peer",
+      "qualification": "pending",
+      "classification": "retained application, outside demos tree",
+      "sha256": "d0cbc05e6ec1d5bbfb274245d318ac92986965eaff12be25d7e293d886ba847c"
+    }
+  ]
+}

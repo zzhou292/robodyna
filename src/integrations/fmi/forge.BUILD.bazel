@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Exact pinned fmu-forge source, including its bundled header-only dependencies.
+# Its bundled prebuilt fmusim executables are not used by these native targets.
+cc_library(
+    name = "headers",
+    hdrs = glob(["*.h", "*.hpp", "fmi2/**/*.h", "fmi3/**/*.h", "rapidxml/*.hpp", "variant/*.hpp", "miniz-cpp/*.hpp"]),
+    includes = ["."],
+    linkopts = ["-ldl"],
+)
+
+cc_binary(
+    name = "model_description",
+    srcs = ["FmuForgeModelDescription.cpp"],
+    deps = [":headers"],
+    linkopts = ["-ldl"],
+    target_compatible_with = ["@platforms//os:linux"],
+)
+
+exports_files([
+    "LICENSE", "variant/LICENSE.md", "rapidxml/license.txt", "miniz-cpp/zip_file.hpp",
+    "fmi2/FmuForgeExport.cpp", "fmi3/FmuForgeExport.cpp",
+    "fmi2/CMakeLists.txt", "fmi3/CMakeLists.txt",
+])

@@ -1,0 +1,6 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_library(name = "cuda_math_library", srcs = ["cuda_math.py"], visibility = ["//visibility:public"])
+py_library(name = "cmake_sdk_library", srcs = ["cmake_sdk.py"], deps = [":cuda_math_library"])
+py_binary(name = "cmake_sdk", srcs = ["cmake_sdk.py"], deps = [":cuda_math_library"])
+py_test(name = "cmake_sdk_test", srcs = ["CmakeSdkTest.py"], main = "CmakeSdkTest.py", deps = [":cmake_sdk_library"], size = "small")

@@ -5,6 +5,7 @@ not be used as evidence that FEA and MBD can already link independently.
 """
 
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
 
 _OPTIONAL_MODULES = [
     "CASCADE", "CSHARP", "DEM", "FMI", "FSI", "IRRLICHT", "MODAL",
@@ -98,6 +99,6 @@ def chrono_host_bridge(name, source, compile_jobs = 4):
         # Chrono's archive factory uses registrations in otherwise unreferenced
         # translation units. Keep them until a native explicit registrar exists.
         alwayslink = True,
-        target_compatible_with = ["@platforms//os:linux"],
+        target_compatible_with = ["@platforms//os:linux"] + BASELINE_ABI_ONLY,
         tags = ["manual", "chrono-transition", "cpu-only"],
     )

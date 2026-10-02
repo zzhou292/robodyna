@@ -1,0 +1,24 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "socket",
+    srcs = ["//src/compatibility/chrono:src/demos/cosimulation/demo_COSIM_socket.cpp"],
+)
+
+robodyna_cpp_demo(
+    name = "data_exchange",
+    srcs = ["//src/compatibility/chrono:src/demos/cosimulation/demo_COSIM_data_exchange.cpp"],
+)
+
+robodyna_cpp_demo(
+    name = "hydraulics",
+    srcs = ["//src/compatibility/chrono:src/demos/cosimulation/demo_COSIM_hydraulics.cpp"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":socket", ":data_exchange", ":hydraulics"],
+    tags = ["manual"],
+)

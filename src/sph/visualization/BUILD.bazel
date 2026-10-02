@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//src/sph:sources.bzl", "SPH_VISUAL_HEADERS", "SPH_VISUAL_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+# The retained CUDA profile compiles this adapter with the ordinary C++ compiler.
+# Only the alternative HIP profile changes its source language to HIP.
+cc_library(
+    name = "vsg",
+    srcs = ["//src/compatibility/chrono:" + path for path in SPH_VISUAL_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in SPH_VISUAL_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/sph:sph", "//build_defs/chrono/vsg:vsg"],
+    local_defines = [
+        "CH_API_COMPILE_FSI",
+        "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA",
+        "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP",
+    ],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-sph", "vulkan-rendering"],
+)

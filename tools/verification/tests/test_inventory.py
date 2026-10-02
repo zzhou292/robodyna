@@ -4,10 +4,29 @@ import subprocess
 import tempfile
 import unittest
 
-from tools.verification.chrono_inventory import audit
+from tools.verification.chrono_inventory import audit, literal_bazel_targets
 
 
 class InventoryTest(unittest.TestCase):
+    def test_only_owned_native_demo_macro_is_admitted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(['git', 'init', '-q'], cwd=root, check=True)
+            source = '//src/compatibility/chrono:src/demos/core/demo_A.cpp'
+            for name, declaration in {
+                'owned': 'load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")\nrobodyna_cpp_demo',
+                'aliased': 'load("//build_defs/examples:defs.bzl", demo="robodyna_cpp_demo")\ndemo',
+                'unrelated': 'load("//other:defs.bzl", "robodyna_cpp_demo")\nrobodyna_cpp_demo',
+                'data_only': 'filegroup',
+            }.items():
+                folder = root / name
+                folder.mkdir()
+                (folder / 'BUILD.bazel').write_text(declaration + '(name="sample", srcs=[' + json.dumps(source) + '])\n')
+            records = literal_bazel_targets(root, 'src/compatibility/chrono')
+            rows = records['src/demos/core/demo_A.cpp']
+            self.assertEqual({row['target'] for row in rows}, {'//owned:sample', '//aliased:sample'})
+            self.assertEqual({row['rule'] for row in rows}, {'cc_binary'})
+
     def test_real_git_identity_distinguishes_missing_modified_and_source_only(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)

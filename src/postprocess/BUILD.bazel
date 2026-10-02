@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Header-only plot-script writer. It does not supply a plotting executable.
+cc_library(
+    name = "gnuplot_headers",
+    hdrs = [
+        "//src/compatibility/chrono:src/chrono_postprocess/ChGnuPlot.h",
+        "//src/compatibility/chrono:src/chrono_postprocess/ChApiPostProcess.h",
+    ],
+    deps = ["//build_defs/chrono:native_core_fea"],
+)
+
+# Canonical public module label. The retained source definitions compile once
+# in their declared transition owner; the core dependency is still explicit.
+alias(
+    name = "exporters",
+    actual = "//src/compatibility/chrono:native_postprocess",
+)

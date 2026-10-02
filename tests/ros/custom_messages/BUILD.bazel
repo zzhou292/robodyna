@@ -1,0 +1,28 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+# Intentional test-only co-linkage supplies an independent typed ROS peer. The
+# unchanged production node remains a separate two-source schema-driven process.
+cc_binary(
+    name = "transport_backend",
+    srcs = ["BodyTransportTest.cpp"],
+    deps = ["//src/integrations/ros:simulation", "@ros_interfaces_sdk//:typed_messages", "@googletest//:gtest_main"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "cpu-only", "ros-test-backend"],
+)
+py_test(
+    name = "transport_test",
+    srcs = ["//src/integrations/ros:BridgeTest.py"],
+    main = "//src/integrations/ros:BridgeTest.py",
+    args = ["$(rlocationpath :transport_backend)", "$(rlocationpath //src/integrations/ros:node)",
+            "$(rlocationpath @ros_sdk//:sdk.json)", "$(rlocationpath @ros_interfaces_sdk//:sdk.json)"],
+    data = [":transport_backend", "//src/integrations/ros:node", "@ros_sdk//:runtime", "@ros_sdk//:sdk.json",
+            "@ros_interfaces_sdk//:runtime", "@ros_interfaces_sdk//:sdk.json"],
+    deps = ["@rules_python//python/runfiles", "//tools/ros:environment"],
+    target_compatible_with = ["@platforms//os:linux"],
+    size = "medium",
+    timeout = "moderate",
+    tags = ["manual", "cpu-only", "ros-integration", "local"],
+)

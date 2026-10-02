@@ -1,0 +1,67 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load(":sources.bzl", "ROBOT_MODEL_GROUPS")
+load(":exports.bzl", "ROBOT_SOURCE_EXPORTS")
+load(":ownership.bzl", "robotics_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "exports.bzl", "SourceBaseline.json"])
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for group in ROBOT_MODEL_GROUPS.values() for path in group["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea"],
+)
+
+# The seven retained CMake groups contain sixteen separate translation units.
+# They share the original module symbol closure and exactly one core owner.
+cc_library(
+    name = "models",
+    srcs = ["//src/compatibility/chrono:" + path for group in ROBOT_MODEL_GROUPS.values() for path in group["sources"]],
+    deps = [":headers"],
+    local_defines = ["CH_API_COMPILE_MODELS"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-robot-models", "cpu-dynamics"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)",
+        "$(location //src/compatibility/chrono:src/chrono_models/robot/CMakeLists.txt)",
+        "$(location :SourceBaseline.json)",
+        "$(location //examples/robotics:DemoCatalog.json)",
+        "$(location //examples/robotics:sources.bzl)",
+        "$(location //examples/robotics:BUILD.bazel)",
+    ],
+    data = [
+        ":sources.bzl", ":SourceBaseline.json",
+        "//examples/robotics:DemoCatalog.json", "//examples/robotics:sources.bzl",
+        "//examples/robotics:BUILD.bazel",
+    ] + ["//src/compatibility/chrono:" + path for path in ROBOT_SOURCE_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+robotics_ownership_test(
+    name = "ownership_test",
+    models = ":models",
+    lander = "//examples/robotics:lander_model",
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_test(
+    name = "host_module_test",
+    srcs = ["HostModuleTest.cpp"],
+    deps = [":models", "//include/robodyna/simulation:api", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-robot-models"],
+)

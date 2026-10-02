@@ -1,0 +1,445 @@
+{
+  "schema": "robodyna.retained_fsi_sph_build.v1",
+  "baseline_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "profile": {
+    "backend": "cuda",
+    "sph_real": "float",
+    "splashsurf": false,
+    "fea": true,
+    "vsg": true,
+    "tdpf": false
+  },
+  "scope": "Current retained source bytes before native FSI/SPH build wiring. Original import and rename provenance remains separately preserved.",
+  "files": [
+    {
+      "path": "src/chrono_fsi/CMakeLists.txt",
+      "bytes": 3248,
+      "sha256": "048f1cca884e02db3057bb6a2b3ec685101021ab662c707b48285e6f32df2186"
+    },
+    {
+      "path": "src/chrono_fsi/ChApiFsi.h",
+      "bytes": 3103,
+      "sha256": "5195c409d2d31919a02a688d81377c18b944518c8c54e0c6d8fdaf905a57f584"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiBenchmark.h",
+      "bytes": 5963,
+      "sha256": "055c63e20eb3b0d40d7153cb3fceeddfb00599e5da502903dc1575275b6412b0"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiDefinitions.h",
+      "bytes": 5084,
+      "sha256": "1ca838d504df0edf6b17b39d226e304acc74436e96bbe0ce20b6e26ff4b0688f"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiFluidSystem.cpp",
+      "bytes": 2094,
+      "sha256": "d925fa7e566d298917cdfab46383f199607f961bec2df1334ea65d7a68f94e68"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiFluidSystem.h",
+      "bytes": 7291,
+      "sha256": "51df61ad96101f035a8a6bc22d3d349879243ee9a8de12694bf91ec8be973bed"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiInterface.cpp",
+      "bytes": 23973,
+      "sha256": "ec7f4b37b1136e78a6431b92f5ad445f96f0954d0d0ed73953f31dd71e2ea59a"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiInterface.h",
+      "bytes": 10919,
+      "sha256": "2c716b728a0f05ff1caca5500293350cf20e297127cb9c87ea805c396c75cf3c"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiSystem.cpp",
+      "bytes": 10390,
+      "sha256": "57272feee4662efe3f56d8d276ebbe629cc18f43efe12512532006cb442104c8"
+    },
+    {
+      "path": "src/chrono_fsi/ChFsiSystem.h",
+      "bytes": 10704,
+      "sha256": "c4b0a9e65ed7aa0b8cc0790be7131a0a9f5de2e0e9b64ef55759838baf9d2f4f"
+    },
+    {
+      "path": "src/chrono_fsi/sph/CMakeLists.txt",
+      "bytes": 17239,
+      "sha256": "88af051e8d9ac59131a60342a2e11e0f89be4aa02a8d0d3f985362f88ff826b4"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiConfigSPH.h.in",
+      "bytes": 1351,
+      "sha256": "9da2171f17a7e8a7e74f84b9a304951a2af46a342ef1c08066201cb0ce9f9894"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiDataTypesSPH.h",
+      "bytes": 3111,
+      "sha256": "2750739a073b2ec4c00f3af44466e29295875c503203127de70ad1b399f2db3c"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiDefinitionsSPH.h",
+      "bytes": 6297,
+      "sha256": "0ddbae627ec0eda070ad55f084b0410eb0ab55f1f007d86f34c6eede345982ec"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiFluidSystemSPH.cpp",
+      "bytes": 132298,
+      "sha256": "ffdeaadf101377b527d342b9b59c3da03d87d0a73706cec0b060fc9c58839cc9"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiFluidSystemSPH.h",
+      "bytes": 46082,
+      "sha256": "64ba71c54e38928dbee9f0a9ef5f8327631725a817fcea6a08d1c58089d38356"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiInterfaceSPH.cpp",
+      "bytes": 6448,
+      "sha256": "7e0ba096e1880180bac8906e2a4e574584f986cdbad1b3ad0f8743f3646f380b"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiInterfaceSPH.h",
+      "bytes": 2385,
+      "sha256": "4c7367e239a5d1aa2d27dadf80b21941b879ab64eacd9f10000cb93c7f5569ea"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiParamsSPH.h",
+      "bytes": 11776,
+      "sha256": "68631bcfa6830d38f96be2e07abb11cc6cc15d5c8efd3c83960ff1e8bfd45d11"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiPrintUtilsSPH.h",
+      "bytes": 2270,
+      "sha256": "d04b577461066eec4f29d12c0b20622dc2589b4ecfba62c6efc91a2d776c4148"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiProblemSPH.cpp",
+      "bytes": 55559,
+      "sha256": "4684491164577e8c9add2b790e32f78b57c337e2b84f4a8d789d4f7e53836710"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiProblemSPH.h",
+      "bytes": 28060,
+      "sha256": "99d783d272b65221a69e4653385ef340650dea70999fe02d770401dedb8ac32d"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiSplashsurfSPH.cpp",
+      "bytes": 2596,
+      "sha256": "6d08e902999e7b219f2dfc601f9fa5a2801f6be4c20be1a4aeb01b2f723c7ef9"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiSplashsurfSPH.h",
+      "bytes": 3319,
+      "sha256": "7b38b876fe091e2355ca38a7d9472a1b7856a97c33c5852f3eeca4256e3ae643"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiSystemSPH.cpp",
+      "bytes": 3770,
+      "sha256": "f3bd52df90f931308e273de5f2c91e5a2091cdfc9351037e749c07a6b94ac6b2"
+    },
+    {
+      "path": "src/chrono_fsi/sph/ChFsiSystemSPH.h",
+      "bytes": 4145,
+      "sha256": "daebfedc994e9170a4f08908ab921bca67ddecfc54711dac81c5f576d32d5f5a"
+    },
+    {
+      "path": "src/chrono_fsi/sph/math/SphCustomMath.cuh",
+      "bytes": 49804,
+      "sha256": "3deeee8b8d38ed3735fe4a31c806a59c70b08aecbbedcce33e996310f31f8ddd"
+    },
+    {
+      "path": "src/chrono_fsi/sph/math/SphExactLinearSolvers.cuh",
+      "bytes": 143205,
+      "sha256": "11bbd77a11921729bd6fdea3a9850a3d76f80164cc0172b1dc71186a43906b93"
+    },
+    {
+      "path": "src/chrono_fsi/sph/math/SphLinearSolver.h",
+      "bytes": 3396,
+      "sha256": "4fe218ae9e09bc0eec7708dcb7cff43412b677498e288a1226e44fa38c075c55"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphBceManager.cu",
+      "bytes": 59763,
+      "sha256": "b8f747412077f934621133b02759d599586d697857aef30a17615c25e8523517"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphBceManager.cuh",
+      "bytes": 4047,
+      "sha256": "214f861b4826b51f94de3e1ea006c73de05e38e41d5d98fa0bc9cd100f8c180e"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphCollisionSystem.cu",
+      "bytes": 20612,
+      "sha256": "1eddbb85181dc2c958eaf597ce69154fc5bd7b99cda18be7bdb054b5f9ed9598"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphCollisionSystem.cuh",
+      "bytes": 2641,
+      "sha256": "fa3122548a2cde007bacd50d32ed6b7dcebf766b9f8e4c27e80a1de6f4f6b084"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphDataManager.cu",
+      "bytes": 46624,
+      "sha256": "8bf70b0ba1c44288bf51ad4524ffc0124bf707b271d56a9f4f7c6ada8cc7a245"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphDataManager.cuh",
+      "bytes": 23207,
+      "sha256": "c22c91454204bd62110e469f3d1e9d1d08c7f64d45aaa21b34b583aeee6231cc"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphFluidDynamics.cu",
+      "bytes": 52118,
+      "sha256": "4172c76b3809421d326c1a977de9006a42e412d4ce6515c23f8df71c8647a782"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphFluidDynamics.cuh",
+      "bytes": 5897,
+      "sha256": "ffaebca2763d21fc87ebd8929ed9e9d4678254b479dccd004fe64a1786ab8281"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForce.cu",
+      "bytes": 3248,
+      "sha256": "4418b48a218cba63ce5e1da72e47ce7be9b3d6c91ce473d9dffdb2220ab0060b"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForce.cuh",
+      "bytes": 7322,
+      "sha256": "3059ab51e6351031a3d039379a023e0c2f37910c03c5fa03dabff4f24b2a7056"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForceISPH.cu",
+      "bytes": 64617,
+      "sha256": "0d306453431ede9d454eaff865500150cb495b5762c42fe1462adf2808d3f75e"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForceISPH.cuh",
+      "bytes": 2431,
+      "sha256": "82c0ab4063a89b2c13aa99e51270309ca43cbbc9b955dadfdddcb15af826d906"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForceWCSPH.cu",
+      "bytes": 90232,
+      "sha256": "4a49e155ac3e8e76330ad0b3269bbd07476f39d966626d659653fa2d556f464f"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphForceWCSPH.cuh",
+      "bytes": 2509,
+      "sha256": "9135b1a5c6fc5e17a619635bbae6c7f31c8c4c3931512356bce181f139b92879"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphFsiInterface.cu",
+      "bytes": 4828,
+      "sha256": "6f38cf3f78a85dd7c9b09467fb6f1cdb9d8a986c1401bc5d8f26da8f7ba0d176"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphFsiInterface.cuh",
+      "bytes": 1618,
+      "sha256": "fed06f7e587cfb50d245f7a63ba29f6420ea68f4c4c1c255d047e3352672d722"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphGeneral.cu",
+      "bytes": 30633,
+      "sha256": "8afa8b985c26dd37406b49a2f8ccaa4da1bf97597c746f1711f1ef3cecd164f7"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphGeneral.cuh",
+      "bytes": 24488,
+      "sha256": "044a6cc77785904671757a473643c3c550b5423d42e77bb0d5ef5f11082e7485"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphMarkerType.cuh",
+      "bytes": 3869,
+      "sha256": "332b07bfad2f7b9fc3ded4c347a0975ca3cd925df55eb09903174ec0a02b082f"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphParticleRelocator.cu",
+      "bytes": 7568,
+      "sha256": "ce0fccb04d5a75e7742b408f4906b791f9092ae3bccd145b17248f6c91ac54bc"
+    },
+    {
+      "path": "src/chrono_fsi/sph/physics/SphParticleRelocator.cuh",
+      "bytes": 2156,
+      "sha256": "9ce1cec3863cbaeb9d2a46fffd38e29055f8156d416773ea1cabedef1d14974c"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsDevice.cu",
+      "bytes": 1653,
+      "sha256": "37dd7ffe5a5df8cc7ff9beeb10d31e1cb86e3fe8c3983dce1c0c106fb739d92a"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsDevice.cuh",
+      "bytes": 10945,
+      "sha256": "efffe6aa951092ff7721d74773e9e7d515611946626a03c35a320eb58e11ab04"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsLogging.cuh",
+      "bytes": 14391,
+      "sha256": "861f1fffd7d6eb7a7d6a15e53af90ab48907346d4adcd91abe57c17a1dc873c9"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsPrint.cu",
+      "bytes": 27506,
+      "sha256": "f90c1410e02b82fb6f9b6850b1d8da20a7ddc008ba8f99d66e477f84d552064c"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsPrint.cuh",
+      "bytes": 5248,
+      "sha256": "8a8268074cd2d5aaced65023a49dfebc18de4ec4989121d7e6465627febef2ad"
+    },
+    {
+      "path": "src/chrono_fsi/sph/utils/SphUtilsTypeConvert.cuh",
+      "bytes": 3868,
+      "sha256": "9bdc99bc676c98439676414383d06fb12047e6f0b80a044dbd4fbd55f53606af"
+    },
+    {
+      "path": "src/chrono_fsi/sph/visualization/ChSphVisualizationVSG.cpp",
+      "bytes": 47235,
+      "sha256": "6df53c766ae422e86afd2431ca9174183361ea21642e3021c547c98fd128cb72"
+    },
+    {
+      "path": "src/chrono_fsi/sph/visualization/ChSphVisualizationVSG.h",
+      "bytes": 17896,
+      "sha256": "0b7644b14f824829bd4d88ffb48b228215215f2174331dc0b0aa8616fcfe27c5"
+    },
+    {
+      "path": "src/chrono_thirdparty/stb/stb_image.cpp",
+      "bytes": 56,
+      "sha256": "40bcca3eb0e068d731e636dd0a5111e1fedccc46fdf76d360bea6c3ac31b4477"
+    },
+    {
+      "path": "src/chrono_thirdparty/stb/stb_image_write.cpp",
+      "bytes": 68,
+      "sha256": "69b26e3dedeb42d27a06f58f9022c38eb42794bd482e2c828b1d17afbcd0d652"
+    },
+    {
+      "path": "src/demos/fsi/sph/CMakeLists.txt",
+      "bytes": 1774,
+      "sha256": "4def4127313bb6469becb77a43cb0991f9bfa446705d1d79b17649f8ccd68bdb"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_AngleRepose.cpp",
+      "bytes": 12503,
+      "sha256": "fbdfdadbf8b95f70f58c85d2ce994dd8c1b03549b3dd84e82d96ee9077e70b85"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_BCE.cpp",
+      "bytes": 26998,
+      "sha256": "46e080041813f64ace3713ec6e5c1f26d7a7687a58e5362e3abe66c45a568c72"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_BaffleFlow.cpp",
+      "bytes": 14418,
+      "sha256": "06af90375e6ee91e53c418f7be5fe16c503d512c2cd4be9eb46d43d29b246115"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Compressibility.cpp",
+      "bytes": 7106,
+      "sha256": "156c44de1fd0e54f994c86d1e9158b496ea82e774f42405483f6ec6c998b0243"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Cone_Drop.cpp",
+      "bytes": 31504,
+      "sha256": "0b49ded599134e4712256087e32b2124d77132cbb2e4b40eac9467b35e9a7260"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_CouetteFlow.cpp",
+      "bytes": 15615,
+      "sha256": "aa0003f6563635517b7dc7e3f778c4e98c7d0622b8af9271fd2cada821e5fcdb"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_CylindricalTank.cpp",
+      "bytes": 10273,
+      "sha256": "afb910973754da350504ac3498ecabaf53887c3bccbbdb58156056fdd1e40fc7"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_DamBreak.cpp",
+      "bytes": 10386,
+      "sha256": "64c733e894b67e387a1a3a436dfff60c650d734fe0049a3fcdf555731c15ec28"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_EmbeddedObject.cpp",
+      "bytes": 12151,
+      "sha256": "1d7dc754cadcdaa533162a8c6677000bc3078d9eb280968d75d0bc70b7c439eb"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_FEAdirections.cpp",
+      "bytes": 19189,
+      "sha256": "78e8820f5697d5baec5f9ab330e5a28f01ef68e8b956e56896ba9fa0ec894007"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Cable.cpp",
+      "bytes": 23498,
+      "sha256": "0561e26d2b0ae468d186344b3f5f7b3a7730aca2a107fbf786e149d9ffe7adc6"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Plate.cpp",
+      "bytes": 31292,
+      "sha256": "860944052e48a5423eb61cc20e4529e50f376b9e053161c610d2e501d5e82b1e"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Toroidal_Tire.cpp",
+      "bytes": 19030,
+      "sha256": "e7c5877f8dcda20bf42cc2b524a202ef54a852dec82fd6f93ef08cfbbd437d25"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Kernels.cpp",
+      "bytes": 5275,
+      "sha256": "e0da3a374509bf22c6b175fdb0d1ce98532a8b33a68471b9a2c692fa49073d68"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_ObjectDrop.cpp",
+      "bytes": 18619,
+      "sha256": "453e01f5a8be92556adf9986feb29b26780dfbf41aa0bf1648dacaeb223ec4c1"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_PlateSinkage.cpp",
+      "bytes": 29743,
+      "sha256": "75529c4d673a8ad3588299f2e34f45759eac18e6c10debde39e14544c6a89775"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_Poiseuille_flow.cpp",
+      "bytes": 7494,
+      "sha256": "3139f32b5c919eecdd296edc7ead59cc049fd0dbbb820ec4a8a544ab73e19fe9"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_RassorDrum.cpp",
+      "bytes": 28607,
+      "sha256": "988f590c5d7268c9815a9e4dc536734c8b17d68fc12da32485197bfa0a3b8837"
+    },
+    {
+      "path": "src/demos/fsi/sph/demo_FSI-SPH_WaveTank.cpp",
+      "bytes": 26715,
+      "sha256": "1437e5945717fa7ab12ff4744c667521b6dccf542eec3e83ccfc6f307fc5fd89"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/CMakeLists.txt",
+      "bytes": 1404,
+      "sha256": "45b0834fc5a0c1760955e94538aa44fe384cca599770877adb546b66d4fac198"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/demo_FSI-TDPF_oswec_reg_waves.cpp",
+      "bytes": 9211,
+      "sha256": "6973537eb5f2444815b07d2ca967d6a3c3cbd3966eab274f58d5206aef2a0bff"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/demo_FSI-TDPF_rm3_reg_waves.cpp",
+      "bytes": 9923,
+      "sha256": "984bd2d634674ac5353a362d6f6eb27b28c3987fe99ccbbe83a5e7c091290e5c"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_decay.cpp",
+      "bytes": 7073,
+      "sha256": "9b3eb4a7725014ab899b58ba5908d73f45607f59be364adaa2f07fb80c7eb782"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_irreg_waves.cpp",
+      "bytes": 8408,
+      "sha256": "efdf6343b1fc0d33dc4ddee1c3c50b9376187c691123ad5609fcd53262eb9fb1"
+    },
+    {
+      "path": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_reg_waves.cpp",
+      "bytes": 8570,
+      "sha256": "206bb348aa709e19631a051f7cde428120c92e31af8b84b834d47dca39acdc78"
+    }
+  ]
+}

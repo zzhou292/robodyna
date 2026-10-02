@@ -1,0 +1,73 @@
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "modules_assembly",
+    assembly_name = "Robodyna.ManagedModulesTest.exe",
+    kind = "exe",
+    srcs = ["ManagedModulesTest.cs"],
+    deps = ["//build_defs/bindings/optional:managed_vehicle"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "managed-runtime"],
+)
+
+py_test(
+    name = "runtime_test",
+    srcs = ["RuntimeTest.py"],
+    main = "RuntimeTest.py",
+    deps = ["//tools/managed:launcher"],
+    args = [
+        "--mono", "$(rlocationpath @mono_sdk//:usr/bin/mono-sgen)",
+        "--assembly", "$(rlocationpath :modules_assembly)",
+        "--managed", "$(rlocationpath //build_defs/bindings/optional:managed_vehicle)",
+        "--native-wrapper", "$(rlocationpath //build_defs/bindings/optional:csharp_vehicle)",
+        "--native-core", "$(rlocationpath //build_defs/bindings:native_core)",
+        "--data-anchor", "$(rlocationpath //src/compatibility/chrono:data/logo_robodyna_alpha.png)",
+    ],
+    data = [
+        ":modules_assembly", "//build_defs/bindings/optional:managed_vehicle",
+        "//build_defs/bindings/optional:csharp_vehicle", "//build_defs/bindings:native_core",
+        "@mono_sdk//:runtime", "@mono_sdk//:usr/bin/mono-sgen",
+        "//src/compatibility/chrono:data/logo_robodyna_alpha.png",
+    ],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    size = "small",
+    tags = ["manual", "managed-runtime", "cpu-only"],
+)
+
+py_test(
+    name = "elf_ownership_test",
+    srcs = ["ElfOwnershipTest.py"],
+    main = "ElfOwnershipTest.py",
+    deps = ["//tests/bindings:elf_inspection", "@rules_python//python/runfiles"],
+    args = [
+        "core=$(rlocationpath //build_defs/bindings:native_core)",
+        "images=$(rlocationpath //build_defs/bindings/optional:native_images)",
+        "vsg=$(rlocationpath //build_defs/bindings/optional:native_vsg)",
+        "vsg_wrapper=$(rlocationpath //build_defs/bindings/optional:csharp_vsg)",
+        "irrlicht=$(rlocationpath //build_defs/bindings/optional:native_irrlicht)",
+        "irrlicht_wrapper=$(rlocationpath //build_defs/bindings/optional:csharp_irrlicht)",
+        "postprocess=$(rlocationpath //build_defs/bindings/optional:native_postprocess)",
+        "postprocess_wrapper=$(rlocationpath //build_defs/bindings/optional:csharp_postprocess)",
+        "vehicle=$(rlocationpath //build_defs/bindings/optional:native_vehicle)",
+        "vehicle_wrapper=$(rlocationpath //build_defs/bindings/optional:csharp_vehicle)",
+    ],
+    data = [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:csharp_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:csharp_irrlicht",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:csharp_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:csharp_vehicle",
+    ],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "native-bindings", "requires-binutils"],
+)

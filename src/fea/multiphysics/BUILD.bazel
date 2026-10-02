@@ -1,0 +1,18 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The field owner is separate; its solver/system dependency remains the explicit
+# transitional mixed backend, with one consistent contact-surface configuration.
+cc_library(
+    name = "fields",
+    deps = [
+        "//src/compatibility/chrono:native_fea_multiphysics",
+        "//build_defs/chrono:native_core_fea",
+    ],
+    target_compatible_with = select({
+        "//build_defs/features:fea_multiphysics_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "cpu-only"],
+)

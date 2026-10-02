@@ -1,0 +1,102 @@
+load("//build_defs/bindings/python:defs.bzl", "python_module")
+load(":policy.bzl", "IMPLEMENTATION_PROFILE", "PROFILE_DEFINES", "ROS_DEFINES")
+load("//build_defs/features:defs.bzl", "FSI_SPH_ONLY", "SENSOR_OPTIX_ONLY", "YAML_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["policy.bzl"])
+
+_CORE = "//build_defs/bindings:native_core"
+_IMAGES = "//build_defs/bindings/optional:native_images"
+_VSG = "//build_defs/bindings/optional:native_vsg"
+_IRRLICHT = "//build_defs/bindings/optional:native_irrlicht"
+_VEHICLE = "//build_defs/bindings/optional:native_vehicle"
+_FSI = "//build_defs/bindings/optional:native_fsi"
+
+# These are distinct wrapper targets over the same configured implementation
+# owners. The original baseline wrappers retain their stricter admission policy.
+[
+    python_module(
+        name = name, stem = stem, implementation = _CORE,
+        cpp_deps = ["//build_defs/chrono:native_core_fea"], dynamic_deps = [],
+        defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+        compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+    )
+    for name, stem in [("core", "Core"), ("fea", "Fea")]
+]
+python_module(
+    name = "vsg3d", stem = "Vsg", implementation = _VSG,
+    cpp_deps = ["//build_defs/chrono/vsg:vsg"], dynamic_deps = [_CORE, _IMAGES],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "irrlicht", stem = "Irrlicht", implementation = _IRRLICHT,
+    cpp_deps = ["//src/visualization/irrlicht:irrlicht"], dynamic_deps = [_CORE],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "robot", stem = "Robot", implementation = "//build_defs/bindings/optional:native_robot",
+    cpp_deps = ["//src/robotics/models:models"], dynamic_deps = [_CORE],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "postprocess", stem = "Postprocess", implementation = "//build_defs/bindings/optional:native_postprocess",
+    cpp_deps = ["//src/postprocess:exporters"], dynamic_deps = [_CORE],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "pardisomkl", stem = "PardisoMkl", implementation = "//build_defs/bindings/optional:native_pardisomkl",
+    cpp_deps = ["//src/numerics/sparse:pardiso_mkl"], dynamic_deps = [_CORE],
+    defines = PROFILE_DEFINES + ["CHRONO_PARDISO_MKL"], compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "vehicle", stem = "Vehicle", implementation = _VEHICLE,
+    cpp_deps = ["//src/vehicle:vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/visualization:irrlicht"],
+    dynamic_deps = [_CORE, _IMAGES, _VSG, _IRRLICHT, "//build_defs/bindings/optional:native_vehicle_irrlicht"] + select({
+        "//build_defs/features:fsi_sph_enabled": [_FSI], "//conditions:default": [],
+    }),
+    defines = PROFILE_DEFINES + ["CHRONO_IRRLICHT", "CHRONO_VEHICLE"], compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)
+python_module(
+    name = "fsi", stem = "Fsi", implementation = _FSI,
+    cpp_deps = ["//src/coupling/fsi:fsi", "//src/sph:sph", "//src/sph/visualization:vsg"],
+    dynamic_deps = [_CORE, _IMAGES, _VSG, "//build_defs/bindings/optional:native_sph_vsg"],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE + FSI_SPH_ONLY,
+    numpy = True,
+)
+python_module(
+    name = "parsers", stem = "Parsers", implementation = "//build_defs/bindings/optional:native_parsers",
+    cpp_deps = ["//src/io/parsers:urdf", "//src/io/parsers:yaml_mbs"], dynamic_deps = [_CORE],
+    defines = PROFILE_DEFINES, compile_defines = PROFILE_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE + YAML_ONLY, numpy = True,
+)
+python_module(
+    name = "sensor", stem = "Sensor", implementation = "//build_defs/bindings/optional:native_sensor",
+    cpp_deps = ["//src/sensor/backend:sensor"],
+    dynamic_deps = [_CORE, _IMAGES] + select({
+        "//build_defs/features:fsi_sph_enabled": [_FSI], "//conditions:default": [],
+    }),
+    defines = PROFILE_DEFINES + ["CHRONO_HAS_OPTIX"],
+    compile_defines = PROFILE_DEFINES + ["CHRONO_HAS_OPTIX"],
+    compatibility = IMPLEMENTATION_PROFILE + SENSOR_OPTIX_ONLY, numpy = True,
+)
+
+python_module(
+    name = "ros", stem = "ROS", implementation = "//build_defs/bindings/optional:native_ros",
+    cpp_deps = ["//src/integrations/ros:simulation", "//src/integrations/ros:vehicle_handlers", "//src/integrations/ros:robot_handlers"] + select({
+        "//build_defs/features:ros_sensor_enabled": ["//src/integrations/ros:sensor_handlers"], "//conditions:default": [],
+    }),
+    dynamic_deps = [_CORE, _IMAGES, _VSG, _VEHICLE, "//build_defs/bindings/optional:native_robot"] + select({
+        "//build_defs/features:ros_sensor_enabled": ["//build_defs/bindings/optional:native_sensor"], "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:ros_urdf_enabled": ["//build_defs/bindings/optional:native_parsers"], "//conditions:default": [],
+    }),
+    defines = PROFILE_DEFINES + ROS_DEFINES, compile_defines = PROFILE_DEFINES + ROS_DEFINES,
+    compatibility = IMPLEMENTATION_PROFILE, numpy = True,
+)

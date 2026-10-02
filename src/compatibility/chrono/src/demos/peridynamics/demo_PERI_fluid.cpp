@@ -27,7 +27,7 @@
 #include "chrono/fea/ChLinkNodeFrame.h"
 
 #include "chrono_peridynamics/ChMatterPeriSprings.h"
-#include "chrono_peridynamics/ChMatterPeriBulkElastic.h"
+// Obsolete unused include removed: ChMatterPeriBulkElastic.h
 #include "chrono_peridynamics/ChMatterPeriLiquid.h"
 #include "chrono_peridynamics/ChPeridynamics.h"
 

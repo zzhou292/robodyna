@@ -1,0 +1,110 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("//build_defs/features:defs.bzl", "SENSOR_VULKAN_ONLY")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load(":configuration.bzl", "sensor_configuration")
+load(":shaders.bzl", "sensor_shaders")
+load(":sources.bzl", "SENSOR_CONFIG_TEMPLATE", "SENSOR_GROUPS", "SENSOR_PRIVATE_HEADERS", "SENSOR_SHADERS")
+load(":exports.bzl", "SENSOR_SOURCE_EXPORTS")
+load(":ownership.bzl", "sensor_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "exports.bzl", "SourceBaseline.json"])
+
+sensor_configuration(
+    name = "configuration",
+    template = "//src/compatibility/chrono:" + SENSOR_CONFIG_TEMPLATE,
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for group in SENSOR_GROUPS.values() for path in group["headers"]] +
+           ["//src/compatibility/chrono:" + path for path in SENSOR_PRIVATE_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    # Both definitions are PUBLIC in the retained Sensor CMake configuration.
+    defines = ["CH_API_COMPILE_SENSOR", "USE_SENSOR_GLFW"],
+    target_compatible_with = SENSOR_VULKAN_ONLY,
+    deps = [
+        ":configuration_headers",
+        "//build_defs/chrono:native_core_fea",
+        "//src/compatibility/chrono:native_stb",
+        "@vsg_sdk//:vulkan",
+        "@sensor_sdk//:windowing",
+    ] + select({"//build_defs/features:fsi_sph_enabled": ["//src/sph:sph"], "//conditions:default": []}),
+)
+
+sensor_shaders(
+    name = "shaders",
+    srcs = ["//src/compatibility/chrono:" + path for path in SENSOR_SHADERS],
+    tags = ["manual", "native-sensor", "shader-compiler"],
+)
+
+cc_library(
+    name = "sensor",
+    srcs = ["//src/compatibility/chrono:" + path for group in SENSOR_GROUPS.values() for path in group["sources"]],
+    deps = [":headers"],
+    data = [":shaders", "@sensor_sdk//:runtime"],
+    local_defines = ["CHRONO_SENSOR_VULKAN_RT_GPU_ENABLED"],
+    copts = ["-O3", "-fPIC"],
+    linkopts = ["-pthread"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + SENSOR_VULKAN_ONLY,
+    tags = ["manual", "native-sensor", "vulkan-rt"],
+)
+
+py_library(
+    name = "cmake_profile",
+    srcs = ["CMakeProfile.py"],
+    deps = ["//tools/verification:inventory"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)",
+        "$(location //src/compatibility/chrono:src/chrono_sensor/CMakeLists.txt)",
+        "$(location :SourceBaseline.json)",
+        "$(location //examples/sensor:DemoCatalog.json)",
+        "$(location //examples/sensor:BUILD.bazel)",
+    ],
+    data = [":sources.bzl", ":SourceBaseline.json", "//examples/sensor:DemoCatalog.json", "//examples/sensor:BUILD.bazel"] +
+           ["//src/compatibility/chrono:" + path for path in SENSOR_SOURCE_EXPORTS],
+    deps = [":cmake_profile"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+sensor_ownership_test(
+    name = "ownership_test",
+    with_sph = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+    implementation = ":sensor",
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_test(
+    name = "host_module_test",
+    srcs = ["HostModuleTest.cpp"],
+    deps = [":sensor", "//include/robodyna/mbd:api", "//include/robodyna/simulation:api", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-sensor"],
+)
+
+py_test(
+    name = "spirv_test",
+    srcs = ["SpirvTest.py"],
+    main = "SpirvTest.py",
+    args = ["$(locations :shaders)"],
+    data = [":shaders"],
+    size = "small",
+    tags = ["manual", "cpu-only", "compiled-shader-proof"],
+)

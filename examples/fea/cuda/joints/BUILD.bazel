@@ -1,0 +1,40 @@
+package(default_visibility = ["//visibility:public"])
+
+# Canonical names select existing real binaries; numerical compile owners stay unchanged.
+exports_files(["BUILD.bazel"])
+
+alias(
+    name = "double_pendulum_revolute",
+    actual = "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_revolute",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "double_pendulum_spherical",
+    actual = "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_spherical",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "double_pendulum_welded",
+    actual = "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_welded",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "piston_pump_cylindrical",
+    actual = "@legacy_fea//lib_bin/engineering_joint:test_feat10_piston_pump_cylindrical",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+# Explicit aggregate includes every program in this group, including optional backends.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        ":double_pendulum_revolute",
+        ":double_pendulum_spherical",
+        ":double_pendulum_welded",
+        ":piston_pump_cylindrical",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)

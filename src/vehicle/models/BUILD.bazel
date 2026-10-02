@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//src/vehicle:defs.bzl", "vehicle_components")
+load(":sources.bzl", "MODEL_GROUPS")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl"])
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for group in MODEL_GROUPS.values() for path in group["headers"]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/vehicle:vehicle"],
+)
+
+# Nineteen final vehicle-family groups plus common headers. Nested CMake helper
+# groups are expanded into their final family once, never compiled a second time.
+_COMPONENTS = vehicle_components(MODEL_GROUPS, "CH_API_COMPILE_MODELS")
+
+cc_library(
+    name = "models",
+    deps = _COMPONENTS + [":headers"],
+    tags = ["manual", "native-vehicle-models", "cpu-dynamics"],
+)

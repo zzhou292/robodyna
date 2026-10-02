@@ -1,0 +1,14 @@
+load("//build_defs/managed:defs.bzl", "managed_assembly")
+
+package(default_visibility = ["//visibility:public"])
+
+managed_assembly(
+    name = "sensor_bridge",
+    assembly_name = "Robodyna.Ros.SensorBridge.exe",
+    kind = "exe",
+    srcs = ["//src/compatibility/chrono:src/demos/csharp/ros/demo_CS_ROS_sensor.cs"],
+    deps = ["//build_defs/bindings/csharp/profiles:managed_ros_sensor"],
+    tags = ["manual", "managed-demo", "retained-original-main"],
+)
+
+filegroup(name = "assemblies", srcs = [':sensor_bridge'], tags = ["manual"])

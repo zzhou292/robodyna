@@ -1,0 +1,940 @@
+{
+  "schema": "robodyna.retained_sensor_optix_build.v1",
+  "baseline_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "profile": {
+    "CH_USE_SENSOR_OPTIX": true,
+    "CH_USE_SENSOR_VULKAN_RT": false,
+    "CH_USE_SENSOR_VULKAN_RT_GPU": false,
+    "CH_USE_SENSOR_METAL_RT": false,
+    "CH_USE_SENSOR_NVDB": false,
+    "CH_ENABLE_MODULE_FSI_SPH": true
+  },
+  "scope": "Original OptiX/CUDA/NVRTC source inputs; declarations do not establish compile or runtime qualification.",
+  "files": [
+    {
+      "path": "src/chrono/assets/ChVisualBSDFType.h",
+      "bytes": 235,
+      "sha256": "a964b849a68672a4b8e8ad1a47b61e3a02f3087ba8fdc170ae54a54fbda42955"
+    },
+    {
+      "path": "src/chrono_sensor/CMakeLists.txt",
+      "bytes": 57322,
+      "sha256": "6ece1e407b7d247834e4eae93a7d01b3a8b22434be88df7e42d1698fe15af834"
+    },
+    {
+      "path": "src/chrono_sensor/ChApiSensor.h",
+      "bytes": 2176,
+      "sha256": "1a7976d3b600c44f2e3e541bb5d6ac4c9a289cb858a14c2c56f8904403421afc"
+    },
+    {
+      "path": "src/chrono_sensor/ChConfigSensor.h.in",
+      "bytes": 1941,
+      "sha256": "ef4446e40a9642e5af35b81be8526d7f00ff08ce9f2d620f718c73c0112d8463"
+    },
+    {
+      "path": "src/chrono_sensor/ChDynamicsManager.cpp",
+      "bytes": 2713,
+      "sha256": "7a8eca0dcd0c35f77a021e1ea035e5c1b34e92f52b787ba1aa0a5bbad04f8e38"
+    },
+    {
+      "path": "src/chrono_sensor/ChDynamicsManager.h",
+      "bytes": 2245,
+      "sha256": "20b6fa86997d8e71fa7fe3bd72941684e02d9c5d781f5a38c02b45706fd6bf52"
+    },
+    {
+      "path": "src/chrono_sensor/ChFsiSphRender.h",
+      "bytes": 1947,
+      "sha256": "d50bdff024cb9d5293b012ff9efa2a005a584c214bb1c032811a5e9a21906ecb"
+    },
+    {
+      "path": "src/chrono_sensor/ChSensorManager.cpp",
+      "bytes": 30816,
+      "sha256": "3199e6cda754c427a6c8fa6c4e40f97545a9ec11864eae6353ef2f22d53ad144"
+    },
+    {
+      "path": "src/chrono_sensor/ChSensorManager.h",
+      "bytes": 16410,
+      "sha256": "2e2417f6cba9187918fcf7702fbab05f455467a216677305b77091786582dde4"
+    },
+    {
+      "path": "src/chrono_sensor/ChSensorRenderTypes.h",
+      "bytes": 4296,
+      "sha256": "51ada6f15e00c418907738b75c6c18843e1d1964897700ae8e11e6132ec66e99"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/camera_noise.cu",
+      "bytes": 5313,
+      "sha256": "f865c46d6e9c154bd2d39666d55dbc090e80d19c95f796e5c73f785c7337ce8f"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/camera_noise.cuh",
+      "bytes": 2770,
+      "sha256": "c5b103e83dfd1091ca073724fff46b1093132b309a3843cd8e4f16be453d3ab1"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/cuda_utils.cu",
+      "bytes": 9820,
+      "sha256": "a209be5c428ccb1498029875224a6aabe000b42015235f9d352d618fb597b940"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/cuda_utils.cuh",
+      "bytes": 1412,
+      "sha256": "c619dbd115df51730f7baca4d3aa6f041863d4d34d7981c780e6720488ebc440"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/curand_utils.cu",
+      "bytes": 1819,
+      "sha256": "83ff8d84e84e04b094d6377f222abe639f50f3b7b48f9477c07fffad7ce09abd"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/curand_utils.cuh",
+      "bytes": 1921,
+      "sha256": "9778d2376bf469be17c7e7373b3fcc53b751ebde2b4a14937393295ef74d7c83"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/fsi_sph_render.cu",
+      "bytes": 6705,
+      "sha256": "69408089073d4cd7e4ad747b24552c2fccd29c793ac74485ea6e62928eea1c6c"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/fsi_sph_render.cuh",
+      "bytes": 1862,
+      "sha256": "ce6851643eb509a2c25c6a1235d4e72ad325b4768c633b9a80854d17bef04769"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/grayscale.cu",
+      "bytes": 1582,
+      "sha256": "cbde83f803a96be4b2e4e5344770190d067ef02baa12184e2e27ea951566be29"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/grayscale.cuh",
+      "bytes": 1257,
+      "sha256": "01af8a117e2371d6a53fa4d505ab72da747b33e917496fcca1e4900ad2ce92a0"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/image_ops.cu",
+      "bytes": 24940,
+      "sha256": "b0acbc140fd3187833dbcb1db24c338c53c57e13fa0b8efe4ad9901d0e5817a4"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/image_ops.cuh",
+      "bytes": 6483,
+      "sha256": "f854d9aa3094b19b6c9d295dec874b51c06ef91b46e39fddf6a07ffe0812c22a"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_clip.cu",
+      "bytes": 1577,
+      "sha256": "0bb6e265128f5bc9fbd42ebd7ed5e3df9ec995e38739be8cd9eaf44f0aacf026"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_clip.cuh",
+      "bytes": 1443,
+      "sha256": "b4ef30b0c8647611457df3bb817f0cd64e6420dd7fbd4cc81d6d686acb9f22e2"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_noise.cu",
+      "bytes": 3884,
+      "sha256": "6be7a79731230f26bff5692f6b72eb5f58b71a5f6c7332236f34d59a1a7a6ddc"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_noise.cuh",
+      "bytes": 1917,
+      "sha256": "52de6fd6f922e90cb57c5fdb1be734d6dc0c8b8a85c74fd691c1b397154e6b4b"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_reduce.cu",
+      "bytes": 10506,
+      "sha256": "6f01e353973e679511cd1ea3338adac35ba53232783b9c631826cae67a14d886"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/lidar_reduce.cuh",
+      "bytes": 3226,
+      "sha256": "f8a3181571ce8582184e654e0051279d7659496bfb79dfc6dae6c1dab8c4332e"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/nn_prep.cu",
+      "bytes": 4930,
+      "sha256": "e87b89dcf424ebb7276c27bcdb0d9429fdcad7d3b8b94b58e96545fc95dafcc4"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/nn_prep.cuh",
+      "bytes": 2907,
+      "sha256": "fb5ec5fa2f3a7822a17b44ff3015a6c05006a99f71e83c065c6702f119910075"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/phys_cam_ops.cu",
+      "bytes": 18179,
+      "sha256": "6c6b83e6819c29b6196e8f139946c7d3f1ab93cdba39b2c4603b4588fa26e0d9"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/phys_cam_ops.cuh",
+      "bytes": 5089,
+      "sha256": "f239373aea56f56c7ccbd66733a6f64343a72ed34506527633b5fe831393b653"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/pointcloud.cu",
+      "bytes": 5318,
+      "sha256": "57be82c754c19214551faa903934dd537a46130b76a8208a9605320a6a3fc271"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/pointcloud.cuh",
+      "bytes": 2765,
+      "sha256": "78748dfcdf8a2f58735b1cf3fa17d9b959c6bacf8c733a450535adcf21b90831"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/radarprocess.cu",
+      "bytes": 3450,
+      "sha256": "26952d162a24a044e79dcf928239f90f74c559baf2b7810af82d3aa4696f9cdb"
+    },
+    {
+      "path": "src/chrono_sensor/cuda/radarprocess.cuh",
+      "bytes": 816,
+      "sha256": "166801975d65fa1126572203b9ca76e7d8a26d4d8cb368713d85fa90e8e3f511"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilter.cpp",
+      "bytes": 1801,
+      "sha256": "858934a3b44cf741ded15955c6b774137772f42edeb2545b757e79ec711bc15f"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilter.h",
+      "bytes": 4759,
+      "sha256": "33cf751f6cdbd51704ccdad722f09a933477b671e849968036b2a54ffa889504"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterAccess.cpp",
+      "bytes": 39119,
+      "sha256": "49395ae651dcecae2733126fafd269fe1f9a7bfafc0c0c2e9e54a38768422e75"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterAccess.h",
+      "bytes": 11070,
+      "sha256": "c0606c254fe23c162b07f560fcd65216ac24737da9d4edd40d57f5ee09166848"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterCameraExposure.cpp",
+      "bytes": 2941,
+      "sha256": "20bb204f8f870436fa419c29b5a8fb5ace7d15a4c4d8867a342a406663cbf519"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterCameraExposure.h",
+      "bytes": 3373,
+      "sha256": "41f5e66298d51df15fbd7d4c859d90dce2637fd52ef71cafce1883817cda6641"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterCameraNoise.cpp",
+      "bytes": 9236,
+      "sha256": "ec3d7974b4544062a3c66eb4ded26999c7132c143a592ac76ac15b04ac3e037a"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterCameraNoise.h",
+      "bytes": 5393,
+      "sha256": "e0a9e003a3b23bc0aef719e74bec6ed299bd28f782fe34342d5f7bd898c3358c"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterGPSUpdate.cpp",
+      "bytes": 2928,
+      "sha256": "0ae11ee060bf6c5ae8e211d54f343ffb93e367f81f8cbf6f41d582826ec3c47a"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterGPSUpdate.h",
+      "bytes": 2231,
+      "sha256": "92fb8aec2590bbba657a76150bdcb6b2ac0ce478b9066169a81b3ff60b24b283"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterGrayscale.cpp",
+      "bytes": 4607,
+      "sha256": "9ac2e71088c85ce4fa8d959897b82cec569ea4d17430a4852475af1bcb152750"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterGrayscale.h",
+      "bytes": 2117,
+      "sha256": "97b42ba3d8d2ff603088b683543feed9abf7e9dd9ce84089dfc40b2dbefbc072"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterIMUUpdate.cpp",
+      "bytes": 7401,
+      "sha256": "5decadf1ba32c38dd1c47a7b1e094a8e953448bc3cf028a4ea0a84d949aa54e8"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterIMUUpdate.h",
+      "bytes": 4381,
+      "sha256": "a1261bdeae5438a3bd62326621f1a7291f63bb03320ebeafc7fa23d994bd81ab"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterImageOps.cpp",
+      "bytes": 38002,
+      "sha256": "ded606e3a01bfdbeb3a2857d0cb79dd7969c341cd976af62ed97f7eed872c824"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterImageOps.h",
+      "bytes": 10852,
+      "sha256": "35061493881960bcc24889116a2e474eb185beb96024ff8aa3a967966ca4157f"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarIntensityClip.cpp",
+      "bytes": 2576,
+      "sha256": "df4ee0c33b8c19aead6623416b00b6721e18e6949bc197f053d9d6370cd90702"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarIntensityClip.h",
+      "bytes": 2663,
+      "sha256": "5e86767fdda9704b7f174abdcaee1369f5d170dba7d840715a7e262e9f9d64e3"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarNoise.cpp",
+      "bytes": 4450,
+      "sha256": "4da33f68df488470598ddd6315c2b69fd0e424c4135e66f91f598587413feb8c"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarNoise.h",
+      "bytes": 3397,
+      "sha256": "358c78ab2a00e0f5bffe745ace34f28ef7adc2352f8f69b2ddca88cf2602a690"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarReduce.cpp",
+      "bytes": 10325,
+      "sha256": "b21c8f55cbc588ad3cc82ceebd4fa179da55f71edf3b3901aeaf1b795c8e1f7d"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterLidarReduce.h",
+      "bytes": 2528,
+      "sha256": "752c5631c83824ac9568267b17f2e228bbb4b1c695ae24ea776ff9e446f808f0"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPCfromDepth.cpp",
+      "bytes": 6618,
+      "sha256": "ec03749076004ba2f5372353329f32009451f47e6cac905f55ca664bca33ff8f"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPCfromDepth.h",
+      "bytes": 2402,
+      "sha256": "c224042b4323d879b89b584e24874ca8256e490a1fa16682697b98c8f3cd0705"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraAggregator.cpp",
+      "bytes": 6645,
+      "sha256": "21db98f84b0e32d03df061ae4ff6c618b73007417d139be6814937b67bc1fc24"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraAggregator.h",
+      "bytes": 3824,
+      "sha256": "3da83cebce023946cf475d88972372d4ebf14296bc1957b928d234d8a7fff812"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraDefocusBlur.cpp",
+      "bytes": 9837,
+      "sha256": "e64e9a5c1b5f6978074f802cac6ef446582c755972957fade30572324bf0eef9"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraDefocusBlur.h",
+      "bytes": 3664,
+      "sha256": "38465d81ccb20f8a73ded930a07c55d5045c605f9eae109c6257afa0c13bcae4"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraExpsrToDV.cpp",
+      "bytes": 9196,
+      "sha256": "abd12224914dd0d1b7744f77fbe1865f948e6944adbf8266c03927aa54b352a8"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraExpsrToDV.h",
+      "bytes": 3945,
+      "sha256": "99aba2d175f50afd05af19a12372a75814ec20c58556ea3e3bd0d0e46a051e92"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraNoise.cpp",
+      "bytes": 8844,
+      "sha256": "79d27bc34d34082ad879c50758be6bd79ff57d82145fe96a25774d8aca132b53"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraNoise.h",
+      "bytes": 4521,
+      "sha256": "e4fe5a044d17b8444f1888f04a29fcdbd5158cb6b810d31edc8bfdd107227032"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraVignetting.cpp",
+      "bytes": 5181,
+      "sha256": "b1ec5ade01a9905aae13a5f03f70286e6c1bcb027d11470b02a7975b486d5864"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterPhysCameraVignetting.h",
+      "bytes": 2908,
+      "sha256": "4939d41a89b6e54402011e143f038ae3d6b84536932c728e25759510cad93a13"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarProcess.cpp",
+      "bytes": 8580,
+      "sha256": "ba7803ec53f514ea4d3ad082deddcaf9901a71225a40facb688b0eba0b4de2f1"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarProcess.h",
+      "bytes": 2476,
+      "sha256": "22d33c84e6e6f4e64e2a3821e9b168efa757d00b2e5549c73eebd2b9a66665cc"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarSavePC.cpp",
+      "bytes": 3504,
+      "sha256": "4fc00b8ca21a5785fda179b8178ae77d3e4809a37137f1ee93da49dc0cb66a34"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarSavePC.h",
+      "bytes": 2339,
+      "sha256": "b098372830d4f6bfaaf25656da5609c41ffcc1c86c2af84cdee75b34042cbb29"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarVisualizeCluster.cpp",
+      "bytes": 5444,
+      "sha256": "3916f9dbae5354491154ff3c47fcc15ffd8e80b1dbef1eaf99c5d191ad67c53b"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarVisualizeCluster.h",
+      "bytes": 1008,
+      "sha256": "0033fb4217b8ace1ed82a6dea4025641ec1d026249186154916b44278c1b8b37"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarXYZReturn.cpp",
+      "bytes": 3969,
+      "sha256": "026778b043a4455570405c2ec633171174f5367e1087840dd879ef6c15bcfce2"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarXYZReturn.h",
+      "bytes": 1713,
+      "sha256": "184b3d284d854aecc591acb79ad828950e5eb7530eeb61ab2bcbc4c98701b337"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarXYZVisualize.cpp",
+      "bytes": 5614,
+      "sha256": "8b7051a2c35d28ef99d418beee3d0bba34d4bdd4e45e37159dc789ed9fe5edd0"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterRadarXYZVisualize.h",
+      "bytes": 1739,
+      "sha256": "6fb1d75e159ec9e090c29a20505f6bc1b5cf90f4c702acaa30cfbb955894797e"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterSave.cpp",
+      "bytes": 16671,
+      "sha256": "afcbce5f1699af375600bf4d7d6012bea6a502ae27fb8039513f5a6e4cb1f82d"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterSave.h",
+      "bytes": 3245,
+      "sha256": "6a0ac8442de0a3795c4e58afbdcad03606a5872c1e6ee25867f587ad282f4b7b"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterSavePtCloud.cpp",
+      "bytes": 4233,
+      "sha256": "56044dd3897b51572079aaef4f1262f949783f8f1e361fd294e736d4c8eda6e3"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterSavePtCloud.h",
+      "bytes": 2402,
+      "sha256": "ce0924471d23c87e2e796175943e7dd1c904246e7b1d8a91f8e5a30e0b08aeb1"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterTachometerUpdate.cpp",
+      "bytes": 1748,
+      "sha256": "14450b45f512066a6a06b56777118e899d5e2453d93eab6b40634bf633b91a9c"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterTachometerUpdate.h",
+      "bytes": 685,
+      "sha256": "d3e21119dd22127722cf007b5c61ab7e2154343ba4fafdd34a465ac175cb2a8a"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterVisualize.cpp",
+      "bytes": 29615,
+      "sha256": "d49075a25d62e1982e900c95a5163a6d927b6e6dcd749c046d1be6bbff24a6bc"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterVisualize.h",
+      "bytes": 4697,
+      "sha256": "0c486a4da54b1e572b642d7d6b1b1bf9dcc6e1c3615511704c7a3126fc59f11e"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterVisualizeGuards.h",
+      "bytes": 9527,
+      "sha256": "c502220ae4dc812b3cbb51752620beaeae75eab4266078d2dbafefc5e3bd187c"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterVisualizePointCloud.cpp",
+      "bytes": 5597,
+      "sha256": "942d4fbda9acf9037685076ced1116000d0362b912b832f8295c210d3ded8fb1"
+    },
+    {
+      "path": "src/chrono_sensor/filters/ChFilterVisualizePointCloud.h",
+      "bytes": 2623,
+      "sha256": "446181653ed703f12a2b60a7178ccbf093d863fde5cd8e94da3ecda4e3b5919d"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChFilterOptixRender.cpp",
+      "bytes": 24529,
+      "sha256": "b33552cba20826f6a428eb49779d9ac9f34c7bcbcc9103e8987ea407ee53b0cf"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChFilterOptixRender.h",
+      "bytes": 3776,
+      "sha256": "6bba54d65dbefb4e09c8a7be1817c65bf8ae6ccf8b4ecbd81af32d50d70b207f"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChNVDBVolume.cpp",
+      "bytes": 2401,
+      "sha256": "7e11d051b1fd8e22ebb78a39f30b40799162fd6fefb1f94cf997dddc68298751"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChNVDBVolume.h",
+      "bytes": 2683,
+      "sha256": "caa16a933927511a4633bfde131ef7fa5e9819e1d4dba42db16855c69743d1ac"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixDefinitions.h",
+      "bytes": 20321,
+      "sha256": "a141f7090e4c2dc10bf4ae79d3f95e6461cc6d38efdd75dd2712996625e224d5"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixEngine.cpp",
+      "bytes": 41279,
+      "sha256": "cf3b90d54a901fbd5960652921251067b7e2222d89e4fb6986d72ae90eb2146c"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixEngine.h",
+      "bytes": 9557,
+      "sha256": "207f422b652132e686d0cb0df94a0a0a72ee36b038a62f7fc93de0b40cec183c"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixGeometry.cpp",
+      "bytes": 48278,
+      "sha256": "a51fdc23699eb1f975a805d17441bb8231d56b214ba02e555dc0b5d0d94fedaa"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixGeometry.h",
+      "bytes": 13979,
+      "sha256": "e45bc72a3d06228a0993f3ecd6597d401dafe71e75a57a32154b09bd4e456809"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixPipeline.cpp",
+      "bytes": 67267,
+      "sha256": "e0ef49748b073223f1d30e39ef759692b1f24b985838a863863f1a23eee086ab"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixPipeline.h",
+      "bytes": 14573,
+      "sha256": "e81a90d8e7e459e3c375fbfc190986e93f6ee8e6bce5a34e9e45808af3f822c5"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixScene.cpp",
+      "bytes": 19669,
+      "sha256": "4737dd1b6562c02eea07d23e28c86125cc375c29b2ab288a948cc6b2334b7863"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixScene.h",
+      "bytes": 19594,
+      "sha256": "c029e816a3352c87f6374e9341cb8dae63db1fc7586e22ac46b1ce558e4339fd"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixUtils.cpp",
+      "bytes": 7834,
+      "sha256": "b0740b6baa24ff78fd2f202039002b7a0fdd7b63001f23df80c80121051958f8"
+    },
+    {
+      "path": "src/chrono_sensor/optix/ChOptixUtils.h",
+      "bytes": 8484,
+      "sha256": "173c5d57df4cfdee64653e1af4bc74411a4fd3db70492de2d7b8d19a1f8d601c"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixDirectionalLight.cuh",
+      "bytes": 4148,
+      "sha256": "c9d81c28ae77e9f128626e5e8a5b4338c30eb4e06edbc676e389dc0c462b9f03"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixDiskLight.cuh",
+      "bytes": 11332,
+      "sha256": "ae541c10d66d733d6285d7bd828b02a8bae17acf1eb902bc86c74006572b2e3e"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixEnvironmentLight.cuh",
+      "bytes": 11115,
+      "sha256": "2445a3988ea9822137faf8470248c5a4d92fd5942d99b35bd623130c561496ec"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixLightHubs.cuh",
+      "bytes": 4658,
+      "sha256": "49eecd8bd2091b938b42ec1f0fe3e33a1a8d7d0971512cff95bfd6314e93c9b7"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixLightStructs.h",
+      "bytes": 7975,
+      "sha256": "c578b4d919df5cbe0ad2c76b20768c2b0c0bb29587b81baf34c2abfde9cfce99"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixPointLight.cuh",
+      "bytes": 4654,
+      "sha256": "510b459b669fe26c94c7b1a713905dbc386dc1fbab1316266a90fe5789f48348"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixRectangleLight.cuh",
+      "bytes": 11298,
+      "sha256": "e43e8dc8e8a5b1f14a68f95448c901f84be3a589f40483cef3cd6a21c4be3624"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/ChOptixSpotLight.cuh",
+      "bytes": 6382,
+      "sha256": "0c596927351e89ebeca528f7912f8854b2cf8f1a3841066b6811afddc9831e58"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/box.cu",
+      "bytes": 4614,
+      "sha256": "91768f3c2f100d6b158ab3c0dc356ac25bc57905e1b230f73d1f69588cce2d5a"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_hapke_shader.cuh",
+      "bytes": 12045,
+      "sha256": "fd6353ae2252ab4f792eb03cc8b860b5e01cd311801fc89d276767037b517253"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_legacy_shader.cuh",
+      "bytes": 33120,
+      "sha256": "a7d47f0121919ee34e13cce9b20bae915dd609d327f13c1a6182aa6bd462bf35"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_path_shader.cuh",
+      "bytes": 12339,
+      "sha256": "8dd1d0755f770a9f4211328c776df1c049536bc435e47cec1afc3d71cc135f43"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_raygen.cu",
+      "bytes": 8837,
+      "sha256": "5542943368668d9777e114e30fa75d5acedd81f0392b22fae17ed7e33a595697"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_shader.cuh",
+      "bytes": 4598,
+      "sha256": "97ff67f093909e704a50ee134ed281c339a6a36caaa518e974f1611f62bd8204"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_utils.cuh",
+      "bytes": 1338,
+      "sha256": "5f3fd6da78c17ceb1964efed8c988b12d01f13d165c31d8cf27dbe0b05fdecc7"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/camera_volumetric_shader.cuh",
+      "bytes": 10368,
+      "sha256": "9f1790e7032c89bc2750065538c8a7760467e18e4a3a27262eb5cdb640bc3c8a"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/cylinder.cu",
+      "bytes": 6547,
+      "sha256": "6735a390e94b3061f25548c6c98799eb8865e38287c8654b8d1ad48b6fe87e11"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/depth_cam_raygen.cu",
+      "bytes": 3629,
+      "sha256": "5b6915069127795c76803bd28f31df178e4f98b7b9a6661aa4fcb3ee20d0a208"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/depth_cam_shader.cuh",
+      "bytes": 1303,
+      "sha256": "44babfa89d0a731d1f9da261d56a0520bf31552cd214b8431aed222e03b2f20a"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/device_utils.cuh",
+      "bytes": 15028,
+      "sha256": "95c408f3aa57440a884eb73615a6d74642668e2222de6170c477a0ce037b1e22"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/lidar_raygen.cu",
+      "bytes": 6635,
+      "sha256": "7f88c092c2387b550b603ea691a4842ae04c23250df52341f00dac70c117cb1f"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/lidar_shader.cuh",
+      "bytes": 1531,
+      "sha256": "6b968cc6f10e448e3765e4c1ddf93a04a4917cc743462beece6760b1948c45f3"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/material_shaders.cu",
+      "bytes": 5842,
+      "sha256": "8f0fb01f22439d02020c9e888980a2d4061693707af6c79c978388e2eb354145"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/miss.cu",
+      "bytes": 4258,
+      "sha256": "a5285800ef57ccc573be36a3f78acb3c0e01082c5e8b572d49446c00488e4990"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/normal_cam_raygen.cu",
+      "bytes": 3695,
+      "sha256": "037a796ab7b963ad372a580674ad0a78aabbd798114354b9ef3ee421e7a9989f"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/normal_cam_shader.cuh",
+      "bytes": 1555,
+      "sha256": "4cf8b790f5e18986004876926909588f2a2ff2de7bb49c43fb603fda75387484"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/phys_cam_raygen.cu",
+      "bytes": 9158,
+      "sha256": "78f9250ee8cb0dd408257bb5fe5f38fb504d18e62211782ae2bd09b91043ef2b"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/radar_raygen.cu",
+      "bytes": 3962,
+      "sha256": "7fd42bb387e1969e0b716c3d9f4b2507de6b8c6d2cd28370b5874c99cbab3757"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/radar_shader.cuh",
+      "bytes": 2273,
+      "sha256": "7451471496844a552e98c4e5eb5572a9466609af402979f15c2afb45ca643c41"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/segment_cam_raygen.cu",
+      "bytes": 3776,
+      "sha256": "3b35aabd11f60f08ecfdc20f69500d942241cb4a3c8aa2a4e385321c537cf7e0"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/segment_cam_shader.cuh",
+      "bytes": 1350,
+      "sha256": "76b48752a101a1000a1cf5ac4c75d4ebfba25add21a4728d2961d480c05ea6f9"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/shader_utils.cuh",
+      "bytes": 17472,
+      "sha256": "862b8a357c71d30fe4ffe42b5bc4b18a682514309903113c1eba8cc1f5ab8c65"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/shadow_shader.cuh",
+      "bytes": 3274,
+      "sha256": "5194b6ddf9cb34a81cdfc7012d1165cefc77654a2e2f13b780f9b58c9d6e1b0c"
+    },
+    {
+      "path": "src/chrono_sensor/optix/shaders/sphere.cu",
+      "bytes": 3773,
+      "sha256": "9d794f7073e967cdc3c74c50903a53269f413fddc7b9ca9eb1156ca579bb6860"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChCameraSensor.cpp",
+      "bytes": 5906,
+      "sha256": "d01b1a86c8f813af8761a55ac5eb8a12e865cab7d3105a5870ca7d474e4a7b12"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChCameraSensor.h",
+      "bytes": 8765,
+      "sha256": "37baa6d49bf5a3055936e4068575a3ea407aa6a51e6669871efb7a7d3b11f8e5"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChDepthCamera.cpp",
+      "bytes": 3084,
+      "sha256": "f317990bdab513a5396147c36131b6250747eb706c63bc6f01e1b060527455d7"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChDepthCamera.h",
+      "bytes": 4582,
+      "sha256": "4ebb18b356a6afe28d3ec465e37b6409ecfced402d8bae969e9d86a749d215e2"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChGPSSensor.cpp",
+      "bytes": 1624,
+      "sha256": "96ae99c4b05c47d1422b1d88205f7801d61a040690733352b31311a540e17521"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChGPSSensor.h",
+      "bytes": 3131,
+      "sha256": "61f1a2a7168c7cc2583ca50aaa1e9c154a8610b130694cc0aaa44b8ccf22eb8a"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChIMUSensor.cpp",
+      "bytes": 3236,
+      "sha256": "c71138282288bbe0ff0a2f76234bf8312d35a4f5a5de486735f69829f8f1bb35"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChIMUSensor.h",
+      "bytes": 5420,
+      "sha256": "bc1a1634e5c4ef4847ab1b2d430bda97fb029ed6b4277f8abe0c014b7f90a309"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChLidarSensor.cpp",
+      "bytes": 3673,
+      "sha256": "5d70f54db75ba1248ac6339916158f562ffc9f0e46c29b921f7041dbd069ab3a"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChLidarSensor.h",
+      "bytes": 7338,
+      "sha256": "0306f1c8632575bed13e45769c4b6f95b7e480fcd6590b5715846a4d2e6e8965"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChNoiseModel.cpp",
+      "bytes": 7237,
+      "sha256": "f0916d729ec7a9785672e421a486ff0c360b3d448a2043dbeb6a61ee9c6a4690"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChNoiseModel.h",
+      "bytes": 6610,
+      "sha256": "ab683d5790c5c56b2c27b083621a3705d513ea119f355bb2224595bd9b56d018"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChNormalCamera.cpp",
+      "bytes": 3484,
+      "sha256": "4b5789f6c9470ba1427d355fc019b8b7cba54186d9e89f8ac1e357155fc7d6a7"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChNormalCamera.h",
+      "bytes": 4019,
+      "sha256": "778c7b3fed7f59897476be0789b543b5be4c9071ce4f5dc4e5d1272f7a359cc4"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChOptixSensor.cpp",
+      "bytes": 2036,
+      "sha256": "90f5858d7fb50e20dcc00876078729aa4f0223c56fa589e5217bc32a91389f20"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChOptixSensor.h",
+      "bytes": 2691,
+      "sha256": "efc42720bbeb84f0bc192b7045a1bfc1f0045f327b180778c87f818fda4c965b"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChPhysCameraSensor.cpp",
+      "bytes": 15058,
+      "sha256": "3ccc9ea4b85e9fea3a99e5d648e1eb250bb8f4b39470adece26ccefba23fc3d0"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChPhysCameraSensor.h",
+      "bytes": 14141,
+      "sha256": "e4ef0b85980e7e435888557cfda211d03ea137fd3fec2b1402501148143b0cea"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChRadarSensor.cpp",
+      "bytes": 2015,
+      "sha256": "9df7d41b5e13ab8ac8b820aa7a622d4430dedd886d619f791be7686b067282e2"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChRadarSensor.h",
+      "bytes": 4643,
+      "sha256": "95441b61639dc8b7d7e737c291311f4a8b1b94740775ab3189f116fed3ed70a8"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChSegmentationCamera.cpp",
+      "bytes": 2827,
+      "sha256": "5f5b28545ff1689e2bf0e1a129375703db17a72aa121be6f47a7f0075e1cca07"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChSegmentationCamera.h",
+      "bytes": 3955,
+      "sha256": "f6163f7575679fa2c42919541f5fcefbb014a0f05ae17e13863b21f51de84450"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChSensor.cpp",
+      "bytes": 11207,
+      "sha256": "71a394d5586be0f5a3652c2a61a00b2833608736a4918923f3bdbaee75236af1"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChSensor.h",
+      "bytes": 13083,
+      "sha256": "fe4f6b883ff8840d6a6cf1391e1f750c171f15fe6fbcbcac48db6300b4c15312"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChSensorBuffer.h",
+      "bytes": 21879,
+      "sha256": "d9176207406b9cec688a423fb05055ae70ea693e4536840e388091807accb342"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChTachometerSensor.cpp",
+      "bytes": 1705,
+      "sha256": "e54479b28c9b338afab27d002a54aaa7286a991fbc5a550fcd0807b5845ddcb0"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/ChTachometerSensor.h",
+      "bytes": 2002,
+      "sha256": "7fae94c4716896be0bd04af9d24e58687a35f631f1e67839bcda2ffb2c07a302"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/Sensor.cpp",
+      "bytes": 1787,
+      "sha256": "70c482499d4c4eb59ed4cbd7a64b6e4fab57325efb722ac52de7e35221ca4892"
+    },
+    {
+      "path": "src/chrono_sensor/sensors/Sensor.h",
+      "bytes": 1601,
+      "sha256": "6d09f8d00458640b2ad25c183c7600806d02179e17d2d0e7eea32396e7d77419"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChGPSUtils.cpp",
+      "bytes": 3472,
+      "sha256": "a372e9f5e93fbf5e0f00418052d28016c9e230a4e13dd9f1e454ca39c198c4c0"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChGPSUtils.h",
+      "bytes": 3056,
+      "sha256": "f275083f40474d9a33807bb36dca7ddc86d03aa2db67d5cc992dcb903392576f"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChSensorImageCompare.h",
+      "bytes": 10007,
+      "sha256": "4e804c8ea208fde62509a31b76be3a53d7b9f64ed97437af02a7512af4e03b77"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChSensorUtils.cpp",
+      "bytes": 3091,
+      "sha256": "8cf657dcba8117d942034bc25ffa265e3dbb982154e9b1a6a42349bf5d04743c"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChSensorUtils.h",
+      "bytes": 1880,
+      "sha256": "6323e95c49c3a02df0248dc90444cf7ea0b9dfb7517814e3c789783c8349a640"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChSensorUtilsJSON.cpp",
+      "bytes": 28702,
+      "sha256": "71f05c9b087c7dc403c8d4efffb7e32898746d42dd1378b32e0cbb3d8480f7ce"
+    },
+    {
+      "path": "src/chrono_sensor/utils/ChSensorUtilsJSON.h",
+      "bytes": 7617,
+      "sha256": "feae866d8cb447e5bb8631fd83401d3ccdbaaa3997c8b2117f863716dfa42764"
+    },
+    {
+      "path": "src/chrono_sensor/utils/CudaMallocHelper.h",
+      "bytes": 2487,
+      "sha256": "18919af72f10bbed61411cd990b221901ac334f7ae2ee2685ec2f133caf446be"
+    },
+    {
+      "path": "src/chrono_sensor/utils/Dbscan.cpp",
+      "bytes": 4843,
+      "sha256": "dfa9ba60b28293988f3e68ac6a96420c4b63f24269b11833873c8f54134ef08b"
+    },
+    {
+      "path": "src/chrono_sensor/utils/Dbscan.h",
+      "bytes": 2936,
+      "sha256": "17ee1a3e0bf24c174e4cddddc333368c2376f2484cb3352d33f32556e305969f"
+    },
+    {
+      "path": "src/chrono_sensor/utils/Kdtree.cpp",
+      "bytes": 11041,
+      "sha256": "a8e854faddf0ce85fa712bde1e25eeb958791171b576ce8ffe03ecb8ca9a9a6f"
+    },
+    {
+      "path": "src/chrono_sensor/utils/Kdtree.h",
+      "bytes": 2654,
+      "sha256": "93ef33be03e86e983fa737b46e9193d2f4b9d94753d3bc11a4866aaeeb80e825"
+    },
+    {
+      "path": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM_Sensor.cpp",
+      "bytes": 22876,
+      "sha256": "cc6b69db6c8b8b0480329f03d960c2272b8a797922cfc7065ef223a17a13a262"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_SCM_Sensor.cpp",
+      "bytes": 22453,
+      "sha256": "406056b0d991c80d2c147874f94f49fbc934962123aaf10775ea636a0b6adb31"
+    },
+    {
+      "path": "src/demos/sensor/demo_SEN_CRM_Rendering.cpp",
+      "bytes": 15350,
+      "sha256": "c9f498339f5b9d8e1d9bb713a1466d6decde349eaa97adc56fe35a02703c0067"
+    },
+    {
+      "path": "src/demos/sensor/demo_SEN_HMMWV.cpp",
+      "bytes": 18041,
+      "sha256": "dd3aa9d0f8459c4f8cfc8396a13fde46a15de8c82fad69d968a6eaef07e30b68"
+    }
+  ]
+}

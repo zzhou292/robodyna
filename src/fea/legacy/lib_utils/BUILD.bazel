@@ -11,7 +11,11 @@ cc_library(
     name = "cuda_utils",
     hdrs = ["cuda_utils.h"],
     copts = ["--std=c++17"],
-    deps = [":cuda_runtime_utils"],
+    deps = [
+        ":cuda_runtime_utils",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cusparse",
+    ],
 )
 
 cc_library(

@@ -1,0 +1,17 @@
+load("@rules_python//python:defs.bzl", "py_test")
+load(":exports.bzl", "VEHICLE_OPTIONAL_EXPORTS")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["exports.bzl", "SourceBaseline.json"])
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location //src/compatibility/chrono:src/chrono_vehicle/CMakeLists.txt)", "$(location :SourceBaseline.json)"],
+    data = [":SourceBaseline.json"] + ["//src/compatibility/chrono:" + path for path in VEHICLE_OPTIONAL_EXPORTS],
+    deps = ["//src/vehicle:cmake_sources"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)

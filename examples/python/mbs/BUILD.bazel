@@ -1,0 +1,207 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "associated",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_associated.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "aux_ref",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_aux_ref.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "callback_nsc",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_callbackNSC.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "callback_smc",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_callbackSMC.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "checkpoint",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_checkpoint.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "collision_nsc",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_collisionNSC.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "collision_smc",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_collisionSMC.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "collision_2d",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_collision_2d.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "collision_trimesh",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_collision_trimesh.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "custom_contact",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_custom_contact.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "earthquake",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_earthquake.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "emit_cluster",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_emit_cluster.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "friction",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_friction.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "gears",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_gears.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "imposed_motion",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_imposed_motion.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "link_bushing",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_link_bushing.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "motors",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_motors.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "planar",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_planar.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "rev_limits",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_rev_limits.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "revolute",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_revolute.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "rot_spring",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_rot_spring.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "spring",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_spring.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "ujoint",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_ujoint.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":associated", ":aux_ref", ":callback_nsc", ":callback_smc", ":checkpoint", ":collision_nsc", ":collision_smc", ":collision_2d", ":collision_trimesh", ":custom_contact", ":earthquake", ":emit_cluster", ":friction", ":gears", ":imposed_motion", ":link_bushing", ":motors", ":planar", ":rev_limits", ":revolute", ":rot_spring", ":spring", ":ujoint"], tags = ["manual", "original-python-demos"])
+
+robodyna_python_demo(
+    name = "prismatic_force",
+    source = "//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_prismatic_force.py",
+    helpers = [],
+    package = "//bindings/python/numpy:package",
+    manifest = "//bindings/python/numpy:manifest",
+)
+
+robodyna_python_demo(
+    name = 'crank_plot',
+    source = '//src/compatibility/chrono:src/demos/python/mbs/demo_MBS_crank_plot.py',
+    helpers = [],
+    package = "//bindings/python/plot:package",
+    manifest = "//bindings/python/plot:manifest",
+)

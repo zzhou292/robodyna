@@ -1,0 +1,34 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "slewing_beam",
+    srcs = ["//src/compatibility/chrono:src/demos/modal/demo_MOD_slewing_beam.cpp"],
+    features = ["modal"],
+)
+
+robodyna_cpp_demo(
+    name = "analysis",
+    srcs = ["//src/compatibility/chrono:src/demos/modal/demo_MOD_analysis.cpp"],
+    features = ["modal", "irrlicht"],
+    deps = ["//src/analysis/modal:irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "reduction",
+    srcs = ["//src/compatibility/chrono:src/demos/modal/demo_MOD_reduction.cpp"],
+    features = ["modal", "irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "cached_reduction",
+    srcs = ["//src/compatibility/chrono:src/demos/modal/demo_MOD_cache_reduced.cpp"],
+    features = ["modal", "irrlicht"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":slewing_beam", ":analysis", ":reduction", ":cached_reduction"],
+    tags = ["manual"],
+)

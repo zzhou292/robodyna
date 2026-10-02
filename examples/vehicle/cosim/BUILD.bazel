@@ -1,0 +1,76 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["DemoCatalog.json", "BUILD.bazel"])
+
+# VSG is a build-wide capability here. Do not use the demo-only VSG or
+# postprocess availability overlays: both affect inherited node object layouts.
+
+robodyna_cpp_demo(
+    name = 'wheel_rig',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheelRig.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'viper',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_Viper.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'curiosity',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_Curiosity.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'wheeled_vehicle',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'tracked_vehicle',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_TrackedVehicle.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'wheeled_vehicle_sph',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_SPH.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers', '//src/vehicle/cosim:sph_terrain'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'wheeled_vehicle_omp',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_OMP.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers', '//src/vehicle/cosim:omp_terrain'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+robodyna_cpp_demo(
+    name = 'custom_terrain',
+    srcs = ['//src/compatibility/chrono:src/demos/vehicle/cosimulation/external/demo_VEH_Cosim_WheelRig_CustomTerrain.cpp'],
+    deps = ['//src/vehicle/cosim:cosim', '//src/vehicle/models:models', '//examples/vehicle:solver_selection_headers'],
+    data = ["@mpi_sdk//:runtime"],
+    tags = ["mpi-program", "requires-explicit-runtime-assets"],
+)
+
+# This complete aggregate includes both required numerical profiles; it must
+# fail admission if either is absent, never silently omit a demo.
+filegroup(name = "all_demos", srcs = [':wheel_rig', ':viper', ':curiosity', ':wheeled_vehicle', ':tracked_vehicle', ':wheeled_vehicle_sph', ':wheeled_vehicle_omp', ':custom_terrain'])
+filegroup(name = "baseline_demos", srcs = [':wheel_rig', ':viper', ':curiosity', ':wheeled_vehicle', ':tracked_vehicle', ':custom_terrain'])

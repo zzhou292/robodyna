@@ -1,0 +1,83 @@
+{
+  "schema": "robodyna.demo_build_qualification.v1",
+  "status": "passed",
+  "recorded_utc": "2026-10-02T03:51:05.098271+00:00",
+  "branch": "work/robodyna-demo-builds",
+  "base_commit": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "remote_push": false,
+  "scope": "Compile every retained original demo through the unified root Bazel graph and qualify the named host/binding/operator interfaces. This does not claim every demo trajectory ran or complete API/domain separation.",
+  "program_counts": {
+    "application": 1,
+    "csharp_demo": 17,
+    "cuda_demo": 26,
+    "native_demo": 311,
+    "native_template": 1,
+    "python_demo": 97
+  },
+  "retained_programs": 452,
+  "additional_applications": 1,
+  "explicit_compiled_labels": 457,
+  "compile": {
+    "batches": 23,
+    "guarded_build_phases": 35,
+    "all_passed": true,
+    "complete_cleanup": true,
+    "root": "crash-work/investigations/robodyna-demo-matrix-full-4",
+    "summary_sha256": "a1fd848a8d45cb9b94ee92cb4b6ad224e34f675e58a951a65089d61ac6509884",
+    "source_snapshot_sha256": "73dfbe34607a871e5fbd33870ab00f208ef1e9c4ddec57da58956220ba3a79b4",
+    "tools_sha256": "64aca1ca7ed0ed71f8767bebc1c4fad5ccb621cf1fc81fc088a431c88ce93411",
+    "matrix_sha256": "3beb45038a16a53a173c6f3056b9fa40a0be61535710a80de3ba0c609daf83f1",
+    "resource_limits": {
+      "affinity_cpus": 8,
+      "rss_gib": 16,
+      "minimum_available_ram_gib": 32,
+      "ordinary_compiler_workers": 4,
+      "wrapper_compiler_workers": 2,
+      "retained_deme_workers": 1
+    },
+    "peak_sampled_phase_rss_bytes": 2063892480,
+    "sum_guarded_phase_elapsed_seconds": 207.216,
+    "timing_scope": "Cached final re-admission of already compiled profiles; not a clean-build performance measurement."
+  },
+  "runtime": {
+    "required_groups": 15,
+    "required_target_occurrences": 23,
+    "additional_control_target_occurrences": 9,
+    "all_passed": true,
+    "controller_behavioral_cases": 28,
+    "source_reconciliation": "Earlier receipt snapshots have exact reviewed source deltas in the independent index; they are not claimed identical to the final source snapshot.",
+    "manifest": "crash-work/investigations/robodyna-demo-builds-1/remaining-runtime-gates-5.json",
+    "manifest_sha256": "d72fc253510880a73838f807e0aedacaeab76a10748a38880b1179ebc0e8b359",
+    "mpi_scope": "Real isolated single-rank preCICE validator with three ordered hashed inputs; existing two-rank message regression with no positional inputs. No coupled physical trajectory."
+  },
+  "independent_audit": {
+    "path": "crash-work/investigations/robodyna-demo-builds-1/final-evidence-audit-1/qualification-index.json",
+    "sha256": "2efd61de31fe907491d641978d6cd7a374605367c4cc4eb5e2a6ad7fec8eb8c1",
+    "status": "passed",
+    "preserved_test_logs_verified": true,
+    "nested_mpi_inputs_argv_cleanup_verified": true
+  },
+  "provenance": {
+    "imported_source_inverse_records": 558,
+    "source_ledger_sha256": "086d8899f5d9d337498635b9b0a2b2f37e691f672b8cd8ed1030785c5da72e5a",
+    "branding_followups": 4,
+    "historical_branding_manifest_unchanged": true,
+    "branding_followups_sha256": "d06c7f2e472caa69026589a960244287510d4b6f4ede640baaf7a62ccd1e4109",
+    "inherited_license_notices_preserved": true
+  },
+  "limits": [
+    "Original GUI/GPU demo trajectories require separate asset and resource admission.",
+    "The broader inherited unit-test suite is retained but is not wholly qualified by this milestone.",
+    "Independent FEA/MBD implementation linkage and complete API renaming remain follow-up work.",
+    "PythonOCC profile covers the 57 required real module targets, not every upstream wrapper family.",
+    "The 16 managed assemblies beyond the core preset do not yet provide general bazel-run launchers.",
+    "Known inherited experimental field-contact/fluid and preCICE partial implementations remain documented; compilation does not qualify them."
+  ],
+  "disk_audit": {
+    "path": "crash-work/investigations/disk-cleanup-audit-20261001-1/OVERVIEW.md",
+    "copied_cmake_data_candidate_gib": 24.04,
+    "staged_benchmark_input_candidate_gib": 8.32,
+    "deleted_files": 0,
+    "before_deletion": "Confirm exact identities and lack of live dependencies. Preserve accepted crash archives, videos, frozen binaries, source worktrees and all failure receipts."
+  }
+}

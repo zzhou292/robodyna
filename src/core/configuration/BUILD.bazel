@@ -6,6 +6,30 @@ package(default_visibility = ["//visibility:public"])
 # Same inherited templates and values as the qualified native aggregate.
 native_configuration(
     name = "host_configuration",
+    yaml = select({
+        "//build_defs/features:yaml_enabled": True,
+        "//conditions:default": False,
+    }),
+    vsg = select({
+        "//build_defs/features:vsg_enabled": True,
+        "//conditions:default": False,
+    }),
+    fsi_tdpf = select({
+        "//build_defs/features:fsi_tdpf_enabled": True,
+        "//conditions:default": False,
+    }),
+    fsi_sph = select({
+        "//build_defs/features:fsi_sph_enabled": True,
+        "//conditions:default": False,
+    }),
+    multicore = select({
+        "//build_defs/features:multicore_enabled": True,
+        "//conditions:default": False,
+    }),
+    fea_multiphysics = select({
+        "//build_defs/features:fea_multiphysics_enabled": True,
+        "//conditions:default": False,
+    }),
     config_template = "//src/compatibility/chrono:src/ChConfig.h.in",
     version_template = "//src/compatibility/chrono:src/ChVersion.h.in",
     config_header = "host/include/chrono/ChConfig.h",

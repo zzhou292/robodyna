@@ -1,0 +1,17 @@
+{
+  "schema": "robodyna.numpy_sdk_pin.v1",
+  "version": "1.26.4",
+  "python": "CPython 3.10 Linux x86_64",
+  "receipt_sha256": "90628ec973e39609b8a3a2756a5b711547ee3fe423f47118cb624f56dc250485",
+  "wheel": {
+    "version": "1.26.4",
+    "url": "https://files.pythonhosted.org/packages/4b/d7/ecf66c1cd12dc28b4040b15ab4d17b773b87fa9d29ca16125de01adb36cd/numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "archive": "numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "bytes": 18240889,
+    "sha256": "ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f"
+  },
+  "metadata": {
+    "url": "https://pypi.org/pypi/numpy/1.26.4/json",
+    "sha256": "3d9ccdd5a7a1036b03f41414dcbf3bfa29b2e022a656fe2b61871086f9a0660f"
+  }
+}

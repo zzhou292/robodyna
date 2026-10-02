@@ -1,0 +1,328 @@
+{
+  "schema": "robodyna.managed_demo_targets.v1",
+  "program_count": 17,
+  "declared_count": 17,
+  "scope": "All17 retained C# mains now have actual public assembly/launcher targets.13 original assemblies compiled;4 Sensor/ROS/OpenCRG profiles are declared but unqualified. Interactive demo runtime remains separate.",
+  "programs": [
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/core/demo_CS_CH_buildsystem.cs",
+      "sha256": "e3a266348a0b5caf7eeeae203917abd1670c90b2ad21b4ad7321a78da67f3f27",
+      "target": "//examples/csharp:build_system",
+      "declared": true,
+      "required_managed_modules": [
+        "core"
+      ],
+      "graphics_choices": [],
+      "status": "PASS: actual managed compilation and original501-step headless run against one native core",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/core/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-core-build-1.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/mbs/demo_CS_MBS_ballSMC.cs",
+      "sha256": "d99d9a1d362366bdb5e1e8a37236ff6e7313e046e44da7eff5eee7720f2db93d",
+      "target": "//examples/csharp/mbd:smooth_contact_ball",
+      "declared": true,
+      "required_managed_modules": [
+        "core"
+      ],
+      "graphics_choices": [
+        "vsg",
+        "irrlicht"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/mbs/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/mbs/demo_CS_MBS_earthquake.cs",
+      "sha256": "24c7228f3467b6bb60be67ef519acfec174a8789286d371bbde6f21faae2bdcd",
+      "target": "//examples/csharp/mbd:earthquake",
+      "declared": true,
+      "required_managed_modules": [
+        "core"
+      ],
+      "graphics_choices": [
+        "vsg",
+        "irrlicht"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/mbs/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/mbs/demo_CS_MBS_link_bushing.cs",
+      "sha256": "034b9d0393b41c981d1f106002020e41ea0a1f2f23e0651624823bce98c98f48",
+      "target": "//examples/csharp/mbd:bushing_links",
+      "declared": true,
+      "required_managed_modules": [
+        "core"
+      ],
+      "graphics_choices": [
+        "vsg",
+        "irrlicht"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/mbs/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/ros/demo_CS_ROS_sensor.cs",
+      "sha256": "fa08f0efb4dfaac82d8c5a288084ff522ea55bea1bebbf3f223aa0a84a09fcf9",
+      "target": "//examples/csharp/ros:sensor_bridge",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "sensor",
+        "ros"
+      ],
+      "graphics_choices": [],
+      "status": "Declared real assembly; native wrapper/managed compilation and runtime qualification pending",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/ros/CMakeLists.txt",
+      "required_native_capabilities": [
+        "sensor_optix",
+        "ros2_sdk"
+      ],
+      "notes": [
+        "Retained source has a main entry point but the original parent CMake does not traverse this directory."
+      ],
+      "required_profiles": [
+        "sensor-optix",
+        "ros-sensor"
+      ]
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/sensor/demo_CS_SEN_camera.cs",
+      "sha256": "a3af24b01a9573af647b3b0443b16e8c781077a2c950da1efb7d8b60e6d06234",
+      "target": "//examples/csharp/sensor:camera",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "sensor"
+      ],
+      "graphics_choices": [],
+      "status": "Declared real assembly; native wrapper/managed compilation and runtime qualification pending",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/sensor/CMakeLists.txt",
+      "required_native_capabilities": [
+        "sensor_optix"
+      ],
+      "required_profiles": [
+        "sensor-optix"
+      ]
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_IRR.cs",
+      "sha256": "0b29061609493c10387b9c0b5e0409c923a34a0ddf6fbd7869e04aa5011c1558",
+      "target": "//examples/csharp/vehicle/opencrg:road_course_alternate",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "Declared real assembly; native wrapper/managed compilation and runtime qualification pending",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [
+        "vehicle_opencrg"
+      ],
+      "notes": [
+        "Retained source has a main entry point but is absent from its current original CMake DEMOS list.",
+        "Despite inherited _IRR filename, the current source instantiates VSG; public name does not imply Irrlicht."
+      ],
+      "required_profiles": [
+        "opencrg"
+      ]
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_CRGTerrain_VSG.cs",
+      "sha256": "024433fbcac5b38da585cabdce2487e3eb7ccbf5524826cd17f3a51fd31012dc",
+      "target": "//examples/csharp/vehicle/opencrg:road_course",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "Declared real assembly; native wrapper/managed compilation and runtime qualification pending",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [
+        "vehicle_opencrg"
+      ],
+      "required_profiles": [
+        "opencrg"
+      ]
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_Gator_Accel.cs",
+      "sha256": "c8d4914cfa736393c9f75a2219a8c5b3e1b91ee9cb339b5a104ac3fb1fc567ed",
+      "target": "//examples/csharp/vehicle:gator_acceleration",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_HMMWV_MeshTerrain.cs",
+      "sha256": "02d475aec263b5f8d9953c4f65420b3f9ff2dbc6a7c7d11cf60277019f2c6102",
+      "target": "//examples/csharp/vehicle:hmmwv_mesh_terrain",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_HMMWV_Rollover.cs",
+      "sha256": "7e8d6bf779367876e019ed9173eec294cd7e73d471ec7b98525bcd09f80e750d",
+      "target": "//examples/csharp/vehicle:hmmwv_rollover",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_Kraz_ClosedLoop.cs",
+      "sha256": "727ad1f927a397b41c631849c3f28da554a3adb27dcd7bd4862160db6717d446",
+      "target": "//examples/csharp/vehicle:kraz_closed_loop",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle",
+        "postprocess"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_Kraz_OpenLoop.cs",
+      "sha256": "bd78e94da6db6fd1117726c0db58464ac7bdb9e07ec93ca7d77797709152cac8",
+      "target": "//examples/csharp/vehicle:kraz_open_loop",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_RigidTerrain_WheeledVehicle.cs",
+      "sha256": "2f7564070f99ef0f20013a4911cbc0f6c2e8571c196e8a3c351fb12742507a0b",
+      "target": "//examples/csharp/vehicle:wheeled_rigid_terrain",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_UAZBUS.cs",
+      "sha256": "b5ecf110221515e9a63e9308385b4d387fedf2024b69a286b5bd4d2c34392cd0",
+      "target": "//examples/csharp/vehicle:uaz_bus",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_WheeledJSON.cs",
+      "sha256": "4c98f801d3500d89eee87d43af66ff168e0ff3da2d662777ee02e46f3f000bb8",
+      "target": "//examples/csharp/vehicle:wheeled_json",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle"
+      ],
+      "graphics_choices": [
+        "vsg"
+      ],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/csharp/vehicle/demo_CS_VEH_paths.cs",
+      "sha256": "1f77d018c40762962fba1538f7e42d29480d427c1f5c49f3655cfd35ebbecce6",
+      "target": "//examples/csharp/vehicle:vehicle_paths",
+      "declared": true,
+      "required_managed_modules": [
+        "core",
+        "vehicle",
+        "postprocess"
+      ],
+      "graphics_choices": [],
+      "status": "PASS: original managed assembly compilation; GUI demo execution not yet qualified",
+      "original_cmake": "src/compatibility/chrono/src/demos/csharp/vehicle/CMakeLists.txt",
+      "required_native_capabilities": [],
+      "receipt": "crash-work/reports/robodyna-managed-optional-build-3.json",
+      "compiled_profile": "Roslyn3.11 C#7.3, Mono6.8 net472, real VSG/Vehicle native wrappers"
+    }
+  ]
+}

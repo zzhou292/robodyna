@@ -1,0 +1,25 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+[
+    robodyna_cpp_demo(
+        name = name,
+        srcs = ["//src/compatibility/chrono:src/demos/peridynamics/demo_PERI_" + name + ".cpp"],
+        deps = ["//src/fea/peridynamics:peridynamics"],
+        features = ["irrlicht", "postprocess"] + (["pardiso_mkl"] if name == "benchmark" else []),
+        tags = ["cpu-dynamics", "peridynamics-demo"],
+    )
+    for name in ["elastic", "fracture", "implicit", "benchmark", "fluid"]
+]
+
+# Keep the two upstream-unlisted programs in the requested build denominator.
+# Inherited fluid is explicitly untested and returns before its simulation body.
+# Compilation must not be reported as a successful fluid simulation.
+filegroup(
+    name = "native_demos",
+    srcs = [":elastic", ":fracture", ":implicit", ":benchmark", ":fluid"],
+    tags = ["manual"],
+)

@@ -1,0 +1,552 @@
+{
+  "schema": "robodyna.retained_multicore_build.v1",
+  "preintegration_commit": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "scope": "Current source bytes retained; original import hashes remain in SOURCES and exact transformation history. No new numerical implementation.",
+  "counts": {
+    "core_extension_translation_units": 15,
+    "multicore_translation_units": 27,
+    "demo_entrypoints": 15
+  },
+  "files": [
+    {
+      "path": "data/textures/blue.png",
+      "bytes": 82,
+      "sha256": "9a3551ac52b6ca0937e406b3a5e10de847802691e8e1f6579e7639ef7a00c126"
+    },
+    {
+      "path": "data/textures/bluewhite.png",
+      "bytes": 283,
+      "sha256": "6b724a2bf58772325f26ed4d1c303ebab2c908c6528c565bc7a87bd24b359603"
+    },
+    {
+      "path": "data/textures/checker1.png",
+      "bytes": 263755,
+      "sha256": "9d7f17522c4d4d88983fea3728124c1d2b2f13f64850d17059f3d31760da9229"
+    },
+    {
+      "path": "data/textures/concrete.jpg",
+      "bytes": 20701,
+      "sha256": "40702d10306f24ec7ba5f7b3d4626e24eea6a4898df337dc821f62e9bb99d9de"
+    },
+    {
+      "path": "data/vehicle/hmmwv/hmmwv_tire_coarse.obj",
+      "bytes": 32080,
+      "sha256": "f0a6374fbdcc738f32900227759151a2c9ff70760111598591a71687aa9493a6"
+    },
+    {
+      "path": "data/vehicle/hmmwv/hmmwv_tire_fine.obj",
+      "bytes": 277867,
+      "sha256": "54ff15cf3dbb5cff29e71665a3e5f3284ab60e89e4478d19aba3f6ec0b87cad0"
+    },
+    {
+      "path": "src/chrono/CMakeLists.txt",
+      "bytes": 74584,
+      "sha256": "82780cb392ea41bf088d358dc0b22ecbf3e688a235ed3120b837f76cd566722c"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChBroadphase.cpp",
+      "bytes": 14058,
+      "sha256": "7cfded39d82a7a17b2080ec5ba2f031c67e60e7da3e72ad8ea075ed65775b46c"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChBroadphase.h",
+      "bytes": 2249,
+      "sha256": "3b45cbf21018030611d9bb733f2a5fc8fbf7dcaa40587424d4a4fe909f00781b"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionData.h",
+      "bytes": 10301,
+      "sha256": "74e4f25406100e85e7d9ba271812496043b2ca354af63d493f4ea5c66d704bfb"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionModelMulticore.cpp",
+      "bytes": 13441,
+      "sha256": "5186ac1c42fe02516e55aac197c907ffd49dccf992567af25af475d0e98fea8b"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionModelMulticore.h",
+      "bytes": 3182,
+      "sha256": "541425eab1ff3f0a2fae987573cb12910d9149c679b6c896325fca335d305900"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionSystemMulticore.cpp",
+      "bytes": 36304,
+      "sha256": "3af8c264f8305d12ba2e17cdedcb1692883d50a9dfc7dde7fef5d2dba862be7c"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionSystemMulticore.h",
+      "bytes": 8888,
+      "sha256": "d0ecff25807f137213420751a35e398183c3bb8ad64d793db4d28d167b39b120"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionUtils.h",
+      "bytes": 31171,
+      "sha256": "00371a57de6958980ec87ba7a8e5fa02696e1ef2e57c175385fc19be9a66d5ce"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionUtilsBroadphase.cpp",
+      "bytes": 14439,
+      "sha256": "ded1244a740d6a8b1b78b635fd0d1b4cbcd7c368d9e9fe8beedc1709861f466a"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionUtilsMPR.cpp",
+      "bytes": 7832,
+      "sha256": "738379b5fe90211582c97105cd3aa58a79bb0fdca39db1136d951ed446132afc"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChCollisionUtilsPRIMS.cpp",
+      "bytes": 17492,
+      "sha256": "43b9372c87c5cd525b7fb2e01e8e404e67d7fa839bee510cb9012df67118fd23"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChConvexShape.h",
+      "bytes": 5271,
+      "sha256": "d79f46108d95248498b3d9e861e802d453c53ce41f5dd830a0a04e4ed21bfeaf"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChNarrowphase.cpp",
+      "bytes": 29145,
+      "sha256": "0a3e5bffb7ac79d1fd6ae16a6cd81824428ae9a35247050fddf0cabd2aa7cd78"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChNarrowphase.h",
+      "bytes": 7733,
+      "sha256": "c6b0842605d90b99919af0a96d767a61caf54eb2f10a005941eb715e6cf852e7"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChNarrowphaseMPR.cpp",
+      "bytes": 20888,
+      "sha256": "32cf5c513b051c531296b1787c0019cd77dffd01eef68840d107b899852396bb"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChNarrowphasePRIMS.cpp",
+      "bytes": 64433,
+      "sha256": "fc59336feb5914fe8c62b64268444a3d76c6135b269dea76256cf0ec50c3a0ba"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChRayTest.cpp",
+      "bytes": 19788,
+      "sha256": "b0e5c2f1aa284d403b560b65a14e1ab06d459b0a8ebd8459bd2bba4d1bc454de"
+    },
+    {
+      "path": "src/chrono/collision/multicore/ChRayTest.h",
+      "bytes": 3041,
+      "sha256": "8e09ed450665d0335fdd0e536a7d1778bf02c03e9b60daf8b9a6869601b64d75"
+    },
+    {
+      "path": "src/chrono/multicore_math/matrix.cpp",
+      "bytes": 24974,
+      "sha256": "b62613f9d605b5f42ffd328bfa0512a3c6fb585a5ec4ca3023eeae13093a926b"
+    },
+    {
+      "path": "src/chrono/multicore_math/matrix.h",
+      "bytes": 10434,
+      "sha256": "36c8e5d9df48c3a663a05f737c9b03acf85ff097278dadfff7a21a2cb257aa65"
+    },
+    {
+      "path": "src/chrono/multicore_math/real.h",
+      "bytes": 5059,
+      "sha256": "4411ec9d773ca25aef80d6fc861d40a89199780ba82c51d787b55b98ae7097d6"
+    },
+    {
+      "path": "src/chrono/multicore_math/real2.cpp",
+      "bytes": 2703,
+      "sha256": "c0a3f6f74f480276e9af903bc528161fc544abead67fb4c40437905ad58ceb68"
+    },
+    {
+      "path": "src/chrono/multicore_math/real2.h",
+      "bytes": 2400,
+      "sha256": "8959674290dd61461349636eb3d17dee91000320dd02a173a5031f50fe5bb292"
+    },
+    {
+      "path": "src/chrono/multicore_math/real3.cpp",
+      "bytes": 6503,
+      "sha256": "9d7abb5dc5be57c772888e62c35bab33c96e448188d85276283468fda9b2a4fc"
+    },
+    {
+      "path": "src/chrono/multicore_math/real3.h",
+      "bytes": 5176,
+      "sha256": "0ebcff84477a1e909bf5ec995f419cdfd161dddae301b2bb7bbd0baf44611ca9"
+    },
+    {
+      "path": "src/chrono/multicore_math/real4.cpp",
+      "bytes": 6691,
+      "sha256": "a7c98558bb2f0c5959bb1cfae1182c01afc9765b3fe8100450b89257cfae942c"
+    },
+    {
+      "path": "src/chrono/multicore_math/real4.h",
+      "bytes": 7472,
+      "sha256": "a90247364097f891417bec4c2d264ed36d6636407580d7169b2c8c601add8a08"
+    },
+    {
+      "path": "src/chrono/multicore_math/simd.h",
+      "bytes": 1534,
+      "sha256": "5ded95592320baed950986db27a748608f096e4b0ff6edf4055922406e7b450b"
+    },
+    {
+      "path": "src/chrono/multicore_math/simd_avx.h",
+      "bytes": 12856,
+      "sha256": "c570551de79799787ebf6e134360eaa0813438e4c9228b5b4ec86f664db5b073"
+    },
+    {
+      "path": "src/chrono/multicore_math/simd_non.h",
+      "bytes": 8151,
+      "sha256": "bac426956613e3c96c91cfd0582ce33d0357017e97d82c93b504f5d40da63a62"
+    },
+    {
+      "path": "src/chrono/multicore_math/simd_sse.h",
+      "bytes": 8047,
+      "sha256": "cbdc166596562b352c7478331c31bc64e51a60d06d5a1cc1f833d852acfebb5a"
+    },
+    {
+      "path": "src/chrono/multicore_math/thrust.h",
+      "bytes": 6037,
+      "sha256": "d91b07896aa8b04cef9fe92e6aa93cc01a08bc7ffad66658ea1f8d77ee46e258"
+    },
+    {
+      "path": "src/chrono/multicore_math/types.h",
+      "bytes": 6458,
+      "sha256": "7d2b5f6cc5dd88249a1c6408f58013b13c1599d04a17e6de19b56ab2789c78ee"
+    },
+    {
+      "path": "src/chrono/multicore_math/utility.h",
+      "bytes": 3143,
+      "sha256": "0dbc93f0782c1e724b23bcab256cd24016492542de41a2ffe9abc84f8fc989c1"
+    },
+    {
+      "path": "src/chrono/multicore_math/vec3.cpp",
+      "bytes": 1534,
+      "sha256": "c7329076f3969dfa83dff6d7a6a77b5a55b5f09ea207832e7dc48d810572f811"
+    },
+    {
+      "path": "src/chrono_multicore/CMakeLists.txt",
+      "bytes": 7114,
+      "sha256": "e6d26498882ebbcbf44a801e943d0da8d557bcd70c12545d5dc779feb864d7b8"
+    },
+    {
+      "path": "src/chrono_multicore/ChApiMulticore.h",
+      "bytes": 2290,
+      "sha256": "a870f1a92874e40eeb7982b15c54aa642145bb98e02adc9338b0ed090e921252"
+    },
+    {
+      "path": "src/chrono_multicore/ChConfigMulticore.h.in",
+      "bytes": 1127,
+      "sha256": "bff875a685f0bf3cfc58da1089da39a17918d2c8b45eb1080d164bf0b58cdaef"
+    },
+    {
+      "path": "src/chrono_multicore/ChDataManager.cpp",
+      "bytes": 4665,
+      "sha256": "64b49c64241e36d9d8308dcfcc6eaa1e49f8698a7332815ef2592f4e09c6ac37"
+    },
+    {
+      "path": "src/chrono_multicore/ChDataManager.h",
+      "bytes": 17810,
+      "sha256": "b172c08c196f57d928f91150c0fca28fb1f059e42cb4db2490c477ae9b9c667d"
+    },
+    {
+      "path": "src/chrono_multicore/ChMeasures.h",
+      "bytes": 4297,
+      "sha256": "53d0c48e461ffdf6b50c770cebe220c3259b6806b74e09fc43136ea6ee6090ca"
+    },
+    {
+      "path": "src/chrono_multicore/ChMulticoreDefines.h",
+      "bytes": 3331,
+      "sha256": "0d54157836354e5290c5a4405da6e66da8b75ebb68520e059b50b36bdba3caf1"
+    },
+    {
+      "path": "src/chrono_multicore/ChSettings.h",
+      "bytes": 10556,
+      "sha256": "d33dc2c2cab69b433c3d77cfc42abe17a736582974c32f606533ac27bb40a7c6"
+    },
+    {
+      "path": "src/chrono_multicore/ChTimerMulticore.h",
+      "bytes": 2887,
+      "sha256": "5eb55defd16d66619c6897c07f826762bec95bccc7e34fb1f8f02573cbf74f17"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChCollisionSystemChronoMulticore.cpp",
+      "bytes": 7052,
+      "sha256": "9c4eaa26f65ed5905448b0a82c71667ed61175a36663f8de85dc5c952d8dab08"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChCollisionSystemChronoMulticore.h",
+      "bytes": 2621,
+      "sha256": "a9ac868146252c3a65b14e26611a73570c25705d2356b3754c20e08666eb9471"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticore.cpp",
+      "bytes": 7170,
+      "sha256": "730ae04676bd90033f81592c12610ee06bbec3bd4fde82c7f4a25d223d4673c1"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticore.h",
+      "bytes": 3997,
+      "sha256": "906e0ac507ad18be08ad4a96d883c76ccfa22c9d8e4e8383c686f7fc824a9241"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticoreNSC.cpp",
+      "bytes": 8517,
+      "sha256": "382c09263e5143aa8766cec5c6a21b5ac79ef54a0b34c805fa76db840fd0dd5d"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticoreNSC.h",
+      "bytes": 2379,
+      "sha256": "233db10707d5d0723ded3a760b1ad644e021c57c5b6ff428065086feb55bb28f"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticoreSMC.cpp",
+      "bytes": 8168,
+      "sha256": "63b3f6cffa0bc65343bd1afdc85fc73cf1e7ef14cd55d577ae0ad39c9da49d5d"
+    },
+    {
+      "path": "src/chrono_multicore/collision/ChContactContainerMulticoreSMC.h",
+      "bytes": 2396,
+      "sha256": "9defb1fe4811f6cfebe95edb495c5d512375854fc82d394b284026b9219aaf29"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintBilateral.cpp",
+      "bytes": 10256,
+      "sha256": "2b189fb38d20fa25cc50bde47a3269f728ba8547abac9822e28b878f6d980106"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintBilateral.h",
+      "bytes": 1694,
+      "sha256": "98976c4fd62991e4d28f96577502e32d467b7c7c9ce1dcb9d05de79c897dc9e9"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintRigidRigid.cpp",
+      "bytes": 24624,
+      "sha256": "dac4f3e4f605b44d8113a9f0862c8b27403e859b7dab8a8db3b9cb0c830c042f"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintRigidRigid.h",
+      "bytes": 2548,
+      "sha256": "63de084a86b131acc21fc02f27a2d5c5fbd8e7e3108a8f0e1fd9ae95a2cb279a"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintUtils.cpp",
+      "bytes": 13855,
+      "sha256": "4ec8d027474a32063b93d6f2308dd3a268c8a72da8f0b69d714d2154e327c846"
+    },
+    {
+      "path": "src/chrono_multicore/constraints/ChConstraintUtils.h",
+      "bytes": 7924,
+      "sha256": "07a642edb34924945cd9b67d06f2b9fbc87f92d2adbcbc7bfa410f9bd8fe0686"
+    },
+    {
+      "path": "src/chrono_multicore/physics/Ch3DOFContainer.cpp",
+      "bytes": 4794,
+      "sha256": "3d2adb282130066422603bd211f65106316af75f515fcabc89ee2135ae9f7ab5"
+    },
+    {
+      "path": "src/chrono_multicore/physics/Ch3DOFContainer.h",
+      "bytes": 8154,
+      "sha256": "eaa89912d04e7143f6113d910de0c6d2d40c1ec82bc1add791652de2f000cc4d"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChFluidContainer.cpp",
+      "bytes": 20497,
+      "sha256": "62371101d44bf56c5e6d13f781ff5a03e777e623dfbb403b3445b2d5fa72f832"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChFluidKernels.h",
+      "bytes": 4448,
+      "sha256": "12a7181fc85d18d928aff8ff4aa447da473d7150c95c719886385b1cc8e4fda7"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChParticleContainer.cpp",
+      "bytes": 16889,
+      "sha256": "a0a589d170008688b6f79cc392dd60bf66e4f43429aa271e5f8cf2513c689d2b"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChSystemMulticore.cpp",
+      "bytes": 29578,
+      "sha256": "772065e75ae82def94241c0e9c65b788a81bf8b30d8b48aa56cecc3bf613af56"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChSystemMulticore.h",
+      "bytes": 11772,
+      "sha256": "6590360aa6660939877e60c81e7518fc9dbd945146cf58d9574dd7ea0dc1ba50"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChSystemMulticoreNSC.cpp",
+      "bytes": 10341,
+      "sha256": "d344f3746500bb3db6b3ca8460b84dc064fa1c2a078d9abc7208c710ba3a4f7f"
+    },
+    {
+      "path": "src/chrono_multicore/physics/ChSystemMulticoreSMC.cpp",
+      "bytes": 5004,
+      "sha256": "16d298cfe001dfc358272ce2aa9dfddff5a772a3c5ccbcfb84ac8f47bb204204"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChIterativeSolverMulticore.cpp",
+      "bytes": 11759,
+      "sha256": "447a2e97fad526c2a7c9ffd3e253bce04780b23dd658fa4f838cba2b69289001"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChIterativeSolverMulticore.h",
+      "bytes": 4451,
+      "sha256": "0fc4ec329dffffc035b0fec227ca08d9e141c7140d184bc789726a840f071292"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChIterativeSolverMulticoreNSC.cpp",
+      "bytes": 16246,
+      "sha256": "bdf8c9602a9ecac36f5c51f933a9e6f3a83496172d967725a59d8290f25bcdd2"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChIterativeSolverMulticoreSMC.cpp",
+      "bytes": 44564,
+      "sha256": "fd0ea5f01cc5d9ede5e8893e81f893ea32fdedd302dd78a920496167dc1dccb1"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSchurProduct.cpp",
+      "bytes": 7760,
+      "sha256": "3f76a7814896092aa631d224b61bc37d00232eee9fc008d1a5402b8c818133f4"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticore.cpp",
+      "bytes": 2865,
+      "sha256": "cc995ddb08bd5ed367ad4fe0b757b3d9375964e3b8c5fd39b517f8594856c55b"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticore.h",
+      "bytes": 11617,
+      "sha256": "77764d2837564a6ccf4577332bce31b5fb4662da5b865badd7bd7b8ae282e7a0"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreAPGD.cpp",
+      "bytes": 7859,
+      "sha256": "1bce0a672ea6439a441094d6ac5d39382a99c24873b2bfd9878cd3fcfe0643c8"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreAPGDREF.cpp",
+      "bytes": 6312,
+      "sha256": "9af0602f50269e906cb3fdba37c1f521627fdc91751ea07d387dae467f67c255"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreBB.cpp",
+      "bytes": 7569,
+      "sha256": "87dafb1a1799e8f72abff16942d87aac6a8bf0da5ed14d9e9be8b9527874bd73"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreCG.cpp",
+      "bytes": 2461,
+      "sha256": "832cdb7ce9ac1e58be617dd724b636724d8cdc319c196bb255b16ab7e1fdb7d7"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreGS.cpp",
+      "bytes": 6041,
+      "sha256": "2131b9265570142cf65894bcbd89247bd46b4ac43026bc4e23621b77afb7e772"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreJacobi.cpp",
+      "bytes": 4275,
+      "sha256": "f72fad2dd96e93f64bcc2c98fe8af4e38784bc31d5ada4c6764cbd3d051b73e0"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreMINRES.cpp",
+      "bytes": 2896,
+      "sha256": "02214a1b43c080e798bf9e4caaa0636ee203e4acb09a0540ea6d8a593a29e0d5"
+    },
+    {
+      "path": "src/chrono_multicore/solver/ChSolverMulticoreSPGQP.cpp",
+      "bytes": 5720,
+      "sha256": "2b8d4d44281df97ead5e82a816f71b5f7e544f1b99ebabd7b1b1c528cb625995"
+    },
+    {
+      "path": "src/demos/multicore/CMakeLists.txt",
+      "bytes": 2152,
+      "sha256": "b153caa2614a48e54bbaaaa39a62d7cf7576306bc09e6041fc8cb28496191fdd"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_ballsNSC.cpp",
+      "bytes": 7648,
+      "sha256": "e6368582872787ea98e8a9be82185c112de74f36978474027a55638e9454c0e9"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_ballsSMC.cpp",
+      "bytes": 7823,
+      "sha256": "35fb15d91c46f4a9dd5dd34c33a30f7cde627e6dd48c6270128234758348ac7d"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_callbackNSC.cpp",
+      "bytes": 8091,
+      "sha256": "fc5893745220a82d4844356d4e032c1323f05f8fd19b51a914605d453b625238"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_callbackSMC.cpp",
+      "bytes": 7431,
+      "sha256": "096028789b280792468f0cb12cb4e1ab12c8474d7b690c2dffc9099426f27322"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_collision_object.cpp",
+      "bytes": 14505,
+      "sha256": "99dcad8a2ead332dcec66f7f5c95a0eda6d1cb2a4442ef45cadf9052894f7965"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_cratering.cpp",
+      "bytes": 21495,
+      "sha256": "91939809cc2b0515ce0ac7f872881abefc77cfb5ddcd05654e394cf48e858121"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_custom_collision.cpp",
+      "bytes": 8677,
+      "sha256": "e573ab7b2b0fc3150b079fce258c875fff2c7b79705729913f5e7a7214eaca2d"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_fluidNSC.cpp",
+      "bytes": 6877,
+      "sha256": "78e0484924145fd5b52f79cb8d8b6834c4bd6de86a7fdb618a844fe9c0cb95c5"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_friction.cpp",
+      "bytes": 6675,
+      "sha256": "756521d13de5fa20cc5cc6b66376d789e7fb430df1e37e3ae87f386fe4687bc7"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_mesh_contact.cpp",
+      "bytes": 8815,
+      "sha256": "b6f6d67b83718cef721a0ad201025ab0036ebc6e711b9c552270589f272bb65b"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_mixerNSC.cpp",
+      "bytes": 8657,
+      "sha256": "b970aaab6c3c820148dd5a4cb82dd8fb31039b20a889e01a28a53d8b6cc1cba4"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_mixerSMC.cpp",
+      "bytes": 8172,
+      "sha256": "57f69ed32adee7106c33fc56deb52e974e45d871e940fd80741a7bd444b184ef"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_motors.cpp",
+      "bytes": 24952,
+      "sha256": "b92e55b92e85e349dbe28072f5249d49af85d8310fca8a3220e4830c1b787882"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_particlesNSC.cpp",
+      "bytes": 6484,
+      "sha256": "2b1ebfaa55ee48fcd32867b7a92c66ebf7ff094638cebcf3548189cb2edfc3c7"
+    },
+    {
+      "path": "src/demos/multicore/demo_MCORE_snow.cpp",
+      "bytes": 8429,
+      "sha256": "27085feb01c107c1b1f918c6da3ccf3858cf860a7e259636926601bea586d071"
+    },
+    {
+      "path": "src/tests/unit_tests/multicore/utest_MCORE_gravity.cpp",
+      "bytes": 1711,
+      "sha256": "a54f35cdc2b50123e0b759ed41e052de5dc1485b15a81a75b2f1d444aa06dddb"
+    },
+    {
+      "path": "src/tests/unit_tests/multicore/utest_MCORE_real3.cpp",
+      "bytes": 9466,
+      "sha256": "7a66d16d374f2cf14263043e3fe6280ebaa95748b1a55e9639b52ffa0e38dd33"
+    },
+    {
+      "path": "src/tests/unit_tests/ut_utils.h",
+      "bytes": 6726,
+      "sha256": "e944fd6ec834da7044c23f7e06bd7724f1a22d33fca6de42ebe975509a698338"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["DemoCatalog.json"])
+
+# Global YAML/SPH/VSG selections reach both original producers and consumers.
+# Never use a demo-only VSG override for these conditional public interfaces.
+robodyna_cpp_demo(
+    name = "sphere_drop",
+    srcs = ["//src/compatibility/chrono:src/demos/precice/demo_PRECICE_sphere_drop.cpp"],
+    deps = ["//src/coupling/precice:mbs", "//src/coupling/precice:sph"],
+    data = ["//src/coupling/precice:demo_assets", "@precice_sdk//:runtime"],
+    tags = ["requires-explicit-coupled-runtime"],
+)
+
+robodyna_cpp_demo(
+    name = "flap_openfoam",
+    srcs = ["//src/compatibility/chrono:src/demos/precice/demo_PRECICE_flap_openfoam.cpp"],
+    deps = ["//src/coupling/precice:mbs"],
+    data = ["//src/coupling/precice:demo_assets", "@precice_sdk//:runtime"],
+    tags = ["requires-external-openfoam"],
+)
+
+filegroup(name = "all_demos", srcs = [":sphere_drop", ":flap_openfoam"])

@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "spectra",
+    hdrs = glob(["include/Spectra/**/*.h"]),
+    includes = ["include"],
+    deps = ["@eigen//:eigen"],
+)
+exports_files(["LICENSE", "README.md"])

@@ -1,0 +1,177 @@
+{
+  "schema": "robodyna.ros_source_ownership.v1",
+  "owning_cmake": "src/compatibility/chrono/src/chrono_ros/CMakeLists.txt",
+  "scope": "Retained original source groups; no implementation source edits or fake headers",
+  "groups": {
+    "protocol": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSCdr.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSSchema.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSMessageCodec.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSControl.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSRingBuffer.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSSharedMemory.cpp",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSChannel.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSCdr.h",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSSchema.h",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSMessageCodec.h",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSControl.h",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSRingBuffer.h",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSSharedMemory.h",
+        "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSChannel.h",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSFrame.h",
+        "src/compatibility/chrono/src/chrono_ros/core/ChROSQoSSpec.h"
+      ]
+    },
+    "simulation": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/ChROSMessage.cpp",
+        "src/compatibility/chrono/src/chrono_ros/ChROSBridge.cpp",
+        "src/compatibility/chrono/src/chrono_ros/ChROSHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/ChROSManager.cpp",
+        "src/compatibility/chrono/src/chrono_ros/ChROSNodeProcess.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/ChROSMessage.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSBridge.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSManager.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSNodeProcess.h",
+        "src/compatibility/chrono/src/chrono_ros/ChApiROS.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSPublisher.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSSubscription.h",
+        "src/compatibility/chrono/src/chrono_ros/ChROSQoS.h"
+      ]
+    },
+    "handlers": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSClockHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSBodyHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSTFHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/robot/ChROSRobotModelHandler.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSClockHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSBodyHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/ChROSTFHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/robot/ChROSRobotModelHandler.h"
+      ]
+    },
+    "sensor": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGPSHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSIMUHandler.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGPSHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSIMUHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSSensorHandlerUtilities.h"
+      ]
+    },
+    "rendered_sensor": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSCameraHandler.cpp",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSLidarHandler.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSCameraHandler.h",
+        "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSLidarHandler.h"
+      ]
+    },
+    "vehicle": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.h"
+      ]
+    },
+    "robot": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.h"
+      ]
+    },
+    "node": {
+      "sources": [
+        "src/compatibility/chrono/src/chrono_ros/node/chrono_ros_node.cpp",
+        "src/compatibility/chrono/src/chrono_ros/node/ChROSNodeTypeSupport.cpp"
+      ],
+      "headers": [
+        "src/compatibility/chrono/src/chrono_ros/node/ChROSNodeTypeSupport.h"
+      ]
+    }
+  },
+  "files": {
+    "src/compatibility/chrono/src/chrono_ros/ChApiROS.h": "c1974d80e8fbb48f2cf6bbfffcf8c753daed8f1f90e2f4b0ba7674a013682b6b",
+    "src/compatibility/chrono/src/chrono_ros/ChROSBridge.cpp": "6d87ae3eaf80c2f89f3515a5d96da444699ecbd87e6ce600a6f15b63ba442876",
+    "src/compatibility/chrono/src/chrono_ros/ChROSBridge.h": "25fcf0d1c7195d75fe062765162b7913e067f7103ddea358bbeccdd8ddc1a2dc",
+    "src/compatibility/chrono/src/chrono_ros/ChROSHandler.cpp": "047cdc4b3c41c302f2c9fbc37f4c849e06505c13617b1c1be07370d83134f67c",
+    "src/compatibility/chrono/src/chrono_ros/ChROSHandler.h": "9629173f448fb8cd2511eedf301cc1cb30ae5a9131235b9bc4b8213dbb785ca3",
+    "src/compatibility/chrono/src/chrono_ros/ChROSManager.cpp": "122230e2fa378ce30e9f35b53c95bb79be690c188d494e55ce46a53f02fb35e9",
+    "src/compatibility/chrono/src/chrono_ros/ChROSManager.h": "419c768477d29df34e2f35811b49c13f026ab06890374d1dcd18e7060314c89d",
+    "src/compatibility/chrono/src/chrono_ros/ChROSMessage.cpp": "e6e101f94e91eaff7cd4320c59ecb4b43df6275ddc2b215611edcc0d2d75a6b9",
+    "src/compatibility/chrono/src/chrono_ros/ChROSMessage.h": "d0832538992fcd76affd84bec9257a3d2c572dec5e1fbb9d7c941069eb5f87a1",
+    "src/compatibility/chrono/src/chrono_ros/ChROSNodeProcess.cpp": "1ee06b490821dd85dafb18a5c9915a00e26850e443814dc43be7e6841143382a",
+    "src/compatibility/chrono/src/chrono_ros/ChROSNodeProcess.h": "10e5fbccb81e4ad5784e2853e50c4c1e7ef5aedf70d99d4a76f0f107184a7b39",
+    "src/compatibility/chrono/src/chrono_ros/ChROSPublisher.h": "05e3091ce2887f9d88f98f4aa4361e5e8c19bd01faf1d35ed7ce9f38152e5342",
+    "src/compatibility/chrono/src/chrono_ros/ChROSQoS.h": "2f8562c3e260047d7e2009cb6cbb2197e2ad9110314aa036bf4f6f283918746c",
+    "src/compatibility/chrono/src/chrono_ros/ChROSSubscription.h": "cb1d09a4ccc51e5e4d2db4adbcd6919345e3b241de3b8a29ed9786839efb6591",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSCdr.cpp": "9d0a7c08cf8557730ca9c0992c2b00ffa7b4280a9ea278f731a02166452db889",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSCdr.h": "02465dd741d9ef5277912e3b5928eab83cf8e6ea4cd33e909a64e5331393ad85",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSControl.cpp": "198474faf0b5a18c0d2e98d8b7406a52f3a4d0caf4a895f3630a9ac173f7e47b",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSControl.h": "d60c9fd078a779148eb77f4a7551111f5ab605190e762719284befd36f2e8987",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSFrame.h": "3825be8ce28ef864686b9a3fa267f38aa4b8c99b595d2b696b0b7b26c478cb0d",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSMessageCodec.cpp": "6323b39934c477d6530cad66c4e385dc49591547cf90fd4d38f1669c45199ba2",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSMessageCodec.h": "0844ba321ffd9d94057b4ce5ca2f569d33ea8c06b5f355334c4a64aa134ce163",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSQoSSpec.h": "deb5e180a6918847315ef62923096d844424d9078c008bf5887a19cfdadd826d",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSSchema.cpp": "ecec4f4b5f39bc4903fbd26d34a10830a99bb794d12e529c44b5d55d1d1ae67f",
+    "src/compatibility/chrono/src/chrono_ros/core/ChROSSchema.h": "2d0fd9615ae8d2ba1447fbf2d41f0c2f86786b0f4427de5cc78d45ef3ac49b12",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSChannel.cpp": "6f5dee29d1fb3ba417101e0757e1f410304b503c35f38a791bfcf124544e9edf",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSChannel.h": "3094f8aa92a139eb964e54b0361a8099dd9face60b9ffbd7111d6141ae94f431",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSRingBuffer.cpp": "3dacf6d41c518d98cddcdb225873385934fbb2733b939822c7077c3d5385a126",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSRingBuffer.h": "c700dddd10ace19ec5ab64cbd9142ed9984a2bd040f8c55a7fe7e668d0d0b035",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSSharedMemory.cpp": "463a72d74b684ad1b17c0bb4db2e642ce7a678841687c0690f6195e7ddfee24d",
+    "src/compatibility/chrono/src/chrono_ros/core/transport/ChROSSharedMemory.h": "260e78c44dbb4dc721ca01e9928e2becf991c0a4b8732d6d89ecfab0dfff9e8d",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSBodyHandler.cpp": "9fa86cf3e8e1ce875823899d230e2ea61ef626989e17ea9cf45e75dff79aeffd",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSBodyHandler.h": "a7d100180d7d3ab1118da626d04afa89dd70cf5942cb8d61cef333323d43c613",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSClockHandler.cpp": "786eca497330b69ca3ba1da5c06dbe1d6862ec71e601aca31ea05eb97b13e355",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSClockHandler.h": "3afc148d257eb78457479d6e45c6dc812c58407652b08ea8181d92c238f3307d",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSTFHandler.cpp": "2ed3c67fa47a87ec0767bae1b2bc0ee474e6540f88c030cf8eb051a79e118afd",
+    "src/compatibility/chrono/src/chrono_ros/handlers/ChROSTFHandler.h": "f6568f96367f2f0305cd9a8e6b05d223a99de907e9b28d1a8f76affae8bcb527",
+    "src/compatibility/chrono/src/chrono_ros/handlers/robot/ChROSRobotModelHandler.cpp": "99a5044c6763ddbe7e41f05051bd66196f87839ea517f6664a0b3047666b9ba7",
+    "src/compatibility/chrono/src/chrono_ros/handlers/robot/ChROSRobotModelHandler.h": "7a8ba12e06d9c3784ac54e95577e7c1226ea35ec9a456005479bb5ad8818d1ee",
+    "src/compatibility/chrono/src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.cpp": "92e44a8d137b86bcb312a6562e737145d91aeacedc09f6e12c71049bd796d0ff",
+    "src/compatibility/chrono/src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.h": "44d2acfaaf10bda85112bd3b1a6ffd24a115ccc76a37ea732f362c225de435b9",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.cpp": "44563950177a1698ce2ffa02f88796cc2e66a99841f0dd459cd04f84aea7840d",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.h": "fe61068aa6a782949ba0a80be091f8017ddf708339e2c9678ddfdf6b4e843178",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSCameraHandler.cpp": "b2c40e321fadd461bb719f96b679da576497ee10cd5f84b6d22a77460b3fc191",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSCameraHandler.h": "8e63dc1ef7464058e4b93e5a545087e373848e7582025109918de076cdc1efc4",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGPSHandler.cpp": "444018cbb21fd70306884857b5302c1a9ee98fd26251e42700d9ba8394712571",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGPSHandler.h": "d1bd53134fbcba171a5279e84d2967a81c587b953f163303d8c01378de7338ee",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.cpp": "00ade4ed79f67e76e35906fe8739c407ded62f09426e8ef371d52a1c15115783",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.h": "988a878ab56b3a276317ea2665f5b3e061ab823e3b2e068e34f0ef61a04acfe9",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSIMUHandler.cpp": "1c26de59d3b797d84096c4c9179538d94a90aded7cc57051cb6573f8570ca546",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSIMUHandler.h": "b48bd5f2c733d397f061d443b98db04e08b2752934927e84c4ed46ba96ab30e8",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSLidarHandler.cpp": "3be2bbac741de49e52ea0e25cc02afeb0ca95db62c58999f4666147336fac4b2",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSLidarHandler.h": "0a5a4910b54e25ce00fe9cda898a4e903df0225a3dd11049c1afed9e899217cc",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.cpp": "9d3764d89da6f010cced22ef74bd7c5b6d3c5c972b05319fa084a149e4e13426",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.h": "2ab131b2b70f2f6866943324f72a148288e3c068184782efbeb60801ce30ebfb",
+    "src/compatibility/chrono/src/chrono_ros/handlers/sensor/ChROSSensorHandlerUtilities.h": "71c2de2fc7ceefe08efa918b254095ede2c2f2d716a48116498d835a9b32d007",
+    "src/compatibility/chrono/src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.cpp": "6d6d0ca8c61cda07015ecab0516105c16a0b65f9bc7bac89ce9b7331b7293e1d",
+    "src/compatibility/chrono/src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.h": "7c9f6cf62ce3661ff705038a000bcdcdcd4b609205add9c57ae61ab943f7c008",
+    "src/compatibility/chrono/src/chrono_ros/node/ChROSNodeTypeSupport.cpp": "fc3a784984db2e57572598503f2455672e0da8fd845f7f5713d24abec2898f56",
+    "src/compatibility/chrono/src/chrono_ros/node/ChROSNodeTypeSupport.h": "db7520843f6fdd90525cc1c35b3b4526b53b7a2a0c28dbd20a346ee7e3886b3a",
+    "src/compatibility/chrono/src/chrono_ros/node/chrono_ros_node.cpp": "a0facb8af995d164ce2c303f22f0b6981842e67dc9f415dcadcdbcc22c41d14d"
+  }
+}

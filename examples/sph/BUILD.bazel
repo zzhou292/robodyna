@@ -1,0 +1,184 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["DemoCatalog.json", "sources.bzl", "BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "angle_repose",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_AngleRepose.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "bce",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_BCE.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "baffle_flow",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_BaffleFlow.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "compressibility",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Compressibility.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "cone_drop",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Cone_Drop.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "couette_flow",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_CouetteFlow.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "cylindrical_tank",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_CylindricalTank.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "dam_break",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_DamBreak.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "embedded_object",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_EmbeddedObject.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "fe_adirections",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_FEAdirections.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg", "pardiso_mkl"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "flexible_cable",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Flexible_Cable.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg", "pardiso_mkl"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "flexible_plate",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Flexible_Plate.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg", "pardiso_mkl"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "flexible_toroidal_tire",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Flexible_Toroidal_Tire.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg", "pardiso_mkl"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "kernels",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Kernels.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "object_drop",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_ObjectDrop.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "plate_sinkage",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_PlateSinkage.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "poiseuille_flow",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_Poiseuille_flow.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "rassor_drum",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_RassorDrum.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wave_tank",
+    srcs = ["//src/compatibility/chrono:src/demos/fsi/sph/demo_FSI-SPH_WaveTank.cpp"],
+    deps = ["//src/sph/visualization:vsg"],
+    features = ["fsi", "fsi_sph", "vsg"],
+    tags = ["gpu-dynamics", "sph-demo"],
+)
+
+# Explicit compile aggregate; no coupled CPU/GPU dynamics are executed.
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":angle_repose",
+        ":bce",
+        ":baffle_flow",
+        ":compressibility",
+        ":cone_drop",
+        ":couette_flow",
+        ":cylindrical_tank",
+        ":dam_break",
+        ":embedded_object",
+        ":fe_adirections",
+        ":flexible_cable",
+        ":flexible_plate",
+        ":flexible_toroidal_tire",
+        ":kernels",
+        ":object_drop",
+        ":plate_sinkage",
+        ":poiseuille_flow",
+        ":rassor_drum",
+        ":wave_tank",
+    ],
+    tags = ["manual"],
+)

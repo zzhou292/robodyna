@@ -1,0 +1,25 @@
+load("//bindings/python:package.bzl", "python_binding_package")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+python_binding_package(
+    name = "package", profile = "cad-pythonocc-same-occt", numpy = True,
+    python_runtime_anchor = "@numpy_sdk//:site-packages/numpy/__init__.py",
+    additional_runtime_roots = ["@pythonocc_sdk//:runtime/.robodyna-runtime.json"],
+    runtime_data = ["@pythonocc_sdk//:runtime_files", "@numpy_sdk//:runtime_files"],
+    proxies = {
+        "core": "//build_defs/bindings/python/numpy:core_proxy",
+        "irrlicht": "//build_defs/bindings/python/numpy:irrlicht_proxy",
+        "cascade": "//build_defs/bindings/python/cascade:cascade_proxy",
+    },
+    extensions = {
+        "core": "//build_defs/bindings/python/numpy:python_core",
+        "irrlicht": "//build_defs/bindings/python/numpy:python_irrlicht",
+        "cascade": "//build_defs/bindings/python/cascade:python_cascade",
+    },
+    backends = ["//build_defs/bindings:native_core", "//build_defs/bindings/optional:native_irrlicht", "//build_defs/bindings/optional/cascade:native_cascade"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package", "actual-cad-bindings"],
+)
+filegroup(name = "manifest", srcs = [":package"], output_group = "manifest")

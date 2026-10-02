@@ -1,0 +1,102 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["DEMO_TARGETS.json", "BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "custom_handler",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_custom_handler.cpp"],
+    deps = ["//src/integrations/ros:simulation"],
+    data = ["//src/integrations/ros:node"],
+)
+
+robodyna_cpp_demo(
+    name = "hydraulic_crane",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_hydraulic_crane.cpp"],
+    deps = ["//src/integrations/ros:simulation"],
+    features = ["vsg"],
+    data = ["//src/integrations/ros:node"],
+)
+
+robodyna_cpp_demo(
+    name = "vehicle",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_vehicle.cpp"],
+    deps = ["//src/integrations/ros:vehicle_handlers"],
+    features = ["vehicle"],
+    data = [
+        "//src/integrations/ros:node",
+        "//src/compatibility/chrono:data/vehicle/audi/json/audi_Vehicle.json",
+        "//src/compatibility/chrono:data/vehicle/audi/json/audi_Pac02Tire.json",
+        "//src/compatibility/chrono:data/vehicle/audi/json/audi_EngineSimpleMap.json",
+        "//src/compatibility/chrono:data/vehicle/audi/json/audi_AutomaticTransmissionSimpleMap.json",
+        "//src/compatibility/chrono:data/vehicle/terrain/RigidPlane.json",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "two_managers",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_two_managers.cpp"],
+    deps = ["//src/integrations/ros:vehicle_handlers", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg"],
+    features = ["vehicle", "vsg"],
+    data = ["//src/integrations/ros:node", "//src/compatibility/chrono:data/vehicle/terrain/textures/tile4.jpg"],
+)
+
+robodyna_cpp_demo(
+    name = "viper",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_viper.cpp"],
+    deps = ["//src/integrations/ros:robot_handlers"],
+    features = ["vsg"],
+    data = ["//src/integrations/ros:node", "//src/compatibility/chrono:data/textures/concrete.jpg"],
+)
+
+# Explicit currently admitted source slice. Complete coverage also needs the
+# sensor and URDF profiles; they are not replaced with disabled demo programs.
+filegroup(
+    name = "baseline_demos",
+    srcs = [":custom_handler", ":hydraulic_crane", ":vehicle", ":two_managers", ":viper"],
+    tags = ["manual"],
+)
+
+# These two originals need producer/consumer capability agreement. Direct native
+# rules preserve their main functions without demo-only availability overrides.
+cc_binary(
+    name = "sensor",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_sensor.cpp"],
+    deps = ["//src/integrations/ros:sensor_handlers", "//src/sensor/backend:sensor"],
+    data = ["//src/integrations/ros:node", "//src/sensor/backend:runtime_inputs",
+            "//src/compatibility/chrono:data/vehicle/audi/audi_chassis.obj",
+            "//src/compatibility/chrono:data/sensor/textures/quarry_01_4k.hdr"],
+    target_compatible_with = select({
+        "//build_defs/features:ros_sensor_optix": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "robodyna-demo", "native-demo", "ros-sensor-profile"],
+)
+
+config_setting(
+    name = "urdf_vsg_enabled",
+    flag_values = {
+        "//build_defs/features:ros_urdf": "true",
+        "//build_defs/features:vsg": "true",
+    },
+)
+
+cc_binary(
+    name = "urdf",
+    srcs = ["//src/compatibility/chrono:src/demos/ros/demo_ROS_urdf.cpp"],
+    deps = ["//src/integrations/ros:robot_handlers", "//src/io/parsers:urdf", "//build_defs/chrono/vsg:vsg"],
+    data = ["//src/integrations/ros:node", "//build_defs/chrono/vsg:assets", "@vsg_sdk//:runtime",
+            "//src/compatibility/chrono:data/textures/checker2.png",
+            "//src/compatibility/chrono:data/robot/robosimian/rs.urdf",
+            "//src/compatibility/chrono:data/robot/robosimian/actuation/motor_names.txt",
+            "//src/compatibility/chrono:data/robot/robosimian/actuation/walking_cycle.txt"],
+    target_compatible_with = select({
+        ":urdf_vsg_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    tags = ["manual", "robodyna-demo", "native-demo", "ros-urdf-profile"],
+)
+
+# Every original remains visible; missing coherent profiles reject this aggregate.
+filegroup(name = "all_demos", srcs = [":baseline_demos", ":sensor", ":urdf"], tags = ["manual"])

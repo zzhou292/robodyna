@@ -1,0 +1,619 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+load(":sources.bzl", "ARTICULATED_HEADERS", "ARTICULATED_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["DemoCatalog.json", "sources.bzl", "BUILD.bazel"])
+
+# Source-root demo helpers retain their original demos/... include spelling.
+# They contain header definitions used by each main, never a second compiled TU.
+cc_library(
+    name = "solver_selection_headers",
+    hdrs = ["//src/compatibility/chrono:src/demos/SetChronoSolver.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//build_defs/chrono:native_core_fea"],
+)
+
+cc_library(
+    name = "wheeled_models_headers",
+    hdrs = ["//src/compatibility/chrono:src/demos/vehicle/WheeledVehicleModels.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/vehicle/models:models"],
+)
+
+cc_library(
+    name = "wheeled_json_headers",
+    hdrs = ["//src/compatibility/chrono:src/demos/vehicle/WheeledVehicleJSON.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/vehicle:vehicle"],
+)
+
+# Original eleven private model files used by the articulated-vehicle demo.
+cc_library(
+    name = "articulated_model",
+    srcs = ["//src/compatibility/chrono:" + path for path in ARTICULATED_SOURCES],
+    hdrs = ["//src/compatibility/chrono:" + path for path in ARTICULATED_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src/demos/vehicle/articulated_vehicle",
+    deps = ["//src/vehicle:vehicle"],
+    tags = ["manual", "original-demo-model"],
+)
+
+robodyna_cpp_demo(
+    name = "articulated_vehicle",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/articulated_vehicle/demo_VEH_ArticulatedVehicle.cpp",
+        "//src/compatibility/chrono:src/demos/vehicle/articulated_vehicle/subsystems/ACV_AutomaticTransmissionSimple.h",
+        "//src/compatibility/chrono:src/demos/vehicle/articulated_vehicle/subsystems/ACV_EngineSimple.h",
+        "//src/compatibility/chrono:src/demos/vehicle/articulated_vehicle/subsystems/ACV_RigidTire.h",
+        "//src/compatibility/chrono:src/demos/vehicle/articulated_vehicle/subsystems/ACV_Vehicle.h",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+        ":articulated_model",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "checkpoint",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/checkpoint/demo_VEH_Checkpoint.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        ":wheeled_models_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "checkpoint_collision",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/checkpoint/demo_VEH_Checkpoint_Collision.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "controller_ai_driver",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/controllers/demo_VEH_Controller_AIDriver.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "controller_dlc",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/controllers/demo_VEH_Controller_DLC.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "rigid_scm_terrain_mixed_patches",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_RigidSCMTerrain_MixedPatches.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "rigid_terrain_moving_patch",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_RigidTerrain_MovingPatch.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "rigid_terrain_wheeled_vehicle",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_RigidTerrain_WheeledVehicle.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "scm_terrain_rigid_tire",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "scm_terrain_tracked_vehicle",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_TrackedVehicle.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "scm_terrain_wheeled_vehicle",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_WheeledVehicle.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "suspension_test_rig",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_SuspensionTestRig.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "track_test_rig",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_TrackTestRig.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheel_suspension_test_rig",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_WheelSuspensionTestRig.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheel_test_rig",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_WheelTestRig.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "m113",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/tracked_models/demo_VEH_M113.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "m113_band",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/tracked_models/demo_VEH_M113_Band.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "marder",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/tracked_models/demo_VEH_Marder.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "tracked_json",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/tracked_models/demo_VEH_TrackedJSON.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "tracked_json_band",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/tracked_models/demo_VEH_TrackedJSON_Band.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "two_cars",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/two_cars/demo_VEH_TwoCars.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "render_json_vsg",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/visualization/demo_VEH_RenderJSON_VSG.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "gator_incline",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_Gator_Incline.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "hmmwv9_yup",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_HMMWV9_YUP.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "hmmwv_rollover",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_HMMWV_Rollover.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "sedan_lockable_diff",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_Sedan_Lockable_Diff.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheeled",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_Wheeled.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        ":wheeled_models_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheeled_generic",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_WheeledGeneric.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheeled_generic_set",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_WheeledGenericSet.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "wheeled_json",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_models/demo_VEH_WheeledJSON.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        ":wheeled_json_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "test_accel",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_Accel.cpp",
+    ],
+    deps = [
+        ":wheeled_models_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "test_fmtv_ride",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_FMTV_Ride.cpp",
+    ],
+    deps = [
+        ":wheeled_models_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "test_iso2631_ride",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_ISO2631_Ride.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "test_iso2631_shock",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_ISO2631_Shock.cpp",
+    ],
+    deps = [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "test_tire_fea",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/vehicle/wheeled_tests/demo_VEH_Test_TireFEA.cpp",
+    ],
+    deps = [
+        ":solver_selection_headers",
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht",
+    ],
+    features = ["vehicle", "vsg", "irrlicht"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "paths",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/paths/demo_VEH_paths.cpp"],
+    features = ["vehicle", "postprocess"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "scm_terrain_fea_tire",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/terrain/demo_VEH_SCMTerrain_FEATire.cpp"],
+    deps = ["//src/vehicle/visualization:vsg"],
+    features = ["vehicle", "vsg", "pardiso_mkl"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+robodyna_cpp_demo(
+    name = "track_test_rig_band",
+    srcs = ["//src/compatibility/chrono:src/demos/vehicle/test_rigs/demo_VEH_TrackTestRig_Band.cpp"],
+    deps = ["//src/vehicle/models:models", "//src/vehicle/visualization:vsg"],
+    features = ["vehicle", "vsg", "pardiso_mkl"],
+    tags = ["cpu-dynamics", "vehicle-demo"],
+)
+
+# This explicit aggregate links the admitted original programs; no simulation is run.
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":articulated_vehicle",
+        ":checkpoint",
+        ":checkpoint_collision",
+        ":controller_ai_driver",
+        ":controller_dlc",
+        ":rigid_scm_terrain_mixed_patches",
+        ":rigid_terrain_moving_patch",
+        ":rigid_terrain_wheeled_vehicle",
+        ":scm_terrain_rigid_tire",
+        ":scm_terrain_tracked_vehicle",
+        ":scm_terrain_wheeled_vehicle",
+        ":suspension_test_rig",
+        ":track_test_rig",
+        ":wheel_suspension_test_rig",
+        ":wheel_test_rig",
+        ":m113",
+        ":m113_band",
+        ":marder",
+        ":tracked_json",
+        ":tracked_json_band",
+        ":two_cars",
+        ":render_json_vsg",
+        ":gator_incline",
+        ":hmmwv9_yup",
+        ":hmmwv_rollover",
+        ":sedan_lockable_diff",
+        ":wheeled",
+        ":wheeled_generic",
+        ":wheeled_generic_set",
+        ":wheeled_json",
+        ":test_accel",
+        ":test_fmtv_ride",
+        ":test_iso2631_ride",
+        ":test_iso2631_shock",
+        ":test_tire_fea",
+        ":paths",
+        ":scm_terrain_fea_tire",
+        ":track_test_rig_band",
+    ],
+    tags = ["manual"],
+)

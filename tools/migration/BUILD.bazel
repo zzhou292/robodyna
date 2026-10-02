@@ -4,8 +4,9 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(name = "import_library", srcs = ["import_tree.py"])
 py_library(name = "source_transform", srcs = ["source_transform.py"])
-py_library(name = "branding_verification", srcs = ["verify_branding.py"], deps = [":source_transform"])
-py_binary(name = "verify_branding", srcs = ["verify_branding.py"], deps = [":source_transform"])
+py_library(name = "branding_followups", srcs = ["branding_followups.py"], deps = [":source_transform"])
+py_library(name = "branding_verification", srcs = ["verify_branding.py"], deps = [":source_transform", ":branding_followups"])
+py_binary(name = "verify_branding", srcs = ["verify_branding.py"], deps = [":source_transform", ":branding_followups"])
 py_test(
     name = "verify_branding_test",
     srcs = ["tests/test_verify_branding.py"],
@@ -60,3 +61,11 @@ test_suite(name = "behavior_tests", tests = [":import_tree_test", ":verify_run_t
 # declarations and are distinct from the small fixture unit tests above.
 alias(name = "check_source_boundary", actual = "//build_defs:check_source_boundary")
 alias(name = "check_app_sources", actual = "//build_defs/app:check_port")
+
+py_test(
+    name = "branding_followups_test",
+    srcs = ["tests/test_branding_followups.py"],
+    main = "tests/test_branding_followups.py",
+    deps = [":branding_followups", ":branding_verification"],
+    size = "small",
+)

@@ -1,0 +1,28 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["Admission.json"])
+
+# These are separate operator batches. Building their union with a wildcard
+# would skip or reject incompatible profiles instead of proving full coverage.
+filegroup(name = "sensor_vulkan_additions", srcs = ["//examples/robotics/sensor:native_demos"], tags = ["manual"])
+filegroup(name = "vehicle_crm", srcs = ["//examples/vehicle/crm:native_demos", "//examples/robotics/crm:native_demos"], tags = ["manual"])
+filegroup(name = "vehicle_opencrg", srcs = ["//examples/vehicle/opencrg:native_demos"], tags = ["manual"])
+filegroup(name = "vehicle_multicore", srcs = ["//examples/vehicle/multicore:native_demos", "//examples/robotics/multicore:native_demos"], tags = ["manual"])
+filegroup(name = "sensor_optix_sph", srcs = ["//examples/sensor/optix:native_demos"], tags = ["manual"])
+
+py_test(
+    name = "admission_test",
+    srcs = ["AdmissionTest.py"],
+    main = "AdmissionTest.py",
+    args = ["$(location :Admission.json)", "$(location //examples/vehicle:DemoCatalog.json)", "$(location //examples/robotics:DemoCatalog.json)", "$(location //examples/sensor:DemoCatalog.json)"],
+    data = [
+        ":Admission.json", "//examples/vehicle:DemoCatalog.json", "//examples/robotics:DemoCatalog.json", "//examples/sensor:DemoCatalog.json",
+        "//examples/vehicle/crm:BUILD.bazel", "//examples/vehicle/opencrg:BUILD.bazel", "//examples/vehicle/multicore:BUILD.bazel",
+        "//examples/robotics/crm:BUILD.bazel", "//examples/robotics/sensor:BUILD.bazel", "//examples/robotics/multicore:BUILD.bazel",
+        "//examples/sensor/optix:BUILD.bazel",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)

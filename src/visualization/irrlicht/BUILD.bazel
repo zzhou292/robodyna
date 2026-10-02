@@ -1,0 +1,29 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Exact Linux implementation list from the retained module CMake declaration.
+# The optional macOS Objective-C adapter has a separate platform requirement.
+cc_library(
+    name = "irrlicht",
+    srcs = ["//src/compatibility/chrono:src/chrono_irrlicht/" + path for path in [
+        "ChIrrCamera.cpp",
+        "ChIrrMeshTools.cpp",
+        "ChIrrTools.cpp",
+        "ChIrrSkyBoxSceneNode.cpp",
+        "ChIrrGUI.cpp",
+        "ChVisualSystemIrrlicht.cpp",
+        "ChIrrNodeModel.cpp",
+        "ChIrrNodeShape.cpp",
+    ]],
+    hdrs = ["//src/compatibility/chrono:src/chrono_irrlicht/" + path for path in [
+        "ChApiIrr.h", "ChIrrTools.h", "ChIrrCamera.h", "ChIrrMeshTools.h",
+        "ChIrrEffects.h", "ChIrrSkyBoxSceneNode.h", "ChIrrGUI.h",
+        "ChVisualSystemIrrlicht.h", "ChIrrNodeModel.h", "ChIrrNodeShape.h",
+    ]],
+    deps = ["//build_defs/chrono:native_core_fea", "@irrlicht_sdk//:sdk"],
+    local_defines = ["CH_API_COMPILE_IRRLICHT", "IGNORE_DEPRECATED_WARNING"],
+    copts = ["-O3", "-fPIC", "-Wno-stringop-overflow"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-visualization"],
+)

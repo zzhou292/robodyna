@@ -118,6 +118,7 @@ def _local_vsg_impl(ctx):
         records[name] = library.record
         build.append('cc_import(name = %s, shared_library = %s)' % (repr(name), repr(library.output)))
     build.extend([
+        'cc_library(name = "vulkan", hdrs = glob(["include/vulkan/**/*.h"]), includes = ["include"], deps = [":vulkan_binary"])',
         'cc_library(name = "sdk", hdrs = glob(["include/**/*.h", "include/**/*.hpp"], allow_empty = True), includes = ["include"],',
         '    defines = ["VSG_SHARED_LIBRARY", "VSGXCHANGE_SHARED_LIBRARY", "VSGIMGUI_SHARED_LIBRARY"],',
         '    deps = %s, linkopts = ["-pthread"])' % repr([":" + name for name in requests]),

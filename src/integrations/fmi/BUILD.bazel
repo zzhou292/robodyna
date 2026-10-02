@@ -1,0 +1,70 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+load(":configuration.bzl", "fmi_configuration")
+load(":sources.bzl", "FMI_NOTICE_EXPORTS", "FMI_SOURCE_EXPORTS")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["forge.BUILD.bazel", "dependency.json", "sources.bzl", "SOURCE_TRANSFORMATIONS.json", "SourceBaseline.json"])
+
+_SOURCE = "//src/compatibility/chrono:"
+
+filegroup(name = "source_inputs", srcs = [_SOURCE + path for path in FMI_SOURCE_EXPORTS])
+
+# Preserve upstream license texts and embedded notice-bearing source headers in
+# exported FMUs. This is packaging provenance, not a change to a source license.
+filegroup(
+    name = "export_notices",
+    srcs = [_SOURCE + path for path in FMI_NOTICE_EXPORTS] + [
+        "//LICENSES:Chrono-BSD-3-Clause.txt",
+        "@eigen//:COPYING.MPL2", "@eigen//:COPYING.BSD", "@eigen//:COPYING.MINPACK",
+        "@fmu_forge//:LICENSE", "@fmu_forge//:variant/LICENSE.md",
+        "@fmu_forge//:rapidxml/license.txt", "@fmu_forge//:miniz-cpp/zip_file.hpp",
+    ],
+)
+
+cc_library(
+    name = "archive_values",
+    hdrs = [_SOURCE + "src/chrono_fmi/fmi2/FmuArchiveValues.h"],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = ["//src/core:foundation"],
+)
+
+fmi_configuration(
+    name = "configuration",
+    template = _SOURCE + "src/chrono_fmi/ChConfigFMI.h.in",
+    header = "generated/include/chrono_fmi/ChConfigFMI.h",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated/include",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [_SOURCE + "src/chrono_fmi/" + path for path in [
+        "ChApiFMI.h", "ChExternalFmu.h",
+        "fmi2/ChFmuForgeImport.h", "fmi2/ChFmuForgeExport.h",
+        "fmi3/ChFmuForgeImport.h", "fmi3/ChFmuForgeExport.h",
+    ]],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":configuration_headers", ":archive_values", "//build_defs/chrono:native_core_fea", "@fmu_forge//:headers"],
+    defines = ['FMI2_PLATFORM=\\"linux64\\"', 'FMI3_PLATFORM=\\"x86_64-linux\\"', 'SHARED_LIBRARY_SUFFIX=\\".so\\"'],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    tags = ["manual", "native-fmi", "cpu-only"],
+)
+
+cc_library(
+    name = "fmi",
+    srcs = [_SOURCE + "src/chrono_fmi/ChExternalFmu.cpp"],
+    deps = [":headers"],
+    local_defines = ["CH_API_COMPILE_FMI"],
+    copts = ["-O3", "-fPIC"],
+    # Header-only importer functions have one owning TU in each consumer.
+    # Do not whole-archive this optional wrapper into exporter-only clients.
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    tags = ["manual", "native-fmi", "cpu-only"],
+)

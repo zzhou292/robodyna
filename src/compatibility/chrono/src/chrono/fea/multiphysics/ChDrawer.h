@@ -15,6 +15,9 @@
 #ifndef CHDRAWER_H
 #define CHDRAWER_H
 
+#include "chrono/assets/ChColormap.h"
+#include "chrono/assets/ChGlyphs.h"
+#include "chrono/assets/ChVisualShapeTriangleMesh.h"
 #include "chrono/fea/multiphysics/ChVisualDataExtractor.h"
 #include "chrono/fea/multiphysics/ChFieldData.h"
 #include "chrono/fea/multiphysics/ChFEModel.h"

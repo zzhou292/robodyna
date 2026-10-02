@@ -3,6 +3,18 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["openssl.bzl", "vsg.bzl", "swig.bzl", "python_bindings.bzl"])
+exports_files(["inspection.bzl", "irrlicht.bzl"])
+exports_files(["cuda_math_manifest.json", "cuda_math.bzl"])
+exports_files(["spectra.BUILD.bazel"])
+exports_files(["sparse.bzl", "sparse_pins.json"])
+exports_files(["mono.bzl", "mono_pins.json"])
+exports_files(["roslyn.bzl", "roslyn_pins.json"])
+exports_files(["sensor.bzl", "sensor_pins.json"])
+exports_files(["hdf5.bzl", "hdf5_pins.json", "hydrochrono.bzl", "hydrochrono_pins.json"])
+exports_files(["ros.bzl", "ros_pins.json", "ros_downloads.json"])
+exports_files(["occt.bzl", "occt_pins.json"])
+exports_files(["urdf.bzl", "urdf_pins.json", "python_embed.bzl"])
+exports_files(["mpi.bzl", "mpi_pins.json", "flatbuffers.BUILD.bazel"])
 
 cc_test(
     name = "openssl_sdk_test",
@@ -10,3 +22,30 @@ cc_test(
     srcs = ["OpenSslSdkTest.cpp"],
     deps = ["@openssl//:crypto", "@googletest//:gtest_main"],
 )
+
+cc_test(
+    name = "cuda_math_sdk_test",
+    srcs = ["CudaMathSdkTest.cpp"],
+    deps = [
+        "@cuda_math//:cublas", "@cuda_math//:cusparse", "@cuda_math//:cusolver",
+        "@cuda_math//:cudss", "@cuda_math//:nvrtc", "@cuda_math//:nvjitlink",
+        "@googletest//:gtest_main",
+    ],
+    linkopts = ["-ldl"],
+    size = "small",
+    tags = ["manual", "cpu-only", "sdk-admission"],
+)
+
+exports_files(["optix.bzl", "optix_pins.json", "opencrg.bzl", "opencrg_pins.json"])
+
+exports_files(["precice.bzl", "precice_pins.json"])
+
+exports_files(["numpy.bzl", "numpy_pins.json"])
+
+exports_files(["fastdds.bzl", "fastdds_pins.json"])
+
+exports_files(["python_plot.bzl", "python_plot_pins.json"])
+
+exports_files(["ros_interfaces.bzl", "ros_interfaces_pins.json"])
+
+exports_files(["pythonocc.bzl", "pythonocc_pins.json"])

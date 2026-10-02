@@ -1,0 +1,132 @@
+load("//src/integrations/fmi/export:defs.bzl", "native_fmu")
+load("//src/integrations/fmi/runtime:driver.bzl", "native_fmi_driver")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["exports.json", "BUILD.bazel"])
+
+native_fmu(
+    name = "crane_fmi2_cosim",
+    identifier = "FMU2cs_crane",
+    version = "2",
+    mode = "CoSimulation",
+    guid = "e361b0f2-3b73-5f9d-b098-30dae9938907",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/cosim/fmu2_crane/craneFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/cosim/fmu2_crane/craneFMU.h"],
+)
+
+native_fmu(
+    name = "crane_fmi3_cosim",
+    identifier = "FMU3cs_crane",
+    version = "3",
+    mode = "CoSimulation",
+    guid = "0edd931a-4fae-5120-83a2-cd36ddffb42b",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/cosim/fmu3_crane/craneFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/cosim/fmu3_crane/craneFMU.h"],
+)
+
+native_fmu(
+    name = "actuator_fmi2_cosim",
+    identifier = "FMU2cs_actuator",
+    version = "2",
+    mode = "CoSimulation",
+    guid = "bc0f53a3-39e2-5654-ba79-0b246d455332",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.h"],
+)
+
+native_fmu(
+    name = "actuator_fmi3_cosim",
+    identifier = "FMU3cs_actuator",
+    version = "3",
+    mode = "CoSimulation",
+    guid = "7cc5e6c4-c9aa-52cd-9cd7-dc845b7e0365",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.h"],
+)
+
+native_fmu(
+    name = "vdp_fmi2_modex",
+    identifier = "FMU2me_vdp",
+    version = "2",
+    mode = "ModelExchange",
+    guid = "ffe7eebe-552b-582c-bf9e-c1675e86109b",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/modex/fmu2_vdp/vdpFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/modex/fmu2_vdp/vdpFMU.h"],
+)
+
+native_fmu(
+    name = "vdp_fmi3_modex",
+    identifier = "FMU3me_vdp",
+    version = "3",
+    mode = "ModelExchange",
+    guid = "da8f06c9-e3df-5690-aec8-fd117f95e531",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/modex/fmu3_vdp/vdpFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/modex/fmu3_vdp/vdpFMU.h"],
+)
+
+native_fmu(
+    name = "actuator_fmi2_modex",
+    identifier = "FMU2me_actuator",
+    version = "2",
+    mode = "ModelExchange",
+    guid = "53e21035-329a-5b84-9736-9696f075c98e",
+    srcs = ["//src/compatibility/chrono:src/demos/fmi/modex/fmu2_actuator/actuatorFMU.cpp", "//src/compatibility/chrono:src/demos/fmi/modex/fmu2_actuator/actuatorFMU.h"],
+)
+
+native_fmu(
+    name = "template_fmi2_cosim",
+    identifier = "FmuComponentChrono",
+    version = "2",
+    mode = "CoSimulation",
+    guid = "ef6bd38e-7283-5540-bbc4-939053c779bd",
+    srcs = ["//src/compatibility/chrono:template_project_fmi2/FmuComponentChrono.cpp", "//src/compatibility/chrono:template_project_fmi2/FmuComponentChrono.h"],
+    resource_prefix = "src/compatibility/chrono/template_project_fmi2/fmu_resources/",
+    resources = [
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/fonts/arial8.xml",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/fonts/arial80.bmp",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/fonts/jetbrainmono6_bold.png",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/logo_robodyna_alpha.png",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/skybox/sky_dn.jpg",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/skybox/sky_lf.jpg",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/skybox/sky_up.jpg",
+        "//src/compatibility/chrono:template_project_fmi2/fmu_resources/textures/blue.png"
+],
+)
+
+native_fmi_driver(
+    name = "hydraulic_crane_fmi2_cosim",
+    source = "//src/compatibility/chrono:src/demos/fmi/cosim/demo_FMI2_hydraulic_crane_cosim.cpp",
+    fmu_macros = {":crane_fmi2_cosim": "CRANE_FMU2_FILENAME", ":actuator_fmi2_cosim": "ACTUATOR_FMU2_FILENAME"},
+    external_wrapper = False,
+    visualization = False,
+)
+
+native_fmi_driver(
+    name = "hydraulic_crane_fmi3_cosim",
+    source = "//src/compatibility/chrono:src/demos/fmi/cosim/demo_FMI3_hydraulic_crane_cosim.cpp",
+    fmu_macros = {":crane_fmi3_cosim": "CRANE_FMU3_FILENAME", ":actuator_fmi3_cosim": "ACTUATOR_FMU3_FILENAME"},
+    external_wrapper = False,
+    visualization = False,
+)
+
+native_fmi_driver(
+    name = "van_der_pol_modex",
+    source = "//src/compatibility/chrono:src/demos/fmi/modex/demo_FMI_VdP_modex.cpp",
+    fmu_macros = {":vdp_fmi2_modex": "VDP_FMU2_FILENAME", ":vdp_fmi3_modex": "VDP_FMU3_FILENAME"},
+    external_wrapper = True,
+    visualization = False,
+)
+
+native_fmi_driver(
+    name = "hydraulic_crane_modex",
+    source = "//src/compatibility/chrono:src/demos/fmi/modex/demo_FMI_hydraulic_crane_modex.cpp",
+    fmu_macros = {":actuator_fmi2_modex": "ACTUATOR_FMU2_FILENAME"},
+    external_wrapper = True,
+    visualization = True,
+)
+
+native_fmi_driver(
+    name = "template_cosim",
+    source = "//src/compatibility/chrono:template_project_fmi2/demo_FmuComponentChrono.cpp",
+    fmu_macros = {":template_fmi2_cosim": "FMU_FILENAME"},
+    external_wrapper = False,
+    visualization = False,
+)
+
+filegroup(name = "fmus", srcs = [":crane_fmi2_cosim", ":crane_fmi3_cosim", ":actuator_fmi2_cosim", ":actuator_fmi3_cosim", ":vdp_fmi2_modex", ":vdp_fmi3_modex", ":actuator_fmi2_modex", ":template_fmi2_cosim"], tags = ["manual"])
+filegroup(name = "native_demos", srcs = [":hydraulic_crane_fmi2_cosim", ":hydraulic_crane_fmi3_cosim", ":van_der_pol_modex", ":hydraulic_crane_modex", ":template_cosim"], tags = ["manual"])

@@ -1,0 +1,35 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["DemoCatalog.json"])
+
+[
+    robodyna_cpp_demo(
+        name = "mpi_" + name,
+        srcs = ["//src/compatibility/chrono:src/demos/synchrono/mpi/demo_SYN_" + name + ".cpp"],
+        deps = ["//src/distributed:synchronization"],
+        features = ["vehicle", "irrlicht"],
+        data = ["@mpi_sdk//:runtime", "@fastdds_sdk//:runtime"],
+        tags = ["distributed-demo", "cpu-dynamics"],
+    )
+    for name in ["scm", "scm_tracked", "wheeled", "tracked", "copter", "highway"]
+]
+
+[
+    robodyna_cpp_demo(
+        name = "dds_" + name,
+        srcs = ["//src/compatibility/chrono:src/demos/synchrono/dds/demo_SYN_DDS_" + name + ".cpp"],
+        deps = ["//src/distributed:synchronization"],
+        features = ["vehicle", "irrlicht"],
+        data = ["@mpi_sdk//:runtime", "@fastdds_sdk//:runtime"],
+        tags = ["distributed-demo", "cpu-dynamics"],
+    )
+    for name in ["distributed", "wheeled", "tracked"]
+]
+
+filegroup(
+    name = "native_demos",
+    srcs = [":mpi_scm", ":mpi_scm_tracked", ":mpi_wheeled", ":mpi_tracked", ":mpi_copter", ":mpi_highway",
+            ":dds_distributed", ":dds_wheeled", ":dds_tracked"],
+    tags = ["manual"],
+)

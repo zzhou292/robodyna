@@ -1,0 +1,125 @@
+{
+  "schema": "robodyna.ros_interfaces_sdk_pins.v1",
+  "sdk_receipt_sha256": "50fd8d245fae8a84be23703b2ab9af389cb7978fd3ff12fef9dfe8f04850168b",
+  "source_commit": "a15959da579a653694fedde18ce8759674a8ab10",
+  "source_archive_sha256": "828dbb2c2627007db52f0db1b216813b6298ece386d44cd3b79f957e547eb43e",
+  "libraries": {
+    "libchrono_ros_interfaces__rosidl_typesupport_cpp.so": {
+      "path": "lib/libchrono_ros_interfaces__rosidl_typesupport_cpp.so",
+      "sha256": "4b2b52bd334653b0cf4793b9f25a53e73c0d18b5a72b3a2d6ed782ef66eac31e",
+      "needed": [
+        "librosidl_typesupport_cpp.so"
+      ]
+    },
+    "libchrono_ros_interfaces__rosidl_typesupport_introspection_cpp.so": {
+      "path": "lib/libchrono_ros_interfaces__rosidl_typesupport_introspection_cpp.so",
+      "sha256": "a562e73a8c186d92cae3589b0ac445854659ebc353461f8d6266bf0e39c30288",
+      "needed": [
+        "libgeometry_msgs__rosidl_typesupport_introspection_cpp.so",
+        "libstd_msgs__rosidl_typesupport_introspection_cpp.so",
+        "librosidl_typesupport_introspection_cpp.so",
+        "librosidl_runtime_c.so",
+        "libstdc++.so.6",
+        "libgcc_s.so.1"
+      ]
+    },
+    "libchrono_ros_interfaces__rosidl_typesupport_fastrtps_cpp.so": {
+      "path": "lib/libchrono_ros_interfaces__rosidl_typesupport_fastrtps_cpp.so",
+      "sha256": "758f7907db3589e0230f2cc3af87267a526e967e8037a969703ea08d2f4e28fe",
+      "needed": [
+        "libgeometry_msgs__rosidl_typesupport_fastrtps_cpp.so",
+        "libstd_msgs__rosidl_typesupport_fastrtps_cpp.so",
+        "librosidl_typesupport_fastrtps_cpp.so",
+        "libfastcdr.so.1",
+        "librosidl_runtime_c.so",
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ]
+    }
+  },
+  "messages": [
+    {
+      "path": "share/chrono_ros_interfaces/msg/Body.msg",
+      "bytes": 327,
+      "sha256": "8e4cfe2cd20aafe817c1f51b125d48f878d4dd05d2244b0381fef075c65dddce"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/DriverInputs.msg",
+      "bytes": 628,
+      "sha256": "11628ed2ac158361b5c2d6b492a3c1f24a564748a251f1a07327f62618db177f"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/Rassor.msg",
+      "bytes": 176,
+      "sha256": "bcb32ac92933e39b190e828a22e3d2de8639c173da18dfc90f0664e2224a3339"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorDriver.msg",
+      "bytes": 325,
+      "sha256": "ada04d0df08e4f4d4db245e83fb5ef5893251565e7c0b19bdbf075617d4fdfa9"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorDrumID.msg",
+      "bytes": 55,
+      "sha256": "06954178ce649962f09e566eed1f5561dfce9514771f73f7550a58b177e9ae52"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorSpeedDriverArm.msg",
+      "bytes": 111,
+      "sha256": "ba67af6e6790d28add7329353a9e5ddab004e42945c85f9ba8143af56616c93a"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorSpeedDriverDrum.msg",
+      "bytes": 107,
+      "sha256": "f276fca6250788a709e5a45f0c42094c3860c401f80adaad5339add8ab05034d"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorSpeedDriverWheel.msg",
+      "bytes": 110,
+      "sha256": "e8b0a0b340f6c3d86fefdbc53d6bc09350b0843911dac525a9090a8252b25757"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/RassorWheelID.msg",
+      "bytes": 90,
+      "sha256": "f42001c8d206957197ceccabbe8c1e4b14e42a61d162b006d3167952ec20e1c1"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/Viper.msg",
+      "bytes": 176,
+      "sha256": "bcb32ac92933e39b190e828a22e3d2de8639c173da18dfc90f0664e2224a3339"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperDCMotorControl.msg",
+      "bytes": 349,
+      "sha256": "1da05529f625e7802ca25f46a3b19dd1314acdff677636c84be707a42285e538"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperDriver.msg",
+      "bytes": 197,
+      "sha256": "c00aa0b23529eab670669c1ac404d6e0e36d88af83d0d5ccda3b2eaca67782f5"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperMotorNoLoadSpeed.msg",
+      "bytes": 117,
+      "sha256": "291869e94d47b2eb4f476de41ea5b013082b3027aa19e4aa4aa88e4978f6acfa"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperMotorStallTorque.msg",
+      "bytes": 117,
+      "sha256": "06c74df9ad13c179f5881f84cbae449cc9efb296d4457b4d57b2b7cdfefdaf7f"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperSteeringCommand.msg",
+      "bytes": 253,
+      "sha256": "020568505d81a612938d14defa5cff1a0810fb197ff898c2c3fde79e40136e12"
+    },
+    {
+      "path": "share/chrono_ros_interfaces/msg/ViperWheelID.msg",
+      "bytes": 118,
+      "sha256": "29a694f4981e1be95075c0f5666d3475eaa2057e2f5a2fb7301572d9971ce865"
+    }
+  ],
+  "installed_file_count": 429,
+  "license_sha256": "eb8755734b0b7a2bcea889aa4d5f65ee711de44d8377b6f43b452efd60800e5c"
+}

@@ -1,0 +1,26 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+# Concrete OptiX dependencies make an incorrect backend selection fail analysis.
+robodyna_cpp_demo(
+    name = "hmmwv",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_HMMWV.cpp"],
+    deps = ["//src/sensor/optix:sensor", "//src/vehicle/models:models", "//src/vehicle/visualization:irrlicht"],
+    features = ["sensor", "vehicle", "irrlicht"],
+    tags = ["sensor-demo", "requires-sensor-optix", "original-fog-scene"],
+)
+
+# This program requires both real OptiX SPH rendering and the coherent Vehicle
+# CRM profile. Both concrete dependencies enforce their configured admission.
+robodyna_cpp_demo(
+    name = "crm_rendering",
+    srcs = ["//src/compatibility/chrono:src/demos/sensor/demo_SEN_CRM_Rendering.cpp"],
+    deps = ["//src/sensor/optix:sensor", "//src/vehicle/crm:terrain", "//src/robotics/models:models", "//src/sph/visualization:vsg"],
+    features = ["sensor", "vehicle", "fsi", "fsi_sph", "vsg"],
+    tags = ["sensor-demo", "requires-sensor-optix", "requires-fsi-sph", "actual-sph-rendering"],
+)
+
+filegroup(name = "native_demos", srcs = [":hmmwv", ":crm_rendering"], tags = ["manual", "native-demo-group"])

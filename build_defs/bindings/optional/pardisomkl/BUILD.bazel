@@ -1,0 +1,13 @@
+load("@mkl_sdk//:runtime_flags.bzl", "RUNTIME_LINK_FLAGS")
+load("//build_defs/bindings/optional:defs.bzl", "shared_implementation")
+
+package(default_visibility = ["//visibility:public"])
+
+# cc_shared_library needs the vendor's dlopen/dispatch layout on this final DSO.
+# Loading the flags here leaves unrelated optional modules independent of MKL.
+shared_implementation(
+    name = "native_pardisomkl",
+    deps = ["//src/numerics/sparse:pardiso_mkl"],
+    dynamic_deps = ["//build_defs/bindings:native_core"],
+    user_link_flags = RUNTIME_LINK_FLAGS,
+)

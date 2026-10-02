@@ -1,0 +1,40 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "qualified_commit": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
+  "scope": "Only cuDSS 0.8 descriptor and reordering API adaptation; Newton iteration, numerical options and GPU kernels remain byte-identical after these exact substitutions are reversed.",
+  "upstream_migration": "https://docs.nvidia.com/cuda/cudss/migration_guide.html",
+  "files": [
+    {
+      "original_path": "src/fea/legacy/lib_src/solvers/SyncedNewton.cu",
+      "canonical_path": "src/fea/legacy/lib_src/solvers/SyncedNewton.cu",
+      "original_sha256": "49b666e4f8a2b2df0cb436db3ac109c44a98dd14c93bf665b79faa7f4803f928",
+      "replacements": [
+        {
+          "before": "#include \"SyncedNewton.cuh\"",
+          "after": "#include \"SyncedNewton.cuh\"\n#include \"CudssApi.h\"",
+          "count": 1
+        },
+        {
+          "before": "cudssAlgType_t reorder = CUDSS_ALG_DEFAULT;",
+          "after": "robodyna::fea::cudss_api::ReorderingAlgorithm reorder =\n        robodyna::fea::cudss_api::kDefaultReordering;",
+          "count": 1
+        },
+        {
+          "before": "cudssMatrixCreateCsr(\n      &dssA, n_dofs, n_dofs, h_nnz_, d_csr_row_offsets_, nullptr,\n      d_csr_col_indices_, d_csr_values_, CUDA_R_32I, CUDA_R_64F,",
+          "after": "robodyna::fea::cudss_api::CreateCsr32Double(\n      &dssA, n_dofs, n_dofs, h_nnz_, d_csr_row_offsets_, nullptr,\n      d_csr_col_indices_, d_csr_values_,",
+          "count": 1
+        },
+        {
+          "before": "cudssMatrixCreateDn(&dssB, n_dofs, 1, n_dofs, d_r_, CUDA_R_64F,",
+          "after": "robodyna::fea::cudss_api::CreateDenseDouble(&dssB, n_dofs, 1, n_dofs, d_r_,",
+          "count": 1
+        },
+        {
+          "before": "cudssMatrixCreateDn(&dssX, n_dofs, 1, n_dofs, d_delta_v_, CUDA_R_64F,",
+          "after": "robodyna::fea::cudss_api::CreateDenseDouble(&dssX, n_dofs, 1, n_dofs, d_delta_v_,",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

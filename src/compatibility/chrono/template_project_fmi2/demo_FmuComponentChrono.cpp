@@ -16,7 +16,7 @@
 #include <iostream>
 #include <cstddef>
 
-#include "chrono_fmi/fmi2/ChFmuToolsImport.h"
+#include "chrono_fmi/fmi2/ChFmuForgeImport.h"
 
 using namespace chrono;
 using namespace chrono::fmi2;

@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["demo.bzl"])
+cc_library(
+    name = "resources",
+    srcs = ["Resources.cpp"],
+    hdrs = ["Resources.h"],
+    deps = ["//build_defs/chrono:native_core_fea", "@rules_cc//cc/runfiles"],
+    target_compatible_with = ["@platforms//os:linux"],
+)

@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from viewer.file_integrity import sha256_file
+from tools.dependencies.cuda_math import file_hash as sha256_file
 from .jsonio import require
 from .runtime import watchdog_environment
 

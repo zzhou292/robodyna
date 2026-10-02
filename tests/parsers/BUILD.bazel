@@ -1,0 +1,33 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY", "YAML_ONLY")
+
+cc_test(
+    name = "yaml_test",
+    srcs = ["YamlTest.cpp"],
+    deps = ["//src/io/parsers:yaml_mbs", "@googletest//:gtest_main"],
+    target_compatible_with = ["@platforms//os:linux"] + YAML_ONLY,
+    tags = ["manual", "cpu-only", "yaml-profile"],
+    size = "small",
+)
+
+cc_test(
+    name = "python_test",
+    srcs = ["PythonTest.cpp"],
+    args = ["$(rlocationpath //bindings/python:core_package_manifest)", "$(rlocationpath :ImportedBody.py)"],
+    deps = ["//src/io/parsers:python", "//src/io/parsers/runtime:resources", "@googletest//:gtest"],
+    dynamic_deps = ["//build_defs/bindings:native_core"],
+    data = [":ImportedBody.py", "//bindings/python:core_package", "//bindings/python:core_package_manifest", "@python_embed_sdk//:runtime"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    tags = ["manual", "cpu-only", "python-embedding"],
+    size = "small",
+)
+
+cc_test(
+    name = "urdf_test",
+    srcs = ["UrdfTest.cpp"],
+    deps = ["//src/io/parsers:urdf", "@googletest//:gtest_main"],
+    data = ["@urdf_sdk//:runtime"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"],
+    tags = ["manual", "cpu-only", "sdk-admission"],
+    size = "small",
+)

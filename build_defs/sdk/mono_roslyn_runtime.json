@@ -1,0 +1,13 @@
+{
+  "schema": "robodyna.mono_runtime_overlay.v1",
+  "components": {
+    "xml_linq": {
+      "version": "6.8.0.105+dfsg-3.2",
+      "archive": "libmono-system-xml-linq4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "bytes": 57148,
+      "sha256": "4b70ef1837d6ff156c6f89f584c1d50942d3e75aed6f7b20831106fd7c1879a9",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/m/mono/libmono-system-xml-linq4.0-cil_6.8.0.105+dfsg-3.2_all.deb"
+    }
+  },
+  "scope": "Real Mono XML LINQ runtime alongside the compiler; do not modify frozen SDKs or substitute reference assemblies."
+}

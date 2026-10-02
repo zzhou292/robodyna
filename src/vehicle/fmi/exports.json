@@ -1,0 +1,79 @@
+{
+  "schema": "robodyna.vehicle_fmi_exports.v1",
+  "guid_namespace": "2f99433d-6b79-59f7-9a1c-58913012ac2b",
+  "exports": [
+    {
+      "target": "wheeled_vehicle",
+      "identifier": "FMU2cs_WheeledVehicle",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "1fe718a5-688b-586e-b87b-75e2c6fbbb1d",
+      "source": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.cpp",
+      "header": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.h",
+      "cmake": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/wheeled_vehicle",
+      "visualization": true
+    },
+    {
+      "target": "wheeled_vehicle_powertrain",
+      "identifier": "FMU2cs_WheeledVehiclePtrain",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "9bd8c987-a0a4-5454-b036-9963837c6ab6",
+      "source": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.cpp",
+      "header": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.h",
+      "cmake": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/wheeled_vehicle_ptrain",
+      "visualization": true
+    },
+    {
+      "target": "powertrain",
+      "identifier": "FMU2cs_Powertrain",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "bdcf90d9-4746-545c-affc-e35e7ab78b27",
+      "source": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.cpp",
+      "header": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.h",
+      "cmake": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/powertrain",
+      "visualization": false
+    },
+    {
+      "target": "tire",
+      "identifier": "FMU2cs_ForceElementTire",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "ccd7ab4c-25fa-5aa1-b9c2-97defe32c3e4",
+      "source": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.cpp",
+      "header": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.h",
+      "cmake": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/handling_tire",
+      "visualization": false
+    },
+    {
+      "target": "path_follower",
+      "identifier": "FMU2cs_PathFollowerDriver",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "7778d1ed-9d79-5168-b2c3-ca1ae96e0625",
+      "source": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp",
+      "header": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.h",
+      "cmake": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/path_follower",
+      "visualization": true
+    },
+    {
+      "target": "path_follower_model_exchange",
+      "identifier": "FMU2me_PathFollowerDriver",
+      "version": "2",
+      "mode": "ModelExchange",
+      "guid": "0ece4570-fc05-5753-b9a2-6883740bcdbc",
+      "source": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp",
+      "header": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.h",
+      "cmake": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/CMakeLists.txt",
+      "resource_directory": "data/vehicle/fmi/path_follower",
+      "visualization": false
+    }
+  ],
+  "profile": "Baseline native mechanics, actual optional Irrlicht implementation inside visual co-simulation FMUs; instantiation can request visible=false."
+}

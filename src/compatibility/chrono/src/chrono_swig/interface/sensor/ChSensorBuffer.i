@@ -15,7 +15,7 @@ using namespace chrono::sensor;
 %shared_ptr(chrono::sensor::Sensor)
 
 %shared_ptr(chrono::sensor::SensorBuffer)
-%shared_ptr(chrono::sensor::SensorBufferT)
+// Concrete buffer specializations are registered in ChModuleSensor.i.
 
 
 

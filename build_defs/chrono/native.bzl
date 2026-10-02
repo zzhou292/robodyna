@@ -53,13 +53,23 @@ def chrono_native_host(name):
         includes = ["src", "src/chrono/collision/bullet", "src/chrono_thirdparty", "src/chrono_thirdparty/HACDv2"],
         defines = ["CH_STATIC", "CH_IGNORE_DEPRECATED", "EIGEN_DONT_PARALLELIZE", "_ENABLE_EXTENDED_ALIGNED_STORAGE", "NDEBUG"],
         deps = [":" + name + "_configuration_headers", "@eigen//:eigen",
-                "//include/robodyna/mechanics:inertia_headers", "//include/robodyna/mbd:implementation_headers", "//include/robodyna/fea:implementation_headers", "//include/robodyna/simulation:implementation_headers"],
+                "//include/robodyna/mechanics:inertia_headers", "//include/robodyna/mbd:implementation_headers", "//include/robodyna/fea:implementation_headers", "//include/robodyna/simulation:implementation_headers"] + select({
+            "//build_defs/features:yaml_enabled": ["//src/io/yaml:headers"],
+            "//conditions:default": [],
+        }),
         tags = _TAGS,
     )
     common = {
         "alwayslink": True,
         "deps": [":" + name + "_headers"],
-        "local_defines": ["CH_API_COMPILE", "BT_THREADSAFE", "BP_USE_FIXEDPOINT_INT_32"],
+        "local_defines": ["CH_API_COMPILE", "BT_THREADSAFE", "BP_USE_FIXEDPOINT_INT_32"] + select({
+            "//build_defs/features:multicore_enabled": [
+                "BT_USE_OPENMP",
+                "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
+                "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_OMP",
+            ],
+            "//conditions:default": [],
+        }),
         "target_compatible_with": ["@platforms//os:linux"],
         "tags": _TAGS,
     }
@@ -95,7 +105,16 @@ def chrono_native_host(name):
     )
     cc_library(
         name = name,
-        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"] + NEUTRAL_TARGETS.values() + VISUAL_TARGETS.values(),
+        deps = [":" + name + "_implementation", ":" + name + "_bundled_collision"] + NEUTRAL_TARGETS.values() + VISUAL_TARGETS.values() + select({
+            "//build_defs/features:fea_multiphysics_enabled": [":native_fea_multiphysics"],
+            "//conditions:default": [],
+        }) + select({
+            "//build_defs/features:multicore_enabled": ["//src/collision/multicore:core_extension"],
+            "//conditions:default": [],
+        }) + select({
+            "//build_defs/features:yaml_enabled": ["//src/io/yaml:core_extension"],
+            "//conditions:default": [],
+        }),
         linkopts = ["-pthread"],
         target_compatible_with = ["@platforms//os:linux"],
         tags = _TAGS,

@@ -1,0 +1,97 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load(":configuration.bzl", "sph_configuration")
+load(":sources.bzl", "SPH_CONFIG_TEMPLATE", "SPH_CUDA_SOURCES", "SPH_HEADERS")
+load(":exports.bzl", "FSI_SPH_SOURCE_EXPORTS")
+load(":ownership.bzl", "sph_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json"])
+
+sph_configuration(
+    name = "configuration",
+    template = "//src/compatibility/chrono:" + SPH_CONFIG_TEMPLATE,
+    header = "generated/include/chrono_fsi/sph/ChFsiConfigSPH.h",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated/include",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for path in SPH_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    defines = ["CHRONO_USE_CUDA"],
+    deps = [
+        ":configuration_headers",
+        "//src/coupling/fsi:fsi",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cccl_headers",
+    ],
+)
+
+# The owning CMake file deliberately compiles all five nominal .cpp files with
+# CUDA as well as the twelve .cu files. rules_cuda's NVCC action uses '-x cu'.
+cuda_library(
+    name = "sph",
+    srcs = ["//src/compatibility/chrono:" + path for path in SPH_CUDA_SOURCES],
+    deps = [":headers", "//src/compatibility/chrono:native_stb"],
+    copts = ["--std=c++17", "-O3", "-Wno-deprecated-gpu-targets", "--expt-relaxed-constexpr"],
+    host_copts = ["-O3"],
+    local_defines = [
+        "CH_API_COMPILE_FSI",
+        "THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA",
+        "THRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP",
+    ],
+    rdc = False,
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = ["manual", "native-sph", "cuda-backend"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location //src/coupling/fsi:sources.bzl)",
+        "$(location :sources.bzl)",
+        "$(location //src/compatibility/chrono:src/chrono_fsi/CMakeLists.txt)",
+        "$(location //src/compatibility/chrono:src/chrono_fsi/sph/CMakeLists.txt)",
+        "$(location :SourceBaseline.json)",
+        "$(location //examples/sph:sources.bzl)",
+        "$(location //src/compatibility/chrono:src/demos/fsi/sph/CMakeLists.txt)",
+        "$(location //examples/sph:BUILD.bazel)",
+        "$(location //examples/sph:DemoCatalog.json)",
+    ],
+    data = [
+        "//src/coupling/fsi:sources.bzl", ":sources.bzl", ":SourceBaseline.json",
+        "//examples/sph:sources.bzl", "//examples/sph:BUILD.bazel", "//examples/sph:DemoCatalog.json",
+    ] + ["//src/compatibility/chrono:" + path for path in FSI_SPH_SOURCE_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+sph_ownership_test(
+    name = "ownership_test",
+    implementation = "//src/sph/visualization:vsg",
+    solver = ":sph",
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+# Header/value gate only: no SPH system construction, CUDA call or time advance.
+cc_test(
+    name = "host_profile_test",
+    srcs = ["HostProfileTest.cpp"],
+    deps = [":headers", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-sph"],
+)

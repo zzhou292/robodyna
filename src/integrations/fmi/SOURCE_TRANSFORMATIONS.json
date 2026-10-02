@@ -1,0 +1,62 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "FMI compatibility includes plus lifetime-safe constant metadata and valid scalar variability; model equations and stepping unchanged.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/template_project_fmi2/FmuComponentChrono.h",
+      "canonical_path": "src/compatibility/chrono/template_project_fmi2/FmuComponentChrono.h",
+      "original_sha256": "8cec1033c4b8a2ad3d31311d5829172ab9226ff6b074d092739ee74e87378edf",
+      "replacements": [
+        {
+          "before": "#include \"chrono_fmi/fmi2/ChFmuToolsExport.h\"",
+          "after": "#include \"chrono_fmi/fmi2/ChFmuForgeExport.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/template_project_fmi2/demo_FmuComponentChrono.cpp",
+      "canonical_path": "src/compatibility/chrono/template_project_fmi2/demo_FmuComponentChrono.cpp",
+      "original_sha256": "7b13e9cbddb51d2ff30fbf6f289766e4e73340a50717b9db4ce7f75f94998962",
+      "replacements": [
+        {
+          "before": "#include \"chrono_fmi/fmi2/ChFmuToolsImport.h\"",
+          "after": "#include \"chrono_fmi/fmi2/ChFmuForgeImport.h\"",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono_fmi/fmi2/ChFmuForgeExport.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono_fmi/fmi2/ChFmuForgeExport.h",
+      "original_sha256": "ca8d312d994afa57a09765a570e7d870af8dde6e47c443476415cc450996381d",
+      "replacements": [
+        {
+          "before": "#include \"fmi2/FmuForgeExport.h\"",
+          "after": "#include \"fmi2/FmuForgeExport.h\"\n#include \"chrono_fmi/fmi2/FmuArchiveValues.h\"",
+          "count": 1
+        },
+        {
+          "before": "#define ADD_BVAL_AS_FMU_GETSET(returnType, codeGet, codeSet)                                         \\\n",
+          "after": "#define ADD_BVAL_AS_FMU_GETSET(returnType, codeGet, codeSet)                                         \\\n    bVal = archive_bindings_.CaptureConstant(bVal);                                            \\\n",
+          "count": 1
+        },
+        {
+          "before": "#define ADD_BVAL_AS_FMU_POINTER(returnType)                                                                          \\\n",
+          "after": "#define ADD_BVAL_AS_FMU_POINTER(returnType)                                                                          \\\n    bVal = archive_bindings_.CaptureConstant(bVal);                                            \\\n",
+          "count": 1
+        },
+        {
+          "before": "VariabilityType_conv.at(bVal.GetVariability())",
+          "after": "VariabilityType_conv.at(robodyna::fmi::ScalarArchiveVariability( \\\n            FmuVariable::Type::returnType == FmuVariable::Type::Real, bVal.GetVariability()))",
+          "count": 2
+        },
+        {
+          "before": "    int tablevel;",
+          "after": "    robodyna::fmi::ArchiveValueBindings archive_bindings_;\n    int tablevel;",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,26 +1,80 @@
 load("//build_defs/chrono:branding_sources.bzl", "BRANDING_SOURCE_INPUTS")
+load("//src/dem:sources.bzl", "DEM_SOURCE_EXPORTS", "DEM_DATA_FILES")
+load("//src/mbd/multicore:sources.bzl", "MULTICORE_EXPORTS")
+load("//src/fea/peridynamics:sources.bzl", "PERIDYNAMICS_EXPORTS")
+load("//src/vehicle:exports.bzl", "VEHICLE_SOURCE_EXPORTS", "VEHICLE_DEMO_EXPORTS")
+load("//src/sph:exports.bzl", "FSI_SPH_SOURCE_EXPORTS")
+load("//src/coupling/tdpf:sources.bzl", "TDPF_EXPORTS")
+load("//src/robotics/models:exports.bzl", "ROBOT_SOURCE_EXPORTS")
+load("//src/sensor:exports.bzl", "SENSOR_SOURCE_EXPORTS")
+load("//src/sensor/optix:exports.bzl", "OPTIX_SOURCE_EXPORTS")
+load("//src/vehicle/profiles:exports.bzl", "VEHICLE_OPTIONAL_EXPORTS")
+load("//src/vehicle/fmi:sources.bzl", "VEHICLE_FMI_SOURCE_EXPORTS")
+load("//src/integrations/fmi:sources.bzl", "FMI_SOURCE_EXPORTS", "FMI_NOTICE_EXPORTS")
+load("//src/integrations/cad:sources.bzl", "CAD_SOURCE_EXPORTS")
+load("//src/io/yaml:sources.bzl", "YAML_SOURCE_EXPORTS")
+load("//src/io/parsers:sources.bzl", "PARSER_SOURCE_EXPORTS", "PARSER_DEMO_ASSETS", "YAML_DEMO_ASSETS")
 load("//build_defs/chrono:native.bzl", "chrono_native_host")
 load("//build_defs/chrono:vsg.bzl", "chrono_native_vsg")
 load("//build_defs/chrono:neutral_sources.bzl", "NEUTRAL_HEADERS", "NEUTRAL_SOURCES")
 load("//build_defs/chrono:source_paths.bzl", "SOURCE_RELOCATIONS", "current_source_label")
 load("//build_defs/chrono:visual_sources.bzl", "VISUAL_ADAPTER_SOURCES", "VISUAL_EXTRA_HEADERS", "VISUAL_HEADERS", "VISUAL_SOURCES")
 load("//build_defs/chrono:scm.bzl", "chrono_native_scm")
+load("//build_defs/chrono:postprocess.bzl", "chrono_native_postprocess")
+load("//build_defs/chrono:sparse.bzl", "chrono_native_mumps", "chrono_native_pardisomkl")
+load("//build_defs/chrono:fea_multiphysics.bzl", "chrono_native_fea_multiphysics")
 load("//build_defs/chrono:stb.bzl", "chrono_native_stb")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["CMakeLists.txt", "src/chrono/CMakeLists.txt", "src/ChConfig.h.in", "src/ChVersion.h.in"])
+exports_files(DEM_SOURCE_EXPORTS + DEM_DATA_FILES)
+exports_files(MULTICORE_EXPORTS)
+exports_files(PERIDYNAMICS_EXPORTS)
+filegroup(
+    name = "peridynamics_source_inputs",
+    srcs = glob(["src/chrono_peridynamics/*", "src/demos/peridynamics/*"]),
+)
+exports_files([
+    "data/vehicle/hmmwv/hmmwv_tire_coarse.obj",
+    "data/vehicle/hmmwv/hmmwv_tire_fine.obj",
+])
+exports_files(VEHICLE_SOURCE_EXPORTS + VEHICLE_DEMO_EXPORTS)
+exports_files(FSI_SPH_SOURCE_EXPORTS)
+exports_files(TDPF_EXPORTS)
+exports_files(ROBOT_SOURCE_EXPORTS)
+exports_files(SENSOR_SOURCE_EXPORTS)
+exports_files(OPTIX_SOURCE_EXPORTS)
+exports_files(VEHICLE_OPTIONAL_EXPORTS)
+exports_files(VEHICLE_FMI_SOURCE_EXPORTS)
+exports_files(FMI_SOURCE_EXPORTS + FMI_NOTICE_EXPORTS)
+exports_files(CAD_SOURCE_EXPORTS)
+exports_files(YAML_SOURCE_EXPORTS + PARSER_SOURCE_EXPORTS + PARSER_DEMO_ASSETS + YAML_DEMO_ASSETS)
+exports_files(glob(["src/chrono_modal/*.cpp", "src/chrono_modal/*.h"]))
+exports_files(["src/tests/unit_tests/modal/utest_MOD_curved_beam.cpp"])
+exports_files(["src/chrono_postprocess/ChGnuPlot.h", "src/chrono_postprocess/ChApiPostProcess.h"])
 
 chrono_native_host(name = "native_core_fea")
 chrono_native_stb(name = "native_stb")
 chrono_native_vsg(name = "native_vsg")
 chrono_native_scm(name = "native_scm")
+chrono_native_postprocess(name = "native_postprocess")
+chrono_native_mumps(name = "native_mumps")
+chrono_native_pardisomkl(name = "native_pardisomkl")
+chrono_native_fea_multiphysics(name = "native_fea_multiphysics")
+
+exports_files(glob(["src/chrono_irrlicht/*.cpp", "src/chrono_irrlicht/*.h"]))
+filegroup(
+    name = "irrlicht_assets",
+    srcs = glob(["data/fonts/**", "data/skybox/**"]) + ["data/logo_robodyna_alpha.png"],
+)
 
 exports_files(["data/logo_robodyna_alpha.png"])
 exports_files(["data/textures/bluewhite.png"])
 exports_files(["data/colormaps/jet-table-float-0512.csv"])
 exports_files(["src/chrono_swig/interface/core/ChMassProperties.i", "src/chrono_swig/interface/core/ChObject.i"])
+exports_files(["src/chrono_swig/chrono_csharp/ChChronoGlobals.cs.in"])
 exports_files(["src/chrono/physics/ChBody.h", "src/chrono/physics/ChBodyFwd.h",
                "src/chrono/physics/ChBodyAuxRef.h", "src/chrono/physics/ChBodyEasy.h"])
 exports_files(["src/chrono/fea/ChMesh.h", "src/chrono/fea/ChMeshFwd.h"])
@@ -74,12 +128,10 @@ filegroup(
     visibility = ["//tests/chrono:__pkg__"],
 )
 
-exports_files([
-    "src/demos/mbs/demo_MBS_spring.cpp",
-    "src/demos/mbs/demo_MBS_collisionNSC.cpp",
-    "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
-    "data/models/tractor_wheel/tractor_wheel.obj",
-])
+# All inherited demo source/helper files can have real product build owners.
+# Exporting them does not itself declare an executable or qualify a module.
+exports_files(glob(["src/demos/**"], exclude = ["src/demos/**/CMakeLists.txt"]))
+exports_files(["data/models/tractor_wheel/tractor_wheel.obj"])
 
 filegroup(
     name = "scm_demo_assets",
@@ -249,3 +301,375 @@ filegroup(
     srcs = BRANDING_SOURCE_INPUTS,
     visibility = ["//tests/chrono:__pkg__"],
 )
+
+# Exact data used by the native mechanical demo batch.
+exports_files([
+    "data/fea/beam.ele",
+    "data/fea/beam.node",
+    "data/fea/electrostatics.INP",
+    "data/models/bulldozer/shoe_view.obj",
+    "data/models/cube.obj",
+    "data/models/sphere.obj",
+    "data/models/spinning_top/platform.obj",
+    "data/models/spinning_top/spinning_top_1.obj",
+    "data/models/spinning_top/spinning_top_2.obj",
+    "data/models/support.obj",
+    "data/textures/bronze.png",
+    "data/textures/checker1.png",
+    "data/textures/cubetexture_borders.png",
+    "data/textures/cubetexture_pinkwhite.png",
+    "data/textures/metal.jpg",
+])
+
+# Data and support declarations for the next native demo groups.
+exports_files([
+    "data/POVRay_chrono_template.pov",
+    "data/models/FlightHelmet/FlightHelmet.gltf",
+    "data/models/bulldozer/bulldozerB10.obj",
+    "data/models/bulldozer/shoe_collision.obj",
+    "data/models/bulldozer/wheel_view.obj",
+    "data/models/bunny.glb",
+    "data/models/fan2.obj",
+    "data/models/feeder_bowl.obj",
+    "data/models/feeder_item.obj",
+    "data/models/forklift/arm.obj",
+    "data/models/forklift/body.obj",
+    "data/models/forklift/forks.obj",
+    "data/models/forklift/wheel.obj",
+    "data/models/pallet.obj",
+    "data/models/red_teapot.obj",
+    "data/models/tractor_wheel/tractor_wheel_coarse.INP",
+    "data/models/tractor_wheel/tractor_wheel_fine.obj",
+    "data/textures/checker2.png",
+    "data/textures/cubetexture.png",
+    "data/textures/cubetexture_wood.png",
+    "data/textures/rock.jpg",
+    "data/vehicle/Nissan_Patrol/suv_chassis.obj",
+    "data/vehicle/Nissan_Patrol/suv_rim.obj",
+    "data/vehicle/Nissan_Patrol/suv_tire.obj",
+    "data/vehicle/Polaris/meshes/Polaris_chassis.obj",
+    "data/vehicle/Polaris/meshes/Polaris_tire.obj",
+    "data/vehicle/Polaris/meshes/Polaris_wheel.obj",
+    "data/vehicle/audi/audi_chassis_white.obj",
+    "data/vehicle/audi/audi_rim.obj",
+    "data/vehicle/audi/audi_tire.obj",
+    "data/vehicle/citybus/CityBusRim.obj",
+    "data/vehicle/citybus/CityBusTire.obj",
+    "data/vehicle/citybus/CityBus_Vis.obj",
+    "data/vehicle/gator/gator_chassis.obj",
+    "data/vehicle/gator/gator_wheel_FL.obj",
+    "data/vehicle/gator/gator_wheel_RL.obj",
+    "data/vehicle/hmmwv/hmmwv_chassis.obj",
+    "data/vehicle/hmmwv/hmmwv_rim.obj",
+    "data/vehicle/hmmwv/hmmwv_tire_left.obj",
+    "data/vehicle/hmmwv/hmmwv_tire_right.obj",
+    "data/vehicle/uaz/uaz_rim.obj",
+    "data/vehicle/uaz/uaz_tire.obj",
+    "data/vehicle/uaz/uazbus_chassis.obj",
+])
+
+# Declared retained managed-language module interfaces.
+exports_files([
+    "src/chrono_swig/chrono_csharp/ChModuleVsg_csharp.i",
+    "src/chrono_swig/chrono_csharp/ChModuleIrrlicht_csharp.i",
+    "src/chrono_swig/chrono_csharp/ChModulePostprocess_csharp.i",
+    "src/chrono_swig/chrono_csharp/ChModuleVehicle_csharp.i",
+    "src/chrono_swig/chrono_csharp/ChModuleSensor_csharp.i",
+    "src/chrono_swig/chrono_csharp/ChModuleROS_csharp.i"
+])
+
+# Retained ROS protocol, simulation-side handlers and node boundary sources.
+exports_files([
+    "src/chrono_ros/ChApiROS.h",
+    "src/chrono_ros/ChROSBridge.cpp",
+    "src/chrono_ros/ChROSBridge.h",
+    "src/chrono_ros/ChROSHandler.cpp",
+    "src/chrono_ros/ChROSHandler.h",
+    "src/chrono_ros/ChROSManager.cpp",
+    "src/chrono_ros/ChROSManager.h",
+    "src/chrono_ros/ChROSMessage.cpp",
+    "src/chrono_ros/ChROSMessage.h",
+    "src/chrono_ros/ChROSNodeProcess.cpp",
+    "src/chrono_ros/ChROSNodeProcess.h",
+    "src/chrono_ros/ChROSPublisher.h",
+    "src/chrono_ros/ChROSQoS.h",
+    "src/chrono_ros/ChROSSubscription.h",
+    "src/chrono_ros/core/ChROSCdr.cpp",
+    "src/chrono_ros/core/ChROSCdr.h",
+    "src/chrono_ros/core/ChROSControl.cpp",
+    "src/chrono_ros/core/ChROSControl.h",
+    "src/chrono_ros/core/ChROSFrame.h",
+    "src/chrono_ros/core/ChROSMessageCodec.cpp",
+    "src/chrono_ros/core/ChROSMessageCodec.h",
+    "src/chrono_ros/core/ChROSQoSSpec.h",
+    "src/chrono_ros/core/ChROSSchema.cpp",
+    "src/chrono_ros/core/ChROSSchema.h",
+    "src/chrono_ros/core/transport/ChROSChannel.cpp",
+    "src/chrono_ros/core/transport/ChROSChannel.h",
+    "src/chrono_ros/core/transport/ChROSRingBuffer.cpp",
+    "src/chrono_ros/core/transport/ChROSRingBuffer.h",
+    "src/chrono_ros/core/transport/ChROSSharedMemory.cpp",
+    "src/chrono_ros/core/transport/ChROSSharedMemory.h",
+    "src/chrono_ros/handlers/ChROSBodyHandler.cpp",
+    "src/chrono_ros/handlers/ChROSBodyHandler.h",
+    "src/chrono_ros/handlers/ChROSClockHandler.cpp",
+    "src/chrono_ros/handlers/ChROSClockHandler.h",
+    "src/chrono_ros/handlers/ChROSTFHandler.cpp",
+    "src/chrono_ros/handlers/ChROSTFHandler.h",
+    "src/chrono_ros/handlers/robot/ChROSRobotModelHandler.cpp",
+    "src/chrono_ros/handlers/robot/ChROSRobotModelHandler.h",
+    "src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.cpp",
+    "src/chrono_ros/handlers/robot/viper/ChROSViperDCMotorControlHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSAccelerometerHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSCameraHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSCameraHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSGPSHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSGPSHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSGyroscopeHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSIMUHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSIMUHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSLidarHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSLidarHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.cpp",
+    "src/chrono_ros/handlers/sensor/ChROSMagnetometerHandler.h",
+    "src/chrono_ros/handlers/sensor/ChROSSensorHandlerUtilities.h",
+    "src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.cpp",
+    "src/chrono_ros/handlers/vehicle/ChROSDriverInputsHandler.h",
+    "src/chrono_ros/node/ChROSNodeTypeSupport.cpp",
+    "src/chrono_ros/node/ChROSNodeTypeSupport.h",
+    "src/chrono_ros/node/chrono_ros_node.cpp",
+    "src/chrono_ros/ChConfigROS.h.in",
+    "src/chrono_ros/CMakeLists.txt",
+    "src/chrono_ros/tests_dev/ChROSTestUtils.h",
+    "src/chrono_ros/tests_dev/test_cdr.cpp",
+    "src/chrono_ros/tests_dev/test_schema.cpp",
+    "src/chrono_ros/tests_dev/test_message.cpp",
+    "src/chrono_ros/tests_dev/test_transport.cpp"
+])
+
+exports_files(["src/tests/unit_tests/ros/utest_ROS_bridge_roundtrip.cpp"])
+
+exports_files([
+    "src/chrono_swig/chrono_python/ChModuleVsg_python.i",
+    "src/chrono_swig/chrono_python/ChModuleIrrlicht_python.i",
+    "src/chrono_swig/chrono_python/ChModulePostprocess_python.i",
+    "src/chrono_swig/chrono_python/ChModuleVehicle_python.i",
+    "src/chrono_swig/chrono_python/ChModuleRobot_python.i",
+    "src/chrono_swig/chrono_python/ChModulePardisoMkl_python.i"
+])
+
+# Additional original ROS demo/test assets.
+exports_files([
+    "data/vehicle/audi/json/audi_AutomaticTransmissionSimpleMap.json",
+    "data/vehicle/audi/json/audi_EngineSimpleMap.json",
+    "data/vehicle/audi/json/audi_Pac02Tire.json",
+    "data/vehicle/audi/json/audi_Vehicle.json",
+    "data/vehicle/terrain/RigidPlane.json",
+    "data/vehicle/terrain/textures/tile4.jpg",
+    "src/demos/ros/demo_ROS_custom_handler.cpp",
+    "src/demos/ros/demo_ROS_hydraulic_crane.cpp",
+    "src/demos/ros/demo_ROS_two_managers.cpp",
+    "src/demos/ros/demo_ROS_vehicle.cpp",
+    "src/demos/ros/demo_ROS_viper.cpp"
+])
+
+# Retained Vehicle co-simulation source/test inputs.
+exports_files([
+    "src/chrono_vehicle/cosim/CMakeLists.txt",
+    "src/chrono_vehicle/cosim/ChVehicleCosimBaseNode.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimBaseNode.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimDBPRig.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimDBPRig.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimOtherNode.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTerrainNode.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTerrainNode.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTireNode.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTireNode.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTrackedMBSNode.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimTrackedMBSNode.h",
+    "src/chrono_vehicle/cosim/ChVehicleCosimWheeledMBSNode.cpp",
+    "src/chrono_vehicle/cosim/ChVehicleCosimWheeledMBSNode.h",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimCuriosityNode.cpp",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimCuriosityNode.h",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimRigNode.cpp",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimRigNode.h",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimTrackedVehicleNode.cpp",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimTrackedVehicleNode.h",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimViperNode.cpp",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimViperNode.h",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimWheeledVehicleNode.cpp",
+    "src/chrono_vehicle/cosim/mbs/ChVehicleCosimWheeledVehicleNode.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeChrono.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeChrono.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularDEM.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularDEM.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularOMP.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularOMP.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularSPH.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeGranularSPH.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeRigid.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeRigid.h",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeSCM.cpp",
+    "src/chrono_vehicle/cosim/terrain/ChVehicleCosimTerrainNodeSCM.h",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeBypass.cpp",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeBypass.h",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeFlexible.cpp",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeFlexible.h",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeRigid.cpp",
+    "src/chrono_vehicle/cosim/tire/ChVehicleCosimTireNodeRigid.h",
+    "src/demos/vehicle/cosimulation/CMakeLists.txt",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_Curiosity.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_TrackedVehicle.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_Viper.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheelRig.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_OMP.cpp",
+    "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_SPH.cpp",
+    "src/demos/vehicle/cosimulation/external/CMakeLists.txt",
+    "src/demos/vehicle/cosimulation/external/demo_VEH_Cosim_WheelRig_CustomTerrain.cpp"
+])
+
+# Retained preCICE adapter sources, original demos and participant data.
+exports_files([
+    "data/precice/flap_openfoam/README.md",
+    "data/precice/flap_openfoam/clean.sh",
+    "data/precice/flap_openfoam/cleaning-tools.sh",
+    "data/precice/flap_openfoam/fluid_openfoam/0/U",
+    "data/precice/flap_openfoam/fluid_openfoam/0/p",
+    "data/precice/flap_openfoam/fluid_openfoam/0/pointDisplacement",
+    "data/precice/flap_openfoam/fluid_openfoam/LICENSE.txt",
+    "data/precice/flap_openfoam/fluid_openfoam/clean.sh",
+    "data/precice/flap_openfoam/fluid_openfoam/constant/dynamicMeshDict",
+    "data/precice/flap_openfoam/fluid_openfoam/constant/transportProperties",
+    "data/precice/flap_openfoam/fluid_openfoam/constant/turbulenceProperties",
+    "data/precice/flap_openfoam/fluid_openfoam/run.sh",
+    "data/precice/flap_openfoam/fluid_openfoam/system/blockMeshDict",
+    "data/precice/flap_openfoam/fluid_openfoam/system/controlDict",
+    "data/precice/flap_openfoam/fluid_openfoam/system/decomposeParDict",
+    "data/precice/flap_openfoam/fluid_openfoam/system/fvSchemes",
+    "data/precice/flap_openfoam/fluid_openfoam/system/fvSolution",
+    "data/precice/flap_openfoam/fluid_openfoam/system/preciceDict",
+    "data/precice/flap_openfoam/precice_config.xml",
+    "data/precice/flap_openfoam/solid_chrono/clean.sh",
+    "data/precice/flap_openfoam/solid_chrono/flap.txt",
+    "data/precice/flap_openfoam/solid_chrono/mbs_model.yaml",
+    "data/precice/flap_openfoam/solid_chrono/mbs_participant.yaml",
+    "data/precice/flap_openfoam/solid_chrono/mbs_solver.yaml",
+    "data/precice/flap_openfoam/solid_chrono/run.sh",
+    "data/precice/sphere_drop/fluid_buoyancy/cfd_participant.yaml",
+    "data/precice/sphere_drop/fluid_sph/sph_model.yaml",
+    "data/precice/sphere_drop/fluid_sph/sph_participant.yaml",
+    "data/precice/sphere_drop/fluid_sph/sph_solver.yaml",
+    "data/precice/sphere_drop/precice_config_explicit.xml",
+    "data/precice/sphere_drop/precice_config_implicit.xml",
+    "data/precice/sphere_drop/solid_chrono/mbs_model.yaml",
+    "data/precice/sphere_drop/solid_chrono/mbs_participant.yaml",
+    "data/precice/sphere_drop/solid_chrono/mbs_solver.yaml",
+    "data/testing/precice/participant_1.yaml",
+    "data/testing/precice/participant_2.yaml",
+    "data/testing/precice/test.xml",
+    "src/chrono_precice/CMakeLists.txt",
+    "src/chrono_precice/ChApiPrecice.h",
+    "src/chrono_precice/ChPreciceAdapter.cpp",
+    "src/chrono_precice/ChPreciceAdapter.h",
+    "src/chrono_precice/ChPreciceAdapterMbs.cpp",
+    "src/chrono_precice/ChPreciceAdapterMbs.h",
+    "src/chrono_precice/ChPreciceAdapterSph.cpp",
+    "src/chrono_precice/ChPreciceAdapterSph.h",
+    "src/chrono_precice/yaml_app/CMakeLists.txt",
+    "src/chrono_precice/yaml_app/run_chrono_adapter.cpp",
+    "src/demos/precice/CMakeLists.txt",
+    "src/demos/precice/demo_PRECICE_flap_openfoam.cpp",
+    "src/demos/precice/demo_PRECICE_sphere_drop.cpp"
+])
+
+# Original distributed module, demos, schemas and data.
+exports_files([
+    "src/chrono_synchrono/CMakeLists.txt",
+    "src/chrono_synchrono/SynApi.h",
+    "src/chrono_synchrono/SynChronoManager.cpp",
+    "src/chrono_synchrono/SynChronoManager.h",
+    "src/chrono_synchrono/SynConfig.h.in",
+    "src/chrono_synchrono/agent/SynAgent.cpp",
+    "src/chrono_synchrono/agent/SynAgent.h",
+    "src/chrono_synchrono/agent/SynAgentFactory.cpp",
+    "src/chrono_synchrono/agent/SynAgentFactory.h",
+    "src/chrono_synchrono/agent/SynCopterAgent.cpp",
+    "src/chrono_synchrono/agent/SynCopterAgent.h",
+    "src/chrono_synchrono/agent/SynEnvironmentAgent.cpp",
+    "src/chrono_synchrono/agent/SynEnvironmentAgent.h",
+    "src/chrono_synchrono/agent/SynSCMTerrainAgent.cpp",
+    "src/chrono_synchrono/agent/SynSCMTerrainAgent.h",
+    "src/chrono_synchrono/agent/SynTrackedVehicleAgent.cpp",
+    "src/chrono_synchrono/agent/SynTrackedVehicleAgent.h",
+    "src/chrono_synchrono/agent/SynWheeledVehicleAgent.cpp",
+    "src/chrono_synchrono/agent/SynWheeledVehicleAgent.h",
+    "src/chrono_synchrono/communication/SynCommunicator.cpp",
+    "src/chrono_synchrono/communication/SynCommunicator.h",
+    "src/chrono_synchrono/communication/dds/SynDDSCommunicator.cpp",
+    "src/chrono_synchrono/communication/dds/SynDDSCommunicator.h",
+    "src/chrono_synchrono/communication/dds/SynDDSListener.cpp",
+    "src/chrono_synchrono/communication/dds/SynDDSListener.h",
+    "src/chrono_synchrono/communication/dds/SynDDSPublisher.cpp",
+    "src/chrono_synchrono/communication/dds/SynDDSPublisher.h",
+    "src/chrono_synchrono/communication/dds/SynDDSSubscriber.cpp",
+    "src/chrono_synchrono/communication/dds/SynDDSSubscriber.h",
+    "src/chrono_synchrono/communication/dds/SynDDSTopic.cpp",
+    "src/chrono_synchrono/communication/dds/SynDDSTopic.h",
+    "src/chrono_synchrono/communication/dds/idl/SynDDSMessage.cxx",
+    "src/chrono_synchrono/communication/dds/idl/SynDDSMessage.h",
+    "src/chrono_synchrono/communication/dds/idl/SynDDSMessagePubSubTypes.cxx",
+    "src/chrono_synchrono/communication/dds/idl/SynDDSMessagePubSubTypes.h",
+    "src/chrono_synchrono/communication/mpi/SynMPICommunicator.cpp",
+    "src/chrono_synchrono/communication/mpi/SynMPICommunicator.h",
+    "src/chrono_synchrono/controller/SynControllerFunctions.cpp",
+    "src/chrono_synchrono/controller/SynControllerFunctions.h",
+    "src/chrono_synchrono/controller/driver/SynMultiPathDriver.cpp",
+    "src/chrono_synchrono/controller/driver/SynMultiPathDriver.h",
+    "src/chrono_synchrono/flatbuffer/SynFlatBuffersManager.cpp",
+    "src/chrono_synchrono/flatbuffer/SynFlatBuffersManager.h",
+    "src/chrono_synchrono/flatbuffer/message/SynApproachMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynApproachMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynCopterMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynCopterMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynEnvironmentMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynEnvironmentMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynFlatBuffers_generated.h",
+    "src/chrono_synchrono/flatbuffer/message/SynMAPMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynMAPMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynMessageFactory.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynMessageFactory.h",
+    "src/chrono_synchrono/flatbuffer/message/SynMessageUtils.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynMessageUtils.h",
+    "src/chrono_synchrono/flatbuffer/message/SynSCMMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynSCMMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynSPATMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynSPATMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynSimulationMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynSimulationMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynTrackedVehicleMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynTrackedVehicleMessage.h",
+    "src/chrono_synchrono/flatbuffer/message/SynWheeledVehicleMessage.cpp",
+    "src/chrono_synchrono/flatbuffer/message/SynWheeledVehicleMessage.h",
+    "src/chrono_synchrono/utils/SynDataPath.cpp",
+    "src/chrono_synchrono/utils/SynDataPath.h",
+    "src/chrono_synchrono/utils/SynGPSTools.cpp",
+    "src/chrono_synchrono/utils/SynGPSTools.h",
+    "src/chrono_synchrono/utils/SynLog.cpp",
+    "src/chrono_synchrono/utils/SynLog.h",
+    "src/demos/synchrono/CMakeLists.txt",
+    "src/demos/synchrono/dds/CMakeLists.txt",
+    "src/demos/synchrono/dds/demo_SYN_DDS_distributed.cpp",
+    "src/demos/synchrono/dds/demo_SYN_DDS_tracked.cpp",
+    "src/demos/synchrono/dds/demo_SYN_DDS_wheeled.cpp",
+    "src/demos/synchrono/mpi/CMakeLists.txt",
+    "src/demos/synchrono/mpi/demo_SYN_copter.cpp",
+    "src/demos/synchrono/mpi/demo_SYN_highway.cpp",
+    "src/demos/synchrono/mpi/demo_SYN_scm.cpp",
+    "src/demos/synchrono/mpi/demo_SYN_scm_tracked.cpp",
+    "src/demos/synchrono/mpi/demo_SYN_tracked.cpp",
+    "src/demos/synchrono/mpi/demo_SYN_wheeled.cpp"
+])

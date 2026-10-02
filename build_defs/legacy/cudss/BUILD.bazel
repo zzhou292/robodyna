@@ -1,0 +1,35 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["SOURCE_TRANSFORMATIONS.json"])
+
+cc_test(
+    name = "descriptor_test",
+    srcs = ["DescriptorTest.cpp"],
+    deps = [
+        "@legacy_fea//lib_src/solvers:cudss_api",
+        "@googletest//:gtest_main",
+    ],
+    size = "small",
+    tags = ["manual", "cpu-only", "sdk-admission"],
+)
+
+py_test(
+    name = "source_proof_test",
+    srcs = ["SourceProofTest.py"],
+    main = "SourceProofTest.py",
+    args = [
+        "$(location SOURCE_TRANSFORMATIONS.json)",
+        "$(location @legacy_fea//lib_src/solvers:cudss_api_source_proof)",
+    ],
+    data = [
+        "SOURCE_TRANSFORMATIONS.json",
+        "@legacy_fea//lib_src/solvers:cudss_api_source_proof",
+    ],
+    deps = ["//tools/migration:source_transform"],
+    size = "small",
+)
+
+test_suite(name = "tests", tests = [":descriptor_test", ":source_proof_test"])

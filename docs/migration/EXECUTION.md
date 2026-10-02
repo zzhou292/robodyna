@@ -1,5 +1,18 @@
 # Active restructuring plan
 
+The completed follow-up is the complete retained demo build on
+`work/robodyna-demo-builds`, based on published checkpoint `e169095`.
+Follow [DEMO_BUILD_PLAN.md](DEMO_BUILD_PLAN.md) and
+[the example operator instructions](../../examples/README.md) for current work.
+The final matrix passes all 23 batches: 338 native programs (including 26 CUDA
+FEA programs), 97 Python programs, 17 C# assemblies and the separate preCICE app.
+All 15 reviewed runtime groups and nine additional regression targets pass.
+[DEMO_BUILD_QUALIFICATION.json](../verification/DEMO_BUILD_QUALIFICATION.json)
+records the evidence and limits. This is a local checkpoint; no push was made.
+Earlier sections below describe their
+named historical migration checkpoints, not completion of the broader API or
+independent FEA/MBD implementation split.
+
 The source integration began on `work/initial-integration`. The user subsequently
 authorized implementation of the Chrono API naming plan with regression tests and
 preserved license notices. Current work is on `work/robodyna-api-renaming`;

@@ -178,7 +178,7 @@ class ChVoigtTensor : public ChVectorN<Real, 6> {
 
         eigvector1 = vectors.col(0);
         eigvector2 = vectors.col(1);
-        eigvector3 = vectors.col(3);
+        eigvector3 = vectors.col(2);
         eigval1 = values(0);
         eigval2 = values(1);
         eigval3 = values(2);

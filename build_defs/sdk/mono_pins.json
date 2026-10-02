@@ -1,0 +1,938 @@
+{
+  "schema": "robodyna.mono_sdk_pins.v1",
+  "version": "6.8.0.105",
+  "package_version": "6.8.0.105+dfsg-3.2",
+  "environment": "ROBODYNA_MONO_ROOT",
+  "framework": "net472",
+  "language": "7.3 via the separately admitted Roslyn compiler",
+  "source_packages": [
+    {
+      "Package": "mono-runtime-sgen",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/mono-runtime-sgen_6.8.0.105+dfsg-3.2_amd64.deb",
+      "Size": "1792584",
+      "SHA256": "7c09be668412b23c9040bd46eafd036c330391379dcad91e5d3ae1aabb5ddd6b",
+      "Depends": "libc6 (>= 2.33), libgcc-s1 (>= 3.3), mono-gac (= 6.8.0.105+dfsg-3.2), mono-runtime-common (= 6.8.0.105+dfsg-3.2)"
+    },
+    {
+      "Package": "mono-runtime-common",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/mono-runtime-common_6.8.0.105+dfsg-3.2_amd64.deb",
+      "Size": "1029896",
+      "SHA256": "b44aab079c987eea440c3a5798e40d59aaae6c0f4eaa5127e5b92c421eadc9ef",
+      "Depends": "libc6 (>= 2.33), libgssapi-krb5-2 (>= 1.17), zlib1g (>= 1:1.1.4), binutils"
+    },
+    {
+      "Package": "mono-mcs",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/mono-mcs_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "536448",
+      "SHA256": "c16a1645ac56833ab94f53e37fd535d9245c35c7e17ad01d80ccef6a6b7dc08e",
+      "Depends": "mono-runtime (>= 3.0~), libc6 (>= 2.33) | libc6.1 (>= 2.33) | libc0.1 (>= 2.33), libmono-corlib4.5-cil (>= 6.8.0.105), libmono-system-core4.0-cil (>= 5.18.0.240), libmono-system-xml4.0-cil (>= 4.6.1.3), libmono-system4.0-cil (>= 5.18.0.240), libmono-corlib4.5-cil (<< 6.8.0.106), libmono-microsoft-csharp4.0-cil"
+    },
+    {
+      "Package": "mono-devel",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/mono-devel_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "23545988",
+      "SHA256": "ad5c236a3891863167bb7ef7acecde3c9b19ab4f537affd456942bde3148a2e9",
+      "Depends": "mono-runtime (>= 3.0~), libc6 (>= 2.33) | libc6.1 (>= 2.33) | libc0.1 (>= 2.33), libmono-cecil-private-cil (>= 6.8.0.105), libmono-cecil-private-cil (<< 6.8.0.106), libmono-codecontracts4.0-cil (>= 1.0), libmono-compilerservices-symbolwriter4.0-cil (>= 4.6.1.3), libmono-corlib4.5-cil (>= 5.18.0.240), libmono-peapi4.0a-cil (>= 4.2.0), libmono-relaxng4.0-cil (>= 2.10.1), libmono-security4.0-cil (>= 4.6.1.3), libmono-system-componentmodel-composition4.0-cil (>= 3.0.6), libmono-system-componentmodel-dataannotations4.0-cil (>= 4.6.1.3), libmono-system-configuration-install4.0-cil (>= 1.0), libmono-system-configuration4.0-cil (>= 4.0.0~alpha1), libmono-system-core4.0-cil (>= 5.18.0.240), libmono-system-data-datasetextensions4.0-cil (>= 5.12.0.309), libmono-system-data4.0-cil (>= 5.16.0.220), libmono-system-drawing4.0-cil (>= 5.12.0.309), libmono-system-identitymodel4.0-cil (>= 5.12.0.309), libmono-system-io-compression-filesystem4.0-cil (>= 5.12.0.309), libmono-system-io-compression4.0-cil (>= 5.12.0.309), libmono-system-net-http4.0-cil (>= 5.12.0.309), libmono-system-numerics4.0-cil (>= 5.16.0.220), libmono-system-runtime-serialization4.0-cil (>= 5.16.0.220), libmono-system-runtime4.0-cil (>= 2.10.1), libmono-system-security4.0-cil (>= 5.18.0.240), libmono-system-servicemodel4.0a-cil (>= 5.18.0.240), libmono-system-serviceprocess4.0-cil (>= 3.0.6), libmono-system-transactions4.0-cil (>= 5.12.0.309), libmono-system-web-services4.0-cil (>= 4.2.0), libmono-system-web4.0-cil (>= 2.10.3), libmono-system-xml-linq4.0-cil (>= 5.16.0.220), libmono-system-xml4.0-cil (>= 4.6.1.3), libmono-system4.0-cil (>= 5.18.0.240), mono-mcs (= 6.8.0.105+dfsg-3.2), mono-gac (= 6.8.0.105+dfsg-3.2), mono-xbuild (= 6.8.0.105+dfsg-3.2), libmono-cil-dev (= 6.8.0.105+dfsg-3.2), libmono-2.0-dev (>= 6.8.0.105+dfsg-3.2), libmono-2.0-dev (<< 6.8.0.105+dfsg-3.2.1~), ca-certificates-mono (= 6.8.0.105+dfsg-3.2), pkg-config"
+    },
+    {
+      "Package": "libmono-corlib4.5-dll",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-corlib4.5-dll_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "1253744",
+      "SHA256": "ed2bd8d842944469aafa3a020e0433921ce09732c321756153d7016c2e7d5049",
+      "Depends": "tzdata"
+    },
+    {
+      "Package": "libmono-corlib4.5-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-corlib4.5-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "12980",
+      "SHA256": "db5adc0dd6a40595fed67e1c692e53dc133d249b82c057a4823acdf3b93afc46",
+      "Depends": "libmono-corlib4.5-dll (= 6.8.0.105+dfsg-3.2), mono-runtime (>= 6.8.0.105), mono-runtime (<< 6.8.0.106)"
+    },
+    {
+      "Package": "libmono-system4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-system4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "801936",
+      "SHA256": "c7924c9cdade4f661fa8198ecc05d68686da217fe99c5010145e82ee3488c2fb",
+      "Depends": "libc6 (>= 2.33) | libc6.1 (>= 2.33) | libc0.1 (>= 2.33), libmono-corlib4.5-dll (>= 5.18.0.240), libmono-security4.0-cil (>= 4.6.1.3), libmono-system-configuration4.0-cil (>= 4.0.0~alpha1), libmono-system-core4.0-cil (>= 5.18.0.240), libmono-system-numerics4.0-cil (>= 5.16.0.220), libmono-system-xml4.0-cil (>= 4.6.1.3), mono-runtime-common (>= 6.8.0.105+dfsg)"
+    },
+    {
+      "Package": "libmono-system-core4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-system-core4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "302036",
+      "SHA256": "5537ec9552a6d3975fa61d2abef28600f4d6bfe3b50c7c80fb01c41cccc02e30",
+      "Depends": "libmono-corlib4.5-dll (>= 5.18.0.240), libmono-system4.0-cil (>= 5.18.0.240), mono-runtime-common (>= 6.8.0.105+dfsg)"
+    },
+    {
+      "Package": "libmono-system-xml4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-system-xml4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "815508",
+      "SHA256": "0b8bf8db51bbd880f43724894fce6ffe1644cca888d6ac1399ff329d78bf1ef2",
+      "Depends": "libmono-corlib4.5-dll (>= 5.18.0.240), libmono-system-configuration4.0-cil (>= 4.0.0~alpha1), libmono-system4.0-cil (>= 5.18.0.240)"
+    },
+    {
+      "Package": "libmono-microsoft-csharp4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-microsoft-csharp4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "116008",
+      "SHA256": "d0771fd7fc17faa13f422d1323d22ac1d152ffefafb8e2bbc0e9a4eab21c0aa2",
+      "Depends": "libmono-corlib4.5-cil (>= 5.18.0.240), libmono-system-core4.0-cil (>= 5.18.0.240), libmono-system4.0-cil (>= 5.18.0.240)"
+    },
+    {
+      "Package": "libmono-security4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-security4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "95276",
+      "SHA256": "b80df97ab81f3efb5dd18de39e2f828b4b313faa617b5a73881faa33809a997e",
+      "Depends": "libmono-corlib4.5-dll (>= 5.18.0.240), libmono-system4.0-cil (>= 5.18.0.240)"
+    },
+    {
+      "Package": "libmono-system-configuration4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-system-configuration4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "54852",
+      "SHA256": "717352dcdeb2b8dadf27eb677bfd884859dac2c2a3b7f58e736676d468862393",
+      "Depends": "libmono-corlib4.5-dll (>= 5.18.0.240), libmono-system-security4.0-cil (>= 5.18.0.240), libmono-system-xml4.0-cil (>= 4.6.1.3), libmono-system4.0-cil (>= 5.18.0.240)"
+    },
+    {
+      "Package": "libmono-system-numerics4.0-cil",
+      "Version": "6.8.0.105+dfsg-3.2",
+      "Filename": "pool/universe/m/mono/libmono-system-numerics4.0-cil_6.8.0.105+dfsg-3.2_all.deb",
+      "Size": "48640",
+      "SHA256": "a0fcd7877586d103789bcae14352d7697cf94236d4566e3f66433ad724fc3623",
+      "Depends": "libmono-corlib4.5-dll (>= 5.18.0.240)"
+    }
+  ],
+  "files": [
+    {
+      "path": "usr/bin/mono-sgen",
+      "size_bytes": 5116376,
+      "sha256": "52b49f96283f0fe83748fc1bb59e3ba7696bb09c00f8fb160f5216b1f79ad54f"
+    },
+    {
+      "path": "etc/mono/config",
+      "size_bytes": 3093,
+      "sha256": "bc703f0be6ea2f9ac58994be4cb6a27c1112ec2c791e07a4eb817b286e2875b3"
+    },
+    {
+      "path": "usr/lib/mono/4.5/mcs.exe",
+      "size_bytes": 1913344,
+      "sha256": "eb548329d5f2f33f2b82b6295bdd50f2d66258ccad913c9d296e5fad33651fe2"
+    },
+    {
+      "path": "usr/lib/mono/4.5/mscorlib.dll",
+      "size_bytes": 4811264,
+      "sha256": "ceb40e23c27c375243851853475bda4a6c0a8719433830eb3df1f01a585adf6b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/System.dll",
+      "size_bytes": 2772480,
+      "sha256": "89c48318d2342749050ffb0cbdb64ea05847bc8042ccfcd1da6f1ce843b5680d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/System.Core.dll",
+      "size_bytes": 1169408,
+      "sha256": "32d115ec56a9ef195b1d93fe9fdd37d796f8271451948c4f9db3b6e16aafcd86"
+    },
+    {
+      "path": "usr/lib/mono/4.5/System.Xml.dll",
+      "size_bytes": 3366400,
+      "sha256": "b43bf0c85f6c9f42834a807a69a61c1d97c91fec671cd7d50c1fcd0df19cb90a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/System.Configuration.dll",
+      "size_bytes": 129536,
+      "sha256": "d08f194191b997bd02d705c14b22e6ad136abe4d4b04730144aeffbf956f03ea"
+    },
+    {
+      "path": "usr/lib/mono/4.5/System.Numerics.dll",
+      "size_bytes": 127488,
+      "sha256": "d4a63b1a5c6cc4bf910ae1495da8e2758fd93f983c001e2ff166753cbb42f342"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Microsoft.CSharp.dll",
+      "size_bytes": 327168,
+      "sha256": "9b662e495c3db3967aeb38f08b4b2d39233b44d4afa0d89c406f4e2b90443aba"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Mono.Security.dll",
+      "size_bytes": 256512,
+      "sha256": "8893a7a48dc440a8df0ac7baa0a8f29adb2a967f55899fa57a96c0f707f5a79a"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/mscorlib.dll",
+      "size_bytes": 923648,
+      "sha256": "5dbe64f400b20b290f1b377f53fa7610ac1ddae4cea9101b999c6f18783bbb1f"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/System.dll",
+      "size_bytes": 525312,
+      "sha256": "b202199dfebafb56dbc15c9061e7e23cad9f8d1661c845f4186492772a2ffe72"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/System.Core.dll",
+      "size_bytes": 167936,
+      "sha256": "077f182ba3ea0df19ca55873a7d15d83f3e74ab30b331dd282ce39a9b4dc0ee1"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/System.Xml.dll",
+      "size_bytes": 140800,
+      "sha256": "7bc5b759641b9e5e2fb367004be3590d65c5e195bd850905c80684baa1787331"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/System.Configuration.dll",
+      "size_bytes": 49152,
+      "sha256": "bb0e601bb9a8f408c23efd686c9d09b44186d92a24384d16151423a13043daa0"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/System.Numerics.dll",
+      "size_bytes": 23040,
+      "sha256": "56b14b9175cd7af7bcb43173d0dbb86c0dc277cf74a19a18459b8f524422ec73"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/Microsoft.CSharp.dll",
+      "size_bytes": 7680,
+      "sha256": "42b2f4c7f674f8249baa4405123d340671ebc298f1c5a9290a017fdd79bb81ce"
+    },
+    {
+      "path": "usr/lib/mono/4.7.2-api/Mono.Security.dll",
+      "size_bytes": 80384,
+      "sha256": "377436dbee31cb9fe68c386fb5ea3f02ed18d64022f567463cb9f644a71524a2"
+    },
+    {
+      "path": "usr/lib/libMonoPosixHelper.so",
+      "size_bytes": 305200,
+      "sha256": "a03b8ec4911e12f2e14c0ad7b0e87043b6a8d2e4f22035e1e2bcaca5577a3e6d"
+    },
+    {
+      "path": "usr/lib/libmono-native.so",
+      "size_bytes": 772392,
+      "sha256": "19b2ab8068a9ba64f5967df45800f0a4a54abe18893b039d5ae36d9b5fccefa6"
+    },
+    {
+      "path": "usr/lib/libmono-btls-shared.so",
+      "size_bytes": 1214048,
+      "sha256": "a66cca271a42c1b9a93916133bb915f9e8b623d89edb56e86d1d8d5bacf72fa5"
+    },
+    {
+      "path": "usr/share/doc/mono-runtime-sgen/copyright",
+      "size_bytes": 46601,
+      "sha256": "e2036fed99b82f760966960ef89e1f6ff313552cf0d5e15d81f28c07acde7830"
+    },
+    {
+      "path": "usr/share/doc/mono-runtime-common/copyright",
+      "size_bytes": 46601,
+      "sha256": "e2036fed99b82f760966960ef89e1f6ff313552cf0d5e15d81f28c07acde7830"
+    },
+    {
+      "path": "usr/share/doc/mono-mcs/copyright",
+      "size_bytes": 46601,
+      "sha256": "e2036fed99b82f760966960ef89e1f6ff313552cf0d5e15d81f28c07acde7830"
+    },
+    {
+      "path": "usr/share/doc/mono-devel/copyright",
+      "size_bytes": 46601,
+      "sha256": "e2036fed99b82f760966960ef89e1f6ff313552cf0d5e15d81f28c07acde7830"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/Microsoft.Win32.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "51346c6a1e579fdb55fb7cd638a55ba0c2ccb318316eaf56af5d0fbf7dc0a823"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/Microsoft.Win32.Registry.AccessControl.dll",
+      "size_bytes": 5120,
+      "sha256": "a41c82fd1a7648f950cf6e6dbd409831c4a60f8102f0ef21c6084016538a7c04"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/Microsoft.Win32.Registry.dll",
+      "size_bytes": 4608,
+      "sha256": "8b21fed76ea276549dbbce8dd717164e7ae7af4d106bb3f12511acc598ac91db"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.AppContext.dll",
+      "size_bytes": 3584,
+      "sha256": "f71bd81a97e022f45cda2a318a8695c51b2ac031c125ff3cfeac06891fe841d9"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Collections.Concurrent.dll",
+      "size_bytes": 4608,
+      "sha256": "4c1950ae22bc90ef536e2d0b94c11d8b166d1272942b4d248e4e3c932190d132"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Collections.NonGeneric.dll",
+      "size_bytes": 4608,
+      "sha256": "9ad71a68a8c2ebaad2121353c31a9f21c149de8f4848be90a84a7fd2c33d0bdc"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Collections.Specialized.dll",
+      "size_bytes": 4608,
+      "sha256": "728a13066302cd9da4f9cd910be44166bf596812860317fe3eef62dd1bd0cacc"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Collections.dll",
+      "size_bytes": 4608,
+      "sha256": "e61512210e08f72d3903978e5bd338bfa0a39cce4ebb0ff1d0a029feb80b0117"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ComponentModel.Annotations.dll",
+      "size_bytes": 5632,
+      "sha256": "0b0d3ff9dda4af4fe704161d40afc973e1ffae99084aed22e2e3155fb4c12a96"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ComponentModel.EventBasedAsync.dll",
+      "size_bytes": 4608,
+      "sha256": "9c31b94f63ba8282db0a9b04ebb8aca77445df2c8a5a602b63f4bdbb4b63bd8a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ComponentModel.Primitives.dll",
+      "size_bytes": 5120,
+      "sha256": "fd209a2bd15f607b9e3f347e628e5ea34fa4ae4867d50d4c4c16fcce37c5e7bf"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ComponentModel.TypeConverter.dll",
+      "size_bytes": 6144,
+      "sha256": "a9146b9a5687971676b44c08b57b5dc1bbf4573090e162cead9bd28eee99cc47"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ComponentModel.dll",
+      "size_bytes": 4608,
+      "sha256": "c68ee955915c99d9509db71152d710471ebac749a0cbc346a38f45e444f135bf"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Console.dll",
+      "size_bytes": 4096,
+      "sha256": "01aedff431adf88c8a26a408712539a0bfefef770b0f23655379a5df46f7c428"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Data.Common.dll",
+      "size_bytes": 8704,
+      "sha256": "87f49722ae5426e5d44cd853f4ecb685ff3c506f80810c4d0ed0a55f45633782"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Data.SqlClient.dll",
+      "size_bytes": 6144,
+      "sha256": "ad8ceac2de0473459d8cf92490a223e08b6d136c640b656cc89ed48efce4011e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.Contracts.dll",
+      "size_bytes": 5120,
+      "sha256": "d794f69f3d8c510c1060496cdb038127e1bf5aa2d66d86ceefbe24b01d1a5597"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.Debug.dll",
+      "size_bytes": 4608,
+      "sha256": "61c32916d6821776a603746ae7d4d34955489e0d63c2b76db7c1bb1fa7fcdaa0"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.FileVersionInfo.dll",
+      "size_bytes": 4608,
+      "sha256": "d00d4ee74a31c566243d2f21ccbf0b0877f6b01aae1aba370821efdfd91dca8c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.Process.dll",
+      "size_bytes": 4608,
+      "sha256": "723f4d142370a3241a0de7433c86f684f8d7eca0fd17ff0467b865bc8ba1afca"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.StackTrace.dll",
+      "size_bytes": 5120,
+      "sha256": "28496b8b0ce5e11ffa0989abbd138775a43115dac557da1809e048196077f160"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.TextWriterTraceListener.dll",
+      "size_bytes": 4608,
+      "sha256": "03bdc88d06a2410e5748f7aa4d2dc0d0864b1c363c1475b1b0e1a835b45bc41e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.Tools.dll",
+      "size_bytes": 4608,
+      "sha256": "9925c2d3ed97055881dc2fe61e944ce20aa5d2a532c0dbe19fd6a9d87214d600"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.TraceEvent.dll",
+      "size_bytes": 4608,
+      "sha256": "15121e3965be9ba880b7a387e86d76ee7994ebf0b87e3a45be264a2b6fea4d3b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.TraceSource.dll",
+      "size_bytes": 4608,
+      "sha256": "940a6ecad119ed2a7aa468349071577463b43c7f3d441f9c15c0c1231b733f07"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Diagnostics.Tracing.dll",
+      "size_bytes": 5120,
+      "sha256": "8040b3a4a41b02ad5d5cbbda1b461191c124f55a993f056b6e2a8249a5a08ef0"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Drawing.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "88261edfef51a4a7be75bbb01507114db5459c6e1ae7b19c1e22c9a28de860f6"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Dynamic.Runtime.dll",
+      "size_bytes": 5120,
+      "sha256": "1ccddb2186e4c1a1f933b2d5aafb6d1556d33dad644441cf7778c4c839e4858c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Globalization.Calendars.dll",
+      "size_bytes": 5120,
+      "sha256": "e7a74d207baf19de95d1e3a96df2e6cdceb7126dd308fea35cd31e7092af0be6"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Globalization.Extensions.dll",
+      "size_bytes": 4608,
+      "sha256": "fdee9cadffe427602a0513021423cf0e1ae1d192d53718247b7880616d20513e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Globalization.dll",
+      "size_bytes": 4608,
+      "sha256": "1e51417e2fc6be3dfc859a0e1ea0671383f16fd779de4392802d0314d9b852e3"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.Compression.ZipFile.dll",
+      "size_bytes": 4096,
+      "sha256": "daa54611410603dac66ba745eaf49ac2c71a3fcaaf46a3be7e925aa8d7f92930"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.FileSystem.AccessControl.dll",
+      "size_bytes": 5632,
+      "sha256": "8273af5cd210f6484af60fbedc3ec418ce404c66a7bc459355e8359eef301c37"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.FileSystem.DriveInfo.dll",
+      "size_bytes": 4608,
+      "sha256": "eba8eb9cf25cc1fb7db88628fc6b2046973c1e16adf765c19884aad963bec9fc"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.FileSystem.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "14c0de6cdd3bde70609e49e6851eaa9642a7d11368d8d6f4bfb37828fc75c3a1"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.FileSystem.Watcher.dll",
+      "size_bytes": 4608,
+      "sha256": "e0b6ca00f0880cbda4c3cf80cc685f17dc90793eb2d3f5db51f343ab13efff6b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.FileSystem.dll",
+      "size_bytes": 4608,
+      "sha256": "1ecbfd7961357c96b10fab17ad68079b60fc0f4566777b38b9c664a9f785684b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.IsolatedStorage.dll",
+      "size_bytes": 4608,
+      "sha256": "e0a538f10aeecd23b8602cf681e94f09a8b639000035ccbe7ee8d9651a9c409a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.MemoryMappedFiles.dll",
+      "size_bytes": 4608,
+      "sha256": "98ba435e820a6a74b645d786aa97a3676b5e3bf85a14175e32072fc386bb3744"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.Pipes.dll",
+      "size_bytes": 4096,
+      "sha256": "e171e1b7c1281180e1516cf65cd1a57e0d6c2a1b34ed4eb064ed25cef12efa68"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.UnmanagedMemoryStream.dll",
+      "size_bytes": 4608,
+      "sha256": "f467a7cf889395ec444e54c03f62423255d15a6b34f38fb0dccc8e8b0c48aa30"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.IO.dll",
+      "size_bytes": 4096,
+      "sha256": "6353be998c737898b7b36cf70c4296e13595dcd0fbd06ac990099d8bc52a6564"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Linq.Expressions.dll",
+      "size_bytes": 6656,
+      "sha256": "93e88487316db0ae545753e3fc8527f0ddd9a4b9518e8173403508beba560679"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Linq.Parallel.dll",
+      "size_bytes": 4608,
+      "sha256": "ac897f80db65dc621b581bed46193fc5ac814f6aa46bee010cd91d9bfa71e192"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Linq.Queryable.dll",
+      "size_bytes": 4608,
+      "sha256": "475d4294a82835fa9056d5815f43b04f78f570fb4581cbc3dda844f6a172d104"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Linq.dll",
+      "size_bytes": 4096,
+      "sha256": "cca0f71cc453bc7fa30e76a1cde464d476127420a72140a37e9a2583fdeeaaa2"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.AuthenticationManager.dll",
+      "size_bytes": 4608,
+      "sha256": "c691353f9b6076bbdfa6258341bf2b7e738c4029cd509d585be7a4365fd29216"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Cache.dll",
+      "size_bytes": 4096,
+      "sha256": "fe801fc1807acbeb2c1bbc3a447bd055d7c8c65b14d25958662315cbd6706ca0"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Http.Rtc.dll",
+      "size_bytes": 3584,
+      "sha256": "d59f507c4e171c45b1d14a16e486bf84385060c17222a8f87a1d0b0b756aa2e1"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.HttpListener.dll",
+      "size_bytes": 4608,
+      "sha256": "9ae234e90064d56fb60fe7fb4c9f8166be37f2857898ee032037aedd9169680a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Mail.dll",
+      "size_bytes": 4608,
+      "sha256": "b939dc2a824dd55b32a9fdee60b40ae2194fe27d6052f4dc0151f5b4212227de"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.NameResolution.dll",
+      "size_bytes": 4608,
+      "sha256": "4051133a7ce4ec7fd597abd08ac1df7fcba8e899a945d66a59f849f98f8e4a2b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.NetworkInformation.dll",
+      "size_bytes": 5632,
+      "sha256": "54e9b06c54a4a432c02cf5b020bbc1e94a314cec93ab08c6f0f02e11ab88878a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Ping.dll",
+      "size_bytes": 4096,
+      "sha256": "3951f59df32bd1eaf281de95a8f1d41d4876ae80e446335dc77f91772ee19535"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Primitives.dll",
+      "size_bytes": 5120,
+      "sha256": "13e368bbf0228a29c3784f56eaead8d1f30e489f54b0142e8bf3ae315ba18c65"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Requests.dll",
+      "size_bytes": 4096,
+      "sha256": "04e8bbe9c3833ccdd9d2b3e9a87dad1a28ef8c279011e53e2b2e7e0324162969"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Security.dll",
+      "size_bytes": 4096,
+      "sha256": "77e3ce807b87f3e197c92cc0675a03d864e52d124e6175ae02c8164bd926327e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.ServicePoint.dll",
+      "size_bytes": 4608,
+      "sha256": "31e5020217af3d3321752ed45301aca007b13e6d281802479ff8981a67d67bdd"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Sockets.dll",
+      "size_bytes": 4608,
+      "sha256": "4b95e7c47292d16eca9f0d581fc39480c1121ea9e30ffe8359e0db731c678ebb"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.Utilities.dll",
+      "size_bytes": 4608,
+      "sha256": "639a2995f5aa69f7ce7a95cb4362f5bcf9f0090385890d7d0e10412e58eab53b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.WebHeaderCollection.dll",
+      "size_bytes": 4608,
+      "sha256": "67c7a7e5c046e2a9057a6b5f56f11bc577f0feccff38a05f0e388aebcee15a81"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.WebSockets.Client.dll",
+      "size_bytes": 4608,
+      "sha256": "ebcfafd6d6f13b6d134ef3866f2b7e72c852eb2612d79787eb024701fb6da8b7"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Net.WebSockets.dll",
+      "size_bytes": 4608,
+      "sha256": "2ed71b41e4bbce4b923d9e7179d6a086968e702f246a7b6712d66f3a2bb153f1"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ObjectModel.dll",
+      "size_bytes": 4608,
+      "sha256": "8ccc361fe9af15d38f4d474f6dd11a008e1d24c79062440da8faefad47532437"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.Emit.ILGeneration.dll",
+      "size_bytes": 4608,
+      "sha256": "b966275edcb58b0a8b16ba14dd1db7dc0cdc348ccc9cfc9203c168ee96d626fb"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.Emit.Lightweight.dll",
+      "size_bytes": 4608,
+      "sha256": "6c59124fb38f0e5f4c1625f1da125d820db7e3ae4e699ef4102587945bc1ed2e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.Emit.dll",
+      "size_bytes": 4608,
+      "sha256": "c82badae80f11063b2de12f570f42dbe66b4daaa27f8dfda64262729ac8c8b5c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.Extensions.dll",
+      "size_bytes": 4608,
+      "sha256": "a981beb7f89222df62d85f8e3d9264fdd3d89e9eafe1a8644e19912a8636d2e6"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "ad1ad24e29420ec60a632f07e7860f279f2d44aaabf4b18eb716fb485f6c057c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.TypeExtensions.dll",
+      "size_bytes": 4608,
+      "sha256": "93a433aaadd3240f55d06d098406cd6f60849de2077063b72f88f589b7243a3b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Reflection.dll",
+      "size_bytes": 4608,
+      "sha256": "afd503bf76f3c809ca80e101a73203e3c294cdb2b44db8f9279a808b9c165ef3"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Resources.Reader.dll",
+      "size_bytes": 4608,
+      "sha256": "75ca658b7876119ffcd60e3e08348c0cea7f8662ea50c7a42782b86830d65196"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Resources.ReaderWriter.dll",
+      "size_bytes": 4608,
+      "sha256": "23a7a4647966042887f751bb6b9108ca4c52b79d090ba90f0bac1d7e403af542"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Resources.ResourceManager.dll",
+      "size_bytes": 4608,
+      "sha256": "29295e3d013c7a402810ab93492f8b947dca398998f85664df0d9b111b3469bd"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Resources.Writer.dll",
+      "size_bytes": 4096,
+      "sha256": "08b6c26f4f5b56b2c4fe81950bfbf9e0238d00bcc8f955bfc90f2a18df7a4563"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.CompilerServices.VisualC.dll",
+      "size_bytes": 4608,
+      "sha256": "7f015801908cc8739024fff7c4ef64c19b626ef844b26aa62f2fd7dbb392ed37"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Extensions.dll",
+      "size_bytes": 6656,
+      "sha256": "03582e0538829d7da494022050b27c30220c4101b01e53f81b3b7b8bbee52200"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Handles.dll",
+      "size_bytes": 4608,
+      "sha256": "b5e2d898df133e217697ee305693dc7e6c69397679ad41b3772df44c810c1ffa"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.InteropServices.RuntimeInformation.dll",
+      "size_bytes": 4608,
+      "sha256": "7de6eab8b75af0331d306784e1439a118cd636672afe8eb24563f4598a2fa9f8"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.InteropServices.WindowsRuntime.dll",
+      "size_bytes": 5120,
+      "sha256": "529a5b21ed6923f9a16ec55e4e4cd181eeab5c009d33e5bd1f9fc874635671e4"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.InteropServices.dll",
+      "size_bytes": 7680,
+      "sha256": "6a39bb82848a9d7019b29bb1abe68555a5990ad3bf21e6e108795942bbadd307"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Numerics.dll",
+      "size_bytes": 4608,
+      "sha256": "d9e4d9bfd92ac9daddcf8539e615d6c6a2037c9fedbefe79a38be70ee565059e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Serialization.Formatters.dll",
+      "size_bytes": 4608,
+      "sha256": "a56a82476a8f6a168e145ff6481069cba536dd110acc3bfab8a39005ddd62c8b"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Serialization.Json.dll",
+      "size_bytes": 4608,
+      "sha256": "ea5879243c48cceaaa206282ae637444be38469a048c7615cf0db59bb78b087f"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Serialization.Primitives.dll",
+      "size_bytes": 5632,
+      "sha256": "0787b8855e9f802afdec7f0d96dfb7e416c78b41ff6b659e72c3a27e2ba80ab9"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.Serialization.Xml.dll",
+      "size_bytes": 5120,
+      "sha256": "2d70f80682e5f9786e8ce5ffebe0a9a59ee719d3ec9d40e00b0817f1e6b4749e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Runtime.dll",
+      "size_bytes": 22528,
+      "sha256": "cedf40b5e72efcec621af1dc841ac852074db368fa3c6337fb1a496984954d2a"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.AccessControl.dll",
+      "size_bytes": 5632,
+      "sha256": "054a74a18ee487ba1cedc17687ee85f4f5000d32723e69235349d3c7d4cfd67d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Claims.dll",
+      "size_bytes": 4608,
+      "sha256": "4c9d55c3cf6a74524eb3c4f7fbf18548db73aefb2a42889b48d7cc5bb86b0359"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Algorithms.dll",
+      "size_bytes": 6144,
+      "sha256": "63fc350f3d88ad073be1e754d0f547b12ffc4914d9ad36acd31859b52de704ef"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Csp.dll",
+      "size_bytes": 4608,
+      "sha256": "35baae7cc4efd34ab918c3616275b4072f698ed9008500c8477fa42c05c6cfd9"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.DeriveBytes.dll",
+      "size_bytes": 4608,
+      "sha256": "4b64973cedc75c6f5f99312432fa155f50325d7418c57f4fa31e21cf2a606de7"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Encoding.dll",
+      "size_bytes": 4608,
+      "sha256": "8b9d8d8ee25429184cb34fe4102978529a9ecff6e50dc43523c7385f0437ef5d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Encryption.Aes.dll",
+      "size_bytes": 4608,
+      "sha256": "d6ced9dc6eab6281b19de8f7c56d07538b2bb44cd295722145143c094de00f55"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Encryption.ECDiffieHellman.dll",
+      "size_bytes": 4608,
+      "sha256": "887a47069316bf49eaa71e9479b22a7aa5856e73894ef8e3e780b3c9f7b6d464"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Encryption.ECDsa.dll",
+      "size_bytes": 4608,
+      "sha256": "0c6acb466b3a9bec0b69dab6ece8ad0c196b6c41103496765007db088e3f67fc"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Encryption.dll",
+      "size_bytes": 4608,
+      "sha256": "b56b63a0f74ecbf596cdf76b0dce579f504d1717ceda7ea0d2a31ebe8172752c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Hashing.Algorithms.dll",
+      "size_bytes": 4608,
+      "sha256": "37d0046084ee7aa28215aed511ee2695b3f144df53509112dbdd5047796740e4"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Hashing.dll",
+      "size_bytes": 4608,
+      "sha256": "0f7633bdff671b10d75a15f1724443d25d78bf12b14441366081191853e2e4c4"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "d213d948983377c068691f1d06adb4e4ac6a23d9b4f371f1b8bd694d8d7e65c5"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.ProtectedData.dll",
+      "size_bytes": 4608,
+      "sha256": "8b7de3905b3fe16f21b8d813a302d49a67699c5d21f519c95db82767deca1710"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.RSA.dll",
+      "size_bytes": 4608,
+      "sha256": "4ea67c943cd07f83bde869f75ecfff6055144dd27f261893eaf1ddb77f682aab"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.RandomNumberGenerator.dll",
+      "size_bytes": 4608,
+      "sha256": "42387f356809622cbc0b97536291302f8fa92251adee4c2139e4740e34704cfb"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Cryptography.X509Certificates.dll",
+      "size_bytes": 5632,
+      "sha256": "ee44573995c5a2bdf922625a146b3b037e75c88dd17e21fd80431b30d8da2168"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Principal.Windows.dll",
+      "size_bytes": 4608,
+      "sha256": "caae75ba8821f2d372e228948a413e920752a951b48682391e83e0870e49bd1c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.Principal.dll",
+      "size_bytes": 4608,
+      "sha256": "f58d0b08e1662dcf84c32c6da35c4edb0ff0146c550e933a548040504d3cce48"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Security.SecureString.dll",
+      "size_bytes": 4608,
+      "sha256": "5852e08697afb232b51484053b8d62ad960a7608320eed4b4ceeee6785f1c959"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceModel.Duplex.dll",
+      "size_bytes": 4608,
+      "sha256": "bca22484b2748ce46aa7ee28d3cbb294929cb702e889764d77cd2aa70c8e114d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceModel.Http.dll",
+      "size_bytes": 5120,
+      "sha256": "7b714ac6c4b14c00454d17327e84eaae600b18c650e78c97f01177711b84cc00"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceModel.NetTcp.dll",
+      "size_bytes": 4608,
+      "sha256": "b9d2137b1c37275166e6a77d60bfb12b4958a4af5c351b887b6adf4f500fe0b7"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceModel.Primitives.dll",
+      "size_bytes": 10240,
+      "sha256": "5b2401f291ce0217156dee13a79543062ccacbe95cdfe9d2f5e57019d1adf666"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceModel.Security.dll",
+      "size_bytes": 5120,
+      "sha256": "597f278336dbba237ff9a95374277b48605a4bab817c3aed82a3f547bb447908"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ServiceProcess.ServiceController.dll",
+      "size_bytes": 5120,
+      "sha256": "3d23678b732f104e70d24bbe85d8c79a84fa4f2b0dc4480c68f93631e5be747d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Text.Encoding.CodePages.dll",
+      "size_bytes": 4608,
+      "sha256": "221f16b5fa2f72e0ec65c5d81857bcdb3ba35f20b20e35790b3923cb439bd8cb"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Text.Encoding.Extensions.dll",
+      "size_bytes": 4608,
+      "sha256": "1551e405d8c4bc13aa4e2e6bffa2f304a65c38a41c3c5607aa3859a94297e9a1"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Text.Encoding.dll",
+      "size_bytes": 5120,
+      "sha256": "4efd8ffeee9c0453bb1c811d18990a9a318d965ee348789a0bf2961f6dfafdba"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Text.RegularExpressions.dll",
+      "size_bytes": 4608,
+      "sha256": "ffb7627d5185e62962d204f2f6ce0320584c6ce01424b69fb891b3bb4c243ba2"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.AccessControl.dll",
+      "size_bytes": 5632,
+      "sha256": "882fede2b5f0984e923dc996860c51b0e015b1f0827c096a7f04c86a26ef9288"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.Overlapped.dll",
+      "size_bytes": 4608,
+      "sha256": "8387eafd5f3642a20d55413a729a5791fb187e386511d4b79de9c0c10ff7c120"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.Tasks.Parallel.dll",
+      "size_bytes": 4608,
+      "sha256": "e6fe2d89f737f01548b4602ae23982a9b5ba082b74c0add1204cad9e50042652"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.Tasks.dll",
+      "size_bytes": 5632,
+      "sha256": "fdc790600ca7b29a782d2873146021995355a81e9fdc9f8af8910e4241628907"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.Thread.dll",
+      "size_bytes": 4608,
+      "sha256": "bc01bca615f976ebd42c2aa35b20db4ab7827f9fa9f8e0c8754f43d1c016ed4d"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.ThreadPool.dll",
+      "size_bytes": 4608,
+      "sha256": "ad4305bf6d1bd5b614bde4684cfe89f6b69091211b619cf6cf3fac2466c30b61"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.Timer.dll",
+      "size_bytes": 4096,
+      "sha256": "2aab8d020f55e49ea5d5fd0099830ccc6d6c4f6b82ff76bc689184ed866dda21"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Threading.dll",
+      "size_bytes": 5120,
+      "sha256": "89a30e3c3874f212ede139c0dfc569ecd77a0899589f3f948d238de83bd6f36c"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.ValueTuple.dll",
+      "size_bytes": 4096,
+      "sha256": "2e4d089d624621e279d4e23c572454586f7891a68dcef3139bb37468af2af6a3"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.ReaderWriter.dll",
+      "size_bytes": 5120,
+      "sha256": "72b9c63d94c8964bc77dcf28d88cf9f584aa0f668525bc866a88151cf6847a4e"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.XDocument.dll",
+      "size_bytes": 5120,
+      "sha256": "5d5e73a222003a4cb91047fb4971a416041f1b31903bfb78825de49d267db7b7"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.XPath.XDocument.dll",
+      "size_bytes": 4608,
+      "sha256": "5c3d84b781663ebec0a054f262f3d15849c3548a7fb79a131bff618630ad9ffb"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.XPath.dll",
+      "size_bytes": 4096,
+      "sha256": "c7bb1267f6bf2ed0cb8d1691e91c48f5278c7c491da226400cb7e7d4193473ca"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.XmlDocument.dll",
+      "size_bytes": 5120,
+      "sha256": "6070dae95897eea99ebd57286c6307ada8b84151ed3e9904171be025412239c7"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.XmlSerializer.dll",
+      "size_bytes": 5120,
+      "sha256": "0a95c7db0fcf177edc11469a5e09e6754b4786a08f74b849f4b4d84576636cc3"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/System.Xml.Xsl.Primitives.dll",
+      "size_bytes": 4608,
+      "sha256": "69a15b0750abdbe46fc7570dd9e0ad161c32d2ce326506c1dfff278c0e4bc545"
+    },
+    {
+      "path": "usr/lib/mono/4.5/Facades/netstandard.dll",
+      "size_bytes": 93696,
+      "sha256": "e9741435907d8e393fd74682a6b2ff3ec19a934f2c3c1956b00b61dbb51df4dc"
+    }
+  ],
+  "runtime_assemblies": [
+    "mscorlib.dll",
+    "System.dll",
+    "System.Core.dll",
+    "System.Xml.dll",
+    "System.Configuration.dll",
+    "System.Numerics.dll",
+    "Microsoft.CSharp.dll",
+    "Mono.Security.dll"
+  ],
+  "references": [
+    "usr/lib/mono/4.7.2-api/mscorlib.dll",
+    "usr/lib/mono/4.7.2-api/System.dll",
+    "usr/lib/mono/4.7.2-api/System.Core.dll",
+    "usr/lib/mono/4.7.2-api/System.Xml.dll",
+    "usr/lib/mono/4.7.2-api/System.Configuration.dll",
+    "usr/lib/mono/4.7.2-api/System.Numerics.dll",
+    "usr/lib/mono/4.7.2-api/Microsoft.CSharp.dll",
+    "usr/lib/mono/4.7.2-api/Mono.Security.dll"
+  ],
+  "platform": "Linux x86_64; Ubuntu22.04 glibc/libgcc/zlib/krb5 system prerequisites",
+  "scope": "Explicit Mono compiler/BCL/net472-reference and runtime-facade inputs; Roslyn7.3 build profile uses the separately pinned Microsoft compiler. Existing numerical/runtime source is unchanged."
+}

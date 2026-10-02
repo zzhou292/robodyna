@@ -1,0 +1,119 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "SENSOR_OPTIX_ONLY")
+load(":configuration.bzl", "optix_configuration")
+load(":exports.bzl", "OPTIX_SOURCE_EXPORTS")
+load(":sources.bzl", "OPTIX_CUDA_SHADER_HEADERS", "OPTIX_CUDA_SOURCES", "OPTIX_HOST_GROUPS", "OPTIX_PRIVATE_HEADERS", "OPTIX_RUNTIME_HEADERS", "OPTIX_RUNTIME_SHADERS", "OPTIX_SPH_CUDA_SOURCES")
+load(":ownership.bzl", "optix_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "exports.bzl", "SourceBaseline.json"])
+
+optix_configuration(
+    name = "configuration",
+    template = "//src/compatibility/chrono:src/chrono_sensor/ChConfigSensor.h.in",
+    shaders = ["//src/compatibility/chrono:" + path for path in OPTIX_RUNTIME_SHADERS],
+    project_headers = ["//src/compatibility/chrono:" + path for path in OPTIX_RUNTIME_HEADERS],
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+)
+
+filegroup(name = "nvrtc_metadata", srcs = [":configuration"], output_group = "metadata")
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/core/configuration:host_headers"],
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+)
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for group in OPTIX_HOST_GROUPS.values() for path in group["headers"]] +
+           ["//src/compatibility/chrono:" + path for path in OPTIX_CUDA_SHADER_HEADERS + OPTIX_PRIVATE_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    defines = ["CHRONO_USE_CUDA"],
+    deps = [
+        ":configuration_headers",
+        "//build_defs/chrono:native_core_fea",
+        "//src/compatibility/chrono:native_stb",
+        "@optix_sdk//:headers",
+        "@sensor_sdk//:windowing",
+        "@cuda_math//:cccl_headers",
+        "@rules_cuda//cuda:runtime",
+    ] + select({"//build_defs/features:fsi_sph_enabled": ["//src/sph:sph"], "//conditions:default": []}),
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+    visibility = ["//visibility:private"],
+)
+
+# Original OptiX CUDA filters retain their own fast-math policy. No such option
+# is added to mechanical/FEA/SPH kernels or to ordinary Sensor host translation units.
+cuda_library(
+    name = "kernels",
+    srcs = ["//src/compatibility/chrono:" + path for path in OPTIX_CUDA_SOURCES] + select({
+        "//build_defs/features:fsi_sph_enabled": ["//src/compatibility/chrono:" + path for path in OPTIX_SPH_CUDA_SOURCES],
+        "//conditions:default": [],
+    }),
+    deps = [":headers", "@optix_sdk//:npp"],
+    copts = ["--std=c++17", "-O3", "--use_fast_math", "--extended-lambda", "-Wno-deprecated-gpu-targets", "--expt-relaxed-constexpr"],
+    host_copts = ["-O3"],
+    rdc = False,
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + SENSOR_OPTIX_ONLY,
+    tags = ["manual", "native-sensor-optix", "cuda-backend"],
+)
+
+cc_library(
+    name = "sensor",
+    srcs = ["//src/compatibility/chrono:" + path for group in OPTIX_HOST_GROUPS.values() for path in group["sources"]],
+    deps = [":headers", ":kernels", "@optix_sdk//:npp", "@cuda_math//:nvrtc", "@cuda_math//:driver"],
+    # The retained CMake expression exports this only for CXX compilation.
+    defines = ["CH_API_COMPILE_SENSOR", "USE_SENSOR_GLFW"],
+    local_defines = ["USE_CUDA_NVRTC"],
+    copts = ["-O3", "-fPIC"],
+    data = [":configuration", "@optix_sdk//:runtime_headers", "@optix_sdk//:runtime", "@sensor_sdk//:runtime"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + SENSOR_OPTIX_ONLY,
+    tags = ["manual", "native-sensor-optix", "cuda-backend"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = ["$(location :sources.bzl)", "$(location //src/compatibility/chrono:src/chrono_sensor/CMakeLists.txt)", "$(location :SourceBaseline.json)"],
+    data = [":sources.bzl", ":SourceBaseline.json"] + ["//src/compatibility/chrono:" + path for path in OPTIX_SOURCE_EXPORTS],
+    deps = ["//src/sensor:cmake_profile"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+optix_ownership_test(
+    name = "ownership_test",
+    implementation = ":sensor",
+    with_sph = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_test(
+    name = "host_profile_test",
+    srcs = ["HostProfileTest.cpp"],
+    deps = [":sensor", "//include/robodyna/mbd:api", "@googletest//:gtest_main"],
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "native-sensor-optix"],
+)
+
+cc_test(
+    name = "nvrtc_shader_test",
+    srcs = ["NvrtcShaderTest.cpp"],
+    deps = [":configuration_headers", "@cuda_math//:nvrtc", "@googletest//:gtest_main"],
+    data = [":configuration", "@optix_sdk//:runtime_headers"],
+    target_compatible_with = SENSOR_OPTIX_ONLY,
+    size = "medium",
+    tags = ["manual", "cpu-only", "runtime-shader-compiler"],
+)

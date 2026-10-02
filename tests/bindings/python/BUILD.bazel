@@ -1,0 +1,47 @@
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["package_runtime.py", "run_package.py"])
+
+py_test(
+    name = "core_package_test",
+    srcs = ["run_package.py"],
+    main = "run_package.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :package_runtime.py)", "$(rlocationpath //bindings/python:core_package_manifest)"],
+    data = ["@python_sdk//:bin/python3.10", ":package_runtime.py", "//bindings/python:core_package", "//bindings/python:core_package_manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "small",
+    tags = ["manual", "local", "cpu-only", "native-bindings"],
+)
+
+py_test(
+    name = "core_fea_package_test",
+    srcs = ["run_package.py"],
+    main = "run_package.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :package_runtime.py)", "$(rlocationpath //bindings/python:core_fea_package_manifest)", "--with-fea"],
+    data = ["@python_sdk//:bin/python3.10", ":package_runtime.py", "//bindings/python:core_fea_package", "//bindings/python:core_fea_package_manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "small",
+    tags = ["manual", "local", "cpu-only", "native-bindings"],
+)
+
+py_test(
+    name = "original_functions_demo_test",
+    srcs = ["functions_demo_test.py"],
+    main = "functions_demo_test.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath //tools/python_demos:execute.py)",
+            "$(rlocationpath //src/compatibility/chrono:src/demos/python/core/demo_CH_functions.py)",
+            "$(rlocationpath //bindings/python:core_package_manifest)"],
+    data = ["@python_sdk//:bin/python3.10", "//tools/python_demos:execute.py",
+            "//src/compatibility/chrono:src/demos/python/core/demo_CH_functions.py",
+            "//bindings/python:core_package", "//bindings/python:core_package_manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "small",
+    tags = ["manual", "local", "cpu-only", "original-python-demo"],
+)
+
+exports_files(["origin.py"])
+py_library(name = "runtime_origin", srcs = ["origin.py"])
+py_test(name = "runtime_origin_test", srcs = ["OriginTest.py"], main = "OriginTest.py",
+        deps = [":runtime_origin"], size = "small", tags = ["manual", "cpu-only", "control-unit"])

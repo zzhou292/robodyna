@@ -1,0 +1,102 @@
+{
+  "schema": "robodyna.peridynamics_source.v1",
+  "source_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "files": [
+    {
+      "path": "src/chrono_peridynamics/CMakeLists.txt",
+      "sha256": "961b03cee166734918bc737e992f27309e527d287b0dc51ffc708e40f0f31eb7"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChApiPeridynamics.h",
+      "sha256": "8ccee18b37109ed70dabb90688256119d1883768f8db839ead729d0d13eae9a8"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterLiquid.cpp",
+      "sha256": "8ba50d57d579e61d7da489bba782473ccb5f4867ad56813a907b9cd43a34e9b9"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriBB.cpp",
+      "sha256": "5b303033ec054f3d2123c6af56904c6401ad0a943e8b268bd1769416a4c22ce4"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriBB.h",
+      "sha256": "5c8d5398dc983183813a82662b715e3b216ef3c83717405f64679a509c46b16d"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriBBimplicit.cpp",
+      "sha256": "f66ee4d08dfd30a914386b4288690095d553bdc32d3adf9ed2729b63eb717596"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriBBimplicit.h",
+      "sha256": "1b2068576dca7048411aea9cdee766d47fd803fdd95d491456d1d980f19689cb"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriLinearElastic.cpp",
+      "sha256": "22beccb8e56f241dc564879a112c5e38053cabc5203f8a174f6cb42ecf5de4c2"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriLinearElastic.h",
+      "sha256": "71b1c2f8f9b0c54f4ee99805008c761b362ccff67d41cbd6259d18411dc4b295"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriLiquid.cpp",
+      "sha256": "16c5d76f157546fba4368b7b1973addc765ea6bfd8d123049f71f34ff17215b9"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriLiquid.h",
+      "sha256": "3df03a66f48ac63cf91884eccb1d2980ecceac362f355aa2c93496c6995a8d66"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriSprings.cpp",
+      "sha256": "24a4d341b4d7f4ae46c873fb3570011c58956fcf63af6447547abe6c66b7ef33"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeriSprings.h",
+      "sha256": "4e2ea152c6edc26749d1137ea33f3bfba111c47c6f3eb16052db0a9de40f3786"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChMatterPeridynamics.h",
+      "sha256": "b10d65e614777f426079d27b1af2f17add7c21e28d08894e692b67dc6e0fd34f"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChNodePeri.cpp",
+      "sha256": "716d36ba1a8b6dc89913b16ce85b9ec119d8b5d1c0b1419e7214bc02f2153a2b"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChNodePeri.h",
+      "sha256": "effb586567c670b0883ecba94a6563b11c84eb17c0acdcf71198d43faa78e538"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChPeridynamics.cpp",
+      "sha256": "f50a7bce5fb470e4b9d1b5368473dee8bdecfbab063f26c5ef9ecd65ff401e23"
+    },
+    {
+      "path": "src/chrono_peridynamics/ChPeridynamics.h",
+      "sha256": "2eab6cce49a09002e6e3eae6b8c01064afb1d2c62e5331c423a520f36f4b4c73"
+    },
+    {
+      "path": "src/demos/peridynamics/CMakeLists.txt",
+      "sha256": "ef521c6f974c88f71f07649d2b582c1367f745a8c98761b7ff33843745ad1a10"
+    },
+    {
+      "path": "src/demos/peridynamics/demo_PERI_benchmark.cpp",
+      "sha256": "529c250af267cbead5629e66a056ce71edfe11df57990e1790e35e776802b0b5"
+    },
+    {
+      "path": "src/demos/peridynamics/demo_PERI_elastic.cpp",
+      "sha256": "c94750f7ccabc50dcd2acd1750c6e56fc7587a80c08712074427ab8c43f06ace"
+    },
+    {
+      "path": "src/demos/peridynamics/demo_PERI_fluid.cpp",
+      "sha256": "6df2bdf1a5e4c299d6edc0ca9abb2ab68985187931f128d66bb5477454b51dce"
+    },
+    {
+      "path": "src/demos/peridynamics/demo_PERI_fracture.cpp",
+      "sha256": "acd829a0d2e4e4f8ec9b53477103da90054b453fd20ec52d482f83a1107b6539"
+    },
+    {
+      "path": "src/demos/peridynamics/demo_PERI_implicit.cpp",
+      "sha256": "7b44b86aeff168f98f10ac98fb2d77e05ded4addb19ed24a8e994c526ce4c2a0"
+    }
+  ]
+}

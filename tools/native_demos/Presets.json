@@ -1,0 +1,17 @@
+{
+  "schema": "robodyna.native_demo_presets.v1",
+  "presets": {
+    "core_build_system": {
+      "target": "//examples/core:build_system",
+      "source": "src/compatibility/chrono/src/demos/core/demo_CH_buildsystem.cpp",
+      "source_sha256": "b62ab8fcc3ae7ce4f1f775b9048fae98206486457d08a932b246ec4bdc39f42f",
+      "binary": "bazel-bin/examples/core/build_system",
+      "mode": "cpu_headless",
+      "arguments": [],
+      "data_convention": "../data/",
+      "output_convention": "DEMO_OUTPUT/",
+      "writes_into_data": false,
+      "scope": "Original body/joint construction and slider-crank frame stepping; no renderer, CUDA, MPI or ROS node is constructed by this audited main"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Unused missing header and two retained visualization API spellings only. Equations, stepping and experimental fluid guard unchanged.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/demos/peridynamics/demo_PERI_fluid.cpp",
+      "canonical_path": "src/compatibility/chrono/src/demos/peridynamics/demo_PERI_fluid.cpp",
+      "original_sha256": "6df2bdf1a5e4c299d6edc0ca9abb2ab68985187931f128d66bb5477454b51dce",
+      "replacements": [
+        {
+          "before": "#include \"chrono_peridynamics/ChMatterPeriBulkElastic.h\"",
+          "after": "// Obsolete unused include removed: ChMatterPeriBulkElastic.h",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/demos/peridynamics/demo_PERI_benchmark.cpp",
+      "canonical_path": "src/compatibility/chrono/src/demos/peridynamics/demo_PERI_benchmark.cpp",
+      "original_sha256": "529c250af267cbead5629e66a056ce71edfe11df57990e1790e35e776802b0b5",
+      "replacements": [
+        {
+          "before": "chrono_types::make_shared<ChVisualShapeFEA>(mesh)",
+          "after": "chrono_types::make_shared<ChVisualShapeFEA>()",
+          "count": 2
+        },
+        {
+          "before": "vis_mesh->SetColorscaleMinMax(0.0, 5.50);",
+          "after": "vis_mesh->SetColormapRange(0.0, 5.50);",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

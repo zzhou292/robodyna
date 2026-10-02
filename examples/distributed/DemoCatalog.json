@@ -1,0 +1,68 @@
+{
+  "schema": "robodyna.distributed_demos.v1",
+  "programs": [
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_scm.cpp",
+      "sha256": "1454f680148d36916934bf7d0675a43b5fa41da00de203521eadf7c4ce8dcbdb",
+      "target": "//examples/distributed:mpi_scm",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_scm_tracked.cpp",
+      "sha256": "d4f9ac02aff1a3fecd5c5828ebb45759449a5ddc6987ba0bf6b55544aa1b3fdc",
+      "target": "//examples/distributed:mpi_scm_tracked",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_wheeled.cpp",
+      "sha256": "f16523cc9fb0edf61a129490678c120957b48492a1826f41450cdb3a076440e7",
+      "target": "//examples/distributed:mpi_wheeled",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_tracked.cpp",
+      "sha256": "7b4a9ada99ad16973cd928c9eadfbd9604c6c94c9d6665e0f3f1da4d28324a6e",
+      "target": "//examples/distributed:mpi_tracked",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_copter.cpp",
+      "sha256": "300b156c78b68dd3aa9b58a888368a65cd444ea012c838478f9cca1c45793298",
+      "target": "//examples/distributed:mpi_copter",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/mpi/demo_SYN_highway.cpp",
+      "sha256": "15fc7b7c84e07731915e434ed04c67c38657767267f1807d741ad8bea8cd7190",
+      "target": "//examples/distributed:mpi_highway",
+      "transport": "mpi",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/dds/demo_SYN_DDS_distributed.cpp",
+      "sha256": "cdbdaf3a06adccb31f56ffd15a32fb9013ff5f09b507c1809265328ec0aad3c9",
+      "target": "//examples/distributed:dds_distributed",
+      "transport": "dds",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/dds/demo_SYN_DDS_wheeled.cpp",
+      "sha256": "ad6d86cdb02c64ee1d91f8a3bf9c28b22b066872bfca91f79075ec10d3ad80e4",
+      "target": "//examples/distributed:dds_wheeled",
+      "transport": "dds",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    },
+    {
+      "source": "src/demos/synchrono/dds/demo_SYN_DDS_tracked.cpp",
+      "sha256": "0d66c4c6ecd402ce6f78b9c05f51f9c29aa23f51999d72e6ef41f7ea49959edf",
+      "target": "//examples/distributed:dds_tracked",
+      "transport": "dds",
+      "runtime_qualification": "pending, original GUI/data/rank admission required"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "convex_decomposition",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_decomposition.cpp"],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "assets",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_assets.cpp"],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/textures/pinkwhite.png",
+        "//src/compatibility/chrono:data/models/forklift/body.obj",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "paths",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_paths.cpp"],
+    features = ["irrlicht"],
+)
+
+robodyna_cpp_demo(
+    name = "collision_visualization",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_visualize_collision.cpp"],
+    features = ["irrlicht"],
+    data = ["//src/compatibility/chrono:data/models/cube.obj"],
+)
+
+robodyna_cpp_demo(
+    name = "fea_visualization",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_visualize_FEA.cpp"],
+    features = ["irrlicht"],
+    data = [
+        "//src/compatibility/chrono:data/fea/beam.node",
+        "//src/compatibility/chrono:data/fea/beam.ele",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "raycast",
+    srcs = ["//src/compatibility/chrono:src/demos/irrlicht/demo_IRR_raycast_test.cpp"],
+    deps = ["//src/collision/multicore:collision"],
+    features = ["irrlicht"],
+    data = ["//src/compatibility/chrono:data/models/sphere.obj"],
+)
+
+# The complete six-program collection requires --config=multicore.
+filegroup(name = "all_demos", srcs = [":native_demos", ":raycast"], tags = ["manual"])
+
+filegroup(
+    name = "native_demos",
+    srcs = [":convex_decomposition", ":assets", ":paths", ":collision_visualization", ":fea_visualization"],
+    tags = ["manual"],
+)

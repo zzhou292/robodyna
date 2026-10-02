@@ -1,0 +1,65 @@
+load("//build_defs/bindings/python:defs.bzl", "python_module")
+
+package(default_visibility = ["//visibility:public"])
+
+_CORE = "//build_defs/bindings:native_core"
+_IMAGES = "//build_defs/bindings/optional:native_images"
+_VSG = "//build_defs/bindings/optional:native_vsg"
+_IRRLICHT = "//build_defs/bindings/optional:native_irrlicht"
+_VEHICLE = "//build_defs/bindings/optional:native_vehicle"
+_VEHICLE_IRRLICHT = "//build_defs/bindings/optional:native_vehicle_irrlicht"
+
+python_module(
+    name = "core", stem = "Core", implementation = _CORE,
+    cpp_deps = ["//build_defs/chrono:native_core_fea"], dynamic_deps = [], numpy = True,
+)
+python_module(
+    name = "fea", stem = "Fea", implementation = _CORE,
+    cpp_deps = ["//build_defs/chrono:native_core_fea"], dynamic_deps = [], numpy = True,
+)
+
+# The actual Python interface declares vsg3d; the C# module is named vsg.
+python_module(
+    numpy = True,
+    name = "vsg3d", stem = "Vsg", implementation = _VSG,
+    cpp_deps = ["//build_defs/chrono/vsg:vsg"], dynamic_deps = [_CORE, _IMAGES],
+)
+python_module(
+    numpy = True,
+    name = "irrlicht", stem = "Irrlicht", implementation = _IRRLICHT,
+    cpp_deps = ["//src/visualization/irrlicht:irrlicht"], dynamic_deps = [_CORE],
+)
+python_module(
+    numpy = True,
+    name = "postprocess", stem = "Postprocess", implementation = "//build_defs/bindings/optional:native_postprocess",
+    cpp_deps = ["//src/postprocess:exporters"], dynamic_deps = [_CORE],
+)
+python_module(
+    numpy = True,
+    name = "vehicle", stem = "Vehicle", implementation = _VEHICLE,
+    cpp_deps = ["//src/vehicle:vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/visualization:irrlicht"],
+    dynamic_deps = [_CORE, _IMAGES, _VSG, _IRRLICHT, _VEHICLE_IRRLICHT],
+    defines = ["CHRONO_VSG", "CHRONO_IRRLICHT", "CHRONO_VEHICLE"],
+)
+python_module(
+    numpy = True,
+    name = "robot", stem = "Robot", implementation = "//build_defs/bindings/optional:native_robot",
+    cpp_deps = ["//src/robotics/models:models"], dynamic_deps = [_CORE],
+)
+python_module(
+    numpy = True,
+    name = "pardisomkl", stem = "PardisoMkl", implementation = "//build_defs/bindings/optional:native_pardisomkl",
+    cpp_deps = ["//src/numerics/sparse:pardiso_mkl"], dynamic_deps = [_CORE],
+    defines = ["CHRONO_PARDISO_MKL"],
+)
+
+filegroup(
+    name = "generators",
+    srcs = [":core_generated", ":fea_generated", ":vsg3d_generated", ":irrlicht_generated", ":postprocess_generated", ":vehicle_generated", ":robot_generated", ":pardisomkl_generated"],
+    tags = ["manual", "native-python-bindings"],
+)
+filegroup(
+    name = "extensions",
+    srcs = [":python_core", ":python_fea", ":python_vsg3d", ":python_irrlicht", ":python_postprocess", ":python_vehicle", ":python_robot", ":python_pardisomkl"],
+    tags = ["manual", "native-python-bindings"],
+)

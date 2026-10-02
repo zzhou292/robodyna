@@ -1,0 +1,323 @@
+{
+  "schema": "robodyna.fsi_demo_admission.v1",
+  "scope": "Declaration is not compilation or runtime qualification; all24originalC++FSIdemos remain in the denominator.",
+  "source_count": 24,
+  "declared_sph": 19,
+  "pending_tdpf": 5,
+  "sph_precision": "float (retained CMake default)",
+  "sph": [
+    {
+      "name": "angle_repose",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_AngleRepose.cpp",
+      "target": "//examples/sph:angle_repose",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "bce",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_BCE.cpp",
+      "target": "//examples/sph:bce",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "baffle_flow",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_BaffleFlow.cpp",
+      "target": "//examples/sph:baffle_flow",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "compressibility",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Compressibility.cpp",
+      "target": "//examples/sph:compressibility",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cone_drop",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Cone_Drop.cpp",
+      "target": "//examples/sph:cone_drop",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "couette_flow",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_CouetteFlow.cpp",
+      "target": "//examples/sph:couette_flow",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cylindrical_tank",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_CylindricalTank.cpp",
+      "target": "//examples/sph:cylindrical_tank",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "dam_break",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_DamBreak.cpp",
+      "target": "//examples/sph:dam_break",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "embedded_object",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_EmbeddedObject.cpp",
+      "target": "//examples/sph:embedded_object",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fe_adirections",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_FEAdirections.cpp",
+      "target": "//examples/sph:fe_adirections",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "flexible_cable",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Cable.cpp",
+      "target": "//examples/sph:flexible_cable",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "flexible_plate",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Plate.cpp",
+      "target": "//examples/sph:flexible_plate",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "flexible_toroidal_tire",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Flexible_Toroidal_Tire.cpp",
+      "target": "//examples/sph:flexible_toroidal_tire",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg",
+        "pardiso_mkl"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "kernels",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Kernels.cpp",
+      "target": "//examples/sph:kernels",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "object_drop",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_ObjectDrop.cpp",
+      "target": "//examples/sph:object_drop",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "plate_sinkage",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_PlateSinkage.cpp",
+      "target": "//examples/sph:plate_sinkage",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "poiseuille_flow",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_Poiseuille_flow.cpp",
+      "target": "//examples/sph:poiseuille_flow",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "rassor_drum",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_RassorDrum.cpp",
+      "target": "//examples/sph:rassor_drum",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wave_tank",
+      "source": "src/demos/fsi/sph/demo_FSI-SPH_WaveTank.cpp",
+      "target": "//examples/sph:wave_tank",
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "status": "declared_for_compile",
+      "compiled": false,
+      "runtime_qualified": false
+    }
+  ],
+  "tdpf": [
+    {
+      "source": "src/demos/fsi/tdpf/demo_FSI-TDPF_oswec_reg_waves.cpp",
+      "status": "pending_prerequisites",
+      "target": null,
+      "requires": [
+        "pinned_hydrochrono_source",
+        "hdf5_development",
+        "native_tdpf_module"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/fsi/tdpf/demo_FSI-TDPF_rm3_reg_waves.cpp",
+      "status": "pending_prerequisites",
+      "target": null,
+      "requires": [
+        "pinned_hydrochrono_source",
+        "hdf5_development",
+        "native_tdpf_module"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_decay.cpp",
+      "status": "pending_prerequisites",
+      "target": null,
+      "requires": [
+        "pinned_hydrochrono_source",
+        "hdf5_development",
+        "native_tdpf_module"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_irreg_waves.cpp",
+      "status": "pending_prerequisites",
+      "target": null,
+      "requires": [
+        "pinned_hydrochrono_source",
+        "hdf5_development",
+        "native_tdpf_module"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "source": "src/demos/fsi/tdpf/demo_FSI-TDPF_sphere_reg_waves.cpp",
+      "status": "pending_prerequisites",
+      "target": null,
+      "requires": [
+        "pinned_hydrochrono_source",
+        "hdf5_development",
+        "native_tdpf_module"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    }
+  ]
+}

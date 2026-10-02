@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 
@@ -26,17 +27,21 @@ def main():
     parser.add_argument("--proxy-dir", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--include", action="append", default=[])
+    parser.add_argument("--define", action="append", default=[])
     args = parser.parse_args()
+    if any(not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(?:=[A-Za-z0-9_]+)?", value) for value in args.define):
+        raise ValueError("Invalid declared SWIG availability definition")
     args.wrapper.parent.mkdir(parents=True, exist_ok=True)
     args.proxy_dir.mkdir(parents=True, exist_ok=True)
     command = [args.swig, "-c++", "-" + args.language, "-DCHRONO_FEA"]
+    command += ["-D" + value for value in args.define]
     command += ["-I" + value for value in args.include]
     command += ["-o", str(args.wrapper), "-oh", str(args.directors),
                 "-outdir", str(args.proxy_dir), args.interface]
     result = subprocess.run(command, capture_output=True, text=True, env=tool_environment(os.environ))
     args.report.write_text(json.dumps({"schema": "robodyna.swig_action.v1", "command": command,
                                       "exit_code": result.returncode, "stdout": result.stdout,
-                                      "stderr": result.stderr, "numpy": False,
+                                      "stderr": result.stderr, "numpy": "CHRONO_PYTHON_NUMPY" in args.define,
                                       "scope": "Wrapper generation only"}, indent=2) + "\n")
     if result.returncode:
         raise RuntimeError(result.stderr)

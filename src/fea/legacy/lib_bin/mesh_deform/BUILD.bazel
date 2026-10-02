@@ -6,11 +6,6 @@ cc_binary(
     name = "test_feat10_bunny_adamw",
     srcs = ["test_feat10_bunny_adamw.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-    ],
     deps = [
         "//lib_src/elements:FEAT10Data",
         "//lib_src/solvers:FEAT10ConstraintManager",
@@ -19,6 +14,8 @@ cc_binary(
         "//lib_src/solvers:solvers_syncednewton",
         "//lib_utils:cpu_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
     ],
 )
 
@@ -26,12 +23,6 @@ cc_binary(
     name = "test_feat10_teapot_adamw",
     srcs = ["test_feat10_teapot_adamw.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcublas",
-        "-lcusparse",
-        "-lcudart",
-    ],
     deps = [
         "//lib_src/elements:FEAT10Data",
         "//lib_src/solvers:FEAT10ConstraintManager",
@@ -40,6 +31,9 @@ cc_binary(
         "//lib_src/solvers:solvers_syncednewton",
         "//lib_utils:cpu_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
     ],
 )
 
@@ -47,13 +41,6 @@ cc_binary(
     name = "test_feat10_bunny_newton",
     srcs = ["test_feat10_bunny_newton.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/elements:FEAT10Data",
         "//lib_src/solvers:FEAT10ConstraintManager",
@@ -63,6 +50,10 @@ cc_binary(
         "//lib_utils:cli_utils",
         "//lib_utils:cpu_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -70,13 +61,6 @@ cc_binary(
     name = "test_feat10_teapot_newton",
     srcs = ["test_feat10_teapot_newton.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/elements:FEAT10Data",
         "//lib_src/solvers:FEAT10ConstraintManager",
@@ -86,6 +70,10 @@ cc_binary(
         "//lib_utils:cli_utils",
         "//lib_utils:cpu_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -93,13 +81,6 @@ cc_binary(
     name = "test_feat10_tire_newton",
     srcs = ["test_feat10_tire_newton.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-        "-lcublas",
-    ],
     deps = [
         "//lib_src/elements:FEAT10Data",
         "//lib_src/solvers:FEAT10ConstraintManager",
@@ -109,6 +90,10 @@ cc_binary(
         "//lib_utils:cli_utils",
         "//lib_utils:cpu_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
+        "@cuda_math//:cublas",
     ],
 )
 
@@ -116,13 +101,6 @@ cc_binary(
     name = "test_ancf3243_net_newton",
     srcs = ["test_ancf3243_net_newton.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcublas",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-    ],
     deps = [
         "//lib_src/elements:ANCF3243Data",
         "//lib_src/solvers:solvers_syncednewton",
@@ -130,6 +108,10 @@ cc_binary(
         "//lib_utils:mesh_utils",
         "//lib_utils:visualization_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
     ],
 )
 
@@ -137,13 +119,6 @@ cc_binary(
     name = "test_ancf3443_mesh_newton",
     srcs = ["test_ancf3443_mesh_newton.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcublas",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-    ],
     deps = [
         "//lib_src/elements:ANCF3443Data",
         "//lib_src/solvers:solvers_syncednewton",
@@ -151,5 +126,9 @@ cc_binary(
         "//lib_utils:mesh_utils",
         "//lib_utils:visualization_utils",
         "@eigen//:eigen",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
     ],
 )

@@ -1,0 +1,61 @@
+load("//bindings/python:package.bzl", "python_binding_package")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+python_binding_package(
+    name = "package",
+    numpy = True,
+    python_runtime_anchor = "@numpy_sdk//:site-packages/numpy/__init__.py",
+    runtime_data = ["@numpy_sdk//:runtime_files"],
+    profile = "numpy-graphics-vehicle-robot-sparse",
+    proxies = {
+        "core": "//build_defs/bindings/python/numpy:core_proxy",
+        "fea": "//build_defs/bindings/python/numpy:fea_proxy",
+        "vsg3d": "//build_defs/bindings/python/numpy:vsg3d_proxy",
+        "irrlicht": "//build_defs/bindings/python/numpy:irrlicht_proxy",
+        "postprocess": "//build_defs/bindings/python/numpy:postprocess_proxy",
+        "vehicle": "//build_defs/bindings/python/numpy:vehicle_proxy",
+        "robot": "//build_defs/bindings/python/numpy:robot_proxy",
+        "pardisomkl": "//build_defs/bindings/python/numpy:pardisomkl_proxy",
+    },
+    extensions = {
+        "core": "//build_defs/bindings/python/numpy:python_core",
+        "fea": "//build_defs/bindings/python/numpy:python_fea",
+        "vsg3d": "//build_defs/bindings/python/numpy:python_vsg3d",
+        "irrlicht": "//build_defs/bindings/python/numpy:python_irrlicht",
+        "postprocess": "//build_defs/bindings/python/numpy:python_postprocess",
+        "vehicle": "//build_defs/bindings/python/numpy:python_vehicle",
+        "robot": "//build_defs/bindings/python/numpy:python_robot",
+        "pardisomkl": "//build_defs/bindings/python/numpy:python_pardisomkl",
+    },
+    backends = [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_pardisomkl",
+    ],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+
+filegroup(name = "manifest", srcs = [":package"], output_group = "manifest")
+
+python_binding_package(
+    name = "core_package",
+    numpy = True,
+    profile = "numpy-core",
+    python_runtime_anchor = "@numpy_sdk//:site-packages/numpy/__init__.py",
+    runtime_data = ["@numpy_sdk//:runtime_files"],
+    proxies = {"core": "//build_defs/bindings/python/numpy:core_proxy"},
+    extensions = {"core": "//build_defs/bindings/python/numpy:python_core"},
+    backends = ["//build_defs/bindings:native_core"],
+    target_compatible_with = BASELINE_ABI_ONLY,
+    tags = ["manual", "native-python-package"],
+)
+filegroup(name = "core_manifest", srcs = [":core_package"], output_group = "manifest")

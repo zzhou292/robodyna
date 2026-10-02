@@ -1,0 +1,31 @@
+load("//tools/python_demos:defs.bzl", "robodyna_python_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_python_demo(
+    name = "assets",
+    source = "//src/compatibility/chrono:src/demos/python/irrlicht/demo_IRR_assets.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "paths",
+    source = "//src/compatibility/chrono:src/demos/python/irrlicht/demo_IRR_paths.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+robodyna_python_demo(
+    name = "visualize_collision",
+    source = "//src/compatibility/chrono:src/demos/python/irrlicht/demo_IRR_visualize_collision.py",
+    helpers = [],
+    package = "//bindings/python/baseline:package",
+    manifest = "//bindings/python/baseline:manifest",
+)
+
+filegroup(name = "programs", srcs = [":assets", ":paths", ":visualize_collision"], tags = ["manual", "original-python-demos"])

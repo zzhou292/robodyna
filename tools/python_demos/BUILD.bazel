@@ -1,0 +1,19 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["defs.bzl", "launch.py", "execute.py"])
+
+py_library(name = "inventory_library", srcs = ["inventory.py"])
+py_binary(name = "audit", srcs = ["inventory.py"], main = "inventory.py", tags = ["manual", "source-proof"])
+
+py_test(name = "inventory_test", srcs = ["test_inventory.py"], main = "test_inventory.py",
+        deps = [":inventory_library"], size = "small", tags = ["manual", "cpu-only", "source-proof"])
+
+py_library(name = "launcher", srcs = ["launch.py"], deps = ["@rules_python//python/runfiles"])
+py_test(name = "launch_test", srcs = ["test_launch.py"], main = "test_launch.py",
+        deps = [":launcher"], size = "small", tags = ["manual", "cpu-only", "control-unit"])
+
+py_library(name = "executor", srcs = ["execute.py"])
+py_test(name = "node_binding_test", srcs = ["test_node_binding.py"], main = "test_node_binding.py",
+        deps = [":executor"], size = "small", tags = ["manual", "cpu-only", "control-unit"])

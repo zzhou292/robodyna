@@ -1,0 +1,35 @@
+{
+  "schema": "robodyna.source_transformations.v1",
+  "scope": "Inverse to the current pre-FMI source. Existing import history is preserved separately in the proposed composed global ledger.",
+  "files": [
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "canonical_path": "src/compatibility/chrono/src/chrono/serialization/ChArchive.cpp",
+      "original_sha256": "bb304a50de2d70fa88f8d507909a7276bb0f14d7bbede3c06f4823d0ede378e9",
+      "replacements": [
+        {
+          "before": "this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver));",
+          "after": "this->out(ChNameValue<int>((\"_version_\" + class_name).c_str(), mver, 0,\n                                 ChCausalityType::local, ChVariabilityType::constant));",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "original_path": "src/compatibility/chrono/src/chrono/core/ChMatrixEigenExtensions.h",
+      "canonical_path": "src/compatibility/chrono/src/chrono/core/ChMatrixEigenExtensions.h",
+      "original_sha256": "dc3431ba9657c65e0da5ac04873f7fb07305f5cbf465e04f4b572571afad8620",
+      "replacements": [
+        {
+          "before": "archive_out << chrono::make_ChNameValue(\"rows\", m_row);",
+          "after": "archive_out << chrono::make_ChNameValue(\"rows\", m_row, 0, chrono::ChCausalityType::local,\n                                               chrono::ChVariabilityType::constant);",
+          "count": 1
+        },
+        {
+          "before": "archive_out << chrono::make_ChNameValue(\"columns\", m_col);",
+          "after": "archive_out << chrono::make_ChNameValue(\"columns\", m_col, 0, chrono::ChCausalityType::local,\n                                               chrono::ChVariabilityType::constant);",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

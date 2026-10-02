@@ -1,0 +1,9 @@
+{
+  "schema": "robodyna.occt_sdk_pin.v1",
+  "version": "7.9.3",
+  "source_commit": "a016080bf6738d6aeae020badee4e888ad1540a5",
+  "source_archive_sha256": "c533f2667b59921bd6bd40ce82e7b9900b0289ccc731af5fdeeba097de80ef0f",
+  "sdk_receipt_sha256": "d940abf74aaebe07f665dfff511eff737ab26c8acb81202513e72054e955a317",
+  "build_recipe_sha256": "86c68dd477f4474ca12224f5fac321596902d72cea65e2bc153fd66fbdeb0f44",
+  "qualification": "Source SDK build passed; native CAD owner/runtime gates pending"
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "robodyna.fmu_forge_source_download.v1",
+  "recorded_gitlink": "cbf2a58ba9518e6230e831ff0b3640f9a0b4905a",
+  "url": "https://codeload.github.com/projectchrono/fmu-forge/tar.gz/cbf2a58ba9518e6230e831ff0b3640f9a0b4905a",
+  "archive": "fmu-forge-cbf2a58ba9518e6230e831ff0b3640f9a0b4905a.tar.gz",
+  "bytes": 1927164,
+  "sha256": "56eec5cf264b357d43e2087396106517ccfd0d8a6b187ac770ecba272f94efe0",
+  "source": "docs/migration/DEPENDENCIES.json:chrono-fmu-forge",
+  "scope": "Official source archive only; no build or runtime qualification",
+  "build_owner": "//src/integrations/fmi",
+  "license": "BSD-3-Clause plus bundled dependency notices",
+  "strip_prefix": "fmu-forge-cbf2a58ba9518e6230e831ff0b3640f9a0b4905a"
+}

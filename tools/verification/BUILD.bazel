@@ -44,3 +44,19 @@ py_test(
     tags = ["requires-git"],
 )
 test_suite(name = "catalog_tests", tests = [":catalog_test", ":inventory_test"])
+
+py_library(name = "native_entrypoints", srcs = ["native_entrypoints.py"], deps = [":inventory"])
+py_binary(
+    name = "audit_native_entrypoints",
+    srcs = ["native_entrypoints.py"],
+    main = "native_entrypoints.py",
+    deps = [":inventory"],
+    tags = ["manual", "local"],
+)
+py_test(
+    name = "native_entrypoints_test",
+    srcs = ["tests/test_native_entrypoints.py"],
+    main = "tests/test_native_entrypoints.py",
+    deps = [":native_entrypoints"],
+    size = "small",
+)

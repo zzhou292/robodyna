@@ -1,0 +1,111 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load(":configuration.bzl", "dem_configuration")
+load(":sources.bzl", "DEM_CMAKE", "DEM_CONFIG_TEMPLATE", "DEM_CUDA_SOURCES", "DEM_DATA_FILES", "DEM_DEMO_CMAKE", "DEM_HEADERS", "DEM_HOST_SOURCES", "DEM_SOURCE_EXPORTS", "DEM_VISUAL_HEADERS", "DEM_VISUAL_SOURCES")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "SourceBaseline.json"])
+
+_SOURCE = "//src/compatibility/chrono:"
+_TAGS = ["manual", "native-dem", "cuda-backend"]
+
+dem_configuration(
+    name = "configuration",
+    template = _SOURCE + DEM_CONFIG_TEMPLATE,
+    header = "generated/include/chrono_dem/ChConfigDem.h",
+)
+
+cc_library(
+    name = "configuration_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated/include",
+    deps = ["//src/core/configuration:host_headers"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [_SOURCE + path for path in DEM_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    # This is the owning CMake CUDA backend definition, not a mutation of the
+    # qualified core's CHRONO_HAS_CUDA/CHRONO_* configuration or math flags.
+    defines = ["CHRONO_USE_CUDA"],
+    deps = [
+        ":configuration_headers",
+        "//build_defs/chrono:native_core_fea",
+        "@rules_cuda//cuda:runtime",
+    ],
+    tags = _TAGS,
+)
+
+# Keep .cu compilation separate from the original host C++ translation units.
+cuda_library(
+    name = "kernels",
+    srcs = [_SOURCE + path for path in DEM_CUDA_SOURCES],
+    deps = [":headers", "@cuda_math//:cccl_headers"],
+    copts = ["--std=c++17", "-O3", "-Wno-deprecated-gpu-targets"],
+    host_copts = ["-O3"],
+    rdc = False,
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = _TAGS,
+)
+
+cc_library(
+    name = "dem",
+    srcs = [_SOURCE + path for path in DEM_HOST_SOURCES],
+    deps = [":headers", ":kernels"],
+    local_defines = ["CH_API_COMPILE_DEM"],
+    copts = ["-O3", "-fPIC"],
+    # Keep the full module's host/device symbol closure together, as in the
+    # retained shared module, without a static-archive host/device back edge.
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = _TAGS,
+)
+
+cc_library(
+    name = "visualization",
+    srcs = [_SOURCE + path for path in DEM_VISUAL_SOURCES],
+    hdrs = [_SOURCE + path for path in DEM_VISUAL_HEADERS],
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [":dem", "//build_defs/chrono/vsg:vsg"],
+    local_defines = ["CH_API_COMPILE_DEM"],
+    copts = ["-O3", "-fPIC"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tags = _TAGS + ["vulkan-rendering"],
+)
+
+filegroup(
+    name = "demo_assets",
+    srcs = [_SOURCE + path for path in DEM_DATA_FILES],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)",
+        "$(location :SourceBaseline.json)",
+        "$(location " + _SOURCE + DEM_CMAKE + ")",
+        "$(location " + _SOURCE + DEM_DEMO_CMAKE + ")",
+    ],
+    data = [":sources.bzl", ":SourceBaseline.json"] + [_SOURCE + path for path in DEM_SOURCE_EXPORTS + DEM_DATA_FILES],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+# No DEM system is constructed here and no CUDA function or kernel is called.
+# Only the header/runtime type contract and original JSON admission are exercised.
+cc_test(
+    name = "host_contract_test",
+    srcs = ["HostContractTest.cpp"],
+    args = ["$(location " + _SOURCE + "data/dem/ballCosim.json)"],
+    data = [_SOURCE + "data/dem/ballCosim.json"],
+    deps = [":headers", "@googletest//:gtest"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-dem"],
+)

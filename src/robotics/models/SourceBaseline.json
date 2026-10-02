@@ -1,0 +1,377 @@
+{
+  "schema": "robodyna.retained_robotics_build.v1",
+  "baseline_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "profile": {
+    "robot_model_urdf": false,
+    "vehicle_crm": false,
+    "vehicle_scm_gpu": false
+  },
+  "scope": "Original model/demo/helper/config bytes before native robot build wiring; not runtime qualification.",
+  "files": [
+    {
+      "path": "src/chrono_models/ChApiModels.h",
+      "bytes": 2941,
+      "sha256": "cb3e7fad71b2641fee366c5864f2491c3c45286539dbbfc227c3355b43b2043c"
+    },
+    {
+      "path": "src/chrono_models/robot/CMakeLists.txt",
+      "bytes": 4632,
+      "sha256": "6e18970f31b8a26749e7f063ef32cb0d97067dfcb661b7382ecf6c4e51fa1d53"
+    },
+    {
+      "path": "src/chrono_models/robot/ChRobotActuation.cpp",
+      "bytes": 6943,
+      "sha256": "27b4d7454212897bd74d6e1d8db10fa291e9fddfb51299d771e4f126de250a0c"
+    },
+    {
+      "path": "src/chrono_models/robot/ChRobotActuation.h",
+      "bytes": 6608,
+      "sha256": "3f6bda300af25ee2302548010b3138bf4db59e895f668413da9227194c0f7573"
+    },
+    {
+      "path": "src/chrono_models/robot/copters/Copter.h",
+      "bytes": 14398,
+      "sha256": "d44c184e790529046815af898d80370d10b6cfd47d82ed38c141fbe74e2c8073"
+    },
+    {
+      "path": "src/chrono_models/robot/copters/Little_Hexy.cpp",
+      "bytes": 4289,
+      "sha256": "a9bab23f6459e07c9a0ca24ba8ae32d3c84af44bbd04f9e4f37dfca7043569fa"
+    },
+    {
+      "path": "src/chrono_models/robot/copters/Little_Hexy.h",
+      "bytes": 2748,
+      "sha256": "ba66dcfd0691188eb3e219c60b8ad51425d0672a5fdbd84d92a8eb214de59df8"
+    },
+    {
+      "path": "src/chrono_models/robot/curiosity/Curiosity.cpp",
+      "bytes": 30438,
+      "sha256": "fe24ebf8f9ef89b2dcbc82b53e7ef443514715bfa71e94c43a61da7fd116a37c"
+    },
+    {
+      "path": "src/chrono_models/robot/curiosity/Curiosity.h",
+      "bytes": 19801,
+      "sha256": "6ec6c9368d57502d002dfc9ae93d73e9533863fbb735ac4032ccc13bd860d142"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematics.cpp",
+      "bytes": 920,
+      "sha256": "5638387e46748485c4297c60b0e1f64c245412188ddd3174782b1a4e4c570a96"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematics.h",
+      "bytes": 1603,
+      "sha256": "6b41f0460db8bb4e79f2b5785746ad04abdeaf3832c3e9bdd7a1e02c8cd4529c"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematics6dofSpherical.cpp",
+      "bytes": 7911,
+      "sha256": "e65265def9b6878d8297e036ea92fc4d007e5e257261d62ffe1f1d4126fc029a"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematics6dofSpherical.h",
+      "bytes": 3725,
+      "sha256": "0606480f0052732cba1fbbf5af66e21a852988c7711cbea7d4477ac938530164"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematicsNdofNumerical.cpp",
+      "bytes": 7259,
+      "sha256": "d27d56d0f21ce185987047be2846f399af6d6f28e63028d0b3e08db4531f6a62"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematicsNdofNumerical.h",
+      "bytes": 4169,
+      "sha256": "98dfb6ed7fd7d8c170ba23828474d62cade86aaa3b96b08866d6d079d54a01cc"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematicsSCARA.cpp",
+      "bytes": 4314,
+      "sha256": "943b1566d073d2ed794213203d4b9476080e70b559018f63453b2ffc5bdc3ddb"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialKinematicsSCARA.h",
+      "bytes": 2936,
+      "sha256": "ae440feff0ac63fcba8f0b84008f275883b0295eaf5c2289bb44ef3d84a832cd"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot.cpp",
+      "bytes": 6901,
+      "sha256": "82353e5d7550adbbc839992c727460e93e518ca2074123c9a9dd3be5b5fd9a81"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot.h",
+      "bytes": 7731,
+      "sha256": "def429df1487201c13d00efc47aa6590964486212d7f9bc6dd27ccc10d391fbf"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot6dof.cpp",
+      "bytes": 14390,
+      "sha256": "0182a10b011d3432142a31ff9114c3da0b8234815b7bcfd198cb0601c4152a51"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot6dof.h",
+      "bytes": 4944,
+      "sha256": "92b9686b6a14e88bc297d869e2f60313cf445fe3c80750cf530897c0de3d02e1"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot6dofCAD.cpp",
+      "bytes": 7609,
+      "sha256": "7f06e0b9f7b97424a1cf1e647ae727fcb9115a7039a5d1ff467d763c4bd5d00e"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobot6dofCAD.h",
+      "bytes": 3297,
+      "sha256": "891e71da924f0e04a01b04c216835535611482850e9ee88a2ab72dddc479f96f"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobotSCARA.cpp",
+      "bytes": 15020,
+      "sha256": "e5e68c259b6cada4001e4e2d046d264df25079bb63e5673f5a62195b840b0168"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobotSCARA.h",
+      "bytes": 4669,
+      "sha256": "d876f56c724ad3adcd96193838a2abfb7edc727120b8f88815768ed7be707dd0"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobotSCARA_CAD.cpp",
+      "bytes": 8241,
+      "sha256": "daa6090a7c7a70669e49a6daad6789348f640e9bab786832eed02518619e31d1"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/IndustrialRobotSCARA_CAD.h",
+      "bytes": 2961,
+      "sha256": "b99b2cd8777dda2d9bfdc950e3995ce5b0fabd5cf47a623ddbd451a9077cb256"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/TrajectoryInterpolator.cpp",
+      "bytes": 15514,
+      "sha256": "9ffc4033e67757d15ce13cf6a41e8eccb606984d20f2faa367ab80311822387f"
+    },
+    {
+      "path": "src/chrono_models/robot/industrial/TrajectoryInterpolator.h",
+      "bytes": 11061,
+      "sha256": "156f972e508068fa8b38713a40b3aea3baec9e6abec9358a63cd155b5d92b878"
+    },
+    {
+      "path": "src/chrono_models/robot/robosimian/RoboSimian.cpp",
+      "bytes": 50776,
+      "sha256": "b97d2ba168a7afd6dbba120597af5193fbc6958a9474ebdd4db03a2625683107"
+    },
+    {
+      "path": "src/chrono_models/robot/robosimian/RoboSimian.h",
+      "bytes": 25193,
+      "sha256": "48b59fd7b95dd9178ca986a2fdabee910092f7161d0bc75ae8ae50708634f326"
+    },
+    {
+      "path": "src/chrono_models/robot/robosimian/RoboSimianURDF.cpp",
+      "bytes": 8017,
+      "sha256": "964b02a08151cc2f8ad61c846836d75a78d0894347f3280f4f49792679530429"
+    },
+    {
+      "path": "src/chrono_models/robot/robosimian/RoboSimianURDF.h",
+      "bytes": 5276,
+      "sha256": "eebc87d1469d9beef617960840cf3dd8228462dfd40d18837896cf749723528d"
+    },
+    {
+      "path": "src/chrono_models/robot/turtlebot/Turtlebot.cpp",
+      "bytes": 46336,
+      "sha256": "40c045433d444d7f2be659e8262b9e5a9ea0de42df6b8d09ee2fdd2199f5621e"
+    },
+    {
+      "path": "src/chrono_models/robot/turtlebot/Turtlebot.h",
+      "bytes": 14144,
+      "sha256": "b622064a8cbc0cfcc75ce21c72c899a46b9e03f1bf3d96fe2984550fe9183ef1"
+    },
+    {
+      "path": "src/chrono_models/robot/viper/Viper.cpp",
+      "bytes": 29157,
+      "sha256": "3f6f20cbf5264591e428e5091c08e724e569670cf016f4d538907439bcd06ed5"
+    },
+    {
+      "path": "src/chrono_models/robot/viper/Viper.h",
+      "bytes": 18223,
+      "sha256": "12739138ddb51f8ced46e4c157f478184871e1635c8f770bc5050e2c4a5b62dc"
+    },
+    {
+      "path": "src/chrono_vehicle/ChConfigVehicle.h.in",
+      "bytes": 1205,
+      "sha256": "c478cac948615508ec679c51c5f459f40d2dafc930525c6c61e6b343b67d6592"
+    },
+    {
+      "path": "src/chrono_vehicle/wheeled_vehicle/test_rig/ChWheelTestRig.cpp",
+      "bytes": 38236,
+      "sha256": "e2746841ee02ec8fa234add220670021c104a00336bb2860f1c16a101797450c"
+    },
+    {
+      "path": "src/chrono_vehicle/wheeled_vehicle/test_rig/ChWheelTestRig.h",
+      "bytes": 26479,
+      "sha256": "036c5ffcdd79704a396c98750a77aa2dc0f9d67b69388cffbe3ec7a093ecdc25"
+    },
+    {
+      "path": "src/demos/SetChronoSolver.h",
+      "bytes": 6916,
+      "sha256": "10c971384fee0f8a4b9f52b8b32ca1514e5ac012426262491d5f73ba2699e77e"
+    },
+    {
+      "path": "src/demos/robot/CMakeLists.txt",
+      "bytes": 317,
+      "sha256": "36781f17e5ed26056672e2c0588b52bb239d9cbbfbd27302a465a5a02cb35730"
+    },
+    {
+      "path": "src/demos/robot/curiosity/CMakeLists.txt",
+      "bytes": 1884,
+      "sha256": "84a2c2211a90a921688100d7cc1ea556ec60b09fcc6f5036fe54af8480a5d576"
+    },
+    {
+      "path": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_Rigid.cpp",
+      "bytes": 7491,
+      "sha256": "44b233fa8d6e72640212e1af4e84d4e23e624dece9e8fdd53a1e3a58167eeca3"
+    },
+    {
+      "path": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM.cpp",
+      "bytes": 12150,
+      "sha256": "1a28896e5693a685546a8ebbec2085df65792b838d9ba008479545b6bb706501"
+    },
+    {
+      "path": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM_Sensor.cpp",
+      "bytes": 22876,
+      "sha256": "cc6b69db6c8b8b0480329f03d960c2272b8a797922cfc7065ef223a17a13a262"
+    },
+    {
+      "path": "src/demos/robot/hexy/CMakeLists.txt",
+      "bytes": 1144,
+      "sha256": "378decf35d1726f17f2b5077a1709f88c2b89c6d8351d274683197d3ea94ed51"
+    },
+    {
+      "path": "src/demos/robot/hexy/demo_ROBOT_LittleHexy.cpp",
+      "bytes": 5929,
+      "sha256": "5a792344c497b25f5670f38b324ff5e0a3ee3bc31a1d3719ee122a1f3c8e73e7"
+    },
+    {
+      "path": "src/demos/robot/industrial/CMakeLists.txt",
+      "bytes": 1233,
+      "sha256": "be8c9de478c095a237ebbd8d09649294027a00bf8aa4bed762d9431c55d0530d"
+    },
+    {
+      "path": "src/demos/robot/industrial/demo_ROBOT_Industrial.cpp",
+      "bytes": 7521,
+      "sha256": "fd52161e596e531dbe15fbe4ca882bc6601e40e4e10bfce0f869e310d1566278"
+    },
+    {
+      "path": "src/demos/robot/lander/CMakeLists.txt",
+      "bytes": 1759,
+      "sha256": "13e5ac8b44322083a5a60fff41ab778b5dadd60065bcd7c44e901d59c0403883"
+    },
+    {
+      "path": "src/demos/robot/lander/demo_ROBOT_Lander.cpp",
+      "bytes": 9085,
+      "sha256": "7581aa815512390dcff525150483e0ae2cc800b03f38214d0b016e105d1224d8"
+    },
+    {
+      "path": "src/demos/robot/lander/demo_ROBOT_Lander_CRM.cpp",
+      "bytes": 20984,
+      "sha256": "ce0e6f7c6ea930646fbc497856617f0ad4bb7a547de48485898e74805e264b70"
+    },
+    {
+      "path": "src/demos/robot/lander/model/Lander.cpp",
+      "bytes": 13532,
+      "sha256": "199989ad9ee8906ddc47015eff0090889e3a436ec2642daa1a1a930e5070bbc5"
+    },
+    {
+      "path": "src/demos/robot/lander/model/Lander.h",
+      "bytes": 9118,
+      "sha256": "1b2e381cb79c210e008c75d482903f9884c5590f219eeb1ab4b28f3cd5c10c29"
+    },
+    {
+      "path": "src/demos/robot/robosimian/CMakeLists.txt",
+      "bytes": 314,
+      "sha256": "94014e7d9e546e0d67523021a5b6c0bce60ae081c6ab6d45e1b2ba22c86b92a0"
+    },
+    {
+      "path": "src/demos/robot/robosimian/multicore/CMakeLists.txt",
+      "bytes": 1391,
+      "sha256": "55196a88137e50e48c17a081b3aaf265767c570f068aeaf8f4842305b7bac6ed"
+    },
+    {
+      "path": "src/demos/robot/robosimian/multicore/demo_ROBOT_RoboSimian_Granular.cpp",
+      "bytes": 21165,
+      "sha256": "cc4789898fadb3f7e7b4298bde9cfda8118ac57eef5d2297eb40b7235f76ee86"
+    },
+    {
+      "path": "src/demos/robot/robosimian/multicore/granular.cpp",
+      "bytes": 8246,
+      "sha256": "65074a7b74fef346d7460e5adae9a6f914586f17c8684801964cb574eed3ea8a"
+    },
+    {
+      "path": "src/demos/robot/robosimian/multicore/granular.h",
+      "bytes": 2687,
+      "sha256": "0dbf35a0df00213bf2264f7ad513ca2075b48a35efa87818ae56674daa011ef4"
+    },
+    {
+      "path": "src/demos/robot/robosimian/sequential/CMakeLists.txt",
+      "bytes": 1386,
+      "sha256": "1df93f72c5965858e4f7d0261f64087ae74ba638aa5dd6cd7e65d3a0abdafcf6"
+    },
+    {
+      "path": "src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_Rigid.cpp",
+      "bytes": 16336,
+      "sha256": "79d5aa8a5532106f9e2d9bd3d38a0b591ad1f39a51bcdc4155232925e1042e74"
+    },
+    {
+      "path": "src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_SCM.cpp",
+      "bytes": 23479,
+      "sha256": "5dcc35583ab517a762b8695db0260c29fb25526a6241938b42514a1afd7aa025"
+    },
+    {
+      "path": "src/demos/robot/turtlebot/CMakeLists.txt",
+      "bytes": 1568,
+      "sha256": "da964207b7931ba114eb1b92722dc061ea1c2f5f06ced61e657a370ff9a01524"
+    },
+    {
+      "path": "src/demos/robot/turtlebot/demo_ROBOT_Turtlebot_Rigid.cpp",
+      "bytes": 6989,
+      "sha256": "cec920beb849ceb78475efb8c41606f212668ee261b5e7a7a94faa5a93f16a75"
+    },
+    {
+      "path": "src/demos/robot/viper/CMakeLists.txt",
+      "bytes": 2310,
+      "sha256": "00d680fac2e6bea1fcd4c801e9c8151a42b6af0b9d6656ec57dc941c66e85743"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_CRM.cpp",
+      "bytes": 10076,
+      "sha256": "b77b489ca4b4a673984037c3bee1a1d918abbd79575b4c7bf6ab5c01efc525f5"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_Rigid.cpp",
+      "bytes": 8023,
+      "sha256": "161a7a05cce224c8c84b6e70ce69d30acf09311f18ccc0fe061487da544304d5"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_SCM.cpp",
+      "bytes": 21503,
+      "sha256": "12856831412d345676d9d842922e403d8ab07bc559204b5088153a31fff493c9"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_SCM_Sensor.cpp",
+      "bytes": 22453,
+      "sha256": "406056b0d991c80d2c147874f94f49fbc934962123aaf10775ea636a0b6adb31"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_WheelSlope_CRM.cpp",
+      "bytes": 31269,
+      "sha256": "371cfe021f6206371354ea80e246f31f78f1168624149965815fc1274595acc5"
+    },
+    {
+      "path": "src/demos/robot/viper/demo_ROBOT_Viper_WheelTestRig_CRM.cpp",
+      "bytes": 8926,
+      "sha256": "f407bea4561a20c6269d879fd37bdea6b0af44460560cc5b9d08c614845a913c"
+    },
+    {
+      "path": "src/demos/robot/viper/viper_wheel.h",
+      "bytes": 8352,
+      "sha256": "4eb948e2788eef1a696eee314c5d88a16df7cb511a71713ae02e5c6923181cec"
+    }
+  ]
+}

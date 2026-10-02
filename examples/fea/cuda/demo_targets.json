@@ -1,0 +1,1130 @@
+{
+  "schema": "robodyna.retained_cuda_demo_catalog.v1",
+  "source_pin": "f0cdeffaef85ea1f97c2162790dbd091fb2e4853",
+  "status": "canonical_real_binary_aliases_declared_build_and_runtime_pending",
+  "scope": "All26 first-party lib_bin programs; imported unit-test/qualification drivers and third-party DEM-Engine demos remain separate.",
+  "arithmetic_policy": "Existing CUDA/solver targets own their arithmetic flags. Aliases introduce no flags, source changes or duplicate compile owners.",
+  "all_target": "//examples/fea/cuda:all_demos",
+  "groups": {
+    "beams": "//examples/fea/cuda/beams:all_demos",
+    "deformation": "//examples/fea/cuda/deformation:all_demos",
+    "joints": "//examples/fea/cuda/joints:all_demos",
+    "contact": "//examples/fea/cuda/contact:all_demos",
+    "mixed": "//examples/fea/cuda/mixed:all_demos"
+  },
+  "programs": [
+    {
+      "target": "//examples/fea/cuda/beams:ancf3243_sag",
+      "group": "beams",
+      "source": "src/fea/legacy/lib_bin/beam_sag/test_ancf3243.cc",
+      "source_sha256": "f916b0be381b02fa8c7a0e9f98d3bb08218cb5e49cb89f7422ac15d31597c5fd",
+      "existing_target": "@legacy_fea//lib_bin/beam_sag:test_ancf3243",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/beam_sag/BUILD.bazel",
+      "existing_build_sha256": "cf178c2645630eb8390b908288e9d2683ca9b6c966ba902be7cb53d1c3903b32",
+      "existing_dependencies": [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/solvers:solvers_syncedadamwnocoop",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_src/solvers:solvers_syncedvbd",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_utils",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [],
+      "literal_output_references": [
+        "output/ancf3243"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/beams:ancf3443_sag",
+      "group": "beams",
+      "source": "src/fea/legacy/lib_bin/beam_sag/test_ancf3443.cc",
+      "source_sha256": "0d3a913748a6ccfd64d8cda19a53600e3b27be4f4de74975e67fa3ae496fb864",
+      "existing_target": "@legacy_fea//lib_bin/beam_sag:test_ancf3443",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/beam_sag/BUILD.bazel",
+      "existing_build_sha256": "cf178c2645630eb8390b908288e9d2683ca9b6c966ba902be7cb53d1c3903b32",
+      "existing_dependencies": [
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/solvers:solvers_syncedadamwnocoop",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_src/solvers:solvers_syncedvbd",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [],
+      "literal_output_references": [
+        "output/ancf3443"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/beams:tetra10_adamw_sag",
+      "group": "beams",
+      "source": "src/fea/legacy/lib_bin/beam_sag/test_feat10_adamw.cc",
+      "source_sha256": "7b6919022cf2112998ac7b367bb017e9a44271f0305e133f587b72658ade0897",
+      "existing_target": "@legacy_fea//lib_bin/beam_sag:test_feat10_adamw",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/beam_sag/BUILD.bazel",
+      "existing_build_sha256": "cf178c2645630eb8390b908288e9d2683ca9b6c966ba902be7cb53d1c3903b32",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/cube.1.ele",
+        "data/meshes/T10/cube.1.node"
+      ],
+      "literal_output_references": [],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/beams:tetra10_nesterov_sag",
+      "group": "beams",
+      "source": "src/fea/legacy/lib_bin/beam_sag/test_feat10_nesterov.cc",
+      "source_sha256": "01a5697588e0ce1c1b6c846949189cd08f98d21acd01ad85aed6c1cc0251744d",
+      "existing_target": "@legacy_fea//lib_bin/beam_sag:test_feat10_nesterov",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/beam_sag/BUILD.bazel",
+      "existing_build_sha256": "cf178c2645630eb8390b908288e9d2683ca9b6c966ba902be7cb53d1c3903b32",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/cube.1.ele",
+        "data/meshes/T10/cube.1.node"
+      ],
+      "literal_output_references": [],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/beams:tetra10_resolution",
+      "group": "beams",
+      "source": "src/fea/legacy/lib_bin/beam_sag/test_feat10_resolution.cc",
+      "source_sha256": "48a08552bfb20ac436f3912e3bdda3e04f471e2ccfda8dfa1a73450f02e17c05",
+      "existing_target": "@legacy_fea//lib_bin/beam_sag:test_feat10_resolution",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/beam_sag/BUILD.bazel",
+      "existing_build_sha256": "cf178c2645630eb8390b908288e9d2683ca9b6c966ba902be7cb53d1c3903b32",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamwnocoop",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_src/solvers:solvers_syncedvbd",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/resolution/beam_3x2x1_res"
+      ],
+      "literal_output_references": [],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:bunny_adamw",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_feat10_bunny_adamw.cc",
+      "source_sha256": "0edd837386db39b7cca1f0a895497f663e760b315bb7670ff7b00e353f6c1ad1",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_feat10_bunny_adamw",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bunny_ascii_26.1.ele",
+        "data/meshes/T10/bunny_ascii_26.1.node"
+      ],
+      "literal_output_references": [
+        "output/bunny_adamw_step_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:bunny_newton",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_feat10_bunny_newton.cc",
+      "source_sha256": "656f27f179489b476309c24ca03ff3b3c8f622d39a0c5bb9cc4d2901dd5cb74b",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_feat10_bunny_newton",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bunny_ascii_26.1",
+        "data/meshes/T10/bunny_scaling/bunny_res"
+      ],
+      "literal_output_references": [
+        "output/bunny_newton_res"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:teapot_adamw",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_feat10_teapot_adamw.cc",
+      "source_sha256": "ba719803aac964a3eab09136a3dc9752dea504c4c73e576c26651c6e60290c13",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_feat10_teapot_adamw",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamwnocoop",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/teapot.1.ele",
+        "data/meshes/T10/teapot.1.node"
+      ],
+      "literal_output_references": [
+        "output/teapot_adamw_step_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:teapot_newton",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_feat10_teapot_newton.cc",
+      "source_sha256": "785b70675aff8ddb0adc1d3df764fa8aff672918b3630e447365f8e41f020581",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_feat10_teapot_newton",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/teapot_scaling/teapot_res"
+      ],
+      "literal_output_references": [
+        "output/teapot_newton_res"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:tire_newton",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_feat10_tire_newton.cc",
+      "source_sha256": "753293d81bf5bae393962a4678c6ef5895258384682ef55610931e5bb86cc52d",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_feat10_tire_newton",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cpu_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/tire_scaling/tire_res"
+      ],
+      "literal_output_references": [
+        "output/tire_newton_res"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:ancf3243_net_newton",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_ancf3243_net_newton.cc",
+      "source_sha256": "d6ebe5f060a27705cacebe5022f591bf629b9f24f47a9862846743316e552231",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_ancf3243_net_newton",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cli_utils",
+        "//lib_utils:mesh_utils",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/ANCF3243",
+        "data/meshes/ANCF3243/net_pinned_nx20_ny20_L0.5.ancf3243mesh",
+        "data/meshes/ANCF3243/net_welded_nx20_ny20_L0.5.ancf3243mesh"
+      ],
+      "literal_output_references": [
+        "output/ancf3243_net",
+        "output/ancf3243_net/"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/deformation:ancf3443_mesh_newton",
+      "group": "deformation",
+      "source": "src/fea/legacy/lib_bin/mesh_deform/test_ancf3443_mesh_newton.cc",
+      "source_sha256": "929973a8a171f749554e7136e88c42e2aa6e5dca98bb57a4fdff2943c100b3ed",
+      "existing_target": "@legacy_fea//lib_bin/mesh_deform:test_ancf3443_mesh_newton",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/mesh_deform/BUILD.bazel",
+      "existing_build_sha256": "c813b524908e822fcc75e0aa53af895b3a4fadb6ae785da54a105c50dd58e0df",
+      "existing_dependencies": [
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cli_utils",
+        "//lib_utils:mesh_utils",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [],
+      "literal_output_references": [
+        "output/ancf3443_mesh",
+        "output/ancf3443_mesh/"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/joints:double_pendulum_revolute",
+      "group": "joints",
+      "source": "src/fea/legacy/lib_bin/engineering_joint/test_feat10_double_pendulum_revolute.cc",
+      "source_sha256": "2b970757a840300b18ccc7e470dfa84073e9adf28c40da2d27de029c03216c6e",
+      "existing_target": "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_revolute",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/engineering_joint/BUILD.bazel",
+      "existing_build_sha256": "70a80ca1155eaae6fd9e7185e85ece5ddd98a97798ea3444075c999ef493b817",
+      "existing_dependencies": [
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/double_pendulum/pendulum_beam.1"
+      ],
+      "literal_output_references": [
+        "output/engineering_joint",
+        "output/engineering_joint/double_pendulum_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/joints:double_pendulum_spherical",
+      "group": "joints",
+      "source": "src/fea/legacy/lib_bin/engineering_joint/test_feat10_double_pendulum_spherical.cc",
+      "source_sha256": "3599405e888dad95b0d56af777f0ff64d975c1b8ffb697474e97162b3c1c13b6",
+      "existing_target": "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_spherical",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/engineering_joint/BUILD.bazel",
+      "existing_build_sha256": "70a80ca1155eaae6fd9e7185e85ece5ddd98a97798ea3444075c999ef493b817",
+      "existing_dependencies": [
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/double_pendulum/pendulum_beam.1"
+      ],
+      "literal_output_references": [
+        "output/engineering_joint",
+        "output/engineering_joint/double_pendulum_spherical_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/joints:double_pendulum_welded",
+      "group": "joints",
+      "source": "src/fea/legacy/lib_bin/engineering_joint/test_feat10_double_pendulum_welded.cc",
+      "source_sha256": "e34db77febd7c73bce70f5a92ed9fa0a13c969c6953ba19e9efc405346d4ce98",
+      "existing_target": "@legacy_fea//lib_bin/engineering_joint:test_feat10_double_pendulum_welded",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/engineering_joint/BUILD.bazel",
+      "existing_build_sha256": "70a80ca1155eaae6fd9e7185e85ece5ddd98a97798ea3444075c999ef493b817",
+      "existing_dependencies": [
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/double_pendulum/pendulum_beam.1"
+      ],
+      "literal_output_references": [
+        "output/engineering_joint",
+        "output/engineering_joint/double_pendulum_welded_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/joints:piston_pump_cylindrical",
+      "group": "joints",
+      "source": "src/fea/legacy/lib_bin/engineering_joint/test_feat10_piston_pump_cylindrical.cc",
+      "source_sha256": "aa7ccf3cd9148f82205a12148f117c6e7447e495441a55e9f80df2ea31797453",
+      "existing_target": "@legacy_fea//lib_bin/engineering_joint:test_feat10_piston_pump_cylindrical",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/engineering_joint/BUILD.bazel",
+      "existing_build_sha256": "70a80ca1155eaae6fd9e7185e85ece5ddd98a97798ea3444075c999ef493b817",
+      "existing_dependencies": [
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/pump_cynlindrical"
+      ],
+      "literal_output_references": [
+        "output/engineering_joint",
+        "output/engineering_joint/piston_pump_cylindrical_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:sphere_drop_hydroelastic",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/collision_system/test_sphere_drop_collision.cc",
+      "source_sha256": "2d5b292aabccf2b070809f8520a16f1ede8055e4abd0b34068a15663bf0b112b",
+      "existing_target": "@legacy_fea//lib_bin/collision_system:test_sphere_drop_collision",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/collision_system/BUILD.bazel",
+      "existing_build_sha256": "0ed6fb17014b984fdd4418c26b71e421c7da5652c145e43882af447945754750",
+      "existing_dependencies": [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "//lib_src/collision:hydroelastic_narrowphase",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/sphere.1.ele",
+        "data/meshes/T10/sphere.1.node",
+        "data/meshes/T10/sphere.1.uncompressed.npz"
+      ],
+      "literal_output_references": [
+        "output/sphere_drop",
+        "output/sphere_drop/mesh_",
+        "output/sphere_drop/patches_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:bubble_gripper_bunny",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/collision_system/test_bubble_gripper_bunny.cc",
+      "source_sha256": "9d4b6b85130b45ddc1d22c0f2b88e331e7854aba25eea57dd36b4da805429aa2",
+      "existing_target": "@legacy_fea//lib_bin/collision_system:test_bubble_gripper_bunny",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/collision_system/BUILD.bazel",
+      "existing_build_sha256": "0ed6fb17014b984fdd4418c26b71e421c7da5652c145e43882af447945754750",
+      "existing_dependencies": [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "//lib_src/collision:hydroelastic_narrowphase",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bubble_gripper_bunny/"
+      ],
+      "literal_output_references": [
+        "output/bubble_gripper",
+        "output/bubble_gripper/mesh_",
+        "output/bubble_gripper/patches_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:bubble_gripper_bunny_floor",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/collision_system/test_bubble_gripper_bunny_floor.cc",
+      "source_sha256": "15d6e639fde5b5bc1c5a534bbaa5d7064784771deecd5718898da2a68030cc52",
+      "existing_target": "@legacy_fea//lib_bin/collision_system:test_bubble_gripper_bunny_floor",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/collision_system/BUILD.bazel",
+      "existing_build_sha256": "0ed6fb17014b984fdd4418c26b71e421c7da5652c145e43882af447945754750",
+      "existing_dependencies": [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "//lib_src/collision:hydroelastic_narrowphase",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": false,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bubble_gripper_bunny/"
+      ],
+      "literal_output_references": [
+        "output/bubble_gripper_bunny_floor",
+        "output/bubble_gripper_bunny_floor/mesh_",
+        "output/bubble_gripper_bunny_floor/patches_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:item_drop",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/collision_system/test_item_drop.cc",
+      "source_sha256": "f94bddc59313b7f91d491cb70a2c84dc4c066264daef334e728d5fcb25a1ed91",
+      "existing_target": "@legacy_fea//lib_bin/collision_system:test_item_drop",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/collision_system/BUILD.bazel",
+      "existing_build_sha256": "0ed6fb17014b984fdd4418c26b71e421c7da5652c145e43882af447945754750",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/collision:hydroelastic_patch_collision_system",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncedadamw",
+        "//lib_src/solvers:solvers_syncednesterov",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bubble_gripper_bunny/",
+        "data/meshes/T10/item_drop/"
+      ],
+      "literal_output_references": [
+        "output/item_drop",
+        "output/item_drop/mesh_",
+        "output/item_drop/patches_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:multi_object_drop",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/large_scale/test_multiitem_drop.cc",
+      "source_sha256": "8260d2b9f60b089604989b36b377e733a4893832c4a626bbde24318c938a8c9a",
+      "existing_target": "@legacy_fea//lib_bin/large_scale:test_multiitem_drop",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/large_scale/BUILD.bazel",
+      "existing_build_sha256": "92be6f18e8fc2cc5f658a82f3267fc7f7e34729798c2383a7daf39b497afa061",
+      "existing_dependencies": [
+        ":multiitem_collision_kernels",
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:ANCF3443Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:multi_element_newton",
+        "//lib_src/solvers:multi_element_problem",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/bubble_gripper_bunny/bunny_26_scaled_0p01.1.ele",
+        "data/meshes/T10/bubble_gripper_bunny/bunny_26_scaled_0p01.1.node",
+        "data/meshes/T10/item_drop/armadilo.ele",
+        "data/meshes/T10/item_drop/armadilo.node",
+        "data/meshes/T10/item_drop/openbox.ele",
+        "data/meshes/T10/item_drop/openbox.node",
+        "data/meshes/T10/teapot.1.ele",
+        "data/meshes/T10/teapot.1.node",
+        "data/meshes/T10/tire.ele",
+        "data/meshes/T10/tire.node"
+      ],
+      "literal_output_references": [
+        "output/multiitem_drop",
+        "output/multiitem_drop/",
+        "output/multiitem_drop/beam_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:vase_drop",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/large_scale/test_vase.cc",
+      "source_sha256": "dd9eecd3f91a3de633cb248ad4c208d3ebe9018684f5c4c81ab1574889d37698",
+      "existing_target": "@legacy_fea//lib_bin/large_scale:test_vase",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/large_scale/BUILD.bazel",
+      "existing_build_sha256": "92be6f18e8fc2cc5f658a82f3267fc7f7e34729798c2383a7daf39b497afa061",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:multi_element_newton",
+        "//lib_src/solvers:multi_element_problem",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/T10/vase/bouquet_vase_ascii.1.ele",
+        "data/meshes/T10/vase/bouquet_vase_ascii.1.node",
+        "data/meshes/T10/vase/protect_foam_ascii.1.ele",
+        "data/meshes/T10/vase/protect_foam_ascii.1.node"
+      ],
+      "literal_output_references": [
+        "output/vase_drop",
+        "output/vase_drop/foam_",
+        "output/vase_drop/vase_"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:brick_sliding",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/ptest/brick_sliding.cc",
+      "source_sha256": "be373ff7225ffafda6f481e09e7f75f8f8f055c37af9d64c9aa224bc95e0f7af",
+      "existing_target": "@legacy_fea//lib_bin/ptest:brick_sliding",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/ptest/BUILD.bazel",
+      "existing_build_sha256": "73dcb8924fbf681554906eff92df26f94c52653277fc6026005caeb0aa880554",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncednewton",
+        ":rigid_equivalent_utils",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/ptest/brick/brick_medium.1.ele",
+        "data/meshes/ptest/brick/brick_medium.1.node",
+        "data/meshes/ptest/slope/slope_"
+      ],
+      "literal_output_references": [
+        "output/brick_sliding"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:sphere_stacking",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/ptest/sphere_stacking.cc",
+      "source_sha256": "ecf562adbab26fb504d604dc24173ceb6b94cccbcbf3077ce7232f93de96cf10",
+      "existing_target": "@legacy_fea//lib_bin/ptest:sphere_stacking",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/ptest/BUILD.bazel",
+      "existing_build_sha256": "73dcb8924fbf681554906eff92df26f94c52653277fc6026005caeb0aa880554",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncednewton",
+        ":rigid_equivalent_utils",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcublas",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/ptest/plate/1.1.001plate.1.ele",
+        "data/meshes/ptest/plate/1.1.001plate.1.node",
+        "data/meshes/ptest/sphere/sphere_r0p15_"
+      ],
+      "literal_output_references": [
+        "output/sphere_stacking"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/contact:oblique_impact",
+      "group": "contact",
+      "source": "src/fea/legacy/lib_bin/ptest/oblique_impact.cc",
+      "source_sha256": "91c3d98781d4535339feb0688ccfcce84d29ac90ca21084994b9bc33c47e9b05",
+      "existing_target": "@legacy_fea//lib_bin/ptest:oblique_impact",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/ptest/BUILD.bazel",
+      "existing_build_sha256": "73dcb8924fbf681554906eff92df26f94c52653277fc6026005caeb0aa880554",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:FEAT10ConstraintManager",
+        "//lib_src/solvers:solvers_syncednewton",
+        ":rigid_equivalent_utils",
+        "//lib_utils:cli_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcusparse",
+        "-lcudart",
+        "-lcudss",
+        "-lcublas"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/ptest/plate/1.1.001plate.1.ele",
+        "data/meshes/ptest/plate/1.1.001plate.1.node",
+        "data/meshes/ptest/sphere/sphere_r0p15_med.1"
+      ],
+      "literal_output_references": [
+        "output/oblique_impact"
+      ],
+      "runtime_qualified": false
+    },
+    {
+      "target": "//examples/fea/cuda/mixed:mixed_elements_gravity",
+      "group": "mixed",
+      "source": "src/fea/legacy/lib_bin/multi_type/test_multi_element_gravity.cc",
+      "source_sha256": "4cad30709a850be62a2533925cfa7cb1b030e39258b04c087a336eac4c87b16a",
+      "existing_target": "@legacy_fea//lib_bin/multi_type:test_multi_element_gravity",
+      "existing_kind": "cc_binary",
+      "existing_build": "src/fea/legacy/lib_bin/multi_type/BUILD.bazel",
+      "existing_build_sha256": "10965363be0ddea70e838ad1a98abc27c553f65c51ed063dae81370926014f0f",
+      "existing_dependencies": [
+        "//lib_src/collision:deme_mesh_collision_system",
+        "//lib_src/elements:ANCF3243Data",
+        "//lib_src/elements:FEAT10Data",
+        "//lib_src/solvers:solvers_syncednewton",
+        "//lib_utils:cpu_utils",
+        "//lib_utils:cuda_utils",
+        "//lib_utils:mesh_manager",
+        "//lib_utils:mesh_utils",
+        "//lib_utils:surface_trimesh_extract",
+        "//lib_utils:visualization_utils",
+        "@eigen//:eigen"
+      ],
+      "existing_copts": [
+        "--std=c++17"
+      ],
+      "existing_linkopts": [
+        "-L/usr/local/cuda/lib64",
+        "-lnvrtc",
+        "-lcuda",
+        "-lcusparse",
+        "-lcudart",
+        "-lcusolver",
+        "-lcublas",
+        "-lcudss"
+      ],
+      "existing_data": [
+        "//:data_meshes"
+      ],
+      "requires_deme": true,
+      "requires_cudss_in_existing_closure": true,
+      "literal_data_references": [
+        "data/meshes/ANCF3243/net_pinned_nx20_ny20_L0.5.ancf3243mesh",
+        "data/meshes/T10/item_drop/"
+      ],
+      "literal_output_references": [
+        "output/dragon_on_net",
+        "output/dragon_on_net/dragon_",
+        "output/dragon_on_net/net_"
+      ],
+      "runtime_qualified": false
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["runtime.py"])
+
+py_test(
+    name = "core_runtime_test",
+    srcs = ["//tests/bindings/python:run_package.py"],
+    main = "//tests/bindings/python:run_package.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :runtime.py)", "$(rlocationpath //bindings/python/numpy:core_manifest)"],
+    data = ["@python_sdk//:bin/python3.10", ":runtime.py", "//tests/bindings/python:origin.py", "//bindings/python/numpy:core_package", "//bindings/python/numpy:core_manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    env = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"},
+    size = "medium",
+    tags = ["manual", "local", "cpu-only", "native-numpy-bindings"],
+)
+
+py_test(
+    name = "full_package_runtime_test",
+    srcs = ["//tests/bindings/python:run_package.py"],
+    main = "//tests/bindings/python:run_package.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :runtime.py)", "$(rlocationpath //bindings/python/numpy:manifest)"],
+    data = ["@python_sdk//:bin/python3.10", ":runtime.py", "//tests/bindings/python:origin.py", "//bindings/python/numpy:package", "//bindings/python/numpy:manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    env = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"},
+    size = "medium",
+    tags = ["manual", "local", "cpu-only", "native-numpy-bindings"],
+)

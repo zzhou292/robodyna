@@ -1,0 +1,612 @@
+{
+  "schema": "robodyna.ros_sdk_downloads.v1",
+  "distribution": "humble",
+  "platform": "ubuntu22.04-x86_64",
+  "metadata_source": "https://repo.ros2.org/ubuntu/main/",
+  "metadata_sha256": "77f76c7726d89fbcc0f57f2bf7ce822c1dcb1f07154a2928f0c28a2614d31a2b",
+  "components": {
+    "ros-humble-action-msgs": {
+      "version": "1.2.3-1jammy.20260907.205155",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-action-msgs/ros-humble-action-msgs_1.2.3-1jammy.20260907.205155_amd64.deb",
+      "archive": "ros-humble-action-msgs_1.2.3-1jammy.20260907.205155_amd64.deb",
+      "bytes": 72820,
+      "sha256": "961273bff800cb65ce98c4b980b843f4546e2e3a9ba045093456ffc16856bf63"
+    },
+    "ros-humble-ament-cmake": {
+      "version": "1.3.14-1jammy.20260226.035055",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake/ros-humble-ament-cmake_1.3.14-1jammy.20260226.035055_amd64.deb",
+      "archive": "ros-humble-ament-cmake_1.3.14-1jammy.20260226.035055_amd64.deb",
+      "bytes": 7694,
+      "sha256": "6afbf6fb07787ae664ed732b358064298debe8032dfb3dca5a4b5de5ecfdfac3"
+    },
+    "ros-humble-ament-cmake-core": {
+      "version": "1.3.14-1jammy.20260224.185609",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-core/ros-humble-ament-cmake-core_1.3.14-1jammy.20260224.185609_amd64.deb",
+      "archive": "ros-humble-ament-cmake-core_1.3.14-1jammy.20260224.185609_amd64.deb",
+      "bytes": 29294,
+      "sha256": "27ef3ca5e8ec3e515b99af01219322e0ece1b2f5c583bdb880a098017a009ee5"
+    },
+    "ros-humble-ament-cmake-export-definitions": {
+      "version": "1.3.14-1jammy.20260226.010509",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-definitions/ros-humble-ament-cmake-export-definitions_1.3.14-1jammy.20260226.010509_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-definitions_1.3.14-1jammy.20260226.010509_amd64.deb",
+      "bytes": 7552,
+      "sha256": "61f1797100cb21db4d09f6c0c7c56c3567bf5bc9572a3e5ba4b77c0e2af9fe67"
+    },
+    "ros-humble-ament-cmake-export-dependencies": {
+      "version": "1.3.14-1jammy.20260226.011144",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-dependencies/ros-humble-ament-cmake-export-dependencies_1.3.14-1jammy.20260226.011144_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-dependencies_1.3.14-1jammy.20260226.011144_amd64.deb",
+      "bytes": 9048,
+      "sha256": "5d609230ee8ba522a4eae8a71d9ccf90e216017814f03e5e13197e0e1d350c80"
+    },
+    "ros-humble-ament-cmake-export-include-directories": {
+      "version": "1.3.14-1jammy.20260226.010305",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-include-directories/ros-humble-ament-cmake-export-include-directories_1.3.14-1jammy.20260226.010305_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-include-directories_1.3.14-1jammy.20260226.010305_amd64.deb",
+      "bytes": 7876,
+      "sha256": "b84dd03176286cb449ac32d6dcb5a8de47e371ffc6d44622ae06ddd545a0cc97"
+    },
+    "ros-humble-ament-cmake-export-interfaces": {
+      "version": "1.3.14-1jammy.20260226.005715",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-interfaces/ros-humble-ament-cmake-export-interfaces_1.3.14-1jammy.20260226.005715_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-interfaces_1.3.14-1jammy.20260226.005715_amd64.deb",
+      "bytes": 8288,
+      "sha256": "655e8da03f68e4dcd4830487988f9c8b543c17b4167e7c3d6440620647e58362"
+    },
+    "ros-humble-ament-cmake-export-libraries": {
+      "version": "1.3.14-1jammy.20260226.004939",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-libraries/ros-humble-ament-cmake-export-libraries_1.3.14-1jammy.20260226.004939_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-libraries_1.3.14-1jammy.20260226.004939_amd64.deb",
+      "bytes": 10586,
+      "sha256": "cc22b77ab698be9a2768a9f96ae695c620b0265fe78772af81ba53e352322bce"
+    },
+    "ros-humble-ament-cmake-export-link-flags": {
+      "version": "1.3.14-1jammy.20260226.010357",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-link-flags/ros-humble-ament-cmake-export-link-flags_1.3.14-1jammy.20260226.010357_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-link-flags_1.3.14-1jammy.20260226.010357_amd64.deb",
+      "bytes": 7154,
+      "sha256": "f9c96b6433cab395168de8724b780e95cd37f3bbbec4e612a730fde089a946cf"
+    },
+    "ros-humble-ament-cmake-export-targets": {
+      "version": "1.3.14-1jammy.20260226.005705",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-export-targets/ros-humble-ament-cmake-export-targets_1.3.14-1jammy.20260226.005705_amd64.deb",
+      "archive": "ros-humble-ament-cmake-export-targets_1.3.14-1jammy.20260226.005705_amd64.deb",
+      "bytes": 8136,
+      "sha256": "62cb88f9cd6f2acef56f766a03127de3131ef023e87c6345012b5ee3d1b96e0d"
+    },
+    "ros-humble-ament-cmake-gen-version-h": {
+      "version": "1.3.14-1jammy.20260226.034234",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-gen-version-h/ros-humble-ament-cmake-gen-version-h_1.3.14-1jammy.20260226.034234_amd64.deb",
+      "archive": "ros-humble-ament-cmake-gen-version-h_1.3.14-1jammy.20260226.034234_amd64.deb",
+      "bytes": 9322,
+      "sha256": "fd93b380a95804820cb7a5d1ef2ccd0c6dd13e9bb5a2095885bd978816a68165"
+    },
+    "ros-humble-ament-cmake-gmock": {
+      "version": "1.3.14-1jammy.20260226.034220",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-gmock/ros-humble-ament-cmake-gmock_1.3.14-1jammy.20260226.034220_amd64.deb",
+      "archive": "ros-humble-ament-cmake-gmock_1.3.14-1jammy.20260226.034220_amd64.deb",
+      "bytes": 10528,
+      "sha256": "a349b6e543744a982a15febf5cf6123b9a03d395935a529742fe6b28e65c7139"
+    },
+    "ros-humble-ament-cmake-gtest": {
+      "version": "1.3.14-1jammy.20260226.013944",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-gtest/ros-humble-ament-cmake-gtest_1.3.14-1jammy.20260226.013944_amd64.deb",
+      "archive": "ros-humble-ament-cmake-gtest_1.3.14-1jammy.20260226.013944_amd64.deb",
+      "bytes": 11590,
+      "sha256": "94bba469f101684ac323bebe8cf75bd52d877a0d3027b01236e998ec636dc30b"
+    },
+    "ros-humble-ament-cmake-include-directories": {
+      "version": "1.3.14-1jammy.20260226.010650",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-include-directories/ros-humble-ament-cmake-include-directories_1.3.14-1jammy.20260226.010650_amd64.deb",
+      "archive": "ros-humble-ament-cmake-include-directories_1.3.14-1jammy.20260226.010650_amd64.deb",
+      "bytes": 7570,
+      "sha256": "b7f109088d12e91acdae6a57f8a24432aa28330639218eded30d9a6743b873f9"
+    },
+    "ros-humble-ament-cmake-libraries": {
+      "version": "1.3.14-1jammy.20260226.010453",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-libraries/ros-humble-ament-cmake-libraries_1.3.14-1jammy.20260226.010453_amd64.deb",
+      "archive": "ros-humble-ament-cmake-libraries_1.3.14-1jammy.20260226.010453_amd64.deb",
+      "bytes": 7264,
+      "sha256": "b374b790ee4398fd1781dffe70eeb0010753fe324f6eb05600bcd1d67a51991b"
+    },
+    "ros-humble-ament-cmake-pytest": {
+      "version": "1.3.14-1jammy.20260226.014042",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-pytest/ros-humble-ament-cmake-pytest_1.3.14-1jammy.20260226.014042_amd64.deb",
+      "archive": "ros-humble-ament-cmake-pytest_1.3.14-1jammy.20260226.014042_amd64.deb",
+      "bytes": 9972,
+      "sha256": "84526836590fb7737a36234d4381620652c1c8cef40863373e50198c455df782"
+    },
+    "ros-humble-ament-cmake-python": {
+      "version": "1.3.14-1jammy.20260226.005145",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-python/ros-humble-ament-cmake-python_1.3.14-1jammy.20260226.005145_amd64.deb",
+      "archive": "ros-humble-ament-cmake-python_1.3.14-1jammy.20260226.005145_amd64.deb",
+      "bytes": 10650,
+      "sha256": "8a8699440431dc9f722e87fc4139c13cae0facb94eb5fdb1b33c5cb89ff1a7d5"
+    },
+    "ros-humble-ament-cmake-ros": {
+      "version": "0.10.1-1jammy.20260907.191552",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-ros/ros-humble-ament-cmake-ros_0.10.1-1jammy.20260907.191552_amd64.deb",
+      "archive": "ros-humble-ament-cmake-ros_0.10.1-1jammy.20260907.191552_amd64.deb",
+      "bytes": 8202,
+      "sha256": "9422c353a22da9108d367c9e0742f18e8eca96eac9e3285a4b1a51c10d722d31"
+    },
+    "ros-humble-ament-cmake-target-dependencies": {
+      "version": "1.3.14-1jammy.20260226.013622",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-target-dependencies/ros-humble-ament-cmake-target-dependencies_1.3.14-1jammy.20260226.013622_amd64.deb",
+      "archive": "ros-humble-ament-cmake-target-dependencies_1.3.14-1jammy.20260226.013622_amd64.deb",
+      "bytes": 9800,
+      "sha256": "7200a5853f876bf22c78dc4bdc983dc5dde802862b9101b392d8755cec81a818"
+    },
+    "ros-humble-ament-cmake-test": {
+      "version": "1.3.14-1jammy.20260226.013528",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-test/ros-humble-ament-cmake-test_1.3.14-1jammy.20260226.013528_amd64.deb",
+      "archive": "ros-humble-ament-cmake-test_1.3.14-1jammy.20260226.013528_amd64.deb",
+      "bytes": 16916,
+      "sha256": "c1eb4bd14e0fe2d7a786d234644c353cdcd80a90ab083c0bf2e5f73274a8b718"
+    },
+    "ros-humble-ament-cmake-version": {
+      "version": "1.3.14-1jammy.20260226.010514",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-cmake-version/ros-humble-ament-cmake-version_1.3.14-1jammy.20260226.010514_amd64.deb",
+      "archive": "ros-humble-ament-cmake-version_1.3.14-1jammy.20260226.010514_amd64.deb",
+      "bytes": 7340,
+      "sha256": "891e2262cedae8c8664440a1d3252a57623d88967079e1e5a04ef3dc01299574"
+    },
+    "ros-humble-ament-index-cpp": {
+      "version": "1.4.1-1jammy.20260304.201844",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-index-cpp/ros-humble-ament-index-cpp_1.4.1-1jammy.20260304.201844_amd64.deb",
+      "archive": "ros-humble-ament-index-cpp_1.4.1-1jammy.20260304.201844_amd64.deb",
+      "bytes": 23364,
+      "sha256": "ce98577a6520976c75608ce8afa1b37adc6889a86cb3ce97c2220ce18f893de8"
+    },
+    "ros-humble-ament-index-python": {
+      "version": "1.4.1-1jammy.20260304.090250",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-index-python/ros-humble-ament-index-python_1.4.1-1jammy.20260304.090250_amd64.deb",
+      "archive": "ros-humble-ament-index-python_1.4.1-1jammy.20260304.090250_amd64.deb",
+      "bytes": 12294,
+      "sha256": "bf613285d5dbd803d0093128eae2ee51d13226ec4f65319bd46dfef875d7dcc9"
+    },
+    "ros-humble-ament-package": {
+      "version": "0.14.2-1jammy.20260213.215617",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ament-package/ros-humble-ament-package_0.14.2-1jammy.20260213.215617_amd64.deb",
+      "archive": "ros-humble-ament-package_0.14.2-1jammy.20260213.215617_amd64.deb",
+      "bytes": 23750,
+      "sha256": "468377c879cc19a7e952d0b7424a6a1ba2802135b631e902407f4e75b8a1f268"
+    },
+    "ros-humble-builtin-interfaces": {
+      "version": "1.2.3-1jammy.20260907.204459",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-builtin-interfaces/ros-humble-builtin-interfaces_1.2.3-1jammy.20260907.204459_amd64.deb",
+      "archive": "ros-humble-builtin-interfaces_1.2.3-1jammy.20260907.204459_amd64.deb",
+      "bytes": 43198,
+      "sha256": "d48725638f4cf8f8faa16a23a07ddd7dde1b048e07a76b2f1db3006d9ce4a8b9"
+    },
+    "ros-humble-domain-coordinator": {
+      "version": "0.10.1-1jammy.20260907.191130",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-domain-coordinator/ros-humble-domain-coordinator_0.10.1-1jammy.20260907.191130_amd64.deb",
+      "archive": "ros-humble-domain-coordinator_0.10.1-1jammy.20260907.191130_amd64.deb",
+      "bytes": 5480,
+      "sha256": "f0f0b69b39f76c469304b244fa3ce6662ec0fe596c46a050197d774732c45934"
+    },
+    "ros-humble-fastcdr": {
+      "version": "1.0.29-1jammy.20260226.010952",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-fastcdr/ros-humble-fastcdr_1.0.29-1jammy.20260226.010952_amd64.deb",
+      "archive": "ros-humble-fastcdr_1.0.29-1jammy.20260226.010952_amd64.deb",
+      "bytes": 44932,
+      "sha256": "efe5c7f9fa49051256db2e096bb479e20e48f6f2b178f12f6e6241e70e882052"
+    },
+    "ros-humble-fastrtps": {
+      "version": "2.6.12-1jammy.20260723.233918",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-fastrtps/ros-humble-fastrtps_2.6.12-1jammy.20260723.233918_amd64.deb",
+      "archive": "ros-humble-fastrtps_2.6.12-1jammy.20260723.233918_amd64.deb",
+      "bytes": 2879626,
+      "sha256": "aaebac26f5f02649f0e094a125ae5e49b724ecf08df0ac607348f5489e8c4a28"
+    },
+    "ros-humble-fastrtps-cmake-module": {
+      "version": "2.2.4-1jammy.20260304.202011",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-fastrtps-cmake-module/ros-humble-fastrtps-cmake-module_2.2.4-1jammy.20260304.202011_amd64.deb",
+      "archive": "ros-humble-fastrtps-cmake-module_2.2.4-1jammy.20260304.202011_amd64.deb",
+      "bytes": 7196,
+      "sha256": "388952e05172b3f821b2eed72477963cd73ee92faaef8c005c1575b84485351c"
+    },
+    "ros-humble-foonathan-memory-vendor": {
+      "version": "1.2.0-3jammy.20260304.200554",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-foonathan-memory-vendor/ros-humble-foonathan-memory-vendor_1.2.0-3jammy.20260304.200554_amd64.deb",
+      "archive": "ros-humble-foonathan-memory-vendor_1.2.0-3jammy.20260304.200554_amd64.deb",
+      "bytes": 768932,
+      "sha256": "899f1422a7c9259b08da360a5355c8908352f3104f1bc13fd76006aee836ac89"
+    },
+    "ros-humble-geometry-msgs": {
+      "version": "4.9.2-1jammy.20260907.210358",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-geometry-msgs/ros-humble-geometry-msgs_4.9.2-1jammy.20260907.210358_amd64.deb",
+      "archive": "ros-humble-geometry-msgs_4.9.2-1jammy.20260907.210358_amd64.deb",
+      "bytes": 224232,
+      "sha256": "9d24f19d22399a57d3280f47cb9d6f5b045ff99e3f04c6fda338ee0985f2c46f"
+    },
+    "ros-humble-gmock-vendor": {
+      "version": "1.10.9006-1jammy.20260226.011659",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-gmock-vendor/ros-humble-gmock-vendor_1.10.9006-1jammy.20260226.011659_amd64.deb",
+      "archive": "ros-humble-gmock-vendor_1.10.9006-1jammy.20260226.011659_amd64.deb",
+      "bytes": 93496,
+      "sha256": "cdcf332a6d04f94ab1cdc531921df16a5acc2c07f3dcb5fa18bf5fb2d3a4b3b1"
+    },
+    "ros-humble-gtest-vendor": {
+      "version": "1.10.9006-1jammy.20260226.011046",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-gtest-vendor/ros-humble-gtest-vendor_1.10.9006-1jammy.20260226.011046_amd64.deb",
+      "archive": "ros-humble-gtest-vendor_1.10.9006-1jammy.20260226.011046_amd64.deb",
+      "bytes": 174908,
+      "sha256": "a4b6f8f43063dfe0589a955a11fccb6b720860b940dd3041aff52d77febc7938"
+    },
+    "ros-humble-libstatistics-collector": {
+      "version": "1.3.4-1jammy.20260907.212934",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-libstatistics-collector/ros-humble-libstatistics-collector_1.3.4-1jammy.20260907.212934_amd64.deb",
+      "archive": "ros-humble-libstatistics-collector_1.3.4-1jammy.20260907.212934_amd64.deb",
+      "bytes": 25912,
+      "sha256": "9a76b83c9053adc500eef11c809b75274797b47aed111c3d0204c8a2202ea805"
+    },
+    "ros-humble-libyaml-vendor": {
+      "version": "1.2.2-2jammy.20260907.194336",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-libyaml-vendor/ros-humble-libyaml-vendor_1.2.2-2jammy.20260907.194336_amd64.deb",
+      "archive": "ros-humble-libyaml-vendor_1.2.2-2jammy.20260907.194336_amd64.deb",
+      "bytes": 68392,
+      "sha256": "24346222932ff3b193b2e8ca5daa0155ecb13d6ad326f6595bd01259cad96f7b"
+    },
+    "ros-humble-nav-msgs": {
+      "version": "4.9.2-1jammy.20260907.211410",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-nav-msgs/ros-humble-nav-msgs_4.9.2-1jammy.20260907.211410_amd64.deb",
+      "archive": "ros-humble-nav-msgs_4.9.2-1jammy.20260907.211410_amd64.deb",
+      "bytes": 136374,
+      "sha256": "ffe2ab164de817245e91c8a17a64060652adafce5e8075c4b21919c6ed5a5acc"
+    },
+    "ros-humble-python-cmake-module": {
+      "version": "0.10.0-2jammy.20260304.202554",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-python-cmake-module/ros-humble-python-cmake-module_0.10.0-2jammy.20260304.202554_amd64.deb",
+      "archive": "ros-humble-python-cmake-module_0.10.0-2jammy.20260304.202554_amd64.deb",
+      "bytes": 8012,
+      "sha256": "18031a59cab311e0499aafb48db2d2690477dd0fd9d53aab3c9ac5ee42b2df46"
+    },
+    "ros-humble-rcl": {
+      "version": "5.3.13-1jammy.20260907.211637",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcl/ros-humble-rcl_5.3.13-1jammy.20260907.211637_amd64.deb",
+      "archive": "ros-humble-rcl_5.3.13-1jammy.20260907.211637_amd64.deb",
+      "bytes": 146076,
+      "sha256": "5666b0f79d432d99adad6a037c260d2857e41ec8481dd98b6a745002859a1745"
+    },
+    "ros-humble-rcl-interfaces": {
+      "version": "1.2.3-1jammy.20260907.204906",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcl-interfaces/ros-humble-rcl-interfaces_1.2.3-1jammy.20260907.204906_amd64.deb",
+      "archive": "ros-humble-rcl-interfaces_1.2.3-1jammy.20260907.204906_amd64.deb",
+      "bytes": 232534,
+      "sha256": "704709082d8ee7ecb6dee50e6347f9f871a8bdf6f4b86ee26cc8780612eb854f"
+    },
+    "ros-humble-rcl-logging-interface": {
+      "version": "2.3.2-1jammy.20260907.194806",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcl-logging-interface/ros-humble-rcl-logging-interface_2.3.2-1jammy.20260907.194806_amd64.deb",
+      "archive": "ros-humble-rcl-logging-interface_2.3.2-1jammy.20260907.194806_amd64.deb",
+      "bytes": 12800,
+      "sha256": "00592f4b7f9ff35658fffcf3eb07a720bba5d22935dbd672b4129e59b76bf63e"
+    },
+    "ros-humble-rcl-logging-spdlog": {
+      "version": "2.3.2-1jammy.20260907.195605",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcl-logging-spdlog/ros-humble-rcl-logging-spdlog_2.3.2-1jammy.20260907.195605_amd64.deb",
+      "archive": "ros-humble-rcl-logging-spdlog_2.3.2-1jammy.20260907.195605_amd64.deb",
+      "bytes": 19606,
+      "sha256": "b83753ec00443958b4ee939489b701c05daf566f4d8555df663967ad054cd481"
+    },
+    "ros-humble-rcl-yaml-param-parser": {
+      "version": "5.3.13-1jammy.20260907.195746",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcl-yaml-param-parser/ros-humble-rcl-yaml-param-parser_5.3.13-1jammy.20260907.195746_amd64.deb",
+      "archive": "ros-humble-rcl-yaml-param-parser_5.3.13-1jammy.20260907.195746_amd64.deb",
+      "bytes": 30028,
+      "sha256": "d8ea07089d2919b03785dc68c7bc58f7be6d658d3f7fdbbcee7988a6c63b036b"
+    },
+    "ros-humble-rclcpp": {
+      "version": "16.0.21-1jammy.20260907.213403",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rclcpp/ros-humble-rclcpp_16.0.21-1jammy.20260907.213403_amd64.deb",
+      "archive": "ros-humble-rclcpp_16.0.21-1jammy.20260907.213403_amd64.deb",
+      "bytes": 647774,
+      "sha256": "fb551ea9da823375192f5ee7cde6f80509fa933b288979a51d1742a9b392b33a"
+    },
+    "ros-humble-rcpputils": {
+      "version": "2.4.7-1jammy.20260907.193454",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcpputils/ros-humble-rcpputils_2.4.7-1jammy.20260907.193454_amd64.deb",
+      "archive": "ros-humble-rcpputils_2.4.7-1jammy.20260907.193454_amd64.deb",
+      "bytes": 53724,
+      "sha256": "b77467fef4650c547103e5816af1f346e45a76c01c09a9ae1c361fdaefd71978"
+    },
+    "ros-humble-rcutils": {
+      "version": "5.1.10-1jammy.20260907.192648",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rcutils/ros-humble-rcutils_5.1.10-1jammy.20260907.192648_amd64.deb",
+      "archive": "ros-humble-rcutils_5.1.10-1jammy.20260907.192648_amd64.deb",
+      "bytes": 88820,
+      "sha256": "ae673295189ecc5fba6a5f418207d3e97794fcbd5457970f53a073b051a0a51b"
+    },
+    "ros-humble-rmw": {
+      "version": "6.1.4-1jammy.20260907.194822",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw/ros-humble-rmw_6.1.4-1jammy.20260907.194822_amd64.deb",
+      "archive": "ros-humble-rmw_6.1.4-1jammy.20260907.194822_amd64.deb",
+      "bytes": 67704,
+      "sha256": "e114581b079c5253739bc717f65d7afd14e802dd05c26856b4a57e7d0eb454e0"
+    },
+    "ros-humble-rmw-dds-common": {
+      "version": "1.6.0-2jammy.20260907.204727",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw-dds-common/ros-humble-rmw-dds-common_1.6.0-2jammy.20260907.204727_amd64.deb",
+      "archive": "ros-humble-rmw-dds-common_1.6.0-2jammy.20260907.204727_amd64.deb",
+      "bytes": 99194,
+      "sha256": "7956cee80da23cb7f5b219b1545e168fe1f9dcf03045ecf056e85105b98b4fcc"
+    },
+    "ros-humble-rmw-fastrtps-cpp": {
+      "version": "6.2.10-1jammy.20260907.210327",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw-fastrtps-cpp/ros-humble-rmw-fastrtps-cpp_6.2.10-1jammy.20260907.210327_amd64.deb",
+      "archive": "ros-humble-rmw-fastrtps-cpp_6.2.10-1jammy.20260907.210327_amd64.deb",
+      "bytes": 90974,
+      "sha256": "2c2a2af585ac55768fbe1d2c2c94897a42ce0268eac01fcc1617ac77f8a6a5f9"
+    },
+    "ros-humble-rmw-fastrtps-shared-cpp": {
+      "version": "6.2.10-1jammy.20260907.205244",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw-fastrtps-shared-cpp/ros-humble-rmw-fastrtps-shared-cpp_6.2.10-1jammy.20260907.205244_amd64.deb",
+      "archive": "ros-humble-rmw-fastrtps-shared-cpp_6.2.10-1jammy.20260907.205244_amd64.deb",
+      "bytes": 161832,
+      "sha256": "85b63fb9d133f106826f703607a38426a935f7c2ab488bc78057c02d25508d0a"
+    },
+    "ros-humble-rmw-implementation": {
+      "version": "2.8.5-1jammy.20260907.211224",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw-implementation/ros-humble-rmw-implementation_2.8.5-1jammy.20260907.211224_amd64.deb",
+      "archive": "ros-humble-rmw-implementation_2.8.5-1jammy.20260907.211224_amd64.deb",
+      "bytes": 25430,
+      "sha256": "c9108117fcd7b837a4c12c7ca3e4d4274f7707409d7d76be98a173ca1627ff11"
+    },
+    "ros-humble-rmw-implementation-cmake": {
+      "version": "6.1.4-1jammy.20260907.191123",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rmw-implementation-cmake/ros-humble-rmw-implementation-cmake_6.1.4-1jammy.20260907.191123_amd64.deb",
+      "archive": "ros-humble-rmw-implementation-cmake_6.1.4-1jammy.20260907.191123_amd64.deb",
+      "bytes": 8970,
+      "sha256": "66482eab52da0f00b071bd301d9c17aeb3f4857689fec1f37ac30ae963a4ff1d"
+    },
+    "ros-humble-ros-workspace": {
+      "version": "1.0.2-2jammy.20260224.185744",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-ros-workspace/ros-humble-ros-workspace_1.0.2-2jammy.20260224.185744_amd64.deb",
+      "archive": "ros-humble-ros-workspace_1.0.2-2jammy.20260224.185744_amd64.deb",
+      "bytes": 16696,
+      "sha256": "0f907d30c0d7929593deef135be6ead360b1da17d9d2517288120cad5776b108"
+    },
+    "ros-humble-rosgraph-msgs": {
+      "version": "1.2.3-1jammy.20260907.205335",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosgraph-msgs/ros-humble-rosgraph-msgs_1.2.3-1jammy.20260907.205335_amd64.deb",
+      "archive": "ros-humble-rosgraph-msgs_1.2.3-1jammy.20260907.205335_amd64.deb",
+      "bytes": 139788,
+      "sha256": "f4381dd334a6a75f46a02591bd67f0f79a39168aac29b1c118ab70963b17207a"
+    },
+    "ros-humble-rosidl-adapter": {
+      "version": "3.1.9-1jammy.20260605.103907",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-adapter/ros-humble-rosidl-adapter_3.1.9-1jammy.20260605.103907_amd64.deb",
+      "archive": "ros-humble-rosidl-adapter_3.1.9-1jammy.20260605.103907_amd64.deb",
+      "bytes": 19440,
+      "sha256": "70bf8d555de5750287ea6811fd12b7fcf837fd7857e3f3d1232935e955986f02"
+    },
+    "ros-humble-rosidl-cli": {
+      "version": "3.1.9-1jammy.20260605.103654",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-cli/ros-humble-rosidl-cli_3.1.9-1jammy.20260605.103654_amd64.deb",
+      "archive": "ros-humble-rosidl-cli_3.1.9-1jammy.20260605.103654_amd64.deb",
+      "bytes": 18948,
+      "sha256": "3763c2997ec537e7d09ac631e085548c940eee061c8ffe477c598e638fb09c59"
+    },
+    "ros-humble-rosidl-cmake": {
+      "version": "3.1.9-1jammy.20260605.104545",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-cmake/ros-humble-rosidl-cmake_3.1.9-1jammy.20260605.104545_amd64.deb",
+      "archive": "ros-humble-rosidl-cmake_3.1.9-1jammy.20260605.104545_amd64.deb",
+      "bytes": 17204,
+      "sha256": "32eaed9ed63793a3e07dd9570a5fdad74233538a71ecc14e93e88d3538c6273c"
+    },
+    "ros-humble-rosidl-default-runtime": {
+      "version": "1.2.1-1jammy.20260907.201130",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-default-runtime/ros-humble-rosidl-default-runtime_1.2.1-1jammy.20260907.201130_amd64.deb",
+      "archive": "ros-humble-rosidl-default-runtime_1.2.1-1jammy.20260907.201130_amd64.deb",
+      "bytes": 6510,
+      "sha256": "fd5d5b5bf15a178f66ba149e2cbdb3309c44f2ab7cc3cf6b18cd64d0e757c2a3"
+    },
+    "ros-humble-rosidl-generator-c": {
+      "version": "3.1.9-1jammy.20260907.194807",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-generator-c/ros-humble-rosidl-generator-c_3.1.9-1jammy.20260907.194807_amd64.deb",
+      "archive": "ros-humble-rosidl-generator-c_3.1.9-1jammy.20260907.194807_amd64.deb",
+      "bytes": 20374,
+      "sha256": "6cba72916147769230b0b1c99bee14cf4726b89e0767797cb46f67cd71f498db"
+    },
+    "ros-humble-rosidl-generator-cpp": {
+      "version": "3.1.9-1jammy.20260907.195420",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-generator-cpp/ros-humble-rosidl-generator-cpp_3.1.9-1jammy.20260907.195420_amd64.deb",
+      "archive": "ros-humble-rosidl-generator-cpp_3.1.9-1jammy.20260907.195420_amd64.deb",
+      "bytes": 22746,
+      "sha256": "2f63ca8cd707f8ae85f6b28fa66fc067b467376ca0103cee5b2c0f6256540e92"
+    },
+    "ros-humble-rosidl-generator-py": {
+      "version": "0.14.6-1jammy.20260907.200655",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-generator-py/ros-humble-rosidl-generator-py_0.14.6-1jammy.20260907.200655_amd64.deb",
+      "archive": "ros-humble-rosidl-generator-py_0.14.6-1jammy.20260907.200655_amd64.deb",
+      "bytes": 29794,
+      "sha256": "b31b6077d728ce19c6d6bbcab0cbe371c36da0ab9d06a9311f8e8997ad316cba"
+    },
+    "ros-humble-rosidl-parser": {
+      "version": "3.1.9-1jammy.20260605.104513",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-parser/ros-humble-rosidl-parser_3.1.9-1jammy.20260605.104513_amd64.deb",
+      "archive": "ros-humble-rosidl-parser_3.1.9-1jammy.20260605.104513_amd64.deb",
+      "bytes": 19508,
+      "sha256": "6087f03f73d51fab729b36d478462301f3620c2c6ab25792507b17d1ebec2651"
+    },
+    "ros-humble-rosidl-runtime-c": {
+      "version": "3.1.9-1jammy.20260907.193450",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-runtime-c/ros-humble-rosidl-runtime-c_3.1.9-1jammy.20260907.193450_amd64.deb",
+      "archive": "ros-humble-rosidl-runtime-c_3.1.9-1jammy.20260907.193450_amd64.deb",
+      "bytes": 26756,
+      "sha256": "e85b77df263d5bc8aa3d47b69eb47bbee1a7155e3e287b1a0bf32b1b1341c66f"
+    },
+    "ros-humble-rosidl-runtime-cpp": {
+      "version": "3.1.9-1jammy.20260907.194318",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-runtime-cpp/ros-humble-rosidl-runtime-cpp_3.1.9-1jammy.20260907.194318_amd64.deb",
+      "archive": "ros-humble-rosidl-runtime-cpp_3.1.9-1jammy.20260907.194318_amd64.deb",
+      "bytes": 15598,
+      "sha256": "8d028f7cedba9d62167dbbcb75aaf12d2c0f2cc7508ddbd350167c31992dcc2a"
+    },
+    "ros-humble-rosidl-typesupport-c": {
+      "version": "2.0.2-1jammy.20260907.195356",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-c/ros-humble-rosidl-typesupport-c_2.0.2-1jammy.20260907.195356_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-c_2.0.2-1jammy.20260907.195356_amd64.deb",
+      "bytes": 24398,
+      "sha256": "2d4ea12ae3290d0f04e732537f6bb6d697b4f20f2361b7c962456385a1a2f43e"
+    },
+    "ros-humble-rosidl-typesupport-cpp": {
+      "version": "2.0.2-1jammy.20260907.200013",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-cpp/ros-humble-rosidl-typesupport-cpp_2.0.2-1jammy.20260907.200013_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-cpp_2.0.2-1jammy.20260907.200013_amd64.deb",
+      "bytes": 23666,
+      "sha256": "b436fb4e730794db9e06061ba6debe315b2ad6b3010781233e0dc2f27118c159"
+    },
+    "ros-humble-rosidl-typesupport-fastrtps-c": {
+      "version": "2.2.4-1jammy.20260907.200330",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-fastrtps-c/ros-humble-rosidl-typesupport-fastrtps-c_2.2.4-1jammy.20260907.200330_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-fastrtps-c_2.2.4-1jammy.20260907.200330_amd64.deb",
+      "bytes": 24254,
+      "sha256": "65b93411e59a81d175fa0837c8bc6bdcfd3c63d8a7d63f6bc88d875eae39da70"
+    },
+    "ros-humble-rosidl-typesupport-fastrtps-cpp": {
+      "version": "2.2.4-1jammy.20260907.200016",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-fastrtps-cpp/ros-humble-rosidl-typesupport-fastrtps-cpp_2.2.4-1jammy.20260907.200016_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-fastrtps-cpp_2.2.4-1jammy.20260907.200016_amd64.deb",
+      "bytes": 26048,
+      "sha256": "710e30d15a871ac687fe84565cbcbdffbb69e08d44df84a2c6ad4346dfd678dd"
+    },
+    "ros-humble-rosidl-typesupport-interface": {
+      "version": "3.1.9-1jammy.20260605.103839",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-interface/ros-humble-rosidl-typesupport-interface_3.1.9-1jammy.20260605.103839_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-interface_3.1.9-1jammy.20260605.103839_amd64.deb",
+      "bytes": 8960,
+      "sha256": "7ade2bebc8a315b37bf598ed69563d50949f97ebf2b8ed50a13b788db52c1777"
+    },
+    "ros-humble-rosidl-typesupport-introspection-c": {
+      "version": "3.1.9-1jammy.20260907.194327",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-introspection-c/ros-humble-rosidl-typesupport-introspection-c_3.1.9-1jammy.20260907.194327_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-introspection-c_3.1.9-1jammy.20260907.194327_amd64.deb",
+      "bytes": 22670,
+      "sha256": "83fe03f4f25e1e4173d1054dfcc0147af8ce724d00dac9683aefce780eb8194d"
+    },
+    "ros-humble-rosidl-typesupport-introspection-cpp": {
+      "version": "3.1.9-1jammy.20260907.195401",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rosidl-typesupport-introspection-cpp/ros-humble-rosidl-typesupport-introspection-cpp_3.1.9-1jammy.20260907.195401_amd64.deb",
+      "archive": "ros-humble-rosidl-typesupport-introspection-cpp_3.1.9-1jammy.20260907.195401_amd64.deb",
+      "bytes": 22800,
+      "sha256": "4226c194baa7a4c017f081518253109d8c713c9aefb6076ca51fd3f2af6b6b2b"
+    },
+    "ros-humble-rpyutils": {
+      "version": "0.2.2-1jammy.20260304.195455",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-rpyutils/ros-humble-rpyutils_0.2.2-1jammy.20260304.195455_amd64.deb",
+      "archive": "ros-humble-rpyutils_0.2.2-1jammy.20260304.195455_amd64.deb",
+      "bytes": 6244,
+      "sha256": "6c4132df1a499dd35abb182787d3765221f16e77e112a091878df64dc2155290"
+    },
+    "ros-humble-sensor-msgs": {
+      "version": "4.9.2-1jammy.20260907.212033",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-sensor-msgs/ros-humble-sensor-msgs_4.9.2-1jammy.20260907.212033_amd64.deb",
+      "archive": "ros-humble-sensor-msgs_4.9.2-1jammy.20260907.212033_amd64.deb",
+      "bytes": 316242,
+      "sha256": "dd68be7592030bf0f3e43a4539429fd70a4d82bd35adcdafdb519dd04834ec0a"
+    },
+    "ros-humble-spdlog-vendor": {
+      "version": "1.3.1-1jammy.20260304.202915",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-spdlog-vendor/ros-humble-spdlog-vendor_1.3.1-1jammy.20260304.202915_amd64.deb",
+      "archive": "ros-humble-spdlog-vendor_1.3.1-1jammy.20260304.202915_amd64.deb",
+      "bytes": 6234,
+      "sha256": "50e002ccf751ae4994d353ef86abe78ec6406acaa25ebfff44bba78b54ce7ca2"
+    },
+    "ros-humble-statistics-msgs": {
+      "version": "1.2.3-1jammy.20260907.205029",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-statistics-msgs/ros-humble-statistics-msgs_1.2.3-1jammy.20260907.205029_amd64.deb",
+      "archive": "ros-humble-statistics-msgs_1.2.3-1jammy.20260907.205029_amd64.deb",
+      "bytes": 61232,
+      "sha256": "3752c0a5e4711677c600d8c400fc8c0c5bd200e32d74f1827df658265a2e50cb"
+    },
+    "ros-humble-std-msgs": {
+      "version": "4.9.2-1jammy.20260907.205027",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-std-msgs/ros-humble-std-msgs_4.9.2-1jammy.20260907.205027_amd64.deb",
+      "archive": "ros-humble-std-msgs_4.9.2-1jammy.20260907.205027_amd64.deb",
+      "bytes": 199636,
+      "sha256": "a4e1dbdfcc9cd70d7a224fab6e864e52ad367f874f74452769709e83af861802"
+    },
+    "ros-humble-tf2-msgs": {
+      "version": "0.25.23-1jammy.20260907.215317",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-tf2-msgs/ros-humble-tf2-msgs_0.25.23-1jammy.20260907.215317_amd64.deb",
+      "archive": "ros-humble-tf2-msgs_0.25.23-1jammy.20260907.215317_amd64.deb",
+      "bytes": 113464,
+      "sha256": "355fd0e3603f17eb3160e81102ca6a891637046d05a45cceeb8883422e97cb34"
+    },
+    "ros-humble-tracetools": {
+      "version": "4.1.2-1jammy.20260907.192206",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-tracetools/ros-humble-tracetools_4.1.2-1jammy.20260907.192206_amd64.deb",
+      "archive": "ros-humble-tracetools_4.1.2-1jammy.20260907.192206_amd64.deb",
+      "bytes": 17920,
+      "sha256": "6070f90407db7116103908e2e692cc32431821ca2222098ffaef827de1198f82"
+    },
+    "ros-humble-unique-identifier-msgs": {
+      "version": "2.2.1-3jammy.20260907.205031",
+      "url": "https://repo.ros2.org/ubuntu/main/pool/main/r/ros-humble-unique-identifier-msgs/ros-humble-unique-identifier-msgs_2.2.1-3jammy.20260907.205031_amd64.deb",
+      "archive": "ros-humble-unique-identifier-msgs_2.2.1-3jammy.20260907.205031_amd64.deb",
+      "bytes": 39462,
+      "sha256": "f6d802818a8ab82d57a19b4b506f3101f5674a58000bda77bbd0b007e3e098fd"
+    },
+    "libspdlog1": {
+      "version": "1:1.9.2+ds-0.2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/s/spdlog/libspdlog1_1.9.2+ds-0.2_amd64.deb",
+      "archive": "libspdlog1_1.9.2+ds-0.2_amd64.deb",
+      "bytes": 125578,
+      "sha256": "9084bee02e88fe498e69ab2625183d3d90755ff7652c2a0e545de196c90084f1"
+    },
+    "libspdlog-dev": {
+      "version": "1:1.9.2+ds-0.2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/s/spdlog/libspdlog-dev_1.9.2+ds-0.2_amd64.deb",
+      "archive": "libspdlog-dev_1.9.2+ds-0.2_amd64.deb",
+      "bytes": 180776,
+      "sha256": "2f7ba1c761782bea55e01f075acad8c93634ccf9a45515f4fb2388ca89fb78c5"
+    },
+    "libfmt8": {
+      "version": "8.1.1+ds1-2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/f/fmtlib/libfmt8_8.1.1+ds1-2_amd64.deb",
+      "archive": "libfmt8_8.1.1+ds1-2_amd64.deb",
+      "bytes": 60218,
+      "sha256": "e993359633e95411813fba0726f0391b7005668d52a71d56effe0b69d1de9877"
+    },
+    "libfmt-dev": {
+      "version": "8.1.1+ds1-2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/f/fmtlib/libfmt-dev_8.1.1+ds1-2_amd64.deb",
+      "archive": "libfmt-dev_8.1.1+ds1-2_amd64.deb",
+      "bytes": 118324,
+      "sha256": "6e912047465e16329e1a5baadc5e61e82a095d160d2caf43c201520c1659b75f"
+    },
+    "libyaml-dev": {
+      "version": "0.2.2-1build2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/liby/libyaml/libyaml-dev_0.2.2-1build2_amd64.deb",
+      "archive": "libyaml-dev_0.2.2-1build2_amd64.deb",
+      "bytes": 62750,
+      "sha256": "8e56e89eaf8d9523028f64c3ba1d249316eb457f891602b24aa0963cc0fe751b"
+    },
+    "libyaml-0-2": {
+      "version": "0.2.2-1build2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/liby/libyaml/libyaml-0-2_0.2.2-1build2_amd64.deb",
+      "archive": "libyaml-0-2_0.2.2-1build2_amd64.deb",
+      "bytes": 51622,
+      "sha256": "b137d89a463b671383b6eaec404a494c8bd630a4adb79fc059c3aa48af170dcb"
+    },
+    "libtinyxml2-dev": {
+      "version": "9.0.0+dfsg-3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/t/tinyxml2/libtinyxml2-dev_9.0.0+dfsg-3_amd64.deb",
+      "archive": "libtinyxml2-dev_9.0.0+dfsg-3_amd64.deb",
+      "bytes": 18564,
+      "sha256": "30588c7da8bf5dfb3a52e833d10e6d3278d8e8061db55e2e07d4281a58a0c034"
+    },
+    "libtinyxml2-9": {
+      "version": "9.0.0+dfsg-3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/t/tinyxml2/libtinyxml2-9_9.0.0+dfsg-3_amd64.deb",
+      "archive": "libtinyxml2-9_9.0.0+dfsg-3_amd64.deb",
+      "bytes": 32468,
+      "sha256": "0d6cbec420cb9be6fee7dc059c29f3bdf2f3772397c25f02b8c804a535164c2d"
+    }
+  },
+  "scope": "Workspace-only ROS2 C++ bridge SDK and runtime/message types. No desktop or globalinstallation. Python ROS generators require separate interpreter/module admission."
+}

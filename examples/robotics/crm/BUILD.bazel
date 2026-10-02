@@ -1,0 +1,47 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["BUILD.bazel"])
+
+robodyna_cpp_demo(
+    name = "viper_crm",
+    srcs = ["//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_CRM.cpp"],
+    deps = ["//src/robotics/models:models", "//src/vehicle/crm:terrain", "//src/vehicle/visualization:vsg", "//src/sph/visualization:vsg"],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "robot-crm"],
+)
+
+robodyna_cpp_demo(
+    name = "viper_wheel_slope_crm",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_WheelSlope_CRM.cpp",
+        "//src/compatibility/chrono:src/demos/robot/viper/viper_wheel.h",
+    ],
+    deps = ["//src/robotics/models:models", "//src/vehicle/crm:terrain", "//src/vehicle/visualization:vsg", "//src/sph/visualization:vsg"],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "robot-crm"],
+)
+
+robodyna_cpp_demo(
+    name = "viper_wheel_test_rig_crm",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/robot/viper/demo_ROBOT_Viper_WheelTestRig_CRM.cpp",
+        "//src/compatibility/chrono:src/demos/robot/viper/viper_wheel.h",
+    ],
+    deps = [
+        "//src/robotics/models:models",
+        "//src/vehicle/crm:terrain",
+        "//src/vehicle/visualization:vsg",
+        "//src/sph/visualization:vsg",
+        "//examples/vehicle:solver_selection_headers",
+    ],
+    features = ["vehicle", "vsg", "fsi", "fsi_sph", "pardiso_mkl"],
+    tags = ["native-profile-demo", "robot-crm"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":viper_crm", ":viper_wheel_slope_crm", ":viper_wheel_test_rig_crm"],
+    tags = ["manual", "native-demo-group"],
+)

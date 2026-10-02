@@ -1,0 +1,28 @@
+{
+  "schema": "robodyna.managed_proxy_collision_approvals.v1",
+  "policy": "Retain the original first-module owner only for exact reviewed generated hashes with identical native primitive/vector helper bodies. Distinct RoboSimian shape types have separate C# names.",
+  "semantic_review": "crash-work/investigations/robodyna-demo-builds-1/managed-proxy-peer-review-1.json",
+  "collisions": [
+    {
+      "file": "double_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "1803038fd8ad1859d1dd3bb623e6fbe454a0d222911380131d427f6b91ec1954",
+      "discarded_sha256": "ecb4c0a78f8d2343d813719e0be612eb3b3025edcb63530842fc54e2ebbad1a3"
+    },
+    {
+      "file": "float_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "a033113165b003919821ddb5a26ede048bd885c3470ea12022391644f6cf46f9",
+      "discarded_sha256": "08ccaf08bdea0cbf8d662f17db825914e1d0e1247445168782dac7194f603ecc"
+    },
+    {
+      "file": "int_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "ed905505df6a043377d404c1628e8c9d51cde0d4f4323a40f84a5b0aeeba519e",
+      "discarded_sha256": "313a1ab12f1182b78ebfcf520721f6b4111f9b80f21696f40a81d98347dddc17"
+    }
+  ]
+}

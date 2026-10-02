@@ -1,0 +1,50 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+cc_test(
+    name = "model_exchange_test",
+    srcs = ["NativeModelExchangeTest.cpp"],
+    args = [
+        "$(location //examples/integrations/fmi:vdp_fmi2_modex)",
+        "$(location //examples/integrations/fmi:vdp_fmi3_modex)",
+    ],
+    data = ["//examples/integrations/fmi:vdp_fmi2_modex", "//examples/integrations/fmi:vdp_fmi3_modex"],
+    deps = ["//src/integrations/fmi:fmi", "@googletest//:gtest"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    size = "small",
+    tags = ["manual", "cpu-only", "native-fmi"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location //examples/integrations/fmi:exports.json)",
+        "$(location //examples/integrations/fmi:BUILD.bazel)",
+        "$(location //src/integrations/fmi:SourceBaseline.json)",
+        "$(location //src/integrations/fmi:SOURCE_TRANSFORMATIONS.json)",
+        "$(location //src/integrations/fmi:dependency.json)",
+        "$(location //src/compatibility/chrono:src/chrono_fmi/CMakeLists.txt)",
+    ],
+    data = [
+        "//examples/integrations/fmi:exports.json", "//examples/integrations/fmi:BUILD.bazel",
+        "//src/integrations/fmi:SourceBaseline.json", "//src/integrations/fmi:SOURCE_TRANSFORMATIONS.json",
+        "//src/integrations/fmi:dependency.json", "//src/integrations/fmi:source_inputs",
+        "//src/compatibility/chrono:src/chrono_fmi/CMakeLists.txt",
+    ],
+    deps = ["//tools/migration:source_transform", "//tools/verification:inventory"],
+    size = "small",
+)
+
+cc_test(
+    name = "archive_values_test",
+    srcs = ["ArchiveValuesTest.cpp"],
+    deps = ["//src/integrations/fmi:archive_values", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only"],
+)
+
+test_suite(name = "tests", tests = [":model_exchange_test", ":archive_values_test", ":source_inventory_test", "//src/integrations/fmi/export:package_test"], tags = ["manual"])

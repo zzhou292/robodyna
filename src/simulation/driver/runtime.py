@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from .jsonio import require
-from .manifests import GIB
+GIB = 1 << 30
 
 
 def runtime_file(logical_name, explicit=None):

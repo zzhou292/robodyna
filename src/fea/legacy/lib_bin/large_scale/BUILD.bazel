@@ -8,7 +8,9 @@ cuda_library(
     srcs = ["prescribed_shake.cu"],
     hdrs = ["prescribed_shake.h"],
     copts = ["--std=c++17"],
-    linkopts = ["-lcudart"],
+    deps = [
+        "@rules_cuda//cuda:runtime",
+    ],
 )
 
 cuda_library(
@@ -16,22 +18,15 @@ cuda_library(
     srcs = ["multiitem_collision_kernels.cu"],
     hdrs = ["multiitem_collision_kernels.h"],
     copts = ["--std=c++17"],
-    linkopts = ["-lcudart"],
+    deps = [
+        "@rules_cuda//cuda:runtime",
+    ],
 )
 
 cc_binary(
     name = "test_vase",
     srcs = ["test_vase.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lnvrtc",
-        "-lcuda",
-        "-lcublas",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-    ],
     data = [
         "//:data_meshes",
     ],
@@ -46,6 +41,12 @@ cc_binary(
         "//lib_utils:mesh_manager",
         "//lib_utils:surface_trimesh_extract",
         "@eigen//:eigen",
+        "@cuda_math//:nvrtc",
+        "@cuda_math//:driver",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
     ],
 )
 
@@ -53,15 +54,6 @@ cc_binary(
     name = "test_multiitem_drop",
     srcs = ["test_multiitem_drop.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lnvrtc",
-        "-lcuda",
-        "-lcublas",
-        "-lcusparse",
-        "-lcudart",
-        "-lcudss",
-    ],
     data = [
         "//:data_meshes",
     ],
@@ -79,5 +71,11 @@ cc_binary(
         "//lib_utils:surface_trimesh_extract",
         "//lib_utils:visualization_utils",
         "@eigen//:eigen",
+        "@cuda_math//:nvrtc",
+        "@cuda_math//:driver",
+        "@cuda_math//:cublas",
+        "@cuda_math//:cusparse",
+        "@rules_cuda//cuda:runtime",
+        "@cuda_math//:cudss",
     ],
 )

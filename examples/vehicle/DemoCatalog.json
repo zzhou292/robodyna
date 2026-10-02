@@ -1,0 +1,979 @@
+{
+  "schema": "robodyna.vehicle_demo_admission.v1",
+  "scope": "Complete64-source roster; declaration is not compilation or runtime qualification.",
+  "profile": {
+    "fea": true,
+    "vehicle": true,
+    "vehicle_models": true,
+    "vsg": true,
+    "irrlicht": true,
+    "cpu_scm": true,
+    "crm": false,
+    "opencrg": false,
+    "scm_gpu": false,
+    "vehicle_fmi": false,
+    "vehicle_cosimulation": false,
+    "mpi": false
+  },
+  "total_programs": 64,
+  "declared_programs": 38,
+  "pending_programs": 26,
+  "programs": [
+    {
+      "name": "articulated_vehicle",
+      "source": "src/demos/vehicle/articulated_vehicle/demo_VEH_ArticulatedVehicle.cpp",
+      "family": "articulated_vehicle",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:articulated_vehicle",
+      "planned_target": "//examples/vehicle:articulated_vehicle",
+      "requires": [],
+      "cmake": "src/demos/vehicle/articulated_vehicle/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/vehicle/articulated_vehicle/subsystems/ACV_AutomaticTransmissionSimple.h",
+        "src/demos/vehicle/articulated_vehicle/subsystems/ACV_EngineSimple.h",
+        "src/demos/vehicle/articulated_vehicle/subsystems/ACV_RigidTire.h",
+        "src/demos/vehicle/articulated_vehicle/subsystems/ACV_Vehicle.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "checkpoint",
+      "source": "src/demos/vehicle/checkpoint/demo_VEH_Checkpoint.cpp",
+      "family": "checkpoint",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:checkpoint",
+      "planned_target": "//examples/vehicle:checkpoint",
+      "requires": [],
+      "cmake": "src/demos/vehicle/checkpoint/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "checkpoint_collision",
+      "source": "src/demos/vehicle/checkpoint/demo_VEH_Checkpoint_Collision.cpp",
+      "family": "checkpoint",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:checkpoint_collision",
+      "planned_target": "//examples/vehicle:checkpoint_collision",
+      "requires": [],
+      "cmake": "src/demos/vehicle/checkpoint/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "controller_ai_driver",
+      "source": "src/demos/vehicle/controllers/demo_VEH_Controller_AIDriver.cpp",
+      "family": "controllers",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:controller_ai_driver",
+      "planned_target": "//examples/vehicle:controller_ai_driver",
+      "requires": [],
+      "cmake": "src/demos/vehicle/controllers/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "controller_dlc",
+      "source": "src/demos/vehicle/controllers/demo_VEH_Controller_DLC.cpp",
+      "family": "controllers",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:controller_dlc",
+      "planned_target": "//examples/vehicle:controller_dlc",
+      "requires": [],
+      "cmake": "src/demos/vehicle/controllers/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_curiosity",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_Curiosity.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_curiosity",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi",
+        "robot_models"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_tracked_vehicle",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_TrackedVehicle.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_tracked_vehicle",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_viper",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_Viper.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_viper",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi",
+        "robot_models"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_wheel_rig",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheelRig.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_wheel_rig",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_wheeled_vehicle",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_wheeled_vehicle",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_wheeled_vehicle_omp",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_OMP.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_wheeled_vehicle_omp",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi",
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_wheeled_vehicle_sph",
+      "source": "src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_SPH.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_wheeled_vehicle_sph",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi",
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "cosim_wheel_rig_custom_terrain",
+      "source": "src/demos/vehicle/cosimulation/external/demo_VEH_Cosim_WheelRig_CustomTerrain.cpp",
+      "family": "cosimulation",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:cosim_wheel_rig_custom_terrain",
+      "requires": [
+        "vehicle_cosimulation",
+        "mpi"
+      ],
+      "cmake": "src/demos/vehicle/cosimulation/external/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fmi2_wheeled_vehicle_ptrain_a",
+      "source": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehiclePtrain_a.cpp",
+      "family": "fmi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fmi2_wheeled_vehicle_ptrain_a",
+      "requires": [
+        "vehicle_fmi",
+        "fmu_forge",
+        "matching_fmu_artifacts"
+      ],
+      "cmake": "src/demos/vehicle/fmi/cosim/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fmi2_wheeled_vehicle_ptrain_b",
+      "source": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehiclePtrain_b.cpp",
+      "family": "fmi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fmi2_wheeled_vehicle_ptrain_b",
+      "requires": [
+        "vehicle_fmi",
+        "fmu_forge",
+        "matching_fmu_artifacts"
+      ],
+      "cmake": "src/demos/vehicle/fmi/cosim/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fmi2_wheeled_vehicle_a",
+      "source": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehicle_a.cpp",
+      "family": "fmi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fmi2_wheeled_vehicle_a",
+      "requires": [
+        "vehicle_fmi",
+        "fmu_forge",
+        "matching_fmu_artifacts"
+      ],
+      "cmake": "src/demos/vehicle/fmi/cosim/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fmi2_wheeled_vehicle_b",
+      "source": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehicle_b.cpp",
+      "family": "fmi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fmi2_wheeled_vehicle_b",
+      "requires": [
+        "vehicle_fmi",
+        "fmu_forge",
+        "matching_fmu_artifacts"
+      ],
+      "cmake": "src/demos/vehicle/fmi/cosim/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fmi2_path_follower",
+      "source": "src/demos/vehicle/fmi/modex/demo_VEH_FMI2_PathFollower.cpp",
+      "family": "fmi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fmi2_path_follower",
+      "requires": [
+        "vehicle_fmi",
+        "fmu_forge",
+        "matching_fmu_artifacts"
+      ],
+      "cmake": "src/demos/vehicle/fmi/modex/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "fsi_floating_block",
+      "source": "src/demos/vehicle/fsi/demo_VEH_FSI_FloatingBlock.cpp",
+      "family": "fsi",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:fsi_floating_block",
+      "requires": [
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/fsi/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "hmmwv_multicore",
+      "source": "src/demos/vehicle/multicore/demo_VEH_HMMWV_Multicore.cpp",
+      "family": "multicore",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:hmmwv_multicore",
+      "requires": [
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/multicore/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "m113_multicore",
+      "source": "src/demos/vehicle/multicore/demo_VEH_M113_Multicore.cpp",
+      "family": "multicore",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:m113_multicore",
+      "requires": [
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/multicore/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheel_test_rig_multicore",
+      "source": "src/demos/vehicle/multicore/demo_VEH_WheelTestRig_Multicore.cpp",
+      "family": "multicore",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:wheel_test_rig_multicore",
+      "requires": [
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/multicore/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "paths",
+      "source": "src/demos/vehicle/paths/demo_VEH_paths.cpp",
+      "family": "paths",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:paths",
+      "planned_target": "//examples/vehicle:paths",
+      "requires": [],
+      "cmake": "src/demos/vehicle/paths/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "crg_terrain_vsg",
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRGTerrain_VSG.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:crg_terrain_vsg",
+      "requires": [
+        "opencrg"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "crm_terrain_moving_patch",
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_MovingPatch.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:crm_terrain_moving_patch",
+      "requires": [
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "crm_terrain_tracked_vehicle",
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_TrackedVehicle.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:crm_terrain_tracked_vehicle",
+      "requires": [
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "crm_terrain_wheeled_vehicle",
+      "source": "src/demos/vehicle/terrain/demo_VEH_CRMTerrain_WheeledVehicle.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:crm_terrain_wheeled_vehicle",
+      "requires": [
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "granular_terrain_moving_patch",
+      "source": "src/demos/vehicle/terrain/demo_VEH_GranularTerrain_MovingPatch.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:granular_terrain_moving_patch",
+      "requires": [
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "granular_terrain_rigid_tire",
+      "source": "src/demos/vehicle/terrain/demo_VEH_GranularTerrain_RigidTire.cpp",
+      "family": "terrain",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:granular_terrain_rigid_tire",
+      "requires": [
+        "multicore"
+      ],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "rigid_scm_terrain_mixed_patches",
+      "source": "src/demos/vehicle/terrain/demo_VEH_RigidSCMTerrain_MixedPatches.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:rigid_scm_terrain_mixed_patches",
+      "planned_target": "//examples/vehicle:rigid_scm_terrain_mixed_patches",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "rigid_terrain_moving_patch",
+      "source": "src/demos/vehicle/terrain/demo_VEH_RigidTerrain_MovingPatch.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:rigid_terrain_moving_patch",
+      "planned_target": "//examples/vehicle:rigid_terrain_moving_patch",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "rigid_terrain_wheeled_vehicle",
+      "source": "src/demos/vehicle/terrain/demo_VEH_RigidTerrain_WheeledVehicle.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:rigid_terrain_wheeled_vehicle",
+      "planned_target": "//examples/vehicle:rigid_terrain_wheeled_vehicle",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "scm_terrain_fea_tire",
+      "source": "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_FEATire.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:scm_terrain_fea_tire",
+      "planned_target": "//examples/vehicle:scm_terrain_fea_tire",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "scm_terrain_rigid_tire",
+      "source": "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_RigidTire.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:scm_terrain_rigid_tire",
+      "planned_target": "//examples/vehicle:scm_terrain_rigid_tire",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "scm_terrain_tracked_vehicle",
+      "source": "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_TrackedVehicle.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:scm_terrain_tracked_vehicle",
+      "planned_target": "//examples/vehicle:scm_terrain_tracked_vehicle",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "scm_terrain_wheeled_vehicle",
+      "source": "src/demos/vehicle/terrain/demo_VEH_SCMTerrain_WheeledVehicle.cpp",
+      "family": "terrain",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:scm_terrain_wheeled_vehicle",
+      "planned_target": "//examples/vehicle:scm_terrain_wheeled_vehicle",
+      "requires": [],
+      "cmake": "src/demos/vehicle/terrain/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "suspension_test_rig",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_SuspensionTestRig.cpp",
+      "family": "test_rigs",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:suspension_test_rig",
+      "planned_target": "//examples/vehicle:suspension_test_rig",
+      "requires": [],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "track_test_rig",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_TrackTestRig.cpp",
+      "family": "test_rigs",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:track_test_rig",
+      "planned_target": "//examples/vehicle:track_test_rig",
+      "requires": [],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "track_test_rig_band",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_TrackTestRig_Band.cpp",
+      "family": "test_rigs",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:track_test_rig_band",
+      "planned_target": "//examples/vehicle:track_test_rig_band",
+      "requires": [],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheel_suspension_test_rig",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_WheelSuspensionTestRig.cpp",
+      "family": "test_rigs",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheel_suspension_test_rig",
+      "planned_target": "//examples/vehicle:wheel_suspension_test_rig",
+      "requires": [],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheel_test_rig",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_WheelTestRig.cpp",
+      "family": "test_rigs",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheel_test_rig",
+      "planned_target": "//examples/vehicle:wheel_test_rig",
+      "requires": [],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheel_test_rig_crm",
+      "source": "src/demos/vehicle/test_rigs/demo_VEH_WheelTestRig_CRM.cpp",
+      "family": "test_rigs",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:wheel_test_rig_crm",
+      "requires": [
+        "fsi_sph"
+      ],
+      "cmake": "src/demos/vehicle/test_rigs/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "m113",
+      "source": "src/demos/vehicle/tracked_models/demo_VEH_M113.cpp",
+      "family": "tracked_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:m113",
+      "planned_target": "//examples/vehicle:m113",
+      "requires": [],
+      "cmake": "src/demos/vehicle/tracked_models/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "m113_band",
+      "source": "src/demos/vehicle/tracked_models/demo_VEH_M113_Band.cpp",
+      "family": "tracked_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:m113_band",
+      "planned_target": "//examples/vehicle:m113_band",
+      "requires": [],
+      "cmake": "src/demos/vehicle/tracked_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "marder",
+      "source": "src/demos/vehicle/tracked_models/demo_VEH_Marder.cpp",
+      "family": "tracked_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:marder",
+      "planned_target": "//examples/vehicle:marder",
+      "requires": [],
+      "cmake": "src/demos/vehicle/tracked_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "tracked_json",
+      "source": "src/demos/vehicle/tracked_models/demo_VEH_TrackedJSON.cpp",
+      "family": "tracked_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:tracked_json",
+      "planned_target": "//examples/vehicle:tracked_json",
+      "requires": [],
+      "cmake": "src/demos/vehicle/tracked_models/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "tracked_json_band",
+      "source": "src/demos/vehicle/tracked_models/demo_VEH_TrackedJSON_Band.cpp",
+      "family": "tracked_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:tracked_json_band",
+      "planned_target": "//examples/vehicle:tracked_json_band",
+      "requires": [],
+      "cmake": "src/demos/vehicle/tracked_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "two_cars",
+      "source": "src/demos/vehicle/two_cars/demo_VEH_TwoCars.cpp",
+      "family": "two_cars",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:two_cars",
+      "planned_target": "//examples/vehicle:two_cars",
+      "requires": [],
+      "cmake": "src/demos/vehicle/two_cars/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "render_json_vsg",
+      "source": "src/demos/vehicle/visualization/demo_VEH_RenderJSON_VSG.cpp",
+      "family": "visualization",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:render_json_vsg",
+      "planned_target": "//examples/vehicle:render_json_vsg",
+      "requires": [],
+      "cmake": "src/demos/vehicle/visualization/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "gator_incline",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_Gator_Incline.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:gator_incline",
+      "planned_target": "//examples/vehicle:gator_incline",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "hmmwv9_yup",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_HMMWV9_YUP.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:hmmwv9_yup",
+      "planned_target": "//examples/vehicle:hmmwv9_yup",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "hmmwv_rollover",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_HMMWV_Rollover.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:hmmwv_rollover",
+      "planned_target": "//examples/vehicle:hmmwv_rollover",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "sedan_lockable_diff",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_Sedan_Lockable_Diff.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:sedan_lockable_diff",
+      "planned_target": "//examples/vehicle:sedan_lockable_diff",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheeled",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_Wheeled.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheeled",
+      "planned_target": "//examples/vehicle:wheeled",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheeled_generic",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_WheeledGeneric.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheeled_generic",
+      "planned_target": "//examples/vehicle:wheeled_generic",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheeled_generic_set",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_WheeledGenericSet.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheeled_generic_set",
+      "planned_target": "//examples/vehicle:wheeled_generic_set",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "wheeled_json",
+      "source": "src/demos/vehicle/wheeled_models/demo_VEH_WheeledJSON.cpp",
+      "family": "wheeled_models",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:wheeled_json",
+      "planned_target": "//examples/vehicle:wheeled_json",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_models/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/vehicle/WheeledVehicleJSON.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_accel",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_Accel.cpp",
+      "family": "wheeled_tests",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:test_accel",
+      "planned_target": "//examples/vehicle:test_accel",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_cornering",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_Cornering.cpp",
+      "family": "wheeled_tests",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:test_cornering",
+      "requires": [
+        "opencrg"
+      ],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_feda_ride",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_FEDA_Ride.cpp",
+      "family": "wheeled_tests",
+      "status": "pending_prerequisites",
+      "target": null,
+      "planned_target": "//examples/vehicle:test_feda_ride",
+      "requires": [
+        "opencrg"
+      ],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_fmtv_ride",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_FMTV_Ride.cpp",
+      "family": "wheeled_tests",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:test_fmtv_ride",
+      "planned_target": "//examples/vehicle:test_fmtv_ride",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/vehicle/WheeledVehicleModels.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_iso2631_ride",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_ISO2631_Ride.cpp",
+      "family": "wheeled_tests",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:test_iso2631_ride",
+      "planned_target": "//examples/vehicle:test_iso2631_ride",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_iso2631_shock",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_ISO2631_Shock.cpp",
+      "family": "wheeled_tests",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:test_iso2631_shock",
+      "planned_target": "//examples/vehicle:test_iso2631_shock",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "test_tire_fea",
+      "source": "src/demos/vehicle/wheeled_tests/demo_VEH_Test_TireFEA.cpp",
+      "family": "wheeled_tests",
+      "status": "declared_for_compile",
+      "target": "//examples/vehicle:test_tire_fea",
+      "planned_target": "//examples/vehicle:test_tire_fea",
+      "requires": [],
+      "cmake": "src/demos/vehicle/wheeled_tests/CMakeLists.txt",
+      "local_headers": [
+        "src/demos/SetChronoSolver.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    }
+  ]
+}

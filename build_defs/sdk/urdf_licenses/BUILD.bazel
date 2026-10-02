@@ -1,0 +1,2 @@
+package(default_visibility = ["//visibility:public"])
+exports_files(['tinyxml2.txt', 'console_bridge.txt', 'urdfdom_headers.txt', 'urdfdom.txt', 'manifest.json'])

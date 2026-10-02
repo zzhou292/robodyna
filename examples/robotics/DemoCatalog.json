@@ -1,0 +1,312 @@
+{
+  "schema": "robodyna.robotics_demo_admission.v1",
+  "scope": "Declaration is not compilation or runtime qualification. All 17 retained C++ robot demos remain in the denominator.",
+  "source_count": 17,
+  "declared": 11,
+  "pending": 6,
+  "vehicle_crm_profile": "OFF; no per-demo ABI-changing feature override",
+  "programs": [
+    {
+      "name": "curiosity_rigid",
+      "source": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_Rigid.cpp",
+      "target": "//examples/robotics:curiosity_rigid",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "vsg",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "curiosity_scm",
+      "source": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM.cpp",
+      "target": "//examples/robotics:curiosity_scm",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "vsg",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "curiosity_scm_sensor",
+      "source": "src/demos/robot/curiosity/demo_ROBOT_Curiosity_SCM_Sensor.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "native Sensor module with rendering backend and runtime SDK/assets"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "little_hexy",
+      "source": "src/demos/robot/hexy/demo_ROBOT_LittleHexy.cpp",
+      "target": "//examples/robotics:little_hexy",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "industrial",
+      "source": "src/demos/robot/industrial/demo_ROBOT_Industrial.cpp",
+      "target": "//examples/robotics:industrial",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "lander",
+      "source": "src/demos/robot/lander/demo_ROBOT_Lander.cpp",
+      "target": "//examples/robotics:lander",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vsg"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        ":lander_model",
+        "//examples/vehicle:solver_selection_headers"
+      ],
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/robot/lander/model/Lander.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "lander_crm",
+      "source": "src/demos/robot/lander/demo_ROBOT_Lander_CRM.cpp",
+      "target": "//examples/robotics:lander_crm",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "fsi",
+        "fsi_sph",
+        "vsg"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        ":lander_model",
+        "//examples/vehicle:solver_selection_headers",
+        "//src/sph/visualization:vsg"
+      ],
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/robot/lander/model/Lander.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "robo_simian_granular",
+      "source": "src/demos/robot/robosimian/multicore/demo_ROBOT_RoboSimian_Granular.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "coherent Multicore/OpenMP profile and granular helper owner"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [
+        "src/demos/robot/robosimian/multicore/granular.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "robo_simian_rigid",
+      "source": "src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_Rigid.cpp",
+      "target": "//examples/robotics:robo_simian_rigid",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "robo_simian_scm",
+      "source": "src/demos/robot/robosimian/sequential/demo_ROBOT_RoboSimian_SCM.cpp",
+      "target": "//examples/robotics:robo_simian_scm",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "turtlebot_rigid",
+      "source": "src/demos/robot/turtlebot/demo_ROBOT_Turtlebot_Rigid.cpp",
+      "target": "//examples/robotics:turtlebot_rigid",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "vsg",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_crm",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_CRM.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "coherent Vehicle CRM/SPH configuration for headers and implementation (including WheelAssembly layout)"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_rigid",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_Rigid.cpp",
+      "target": "//examples/robotics:viper_rigid",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "vsg",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_scm",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_SCM.cpp",
+      "target": "//examples/robotics:viper_scm",
+      "status": "declared_for_compile",
+      "requires": [],
+      "features": [
+        "vehicle",
+        "vsg",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/robotics/models:models",
+        "//src/vehicle/visualization:vsg",
+        "//src/vehicle/visualization:irrlicht"
+      ],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_scm_sensor",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_SCM_Sensor.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "native Sensor module with rendering backend and runtime SDK/assets"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_wheel_slope_crm",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_WheelSlope_CRM.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "coherent Vehicle CRM/SPH configuration for headers and implementation (including WheelAssembly layout)"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [
+        "src/demos/robot/viper/viper_wheel.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    },
+    {
+      "name": "viper_wheel_test_rig_crm",
+      "source": "src/demos/robot/viper/demo_ROBOT_Viper_WheelTestRig_CRM.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "coherent Vehicle CRM/SPH configuration for headers and implementation (including WheelAssembly layout)"
+      ],
+      "features": [],
+      "deps": [],
+      "local_headers": [
+        "src/demos/SetChronoSolver.h",
+        "src/demos/robot/viper/viper_wheel.h"
+      ],
+      "compiled": false,
+      "runtime_qualified": false
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "library",
+    srcs = ["__init__.py", "query.py", "roster.py", "inventory.py", "plans.py", "phases.py", "evidence.py", "executor.py", "snapshots.py", "identities.py", "status.py"],
+    deps = ["//tools/verification:inventory", "//tools/verification:native_entrypoints",
+            "//tools/dependencies:cuda_math_library", "//src/simulation/driver:driver"],
+)
+
+py_binary(
+    name = "demo_matrix",
+    srcs = ["cli.py", "capture.py"],
+    main = "cli.py",
+    deps = [":library"],
+    tags = ["manual", "local", "source-inspection"],
+)
+
+py_test(
+    name = "matrix_test",
+    srcs = ["MatrixTest.py"],
+    main = "MatrixTest.py",
+    deps = [":library"],
+    args = ["$(location :query_fixture.xml)"],
+    data = ["query_fixture.xml"],
+    size = "small",
+)
+
+py_test(
+    name = "executor_test",
+    srcs = ["ExecutorTest.py"],
+    main = "ExecutorTest.py",
+    deps = [":library"],
+    size = "small",
+)
+
+py_test(
+    name = "phases_test",
+    srcs = ["PhasesTest.py"],
+    main = "PhasesTest.py",
+    deps = [":library"],
+    size = "small",
+)
+
+py_test(
+    name = "status_test",
+    srcs = ["StatusTest.py"],
+    main = "StatusTest.py",
+    deps = [":library"],
+    size = "small",
+)

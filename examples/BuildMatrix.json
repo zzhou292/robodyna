@@ -1,0 +1,795 @@
+{
+  "schema": "robodyna.demo_build_matrix.v1",
+  "scope": "Compile plans for the full source denominator; no target pattern is sent to Bazel. Expand only recorded public executable labels; missing declarations remain explicit.",
+  "expected_sources": {
+    "native_demo": 311,
+    "native_template": 1,
+    "cuda_demo": 26,
+    "python_demo": 97,
+    "csharp_demo": 17
+  },
+  "known_configs": [
+    "cuda",
+    "host",
+    "sm75",
+    "sm86",
+    "sm120",
+    "multiphysics",
+    "multicore",
+    "fsi-sph",
+    "opencrg",
+    "sensor-optix",
+    "sensor-optix-sph",
+    "yaml",
+    "vsg",
+    "fsi_tdpf",
+    "ros-sensor",
+    "ros-urdf"
+  ],
+  "cuda_arch_configs": [
+    "sm75",
+    "sm86",
+    "sm120"
+  ],
+  "config_implies": {
+    "yaml": [
+      "vsg"
+    ],
+    "sensor-optix-sph": [
+      "sensor-optix",
+      "fsi-sph"
+    ]
+  },
+  "sdk_sets": {
+    "graphics": [
+      "ROBODYNA_VSG_ROOT",
+      "ROBODYNA_VSG_SYSROOT",
+      "ROBODYNA_IRRLICHT_ROOT"
+    ],
+    "cuda": [
+      "ROBODYNA_CUDA_MATH_ROOT"
+    ],
+    "sparse": [
+      "ROBODYNA_MUMPS_ROOT",
+      "ROBODYNA_ONEAPI_2023_ROOT"
+    ],
+    "bindings": [
+      "ROBODYNA_SWIG_ROOT",
+      "ROBODYNA_PYTHON_EXECUTABLE"
+    ],
+    "managed": [
+      "ROBODYNA_MONO_ROOT",
+      "ROBODYNA_ROSLYN_ROOT",
+      "ROBODYNA_MONO_ROSLYN_RUNTIME_ROOT"
+    ],
+    "ros": [
+      "ROBODYNA_ROS_ROOT",
+      "ROBODYNA_ROS_INTERFACES_ROOT"
+    ],
+    "urdf": [
+      "ROBODYNA_TINYXML2_ROOT",
+      "ROBODYNA_CONSOLE_BRIDGE_ROOT",
+      "ROBODYNA_URDF_HEADERS_ROOT",
+      "ROBODYNA_URDF_ROOT"
+    ],
+    "sensor": [
+      "ROBODYNA_SENSOR_ROOT"
+    ],
+    "cad": [
+      "ROBODYNA_OCCT_ROOT"
+    ],
+    "distributed": [
+      "ROBODYNA_MPI_ROOT",
+      "ROBODYNA_FASTDDS_ROOT"
+    ],
+    "hydrodynamics": [
+      "ROBODYNA_HDF5_ROOT",
+      "ROBODYNA_HYDROCHRONO_ROOT"
+    ],
+    "precice": [
+      "ROBODYNA_PRECICE_ROOT",
+      "ROBODYNA_PRECICE_RUNTIME_ROOT",
+      "ROBODYNA_MPI_ROOT"
+    ],
+    "opencrg": [
+      "ROBODYNA_OPENCRG_ARCHIVE"
+    ],
+    "numpy": [
+      "ROBODYNA_PYTHON_RUNTIME_ROOT"
+    ],
+    "optix": [
+      "ROBODYNA_OPTIX_ROOT"
+    ],
+    "plotting": [
+      "ROBODYNA_PYTHON_PLOT_ROOT"
+    ],
+    "pythonocc": [
+      "ROBODYNA_PYTHONOCC_ROOT"
+    ]
+  },
+  "batches": [
+    {
+      "id": "native_baseline",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/core:*",
+        "//examples/mbd:*",
+        "//examples/fea:*",
+        "//examples/fea/peridynamics:*",
+        "//examples/analysis/modal:*",
+        "//examples/cosimulation:*",
+        "//examples/vsg:*",
+        "//examples/irrlicht:*",
+        "//examples/postprocess:*",
+        "//examples/scm:*",
+        "//examples/vehicle:*",
+        "//examples/vehicle/fmi:*",
+        "//examples/robotics:*",
+        "//examples/robotics/sensor:*",
+        "//examples/dem:*",
+        "//examples/sph:*",
+        "//examples/coupling/tdpf:*",
+        "//examples/sensor:*",
+        "//examples/ros:*",
+        "//examples/numerics:*",
+        "//examples/integrations/cad:*",
+        "//examples/integrations/fmi:*",
+        "//examples/io/parsers:*",
+        "//examples/distributed:*",
+        "//examples/vehicle/cosim:*"
+      ],
+      "exclude": [
+        "//examples/fea:*multiphysics*",
+        "//examples/irrlicht:raycast",
+        "//examples/ros:sensor",
+        "//examples/ros:urdf",
+        "//examples/vehicle/cosim:wheeled_vehicle_omp",
+        "//examples/vehicle/cosim:wheeled_vehicle_sph",
+        "//examples/mbd:collision_objects"
+      ],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "bindings",
+        "ros",
+        "urdf",
+        "sensor",
+        "cad",
+        "distributed",
+        "hydrodynamics"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_multiphysics",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/fea:*multiphysics*"
+      ],
+      "exclude": [],
+      "configs": [
+        "multiphysics"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_multicore",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/mbd/multicore:*",
+        "//examples/vehicle/multicore:*",
+        "//examples/robotics/multicore:*",
+        "//examples/irrlicht:raycast",
+        "//examples/vehicle/cosim:wheeled_vehicle_omp",
+        "//examples/mbd:collision_objects"
+      ],
+      "exclude": [],
+      "configs": [
+        "multicore"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "distributed"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_sph_coupling",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/vehicle/crm:*",
+        "//examples/robotics/crm:*",
+        "//examples/vehicle/cosim:wheeled_vehicle_sph"
+      ],
+      "exclude": [],
+      "configs": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "distributed"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_opencrg",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/vehicle/opencrg:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "opencrg"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "opencrg"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_sensor_optix_sph",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/sensor/optix:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "sensor-optix",
+        "fsi-sph"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sensor",
+        "optix"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_yaml_sph",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/io/yaml:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "yaml",
+        "fsi-sph",
+        "fsi_tdpf"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "hydrodynamics"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_precice",
+      "families": [
+        "native_demo",
+        "native_template",
+        "application"
+      ],
+      "targets": [
+        "//examples/coupling/precice:*",
+        "//apps/precice:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "yaml",
+        "fsi-sph"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "precice"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_ros_sensor",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/ros:sensor"
+      ],
+      "exclude": [],
+      "configs": [
+        "ros-sensor",
+        "sensor-optix"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "cuda",
+        "ros",
+        "sensor",
+        "optix"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "native_ros_urdf",
+      "families": [
+        "native_demo",
+        "native_template"
+      ],
+      "targets": [
+        "//examples/ros:urdf"
+      ],
+      "exclude": [],
+      "configs": [
+        "ros-urdf",
+        "vsg"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "ros",
+        "urdf"
+      ],
+      "compiler_workers": 4
+    },
+    {
+      "id": "cuda_retained",
+      "families": [
+        "cuda_demo"
+      ],
+      "targets": [
+        "//examples/fea/cuda/*"
+      ],
+      "exclude": [],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda"
+      ],
+      "compiler_workers": 1
+    },
+    {
+      "id": "python_baseline",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/*"
+      ],
+      "exclude": [
+        "//examples/python/fsi:*",
+        "//examples/python/yaml:*",
+        "//examples/python/sensor:*",
+        "//examples/python/ros:sensor",
+        "//examples/python/ros:urdf",
+        "//examples/python/parsers:urdf",
+        "//examples/python/robot:viper_crm",
+        "//examples/python/vehicle:crmterrain_wheeled_vehicle",
+        "//examples/python/vehicle:wheel_test_rig_crm",
+        "//examples/python/fea:shells",
+        "//examples/python/mbs:crank_plot",
+        "//examples/python/cascade:*"
+      ],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "bindings",
+        "urdf",
+        "ros",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_pardisomkl",
+        "//build_defs/bindings/optional:native_ros"
+      ]
+    },
+    {
+      "id": "python_sph",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/fsi:*",
+        "//examples/python/robot:viper_crm",
+        "//examples/python/vehicle:crmterrain_wheeled_vehicle",
+        "//examples/python/vehicle:wheel_test_rig_crm"
+      ],
+      "exclude": [],
+      "configs": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_pardisomkl",
+        "//build_defs/bindings/optional:native_fsi",
+        "//build_defs/bindings/optional:native_sph_vsg"
+      ]
+    },
+    {
+      "id": "python_yaml",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/yaml:*",
+        "//examples/python/parsers:urdf"
+      ],
+      "exclude": [],
+      "configs": [
+        "yaml"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "urdf",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_parsers"
+      ]
+    },
+    {
+      "id": "python_sensor",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/sensor:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "sensor-optix"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "sensor",
+        "optix",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_sensor"
+      ]
+    },
+    {
+      "id": "python_ros_sensor",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/ros:sensor"
+      ],
+      "exclude": [],
+      "configs": [
+        "sensor-optix",
+        "ros-sensor"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "sensor",
+        "ros",
+        "optix",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_sensor",
+        "//build_defs/bindings/optional:native_ros"
+      ]
+    },
+    {
+      "id": "python_ros_urdf",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/ros:urdf"
+      ],
+      "exclude": [],
+      "configs": [
+        "yaml",
+        "ros-urdf"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "ros",
+        "urdf",
+        "numpy"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_vehicle_irrlicht",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_parsers",
+        "//build_defs/bindings/optional:native_ros"
+      ]
+    },
+    {
+      "id": "managed_baseline",
+      "families": [
+        "csharp_demo"
+      ],
+      "targets": [
+        "//examples/csharp:*",
+        "//examples/csharp/mbd:*",
+        "//examples/csharp/vehicle:*"
+      ],
+      "exclude": [],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "managed"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle"
+      ]
+    },
+    {
+      "id": "managed_opencrg",
+      "families": [
+        "csharp_demo"
+      ],
+      "targets": [
+        "//examples/csharp/vehicle/opencrg:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "opencrg"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "managed",
+        "opencrg"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle"
+      ]
+    },
+    {
+      "id": "managed_sensor",
+      "families": [
+        "csharp_demo"
+      ],
+      "targets": [
+        "//examples/csharp/sensor:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "sensor-optix"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "managed",
+        "sensor",
+        "optix"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_sensor"
+      ]
+    },
+    {
+      "id": "managed_ros_sensor",
+      "families": [
+        "csharp_demo"
+      ],
+      "targets": [
+        "//examples/csharp/ros:*"
+      ],
+      "exclude": [],
+      "configs": [
+        "sensor-optix",
+        "ros-sensor"
+      ],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "managed",
+        "sensor",
+        "ros",
+        "optix"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_images",
+        "//build_defs/bindings/optional:native_vsg",
+        "//build_defs/bindings/optional:native_postprocess",
+        "//build_defs/bindings/optional:native_vehicle",
+        "//build_defs/bindings/optional:native_robot",
+        "//build_defs/bindings/optional:native_sensor",
+        "//build_defs/bindings/optional:native_ros"
+      ]
+    },
+    {
+      "id": "python_plotting",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/fea:shells",
+        "//examples/python/mbs:crank_plot"
+      ],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "sparse",
+        "bindings",
+        "numpy",
+        "plotting"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional:native_pardisomkl"
+      ]
+    },
+    {
+      "id": "python_cad",
+      "families": [
+        "python_demo"
+      ],
+      "targets": [
+        "//examples/python/cascade:*"
+      ],
+      "configs": [],
+      "cuda": true,
+      "sdk_sets": [
+        "graphics",
+        "cuda",
+        "bindings",
+        "numpy",
+        "cad",
+        "pythonocc"
+      ],
+      "compiler_workers": 2,
+      "prerequisite_targets": [
+        "//build_defs/bindings:native_core",
+        "//build_defs/bindings/optional:native_irrlicht",
+        "//build_defs/bindings/optional/cascade:native_cascade"
+      ]
+    }
+  ],
+  "notes": [
+    "No wildcard build can establish every incompatible profile; execute named batches under the workstation guard.",
+    "Language wrappers use a measured two-worker trial under the unchanged 16 GiB guard; restore an affected batch to one worker if needed. Retained DEME preparation remains one worker.",
+    "The 26 CUDA implicit/ANCF demonstrations are separate from the qualified explicit Yaris backend.",
+    "The python_plotting and python_cad batches declare their real plotting and PythonOCC SDKs and original example targets.",
+    "Language batches compile explicit native-library prerequisites at four workers, then generated wrappers and original example assemblies at two workers. Both phases retain eight affinity CPUs, 16 GiB RSS and separate closed receipts. Libraries never increase demo counts.",
+    "Observed single-worker peak sampled RSS: NumPy/plot/CAD 5.130 GiB, baseline Python 4.884 GiB, largest managed batch 3.655 GiB. Two-worker qualification remains subject to the existing guard; these observations are not a new resource allowance."
+  ]
+}

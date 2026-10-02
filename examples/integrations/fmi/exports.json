@@ -1,0 +1,92 @@
+{
+  "schema": "robodyna.retained_fmi_exports.v1",
+  "guid_namespace": "2f99433d-6b79-59f7-9a1c-58913012ac2b",
+  "guid_derivation": "UUIDv5(namespace, original model identifier), matching the owning CMake SHA1 UUID operation with an explicit stable namespace.",
+  "exports": [
+    {
+      "target": "crane_fmi2_cosim",
+      "identifier": "FMU2cs_crane",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "e361b0f2-3b73-5f9d-b098-30dae9938907",
+      "source": "src/demos/fmi/cosim/fmu2_crane/craneFMU.cpp",
+      "header": "src/demos/fmi/cosim/fmu2_crane/craneFMU.h",
+      "cmake": "src/demos/fmi/cosim/fmu2_crane/CMakeLists.txt"
+    },
+    {
+      "target": "crane_fmi3_cosim",
+      "identifier": "FMU3cs_crane",
+      "version": "3",
+      "mode": "CoSimulation",
+      "guid": "0edd931a-4fae-5120-83a2-cd36ddffb42b",
+      "source": "src/demos/fmi/cosim/fmu3_crane/craneFMU.cpp",
+      "header": "src/demos/fmi/cosim/fmu3_crane/craneFMU.h",
+      "cmake": "src/demos/fmi/cosim/fmu3_crane/CMakeLists.txt"
+    },
+    {
+      "target": "actuator_fmi2_cosim",
+      "identifier": "FMU2cs_actuator",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "bc0f53a3-39e2-5654-ba79-0b246d455332",
+      "source": "src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.cpp",
+      "header": "src/demos/fmi/cosim/fmu2_actuator/actuatorFMU.h",
+      "cmake": "src/demos/fmi/cosim/fmu2_actuator/CMakeLists.txt"
+    },
+    {
+      "target": "actuator_fmi3_cosim",
+      "identifier": "FMU3cs_actuator",
+      "version": "3",
+      "mode": "CoSimulation",
+      "guid": "7cc5e6c4-c9aa-52cd-9cd7-dc845b7e0365",
+      "source": "src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.cpp",
+      "header": "src/demos/fmi/cosim/fmu3_actuator/actuatorFMU.h",
+      "cmake": "src/demos/fmi/cosim/fmu3_actuator/CMakeLists.txt"
+    },
+    {
+      "target": "vdp_fmi2_modex",
+      "identifier": "FMU2me_vdp",
+      "version": "2",
+      "mode": "ModelExchange",
+      "guid": "ffe7eebe-552b-582c-bf9e-c1675e86109b",
+      "source": "src/demos/fmi/modex/fmu2_vdp/vdpFMU.cpp",
+      "header": "src/demos/fmi/modex/fmu2_vdp/vdpFMU.h",
+      "cmake": "src/demos/fmi/modex/fmu2_vdp/CMakeLists.txt"
+    },
+    {
+      "target": "vdp_fmi3_modex",
+      "identifier": "FMU3me_vdp",
+      "version": "3",
+      "mode": "ModelExchange",
+      "guid": "da8f06c9-e3df-5690-aec8-fd117f95e531",
+      "source": "src/demos/fmi/modex/fmu3_vdp/vdpFMU.cpp",
+      "header": "src/demos/fmi/modex/fmu3_vdp/vdpFMU.h",
+      "cmake": "src/demos/fmi/modex/fmu3_vdp/CMakeLists.txt"
+    },
+    {
+      "target": "actuator_fmi2_modex",
+      "identifier": "FMU2me_actuator",
+      "version": "2",
+      "mode": "ModelExchange",
+      "guid": "53e21035-329a-5b84-9736-9696f075c98e",
+      "source": "src/demos/fmi/modex/fmu2_actuator/actuatorFMU.cpp",
+      "header": "src/demos/fmi/modex/fmu2_actuator/actuatorFMU.h",
+      "cmake": "src/demos/fmi/modex/fmu2_actuator/CMakeLists.txt"
+    },
+    {
+      "target": "template_fmi2_cosim",
+      "identifier": "FmuComponentChrono",
+      "version": "2",
+      "mode": "CoSimulation",
+      "guid": "ef6bd38e-7283-5540-bbc4-939053c779bd",
+      "source": "template_project_fmi2/FmuComponentChrono.cpp",
+      "header": "template_project_fmi2/FmuComponentChrono.h",
+      "cmake": "template_project_fmi2/CMakeLists.txt"
+    }
+  ],
+  "counts": {
+    "fmus": 8,
+    "drivers": 5
+  },
+  "visual_profile": "FMU-internal optional Irrlicht disabled; model-exchange crane driver uses actual VSG."
+}

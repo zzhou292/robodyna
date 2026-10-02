@@ -19,6 +19,17 @@ test --local_test_jobs=1
 # Keep numerical flags target-local. Inherited explicit and implicit backends
 # have different qualified policies; neither fast math nor its inverse is global.
 build:host --compilation_mode=opt
+
+# This profile changes retained contact class layouts. Apply coherently to the
+# whole configured build graph; never enable it in a single demo translation unit.
+build:multiphysics --//build_defs/features:fea_multiphysics=true
+
+# Coherent OpenMP host profile, including nvcc host compilation. No device math
+# flag or Thrust backend is changed globally.
+build:multicore --//build_defs/features:multicore=true
+build:multicore --cxxopt=-fopenmp
+build:multicore --linkopt=-fopenmp
+build:multicore --@rules_cuda//cuda:host_copts=-fopenmp
 build:cuda --compilation_mode=opt
 build --flag_alias=cuda_archs=@rules_cuda//cuda:archs
 build --@rules_cuda//cuda:archs=compute_75:sm_75;compute_86:sm_86,compute_86
@@ -34,3 +45,19 @@ build:sm120 --define=robodyna_cuda_arch=120
 build --action_env=CUDACXX
 build --action_env=CUDAToolkit_ROOT
 build --action_env=CUDA_PATH
+
+# These flags configure all declarations and implementation owners together.
+build:fsi-sph --//build_defs/features:fsi_sph=true
+build:opencrg --//build_defs/features:opencrg=true
+build:sensor-optix --//build_defs/features:sensor_backend=optix
+build:sensor-optix-sph --config=sensor-optix
+build:sensor-optix-sph --config=fsi-sph
+
+# Parser and virtual visualization interfaces share one generated profile.
+build:yaml --//build_defs/features:yaml=true
+build:yaml --//build_defs/features:vsg=true
+build:vsg --//build_defs/features:vsg=true
+build:fsi_tdpf --//build_defs/features:fsi_tdpf=true
+
+build:ros-sensor --//build_defs/features:ros_sensor=true
+build:ros-urdf --//build_defs/features:ros_urdf=true

@@ -1,0 +1,43 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["Inventory.json", "Admission.json"])
+
+# Builds original-script launchers AND their actual native binding dependencies.
+# It does not launch simulations, graphics or GPUs.
+filegroup(
+    name = "baseline_programs",
+    srcs = [
+        "//examples/python/core:programs",
+        "//examples/python/fea:programs",
+        "//examples/python/irrlicht:programs",
+        "//examples/python/mbs:programs",
+        "//examples/python/parsers:programs",
+        "//examples/python/postprocess:programs",
+        "//examples/python/robot:programs",
+        "//examples/python/vehicle:programs",
+        "//examples/python/vsg:programs",
+    ],
+    tags = ["manual", "original-python-demo-group"],
+)
+
+filegroup(
+    name = "numpy_programs",
+    srcs = ["//examples/python/core:euler_angles", "//examples/python/core:coords", "//examples/python/fea:brick", "//examples/python/mbs:prismatic_force", "//examples/python/robot:curiosity_rigid", "//examples/python/robot:robo_simian_rigid", "//examples/python/robot:turtlebot_rigid", "//examples/python/robot:viper_rigid", "//examples/python/vehicle:hmmwv_circle"],
+    tags = ["manual", "original-python-demo-group"],
+)
+
+filegroup(name = "fsi_programs", srcs = ['//examples/python/fsi:object_drop', '//examples/python/robot:viper_crm', '//examples/python/vehicle:crmterrain_wheeled_vehicle', '//examples/python/vehicle:wheel_test_rig_crm'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "parsers_programs", srcs = ['//examples/python/parsers:urdf', '//examples/python/yaml:mbs', '//examples/python/yaml:mbs_controller'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "sensor_programs", srcs = ['//examples/python/sensor:gator', '//examples/python/sensor:hmmwv', '//examples/python/sensor:camera', '//examples/python/sensor:lidar', '//examples/python/sensor:radar', '//examples/python/sensor:sensors'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "ros_programs", srcs = ['//examples/python/ros:custom_handler', '//examples/python/ros:numpy_camera', '//examples/python/ros:two_managers', '//examples/python/ros:vehicle', '//examples/python/ros:viper'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "ros_sensor_programs", srcs = ['//examples/python/ros:sensor'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "ros_urdf_programs", srcs = ['//examples/python/ros:urdf'], tags = ["manual", "explicit-binding-profile"])
+
+filegroup(name = "plot_programs", srcs = ['//examples/python/fea:shells', '//examples/python/mbs:crank_plot'], tags = ["manual", "plot-runtime", "original-python-demo"])
+
+filegroup(name = "cascade_programs", srcs = ['//examples/python/cascade:cascade', '//examples/python/cascade:robot', '//examples/python/cascade:stepfile'], tags = ["manual", "original-python-demo", "cad-profile"])

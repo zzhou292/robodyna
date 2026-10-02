@@ -1,0 +1,75 @@
+package(default_visibility = ["//visibility:public"])
+
+# Canonical names select existing real binaries; numerical compile owners stay unchanged.
+exports_files(["BUILD.bazel"])
+
+alias(
+    name = "sphere_drop_hydroelastic",
+    actual = "@legacy_fea//lib_bin/collision_system:test_sphere_drop_collision",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "bubble_gripper_bunny",
+    actual = "@legacy_fea//lib_bin/collision_system:test_bubble_gripper_bunny",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "bubble_gripper_bunny_floor",
+    actual = "@legacy_fea//lib_bin/collision_system:test_bubble_gripper_bunny_floor",
+    tags = ["manual", "cuda", "retained-fea-demo"],
+)
+
+alias(
+    name = "item_drop",
+    actual = "@legacy_fea//lib_bin/collision_system:test_item_drop",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+alias(
+    name = "multi_object_drop",
+    actual = "@legacy_fea//lib_bin/large_scale:test_multiitem_drop",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+alias(
+    name = "vase_drop",
+    actual = "@legacy_fea//lib_bin/large_scale:test_vase",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+alias(
+    name = "brick_sliding",
+    actual = "@legacy_fea//lib_bin/ptest:brick_sliding",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+alias(
+    name = "sphere_stacking",
+    actual = "@legacy_fea//lib_bin/ptest:sphere_stacking",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+alias(
+    name = "oblique_impact",
+    actual = "@legacy_fea//lib_bin/ptest:oblique_impact",
+    tags = ["manual", "cuda", "retained-fea-demo", "requires-deme"],
+)
+
+# Explicit aggregate includes every program in this group, including optional backends.
+filegroup(
+    name = "all_demos",
+    srcs = [
+        ":sphere_drop_hydroelastic",
+        ":bubble_gripper_bunny",
+        ":bubble_gripper_bunny_floor",
+        ":item_drop",
+        ":multi_object_drop",
+        ":vase_drop",
+        ":brick_sliding",
+        ":sphere_stacking",
+        ":oblique_impact",
+    ],
+    tags = ["manual", "cuda", "retained-fea-demo-build"],
+)

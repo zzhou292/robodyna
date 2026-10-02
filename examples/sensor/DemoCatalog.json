@@ -1,0 +1,251 @@
+{
+  "schema": "robodyna.sensor_demo_admission.v1",
+  "scope": "All 16 retained Sensor C++ demos are represented. Linking does not establish GPU execution or scene fidelity.",
+  "profile": "Linux Vulkan RT GPU enabled; OptiX/Metal disabled; original OpenGL viewer enabled",
+  "programs": [
+    {
+      "name": "crm_rendering",
+      "source": "src/demos/sensor/demo_SEN_CRM_Rendering.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "OptiX Sensor profile with actual SPH rendering plus coherent Vehicle CRM/SPH profile"
+      ],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "pending_actual_optix_sph_rendering",
+      "features": [],
+      "deps": []
+    },
+    {
+      "name": "gpsimu",
+      "source": "src/demos/sensor/demo_SEN_GPSIMU.cpp",
+      "target": "//examples/sensor:gpsimu",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "gator",
+      "source": "src/demos/sensor/demo_SEN_Gator.cpp",
+      "target": "//examples/sensor:gator",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "Reviewed extension of retained CMake gate: existing Vulkan-compatible sensor/scene API and native Vehicle/Irrlicht owners; source unchanged; runtime pending.",
+      "features": [
+        "sensor",
+        "vehicle",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:irrlicht"
+      ]
+    },
+    {
+      "name": "hmmwv",
+      "source": "src/demos/sensor/demo_SEN_HMMWV.cpp",
+      "target": null,
+      "status": "pending_prerequisites",
+      "requires": [
+        "Real OptiX fog scene implementation; Vulkan has no SetFogScatteringFromDistance or matching shader fog"
+      ],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "pending_actual_optix_fog",
+      "features": [],
+      "deps": []
+    },
+    {
+      "name": "json",
+      "source": "src/demos/sensor/demo_SEN_JSON.cpp",
+      "target": "//examples/sensor:json",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "buildtest",
+      "source": "src/demos/sensor/demo_SEN_buildtest.cpp",
+      "target": "//examples/sensor:buildtest",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "camera",
+      "source": "src/demos/sensor/demo_SEN_camera.cpp",
+      "target": "//examples/sensor:camera",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "cornell_box",
+      "source": "src/demos/sensor/demo_SEN_cornell_box.cpp",
+      "target": "//examples/sensor:cornell_box",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "deformablesoil",
+      "source": "src/demos/sensor/demo_SEN_deformableSoil.cpp",
+      "target": "//examples/sensor:deformablesoil",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "Reviewed extension of retained CMake gate: existing Vulkan-compatible sensor/scene API and native Vehicle/Irrlicht owners; source unchanged; runtime pending.",
+      "features": [
+        "sensor",
+        "vehicle",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:irrlicht"
+      ]
+    },
+    {
+      "name": "lidar",
+      "source": "src/demos/sensor/demo_SEN_lidar.cpp",
+      "target": "//examples/sensor:lidar",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "metal_quarterpanel",
+      "source": "src/demos/sensor/demo_SEN_metal_quarterpanel.cpp",
+      "target": "//examples/sensor:metal_quarterpanel",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "Reviewed extension of retained CMake gate: existing Vulkan-compatible sensor/scene API and native Vehicle/Irrlicht owners; source unchanged; runtime pending.",
+      "features": [
+        "sensor",
+        "vehicle",
+        "irrlicht"
+      ],
+      "deps": [
+        "//src/vehicle/models:models",
+        "//src/vehicle/visualization:irrlicht"
+      ]
+    },
+    {
+      "name": "phys_cam",
+      "source": "src/demos/sensor/demo_SEN_phys_cam.cpp",
+      "target": "//examples/sensor:phys_cam",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "radar",
+      "source": "src/demos/sensor/demo_SEN_radar.cpp",
+      "target": "//examples/sensor:radar",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "radar1",
+      "source": "src/demos/sensor/demo_SEN_radar1.cpp",
+      "target": "//examples/sensor:radar1",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "tachometer",
+      "source": "src/demos/sensor/demo_SEN_tachometer.cpp",
+      "target": "//examples/sensor:tachometer",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    },
+    {
+      "name": "vulkan_validation",
+      "source": "src/demos/sensor/demo_SEN_vulkan_validation.cpp",
+      "target": "//examples/sensor:vulkan_validation",
+      "status": "declared_for_compile",
+      "requires": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "admission": "retained_cmake_vulkan_profile",
+      "features": [
+        "sensor"
+      ],
+      "deps": []
+    }
+  ],
+  "reviewed_cmake_gate_extensions": [
+    "deformablesoil",
+    "gator",
+    "metal_quarterpanel"
+  ]
+}

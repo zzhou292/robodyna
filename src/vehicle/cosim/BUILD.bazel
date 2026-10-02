@@ -1,0 +1,112 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load("//build_defs/features:defs.bzl", "FSI_SPH_ONLY", "MULTICORE_ONLY")
+load("//tools/mpi:defs.bzl", "local_mpi_test")
+load(":defs.bzl", "cosim_component")
+load(":sources.bzl", "COSIM_GROUPS")
+load(":exports.bzl", "COSIM_EXPORTS")
+load(":ownership.bzl", "cosim_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["sources.bzl", "exports.bzl", "SourceBaseline.json"])
+
+# Only the global VSG flag may enable conditional fields in public node classes.
+# CHRONO_POSTPROCESS and CHRONO_PARDISO_MKL remain off in this baseline: the
+# original flexible-tire implementation selects SparseQR and HHT accordingly.
+_VSG = select({
+    "//build_defs/features:vsg_enabled": ["//src/vehicle/visualization:vsg"],
+    "//conditions:default": [],
+})
+
+cosim_component(
+    name = "base",
+    group = COSIM_GROUPS["base"],
+    deps = ["//src/vehicle:vehicle", "@mpi_sdk//:cpp"],
+)
+
+cosim_component(name = "mbs", group = COSIM_GROUPS["mbs"], deps = [":base"] + _VSG)
+cosim_component(name = "robot", group = COSIM_GROUPS["robot"], deps = [":base", "//src/robotics/models:models"] + _VSG)
+cosim_component(name = "rigid_tires", group = COSIM_GROUPS["rigid_tires"], deps = [":base"] + _VSG)
+cosim_component(name = "flexible_tires", group = COSIM_GROUPS["flexible_tires"], deps = [":base"] + _VSG)
+cosim_component(name = "cpu_terrain", group = COSIM_GROUPS["cpu_terrain"], deps = [":base"] + _VSG)
+
+cosim_component(
+    name = "omp_terrain",
+    group = COSIM_GROUPS["omp_terrain"],
+    deps = [":cpu_terrain", "//src/mbd/multicore:multicore"] + _VSG,
+    compatible = MULTICORE_ONLY,
+)
+
+cosim_component(
+    name = "sph_terrain",
+    group = COSIM_GROUPS["sph_terrain"],
+    deps = [":cpu_terrain", "//src/sph:sph"] + select({
+        "//build_defs/features:vsg_enabled": ["//src/sph/visualization:vsg"],
+        "//conditions:default": [],
+    }),
+    compatible = FSI_SPH_ONLY,
+)
+
+cosim_component(
+    name = "dem_terrain",
+    group = COSIM_GROUPS["dem_terrain"],
+    deps = [":cpu_terrain", "//src/dem:dem"] + _VSG,
+)
+
+cc_library(
+    name = "cosim",
+    deps = [":base", ":mbs", ":robot", ":rigid_tires", ":flexible_tires", ":cpu_terrain"] + select({
+        "//build_defs/features:multicore_enabled": [":omp_terrain"],
+        "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:fsi_sph_enabled": [":sph_terrain"],
+        "//conditions:default": [],
+    }),
+    tags = ["manual", "native-vehicle-cosim"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)", "$(location :SourceBaseline.json)",
+        "$(location //src/compatibility/chrono:src/chrono_vehicle/cosim/CMakeLists.txt)",
+        "$(location //examples/vehicle/cosim:DemoCatalog.json)",
+        "$(location //examples/vehicle/cosim:BUILD.bazel)",
+    ],
+    data = [":sources.bzl", ":SourceBaseline.json", "//examples/vehicle/cosim:DemoCatalog.json", "//examples/vehicle/cosim:BUILD.bazel"] + ["//src/compatibility/chrono:" + path for path in COSIM_EXPORTS],
+    deps = ["//tools/verification:inventory"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cosim_ownership_test(
+    name = "ownership_test",
+    implementations = [":cosim"],
+    with_multicore = select({"//build_defs/features:multicore_enabled": True, "//conditions:default": False}),
+    with_sph = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cosim_ownership_test(
+    name = "dem_ownership_test",
+    implementations = [":cosim", ":dem_terrain"],
+    with_multicore = select({"//build_defs/features:multicore_enabled": True, "//conditions:default": False}),
+    with_sph = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+    with_dem = True,
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_binary(
+    name = "mpi_transport_test_backend",
+    srcs = ["MpiTransportTest.cpp", "GeometryFixture.cpp", "GeometryFixture.h"],
+    deps = [":base"],
+    tags = ["manual", "cpu-only", "mpi-test-backend"],
+)
+
+local_mpi_test(
+    name = "mpi_transport_test",
+    program = ":mpi_transport_test_backend",
+    ranks = 4,
+)

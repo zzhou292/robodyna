@@ -1,0 +1,79 @@
+{
+  "schema": "robodyna.ros_demo_targets.v1",
+  "native_programs": 7,
+  "declared_native_programs": 5,
+  "python_programs": 7,
+  "csharp_programs": 1,
+  "scope": "All7 original native mains declared. Five baseline examples compiled; Sensor and URDF require the named coherent profiles. Build does not admit model assets, DDS traffic, runtime paths or simulation accuracy.",
+  "programs": [
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_custom_handler.cpp",
+      "sha256": "6d016758634cd54b99c108141de4b04372f306fd0f144df46e1cdd199793602d",
+      "target": "//examples/ros:custom_handler",
+      "declared": true,
+      "required_optional_profile": null,
+      "status": "PASS: original executable compilation; demonstration runtime pending",
+      "receipt": "crash-work/reports/robodyna-baseline-sdk-gates-3.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_hydraulic_crane.cpp",
+      "sha256": "ee2ac5297405b15d83ed89c8180c7027f392b0766fbf0aca9072101ad4ad9470",
+      "target": "//examples/ros:hydraulic_crane",
+      "declared": true,
+      "required_optional_profile": null,
+      "status": "PASS: original executable compilation; demonstration runtime pending",
+      "receipt": "crash-work/reports/robodyna-baseline-sdk-gates-3.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_vehicle.cpp",
+      "sha256": "f061b0ec75989e1d4d43146987e5699d2b16dffde0c7e861a1d22f8d3487926e",
+      "target": "//examples/ros:vehicle",
+      "declared": true,
+      "required_optional_profile": null,
+      "status": "PASS: original executable compilation; demonstration runtime pending",
+      "receipt": "crash-work/reports/robodyna-baseline-sdk-gates-3.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_two_managers.cpp",
+      "sha256": "c785b4b27400d60221ec65a0e9e348ee429cde9c1bc9fd41fb3ce92ac693672d",
+      "target": "//examples/ros:two_managers",
+      "declared": true,
+      "required_optional_profile": null,
+      "status": "PASS: original executable compilation; demonstration runtime pending",
+      "receipt": "crash-work/reports/robodyna-baseline-sdk-gates-3.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_viper.cpp",
+      "sha256": "2f365e0a30f08ae57aeeaa274651d3a50b6e61b4cf478af5b741ccfac20b53c0",
+      "target": "//examples/ros:viper",
+      "declared": true,
+      "required_optional_profile": null,
+      "status": "PASS: original executable compilation; demonstration runtime pending",
+      "receipt": "crash-work/reports/robodyna-baseline-sdk-gates-3.json"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_sensor.cpp",
+      "sha256": "273ba57aa2a5960abfdbbe611ec84aea85e5da11d4f59ef6145b7c110251c0e5",
+      "target": "//examples/ros:sensor",
+      "declared": true,
+      "required_optional_profile": "coherent ROS sensor and actual OptiX renderer/handlers",
+      "status": "compile/runtime qualification pending",
+      "required_profiles": [
+        "ros-sensor",
+        "sensor-optix"
+      ]
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/ros/demo_ROS_urdf.cpp",
+      "sha256": "970f0df4885d70a3f79c5d94d83baeaedacaec6421dc43ed1f994a5e2925155d",
+      "target": "//examples/ros:urdf",
+      "declared": true,
+      "required_optional_profile": "coherent ROS URDF and global VSG",
+      "status": "compile/runtime qualification pending",
+      "required_profiles": [
+        "ros-urdf",
+        "vsg"
+      ]
+    }
+  ]
+}

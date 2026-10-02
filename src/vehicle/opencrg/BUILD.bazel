@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("//build_defs/features:defs.bzl", "OPENCRG_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "terrain",
+    srcs = ["//src/compatibility/chrono:src/chrono_vehicle/terrain/CRGTerrain.cpp"],
+    deps = ["//src/vehicle:headers", "@opencrg_sdk//:opencrg"],
+    local_defines = ["CH_API_COMPILE_VEHICLE"],
+    copts = ["-O3", "-fPIC"],
+    alwayslink = True,
+    target_compatible_with = ["@platforms//os:linux"] + OPENCRG_ONLY,
+    tags = ["manual", "native-vehicle-opencrg", "cpu-dynamics"],
+)
+
+cc_test(
+    name = "host_terrain_test",
+    srcs = ["HostTerrainTest.cpp"],
+    deps = ["//src/vehicle:vehicle", "//include/robodyna/simulation:api", "@googletest//:gtest"],
+    args = ["$(location //src/compatibility/chrono:data/vehicle/terrain/crg_roads/handmade_straight.crg)"],
+    data = ["//src/compatibility/chrono:data/vehicle/terrain/crg_roads/handmade_straight.crg"],
+    target_compatible_with = OPENCRG_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "native-opencrg"],
+)

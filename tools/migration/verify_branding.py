@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from tools.migration.source_transform import index_entries, original_bytes, relative_file
+from tools.migration.branding_followups import admit_followups
 
 
 def _identity(root, name, expected):
@@ -16,15 +17,16 @@ def _identity(root, name, expected):
         raise ValueError(f"Branding input identity differs: {name}")
 
 
-def verify(root, manifest_path, ledger_path):
+def verify(root, manifest_path, ledger_path, followups_path=None):
     root = Path(root).resolve(strict=True)
     manifest = json.loads(Path(manifest_path).read_text())
     if manifest.get("schema") != "robodyna.branding_replacements.v1":
         raise ValueError("Unsupported branding manifest")
     entries = index_entries(json.loads(Path(ledger_path).read_text()))
+    followups = admit_followups(root, manifest_path, manifest, entries, followups_path)
     imported = 0
     for row in manifest["changed_text"]:
-        _identity(root, row["path"], row["after_sha256"])
+        _identity(root, row["path"], followups.get(row["path"], row["after_sha256"]))
         key = row.get("transformation_original_path")
         if key is None:
             if row["path"].startswith(("src/compatibility/chrono/", "src/compatibility/app/")) and not row["path"].endswith("/BUILD.bazel"):
@@ -63,15 +65,20 @@ def verify(root, manifest_path, ledger_path):
             "changed_text_files": len(manifest["changed_text"]), "imported_source_histories": imported,
             "retired_assets": len(manifest["retired_assets"]),
             "replacement_copies": len(manifest["byte_identical_replacements"]),
+            "reviewed_followup_files": len(followups),
             "scope": "Live file/hash and exact-source-inverse verification; no optional-backend runtime claim"}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", type=Path, required=True)
+    parser.add_argument("--followups", type=Path, help="Explicit reviewed later-edit registry; historical manifests remain unchanged")
     args = parser.parse_args()
+    followups = args.followups or args.repository / "docs/verification/BRANDING_FOLLOWUPS.json"
+    if args.followups is None and not followups.exists():
+        followups = None
     print(json.dumps(verify(args.repository, args.repository / "docs/migration/BRANDING_REPLACEMENTS.json",
-                            args.repository / "docs/migration/SOURCE_TRANSFORMATIONS.json"), indent=2))
+                            args.repository / "docs/migration/SOURCE_TRANSFORMATIONS.json", followups), indent=2))
 
 
 if __name__ == "__main__":

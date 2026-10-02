@@ -237,7 +237,7 @@ namespace ChronoDemo
                                                     fov,           // camera's horizontal field of view
                                                     alias_factor,  // super sampling factor
                                                     lens_model,    // lens model type
-                                                    use_gi, 2.2F);
+                                                    use_gi, false, Integrator.LEGACY, 2.2F);
             cam.SetName("Camera Sensor");
             cam.SetLag(lag);
             cam.SetCollectionWindow(exposure_time);
@@ -281,7 +281,7 @@ namespace ChronoDemo
                                                      image_height,  // image height
                                                      fov,           // camera's horizontal field of view
                                                      alias_factor,  // supersample factor for antialiasing
-                                                     lens_model, false, 2.2F);  // FOV
+                                                     lens_model, false, false, Integrator.LEGACY, 2.2F);  // FOV
             cam2.SetName("Antialiasing Camera Sensor");
             cam2.SetLag(lag);
             cam2.SetCollectionWindow(exposure_time);

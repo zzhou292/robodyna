@@ -1,0 +1,19 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["common.py", "fsi.py", "sensor.py", "parsers.py"])
+
+[
+    py_test(
+        name = profile + "_runtime_test",
+        srcs = ["//tests/bindings/python:run_package.py"],
+        main = "//tests/bindings/python:run_package.py",
+        args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :" + profile + ".py)", "$(rlocationpath //bindings/python/profiles:" + profile + "_manifest)"],
+        data = ["@python_sdk//:bin/python3.10", "//tests/bindings/python:origin.py", ":" + profile + ".py", ":common.py", "//bindings/python/profiles:" + profile, "//bindings/python/profiles:" + profile + "_manifest"],
+        deps = ["@rules_python//python/runfiles"],
+        env = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"},
+        size = "medium",
+        tags = ["manual", "local", "host-only", "actual-native-bindings", "explicit-binding-profile"],
+    )
+    for profile in ["fsi", "parsers", "sensor"]
+]

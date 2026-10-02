@@ -1,0 +1,212 @@
+{
+  "schema": "robodyna.retained_dem_build.v1",
+  "baseline_head": "e16909532138ea0cc2a57225a504cff05d0c5bbe",
+  "scope": "Existing materialized source/assets before DEM native build wiring; no original implementation/data edits. Original import provenance remains separately preserved.",
+  "files": [
+    {
+      "path": "data/dem/ballCosim.json",
+      "bytes": 883,
+      "sha256": "18081afbf405189301a3d75a911c6beb37266f6748b71b548027d15fea7970b3"
+    },
+    {
+      "path": "data/dem/fixedTerrain.json",
+      "bytes": 887,
+      "sha256": "8aacb05518d58c673b3b4254381e702d71c517fdbb585fac65f7066377830a21"
+    },
+    {
+      "path": "data/dem/mixer.json",
+      "bytes": 757,
+      "sha256": "58b5fe5e3db6f8756245920dc64e916222821fd922aa0cafb18f54e9b18b96b1"
+    },
+    {
+      "path": "data/dem/movingBoundary.json",
+      "bytes": 588,
+      "sha256": "9d6bbe236d9dcda1d78c477824ca31d91f7e71674f4949a1026f03ae8dc20487"
+    },
+    {
+      "path": "data/dem/repose.json",
+      "bytes": 917,
+      "sha256": "351fcdba4468096ea96ac0972c30fd5315f96dfb0ac3241abd2ebe821d9341e9"
+    },
+    {
+      "path": "data/models/fixedterrain.obj",
+      "bytes": 1427804,
+      "sha256": "739775b223c488f1a8c647389b81bb9aae941a85bf68fcab08ebfbab75e2ba93"
+    },
+    {
+      "path": "data/models/funnel.obj",
+      "bytes": 51398,
+      "sha256": "6455e376a7b31bc3c7e8f1532509f82bca6b61975791bed3c1e1810cd3b8f556"
+    },
+    {
+      "path": "data/models/mixer/internal_mixer.obj",
+      "bytes": 123678,
+      "sha256": "8f3614c1065c7724d81e3486a6565bc0a95b97d37faed0719741e219d2481408"
+    },
+    {
+      "path": "data/models/sphere.obj",
+      "bytes": 21519,
+      "sha256": "fa56d836dabbe836b51f6d94ebe1d21d32442078488717f6127a1bc9bb6ab880"
+    },
+    {
+      "path": "src/chrono_dem/CMakeLists.txt",
+      "bytes": 8305,
+      "sha256": "1c35e6883c9ca696a947206ec312f57fd60a7130c91b88039fbb5269bb4b21c7"
+    },
+    {
+      "path": "src/chrono_dem/ChApiDem.h",
+      "bytes": 2428,
+      "sha256": "15d2218c8c6662001093cabd86ffe54bc6666eeaa6838c3d7d34bb2f4a1cc41e"
+    },
+    {
+      "path": "src/chrono_dem/ChConfigDem.h.in",
+      "bytes": 790,
+      "sha256": "daba2e9adbac5c453893020a7d743914315476a82131ebca7e01d249aea27a7b"
+    },
+    {
+      "path": "src/chrono_dem/ChDemDefines.h",
+      "bytes": 5172,
+      "sha256": "868ccc915e2ab03c78bb84b040eaae9cdd38784979940f95658f7575d81e545e"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemBoundaryConditions.cuh",
+      "bytes": 40478,
+      "sha256": "72f21491a0ed8dccba83fad08c99863128d465c567a54a4bb4bdaa4302a68bfa"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemBoxTriangle.cuh",
+      "bytes": 17127,
+      "sha256": "761628c8c97280b4ca58bcf8fd9e6adc3518e77a2902f854a3e389c761ee2a07"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemCollision.cuh",
+      "bytes": 6502,
+      "sha256": "1608f5ca5435005504cc559e9cbd2710e782f990081738f1a3fd2076d86cbc06"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemGpuAlloc.h",
+      "bytes": 3189,
+      "sha256": "acba7d975cef6b1fc15623ad2beba2dfbd6b65a0f3a805209769267960071a56"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemGpuMathUtils.cuh",
+      "bytes": 5954,
+      "sha256": "398141fe4a364505c0694602744a56994ddccd2ed988a46a075c5139e1e52238"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemHelpers.cuh",
+      "bytes": 23165,
+      "sha256": "ffdb0adb7fb19e0473efdfdce14dde99ce2f2f2beae098d741c1f100edb614a7"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemSMC.cu",
+      "bytes": 37015,
+      "sha256": "d388ddf13c469e8546849615ca037b3b39ab163f6568c0f16d1f93c5f2bfd813"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemSMC.cuh",
+      "bytes": 79003,
+      "sha256": "58635d67a95bcd884a1c9bd9d925cd232cb8681537eda5b30ff6b986fdcb0285"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemSMCtrimesh.cu",
+      "bytes": 46340,
+      "sha256": "c35789b3997385af7daae3d1644e032fb19245e60d43b388df31cb081e085b47"
+    },
+    {
+      "path": "src/chrono_dem/gpu/ChDemSMCtrimesh.cuh",
+      "bytes": 16496,
+      "sha256": "915d374aefaa65c785308a1fb61b9d8a810f87812cab6df7437b9a917a67aae4"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChDemBoundaryConditions.h",
+      "bytes": 2520,
+      "sha256": "388b59995148c938ac51aba0c610ba7a82e455a70dc96606c29e25e8808f9d49"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDem.cpp",
+      "bytes": 69403,
+      "sha256": "d19f7fa3dd139e845c594bc555ee9afb0737a367c39f43233dab25d4bfa38584"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDem.h",
+      "bytes": 23201,
+      "sha256": "3ad62fdf0bb7de92dccfeeb546ea48990c7cc1cfdf5744e57c34a239cca7a217"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDemMesh_impl.cpp",
+      "bytes": 8967,
+      "sha256": "5bc390a6cfabae46a389543f8709a0ae2ad818a173c8ff1d6658e284692929bd"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDemMesh_impl.h",
+      "bytes": 10127,
+      "sha256": "cb6799eb3469ee35fa36ccc233de6b768d9f902d516dfc1859fef626ebbe11ee"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDem_impl.cpp",
+      "bytes": 65143,
+      "sha256": "e2f23f348823212bdb3ff6cddda6d9de16d3788c3b9dee00178dd93d5ffde368"
+    },
+    {
+      "path": "src/chrono_dem/physics/ChSystemDem_impl.h",
+      "bytes": 36795,
+      "sha256": "87365086b30e653ba8252e901c3c342edd8792e38c2071cff67c6f4a8e51f617"
+    },
+    {
+      "path": "src/chrono_dem/utils/ChDemJsonParser.h",
+      "bytes": 17924,
+      "sha256": "8a54fefcef2312fa88e940d2a5ee175677678d40bf4ee98938b12a8c82a92842"
+    },
+    {
+      "path": "src/chrono_dem/utils/ChDemSphereDecomp.h",
+      "bytes": 5062,
+      "sha256": "9162266a26fb6265964547f4933d33fcd2d92143c8413aaa0182631b831542c8"
+    },
+    {
+      "path": "src/chrono_dem/utils/ChDemUtilities.h",
+      "bytes": 3421,
+      "sha256": "fb6a67770890366540b9d280c1cdb6850b171267621139c94e723d47beb7a575"
+    },
+    {
+      "path": "src/chrono_dem/visualization/ChDemVisualizationVSG.cpp",
+      "bytes": 8286,
+      "sha256": "a00ac5347335d0364106de68c446b04c835ad5e62f7cdf624563781b1fe9d640"
+    },
+    {
+      "path": "src/chrono_dem/visualization/ChDemVisualizationVSG.h",
+      "bytes": 6744,
+      "sha256": "6a6e7588cc5b15d7f3ef59da816deecda51cab375d53431a15e1affc2e0654f2"
+    },
+    {
+      "path": "src/demos/dem/CMakeLists.txt",
+      "bytes": 1274,
+      "sha256": "0ee37cf32895b1af3aca027d629d4d7ebf9b1910fe66eac918c09f55fa97ec1c"
+    },
+    {
+      "path": "src/demos/dem/demo_DEM_ballCosim.cpp",
+      "bytes": 12568,
+      "sha256": "986803d898057f435228bd42bb18931d8650e3c8fcf70291375934592921d863"
+    },
+    {
+      "path": "src/demos/dem/demo_DEM_fixedTerrain.cpp",
+      "bytes": 7158,
+      "sha256": "820ece597e79fcb245a636972aa7f38a42cb65d3b85f4805a510178f9d484c57"
+    },
+    {
+      "path": "src/demos/dem/demo_DEM_mixer.cpp",
+      "bytes": 8251,
+      "sha256": "f774c34437a1b89e5dc9a54749eb57e2abba660e5ff21d6c04d0340a2b2a57c2"
+    },
+    {
+      "path": "src/demos/dem/demo_DEM_movingBoundary.cpp",
+      "bytes": 5551,
+      "sha256": "aaa149560b8b748d2d5beca5ab1cabdaabf59fa0048f4e9226db3f419bf343ae"
+    },
+    {
+      "path": "src/demos/dem/demo_DEM_repose.cpp",
+      "bytes": 8636,
+      "sha256": "61e5e9890bd7210d963a8a165809d53518e98372986d52ab5bb3f81201d1ff66"
+    }
+  ]
+}

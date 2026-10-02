@@ -1,0 +1,234 @@
+{
+  "schema": "robodyna.vehicle_fmi_source_inventory.v1",
+  "scope": "Current retained Vehicle FMI source/data checkpoint before build ownership; original notices and existing reviewed resource-path fixes retained.",
+  "files": [
+    {
+      "path": "data/vehicle/fmi/README.md",
+      "sha256": "9624b1277fe365fbb305e8faa84d3fa26f017dfc6153a321ed6002b4c9019171"
+    },
+    {
+      "path": "data/vehicle/fmi/handling_tire/TMeasyTire.json",
+      "sha256": "5f50c5bf4ee88c68805174d924aef18759866e7375237f2cc791d1743827162a"
+    },
+    {
+      "path": "data/vehicle/fmi/path_follower/ISO_double_lane_change.txt",
+      "sha256": "ed3c29f1ccf6e5f1fa3da170bf0b5d8c8a37e1f19a8676110c1d1a8d3803a20e"
+    },
+    {
+      "path": "data/vehicle/fmi/powertrain/AutomaticTransmissionShafts.json",
+      "sha256": "06ee3e073ec660e389557dae52370e81fd60faa03be9acbb71fd630b20d981e6"
+    },
+    {
+      "path": "data/vehicle/fmi/powertrain/EngineShafts.json",
+      "sha256": "71569f1c6ca4bbef4569f0d0da4730995eb670730822f3da15ec2e2996efe0a6"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/BrakeSimple_Front.json",
+      "sha256": "3554f5e970774da2604034873c5a48cde02bc05fdbd6625518745555badc30c5"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/BrakeSimple_Rear.json",
+      "sha256": "4ba940876827740a80c278f8b80fd175e17ed0d36bf884bea3fd173ea5fdd20e"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/Chassis.json",
+      "sha256": "9c732a21bcb189b7310e3ad7a26cb46699f163055be4c5ea49cf109910f1553c"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/DoubleWishboneFront.json",
+      "sha256": "a3332b29139ede755cc39af3e354e7eb19518384e36a0342befe720831a7cd97"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/DoubleWishboneRear.json",
+      "sha256": "4a4d76249d68812d7a8208e7d45bf8294c82a5a9c2d6c1c5227e7254d038ff45"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/Driveline2WD.json",
+      "sha256": "4bcd83a43ad9d5f0aaaf7d4b776d5d7af68c080c38643db5a141fd2fc5b622aa"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/PitmanArm.json",
+      "sha256": "4928e83d8047ba9a87f5e00af22c217f2c4993832eb99d97d626274f70d2422c"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/Vehicle.json",
+      "sha256": "420af7912abfc9048a9ab91b9ea8f1b294c2a0f56e6b37cb2471c50e7377c9ed"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle/Wheel.json",
+      "sha256": "44b522eedfc1381c5bde3d68e4bddc0a7785f1aa5db63a7e10ed05522639e5d3"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/AutomaticTransmissionShafts.json",
+      "sha256": "06ee3e073ec660e389557dae52370e81fd60faa03be9acbb71fd630b20d981e6"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/BrakeSimple_Front.json",
+      "sha256": "3554f5e970774da2604034873c5a48cde02bc05fdbd6625518745555badc30c5"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/BrakeSimple_Rear.json",
+      "sha256": "4ba940876827740a80c278f8b80fd175e17ed0d36bf884bea3fd173ea5fdd20e"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/Chassis.json",
+      "sha256": "9c732a21bcb189b7310e3ad7a26cb46699f163055be4c5ea49cf109910f1553c"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/DoubleWishboneFront.json",
+      "sha256": "a3332b29139ede755cc39af3e354e7eb19518384e36a0342befe720831a7cd97"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/DoubleWishboneRear.json",
+      "sha256": "4a4d76249d68812d7a8208e7d45bf8294c82a5a9c2d6c1c5227e7254d038ff45"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/Driveline2WD.json",
+      "sha256": "4bcd83a43ad9d5f0aaaf7d4b776d5d7af68c080c38643db5a141fd2fc5b622aa"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/EngineShafts.json",
+      "sha256": "71569f1c6ca4bbef4569f0d0da4730995eb670730822f3da15ec2e2996efe0a6"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/PitmanArm.json",
+      "sha256": "4928e83d8047ba9a87f5e00af22c217f2c4993832eb99d97d626274f70d2422c"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/Vehicle.json",
+      "sha256": "420af7912abfc9048a9ab91b9ea8f1b294c2a0f56e6b37cb2471c50e7377c9ed"
+    },
+    {
+      "path": "data/vehicle/fmi/wheeled_vehicle_ptrain/Wheel.json",
+      "sha256": "44b522eedfc1381c5bde3d68e4bddc0a7785f1aa5db63a7e10ed05522639e5d3"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/CMakeLists.txt",
+      "sha256": "fc2d4800b6420a41873c03929601a6e5abe4198a1f3ad0f9916147234e1ed232"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/ChConfigVehicleFMI.h.in",
+      "sha256": "a9a1d57eee121fb6bcf6024305bfb822f11afd1c1057ee40418f12f0a8cef1d2"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/README.md",
+      "sha256": "28dbd232c6c67119c414e804b10a64f6bf3d8ac57b26421e1e3ab6f58d2fe493"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/CMakeLists.txt",
+      "sha256": "a6c138f0f0e8c184d960109fc49fe11e457e64efed85a8463895661d43d1d81c"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/CMakeLists.txt",
+      "sha256": "325de5a883d2efdda453d025ad5366f1bbb956ac32cf2fa0b7563c4eec149379"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.cpp",
+      "sha256": "f0c4082d5bb856bb92b4c514af49cb95b9592920434c906b64a7b269cabfd15b"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.h",
+      "sha256": "6a30203c96dc4a9b3af5dd37db2a09900597742dfc227b0b8afe1157a6f64dd8"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/CMakeLists.txt",
+      "sha256": "1ddf65922286cf50610dba2d6d5c5f67f99612edb96293382d3fbf1a5fce729d"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp",
+      "sha256": "64f0a789ea8dd7e820c1f3903bd0a7aa2585f39a06ae70f85f83aa29f3b2f269"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.h",
+      "sha256": "62cc98de02d1be56180431d9116573d2a8efc0e274b1933d2c95889b9b453d1b"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/CMakeLists.txt",
+      "sha256": "d9cfe589e7e06d8b3af4969faa66733db3f6538c326c25eb93e1ba766a11868c"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.cpp",
+      "sha256": "49c910f581fe4ae341d652dae5cebbfafd7f314e0df8d32e77a895ce133245aa"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.h",
+      "sha256": "12e8fee94f7aadfe916cbb08b39bc2dadb955dc3d3213d77f454a0ca8518f90d"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/CMakeLists.txt",
+      "sha256": "6851bc4cebaf33714973b5a6ba71f3d6399146ef04c2e808fa8199aa179b4076"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.cpp",
+      "sha256": "b93ae81d1cf8cdb566e6ffdf1f38189d9d48b133d54a919ec7f5623dac5a5fb7"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.h",
+      "sha256": "529fca507a227b9428c3fe6b81a87ce082cf11005a6406b429e95ef8707a6dea"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/CMakeLists.txt",
+      "sha256": "76606b38a2135ab32710c9bd25dcc593e01f39a0ff10e1b5454e74782989e87f"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.cpp",
+      "sha256": "631e965866f3864c6cbf809196e4e5e3992281de7728baced2c93b92673ed114"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.h",
+      "sha256": "63aafd1f0262cb1d082e262bf9ccda7cdea08724bacd78f5e334dc88de0ff128"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/modex/CMakeLists.txt",
+      "sha256": "29bc52f8c8106a971aeb15b680b20016a59b28c69dad1bc2455e04bf13c09665"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/CMakeLists.txt",
+      "sha256": "5b33fcc5c7f2b8ebca57188ecfa33f18cfbf1e2db847362e7a2ac9158cfa59d7"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp",
+      "sha256": "1ee5c6caa13ae35c4cd9b5b5b8c6b31a5cf47ef1297feb7c67fa9258096522d5"
+    },
+    {
+      "path": "src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.h",
+      "sha256": "0816c71ded30ccb94af9551f8301f822aae45ad4ff1ccd86036bbba5fa670fd1"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/CMakeLists.txt",
+      "sha256": "83a7a3ab76a1f1ccedf967b81ff81f5e7816332178ce752a5e465e31b8e36ed0"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/README.md",
+      "sha256": "bc8f1ba04d1e65d8fd0d76296ee0bebfab8d3ab7b450d876683e14892b57bea0"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/cosim/CMakeLists.txt",
+      "sha256": "3e4228df17eb503d59695ee1da2587fa29a930047f3e6414bfab210a90b47365"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehiclePtrain_a.cpp",
+      "sha256": "5987d2b11881f5120347d5e640b9e3e467fb92bd29de8540c8cbccac7ceebb10"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehiclePtrain_b.cpp",
+      "sha256": "3b6dc327357609454a5fffe6eb6f592901ad66d7f5a0f05a44ba9eb2fbcda12c"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehicle_a.cpp",
+      "sha256": "401b3dc8bcf5a0867d70538fc6a7834fdbe7c58b06a08604cd0c11e4b26ce7e5"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/cosim/demo_VEH_FMI2_WheeledVehicle_b.cpp",
+      "sha256": "1542f04197b4b168c41298c879d044f265ec894d767155d88a51aa91ac0b909c"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/modex/CMakeLists.txt",
+      "sha256": "ccf9f8afb3f3644f07182038ce4b6250e517b1f7a97b9bea4eda35c26aba2551"
+    },
+    {
+      "path": "src/demos/vehicle/fmi/modex/demo_VEH_FMI2_PathFollower.cpp",
+      "sha256": "7dcb40aa6511ff1f83c24f3d59a39e8817d9e87d96c699a067e2e8510137a30b"
+    }
+  ]
+}

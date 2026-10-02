@@ -1,0 +1,1732 @@
+{
+  "schema": "robodyna.python_demo_admission.v1",
+  "scope": "All 97 original mains remain counted; initial targets depend on actual native extensions but are not yet build/runtime-qualified.",
+  "programs": [
+    {
+      "name": "cascade",
+      "family": "cascade",
+      "source": "src/demos/python/cascade/demo_CAS_cascade.py",
+      "native_modules": [
+        "cascade",
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "OCC"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/cascade:cascade",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/cascade:package"
+    },
+    {
+      "name": "robot",
+      "family": "cascade",
+      "source": "src/demos/python/cascade/demo_CAS_robot.py",
+      "native_modules": [
+        "cascade",
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "OCC"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/cascade:robot",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/cascade:package"
+    },
+    {
+      "name": "stepfile",
+      "family": "cascade",
+      "source": "src/demos/python/cascade/demo_CAS_stepfile.py",
+      "native_modules": [
+        "cascade",
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "OCC"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/cascade:stepfile",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/cascade:package"
+    },
+    {
+      "name": "euler_angles",
+      "family": "core",
+      "source": "src/demos/python/core/demo_CH_EulerAngles.py",
+      "native_modules": [
+        "core"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/core:euler_angles",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "buildsystem",
+      "family": "core",
+      "source": "src/demos/python/core/demo_CH_buildsystem.py",
+      "native_modules": [
+        "core"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/core:buildsystem",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "coords",
+      "family": "core",
+      "source": "src/demos/python/core/demo_CH_coords.py",
+      "native_modules": [
+        "core"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/core:coords",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "functions",
+      "family": "core",
+      "source": "src/demos/python/core/demo_CH_functions.py",
+      "native_modules": [
+        "core"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/core:functions",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "beams",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_beams.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:beams",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "beams_ancf",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_beamsANCF.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:beams_ancf",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "beams_iga",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_beamsIGA.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:beams_iga",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "beams_constr",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_beams_constr.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:beams_constr",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "beams_rotor",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_beams_rotor.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:beams_rotor",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "brick",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_brick.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/fea:brick",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "cables",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_cables.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:cables",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "contacts",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_contacts.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:contacts",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "loads_dynamic",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_loads_dynamic.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:loads_dynamic",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "loads_static",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_loads_static.py",
+      "native_modules": [
+        "core",
+        "fea"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:loads_static",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "shells",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_shells.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [
+        "matplotlib",
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/fea:shells",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/plot:package",
+      "runtime_requirements": "Original Irrlicht window; FEA plt.show additionally requires admitted Tk/Qt for interactive plotting. Agg PNG/PDF dependency gate alone is not GUI qualification."
+    },
+    {
+      "name": "shells_ancf",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_shellsANCF.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:shells_ancf",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "shells_bst",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_shellsBST.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht",
+        "pardisomkl"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:shells_bst",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "tetra",
+      "family": "fea",
+      "source": "src/demos/python/fea/demo_FEA_tetra.py",
+      "native_modules": [
+        "core",
+        "fea",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/fea:tetra",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "object_drop",
+      "family": "fsi",
+      "source": "src/demos/python/fsi/demo_FSI_ObjectDrop.py",
+      "native_modules": [
+        "core",
+        "fsi",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "target": "//examples/python/fsi:object_drop",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:fsi"
+    },
+    {
+      "name": "assets",
+      "family": "irrlicht",
+      "source": "src/demos/python/irrlicht/demo_IRR_assets.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/irrlicht:assets",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "paths",
+      "family": "irrlicht",
+      "source": "src/demos/python/irrlicht/demo_IRR_paths.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/irrlicht:paths",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "visualize_collision",
+      "family": "irrlicht",
+      "source": "src/demos/python/irrlicht/demo_IRR_visualize_collision.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/irrlicht:visualize_collision",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "associated",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_associated.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:associated",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "aux_ref",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_aux_ref.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:aux_ref",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "callback_nsc",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_callbackNSC.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:callback_nsc",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "callback_smc",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_callbackSMC.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:callback_smc",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "checkpoint",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_checkpoint.py",
+      "native_modules": [
+        "core",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:checkpoint",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "collision_nsc",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_collisionNSC.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:collision_nsc",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "collision_smc",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_collisionSMC.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:collision_smc",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "collision_2d",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_collision_2d.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:collision_2d",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "collision_trimesh",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_collision_trimesh.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:collision_trimesh",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "crank_plot",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_crank_plot.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "matplotlib",
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:crank_plot",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/plot:package",
+      "runtime_requirements": "Original Irrlicht window; FEA plt.show additionally requires admitted Tk/Qt for interactive plotting. Agg PNG/PDF dependency gate alone is not GUI qualification."
+    },
+    {
+      "name": "custom_contact",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_custom_contact.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:custom_contact",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "earthquake",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_earthquake.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:earthquake",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "emit_cluster",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_emit_cluster.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:emit_cluster",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "friction",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_friction.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:friction",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "gears",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_gears.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:gears",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "imposed_motion",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_imposed_motion.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:imposed_motion",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "link_bushing",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_link_bushing.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:link_bushing",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "motors",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_motors.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:motors",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "planar",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_planar.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:planar",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "prismatic_force",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_prismatic_force.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:prismatic_force",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "rev_limits",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_rev_limits.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:rev_limits",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "revolute",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_revolute.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:revolute",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "rot_spring",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_rot_spring.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:rot_spring",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "spring",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_spring.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:spring",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "ujoint",
+      "family": "mbs",
+      "source": "src/demos/python/mbs/demo_MBS_ujoint.py",
+      "native_modules": [
+        "core",
+        "irrlicht"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/mbs:ujoint",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "python_solid_works",
+      "family": "parsers",
+      "source": "src/demos/python/parsers/demo_PARSER_Python_SolidWorks.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "postprocess"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/parsers:python_solid_works",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "urdf",
+      "family": "parsers",
+      "source": "src/demos/python/parsers/demo_PARSER_URDF.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "parsers"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "yaml"
+      ],
+      "target": "//examples/python/parsers:urdf",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:parsers"
+    },
+    {
+      "name": "povray1",
+      "family": "postprocess",
+      "source": "src/demos/python/postprocess/demo_POST_povray1.py",
+      "native_modules": [
+        "core",
+        "postprocess"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/postprocess:povray1",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "povray2",
+      "family": "postprocess",
+      "source": "src/demos/python/postprocess/demo_POST_povray2.py",
+      "native_modules": [
+        "core",
+        "postprocess"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/postprocess:povray2",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "curiosity_rigid",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_Curiosity_Rigid.py",
+      "native_modules": [
+        "core",
+        "robot"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/robot:curiosity_rigid",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "industrial",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_Industrial.py",
+      "native_modules": [
+        "core",
+        "robot"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/robot:industrial",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "robo_simian_rigid",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_RoboSimian_Rigid.py",
+      "native_modules": [
+        "core",
+        "robot"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/robot:robo_simian_rigid",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "turtlebot_rigid",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_Turtlebot_Rigid.py",
+      "native_modules": [
+        "core",
+        "robot"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/robot:turtlebot_rigid",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "viper_crm",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_Viper_CRM.py",
+      "native_modules": [
+        "core",
+        "fsi",
+        "robot",
+        "vehicle",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "target": "//examples/python/robot:viper_crm",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:fsi"
+    },
+    {
+      "name": "viper_rigid",
+      "family": "robot",
+      "source": "src/demos/python/robot/demo_ROBOT_Viper_Rigid.py",
+      "native_modules": [
+        "core",
+        "robot"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/robot:viper_rigid",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "custom_handler",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_custom_handler.py",
+      "native_modules": [
+        "core",
+        "ros"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/ros:custom_handler",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:ros"
+    },
+    {
+      "name": "numpy_camera",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_numpy_camera.py",
+      "native_modules": [
+        "ros"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/ros:numpy_camera",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:ros"
+    },
+    {
+      "name": "sensor",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_sensor.py",
+      "native_modules": [
+        "core",
+        "ros",
+        "sensor"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "sensor-optix",
+        "ros-sensor"
+      ],
+      "target": "//examples/python/ros:sensor",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:ros_sensor"
+    },
+    {
+      "name": "two_managers",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_two_managers.py",
+      "native_modules": [
+        "core",
+        "ros",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/ros:two_managers",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:ros"
+    },
+    {
+      "name": "urdf",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_urdf.py",
+      "native_modules": [
+        "core",
+        "parsers",
+        "robot",
+        "ros"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "yaml",
+        "ros-urdf"
+      ],
+      "target": "//examples/python/ros:urdf",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:ros_urdf"
+    },
+    {
+      "name": "vehicle",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_vehicle.py",
+      "native_modules": [
+        "core",
+        "ros",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/ros:vehicle",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:ros"
+    },
+    {
+      "name": "viper",
+      "family": "ros",
+      "source": "src/demos/python/ros/demo_ROS_viper.py",
+      "native_modules": [
+        "core",
+        "robot",
+        "ros",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/ros:viper",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:ros"
+    },
+    {
+      "name": "gator",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_Gator.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "sensor",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:gator",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "hmmwv",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_HMMWV.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "sensor",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:hmmwv",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "camera",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_camera.py",
+      "native_modules": [
+        "core",
+        "sensor"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:camera",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "lidar",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_lidar.py",
+      "native_modules": [
+        "core",
+        "sensor"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:lidar",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "radar",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_radar.py",
+      "native_modules": [
+        "core",
+        "sensor"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:radar",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "sensors",
+      "family": "sensor",
+      "source": "src/demos/python/sensor/demo_SEN_sensors.py",
+      "native_modules": [
+        "core",
+        "sensor"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [
+        "sensor-optix"
+      ],
+      "target": "//examples/python/sensor:sensors",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": true,
+      "binding_package": "//bindings/python/profiles:sensor"
+    },
+    {
+      "name": "artcar",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_ARTcar.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:artcar",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "crmterrain_wheeled_vehicle",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_CRMTerrain_WheeledVehicle.py",
+      "native_modules": [
+        "core",
+        "fsi",
+        "pardisomkl",
+        "vehicle",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "target": "//examples/python/vehicle:crmterrain_wheeled_vehicle",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:fsi"
+    },
+    {
+      "name": "city_bus",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_CityBus.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:city_bus",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "deformable_soil",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_DeformableSoil.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:deformable_soil",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "feda",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_FEDA.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:feda",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "gator",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_Gator.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:gator",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "hmmwv",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_HMMWV.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:hmmwv",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "hmmwv9_yup",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_HMMWV9_YUP.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:hmmwv9_yup",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "hmmwv_def_soil",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_HMMWV_DefSoil.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:hmmwv_def_soil",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "hmmwv_circle",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_HMMWV_circle.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [
+        "numpy"
+      ],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:hmmwv_circle",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "binding_package": "numpy",
+      "numpy_bridge": true
+    },
+    {
+      "name": "m113",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_M113.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:m113",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "man_10t",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_MAN_10t.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:man_10t",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "rigid_terrain",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_RigidTerrain.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:rigid_terrain",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "steering_controller",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_SteeringController.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:steering_controller",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "suspension_test_rig",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_SuspensionTestRig.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:suspension_test_rig",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "trailer_json",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_TrailerJSON.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:trailer_json",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "two_cars",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_TwoCars.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:two_cars",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "uazbus",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_UAZBUS.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:uazbus",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "wheel_test_rig",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_WheelTestRig.py",
+      "native_modules": [
+        "core",
+        "irrlicht",
+        "vehicle",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:wheel_test_rig",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "wheel_test_rig_crm",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_WheelTestRig_CRM.py",
+      "native_modules": [
+        "core",
+        "fsi",
+        "postprocess",
+        "vehicle",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "fsi-sph",
+        "vsg"
+      ],
+      "target": "//examples/python/vehicle:wheel_test_rig_crm",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:fsi"
+    },
+    {
+      "name": "wheeled_json",
+      "family": "vehicle",
+      "source": "src/demos/python/vehicle/demo_VEH_WheeledJSON.py",
+      "native_modules": [
+        "core",
+        "vehicle"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vehicle:wheeled_json",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "vehicles",
+      "family": "vsg",
+      "source": "src/demos/python/vsg/demo_VSG_vehicles.py",
+      "native_modules": [
+        "core",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [],
+      "target": "//examples/python/vsg:vehicles",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false
+    },
+    {
+      "name": "mbs",
+      "family": "yaml",
+      "source": "src/demos/python/yaml/demo_YAML_mbs.py",
+      "native_modules": [
+        "core",
+        "parsers",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "yaml"
+      ],
+      "target": "//examples/python/yaml:mbs",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:parsers"
+    },
+    {
+      "name": "mbs_controller",
+      "family": "yaml",
+      "source": "src/demos/python/yaml/demo_YAML_mbs_controller.py",
+      "native_modules": [
+        "core",
+        "parsers",
+        "vsg3d"
+      ],
+      "external_packages": [],
+      "required_profiles": [
+        "yaml"
+      ],
+      "target": "//examples/python/yaml:mbs_controller",
+      "pending": [],
+      "compiled": false,
+      "runtime_qualified": false,
+      "numpy_bridge": false,
+      "binding_package": "//bindings/python/profiles:parsers"
+    }
+  ],
+  "declared": 97,
+  "pending": 0
+}

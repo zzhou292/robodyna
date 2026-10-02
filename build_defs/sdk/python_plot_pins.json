@@ -1,0 +1,35 @@
+{
+  "schema": "robodyna.python_plot_sdk_pin.v1",
+  "receipt_sha256": "2cce458a2237deace44da371eb69bb2390638640846274eaa5d3560966abe17c",
+  "packages": {
+    "matplotlib": "3.8.4",
+    "contourpy": "1.2.1",
+    "cycler": "0.12.1",
+    "fonttools": "4.51.0",
+    "kiwisolver": "1.4.5",
+    "pillow": "10.3.0",
+    "packaging": "24.0",
+    "pyparsing": "3.1.2",
+    "python-dateutil": "2.9.0.post0",
+    "six": "1.16.0"
+  },
+  "probe": {
+    "passed": true,
+    "matplotlib": "3.8.4",
+    "numpy": "1.26.4",
+    "backend": "agg",
+    "outputs": {
+      "png": {
+        "bytes": 30464,
+        "sha256": "7078280de0bc1aa366421cd9bc9bb2c542495d5b59974fabfeeac7804199531f"
+      },
+      "pdf": {
+        "bytes": 15581,
+        "sha256": "76a13570f4a6145a832a76b930af4ea67e55554efde9d34cc635f57833fe5825"
+      }
+    },
+    "gui_execution": false,
+    "scope": "Actual plotting/native-extension imports and PNG full decode/PDF header; no interactive GUI claim"
+  },
+  "scope": "Separate qualified Agg plotting runtime; GUI and original simulation execution remain separate"
+}

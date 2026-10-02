@@ -1,0 +1,74 @@
+{
+  "schema": "robodyna.vehicle_cosim_demos.v1",
+  "scope": "Eight original main programs; compile and runtime qualification are separate. Enable global --config=vsg for graphics.",
+  "programs": [
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheelRig.cpp",
+      "sha256": "abb523e706165c263fd4b1e1b56e81e13746203a2fd289b6e9c55fa8c2e554bb",
+      "target": "//examples/vehicle/cosim:wheel_rig",
+      "required_profiles": [],
+      "required_ranks": 3,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_Viper.cpp",
+      "sha256": "85adb687384e664f2c00a1410b53ae772551278a71806d939e1434fda504de4a",
+      "target": "//examples/vehicle/cosim:viper",
+      "required_profiles": [],
+      "required_ranks": 6,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_Curiosity.cpp",
+      "sha256": "11b06cf7fd2ba848bb2e82bbe7359f439aeec877524f9d947c34831bd4b382ec",
+      "target": "//examples/vehicle/cosim:curiosity",
+      "required_profiles": [],
+      "required_ranks": 8,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle.cpp",
+      "sha256": "010acdb8d82d621ba3a590820ffcf14b17fbd5d17acdc565a87bef4a7d1cef67",
+      "target": "//examples/vehicle/cosim:wheeled_vehicle",
+      "required_profiles": [],
+      "required_ranks": 6,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_TrackedVehicle.cpp",
+      "sha256": "985314cb44c8c4c8632584db77c74fb9dbf20e4d05b1624e9148d7f4a8598448",
+      "target": "//examples/vehicle/cosim:tracked_vehicle",
+      "required_profiles": [],
+      "required_ranks": 2,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_SPH.cpp",
+      "sha256": "9caf032e79d632bbb39345f76484af0f0c150458f8bbbbc489245b7d3cced814",
+      "target": "//examples/vehicle/cosim:wheeled_vehicle_sph",
+      "required_profiles": [
+        "fsi-sph"
+      ],
+      "required_ranks": 6,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/demo_VEH_Cosim_WheeledVehicle_OMP.cpp",
+      "sha256": "e2312797f22c7300b06a3547b3f71691a05144e194406bac10479f30ef11f06f",
+      "target": "//examples/vehicle/cosim:wheeled_vehicle_omp",
+      "required_profiles": [
+        "multicore"
+      ],
+      "required_ranks": 6,
+      "runtime_qualification": "pending"
+    },
+    {
+      "source": "src/compatibility/chrono/src/demos/vehicle/cosimulation/external/demo_VEH_Cosim_WheelRig_CustomTerrain.cpp",
+      "sha256": "ef80f283603860b583b62b67013e0317e20d2615f7cb08b2fda8f5b45f6b8255",
+      "target": "//examples/vehicle/cosim:custom_terrain",
+      "required_profiles": [],
+      "required_ranks": 3,
+      "runtime_qualification": "pending"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -58,4 +58,11 @@ py_test(
     deps = ["@rules_python//python/runfiles"],
     size = "medium",
     tags = ["manual", "local", "cpu-only", "native-bindings"],
+)
+
+# Shared existing ELF inspector; old qualification behavior is unchanged.
+py_library(
+    name = "elf_inspection",
+    srcs = ["elf_link_test.py"],
+    deps = ["@rules_python//python/runfiles"],
 )

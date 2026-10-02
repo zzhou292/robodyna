@@ -1,0 +1,34 @@
+{
+  "schema": "robodyna.urdf_sdk_pins.v1",
+  "platform": "Linux x86_64, native source SDKs",
+  "components": {
+    "tinyxml2": {
+      "version": "11.0.0",
+      "commit": "9148bdf719e997d1f474be6bcc7943881046dba1",
+      "source_archive_sha256": "d0bcc7bf4e3e8ed7d83156e681ab9cb72bd636e5b2bb61d6f7199b32c007707f",
+      "receipt_sha256": "30675574d22a9913c269b93f3be4b7333772a1976e2ab2d9e9702f5b7039d9d7",
+      "installed_files": 9
+    },
+    "console_bridge": {
+      "version": "1.0.2",
+      "commit": "0828d846f2d4940b4e2b5075c6c724991d0cd308",
+      "source_archive_sha256": "7902380e996ae941bc90db8784d526dc946e193304808961bbf190a6de22a528",
+      "receipt_sha256": "47b2cb50e169bcef6a98461c21761a41a8736641b12d55479fdc5d9fe991c536",
+      "installed_files": 9
+    },
+    "urdfdom_headers": {
+      "version": "1.1.2",
+      "commit": "7b1b3a44509985b953526dcd1fffacd3b2f92615",
+      "source_archive_sha256": "8dafb707b060928101e55557606448396419f7303f27ae99554354511c837c7a",
+      "receipt_sha256": "f87304fc03f8eb1bb3656d6d5ce7f32ad472437da7faf263f9c43f5f22b45fe9",
+      "installed_files": 20
+    },
+    "urdfdom": {
+      "version": "4.0.1",
+      "commit": "3f6bf9a608065464bb6c2828af6e96c8f577f2bf",
+      "source_archive_sha256": "060a35a5b8aa606ed8387c9d225b3192323a949430ea6bc513b94156daca18e2",
+      "receipt_sha256": "2b8fd7db07bf949a63c73de2d7764a8ac8a8e4ed784e90433a7898362741cc65",
+      "installed_files": 20
+    }
+  }
+}

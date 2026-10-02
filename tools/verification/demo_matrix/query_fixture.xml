@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='utf-8'?>
+<query version="2"><rule class="cc_binary" location="/home/jsonzhou/Desktop/chrono-work/robodyna/examples/core/BUILD.bazel:5:18" name="//examples/core:coordinates">
+        <string name="name" value="coordinates" />
+        <list name="visibility">
+            <label value="//visibility:public" />
+        </list>
+        <list name="tags">
+            <string value="manual" />
+            <string value="native-demo" />
+            <string value="robodyna-demo" />
+        </list>
+        <string name="generator_name" value="coordinates" />
+        <string name="generator_function" value="robodyna_cpp_demo" />
+        <string name="generator_location" value="examples/core/BUILD.bazel:5:18" />
+        <list name="target_compatible_with">
+            <label value="@platforms//os:linux" />
+        </list>
+        <list name="srcs">
+            <label value="//src/compatibility/chrono:src/demos/core/demo_CH_coords.cpp" />
+        </list>
+        <list name="data" />
+        <list name="copts">
+            <string value="-include" />
+            <string value="$(location :coordinates_availability)" />
+        </list>
+        <list name="additional_compiler_inputs">
+            <label value="//examples/core:coordinates_availability" />
+        </list>
+        <list name="deps">
+            <label value="//build_defs/chrono:native_core_fea" />
+            <label value="@rules_cc//:link_extra_lib" />
+        </list>
+        <rule-input name="//build_defs/chrono:native_core_fea" />
+        <rule-input name="//examples/core:coordinates_availability" />
+        <rule-input name="//src/compatibility/chrono:src/demos/core/demo_CH_coords.cpp" />
+        <rule-input name="@platforms//os:linux" />
+        <rule-input name="@rules_cc//:link_extra_lib" />
+        <rule-output name="//examples/core:coordinates.dwp" />
+        <rule-output name="//examples/core:coordinates.stripped" />
+    </rule>
+    <rule class="py_binary" location="/home/jsonzhou/Desktop/chrono-work/robodyna/examples/csharp/BUILD.bazel:33:10" name="//examples/csharp:build_system">
+        <string name="name" value="build_system" />
+        <list name="tags">
+            <string value="cpu-only" />
+            <string value="managed-demo" />
+            <string value="manual" />
+        </list>
+        <string name="generator_name" value="build_system" />
+        <string name="generator_function" value="py_binary" />
+        <string name="generator_location" value="examples/csharp/BUILD.bazel:33:10" />
+        <list name="target_compatible_with">
+            <label value="@platforms//:incompatible" />
+        </list>
+        <list name="args">
+            <string value="--mono" />
+            <string value="$(rlocationpath @mono_sdk//:usr/bin/mono-sgen)" />
+            <string value="--assembly" />
+            <string value="$(rlocationpath :build_system_assembly)" />
+            <string value="--managed" />
+            <string value="$(rlocationpath //build_defs/bindings:csharp_managed_core)" />
+            <string value="--native-wrapper" />
+            <string value="$(rlocationpath //build_defs/bindings:csharp_core)" />
+            <string value="--native-core" />
+            <string value="$(rlocationpath //build_defs/bindings:native_core)" />
+            <string value="--data-anchor" />
+            <string value="$(rlocationpath //src/compatibility/chrono:data/logo_robodyna_alpha.png)" />
+        </list>
+        <list name="data">
+            <label value="//examples/csharp:build_system_assembly" />
+            <label value="//build_defs/bindings:csharp_managed_core" />
+            <label value="//build_defs/bindings:csharp_core" />
+            <label value="//build_defs/bindings:native_core" />
+            <label value="@mono_sdk//:runtime" />
+            <label value="@mono_sdk//:usr/bin/mono-sgen" />
+            <label value="//src/compatibility/chrono:data/logo_robodyna_alpha.png" />
+        </list>
+        <list name="deps">
+            <label value="//tools/managed:launcher" />
+        </list>
+        <list name="srcs">
+            <label value="//tools/managed:launch.py" />
+        </list>
+        <label name="main" value="//tools/managed:launch.py" />
+        <rule-input name="//build_defs/bindings:csharp_core" />
+        <rule-input name="//build_defs/bindings:csharp_managed_core" />
+        <rule-input name="//build_defs/bindings:native_core" />
+        <rule-input name="//build_defs/features:fea_multiphysics_enabled" />
+        <rule-input name="//build_defs/features:fsi_sph_enabled" />
+        <rule-input name="//build_defs/features:fsi_tdpf_enabled" />
+        <rule-input name="//build_defs/features:multicore_enabled" />
+        <rule-input name="//build_defs/features:sensor_optix" />
+        <rule-input name="//build_defs/features:vsg_enabled" />
+        <rule-input name="//build_defs/features:yaml_enabled" />
+        <rule-input name="//examples/csharp:build_system_assembly" />
+        <rule-input name="//src/compatibility/chrono:data/logo_robodyna_alpha.png" />
+        <rule-input name="//tools/managed:launch.py" />
+        <rule-input name="//tools/managed:launcher" />
+        <rule-input name="@mono_sdk//:runtime" />
+        <rule-input name="@mono_sdk//:usr/bin/mono-sgen" />
+        <rule-input name="@platforms//:incompatible" />
+    </rule>
+    <rule class="managed_assembly" location="/home/jsonzhou/Desktop/chrono-work/robodyna/examples/csharp/BUILD.bazel:7:17" name="//examples/csharp:build_system_assembly">
+        <string name="name" value="build_system_assembly" />
+        <list name="tags">
+            <string value="managed-demo" />
+            <string value="manual" />
+        </list>
+        <list name="target_compatible_with">
+            <label value="@platforms//:incompatible" />
+        </list>
+        <string name="assembly_name" value="Robodyna.BuildSystem.exe" />
+        <string name="kind" value="exe" />
+        <list name="srcs">
+            <label value="//src/compatibility/chrono:src/demos/csharp/core/demo_CS_CH_buildsystem.cs" />
+        </list>
+        <list name="deps">
+            <label value="//build_defs/bindings:csharp_managed_core" />
+        </list>
+        <rule-input name="//build_defs/bindings:csharp_managed_core" />
+        <rule-input name="//build_defs/features:fea_multiphysics_enabled" />
+        <rule-input name="//build_defs/features:fsi_sph_enabled" />
+        <rule-input name="//build_defs/features:fsi_tdpf_enabled" />
+        <rule-input name="//build_defs/features:multicore_enabled" />
+        <rule-input name="//build_defs/features:sensor_optix" />
+        <rule-input name="//build_defs/features:vsg_enabled" />
+        <rule-input name="//build_defs/features:yaml_enabled" />
+        <rule-input name="//src/compatibility/chrono:src/demos/csharp/core/demo_CS_CH_buildsystem.cs" />
+        <rule-input name="@platforms//:incompatible" />
+    </rule>
+    <rule class="alias" location="/home/jsonzhou/Desktop/chrono-work/robodyna/examples/fea/cuda/beams/BUILD.bazel:6:6" name="//examples/fea/cuda/beams:ancf3243_sag">
+        <string name="name" value="ancf3243_sag" />
+        <list name="tags">
+            <string value="cuda" />
+            <string value="manual" />
+            <string value="retained-fea-demo" />
+        </list>
+        <label name="actual" value="@legacy_fea//lib_bin/beam_sag:test_ancf3243" />
+        <rule-input name="@legacy_fea//lib_bin/beam_sag:test_ancf3243" />
+    </rule>
+    <rule class="py_binary" location="/home/jsonzhou/Desktop/chrono-work/robodyna/examples/python/core/BUILD.bazel:7:21" name="//examples/python/core:buildsystem">
+        <string name="name" value="buildsystem" />
+        <list name="visibility">
+            <label value="//visibility:public" />
+        </list>
+        <list name="tags">
+            <string value="actual-native-bindings" />
+            <string value="manual" />
+            <string value="original-python-demo" />
+        </list>
+        <string name="generator_name" value="buildsystem" />
+        <string name="generator_function" value="robodyna_python_demo" />
+        <string name="generator_location" value="examples/python/core/BUILD.bazel:7:21" />
+        <list name="args">
+            <string value="--interpreter" />
+            <string value="$(rlocationpath @python_sdk//:bin/python3.10)" />
+            <string value="--executor" />
+            <string value="$(rlocationpath //tools/python_demos:execute.py)" />
+            <string value="--script" />
+            <string value="$(rlocationpath //src/compatibility/chrono:src/demos/python/core/demo_CH_buildsystem.py)" />
+            <string value="--package-manifest" />
+            <string value="$(rlocationpath //bindings/python:core_package_manifest)" />
+            <string value="--case" />
+            <string value="examples/python/core:buildsystem" />
+        </list>
+        <list name="data">
+            <label value="//src/compatibility/chrono:src/demos/python/core/demo_CH_buildsystem.py" />
+            <label value="//bindings/python:core_package" />
+            <label value="//bindings/python:core_package_manifest" />
+            <label value="@python_sdk//:bin/python3.10" />
+            <label value="//tools/python_demos:execute.py" />
+        </list>
+        <list name="deps">
+            <label value="@rules_python//python/runfiles:runfiles" />
+        </list>
+        <list name="srcs">
+            <label value="//tools/python_demos:launch.py" />
+        </list>
+        <label name="main" value="//tools/python_demos:launch.py" />
+        <rule-input name="//bindings/python:core_package" />
+        <rule-input name="//bindings/python:core_package_manifest" />
+        <rule-input name="//src/compatibility/chrono:src/demos/python/core/demo_CH_buildsystem.py" />
+        <rule-input name="//tools/python_demos:execute.py" />
+        <rule-input name="//tools/python_demos:launch.py" />
+        <rule-input name="@python_sdk//:bin/python3.10" />
+        <rule-input name="@rules_python//python/runfiles:runfiles" />
+    </rule>
+    <rule class="cc_binary" location="/home/jsonzhou/Desktop/chrono-work/crash-work/build/robodyna-bazel-user-root/1beac326a87325a4c9a255572d7c4a54/external/+local_repository+legacy_fea/lib_bin/beam_sag/BUILD.bazel:5:10" name="@legacy_fea//lib_bin/beam_sag:test_ancf3243">
+        <string name="name" value="test_ancf3243" />
+        <string name="generator_name" value="test_ancf3243" />
+        <string name="generator_function" value="cc_binary" />
+        <string name="generator_location" value="lib_bin/beam_sag/BUILD.bazel:5:10" />
+        <list name="srcs">
+            <label value="@legacy_fea//lib_bin/beam_sag:test_ancf3243.cc" />
+        </list>
+        <list name="copts">
+            <string value="--std=c++17" />
+        </list>
+        <list name="deps">
+            <label value="@legacy_fea//lib_src/elements:ANCF3243Data" />
+            <label value="@legacy_fea//lib_src/solvers:solvers_syncedadamwnocoop" />
+            <label value="@legacy_fea//lib_src/solvers:solvers_syncednesterov" />
+            <label value="@legacy_fea//lib_src/solvers:solvers_syncednewton" />
+            <label value="@legacy_fea//lib_src/solvers:solvers_syncedvbd" />
+            <label value="@legacy_fea//lib_utils:cpu_utils" />
+            <label value="@legacy_fea//lib_utils:mesh_utils" />
+            <label value="@legacy_fea//lib_utils:visualization_utils" />
+            <label value="@eigen//:eigen" />
+            <label value="@cuda_math//:cublas" />
+            <label value="@cuda_math//:cusparse" />
+            <label value="@rules_cuda//cuda:runtime" />
+            <label value="@cuda_math//:cudss" />
+            <label value="@rules_cc//:link_extra_lib" />
+        </list>
+        <rule-input name="@cuda_math//:cublas" />
+        <rule-input name="@cuda_math//:cudss" />
+        <rule-input name="@cuda_math//:cusparse" />
+        <rule-input name="@legacy_fea//lib_bin/beam_sag:test_ancf3243.cc" />
+        <rule-input name="@legacy_fea//lib_src/elements:ANCF3243Data" />
+        <rule-input name="@legacy_fea//lib_src/solvers:solvers_syncedadamwnocoop" />
+        <rule-input name="@legacy_fea//lib_src/solvers:solvers_syncednesterov" />
+        <rule-input name="@legacy_fea//lib_src/solvers:solvers_syncednewton" />
+        <rule-input name="@legacy_fea//lib_src/solvers:solvers_syncedvbd" />
+        <rule-input name="@legacy_fea//lib_utils:cpu_utils" />
+        <rule-input name="@legacy_fea//lib_utils:mesh_utils" />
+        <rule-input name="@legacy_fea//lib_utils:visualization_utils" />
+        <rule-input name="@eigen//:eigen" />
+        <rule-input name="@rules_cc//:link_extra_lib" />
+        <rule-input name="@rules_cuda//cuda:runtime" />
+        <rule-output name="@legacy_fea//lib_bin/beam_sag:test_ancf3243.dwp" />
+        <rule-output name="@legacy_fea//lib_bin/beam_sag:test_ancf3243.stripped" />
+    </rule>
+    </query>

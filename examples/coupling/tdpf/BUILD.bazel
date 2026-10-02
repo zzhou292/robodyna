@@ -1,0 +1,19 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+_DEMOS = ["sphere_decay", "sphere_reg_waves", "sphere_irreg_waves", "rm3_reg_waves", "oswec_reg_waves"]
+
+[
+    robodyna_cpp_demo(
+        name = name,
+        srcs = ["//src/compatibility/chrono:src/demos/fsi/tdpf/demo_FSI-TDPF_" + name + ".cpp"],
+        deps = ["//src/coupling/tdpf:tdpf", "//src/coupling/tdpf:visualization", "//src/postprocess:gnuplot_headers"],
+        features = ["fsi", "vsg"],
+        data = ["//src/coupling/tdpf:demo_assets", "@hdf5_sdk//:runtime"],
+        tags = ["cpu-dynamics", "tdpf-demo"],
+    )
+    for name in _DEMOS
+]
+
+filegroup(name = "native_demos", srcs = [":" + name for name in _DEMOS], tags = ["manual"])

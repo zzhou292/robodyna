@@ -30,11 +30,18 @@ _COMMON_CACHE = {
     "USE_CHPF": "OFF",
     "USE_MANAGED_ARRAYS": "OFF",
     "CXXSTD_MAX": "17",
+    "ROBODYNA_DEME_SDK_PREFIX": "$$EXT_BUILD_DEPS$$",
+    "CMAKE_PROJECT_Chrono-DEM-Engine_INCLUDE": "$$EXT_BUILD_ROOT$$/build_defs/legacy/deme_sdk.cmake",
 }
 
 cmake(
     name = "dem_engine",
     lib_source = ":srcs",
+    deps = ["@cuda_math//:jitify", "@cuda_math//:nvrtc", "@cuda_math//:cccl_headers", "@cuda_math//:driver"],
+    build_data = [
+        "@robodyna//build_defs/legacy:deme_sdk.cmake",
+        "@robodyna//build_defs/legacy:deme_materialize_install.cmake",
+    ],
     cache_entries = select({
         "@robodyna//build_defs:sm75": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "75"),
         "@robodyna//build_defs:sm86": dict(_COMMON_CACHE, CMAKE_CUDA_ARCHITECTURES = "86"),

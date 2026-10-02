@@ -1,0 +1,100 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "coordinates",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_coords.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "linear_algebra",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_linalg.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "matrix_references",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_matrix_ref.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "math",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_math.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "archives",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_archive.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "build_system",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_buildsystem.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "powertrain",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_powertrain.cpp",
+        "//src/compatibility/chrono:src/demos/SetChronoSolver.h",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "functions",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_functions.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "solvers",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_solver.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "euler_angles",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_EulerAngles.cpp",
+    ],
+)
+
+robodyna_cpp_demo(
+    name = "filesystem",
+    srcs = [
+        "//src/compatibility/chrono:src/demos/core/demo_CH_filesystem.cpp",
+    ],
+)
+
+# Explicit compilation aggregate; this does not execute interactive programs.
+filegroup(
+    name = "native_demos",
+    srcs = [
+        ":coordinates",
+        ":linear_algebra",
+        ":matrix_references",
+        ":math",
+        ":archives",
+        ":build_system",
+        ":powertrain",
+        ":functions",
+        ":solvers",
+        ":euler_angles",
+        ":filesystem",
+    ],
+    tags = ["manual"],
+)

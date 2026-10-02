@@ -1,0 +1,144 @@
+load("//build_defs/examples:defs.bzl", "robodyna_cpp_demo")
+
+package(default_visibility = ["//visibility:public"])
+
+robodyna_cpp_demo(
+    name = "balls_smc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_ballsSMC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "balls_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_ballsNSC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "mixer_smc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_mixerSMC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "mixer_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_mixerNSC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "fluid_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_fluidNSC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "snow",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_snow.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "particles_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_particlesNSC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "cratering",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_cratering.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "motors",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_motors.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "friction",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_friction.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "mesh_contact",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_mesh_contact.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "callback_smc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_callbackSMC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "callback_nsc",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_callbackNSC.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["vsg"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "custom_collision",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_custom_collision.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["irrlicht"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+robodyna_cpp_demo(
+    name = "collision_objects",
+    srcs = ["//src/compatibility/chrono:src/demos/multicore/demo_MCORE_collision_object.cpp"],
+    deps = ["//src/mbd/multicore:multicore"],
+    data = ["//src/mbd/multicore:demo_assets"],
+    features = ["irrlicht"],
+    tags = ["cpu-dynamics", "multicore-profile"],
+)
+
+filegroup(
+    name = "native_demos",
+    srcs = [":balls_smc", ":balls_nsc", ":mixer_smc", ":mixer_nsc", ":fluid_nsc", ":snow", ":particles_nsc", ":cratering", ":motors", ":friction", ":mesh_contact", ":callback_smc", ":callback_nsc", ":custom_collision", ":collision_objects"],
+    tags = ["manual"],
+)

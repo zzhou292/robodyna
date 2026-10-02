@@ -1,0 +1,16 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["runtime.py"])
+
+py_test(
+    name = "runtime_test",
+    srcs = ["//tests/bindings/python:run_package.py"],
+    main = "//tests/bindings/python:run_package.py",
+    args = ["$(rlocationpath @python_sdk//:bin/python3.10)", "$(rlocationpath :runtime.py)", "$(rlocationpath //bindings/python/baseline:manifest)"],
+    data = ["@python_sdk//:bin/python3.10", ":runtime.py", "//bindings/python/baseline:package", "//bindings/python/baseline:manifest"],
+    deps = ["@rules_python//python/runfiles"],
+    size = "medium",
+    tags = ["manual", "local", "cpu-only", "native-bindings"],
+)

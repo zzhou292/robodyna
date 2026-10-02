@@ -1,0 +1,108 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load(":defs.bzl", "vehicle_components")
+load(":sources.bzl", "VEHICLE_GROUPS")
+load(":exports.bzl", "VEHICLE_DEMO_EXPORTS", "VEHICLE_SOURCE_EXPORTS")
+load(":ownership.bzl", "vehicle_ownership_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sources.bzl", "exports.bzl", "SourceBaseline.json"])
+
+# Exact configuration and four already-qualified source owners are reused.
+# No second ChConfigVehicle.h or SCM implementation is generated here.
+alias(
+    name = "configuration_headers",
+    actual = "//src/compatibility/chrono:native_scm_configuration_headers",
+)
+
+cc_library(
+    name = "headers",
+    hdrs = ["//src/compatibility/chrono:" + path for group in VEHICLE_GROUPS.values() for path in group["headers"]] + select({
+        "//build_defs/features:fsi_sph_enabled": ["//src/compatibility/chrono:src/chrono_vehicle/terrain/CRMTerrain.h"],
+        "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:opencrg_enabled": ["//src/compatibility/chrono:src/chrono_vehicle/terrain/CRGTerrain.h"],
+        "//conditions:default": [],
+    }),
+    strip_include_prefix = "/src/compatibility/chrono/src",
+    deps = [
+        ":configuration_headers",
+        "//build_defs/chrono:native_core_fea",
+        "//src/compatibility/chrono:native_scm",
+        "//src/compatibility/chrono:native_stb",
+    ] + select({"//build_defs/features:fsi_sph_enabled": ["//src/sph:sph"], "//conditions:default": []}),
+)
+
+_COMPONENTS = vehicle_components(VEHICLE_GROUPS, "CH_API_COMPILE_VEHICLE")
+
+cc_library(
+    name = "vehicle",
+    deps = _COMPONENTS + [":headers", "//src/compatibility/chrono:native_scm"] + select({
+        "//build_defs/features:fsi_sph_enabled": ["//src/vehicle/crm:terrain"],
+        "//conditions:default": [],
+    }) + select({
+        "//build_defs/features:opencrg_enabled": ["//src/vehicle/opencrg:terrain"],
+        "//conditions:default": [],
+    }),
+    tags = ["manual", "native-vehicle", "cpu-dynamics"],
+)
+
+py_library(
+    name = "cmake_sources",
+    srcs = ["CMakeSources.py"],
+    deps = ["//tools/verification:inventory"],
+    visibility = ["//src/vehicle:__subpackages__", "//examples/vehicle:__subpackages__"],
+)
+
+py_test(
+    name = "cmake_sources_test",
+    srcs = ["CMakeSourcesTest.py"],
+    main = "CMakeSourcesTest.py",
+    deps = [":cmake_sources"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+py_test(
+    name = "source_inventory_test",
+    srcs = ["SourceInventoryTest.py"],
+    main = "SourceInventoryTest.py",
+    args = [
+        "$(location :sources.bzl)",
+        "$(location //src/vehicle/models:sources.bzl)",
+        "$(location //src/vehicle/visualization:sources.bzl)",
+        "$(location //src/compatibility/chrono:src/chrono_vehicle/CMakeLists.txt)",
+        "$(location //src/compatibility/chrono:src/chrono_models/vehicle/CMakeLists.txt)",
+        "$(location :SourceBaseline.json)",
+        "$(location //examples/vehicle:DemoCatalog.json)",
+        "$(location //examples/vehicle:sources.bzl)",
+        "$(location //examples/vehicle:BUILD.bazel)",
+    ],
+    data = [
+        ":sources.bzl", ":SourceBaseline.json",
+        "//src/vehicle/models:sources.bzl", "//src/vehicle/visualization:sources.bzl",
+        "//examples/vehicle:DemoCatalog.json", "//examples/vehicle:sources.bzl",
+        "//examples/vehicle:BUILD.bazel",
+    ] + ["//src/compatibility/chrono:" + path for path in VEHICLE_SOURCE_EXPORTS + VEHICLE_DEMO_EXPORTS],
+    deps = [":cmake_sources"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+vehicle_ownership_test(
+    name = "ownership_test",
+    with_crm = select({"//build_defs/features:fsi_sph_enabled": True, "//conditions:default": False}),
+    with_opencrg = select({"//build_defs/features:opencrg_enabled": True, "//conditions:default": False}),
+    components = [":vehicle", "//src/vehicle/models:models", "//src/vehicle/visualization:vsg", "//src/vehicle/visualization:irrlicht"],
+    size = "small",
+    tags = ["manual", "cpu-only", "source-proof"],
+)
+
+cc_test(
+    name = "host_module_test",
+    srcs = ["HostModuleTest.cpp"],
+    deps = [":vehicle", "//src/vehicle/models:models", "//include/robodyna/simulation:api", "@googletest//:gtest_main"],
+    size = "small",
+    tags = ["manual", "cpu-only", "native-vehicle"],
+)

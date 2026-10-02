@@ -1,0 +1,49 @@
+load(":defs.bzl", "profile_package")
+load("//build_defs/features:defs.bzl", "FSI_SPH_ONLY", "SENSOR_OPTIX_ONLY", "YAML_ONLY")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["defs.bzl"])
+
+_VSG_ONLY = select({"//build_defs/features:vsg_enabled": [], "//conditions:default": ["@platforms//:incompatible"]})
+
+profile_package(
+    name = "fsi",
+    modules = ["core", "fea", "vsg3d", "irrlicht", "fsi", "vehicle", "robot", "postprocess", "pardisomkl"],
+    backends = ["//build_defs/bindings/optional:native_images", "//build_defs/bindings/optional:native_vsg", "//build_defs/bindings/optional:native_irrlicht", "//build_defs/bindings/optional:native_fsi", "//build_defs/bindings/optional:native_sph_vsg", "//build_defs/bindings/optional:native_vehicle", "//build_defs/bindings/optional:native_vehicle_irrlicht", "//build_defs/bindings/optional:native_robot", "//build_defs/bindings/optional:native_postprocess", "//build_defs/bindings/optional:native_pardisomkl"],
+    compatibility = FSI_SPH_ONLY + _VSG_ONLY,
+)
+profile_package(
+    name = "parsers",
+    modules = ["core", "fea", "vsg3d", "irrlicht", "parsers"],
+    backends = ["//build_defs/bindings/optional:native_images", "//build_defs/bindings/optional:native_vsg", "//build_defs/bindings/optional:native_irrlicht", "//build_defs/bindings/optional:native_parsers"],
+    compatibility = YAML_ONLY + _VSG_ONLY,
+)
+profile_package(
+    name = "sensor",
+    modules = ["core", "fea", "vsg3d", "irrlicht", "sensor", "vehicle"],
+    backends = ["//build_defs/bindings/optional:native_images", "//build_defs/bindings/optional:native_vsg", "//build_defs/bindings/optional:native_irrlicht"] + select({
+        "//build_defs/features:fsi_sph_enabled": ["//build_defs/bindings/optional:native_fsi"], "//conditions:default": [],
+    }) + ["//build_defs/bindings/optional:native_vehicle", "//build_defs/bindings/optional:native_vehicle_irrlicht", "//build_defs/bindings/optional:native_sensor"],
+    compatibility = SENSOR_OPTIX_ONLY,
+)
+
+profile_package(
+    name = 'ros',
+    modules = ['core', 'fea', 'vsg3d', 'irrlicht', 'vehicle', 'robot', 'ros'],
+    backends = ['//build_defs/bindings/optional:native_images', '//build_defs/bindings/optional:native_vsg', '//build_defs/bindings/optional:native_irrlicht', '//build_defs/bindings/optional:native_vehicle', '//build_defs/bindings/optional:native_vehicle_irrlicht', '//build_defs/bindings/optional:native_robot', '//build_defs/bindings/optional:native_ros'],
+    compatibility = select({"//build_defs/features:ros_sensor_enabled": ["@platforms//:incompatible"], "//build_defs/features:ros_urdf_enabled": ["@platforms//:incompatible"], "//build_defs/features:fsi_sph_enabled": ["@platforms//:incompatible"], "//conditions:default": []}),
+)
+
+profile_package(
+    name = 'ros_sensor',
+    modules = ['core', 'fea', 'vsg3d', 'irrlicht', 'vehicle', 'robot', 'ros', 'sensor'],
+    backends = ['//build_defs/bindings/optional:native_images', '//build_defs/bindings/optional:native_vsg', '//build_defs/bindings/optional:native_irrlicht', '//build_defs/bindings/optional:native_vehicle', '//build_defs/bindings/optional:native_vehicle_irrlicht', '//build_defs/bindings/optional:native_robot', '//build_defs/bindings/optional:native_sensor', '//build_defs/bindings/optional:native_ros'],
+    compatibility = select({"//build_defs/features:ros_urdf_enabled": ["@platforms//:incompatible"], "//build_defs/features:fsi_sph_enabled": ["@platforms//:incompatible"], "//conditions:default": []}) + SENSOR_OPTIX_ONLY + select({"//build_defs/features:ros_sensor_enabled": [], "//conditions:default": ["@platforms//:incompatible"]}),
+)
+
+profile_package(
+    name = 'ros_urdf',
+    modules = ['core', 'fea', 'vsg3d', 'irrlicht', 'vehicle', 'robot', 'ros', 'parsers'],
+    backends = ['//build_defs/bindings/optional:native_images', '//build_defs/bindings/optional:native_vsg', '//build_defs/bindings/optional:native_irrlicht', '//build_defs/bindings/optional:native_vehicle', '//build_defs/bindings/optional:native_vehicle_irrlicht', '//build_defs/bindings/optional:native_robot', '//build_defs/bindings/optional:native_parsers', '//build_defs/bindings/optional:native_ros'],
+    compatibility = select({"//build_defs/features:ros_sensor_enabled": ["@platforms//:incompatible"], "//build_defs/features:fsi_sph_enabled": ["@platforms//:incompatible"], "//conditions:default": []}) + YAML_ONLY + _VSG_ONLY + select({"//build_defs/features:ros_urdf_enabled": [], "//conditions:default": ["@platforms//:incompatible"]}),
+)

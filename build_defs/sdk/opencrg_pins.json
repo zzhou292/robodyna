@@ -1,0 +1,99 @@
+{
+  "schema": "robodyna.opencrg_source_sdk.v1",
+  "source": {
+    "repository": "https://github.com/hlrs-vis/opencrg",
+    "tag": "v1.1.2",
+    "commit": "31a67e1b92ad990ee6c95c5b2bba7783c9e28819",
+    "url": "https://codeload.github.com/hlrs-vis/opencrg/tar.gz/31a67e1b92ad990ee6c95c5b2bba7783c9e28819",
+    "archive": "opencrg-31a67e1b92ad990ee6c95c5b2bba7783c9e28819.tar.gz",
+    "bytes": 60939,
+    "sha256": "0c39a81256ccdbd0d6a8290d0394a4e3845c723b1d21e54800f78644e5342681",
+    "identity_source": "Repository named by retained Chrono buildOpenCRG.sh; git ls-remote refs/tags/v1.1.2; immutable revision URL and observed HTTPS archive fingerprint"
+  },
+  "strip_prefix": "opencrg-31a67e1b92ad990ee6c95c5b2bba7783c9e28819",
+  "sources": [
+    "src/crgContactPoint.c",
+    "src/crgEvalpk.c",
+    "src/crgEvaluv2xy.c",
+    "src/crgEvalxy2uv.c",
+    "src/crgEvalz.c",
+    "src/crgLoader.c",
+    "src/crgMgr.c",
+    "src/crgMsg.c",
+    "src/crgOptionMgmt.c",
+    "src/crgPortability.c",
+    "src/crgStatistics.c"
+  ],
+  "headers": [
+    "inc/crgBaseLib.h",
+    "inc/crgBaseLibPrivate.h"
+  ],
+  "files": {
+    "LICENSE": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "README.md": {
+      "bytes": 1015,
+      "sha256": "dc3eb9abb6f92a2f4880d755c1a1c6903e114f181a3b4154ea3fd99c50f8a60a"
+    },
+    "inc/crgBaseLib.h": {
+      "bytes": 28326,
+      "sha256": "b5e777760a79ca88f4d98c274bbbb0c8be86ebf5de68df27e7cf62009ec68b69"
+    },
+    "inc/crgBaseLibPrivate.h": {
+      "bytes": 33579,
+      "sha256": "7fb30f53fd4f1ef0b293bd833840dbdebcfa9bfa1fb0d0d2c97eadb331e42d6b"
+    },
+    "makefile": {
+      "bytes": 1676,
+      "sha256": "1c1bbc2286711820406ac0e5cd3ab0dbf66f5048bcb52170647d0da8466f526f"
+    },
+    "src/crgContactPoint.c": {
+      "bytes": 19062,
+      "sha256": "638d55978663cc09955da0a5f7fea7aa94e06365913836f2327e1a0c53db1861"
+    },
+    "src/crgEvalpk.c": {
+      "bytes": 5543,
+      "sha256": "92c0066fa2e563edc8770185d4c09e3510213238576617c507f87912f5cc1c61"
+    },
+    "src/crgEvaluv2xy.c": {
+      "bytes": 6064,
+      "sha256": "02c7b87a1445ba3dec70d723610e63cae42098612d51d2758209b6e48a857fed"
+    },
+    "src/crgEvalxy2uv.c": {
+      "bytes": 15539,
+      "sha256": "72328ac64a1ae29c1e901ad460635432201081718ab7205340dd7ae88e0d5e43"
+    },
+    "src/crgEvalz.c": {
+      "bytes": 25745,
+      "sha256": "f12fffbba521afa62e9c07e31b6b1d86210367cceb0acfd1bf30505599560fd4"
+    },
+    "src/crgLoader.c": {
+      "bytes": 116435,
+      "sha256": "59d5536785f40ba9feac3517593752c85ece71cee2d67e53a3666edd0962bb0f"
+    },
+    "src/crgMgr.c": {
+      "bytes": 36351,
+      "sha256": "20c27382dc0cc2543c5118b230d8d3273eee54fdac0bc6179b1b6f0918febec2"
+    },
+    "src/crgMsg.c": {
+      "bytes": 2334,
+      "sha256": "62395b89ad8071f6b31b096a13df91dbdf1115af43fa61b35254ee97f934f500"
+    },
+    "src/crgOptionMgmt.c": {
+      "bytes": 16920,
+      "sha256": "351aa2481a663ce646fcd43092852cab298caa2ffe368eae66ea4e37089982bb"
+    },
+    "src/crgPortability.c": {
+      "bytes": 4045,
+      "sha256": "66cbdd10e33be6cdfd1299d8625741954c8e98f3c943b2e7e49b6402b4e33006"
+    },
+    "src/crgStatistics.c": {
+      "bytes": 14442,
+      "sha256": "d38d6376e3326bef184987a9517e012306a2d76fd07bd60d2676a2fcd51f6452"
+    }
+  },
+  "license": "Retained Apache2.0 LICENSE and per-file notices",
+  "reference_recipe": "src/compatibility/chrono/contrib/build-scripts/linux/buildOpenCRG.sh"
+}

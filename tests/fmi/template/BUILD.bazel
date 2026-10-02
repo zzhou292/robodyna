@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+cc_test(
+    name = "bindings_test",
+    srcs = ["TemplateBindingsTest.cpp"],
+    args = ["$(location //examples/integrations/fmi:template_fmi2_cosim)"],
+    data = ["//examples/integrations/fmi:template_fmi2_cosim"],
+    deps = ["//src/integrations/fmi:headers", "@googletest//:gtest"],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    env = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+    size = "small",
+    tags = ["manual", "cpu-only", "native-fmi"],
+)

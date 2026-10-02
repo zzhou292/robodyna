@@ -1,0 +1,25 @@
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("//build_defs/features:defs.bzl", "BASELINE_ABI_ONLY")
+
+_MODELS = [
+    ("FMU2cs_crane", "2"), ("FMU3cs_crane", "3"),
+    ("FMU2cs_actuator", "2"), ("FMU3cs_actuator", "3"),
+    ("FMU2me_vdp", "2"), ("FMU3me_vdp", "3"),
+    ("FMU2me_actuator", "2"), ("FmuComponentChrono", "2"),
+]
+
+py_test(
+    name = "exports_test",
+    srcs = ["ExportsTest.py"],
+    main = "ExportsTest.py",
+    args = [value for model, version in _MODELS for value in [
+        "$(location //examples/integrations/fmi:" + model + ".so)", version,
+    ]],
+    data = ["//examples/integrations/fmi:" + model + ".so" for model, _version in _MODELS],
+    target_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64"] + BASELINE_ABI_ONLY,
+    size = "small",
+    tags = ["manual", "cpu-only", "local", "requires-binutils"],
+)
+
+# Other native FMU families reuse the same actual ELF boundary inspection.
+py_library(name = "inspection", srcs = ["ExportsTest.py"], visibility = ["//visibility:public"])

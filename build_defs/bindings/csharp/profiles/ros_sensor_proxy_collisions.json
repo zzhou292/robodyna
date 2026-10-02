@@ -1,0 +1,63 @@
+{
+  "schema": "robodyna.managed_proxy_collision_approvals.v1",
+  "policy": "Retain the original first-module owner only for exact reviewed generated hashes with identical native primitive/vector helper bodies. Distinct RoboSimian shape types have separate C# names.",
+  "semantic_review": "crash-work/investigations/robodyna-demo-builds-1/managed-proxy-peer-review-1.json",
+  "collisions": [
+    {
+      "file": "double_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "robot",
+      "kept_sha256": "1803038fd8ad1859d1dd3bb623e6fbe454a0d222911380131d427f6b91ec1954",
+      "discarded_sha256": "975643fe19399a5a8a2825ec03de24779e756d50eca65a22f51d2f820609bbde"
+    },
+    {
+      "file": "float_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "robot",
+      "kept_sha256": "a033113165b003919821ddb5a26ede048bd885c3470ea12022391644f6cf46f9",
+      "discarded_sha256": "7b83108b5771c547f99df47306a32b18b66f7a37b10be236e5ec11b39cc52e50"
+    },
+    {
+      "file": "int_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "robot",
+      "kept_sha256": "ed905505df6a043377d404c1628e8c9d51cde0d4f4323a40f84a5b0aeeba519e",
+      "discarded_sha256": "11aca745ad38dc2317163d5faee96b58fd2eb96c77be8b75081cdcf664820137"
+    },
+    {
+      "file": "vector_int.cs",
+      "kept_module": "robot",
+      "discarded_module": "vehicle",
+      "kept_sha256": "f58d493ca81f58dd486384b00f64112b92c927ab7c7f8dd42d9b49035d030188",
+      "discarded_sha256": "2c6fd2b159e2f6551c7d0b30eee2808fe8efb9bbf0a28fca07a69857653c5fb1"
+    },
+    {
+      "file": "double_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "1803038fd8ad1859d1dd3bb623e6fbe454a0d222911380131d427f6b91ec1954",
+      "discarded_sha256": "ecb4c0a78f8d2343d813719e0be612eb3b3025edcb63530842fc54e2ebbad1a3"
+    },
+    {
+      "file": "float_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "a033113165b003919821ddb5a26ede048bd885c3470ea12022391644f6cf46f9",
+      "discarded_sha256": "08ccaf08bdea0cbf8d662f17db825914e1d0e1247445168782dac7194f603ecc"
+    },
+    {
+      "file": "int_ptr.cs",
+      "kept_module": "core",
+      "discarded_module": "sensor",
+      "kept_sha256": "ed905505df6a043377d404c1628e8c9d51cde0d4f4323a40f84a5b0aeeba519e",
+      "discarded_sha256": "313a1ab12f1182b78ebfcf520721f6b4111f9b80f21696f40a81d98347dddc17"
+    },
+    {
+      "file": "vector_double.cs",
+      "kept_module": "vehicle",
+      "discarded_module": "sensor",
+      "kept_sha256": "b4b514189f8f6c6e289fdedbe5034418aacc8b264ebad3aeeffccd3cdfb4f146",
+      "discarded_sha256": "3965875235d66b7e9c636e6638292dfb9e58869ff327f5aa15b11e43cd1a9930"
+    }
+  ]
+}

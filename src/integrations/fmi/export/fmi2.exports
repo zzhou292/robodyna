@@ -1,0 +1,7 @@
+{
+  global:
+    fmi2*;
+    createModelDescription;
+  local:
+    *;
+};

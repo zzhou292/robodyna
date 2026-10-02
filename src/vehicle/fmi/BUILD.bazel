@@ -1,0 +1,107 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//src/integrations/fmi/export:defs.bzl", "native_fmu")
+load(":configuration.bzl", "vehicle_fmi_configuration")
+load(":sources.bzl", "VEHICLE_FMI_SOURCE_EXPORTS")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["sources.bzl", "exports.json", "SourceBaseline.json", "BUILD.bazel", "Irrlicht.COPYRIGHT", "Irrlicht.LICENSE.json", "IrrlichtProfile.h"])
+_SOURCE = "//src/compatibility/chrono:"
+
+vehicle_fmi_configuration(
+    name = "configuration",
+    template = _SOURCE + "src/chrono_vehicle/fmi/ChConfigVehicleFMI.h.in",
+    header = "generated/chrono_vehicle/ChConfigVehicleFMI.h",
+)
+cc_library(
+    name = "driver_headers",
+    hdrs = [":configuration"],
+    strip_include_prefix = "generated",
+    deps = ["//src/vehicle:configuration_headers", "//src/integrations/fmi:configuration_headers"],
+)
+filegroup(name = "source_inputs", srcs = [_SOURCE + path for path in VEHICLE_FMI_SOURCE_EXPORTS])
+
+native_fmu(
+    name = 'wheeled_vehicle',
+    identifier = 'FMU2cs_WheeledVehicle',
+    version = '2',
+    mode = 'CoSimulation',
+    guid = '1fe718a5-688b-586e-b87b-75e2c6fbbb1d',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.cpp', _SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.h'],
+    deps = ["//src/vehicle:vehicle", "//src/vehicle/visualization:irrlicht"],
+    compile_profile = ":IrrlichtProfile.h",
+    runtime_libraries = ["@irrlicht_sdk//:runtime"],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle/FMU_WheeledVehicle.h', ":Irrlicht.COPYRIGHT"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/wheeled_vehicle/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/wheeled_vehicle/BrakeSimple_Front.json', 'data/vehicle/fmi/wheeled_vehicle/BrakeSimple_Rear.json', 'data/vehicle/fmi/wheeled_vehicle/Chassis.json', 'data/vehicle/fmi/wheeled_vehicle/DoubleWishboneFront.json', 'data/vehicle/fmi/wheeled_vehicle/DoubleWishboneRear.json', 'data/vehicle/fmi/wheeled_vehicle/Driveline2WD.json', 'data/vehicle/fmi/wheeled_vehicle/PitmanArm.json', 'data/vehicle/fmi/wheeled_vehicle/Vehicle.json', 'data/vehicle/fmi/wheeled_vehicle/Wheel.json']],
+)
+
+native_fmu(
+    name = 'wheeled_vehicle_powertrain',
+    identifier = 'FMU2cs_WheeledVehiclePtrain',
+    version = '2',
+    mode = 'CoSimulation',
+    guid = '9bd8c987-a0a4-5454-b036-9963837c6ab6',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.cpp', _SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.h'],
+    deps = ["//src/vehicle:vehicle", "//src/vehicle/visualization:irrlicht"],
+    compile_profile = ":IrrlichtProfile.h",
+    runtime_libraries = ["@irrlicht_sdk//:runtime"],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_wheeled_vehicle_ptrain/FMU_WheeledVehiclePtrain.h', ":Irrlicht.COPYRIGHT"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/wheeled_vehicle_ptrain/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/wheeled_vehicle_ptrain/AutomaticTransmissionShafts.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/BrakeSimple_Front.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/BrakeSimple_Rear.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/Chassis.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/DoubleWishboneFront.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/DoubleWishboneRear.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/Driveline2WD.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/EngineShafts.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/PitmanArm.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/Vehicle.json', 'data/vehicle/fmi/wheeled_vehicle_ptrain/Wheel.json']],
+)
+
+native_fmu(
+    name = 'powertrain',
+    identifier = 'FMU2cs_Powertrain',
+    version = '2',
+    mode = 'CoSimulation',
+    guid = 'bdcf90d9-4746-545c-affc-e35e7ab78b27',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.cpp', _SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.h'],
+    deps = ["//src/vehicle:vehicle"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/powertrain/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/powertrain/AutomaticTransmissionShafts.json', 'data/vehicle/fmi/powertrain/EngineShafts.json']],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_powertrain/FMU_Powertrain.h'],
+)
+
+native_fmu(
+    name = 'tire',
+    identifier = 'FMU2cs_ForceElementTire',
+    version = '2',
+    mode = 'CoSimulation',
+    guid = 'ccd7ab4c-25fa-5aa1-b9c2-97defe32c3e4',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.cpp', _SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.h'],
+    deps = ["//src/vehicle:vehicle"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/handling_tire/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/handling_tire/TMeasyTire.json']],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_force_element_tire/FMU_ForceElementTire.h'],
+)
+
+native_fmu(
+    name = 'path_follower',
+    identifier = 'FMU2cs_PathFollowerDriver',
+    version = '2',
+    mode = 'CoSimulation',
+    guid = '7778d1ed-9d79-5168-b2c3-ca1ae96e0625',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp', _SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.h'],
+    deps = ["//src/vehicle:vehicle", "//src/vehicle/visualization:irrlicht"],
+    compile_profile = ":IrrlichtProfile.h",
+    runtime_libraries = ["@irrlicht_sdk//:runtime"],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/cosim/fmu2_path_follower_driver/FMU_PathFollowerDriver.h', ":Irrlicht.COPYRIGHT"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/path_follower/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/path_follower/ISO_double_lane_change.txt']],
+)
+
+native_fmu(
+    name = 'path_follower_model_exchange',
+    identifier = 'FMU2me_PathFollowerDriver',
+    version = '2',
+    mode = 'ModelExchange',
+    guid = '0ece4570-fc05-5753-b9a2-6883740bcdbc',
+    srcs = [_SOURCE + 'src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.cpp', _SOURCE + 'src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.h'],
+    deps = ["//src/vehicle:vehicle"],
+    resource_prefix = 'src/compatibility/chrono/data/vehicle/fmi/path_follower/',
+    resources = [_SOURCE + path for path in ['data/vehicle/fmi/path_follower/ISO_double_lane_change.txt']],
+    extra_notices = [_SOURCE + 'src/chrono_vehicle/fmi/modex/fmu2_path_follower_driver/FMU_PathFollowerDriver.h'],
+)
+
+filegroup(name = "fmus", srcs = [':wheeled_vehicle', ':wheeled_vehicle_powertrain', ':powertrain', ':tire', ':path_follower', ':path_follower_model_exchange'], tags = ["manual"])
